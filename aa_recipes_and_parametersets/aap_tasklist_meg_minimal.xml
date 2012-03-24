@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+<tasklist>
+      
+      <initialisation>
+         <module><name>aamod_checkparameters</name></module>
+         <module><name>aamod_evaluatesubjectnames</name></module>
+         <module><name>aamod_make_subjects_short</name></module>
+	 <module><name>aamod_study_init</name></module>
+	 <module><name>aamod_newsubj_init</name></module>
+      </initialisation>
+      
+      <main>
+      </main>
+      
+</tasklist>
+</aap>

@@ -1,0 +1,9 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_plotsources domain='session' desc='Plot source locations and timecourses' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^s?c.*_BLOCK.*\.mat$</InputFilter> 
+			<Overwrite desc='Overwrite?' ui='yesno'>0</Overwrite>
+		</aamod_emeg_plotsources>
+	</tasksettings>
+</aap>
+

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+   <aamod_listspikes domain='session' desc='listspikes' modality='MRI'>
+   </aamod_listspikes>
+  </tasksettings>
+</aap>
+   

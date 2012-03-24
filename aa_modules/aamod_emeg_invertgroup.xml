@@ -1,0 +1,15 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_invertgroup domain='internal' desc='Group inversion of forward model' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^ace.*_BLOCK.*\.mat$</InputFilter> 
+			<Method desc='Priors' ui='IID (minimum-norm-like)_Coherence (Loreta-like smoothness constraint)_Multiple sparse priors with "greedy search"_Multiple sparse priors with "automatic relevance detection" (quite slow)_Multiple sparse priors with GS then ARD' values='IID,LOR,GS,ARD,MSP'>GS</Method>
+			<SensorTypes desc='Separate sensor types?' help='Separate inversion of each sensor type to allow subsequent fusion.' ui='Invert sensor types seperately for subsequent fusion_Invert combined sensor types_Invert sensor types seperately AND combined'>1</SensorTypes>
+			<SourceSmoothness desc='Smoothness of source priors (0-1)' ui='double'>0.6</SourceSmoothness>
+			<SparsePriorsPerHemisphere dependency='Method' onlyif='GS,ARD,MSP' desc='Sparse priors per hemisphere' ui='int'>256</SparsePriorsPerHemisphere>
+			<RotatingDipoles desc='Allow free orientation of dipoles?' ui='yesno'>0</RotatingDipoles>
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+			<specialrequirements desc='Special requirements?'><highmemory/></specialrequirements>
+		</aamod_emeg_invertgroup>
+	</tasksettings>
+</aap>
+

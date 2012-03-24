@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+<tasklist>
+<initialisation>
+<module><name>aamod_checkparameters</name></module>
+<module><name>aamod_evaluatesubjectnames</name></module>
+<module><name>aamod_make_subjects_short</name></module>
+<module><name>aamod_study_init</name></module>
+<module><name>aamod_newsubj_init</name></module>
+<module><name>aamod_autoidentifyseries_timtrio</name></module>
+</initialisation>
+
+<main>      
+
+<!-- get the structural images -->
+<module>
+<name>aamod_copystructural</name>
+<tobecompletedfirst></tobecompletedfirst>
+<epiprefix/>
+<extraparameters/>
+</module>
+
+<!-- do the segmentation (unified segmentation) -->
+<module>
+<name>aamod_norm_vbm</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+<!-- get the stats for total volume of tissue classes and TIV -->
+<module>
+<name>aamod_structuralstats</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+<!-- get the images ready for DARTEL -->
+<module>
+<name>aamod_dartel_import</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+<!-- make a DARTEL template -->
+<module>
+<name>aamod_dartel_createtemplate</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+<!-- write the segmented images to MNI space -->
+<!-- NOTE: this also smooths! -->
+<module>
+<name>aamod_dartel_normmnisegmented</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+<!-- write the original image to MNI space too, sometimes useful -->
+<module>
+<name>aamod_dartel_normmnistruct</name>
+<tobecompletedfirst>aamod_dartel_createtemplate</tobecompletedfirst>
+</module>
+
+<!-- divide the normalized GM images by total GM (propotional scaling -->
+<!-- adds a g prefix; depending on your analysis you might want to try
+     this.  See Peelle et al (2009) HBM poster. -->
+<module>
+<name>aamod_normalisebytotalgray</name>
+<tobecompletedfirst>[previous]</tobecompletedfirst>
+</module>
+
+</main>
+</tasklist>
+</aap>

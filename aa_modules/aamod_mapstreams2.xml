@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_mapstreams2 domain='session' mfile_alias='aamod_mapstreams' desc='Map streams' modality='MRI'>
+            ﻿<inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>  
+            </outputstreams>
+        </aamod_mapstreams2>
+    </tasksettings>
+</aap>
+

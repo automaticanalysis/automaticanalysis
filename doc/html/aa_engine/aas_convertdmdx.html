@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_convertdmdx</title>
+  <meta name="keywords" content="aas_convertdmdx">
+  <meta name="description" content="Automatic Analysis DMDX to .TXT convertor">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_convertdmdx.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_convertdmdx
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic Analysis DMDX to .TXT convertor</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aas_convertdmdx(aap,i,seriesnum,outputpath) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic Analysis DMDX to .TXT convertor
+ Uses awk script to convert from DMDX to .TXT format
+  i=subject number
+  seriesnum=series number
+  outputpath=place to write .TXT format
+ Matt Davi, MRC CBU, Cambridge 2006 **INCOMPLETE**
+ (based on Rhodri Cusack MRC CBU, Cambridge 2005 &quot;aas_convertseries.m&quot;)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>	Automatic analysis - log tool</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic Analysis DMDX to .TXT convertor</span>
+0002 <span class="comment">% Uses awk script to convert from DMDX to .TXT format</span>
+0003 <span class="comment">%  i=subject number</span>
+0004 <span class="comment">%  seriesnum=series number</span>
+0005 <span class="comment">%  outputpath=place to write .TXT format</span>
+0006 <span class="comment">% Matt Davi, MRC CBU, Cambridge 2006 **INCOMPLETE**</span>
+0007 <span class="comment">% (based on Rhodri Cusack MRC CBU, Cambridge 2005 &quot;aas_convertseries.m&quot;)</span>
+0008 
+0009 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aas_convertdmdx(aap,i,seriesnum,outputpath)</a>
+0010 
+0011 <span class="comment">% Get zil file name</span>
+0012 zildirsearchpth=fullfile(aap.directory_conventions.zildatadir,aap.acq_details.subjects{i},<span class="string">'Raw_Events'</span>);
+0013 zildatadir=dir(zildirsearchpth);
+0014 
+0015 <span class="comment">% check that directory of zil files exists</span>
+0016 <span class="keyword">if</span> (length(zildatadir)==0)
+0017     <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,1,sprintf(<span class="string">'Did not find a zil directory called %s'</span>,zildirsearchpth));
+0018 <span class="keyword">end</span>;
+0019 
+0020 <span class="comment">%% START HERE! %%</span>
+0021 
+0022 dicomsearchpth=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects{i},dicomdatadir.name,<span class="string">'*.dcm'</span>);
+0023 dicomdata=dir(dicomsearchpth);
+0024 <span class="keyword">if</span> (length(dicomdata)==0)
+0025     <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,1,sprintf(<span class="string">'Did not find any dicom data (*.dcm) in %s'</span>,dicomsearchpth));
+0026 <span class="keyword">end</span>;
+0027 
+0028 <span class="keyword">for</span> k=1:length(dicomdata)
+0029     DICOMFN=strvcat(DICOMFN,fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects{i},dicomdatadir.name,dicomdata(k).name));
+0030 <span class="keyword">end</span>;
+0031 DICOMHEADERS=spm_dicom_headers(DICOMFN);
+0032 
+0033 <span class="comment">% Save dicom headers</span>
+0034 save(fullfile(outputpath,<span class="string">'dicom_headers'</span>),<span class="string">'DICOMHEADERS'</span>);
+0035 
+0036 <span class="comment">% Now convert</span>
+0037 currdir=cd;
+0038 cd(outputpath);
+0039 spm_dicom_convert(DICOMHEADERS);
+0040 cd(currdir);</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

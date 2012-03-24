@@ -1,0 +1,22 @@
+<!-- THIS MODULE IS UNDER DEVELOPMENT! -->
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias = 'aamod_decodeDMLT' desc='Use the FSL Brain Extraction Tool (BET)' modality='MRI'>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>epiBETmask</stream>
+                <!-- We can use these other 2 masks, or multiple AND!
+                <stream>segmasksExclusive</stream>
+                <stream>rois</stream>
+                -->
+            </inputstreams>
+            <outputstreams>
+                <stream>decodeWeight</stream>
+                <stream>decodeSig</stream>
+                <stream>decodeMat</stream>
+            </outputstreams>
+            <DMLTobj>dml.crossvalidator(''mva'',{dml.svm},''type'',''nfold'',''folds'',5)</DMLTobj>
+        </currenttask>
+    </tasklist>
+</aap>

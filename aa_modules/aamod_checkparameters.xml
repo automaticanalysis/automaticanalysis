@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+      <aamod_checkparameters domain='study' desc='Check user parameters'/>
+   </tasksettings>
+</aap>

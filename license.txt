@@ -1,0 +1,53 @@
+*Automated Analysis Software
+*Licence Agreement
+
+Automated Analysis software was developed by Dr Rhodri Cusack for supporting research at the MRC Cognition and Brain Science Unit. It is made available to the academic community in the hope that it may prove useful.  
+
+Definitions:
+
+AA means the Automated Analysis software package and any associated documentation whether electronic or printed.
+USER means any person or organisation that uses AA.
+ACADEMIC means not-for-profit.
+
+
+By using AA, the USER hereby agrees to the following conditions:
+
+Grant:
+
+AA is copyrighted by MRC and protected by European Copyright Law.  All rights are reserved worldwide.
+
+MRC grants USER the royalty free right under MRC Copyright and MRC intellectual property rights to use AA for ACADEMIC purposes only.  If USER wishes to use AA for commercial for-profit purposes then USER will contact MRC for a commercial licence. 
+
+Contact details:
+
+
+Rhodri Cusack
+MRC Cognition and Brain Sciences Unit,
+15 Chaucer Road,
+Cambridge,
+CB2 2EF
+Tel: +44 (0) 1223 273 689
+Fax: +44 (0) 1223 359 062
+Rhodri.Cusack@mrc-cbu.cam.ac.uk
+
+Duncan Young
+Business Manager
+Medical Research Council Technology
+20 Park Crescent
+London
+W1B 1AL
+Tel: +44 (0)207 291 5329
+Fax: +44 (0)207 291 5325
+duncan.young@tech.mrc.ac.uk
+
+The USER will not pass the AA to any other party unless it is accompanied by this Licence Agreement.
+
+The USER agrees that it will not translate, alter, decompile, disassemble, reverse engineer, reverse compile, attempt to derive or reproduce any code from AA.
+
+Disclaimer:
+
+MRC makes no representation or warranty with respect to AA and specifically disclaims any implied warranties of merchantability and fitness for a particular purpose or that use of MIX will not infringe any third party rights.
+
+MRC reserves the right to revise AA and to make changes therein from time to time without obligation to notify any person or organisation of such revision or changes.
+
+While MRC will make every effort to ensure the accuracy of AA, neither MRC nor its employees or agents may be held responsible for errors, omissions or other inaccuracies or any consequences thereof.  The MRC will not be liable in any way for any losses howsoever caused by the use of AA, such losses to include but not be limited to loss of profit, business interruption, loss of business information, or other pecuniary loss, including but not limited to special incidental consequential or other damages.

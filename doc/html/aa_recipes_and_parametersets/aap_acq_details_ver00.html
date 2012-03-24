@@ -1,0 +1,113 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aap_acq_details_ver00</title>
+  <meta name="keywords" content="aap_acq_details_ver00">
+  <meta name="description" content="Automatic analysis - parameter set holding study acquisition details">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_recipes_and_parametersets</a> &gt; aap_acq_details_ver00.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_recipes_and_parametersets&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aap_acq_details_ver00
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic analysis - parameter set holding study acquisition details</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aa_acq_details(aap) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic analysis - parameter set holding study acquisition details
+ Some critical parameters here are blank and must be specified in your
+ user script (root, numdummies; also fields set by aas_addsubject)
+ Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003
+ MRC CBU
+ aap_acq_details_ver00.m</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic analysis - parameter set holding study acquisition details</span>
+0002 <span class="comment">% Some critical parameters here are blank and must be specified in your</span>
+0003 <span class="comment">% user script (root, numdummies; also fields set by aas_addsubject)</span>
+0004 <span class="comment">% Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003</span>
+0005 <span class="comment">% MRC CBU</span>
+0006 <span class="comment">% aap_acq_details_ver00.m</span>
+0007 
+0008 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aa_acq_details(aap)</a>
+0009 
+0010 
+0011 <span class="comment">% The study directory</span>
+0012 aap.acq_details.root = <span class="string">''</span>;
+0013 
+0014 <span class="comment">% The subject directories</span>
+0015 aap.acq_details.subjects={};
+0016 
+0017 <span class="comment">% Condition names for each session, assumed same for each subject</span>
+0018 aap.acq_details.sessions={};
+0019 
+0020 <span class="comment">% If aap.directory_conventions.selectechonumbers is true, then you must</span>
+0021 <span class="comment">% specifiy which echo numbers should be selected for each session in here</span>
+0022 aap.acq_details.sessions_echonumbers=[];
+0023 
+0024 <span class="comment">% Bruker session numbers: these correspond to condition names above</span>
+0025 aap.acq_details.brukersessionnums={};
+0026 
+0027 <span class="comment">% session numbers of any series to be ignored in the analysis [djm 20/3/06]</span>
+0028 aap.acq_details.ignoreseries={};
+0029 
+0030 <span class="comment">% Number of dummy scans at the start of each session</span>
+0031 aap.acq_details.numdummies=0;
+0032 
+0033 <span class="comment">% Bruker session numbers for phase maps (1a, 1c - don't need to specify 1b)</span>
+0034 <span class="comment">%  can be left blank, and will be filled automatically if</span>
+0035 <span class="comment">%  aap.options.autoidentifyfieldmaps=1</span>
+0036 aap.acq_details.fieldmaps=[];
+0037 
+0038 <span class="comment">% Blank structure for new fieldmaps</span>
+0039 <span class="comment">%  can be left blank, and will be filled automatically if</span>
+0040 <span class="comment">%  aap.options.autoidentifyfieldmaps=1</span>
+0041 aap.acq_details.newfieldmap=[];
+0042 
+0043 <span class="comment">% Series numbers for structurals - put [] if one wasn't acquired</span>
+0044 <span class="comment">%  can be left blank, and will be filled automatically if</span>
+0045 <span class="comment">%  aap.options.autoidentifystructural=1</span>
+0046 aap.acq_details.structural={};
+0047 
+0048 <span class="comment">% Series numbers for real time t maps - put [] if one not needed</span>
+0049 <span class="comment">%  can be left blank, and will be filled automatically if</span>
+0050 <span class="comment">%  aap.options.autoidentifytmaps=1</span>
+0051 aap.acq_details.tmaps={};
+0052 
+0053 <span class="comment">% Special series to be converted from DICOM and put in specialseries folder</span>
+0054 aap.acq_details.specialseries={};
+0055 
+0056 <span class="comment">% Max number of scans</span>
+0057 aap.acq_details.topscannumber=[];
+0058 
+0059 
+0060 
+0061 
+0062</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

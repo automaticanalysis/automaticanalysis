@@ -1,0 +1,208 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_firstlevel_contrasts</title>
+  <meta name="keywords" content="aamod_firstlevel_contrasts">
+  <meta name="description" content="AA module">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_firstlevel_contrasts.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_firstlevel_contrasts
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_contrasts3(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module
+ First-level model Adam Hampshire MRC CBU Cambridge Feb 2006
+ Modified for aa by Rhodri Cusack Mar 2006</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module</span>
+0002 <span class="comment">% First-level model Adam Hampshire MRC CBU Cambridge Feb 2006</span>
+0003 <span class="comment">% Modified for aa by Rhodri Cusack Mar 2006</span>
+0004 <span class="comment">%</span>
+0005 
+0006 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_contrasts3(aap,task,i)</a>
+0007 
+0008 resp=<span class="string">''</span>;
+0009 
+0010 <span class="keyword">switch</span> task
+0011     <span class="keyword">case</span> <span class="string">'domain'</span>
+0012         resp=<span class="string">'subject'</span>;   <span class="comment">% this module needs to be run once per subject</span>
+0013 
+0014     <span class="keyword">case</span> <span class="string">'description'</span>
+0015         resp=<span class="string">'SPM5 contrasts'</span>;
+0016 
+0017     <span class="keyword">case</span> <span class="string">'summary'</span>
+0018         subjpath=aas_getsubjpath(i);
+0019         resp=sprintf(<span class="string">'Contrasts %s\n'</span>,subjpath);
+0020 
+0021     <span class="keyword">case</span> <span class="string">'report'</span>
+0022         
+0023     <span class="keyword">case</span> <span class="string">'doit'</span>
+0024 
+0025         cwd=pwd;
+0026         <span class="comment">% get the subdirectories in the main directory</span>
+0027         subj_dir = aas_getsubjpath(aap,i);
+0028 
+0029         <span class="comment">%number of blocks</span>
+0030         nsess = length(aap.acq_details.sessions);
+0031 
+0032         <span class="comment">%condition names</span>
+0033         cnames = {<span class="string">'block_noocc'</span>,<span class="string">'block_occ'</span>,<span class="string">'f_noocc'</span>,<span class="string">'h_noocc'</span>,<span class="string">'f_occ'</span>,<span class="string">'h_occ'</span>,<span class="string">'occ'</span>};
+0034         ncond=length(cnames);
+0035 
+0036         movefilt = <span class="string">'^rp_.*\.txt$'</span>;
+0037         mnames = {<span class="string">'x_trans'</span> <span class="string">'y_trans'</span> <span class="string">'z_trans'</span> <span class="string">'x_rot'</span> <span class="string">'y_rot'</span> <span class="string">'z_rot'</span>};
+0038         
+0039         <span class="comment">% New option to allow suffix to output file in extraparameters</span>
+0040         <span class="keyword">if</span> (isfield(aap.tasklist.currenttask.extraparameters,<span class="string">'stats_suffix'</span>))
+0041             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
+0042         <span class="keyword">else</span>
+0043             stats_suffix=[];
+0044         <span class="keyword">end</span>;            
+0045         
+0046         <span class="comment">% And make analysis directory</span>
+0047         subdata = aas_getsubjpath(aap,i);
+0048         anadir = fullfile(subdata,[aap.directory_conventions.stats_singlesubj stats_suffix]);
+0049         cd(anadir);
+0050 
+0051         <span class="comment">% set up the contrasts</span>
+0052         mov=[0 0 0 0 0 0]; <span class="comment">%movements</span>
+0053         mns=[0 0 0 0]; <span class="comment">% session means</span>
+0054 
+0055         cname{1} = <span class="string">'simp_block_occ-simp_block_noocc'</span>;
+0056         simp=[-1 1 0 0 0 0 0]; comp=[0 0 0 0 0 0 0];
+0057         cons{1} = [simp mov comp mov comp mov simp mov mns];
+0058 
+0059         cname{2} = <span class="string">'comp_block_occ-comp_block_noocc'</span>;
+0060         simp=[0 0 0 0 0 0 0]; comp=[-1 1 0 0 0 0 0];
+0061         cons{2} = [simp mov comp mov comp mov simp mov mns];
+0062 
+0063         cname{3} = <span class="string">'inter_block_occ-block_nocc'</span>;
+0064         cons{3}=cons{2}-cons{1};
+0065 
+0066         cname{4} = <span class="string">'simp_fh_occ-simp_fh_noocc'</span>;
+0067         simp=[0 0 -1 -1 1 1 0]; comp=[0 0 0 0 0 0 0];
+0068         cons{4} = [simp mov comp mov comp mov simp mov mns];
+0069 
+0070         cname{5} = <span class="string">'comp_fh_occ-comp_fh_noocc'</span>;
+0071         simp=[0 0 0 0 0 0 0]; comp=[0 0 -1 -1 1 1 0];
+0072         cons{5} = [simp mov comp mov comp mov simp mov mns];
+0073 
+0074         cname{6} = <span class="string">'inter_fh_occ-fh_nocc'</span>;
+0075         cons{6}=cons{5}-cons{4};
+0076 
+0077         cname{7} = <span class="string">'simp_f-h_nocc'</span>;
+0078         simp=[0 0 1 -1 0 0 0]; comp=[0 0 0 0 0 0 0];
+0079         cons{7} = [simp mov comp mov comp mov simp mov mns];
+0080 
+0081         cname{8} = <span class="string">'comp_f-h_nocc'</span>;
+0082         simp=[0 0 0 0 0 0 0]; comp=[0 0 1 -1  0 0 0];
+0083         cons{8} = [simp mov comp mov comp mov simp mov mns];
+0084 
+0085         cname{9} = <span class="string">'simp_f-h_occ'</span>;
+0086         simp=[0 0 0 0 1 -1 0]; comp=[0 0 0 0 0 0 0];
+0087         cons{9} = [simp mov comp mov comp mov simp mov mns];
+0088 
+0089         cname{10} = <span class="string">'comp_f-h_occ'</span>;
+0090         simp=[0 0 0 0 0 0 0]; comp=[0 0 0 0 1 -1 0];
+0091         cons{10} = [simp mov comp mov comp mov simp mov mns];
+0092 
+0093         cname{11} = <span class="string">'all_f-h'</span>;
+0094         simp=[0 0 1 -1 1 -1 0]; comp=[0 0 1 -1 1 -1 0];
+0095         cons{11} = [simp mov comp mov comp mov simp mov mns];
+0096 
+0097         cname{12} = <span class="string">'simp_occ'</span>;
+0098         simp=[0 0 0 0 0 0 1]; comp=[0 0 0 0 0 0 0];
+0099         cons{12} = [simp mov comp mov comp mov simp mov mns];
+0100 
+0101         cname{13} = <span class="string">'comp_occ'</span>;
+0102         simp=[0 0 0 0 0 0 0]; comp=[0 0 0 0 0 0 1];
+0103         cons{13} = [simp mov comp mov comp mov simp mov mns];
+0104 
+0105         cname{14} = <span class="string">'simp_fh_occ'</span>;
+0106         simp=[0 0 0 0 1 1 0]; comp=[0 0 0 0 0 0 0];
+0107         cons{14} = [simp mov comp mov comp mov simp mov mns];
+0108 
+0109         cname{15} = <span class="string">'simp_fh_nocc'</span>;
+0110         simp=[0 0 1 1 0 0 0]; comp=[0 0 0 0 0 0 0];
+0111         cons{15} = [simp mov comp mov comp mov simp mov mns];
+0112         
+0113         cname{16} = <span class="string">'comp_fh_occ'</span>;
+0114         simp=[0 0 0 0 0 0 0]; comp=[0 0 0 0 1 1 0];
+0115         cons{16} = [simp mov comp mov comp mov simp mov mns];
+0116 
+0117         cname{17} = <span class="string">'comp_fh_nocc'</span>;
+0118         simp=[0 0 0 0 0 0 0]; comp=[0 0 1 1 0 0 0];
+0119         cons{17} = [simp mov comp mov comp mov simp mov mns];
+0120 
+0121         cname{18} = <span class="string">'simp_block_nocc'</span>;
+0122         simp=[1 0 0 0 0 0 0]; comp=[0 0 0 0 0 0 0];
+0123         cons{18} = [simp mov comp mov comp mov simp mov mns];
+0124       
+0125         cname{19} = <span class="string">'simp_block_occ'</span>;
+0126         simp=[0 1 0 0 0 0 0]; comp=[0 0 0 0 0 0 0];
+0127         cons{19} = [simp mov comp mov comp mov simp mov mns];
+0128 
+0129         cname{20} = <span class="string">'comp_block_nocc'</span>;
+0130         simp=[0 0 0 0 0 0 0]; comp=[1 0 0 0 0 0 0];
+0131         cons{20} = [simp mov comp mov comp mov simp mov mns];
+0132       
+0133         cname{21} = <span class="string">'comp_block_occ'</span>;
+0134         simp=[0 0 0 0 0 0 0]; comp=[0 1 0 0 0 0 0];
+0135         cons{21} = [simp mov comp mov comp mov simp mov mns];
+0136 
+0137         <span class="comment">% Now set up contrasts...</span>
+0138         SPMest=load(<span class="string">'SPM.mat'</span>);
+0139         SPMest=SPMest.SPM;
+0140         <span class="comment">% use this to make the con images</span>
+0141         SPMest.xCon =[];
+0142         <span class="keyword">for</span> i = 1:size(cons,2)
+0143             <span class="keyword">if</span> length(SPMest.xCon)==0
+0144                 SPMest.xCon = spm_FcUtil(<span class="string">'Set'</span>,cname{i},<span class="string">'T'</span>,<span class="string">'c'</span>,cons{i}',SPMest.xX.xKXs);
+0145             <span class="keyword">else</span>
+0146                 SPMest.xCon(end+1) = spm_FcUtil(<span class="string">'Set'</span>,cname{i},<span class="string">'T'</span>,<span class="string">'c'</span>,cons{i}',SPMest.xX.xKXs);
+0147             <span class="keyword">end</span>
+0148         <span class="keyword">end</span>
+0149         spm_contrasts(SPMest);
+0150 
+0151         cd (cwd);
+0152         
+0153     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0154 
+0155     <span class="keyword">otherwise</span>
+0156         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0157 <span class="keyword">end</span>;
+0158 
+0159 
+0160</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+      <aamod_autoidentifyseries_timtrio domain='subject' desc='Automatically identify series numbers'>
+              <outputstreams>
+                  <stream>autoidentifyseries</stream>
+              </outputstreams>
+          </aamod_autoidentifyseries_timtrio>    
+  </tasksettings>
+</aap>

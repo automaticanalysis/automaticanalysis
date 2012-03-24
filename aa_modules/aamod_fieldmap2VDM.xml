@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasklist>
+   <currenttask domain='subject' desc='Create VDMs in fieldmaps' modality='MRI'>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>fieldmap</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>fieldmap</stream>
+            </outputstreams>
+            <te1>10.0</te1>
+            <te2>12.46</te2>
+            <epifm>0</epifm>
+            <tert>23.76</tert>
+            <kdir>-1</kdir>
+            <mask>1</mask>
+            <match>1</match>
+            <writeunwarpedEPI>0</writeunwarpedEPI>
+   </currenttask>
+  </tasklist>
+</aap>

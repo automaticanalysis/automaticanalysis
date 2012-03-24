@@ -1,0 +1,119 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_convert_epis</title>
+  <meta name="keywords" content="aamod_convert_epis">
+  <meta name="description" content="AA module">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_convert_epis.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_convert_epis
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_convert_epis(aap,task,i,j) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module
+ Performs DICOM to NIFTI conversion of all data
+ You will need modified version of spm_dicom_convert.m available from aa
+ website
+ Also moves dummies to 'dummy_scans' directory within each session
+ Rhodri Cusack MRC CBU Cambridge Nov 2005</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module</span>
+0002 <span class="comment">% Performs DICOM to NIFTI conversion of all data</span>
+0003 <span class="comment">% You will need modified version of spm_dicom_convert.m available from aa</span>
+0004 <span class="comment">% website</span>
+0005 <span class="comment">% Also moves dummies to 'dummy_scans' directory within each session</span>
+0006 <span class="comment">% Rhodri Cusack MRC CBU Cambridge Nov 2005</span>
+0007 
+0008 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_convert_epis(aap,task,i,j)</a>
+0009 
+0010 resp=<span class="string">''</span>;
+0011 
+0012 <span class="keyword">switch</span> task
+0013     <span class="keyword">case</span> <span class="string">'domain'</span>
+0014         resp=<span class="string">'session'</span>;   <span class="comment">% this module needs to be run once per session</span>
+0015         
+0016     <span class="keyword">case</span> <span class="string">'description'</span>
+0017         resp=sprintf(<span class="string">'Performing dicom to nifti conversion of EPIs'</span>);
+0018         
+0019     <span class="keyword">case</span> <span class="string">'summary'</span>
+0020         resp=sprintf(<span class="string">'Made directory %s and did dicom to nifti conversion of EPIs\n'</span>);
+0021 
+0022    <span class="keyword">case</span> <span class="string">'inandout'</span>
+0023     
+0024     <span class="comment">% no inputs; outputs to epi stream</span>
+0025     aap.tasklist.currenttask.outputs.epistream.prefix=<span class="string">'f'</span>;
+0026 
+0027     <span class="keyword">case</span> <span class="string">'report'</span>
+0028     <span class="keyword">case</span> <span class="string">'doit'</span>
+0029         subjpath=aas_getsubjpath(aap,i);
+0030         <span class="comment">% If doesn't exist then make session directory, as this is used to store done_ flags as</span>
+0031         <span class="comment">% this module is called once for each session</span>
+0032         sesspath=aas_getsesspath(aap,i,j);
+0033         <span class="keyword">if</span> (~length(dir(sesspath)))
+0034             [s w]=aas_shell([<span class="string">'mkdir '</span> sesspath]);
+0035             <span class="keyword">if</span> (s)
+0036                 aas_log(aap,1,sprintf(<span class="string">'Problem creating directory for session\n%s'</span>,sesspath));
+0037             <span class="keyword">end</span>;
+0038         <span class="keyword">end</span>;
+0039         
+0040         <span class="keyword">if</span> (aap.directory_conventions.selectechonumbers)
+0041             [aap]=aas_convertseries(aap,i,aap.acq_details.brukersessionnums{i}(j),aas_getsesspath(aap,i,j),aap.acq_details.sessions_echonumbers(j));            
+0042         <span class="keyword">else</span>
+0043             [aap]=aas_convertseries(aap,i,aap.acq_details.brukersessionnums{i}(j),aas_getsesspath(aap,i,j));
+0044         <span class="keyword">end</span>;
+0045         <span class="comment">% Now move dummy scans to dummy_scans directory</span>
+0046         dummypath=fullfile(sesspath,<span class="string">'dummy_scans'</span>);
+0047         <span class="keyword">if</span> (~length(dir(dummypath)))
+0048             [s w]=aas_shell([<span class="string">'mkdir '</span> dummypath]);
+0049             <span class="keyword">if</span> (s)
+0050                 aas_log(aap,1,sprintf(<span class="string">'Problem creating directory for dummy scans\n%s'</span>,dummypath));
+0051             <span class="keyword">end</span>;
+0052         <span class="keyword">end</span>;
+0053         
+0054         dummies=aas_getimages(aap,i,j,<span class="string">''</span>,1,aap.acq_details.numdummies);
+0055         <span class="keyword">for</span> i=1:size(dummies,1)
+0056             cmd=[<span class="string">'mv '</span> dummies(i,:) <span class="string">' '</span> dummypath];
+0057             [s w]=aas_shell(cmd);
+0058             <span class="keyword">if</span> (s)
+0059                 aas_log(aap,1,sprintf(<span class="string">'Problem moving dummy scan\n%s\nto\n%s\n'</span>,dummies(i,:),dummypath));
+0060             <span class="keyword">end</span>;
+0061         <span class="keyword">end</span>;
+0062        
+0063     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0064        
+0065      <span class="keyword">otherwise</span>
+0066         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0067 <span class="keyword">end</span>;
+0068</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

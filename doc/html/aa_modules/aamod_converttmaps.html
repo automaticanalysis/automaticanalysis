@@ -1,0 +1,110 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_converttmaps</title>
+  <meta name="keywords" content="aamod_converttmaps">
+  <meta name="description" content="AA module - Converts real time t maps to NIFTI format">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_converttmaps.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_converttmaps
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - Converts real time t maps to NIFTI format</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_converttmaps(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - Converts real time t maps to NIFTI format
+ For all real time t-maps identified, convert them and put them in directory specified by
+ aap.directory_conventions.tmapsdirname
+ Rhodri Cusack MRC CBU Cambridge Nov 2005</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - Converts real time t maps to NIFTI format</span>
+0002 <span class="comment">% For all real time t-maps identified, convert them and put them in directory specified by</span>
+0003 <span class="comment">% aap.directory_conventions.tmapsdirname</span>
+0004 <span class="comment">% Rhodri Cusack MRC CBU Cambridge Nov 2005</span>
+0005 
+0006 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_converttmaps(aap,task,i)</a>
+0007 
+0008 resp=<span class="string">''</span>;
+0009 
+0010 <span class="keyword">switch</span> task
+0011     <span class="keyword">case</span> <span class="string">'domain'</span>
+0012         resp=<span class="string">'subject'</span>;   <span class="comment">% this module needs to be run once per subject</span>
+0013         
+0014     <span class="keyword">case</span> <span class="string">'description'</span>
+0015         resp=<span class="string">'Convert real time t statistic outputs'</span>;
+0016         
+0017     <span class="keyword">case</span> <span class="string">'summary'</span>
+0018         <span class="keyword">if</span> (length(aap.acq_details.tmaps{i})==0)
+0019             resp=sprintf(<span class="string">'No t maps for subject %s\n'</span>,aap.acq_details.subjects{i});
+0020         <span class="keyword">else</span>
+0021             resp=sprintf(<span class="string">'Converted t maps for subject %s to %s\n'</span>, aap.acq_details.subjects{i},aap.directory_conventions.centralstore_structurals);
+0022         <span class="keyword">end</span>;
+0023     
+0024     <span class="keyword">case</span> <span class="string">'inandout'</span>
+0025       aap.tasklist.inputs={};
+0026     anoutput.processingstream=<span class="string">'realtime'</span>;
+0027     anoutput.prefix=<span class="string">'f'</span>;
+0028     aap.tasklist.outputs={anoutput}; 
+0029 
+0030     <span class="keyword">case</span> <span class="string">'report'</span>
+0031     <span class="keyword">case</span> <span class="string">'doit'</span>
+0032         subjpath=aas_getsubjpath(aap,i);
+0033         tmapsdir=fullfile(subjpath,aap.directory_conventions.tmapsdirname);
+0034         <span class="keyword">if</span> (~length(dir(tmapsdir)))
+0035             [s w]=aas_shell([<span class="string">'mkdir '</span> tmapsdir]);
+0036             <span class="keyword">if</span> (s)
+0037                 aas_log(aap,1,sprintf(<span class="string">'Problem making directory%s'</span>,tmapsdir));
+0038             <span class="keyword">end</span>;
+0039         <span class="keyword">end</span>;
+0040         
+0041         <span class="keyword">for</span> j=1:length(aap.acq_details.tmaps{i})
+0042             seriesnum=aap.acq_details.tmaps{i}(j);
+0043             outputpath=fullfile(aas_getsubjpath(aap,i),aap.directory_conventions.tmapsdirname);
+0044             [aap]=aas_convertseries(aap,i,seriesnum,outputpath);
+0045             [pth fle ext]=fileparts(outputpath);
+0046             [pth fle ext]=fileparts(pth);
+0047             mapfn=dir(fullfile(outputpath,sprintf(<span class="string">'f%s-%04d*nii'</span>,fle,seriesnum)));    
+0048             <span class="keyword">if</span> (length(mapfn)&gt;0)
+0049                 Vtmap=spm_vol(fullfile(outputpath,mapfn.name));
+0050                 Ytmap=spm_read_vols(Vtmap);
+0051                 Ytmap=(Ytmap-2048)/256; <span class="comment">%Rescale!</span>
+0052                 spm_write_vol(Vtmap,Ytmap);
+0053             <span class="keyword">end</span>;
+0054         <span class="keyword">end</span>;
+0055         
+0056                 
+0057     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0058         
+0059     <span class="keyword">otherwise</span>
+0060         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0061 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

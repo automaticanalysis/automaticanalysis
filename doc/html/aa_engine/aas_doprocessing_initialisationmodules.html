@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_doprocessing_initialisationmodules</title>
+  <meta name="keywords" content="aas_doprocessing_initialisationmodules">
+  <meta name="description" content="THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_doprocessing_initialisationmodules.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_doprocessing_initialisationmodules
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aas_doprocessing_initialisationmodules(aap) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>	Automatic analysis - log tool</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aa_doprocessing.html" class="code" title="function [aap]=aa_doprocessing(aap)">aa_doprocessing</a>	Automatic analysis - do processing</li><li><a href="aa_doprocessing_parallel.html" class="code" title="function [aap]=aa_doprocessing_parallel(aap)">aa_doprocessing_parallel</a>	Automatic analysis - do processing</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aas_doprocessing_initialisationmodules(aap)</a>
+0002 
+0003 <span class="comment">% THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN</span>
+0004 <span class="keyword">for</span> k=1:length(aap.tasklist.initialisationmodules)
+0005     <span class="comment">% retrieve description from module</span>
+0006     [aap,description]=feval(aap.tasklist.initialisationmodules{k},aap,<span class="string">'description'</span>);
+0007     <span class="comment">% find out whether this module needs to be executed once per study, subject or session</span>
+0008     [aap,domain]=feval(aap.tasklist.initialisationmodules{k},aap,<span class="string">'domain'</span>);
+0009     <span class="keyword">switch</span> (domain)
+0010         <span class="keyword">case</span> <span class="string">'study'</span>
+0011             <span class="comment">% now run current stage</span>
+0012             <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,0,sprintf(<span class="string">'INITIALISAION MODULE %s: %s'</span>,aap.tasklist.initialisationmodules{k},description));
+0013             [aap,resp]=feval(aap.tasklist.initialisationmodules{k},aap,<span class="string">'doit'</span>);
+0014         <span class="keyword">case</span> <span class="string">'subject'</span>
+0015             <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0016                 <span class="comment">% now run current stage</span>
+0017                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,0,sprintf(<span class="string">'INITIALISAION MODULE %s: %s for subject %s'</span>,aap.tasklist.initialisationmodules{k},description,aap.acq_details.subjects{i}));
+0018                 [aap,resp]=feval(aap.tasklist.initialisationmodules{k},aap,<span class="string">'doit'</span>,i);
+0019             <span class="keyword">end</span>;
+0020         <span class="keyword">case</span> <span class="string">'session'</span>
+0021             <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0022                 <span class="keyword">for</span> j=1:length(aap.acq_details.sessions)
+0023                     <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,0,sprintf(<span class="string">'INITIALISATION MODULE %s: %s for subject %s session %s'</span>,aap.tasklist.initialisationmodules{k},description,aap.acq_details.subjects{i},aap.acq_details.sessions{j}));
+0024                     [aap,resp]=feval(aap.tasklist.initialisationmodules{k},aap,<span class="string">'doit'</span>,i,j);
+0025                 <span class="keyword">end</span>;
+0026             <span class="keyword">end</span>;
+0027         <span class="keyword">otherwise</span>
+0028             <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,1,sprintf(<span class="string">'Unknown domain %s associated with stage %s'</span>,aap.tasklist.domain{k},aap.tasklist.stages{k}));
+0029     <span class="keyword">end</span>;
+0030 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_convert_epis domain='session' desc='Convert EPIs'>
+            <echoweightmethod>
+                t2star
+            </echoweightmethod>
+                
+            <inputstreams>
+                <stream>dicom_epi</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>
+                <stream>epi_header</stream>
+                <stream>epi_nulled</stream>
+                <stream>epi_echo_1</stream>
+                <stream>epi_echo_2</stream>
+                <stream>epi_echo_3</stream>
+                <stream>epi_echo_4</stream>
+                <stream>epi_echo_5</stream>
+                <stream>cov_echo_1_1</stream>
+                <stream>cov_echo_1_2</stream>
+                <stream>cov_echo_1_3</stream>
+                <stream>cov_echo_1_4</stream>
+                <stream>cov_echo_1_5</stream>
+                
+                <stream>cov_echo_2_2</stream>
+                <stream>cov_echo_2_3</stream>
+                <stream>cov_echo_2_4</stream>
+                <stream>cov_echo_2_5</stream>
+                
+                <stream>cov_echo_3_3</stream>
+                <stream>cov_echo_3_4</stream>
+                <stream>cov_echo_3_5</stream>
+
+                <stream>cov_echo_4_4</stream>
+                <stream>cov_echo_4_5</stream>
+
+                <stream>cov_echo_5_5</stream>
+                <stream>epi_t2star</stream>
+                <stream>epi_protondensity</stream>
+                <stream>dummyscans</stream>
+                <stream>dummyscans_nulled</stream>
+            </outputstreams>
+        </aamod_convert_epis>
+    </tasksettings>
+</aap>

@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <!-- These modules are run every time -->
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        
+        <!-- The main modules, executed once each only (unless done_... flag is removed) -->
+        <main>
+            <!-- Find the relevant fMRI series and the corresponding files -->
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
+            <module><name>aamod_get_dicom_structural</name></module>
+            <module><name>aamod_get_dicom_epi</name></module>
+            
+            <!-- Convert structural -->
+            <module><name>aamod_copystructural</name></module>
+            
+            <!-- Convert EPIs and do pre-processing -->
+            <module><name>aamod_convert_epis</name></module>
+            <module><name>aamod_realign</name></module>
+            <module><name>aamod_tsdiffana</name></module>
+            <module><name>aamod_coreg_noss</name></module>
+            
+            <!-- Derive normalisation parameters -->
+            <module><name>aamod_norm_noss</name></module>
+            
+            <!-- Write normalised EPIs, smooth -->
+            <module><name>aamod_norm_write_meanepi</name></module>
+            <module><name>aamod_norm_write</name></module>
+            <module><name>aamod_smooth</name></module>
+            
+            <!-- Uncomment these if you want to do modelling - you'll need to make your
+            own copy of aamod_firstlevel_model and aamod_firstlevel_contrasts and
+            customize them appropriately. Theres normally no need to change 
+            aamod_secondlevel_model -->
+            <!--
+            <module><name>aamod_firstlevel_model</name></module>
+            <module><name>aamod_firstlevel_contrasts</name></module>
+            <module><name>aamod_secondlevel_model</name></module>
+            -->
+            
+        </main>
+    </tasklist>
+</aap>

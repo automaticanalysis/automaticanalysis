@@ -1,0 +1,17 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_rfx domain='internal' desc='Group ANOVAs at sensor and/or source levels' modality='meg'>
+			<DirFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^.*fused.*$</DirFilter> 	
+			<FileFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^(b_|l_).*\.nii$</FileFilter> 
+			<factors desc='Factor names' help='(BLOCK will treated as first factor)' ui='text'><item>task</item></factors> 
+			<levels desc='Vector of number of levels of each factor' help='(BLOCK will be treated as first factor)' ui='int'>[2]</levels> 
+			<effects desc='Cell array of effects for each factor' help='(BLOCK will be treated as first factor)' ui='cell'>{'diff'}</effects>
+			<PPM desc='Calculate PPM?' ui='yesno'>1</PPM>
+			<ROIs desc='Cell array of ROI mat files' help='' ui='cell'></ROIs>
+			<rendersources desc='Render sources?' ui='yesno'>1</rendersources>
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+			<specialrequirements desc='Special requirements?'><highmemory/><unlimit/></specialrequirements>
+		</aamod_emeg_rfx>
+	</tasksettings>
+</aap>
+

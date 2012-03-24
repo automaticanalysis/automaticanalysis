@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+   <aamod_structuralstats domain='subject' desc='SPM structural statistics' modality='MRI'>
+   <prefix desc='Prefix for GM,WM,CSF images'>mwc</prefix>
+   </aamod_structuralstats>
+  </tasksettings>
+</aap>
+   

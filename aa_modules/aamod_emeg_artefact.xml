@@ -1,0 +1,20 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_artefact domain='session' desc='Robust averaging and/or artefact rejection' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^ce_.*BLOCK.*\.mat$</InputFilter> 
+			<RobustAveraging desc='Use robust averaging?' ui='yesno'>0</RobustAveraging>
+			<Smoothing dependency='RobustAveraging' onlyif='1' desc='FWHM residual smoothing' ui='int'>8</Smoothing>
+			<WeightingFunction dependency='RobustAveraging' onlyif='1' desc='Weighting function offset' ui='int'>3</WeightingFunction>
+			<thresholdVEOG desc='Rejection threshold for VEOG channel max (uV)' ui='auto|int'>Inf</thresholdVEOG>
+			<thresholdHEOG desc='Rejection threshold for HEOG channel max (uV)' ui='auto|int'>auto</thresholdHEOG>
+			<thresholdVEOGmean desc='Rejection threshold for VEOG channel mean (uV)' ui='auto|int'>Inf</thresholdVEOGmean>
+			<thresholdHEOGmean desc='Rejection threshold for HEOG channel mean (uV)' ui='auto|int'>auto</thresholdHEOGmean>
+			<thresholdEEG desc='Rejection threshold for EEG channels (uV)' ui='int'>120</thresholdEEG>
+			<thresholdMag desc='Rejection threshold for magnetometers (fT)' ui='int'>5000</thresholdMag>
+			<thresholdGrad desc='Rejection threshold for gradiometers (fT/m)' ui='int'>5000</thresholdGrad>
+			<EquateEvents desc='Equalize trial number across event types?' help='If some events have more good trials then others, randomly mark a subset as bad to equate numbers?' ui='yesno'>0</EquateEvents>
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+		</aamod_emeg_artefact>
+	</tasksettings>
+</aap>
+

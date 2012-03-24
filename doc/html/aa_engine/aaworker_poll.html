@@ -1,0 +1,155 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aaworker_poll</title>
+  <meta name="keywords" content="aaworker_poll">
+  <meta name="description" content="This is a message pump for the worker">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aaworker_poll.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aaworker_poll
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a message pump for the worker</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function aaworker_poll(obj,event) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This is a message pump for the worker</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>	Automatic analysis - log tool</li><li><a href="aas_propagatefrom.html" class="code" title="function [destfn]=aas_propagatefrom(destmachine, fn, suffix)">aas_propagatefrom</a>	aa component used by parallel engine</li><li><a href="aas_propagateto.html" class="code" title="function aas_propagateto(destmachine, fn)">aas_propagateto</a>	aa component used by parallel engine</li><li><a href="aaworker_setspmvisibility.html" class="code" title="">aaworker_setspmvisibility</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aaworker_pollsetup.html" class="code" title="function aaworker_pollsetup">aaworker_pollsetup</a>	</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function writedoneflag(aaworker,fn)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% This is a message pump for the worker</span>
+0002 
+0003 <a name="_sub0" href="#_subfunctions" class="code">function aaworker_poll(obj,event)</a>
+0004 <span class="keyword">global</span> aaworker;
+0005 numretries=3; <span class="comment">% For robustness, code will retry each command three times if not successful</span>
+0006 stop(aaworker.polltimer);
+0007 mastertaskpth=fullfile(aaworker.parmpath,<span class="string">'pendingtask.mat'</span>);
+0008 taskpth=<a href="aas_propagatefrom.html" class="code" title="function [destfn]=aas_propagatefrom(destmachine, fn, suffix)">aas_propagatefrom</a>(aaworker.master.hostname,mastertaskpth,<span class="string">'worker'</span>);
+0009 <span class="keyword">if</span> (exist(taskpth))
+0010     <span class="keyword">for</span> i=1:30
+0011         <span class="keyword">try</span>
+0012             task=load(taskpth);
+0013             task=task.task;
+0014             aaworker.aap=task.aap;
+0015             <span class="keyword">break</span>;
+0016         <span class="keyword">catch</span>
+0017             <span class="comment">% assume it was a file propagation delay or locking problem and so try again</span>
+0018             taskpth=<a href="aas_propagatefrom.html" class="code" title="function [destfn]=aas_propagatefrom(destmachine, fn, suffix)">aas_propagatefrom</a>(aaworker.master.hostname,mastertaskpth,<span class="string">'worker'</span>);
+0019             fprintf(<span class="string">'waiting for propagation %d\n'</span>,i);
+0020             pause(5.0);
+0021         <span class="keyword">end</span>;
+0022     <span class="keyword">end</span>;
+0023     fprintf(<span class="string">'AAWORKER: Found task %s here %s\n'</span>,task.name,taskpth);
+0024     tic;
+0025     <span class="keyword">switch</span> (task.name)
+0026         <span class="keyword">case</span> <span class="string">'doprocessing'</span>
+0027             <span class="keyword">for</span> i=1:length(aaworker.aap.internal.taskqueue)
+0028                 
+0029                 <span class="comment">% If at first you don't succeed, try, and try again</span>
+0030                 <span class="keyword">for</span> jj=1:numretries
+0031                     <span class="keyword">try</span>
+0032                         mytask=aaworker.aap.internal.taskqueue(i);
+0033                         <span class="keyword">switch</span>(mytask.domain)
+0034                             <span class="keyword">case</span> <span class="string">'study'</span>
+0035                                 <span class="comment">% now run current stage</span>
+0036                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s RUNNING: %s'</span>,aaworker.aap.tasklist.stages{mytask.k}.name,mytask.description));
+0037                                 [aaworker.aap,resp]=feval(aaworker.aap.tasklist.stages{mytask.k}.name,aaworker.aap,mytask.task);
+0038                                 <a href="#_sub1" class="code" title="subfunction writedoneflag(aaworker,fn)">writedoneflag</a>(aaworker,mytask.doneflag);
+0039                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s COMPLETED'</span>,aaworker.aap.tasklist.stages{mytask.k}.name));
+0040                             <span class="keyword">case</span> <span class="string">'subject'</span>
+0041                                 <span class="comment">% now run current stage</span>
+0042                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s RUNNING: %s for subject %s'</span>,aaworker.aap.tasklist.stages{mytask.k}.name,mytask.description,aaworker.aap.acq_details.subjects{mytask.i}));
+0043                                 [aaworker.aap,resp]=feval(aaworker.aap.tasklist.stages{mytask.k}.name,aaworker.aap,mytask.task,mytask.i);
+0044                                 <a href="#_sub1" class="code" title="subfunction writedoneflag(aaworker,fn)">writedoneflag</a>(aaworker,mytask.doneflag);
+0045                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s COMPLETED'</span>,aaworker.aap.tasklist.stages{mytask.k}.name));
+0046                             <span class="keyword">case</span> <span class="string">'session'</span>
+0047                                 <span class="comment">% now run current stage</span>
+0048                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s RUNNING: %s for subject %s session %s'</span>,aaworker.aap.tasklist.stages{mytask.k}.name,mytask.description,aaworker.aap.acq_details.subjects{mytask.i},aaworker.aap.acq_details.sessions{mytask.j}));
+0049                                 [aaworker.aap,resp]=feval(aaworker.aap.tasklist.stages{mytask.k}.name,aaworker.aap,mytask.task,mytask.i,mytask.j);
+0050                                 <a href="#_sub1" class="code" title="subfunction writedoneflag(aaworker,fn)">writedoneflag</a>(aaworker,mytask.doneflag);
+0051                                 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER %s COMPLETED'</span>,aaworker.aap.tasklist.stages{mytask.k}.name));
+0052                         <span class="keyword">end</span>;
+0053                         jj=0;
+0054                         <span class="keyword">break</span>;
+0055                     <span class="keyword">catch</span>;
+0056                         <span class="comment">% make sure we're in the right directory</span>
+0057                         le=lasterror;
+0058                         cd (aaworker.aap.internal.pwd);
+0059                         <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">'AAWORKER WARNING: retrying as failed on attempt %d of %d with error:\n\t%s'</span>,jj,numretries,le.message));
+0060                         <span class="keyword">for</span> kk=1:length(le.stack)
+0061                             <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,sprintf(<span class="string">' file %s name %s line %d'</span>,le.stack(kk).file,le.stack(kk).name,le.stack(kk).line));
+0062                         <span class="keyword">end</span>;
+0063                     <span class="keyword">end</span>;                    
+0064                 <span class="keyword">end</span>;
+0065                 <span class="keyword">if</span> (jj==3)
+0066                         <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,1,sprintf(<span class="string">'AAWORKER ERROR: %d retries did not suceed - see details above'</span>,numretries));
+0067                 <span class="keyword">end</span>; 
+0068             <span class="keyword">end</span>;
+0069     <span class="keyword">end</span>;
+0070     <span class="keyword">try</span>
+0071         <a href="aaworker_setspmvisibility.html" class="code" title="">aaworker_setspmvisibility</a>
+0072         delete(taskpth);
+0073         delete(mastertaskpth);
+0074         timenow=now;
+0075         boredfn=fullfile(aaworker.parmpath,<span class="string">'iambored.mat'</span>);
+0076         save(boredfn,<span class="string">'timenow'</span>);
+0077         <a href="aas_propagateto.html" class="code" title="function aas_propagateto(destmachine, fn)">aas_propagateto</a>(aaworker.master.hostname,boredfn);
+0078         aaworker.lastexcitement=clock;
+0079     <span class="keyword">catch</span>
+0080     <span class="keyword">end</span>;
+0081 <span class="keyword">else</span>
+0082     <span class="comment">% Terminate worker if not used for 3 minutes</span>
+0083     <span class="keyword">if</span> (etime(clock,aaworker.lastexcitement)&gt;180)
+0084         <span class="keyword">try</span>
+0085             <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,0,<span class="string">'There is nothing happening. I am out of here.\n'</span>);
+0086             pth=aaworker.parmpath;
+0087             rmdir(pth,<span class="string">'s'</span>);
+0088         <span class="keyword">catch</span>
+0089         <span class="keyword">end</span>;
+0090         exit
+0091     <span class="keyword">end</span>;
+0092 <span class="keyword">end</span>;
+0093 start(aaworker.polltimer);
+0094 
+0095 
+0096 <a name="_sub1" href="#_subfunctions" class="code">function writedoneflag(aaworker,fn)</a>
+0097 fid=fopen(fn,<span class="string">'w'</span>);
+0098 <span class="keyword">if</span> (~fid)
+0099     <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aaworker.aap,1,[<span class="string">'Error writing done flag '</span> fn])
+0100 <span class="keyword">end</span>;
+0101 fprintf(fid,<span class="string">'%f'</span>,toc);
+0102 fclose(fid);
+0103 <a href="aas_propagateto.html" class="code" title="function aas_propagateto(destmachine, fn)">aas_propagateto</a>(aaworker.master.hostname,fn);
+0104 <span class="keyword">return</span>;
+0105 
+0106 
+0107</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

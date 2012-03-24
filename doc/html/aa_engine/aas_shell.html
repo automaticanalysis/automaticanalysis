@@ -1,0 +1,65 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_shell</title>
+  <meta name="keywords" content="aas_shell">
+  <meta name="description" content="function [s,w]=aas_shell(cmd)">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_shell.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_shell
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [s,w]=aas_shell(cmd)</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [s,w]=aas_shell(cmd) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment">function [s,w]=aas_shell(cmd)
+ aa subroutine - wrapper for shell call</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aa_doprocessing.html" class="code" title="function [aap]=aa_doprocessing(aap)">aa_doprocessing</a>	Automatic analysis - do processing</li><li><a href="aa_doprocessing_onetask.html" class="code" title="function aa_doprocessing_onetask(aap,task,k)">aa_doprocessing_onetask</a>	</li><li><a href="aa_doprocessing_parallel.html" class="code" title="function [aap]=aa_doprocessing_parallel(aap)">aa_doprocessing_parallel</a>	Automatic analysis - do processing</li><li><a href="aas_findfiles.html" class="code" title="function [aap,resp]=aas_findfiles(aap,searchpath,minfiles,maxfiles)">aas_findfiles</a>	function [aap,resp]=aas_findfiles(aap,searchpath,minfiles,maxfiles)</li><li><a href="aas_launchworker.html" class="code" title="function [s]=aas_launchworker(aap,workernumber)">aas_launchworker</a>	</li><li><a href="aas_makedir.html" class="code" title="function [aap,resp]=aas_makedir(aap,dirname)">aas_makedir</a>	aas_makedir(aap,dirname)</li><li><a href="aas_parsepvshow.html" class="code" title="function  [aap,seriesnum,acqtype,acqtime,reps,recoed]=aas_parsepvshow(aap,rawdatasetpath)">aas_parsepvshow</a>	Automatic analysis - pvshow.pl</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">%function [s,w]=aas_shell(cmd)</span>
+0002 <span class="comment">% aa subroutine - wrapper for shell call</span>
+0003 <span class="comment">%</span>
+0004 <a name="_sub0" href="#_subfunctions" class="code">function [s,w]=aas_shell(cmd)</a>
+0005 
+0006 prefix=<span class="string">'setenv TERM dumb;'</span>; <span class="comment">% stops colours</span>
+0007 
+0008 [s,w]=unix([prefix cmd]);
+0009 
+0010 <span class="comment">% strip off tcsh: errors at start (see http://www.mathworks.com/support/solutions/data/1-18DNL.html?solution=1-18DNL)</span>
+0011 [l r]=strtok(w,10);
+0012 <span class="keyword">while</span> (length(l)&gt;5)
+0013     <span class="keyword">if</span> (~strcmp(l(1:5),<span class="string">'tcsh:'</span>) &amp; ~strcmp(l(1:8),<span class="string">'/bin/sh:'</span>)) 
+0014         <span class="keyword">break</span>;
+0015     <span class="keyword">end</span>;
+0016     [l r]=strtok(r,10);
+0017 <span class="keyword">end</span>;
+0018 w=[l 10 r];</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

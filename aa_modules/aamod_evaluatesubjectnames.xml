@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+       <aamod_evaluatesubjectnames domain='subject' desc='Check raw data'/>
+   </tasksettings>
+</aap>

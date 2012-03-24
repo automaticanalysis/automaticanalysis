@@ -1,0 +1,11 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_processmri domain='subject' desc='Normalise and segment MRI and generate meshes' modality='meg'>		
+			<MeshSize desc='# dipoles in cortical mesh' help='old (spm default) meshes had choice of 3004|4004|5004|7204 dipoles' ui='5124|8196|20484'>2</MeshSize> 
+			<AutoFindFiducials desc='Find MRI fiducials automatically?' ui='yesno'>1</AutoFindFiducials>
+			<AutoMask desc='Try to mask out vit.E capsules?' ui='yesno'>1</AutoMask>
+			<Overwrite desc='Overwrite?' ui='yesno'>0</Overwrite>
+		</aamod_emeg_processmri>
+	</tasksettings>
+</aap>
+

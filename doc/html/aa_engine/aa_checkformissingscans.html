@@ -1,0 +1,90 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aa_checkformissingscans</title>
+  <meta name="keywords" content="aa_checkformissingscans">
+  <meta name="description" content="Automatic analysis - check for missing scans">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aa_checkformissingscans.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aa_checkformissingscans
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic analysis - check for missing scans</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aa_checkformissingscans(studyroot) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic analysis - check for missing scans
+ A problem with data transfer once caused a scan to be missing in the raw
+ DICOM data. You may use this function to scan all of the raw data
+ directories in a study for missing scans.
+ Rhodri Cusack MRC CBU Cambridge 2004</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_getimages.html" class="code" title="function [imagefns]=aas_getimages(aap,i,j,prefixes,minimg,maximg)">aas_getimages</a>	Automatic Analysis function to retrieve image lists</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic analysis - check for missing scans</span>
+0002 <span class="comment">% A problem with data transfer once caused a scan to be missing in the raw</span>
+0003 <span class="comment">% DICOM data. You may use this function to scan all of the raw data</span>
+0004 <span class="comment">% directories in a study for missing scans.</span>
+0005 <span class="comment">% Rhodri Cusack MRC CBU Cambridge 2004</span>
+0006 
+0007 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aa_checkformissingscans(studyroot)</a>
+0008 
+0009 <span class="keyword">if</span> (~exist(<span class="string">'studyroot'</span>,<span class="string">'var'</span>))
+0010     studyroot=pwd;
+0011 <span class="keyword">end</span>;
+0012 
+0013 
+0014 <span class="comment">% First, load AAP structure</span>
+0015 aaploadfn=fullfile(studyroot,<span class="string">'aap_parameters'</span>);
+0016 load(aaploadfn);
+0017 
+0018 wasmissing=false;
+0019 <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0020     fprintf(<span class="string">'Checking %s\n'</span>,aap.acq_details.subjects{i});
+0021     <span class="keyword">for</span> j=1:length(aap.acq_details.sessions)
+0022         fles=<a href="aas_getimages.html" class="code" title="function [imagefns]=aas_getimages(aap,i,j,prefixes,minimg,maximg)">aas_getimages</a>(aap,i,j,<span class="string">'f'</span>);
+0023         <span class="keyword">for</span> k=1:size(fles,1)
+0024             pos=findstr(<span class="string">'-'</span>,fles(k,:));
+0025             ind=str2num(fles(k,(pos(end-1)+1):(pos(end)-1)));
+0026             <span class="keyword">if</span> (k~=1)
+0027                 <span class="keyword">if</span> (ind~=(oldind+1))
+0028                     fprintf(<span class="string">'Missing in session %s scan %d\n'</span>,aap.acq_details.sessions{j},ind);
+0029                     wasmissing=true;
+0030                 <span class="keyword">end</span>;
+0031             <span class="keyword">end</span>;
+0032             oldind=ind;
+0033         <span class="keyword">end</span>;
+0034     <span class="keyword">end</span>;
+0035 <span class="keyword">end</span>;
+0036         
+0037 
+0038 <span class="keyword">if</span> (~wasmissing)
+0039     fprintf(<span class="string">'No scans missing\n'</span>);
+0040 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

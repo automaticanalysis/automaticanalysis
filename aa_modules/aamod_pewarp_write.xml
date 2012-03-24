@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='SPM EPI coregistration with phase-encoding direction unwarping' modality='MRI'>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>PEwarp_params</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

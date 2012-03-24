@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+      <aamod_make_subjects_short domain='study' desc='Make short subject filenames'/>
+   </tasksettings>
+</aap>

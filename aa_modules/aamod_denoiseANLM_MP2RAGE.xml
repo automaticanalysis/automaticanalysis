@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_denoiseANLM' desc='Denoises the structural(s) provided' modality='MRI'>
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>structural_dicom_header</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>structural_dicom_header</stream>
+                <stream>denoiseResidual</stream>
+            </outputstreams>
+            <patchsize>1</patchsize>
+            <searcharea>3</searcharea>
+            <beta>1</beta>
+            <rician>1</rician>
+            <verbose>0</verbose>
+            <structurals>2,5</structurals>
+            <diagnostic>1</diagnostic>
+        </currenttask>
+    </tasklist>
+</aap>
+   

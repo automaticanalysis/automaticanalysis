@@ -1,0 +1,11 @@
+#!/bin/csh
+#
+
+#----------------------------------------------------------
+# Environment Setup for FSL 4.1.2
+#setenv FSLDIR /cbu/imagers/linux/bin/fsl-4.1.2
+set path = ($path /imaging/local/linux/bin/fsl-4.1.2/bin/loadshare/bin )
+setenv FSLDIR /imaging/local/linux/bin/fsl-4.1.2
+source ${FSLDIR}/etc/fslconf/fsl.csh
+setenv FSLOUTPUTTYPE NIFTI
+#----------------------------------------------------------

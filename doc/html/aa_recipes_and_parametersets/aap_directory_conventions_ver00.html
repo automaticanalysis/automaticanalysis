@@ -1,0 +1,123 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aap_directory_conventions_ver00</title>
+  <meta name="keywords" content="aap_directory_conventions_ver00">
+  <meta name="description" content="Automatic analysis - parameter set holding directory naming conventions">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_recipes_and_parametersets</a> &gt; aap_directory_conventions_ver00.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_recipes_and_parametersets&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aap_directory_conventions_ver00
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic analysis - parameter set holding directory naming conventions</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aap_directory_conventions_ver00(aap) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic analysis - parameter set holding directory naming conventions
+ You will need to change various elements to run it at your site
+ Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003
+ MRC CBU
+ aa_study_acq_details.m</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic analysis - parameter set holding directory naming conventions</span>
+0002 <span class="comment">% You will need to change various elements to run it at your site</span>
+0003 <span class="comment">% Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003</span>
+0004 <span class="comment">% MRC CBU</span>
+0005 <span class="comment">% aa_study_acq_details.m</span>
+0006 
+0007 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aap_directory_conventions_ver00(aap)</a>
+0008 
+0009 <span class="comment">% DIRECTORY NAMING CONVENTIONS</span>
+0010 <span class="comment">% Subdirectory in subject directory for field maps</span>
+0011 aap.directory_conventions.fieldmapsdirname= <span class="string">'fieldmaps'</span>; 
+0012 <span class="comment">% Subdirectory in subject directory for structurals</span>
+0013 aap.directory_conventions.structdirname =<span class="string">'structurals'</span>;
+0014 <span class="comment">% Subdirectory in subject directory for t-maps</span>
+0015 aap.directory_conventions.tmapsdirname =<span class="string">'realtime_tmaps'</span>;
+0016 <span class="comment">% Subdirectory in subject directory for special series</span>
+0017 aap.directory_conventions.specialseriesdirname =<span class="string">'specialseries'</span>;
+0018 <span class="comment">% Subdirectory in subject directory for event files</span>
+0019 aap.directory_conventions.eventsdirname = <span class="string">'event_files'</span>; 
+0020 <span class="comment">% Raw data source</span>
+0021 aap.directory_conventions.rawdatadir=<span class="string">'/mridata/cbu/'</span>;
+0022 <span class="comment">% Central store for raw structurals</span>
+0023 aap.directory_conventions.centralstore_structurals=<span class="string">'/imaging/local/structurals/cbu'</span>;
+0024 <span class="comment">% Template for non skull-stripped normalisation</span>
+0025 aap.directory_conventions.T1template=<span class="string">'/imaging/local/spm/spm5/templates/T1.nii'</span>;
+0026 
+0027 <span class="comment">% THESE ARE NOT GENERALLY USED ANY MORE</span>
+0028 <span class="comment">% Central store for skull-stripped structurals</span>
+0029 aap.directory_conventions.centralstore_ssstructurals=<span class="string">'/imaging/local/structurals/cbu/skull_stripped'</span>;
+0030 <span class="comment">% Template for skull-stripped normalisation</span>
+0031 aap.directory_conventions.T1sstemplate=<span class="string">'/imaging/local/spm/spm99/templates/sbrain_avg152T1.img'</span>;
+0032 
+0033 <span class="comment">% Default is that images are slice time corrected and so get 'a' prefix</span>
+0034 <span class="comment">% if you omit slice timing, change this to 'f'</span>
+0035 <span class="comment">%aap.directory_conventions.forrealign_fileprefix='af';</span>
+0036 <span class="comment">%aap.directory_conventions.forcoreg_fileprefix='uf';</span>
+0037 
+0038 <span class="comment">% However, this one is now needed as dual echo sequence gives</span>
+0039 <span class="comment">%  's' not 'f' prefix. Also provides a nice handy place to make</span>
+0040 <span class="comment">%  data site specific or not</span>
+0041 aap.directory_conventions.rawdataafterconversionprefix=<span class="string">'fCBU'</span>;
+0042 
+0043 <span class="comment">% Format for subject output directories</span>
+0044 <span class="comment">% 0: manually specify in aap.directory_conventions.subject_directory_names</span>
+0045 <span class="comment">% 1: truncated subject names (e.g., CBU020123) {default}</span>
+0046 <span class="comment">% 2: automatically generated ordinal labels for subject directories (S01, S02, S03...)</span>
+0047 aap.directory_conventions.subject_directory_format=1;
+0048 
+0049 <span class="comment">% Format for structural image filename</span>
+0050 <span class="comment">% 0: manually specify in field aap.directory_conventions.subject_filenames</span>
+0051 <span class="comment">% 1: truncated subject names (e.g., CBU020123) {default}</span>
+0052 <span class="comment">% 2: automatically generated ordinal labels for subject directories (S01, S02, S03...)</span>
+0053 aap.directory_conventions.subject_filenames_format=1;
+0054 
+0055 <span class="comment">% see two sections above</span>
+0056 aap.directory_conventions.subject_directory_names={};
+0057 aap.directory_conventions.subject_filenames={};
+0058 
+0059 <span class="comment">% for raw data, use number of file in listing rather than filtering for</span>
+0060 <span class="comment">% series number</span>
+0061 aap.directory_conventions.rawseries_usefileorder=0;
+0062 
+0063 <span class="comment">% filter for particular echo numbers</span>
+0064 aap.directory_conventions.selectechonumbers=0;
+0065 
+0066 <span class="comment">% HTML report</span>
+0067 aap.directory_conventions.reportname=<span class="string">'fullreport.htm'</span>;
+0068 
+0069 <span class="comment">% Statistics</span>
+0070 <span class="comment">%   first level random effects root directory name</span>
+0071 aap.directory_conventions.stats_singlesubj=<span class="string">'results'</span>;
+0072 <span class="comment">%   second level random effects root directory name</span>
+0073 aap.directory_conventions.rfx=<span class="string">'rfx'</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

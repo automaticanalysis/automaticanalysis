@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_realign_noreslice domain='subject' desc='SPM motion correction' modality='MRI'>
+            ﻿<inputstreams>
+                <stream>epi</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>realignment_parameter</stream>
+                <stream>meanepi</stream>
+                <stream>epi</stream>
+            </outputstreams>
+        </aamod_realign_noreslice>
+    </tasksettings>
+</aap>
+

@@ -1,0 +1,66 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_launchworker</title>
+  <meta name="keywords" content="aas_launchworker">
+  <meta name="description" content="">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_launchworker.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_launchworker
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong></strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [s]=aas_launchworker(aap,workernumber) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"></pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>	Automatic analysis - log tool</li><li><a href="aas_shell.html" class="code" title="function [s,w]=aas_shell(cmd)">aas_shell</a>	function [s,w]=aas_shell(cmd)</li><li><a href="aaworker_getparmpath.html" class="code" title="function [pth]=aaworker_getparmpath(aap,aaworkerid,dontmakedir)">aaworker_getparmpath</a>	If third parameter is present and true, don't make path</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_getboredworker.html" class="code" title="function [aap workerid]=aas_getboredworker(aap)">aas_getboredworker</a>	</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <a name="_sub0" href="#_subfunctions" class="code">function [s]=aas_launchworker(aap,workernumber)</a>
+0002 pth=<a href="aaworker_getparmpath.html" class="code" title="function [pth]=aaworker_getparmpath(aap,aaworkerid,dontmakedir)">aaworker_getparmpath</a>(aap,workernumber);
+0003 [s rem]=unix(<span class="string">'hostname'</span>);
+0004 <span class="comment">% Just take the last line in case there are warnings (occasionally get</span>
+0005 <span class="comment">% Xauth error on our system)</span>
+0006 rem=strtrim(rem);
+0007 <span class="keyword">while</span>(1)
+0008     [hostname rem]=strtok(rem,10);
+0009     <span class="keyword">if</span> (isempty(rem))
+0010         <span class="keyword">break</span>;
+0011     <span class="keyword">end</span>;
+0012 <span class="keyword">end</span>;
+0013 hostname=strtrim(hostname);
+0014 rmdir(pth,<span class="string">'s'</span>);
+0015 <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,0,sprintf(<span class="string">'PARALLEL launching worker %d'</span>,workernumber));
+0016 cmd=sprintf(<span class="string">'aa_ver2_devel; aaworker_prepare(%d,[%s])'</span>,workernumber,sprintf(<span class="string">'%d '</span>,double(hostname)));
+0017 [s w]=<a href="aas_shell.html" class="code" title="function [s,w]=aas_shell(cmd)">aas_shell</a>([<span class="string">'spm title:aaworker'</span> num2str(workernumber) <span class="string">' workerdesktop fmri &quot;'</span> cmd <span class="string">'&quot;'</span>]);
+0018 <span class="comment">%if (1)</span>
+0019 <span class="comment">%    aas_log(aap,false,sprintf('AAPARALLEL warning: worker %d said:\n%s',workernumber,w));</span>
+0020 <span class="comment">%end;</span></pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

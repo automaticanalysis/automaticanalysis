@@ -1,0 +1,9 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_plottopographies domain='session' desc='Plot topographies with timepoints in columns, events/contrasts in rows, and each data file on a seperate page.' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^mace.*_BLOCK.*\.mat$</InputFilter> 
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+		</aamod_emeg_plottopographies>
+	</tasksettings>
+</aap>
+

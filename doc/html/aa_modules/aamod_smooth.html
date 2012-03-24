@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_smooth</title>
+  <meta name="keywords" content="aamod_smooth">
+  <meta name="description" content="AA module - smoothing">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_smooth.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_smooth
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - smoothing</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_smooth(aap,task,i,j) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - smoothing
+ Kernel size determined by aap.spm_analysis.FWHM
+ Rhodri Cusack MRC CBU Cambridge Jan 2006- Aug 2007
+ Now once per session for improved performance when running in parallel</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - smoothing</span>
+0002 <span class="comment">% Kernel size determined by aap.spm_analysis.FWHM</span>
+0003 <span class="comment">% Rhodri Cusack MRC CBU Cambridge Jan 2006- Aug 2007</span>
+0004 <span class="comment">% Now once per session for improved performance when running in parallel</span>
+0005 
+0006 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_smooth(aap,task,i,j)</a>
+0007 
+0008 resp=<span class="string">''</span>;
+0009 
+0010 <span class="keyword">switch</span> task
+0011     <span class="keyword">case</span> <span class="string">'domain'</span>
+0012         resp=<span class="string">'session'</span>;   <span class="comment">% this module needs to be run once per session</span>
+0013         
+0014     <span class="keyword">case</span> <span class="string">'description'</span>
+0015         resp=<span class="string">'SPM5 smooth'</span>;
+0016         
+0017     <span class="keyword">case</span> <span class="string">'summary'</span>
+0018         subjpath=aas_getsubjpath(i);
+0019         resp=sprintf(<span class="string">'Smooth run on %s\n'</span>,subjpath);
+0020     <span class="keyword">case</span> <span class="string">'report'</span>    
+0021     
+0022     <span class="keyword">case</span> <span class="string">'doit'</span>
+0023         
+0024         <span class="comment">% get the subdirectories in the main directory</span>
+0025         subj_dir = aas_getsubjpath(aap,i);
+0026         
+0027         subj.imgs = [];
+0028         
+0029         <span class="comment">% Add t maps if they're being used</span>
+0030         P = dir(fullfile(subj_dir,<span class="string">'functionals'</span>,aap.directory_conventions.tmapsdirname,<span class="string">'w*nii'</span>));
+0031         <span class="keyword">for</span> b=1:length(P)
+0032             subj.imgs = strvcat(subj.imgs, fullfile(subj_dir,aap.directory_conventions.tmapsdirname,P(b).name));
+0033         <span class="keyword">end</span>;
+0034         <span class="comment">% Image to reslice</span>
+0035             <span class="comment">% get files in this directory</span>
+0036             P = aas_getimages(aap,i,j,[aap.tasklist.currenttask.epiprefix]);
+0037             subj.imgs = strvcat(subj.imgs, P);
+0038                 
+0039         <span class="comment">% now smooth</span>
+0040         s   = aap.spmanalysis.FWHM;
+0041         n   = size(subj.imgs,1);
+0042         
+0043         spm_progress_bar(<span class="string">'Init'</span>,n,<span class="string">'Smoothing'</span>,<span class="string">'Volumes Complete'</span>);
+0044         <span class="keyword">for</span> i = 1:n
+0045             Q = deblank(subj.imgs(i,:));
+0046             [pth,nam,xt,nm] = spm_fileparts(deblank(Q));
+0047             U = fullfile(pth,[<span class="string">'s'</span> nam xt nm]);
+0048             spm_smooth(Q,U,s);
+0049             spm_progress_bar(<span class="string">'Set'</span>,i);
+0050         <span class="keyword">end</span>
+0051         spm_progress_bar(<span class="string">'Clear'</span>);
+0052     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0053         
+0054     <span class="keyword">otherwise</span>
+0055         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0056 <span class="keyword">end</span>;
+0057 
+0058 
+0059</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

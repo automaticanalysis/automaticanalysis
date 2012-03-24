@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Clean up the garbage' modality='MRI'>
+            <inputstreams>
+            </inputstreams>
+            <outputstreams>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>

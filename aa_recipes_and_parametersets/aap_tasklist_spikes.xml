@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+<tasklist>
+      <initialisation>
+         <module><name>aamod_checkparameters</name></module>
+         <module><name>aamod_evaluatesubjectnames</name></module>
+         <module><name>aamod_make_subjects_short</name></module>
+         <module><name>aamod_autoidentifyseries_timtrio</name></module>
+         <module><name>aamod_study_init</name></module>
+	 <module><name>aamod_newsubj_init</name></module>
+      </initialisation>
+      <main>
+        <module>
+	 	<name>aamod_converttmaps</name>
+		<tobecompletedfirst></tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+        <module>
+	 	<name>aamod_copystructural</name>
+		<tobecompletedfirst></tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+        <module>
+	 	<name>aamod_convert_epis</name>
+		<tobecompletedfirst></tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+       <module>
+	 	<name>aamod_realign</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+	<module>
+	 	<name>aamod_tsdiffana</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+	<module>
+	 	<name>aamod_listspikes</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+	
+       <module>
+	 	<name>aamod_slicetiming</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix>r</epiprefix>
+        <extraparameters/>
+	</module>
+       <module>
+	 	<name>aamod_coreg_noss</name>
+		<tobecompletedfirst><item>aamod_slicetiming</item><item>aamod_copystructural</item></tobecompletedfirst>
+		<epiprefix/><extraparameters/>
+	</module>
+       <module>
+	 	<name>aamod_norm_noss</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix>ar</epiprefix><extraparameters/>
+	</module>
+       <module>
+	 	<name>aamod_norm_write</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix>ar</epiprefix><extraparameters/>
+	</module>
+       <module>
+	 	<name>aamod_smooth</name>
+		<tobecompletedfirst>[previous]</tobecompletedfirst>
+		<epiprefix>war</epiprefix><extraparameters/>
+	</module>
+      </main>
+</tasklist>
+</aap>

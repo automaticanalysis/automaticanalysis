@@ -1,0 +1,14 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_importfif domain='session' desc='Import data' modality='meg'>	
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^N?S.*BLOCK.*_raw\.fif$</InputFilter> 
+			<Fchannels desc='MEG channel template file' ui='file' ext='mat'>/imaging/dm01/MEG/aaMEG/FIF306_setup.mat</Fchannels>
+			<Fchannels_eeg desc='EEG channel template file' ui='file' ext='mat'>/imaging/local/spm/spm5/EEGtemplates/draft_eeg_montage_djm_mean.mat</Fchannels_eeg>
+			<trig_chan desc='Trigger channel name' ui='text'>STI101</trig_chan>
+			<heogchan desc='Horizontal EOG channel number' ui='int'>61</heogchan>
+			<veogchan desc='Vertical EOG channel number' ui='int'>62</veogchan>
+			<eeg_ref desc='EEG reference channel name (or "average")' help='(if "average", then averaged calculated)' ui='text'>original</eeg_ref>
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+		</aamod_emeg_importfif>
+	</tasksettings>
+</aap>

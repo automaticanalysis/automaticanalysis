@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM unwarp and motion correction' modality='MRI'>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>fieldmap</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>realignment_parameter</stream>
+                <stream>meanepi</stream>
+                <stream>epi</stream>
+            </outputstreams>  
+            <!--Realignment parameters-->
+            <eoptions>
+                <quality>0.9</quality> <!-- quality; DEFAULT: 0.9000 -->
+                <sep>4</sep> <!-- seperation between sampled points -->
+                <fwhm>5</fwhm> <!-- FWHM of smooting kernel -->
+                <rtm>0</rtm> <!-- NOT registered to the mean, but the first image -->
+                <einterp>2</einterp> <!-- interpolation method: DEFAULT: 2nd degree B-spline -->
+                <ewrap>[0 0 0]</ewrap> <!-- wrapping: DEFAULT is None -->
+                <weight>''</weight> <!-- NO weighting image -->
+            </eoptions>            
+            <!--Unwarp parameters-->            
+            <uweoptions>
+                <basfcn>[12 12]</basfcn> <!-- number of basis functions -->
+                <regorder>1</regorder> <!-- regularisation -->
+                <lambda>100000</lambda> <!-- regularisation factor: medium -->
+                <jm>0</jm> <!-- NO Jacobian deformations -->
+                <fot>[4 5]</fot> <!-- first order effects; [4 5] means model pitch and roll -->
+                <sot>[]</sot> <!-- NO second order effects -->
+                <uwfwhm>4</uwfwhm> <!-- FWHM of smoothing filter applied to images prior to estimation of deformation fields -->
+                <rem>1</rem> <!-- 1: movement parameters are re-estimated at each unwarping iteration -->
+                <noi>5</noi> <!-- maximum number of iterations -->
+                <expround>'Average'</expround> <!-- point in position space to perform Taylor-expansion around -->
+            </uweoptions>
+            <!--Reslicing parameters-->            
+            <uwroptions>
+                <uwwhich>[2 1]</uwwhich> <!-- reslices all images and creates mean image -->
+                <rinterp>4</rinterp> <!-- interpolation method: DEFAULT: 4th degree B splines -->
+                <wrap>[0 0 0]</wrap> <!-- wrapping: DEFAULT is None -->
+                <mask>1</mask> <!-- masking -->
+                <prefix>'u'</prefix> <!-- prefix for images -->
+            </uwroptions>
+        </currenttask>        
+    </tasklist>
+</aap>
+

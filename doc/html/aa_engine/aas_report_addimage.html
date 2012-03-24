@@ -1,0 +1,76 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_report_addimage</title>
+  <meta name="keywords" content="aas_report_addimage">
+  <meta name="description" content="aa report helper function - adds an image to the HTML report">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_report_addimage.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_report_addimage
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>aa report helper function - adds an image to the HTML report</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap resp]=aas_report_addimage(aap,imgpath,scaling) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> aa report helper function - adds an image to the HTML report
+ Rhodri Cusack MRC CBU Cambridge Mar 2006</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>	Automatic analysis - log tool</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% aa report helper function - adds an image to the HTML report</span>
+0002 <span class="comment">% Rhodri Cusack MRC CBU Cambridge Mar 2006</span>
+0003 <span class="comment">%</span>
+0004 
+0005 <a name="_sub0" href="#_subfunctions" class="code">function [aap resp]=aas_report_addimage(aap,imgpath,scaling)</a>
+0006 
+0007 <span class="keyword">if</span> (~exist(<span class="string">'scaling'</span>,<span class="string">'var'</span>))
+0008     scaling=1;
+0009 <span class="keyword">end</span>;
+0010 
+0011 <span class="keyword">if</span> (~strcmp(imgpath(1:length(aap.acq_details.root)),aap.acq_details.root))
+0012     <a href="aas_log.html" class="code" title="function aas_log(aap,iserr,msg)">aas_log</a>(aap,1,sprintf(<span class="string">'Cannot relate file %s to directory root %s\n'</span>));
+0013 <span class="keyword">end</span>;
+0014 
+0015 <span class="keyword">if</span> (aap.acq_details.root(length(aap.acq_details.root))==filesep)
+0016     imgpath=imgpath((length(aap.acq_details.root)+1):length(imgpath));
+0017 <span class="keyword">else</span>
+0018     imgpath=imgpath((length(aap.acq_details.root)+2):length(imgpath));
+0019 <span class="keyword">end</span>;
+0020 
+0021 <span class="keyword">if</span> (scaling==1)
+0022     aap.report.html=strcat(aap.report.html,[<span class="string">'&lt;img src=&quot;'</span> imgpath <span class="string">'&quot;&gt;'</span>]);
+0023 <span class="keyword">else</span>
+0024     tmp=imread(imgpath);
+0025     aap.report.html=strcat(aap.report.html,[<span class="string">'&lt;img src=&quot;'</span> imgpath <span class="string">'&quot; '</span> sprintf(<span class="string">'width=%d height=%d'</span>,round(size(tmp,2)*scaling),round(size(tmp,1)*scaling)) <span class="string">'&gt;'</span>]);
+0026 <span class="keyword">end</span>;
+0027 aap.report.numdependencies=aap.report.numdependencies+1;
+0028 aap.report.dependency{aap.report.numdependencies}=imgpath;
+0029</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

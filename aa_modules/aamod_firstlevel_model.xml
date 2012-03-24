@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='First level model (new)' modality='MRI'>
+            <!-- no firstlevelmasking here any more - use aap.spm.defaults.mask.thresh=-inf;-->
+            <!-- includemovementpars 0=none; 1=realignment parms -->
+            <includemovementpars>1</includemovementpars>
+            
+            <!-- Movement matrix, deciding which derivatives/orders of the movement parameters are used! -->
+            <moveMat>[1 0 0; 0 0 0]</moveMat>
+            
+            <!-- include Compartment Regressors derived from aamod_compSignal 
+            By default filled with [] [no compartment regressors] if you have run aamoc_compSignal-->
+            <compRegs>[]</compRegs>
+            
+            <!-- high pass filter in seconds -->
+            <highpassfilter>128</highpassfilter>
+            
+            
+            <!-- Describe model for design matrix
+    You may do this in your own copy of this .xml file, or programmatically in your user script.
+    Example if design same for every subject.
+    In this example: the duration of the second event type ("Response") is always the same (0) so
+    just a single value can be specified; it has a parametric regressor.
+    Onset times and durations are specified in scans.
+            -->
+            <!--
+    <model>
+        <subject>*</subject>
+        <session>*</session>
+        <event>
+            <name>Stimulus1</name>
+            <ons>1 3 5</ons>
+            <dur>1 2 1</dur>
+        </event>
+        <event>
+            <name>Response</name>
+            <ons>2 4 6</ons>
+            <dur>0</dur>
+            <parametric>4 5 6</parametric>
+        </event>
+    </model>
+            -->
+            <!--
+    Example if design differs by subject and session
+    Exactly specified subjects or sessions override wildcards
+            -->
+            <!--
+<model>
+        <subject>CBU110011</subject>
+        <session>movie</session>
+        <event>
+            <name>Stimulus X</name>
+            <ons>1 3 7</ons>
+            <dur>1</dur>
+        </event>
+        <event>
+            <name>Response</name>
+            <ons>2 4 6</ons>
+            <dur>0</dur>
+        </event>
+    </model>
+-->   
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
+            <modelC>
+                <subject></subject>
+                <session></session>
+                <covariate>
+                    <name></name>
+                    <vector></vector>
+                    <HRF></HRF>
+                    <interest></interest>
+                </covariate>
+            </modelC>
+            
+            ﻿<inputstreams>
+                <stream>epi</stream>
+                <stream>epi_header</stream>
+                <stream>sliceorder</stream>
+                <stream>realignment_parameter</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_betas</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

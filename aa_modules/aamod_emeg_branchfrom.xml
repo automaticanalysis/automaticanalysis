@@ -1,0 +1,14 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_branchfrom domain='study' desc='Copy files from old analysis' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^nothing.*BLOCK.*\.mat$</InputFilter> 
+			<OldAnalysis desc='Analysis directory to copy from' ui='text'>???</OldAnalysis>
+			<CopyEvents desc='Copy events directories?' ui='int'>1</CopyEvents>
+			<CopyStructurals desc='Copy structural directories?' ui='int'>1</CopyStructurals>
+			<CopyBadChans desc='Copy bad channel specification file?' ui='int'>1</CopyBadChans>
+			<Overwrite desc='Overwrite?' ui='yesno'>0</Overwrite>
+			<specialrequirements desc='Special requirements?'><initialisationmodule/></specialrequirements>
+		</aamod_emeg_branchfrom>
+	</tasksettings>
+</aap>
+

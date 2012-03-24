@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+      <aamod_newsubj_init domain='subject' desc='Create subject directory'/>
+   </tasksettings>
+</aap>
+   

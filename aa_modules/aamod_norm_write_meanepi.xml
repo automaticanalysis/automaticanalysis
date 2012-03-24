@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_norm_write_meanepi domain='subject' mfile_alias='aamod_norm_write' desc='SPM normalisation write (stream mean EPI)' modality='MRI'>
+            <session>1</session>
+            <inputstreams>
+                <stream>normalisation_seg_sn</stream>  
+                <stream>meanepi</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>meanepi</stream>
+            </outputstreams>            
+        </aamod_norm_write_meanepi>
+    </tasksettings>
+</aap>
+

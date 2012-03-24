@@ -1,0 +1,182 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_realign</title>
+  <meta name="keywords" content="aamod_realign">
+  <meta name="description" content="AA module - realignment">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_realign.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_realign
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - realignment</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_realign(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - realignment
+ Realignment using SPM5
+ i=subject num
+ Rhodri Cusack MRC CBU 2004-6 based on original by Matthew Brett
+ Modified by Rik Henson 2006-8 to accept reslice &quot;which&quot; option 
+     (plus more defaults can be passed)</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - realignment</span>
+0002 <span class="comment">% Realignment using SPM5</span>
+0003 <span class="comment">% i=subject num</span>
+0004 <span class="comment">% Rhodri Cusack MRC CBU 2004-6 based on original by Matthew Brett</span>
+0005 <span class="comment">% Modified by Rik Henson 2006-8 to accept reslice &quot;which&quot; option</span>
+0006 <span class="comment">%     (plus more defaults can be passed)</span>
+0007 
+0008 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_realign(aap,task,i)</a>
+0009 
+0010 resp=<span class="string">''</span>;
+0011 
+0012 <span class="keyword">switch</span> task
+0013     <span class="keyword">case</span> <span class="string">'domain'</span>
+0014         resp=<span class="string">'subject'</span>;
+0015     <span class="keyword">case</span> <span class="string">'description'</span>
+0016         resp=<span class="string">'SPM5 realignment'</span>;
+0017     <span class="keyword">case</span> <span class="string">'summary'</span>
+0018         resp=<span class="string">'Done SPM5 realignment\n'</span>;
+0019     <span class="keyword">case</span> <span class="string">'report'</span>
+0020         mvmean=[];
+0021         mvmax=[];
+0022         mvstd=[];
+0023         mvall=[];
+0024         nsess=length(aap.acq_details.sessions);
+0025 
+0026         qq=[];
+0027         <span class="keyword">for</span> j=1:nsess
+0028             imfn=aas_getimages(aap,i,j,aap.tasklist.currenttask.epiprefix);
+0029             imV=spm_vol(imfn);
+0030             mv=[];
+0031             <span class="keyword">for</span> k=1:length(imV)
+0032                 tmp=spm_imatrix(imV(k).mat);
+0033                 mv=[mv;tmp(1:6)];
+0034             <span class="keyword">end</span>;
+0035             <span class="keyword">if</span> (j==1)
+0036                 firstscan=mv(1,:);
+0037             <span class="keyword">end</span>;
+0038             mv=mv-repmat(firstscan,[size(mv,1) 1]);
+0039 
+0040             mv(:,4:6)=mv(:,4:6)*180/pi; <span class="comment">% convert to degrees!</span>
+0041             mvmean(j,:)=mean(mv);
+0042             mvmax(j,:)=max(mv);
+0043             mvstd(j,:)=std(mv);
+0044             mvall=[mvall;mv];
+0045         <span class="keyword">end</span>;
+0046 
+0047         
+0048         aap.report.html=strcat(aap.report.html,<span class="string">'&lt;h3&gt;Movement maximums&lt;/h3&gt;'</span>);
+0049         aap.report.html=strcat(aap.report.html,<span class="string">'&lt;table cellspacing=&quot;10&quot;&gt;'</span>);
+0050         aap.report.html=strcat(aap.report.html,sprintf(<span class="string">'&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;Sess&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;x&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;y&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;z&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;rotx&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;roty&lt;/td&gt;&lt;td align=&quot;right&quot;&gt;rotz&lt;/td&gt;&lt;/tr&gt;'</span>,j));
+0051         <span class="keyword">for</span> j=1:nsess
+0052         aap.report.html=strcat(aap.report.html,sprintf(<span class="string">'&lt;tr&gt;&lt;td align=&quot;right&quot;&gt;%d&lt;/td&gt;'</span>,j));
+0053         aap.report.html=strcat(aap.report.html,sprintf(<span class="string">'&lt;td align=&quot;right&quot;&gt;%8.3f&lt;/td&gt;'</span>,mvmax(j,:)));
+0054         aap.report.html=strcat(aap.report.html,sprintf(<span class="string">'&lt;/tr&gt;'</span>,j));
+0055         <span class="keyword">end</span>;
+0056         aap.report.html=strcat(aap.report.html,<span class="string">'&lt;/table&gt;'</span>);
+0057         
+0058         
+0059         
+0060         
+0061         
+0062         aap=aas_report_addimage(aap,fullfile(aas_getsubjpath(aap,i),<span class="string">'diagnostic_aamod_realign.jpg'</span>));     
+0063 
+0064     <span class="keyword">case</span> <span class="string">'doit'</span>
+0065         <span class="keyword">global</span> defaults;
+0066         <span class="comment">% Get realignment defaults</span>
+0067         defs = defaults.realign;
+0068         
+0069         <span class="comment">% Flags to pass to routine to calculate realignment parameters</span>
+0070         <span class="comment">% (spm_realign)</span>
+0071         reaFlags = struct(<span class="keyword">...</span>
+0072             <span class="string">'quality'</span>, defs.estimate.quality,<span class="keyword">...</span><span class="comment">  % estimation quality</span>
+0073             <span class="string">'fwhm'</span>, defs.estimate.fwhm,<span class="keyword">...</span><span class="comment">        % smooth before calculation</span>
+0074             <span class="string">'rtm'</span>, defs.estimate.rtm,<span class="keyword">...</span><span class="comment">          % whether to realign to mean </span>
+0075             <span class="string">'interp'</span>, defs.estimate.interp,<span class="keyword">...</span><span class="comment">    % interpolation type</span>
+0076             <span class="string">'wrap'</span>, defs.estimate.wrap,<span class="keyword">...</span><span class="comment">        % wrap in (x) y (z)</span>
+0077             <span class="string">'weight'</span>, defs.estimate.weight,<span class="keyword">...</span><span class="comment">    % weight some voxels more?</span>
+0078             <span class="string">'sep'</span>, defs.estimate.sep,<span class="keyword">...</span><span class="comment">          % interpolation size (separation)</span>
+0079             <span class="string">'PW'</span>,<span class="string">''</span><span class="keyword">...</span><span class="comment">                            % ??</span>
+0080             );
+0081         
+0082         <span class="keyword">if</span> (length(aap.spmanalysis.reslicewhich)==0)
+0083             aap.spmanalysis.reslicewhich = 0;      <span class="comment">% do not reslice timeseries</span>
+0084         <span class="keyword">end</span>;
+0085         <span class="keyword">if</span> (length(aap.spmanalysis.writemean)==0)
+0086             aap.spmanalysis.writemean = 1;      <span class="comment">% do write (reslice) mean</span>
+0087         <span class="keyword">end</span>;
+0088 
+0089         <span class="comment">% Flags to pass to routine to create resliced images</span>
+0090         <span class="comment">% (spm_reslice)</span>
+0091         resFlags = struct(<span class="keyword">...</span>
+0092             <span class="string">'interp'</span>, defs.write.interp,<span class="keyword">...</span><span class="comment">       % interpolation type</span>
+0093             <span class="string">'wrap'</span>, defs.write.wrap,<span class="keyword">...</span><span class="comment">           % wrapping info (ignore...)</span>
+0094             <span class="string">'mask'</span>, defs.write.mask,<span class="keyword">...</span><span class="comment">           % masking (see spm_reslice)</span>
+0095             <span class="string">'which'</span>, aap.spmanalysis.reslicewhich,<span class="keyword">...</span><span class="comment">     % what images to reslice</span>
+0096             <span class="string">'mean'</span>, aap.spmanalysis.writemean);           <span class="comment">% write mean image</span>
+0097         
+0098         clear imgs;
+0099         <span class="keyword">for</span> j = 1:length(aap.acq_details.sessions) <span class="comment">%</span>
+0100             <span class="comment">% get files in this directory</span>
+0101             P = aas_getimages(aap,i,j,aap.tasklist.currenttask.epiprefix);
+0102             imgs(j) = {P};
+0103         <span class="keyword">end</span>
+0104         
+0105         <span class="comment">% Run the realignment</span>
+0106         spm_realign(imgs, reaFlags);
+0107         
+0108         <span class="comment">% Save graphical output</span>
+0109         figure(spm_figure(<span class="string">'FindWin'</span>));
+0110         print(<span class="string">'-djpeg'</span>,<span class="string">'-r50'</span>,fullfile(aas_getsubjpath(aap,i),<span class="string">'diagnostic_aamod_realign'</span>));
+0111         
+0112         <span class="comment">% Run the reslicing</span>
+0113         spm_reslice(imgs, resFlags);
+0114         
+0115 <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0116     
+0117 <span class="keyword">otherwise</span>
+0118     aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0119 <span class="keyword">end</span>;
+0120 
+0121 
+0122 
+0123 
+0124 
+0125 
+0126 
+0127 
+0128 
+0129 
+0130 
+0131</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

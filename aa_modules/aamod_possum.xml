@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--${FSLDIR}/data/possum/brain.nii.gz-->
+<aap>
+    <tasklist>
+        <currenttask domain='internal' desc='Simulate EPI series' modality='MRI'>
+            <inputbrain>/home/rhodri128/mprage001.nii.gz</inputbrain>  
+            <mrparameters>${FSLDIR}/data/possum/MRpar_3T</mrparameters>
+            <sliceprofile>${FSLDIR}/data/possum/slcprof</sliceprofile>
+            <motion>${FSLDIR}/data/possum/motionAllLarge_0.12s</motion>
+            <pulse_commandlineparameters>
+                <te>0.030</te>
+                <tr>2.25</tr>
+                <trslc>0.070</trslc>
+                <nx>64</nx>
+                <ny>64</ny>
+                <dx>0.004</dx>
+                <dy>0.004</dy>
+                <maxG>0.055</maxG>
+                <riset>0.00022</riset>
+                <bw>162500</bw>
+                <numvol>1</numvol>
+                <numslc>6</numslc>
+                <slcthk>0.003</slcthk>
+                <zstart>0.035</zstart>
+                <seq>epi</seq>
+                <slcdir>z+</slcdir>
+                <readdir>x+</readdir>
+                <phasedir>y+</phasedir>
+                <gap>0.001</gap>
+                <cover>100</cover>
+                <angle>90</angle>
+            </pulse_commandlineparameters>
+            <inputstreams>
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>  
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

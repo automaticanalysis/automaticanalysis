@@ -1,0 +1,20 @@
+function [s]=aas_launchworker(aap,workernumber)
+pth=aaworker_getparmpath(aap,workernumber);
+[s rem]=unix('hostname');
+% Just take the last line in case there are warnings (occasionally get
+% Xauth error on our system)
+rem=strtrim(rem);
+while(1)
+    [hostname rem]=strtok(rem,10);
+    if (isempty(rem))
+        break;
+    end;
+end;
+hostname=strtrim(hostname);
+rmdir(pth,'s');
+aas_log(aap,0,sprintf('PARALLEL launching worker %d',workernumber));
+cmd=sprintf('aa_ver2_devel; aaworker_prepare(%d,[%s])',workernumber,sprintf('%d ',double(hostname)));
+[s w]=aas_shell(['spm title:aaworker' num2str(workernumber) ' workerdesktop fmri "' cmd '"']);
+%if (1)
+%    aas_log(aap,false,sprintf('AAPARALLEL warning: worker %d said:\n%s',workernumber,w));
+%end;

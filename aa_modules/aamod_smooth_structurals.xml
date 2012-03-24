@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+   <aamod_smooth_structurals domain='subject' desc='SPM smooth structurals' modality='MRI'>
+        <FWHM>12</FWHM>
+   </aamod_smooth_structurals>
+  </tasksettings>
+</aap>
+

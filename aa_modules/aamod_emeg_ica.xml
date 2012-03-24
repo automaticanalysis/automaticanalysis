@@ -1,0 +1,12 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_ica domain='session' desc='Estimate independent components and project out that correlating most strongly with VEOG' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^f.*BLOCK.*\.mat$</InputFilter> 
+			<pca desc='PCA reduction to x components' help='"auto" to adjust for 50 samples per weight point' ui=''>auto</pca>
+			<DataFraction desc='Proportion of data to use for estimation(0-1)' ui='double'>1</DataFraction>
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+            		<specialrequirements desc='Special requirements?'><highmemory/><unlimit/></specialrequirements>
+		</aamod_emeg_ica>
+	</tasksettings>
+</aap>
+

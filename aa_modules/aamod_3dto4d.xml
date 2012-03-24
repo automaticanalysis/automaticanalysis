@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Convert 3d timecourse to 4d file' modality='MRI'>
+            <inputstreams>
+﻿                <stream>epi</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>  
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

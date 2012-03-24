@@ -1,0 +1,132 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aaslave_poll</title>
+  <meta name="keywords" content="aaslave_poll">
+  <meta name="description" content="This is a message pump for the slave">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; <a href="#">old</a> &gt; aaslave_poll.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../../index.html"><img alt="<" border="0" src="../../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine/old&nbsp;<img alt=">" border="0" src="../../right.png"></a></td></tr></table>-->
+
+<h1>aaslave_poll
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>This is a message pump for the slave</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="box"><strong>function aaslave_poll(obj,event) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> This is a message pump for the slave</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aaslave_setspmvisibility.html" class="code" title="">aaslave_setspmvisibility</a>	</li></ul>
+This function is called by:
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="aaslave_pollsetup.html" class="code" title="function aaslave_pollsetup">aaslave_pollsetup</a>	</li></ul>
+<!-- crossreference -->
+
+<h2><a name="_subfunctions"></a>SUBFUNCTIONS <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<ul style="list-style-image:url(../../matlabicon.gif)">
+<li><a href="#_sub1" class="code">function writedoneflag(aaslave,fn)</a></li></ul>
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% This is a message pump for the slave</span>
+0002 
+0003 <a name="_sub0" href="#_subfunctions" class="code">function aaslave_poll(obj,event)</a>
+0004 <span class="keyword">global</span> aaslave;
+0005 stop(aaslave.polltimer);
+0006 mastertaskpth=fullfile(aaslave.parmpath,<span class="string">'pendingtask.mat'</span>);
+0007 taskpth=aas_propagatefrom(aaslave.master.hostname,mastertaskpth,<span class="string">'slave'</span>); 
+0008 <span class="keyword">if</span> (exist(taskpth))
+0009     <span class="keyword">for</span> i=1:100
+0010         <span class="keyword">try</span>
+0011             task=load(taskpth);
+0012             <span class="keyword">break</span>;
+0013         <span class="keyword">catch</span>
+0014             <span class="comment">% assume it was a file propagation delay or locking problem and so try again</span>
+0015             taskpth=aas_propagatefrom(aaslave.master.hostname,mastertaskpth,<span class="string">'slave'</span>); 
+0016             fprintf(<span class="string">'waiting for propagation %d\n'</span>,i);
+0017             pause(5.0);
+0018         <span class="keyword">end</span>;
+0019     <span class="keyword">end</span>;
+0020     <span class="keyword">if</span> (i==51)
+0021         task=load(taskpth);
+0022     <span class="keyword">end</span>;
+0023     task=task.task;
+0024     aaslave.aap=task.aap;
+0025     fprintf(<span class="string">'AASLAVE: Found task %s here %s\n'</span>,task.name,taskpth);
+0026     tic;
+0027     <span class="keyword">switch</span> (task.name)
+0028         <span class="keyword">case</span> <span class="string">'doprocessing'</span>
+0029             <span class="keyword">for</span> i=1:length(aaslave.aap.internal.taskqueue)
+0030                 mytask=aaslave.aap.internal.taskqueue(i);
+0031                 <span class="keyword">switch</span>(mytask.domain)
+0032                     <span class="keyword">case</span> <span class="string">'study'</span>
+0033                         <span class="comment">% now run current stage</span>
+0034                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s RUNNING: %s'</span>,aaslave.aap.tasklist.stages{mytask.k},mytask.description));
+0035                         [aaslave.aap,resp]=feval(aaslave.aap.tasklist.stages{mytask.k},aaslave.aap,mytask.task);
+0036                         <a href="#_sub1" class="code" title="subfunction writedoneflag(aaslave,fn)">writedoneflag</a>(aaslave,mytask.doneflag);
+0037                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s COMPLETED'</span>,aaslave.aap.tasklist.stages{mytask.k}));
+0038                     <span class="keyword">case</span> <span class="string">'subject'</span>
+0039                         <span class="comment">% now run current stage</span>
+0040                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s RUNNING: %s for subject %s'</span>,aaslave.aap.tasklist.stages{mytask.k},mytask.description,aaslave.aap.acq_details.subjects{mytask.i}));
+0041                         [aaslave.aap,resp]=feval(aaslave.aap.tasklist.stages{mytask.k},aaslave.aap,mytask.task,mytask.i);
+0042                         <a href="#_sub1" class="code" title="subfunction writedoneflag(aaslave,fn)">writedoneflag</a>(aaslave,mytask.doneflag);
+0043                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s COMPLETED'</span>,aaslave.aap.tasklist.stages{mytask.k}));
+0044                     <span class="keyword">case</span> <span class="string">'session'</span>
+0045                         <span class="comment">% now run current stage</span>
+0046                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s RUNNING: %s for subject %s session %s'</span>,aaslave.aap.tasklist.stages{mytask.k},mytask.description,aaslave.aap.acq_details.subjects{mytask.i},aaslave.aap.acq_details.sessions{mytask.j}));
+0047                         [aaslave.aap,resp]=feval(aaslave.aap.tasklist.stages{mytask.k},aaslave.aap,mytask.task,mytask.i,mytask.j);
+0048                         <a href="#_sub1" class="code" title="subfunction writedoneflag(aaslave,fn)">writedoneflag</a>(aaslave,mytask.doneflag);
+0049                         aas_log(aaslave.aap,0,sprintf(<span class="string">'AASLAVE %s COMPLETED'</span>,aaslave.aap.tasklist.stages{mytask.k}));
+0050                 <span class="keyword">end</span>;
+0051             <span class="keyword">end</span>;
+0052     <span class="keyword">end</span>;
+0053     <a href="aaslave_setspmvisibility.html" class="code" title="">aaslave_setspmvisibility</a>
+0054     delete(taskpth);
+0055     delete(mastertaskpth);
+0056     timenow=now;
+0057     boredfn=fullfile(aaslave.parmpath,<span class="string">'iambored.mat'</span>);
+0058     save(boredfn,<span class="string">'timenow'</span>);
+0059     aas_propagateto(aaslave.master.hostname,boredfn);    
+0060     aaslave.lastexcitement=clock;
+0061 <span class="keyword">else</span>
+0062     <span class="comment">% Terminate slave if not used for 3 minutes</span>
+0063     <span class="keyword">if</span> (etime(clock,aaslave.lastexcitement)&gt;180)
+0064         aas_log(aaslave.aap,0,<span class="string">'There is nothing happening. I am out of here.\n'</span>);
+0065         pth=aaslave.parmpath;
+0066         rmdir(pth,<span class="string">'s'</span>);
+0067         exit
+0068     <span class="keyword">end</span>;
+0069 <span class="keyword">end</span>;
+0070 start(aaslave.polltimer);
+0071 
+0072 
+0073 <a name="_sub1" href="#_subfunctions" class="code">function writedoneflag(aaslave,fn)</a>
+0074 fid=fopen(fn,<span class="string">'w'</span>);
+0075 <span class="keyword">if</span> (~fid)
+0076     aas_log(aaslave.aap,1,[<span class="string">'Error writing done flag '</span> fn])
+0077 <span class="keyword">end</span>;
+0078 fprintf(fid,<span class="string">'%f'</span>,toc);
+0079 fclose(fid);
+0080 aas_propagateto(aaslave.master.hostname,fn);    
+0081 <span class="keyword">return</span>;
+0082 
+0083 
+0084</pre></div>
+<hr><address>Generated on Fri 24-Aug-2007 14:21:08 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

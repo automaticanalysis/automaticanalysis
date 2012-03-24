@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM EPI coregistration with phase-encoding direction unwarping' modality='MRI'>
+            <inputstreams>
+                <stream>epiBETmask</stream>
+                <stream>meanepi</stream>  
+                <stream>structural</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>meanepi</stream>
+                <stream>PEwarp_meanepi</stream>
+                <stream>PEwarp_params</stream>
+            </outputstreams>
+            <!-- What resolution do we want the basis functions to have in mm in each direction, Eelke Visser suggested 20 mm -->
+            <orderMM>[20 20 20]</orderMM>   
+            <!-- Alternatively, we can force the order by hand (e.g. [10 16 10] or [8 8 8]) -->
+            <order></order>          
+            <bias>1</bias>
+            <diagnostic>1</diagnostic>
+        </currenttask>
+    </tasklist>
+</aap>
+

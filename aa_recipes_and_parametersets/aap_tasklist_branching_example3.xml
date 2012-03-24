@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <!-- Example of doubling forking tasklist, and of setting aap parameters for a module within an xml tasklist -->
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_make_subjects_short</name></module>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_converttmaps</name></module>
+            <module><name>aamod_copystructural</name></module>
+            <module><name>aamod_convert_epis</name></module>
+            <module><name>aamod_tsdiffana</name></module>
+            <module>
+                <!-- First fork: realign or slice timing first? -->
+                <branch>
+                    <analysisid_suffix>_realign_then_slicetime</analysisid_suffix>
+                    <module><name>aamod_realign</name></module>
+                    <module><name>aamod_slicetiming</name></module>
+                    <module><name>aamod_coreg_noss</name></module>
+                    <module><name>aamod_norm_noss</name></module>
+                    <module><name>aamod_norm_write</name></module>
+                    <module><name>aamod_smooth</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_slicetime_then_realign</analysisid_suffix>
+                    <module><name>aamod_slicetiming</name></module>
+                    <module><name>aamod_realign</name></module>
+                    <module><name>aamod_coreg_noss</name></module>
+                    <module><name>aamod_norm_noss</name></module>
+                    <module><name>aamod_norm_write</name></module>
+                    <module>
+                        <!-- Second fork: for the slice time first, try two different smoothing kernels  -->
+                        <branch>
+                            <analysisid_suffix>_regularsmoothing</analysisid_suffix>
+                            <module><name>aamod_smooth</name></module>
+                        </branch>
+                        <branch>
+                            <analysisid_suffix>_moresmoothing</analysisid_suffix>
+                            <module><name>aamod_smooth</name>
+                                <!-- Now set smoothing, equivalent to aap.tasklist.currenttask.settings.FWHM -->
+                                <extraparameters>
+                                    <aap><tasklist><currenttask><settings>
+                                                    <FWHM>16</FWHM>
+                                    </settings></currenttask></tasklist></aap>
+                                </extraparameters>
+                            </module>
+                        </branch>
+                    </module>
+                </branch>
+            </module>
+        </main>
+    </tasklist>
+</aap>

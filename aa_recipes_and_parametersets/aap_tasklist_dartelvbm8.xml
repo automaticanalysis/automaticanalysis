@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_make_subjects_short</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
+        </initialisation>
+        
+        <main>      
+            
+            <module><name>aamod_copystructural</name></module> 
+            <module><name>aamod_segment8</name></module>
+            <module><name>aamod_structuralstats</name></module>
+            <module><name>aamod_dartel_copyseg8todartel</name></module>
+            <module>
+                <name>aamod_dartel_createtemplate</name>
+                <extraparameters>highmemory</extraparameters>
+            </module>
+            <module><name>aamod_dartel_normmnisegmented</name></module>
+            <module><name>aamod_dartel_normmnistruct</name></module>            
+            <module><name>aamod_normalisebytotalgray</name></module>
+            
+        </main>
+    </tasklist>
+</aap>

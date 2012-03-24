@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='FSL MELODIC' modality='MRI'>
+            ﻿<inputstreams>
+                <stream>epi</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>melodic</stream>
+            </outputstreams>
+            <!-- MELODIC OPTIONS (default - make it verbose) -->
+            <MELODICoptions>-v</MELODICoptions>
+        </currenttask>
+    </tasklist>
+</aap>

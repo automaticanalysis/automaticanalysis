@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_epifromnifti domain='subject' desc='Find EPI input files from nifti' modality='MRI'>
+            <rejectimages></rejectimages>
+            <inputstreams>
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+        </aamod_epifromnifti>
+    </tasksettings>
+</aap>
+

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_coreg_noss domain='subject' desc='SPM coregistration' modality='MRI'>
+            <inputstreams>
+                <stream>meanepi</stream>  
+                <stream>structural</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>
+        </aamod_coreg_noss>
+    </tasksettings>
+</aap>
+

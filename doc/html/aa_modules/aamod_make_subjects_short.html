@@ -1,0 +1,107 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_make_subjects_short</title>
+  <meta name="keywords" content="aamod_make_subjects_short">
+  <meta name="description" content="AA initialisation module - make subject filenames for structural image">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_make_subjects_short.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_make_subjects_short
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA initialisation module - make subject filenames for structural image</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_make_subjects_short(aap,task) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA initialisation module - make subject filenames for structural image
+ format controlled by aap.directory_conventsion.subject_filenames_format
+        1: Make short subject filenames (e.g., CBU030511)
+        2: Make ordinal short subject filenames (e.g., S01, S02...)'
+        0: User specified short subject filenames';</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA initialisation module - make subject filenames for structural image</span>
+0002 <span class="comment">% format controlled by aap.directory_conventsion.subject_filenames_format</span>
+0003 <span class="comment">%        1: Make short subject filenames (e.g., CBU030511)</span>
+0004 <span class="comment">%        2: Make ordinal short subject filenames (e.g., S01, S02...)'</span>
+0005 <span class="comment">%        0: User specified short subject filenames';</span>
+0006 
+0007 <span class="comment">% Rhodri Cusack MRC CBU Cambridge 2004</span>
+0008 
+0009 
+0010 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_make_subjects_short(aap,task)</a>
+0011 
+0012 resp=<span class="string">''</span>;
+0013 
+0014 <span class="keyword">switch</span> task
+0015     <span class="keyword">case</span> <span class="string">'domain'</span>
+0016         resp=<span class="string">'study'</span>;   <span class="comment">% this module needs to be run once per study</span>
+0017     <span class="keyword">case</span> {<span class="string">'description'</span>,<span class="string">'summary'</span>}
+0018         <span class="keyword">switch</span>(aap.directory_conventions.subject_filenames_format)
+0019             <span class="keyword">case</span> 1
+0020                 resp=<span class="string">'Make short subject filenames (e.g., CBU030511)'</span>;
+0021             <span class="keyword">case</span> 2
+0022                 resp=<span class="string">'Make ordinal short subject filenames (e.g., S01, S02...)'</span>;
+0023             <span class="keyword">case</span> 0
+0024                 resp=<span class="string">'User specified short subject filenames'</span>;
+0025             <span class="keyword">otherwise</span>
+0026                 aas_log(1,sprintf(<span class="string">'Unknown subject directory format (aap.directory_conventions.subjectfn_format=%d)'</span>,aap.directory_conventions.subjectfn_format));
+0027         <span class="keyword">end</span>;
+0028     <span class="keyword">case</span> <span class="string">'doit'</span>
+0029         <span class="keyword">switch</span>(aap.directory_conventions.subject_filenames_format)
+0030             <span class="keyword">case</span> 1
+0031                 <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0032 
+0033                     <span class="comment">% other sites will probably need to change these</span>
+0034                     <span class="comment">% parses things like TESTCBU060500ANYTHING into CBU060500</span>
+0035                     [tmp,rem]=strtok(aap.acq_details.subjects{i},<span class="string">'0123456789'</span>);  <span class="comment">% find part before first digit (that'll be 'TESTCBU' in above example)</span>
+0036                     pos=length(tmp)-2;                                          <span class="comment">% two characters less than length (giving 7-2=5 in example)</span>
+0037                     tmp=aap.acq_details.subjects{i}(pos:(pos+8)); <span class="comment">% pick out 9 characters from this (characters 5 to 13 'CBU060500' in example)</span>
+0038 
+0039                     aap.acq_details.subjects_structuralfn{i}=tmp;
+0040                 <span class="keyword">end</span>;
+0041             <span class="keyword">case</span> 2
+0042                 <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0043                     aap.acq_details.subjects_structuralfn{i}=sprintf(<span class="string">'S%2d'</span>,i);
+0044                 <span class="keyword">end</span>;
+0045         <span class="keyword">end</span>;
+0046 
+0047 
+0048     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0049         <span class="keyword">for</span> i=1:length(aap.acq_details.subjects)
+0050             <span class="keyword">if</span> (length(aap.acq_details.subjects{i})==0)
+0051                 aas_log(aap,1,sprintf(<span class="string">'No filename specified for subject %d\n'</span>,i));
+0052             <span class="keyword">end</span>;
+0053         <span class="keyword">end</span>;
+0054 
+0055     <span class="keyword">otherwise</span>
+0056         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0057 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

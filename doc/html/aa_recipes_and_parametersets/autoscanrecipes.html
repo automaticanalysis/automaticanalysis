@@ -1,0 +1,87 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of autoscanrecipes</title>
+  <meta name="keywords" content="autoscanrecipes">
+  <meta name="description" content="Scan files to produce automatic report of tasklists">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_recipes_and_parametersets</a> &gt; autoscanrecipes.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_recipes_and_parametersets&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>autoscanrecipes
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Scan files to produce automatic report of tasklists</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>This is a script file. </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Scan files to produce automatic report of tasklists</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Scan files to produce automatic report of tasklists</span>
+0002 
+0003 fns=dir(<span class="string">'aarecipe_*.m'</span>);
+0004 
+0005 fid=fopen(<span class="string">'recipesummary.txt'</span>,<span class="string">'w'</span>);
+0006 
+0007 aa_ver2_devel
+0008 
+0009 txt=[];
+0010 contentstxt=[];
+0011 
+0012 <span class="keyword">for</span> i=1:size(fns,1)
+0013     fprintf(<span class="string">'Working on %s\n'</span>,fns(i).name);
+0014     
+0015     txt=[txt sprintf(<span class="string">'== %s ==\n'</span>,fns(i).name)];
+0016     aap=[];
+0017     fn=fns(i).name;
+0018     fn=fn(1:(end-2));
+0019     [aap desc]=feval(fn,aap);
+0020     contentstxt=[contentstxt sprintf(<span class="string">'|| %s || %s ||\n'</span>,fns(i).name,desc)];
+0021     
+0022     aap=aa_init(aap);
+0023     txt=[txt sprintf(<span class="string">'%s\n'</span>,desc)];
+0024     txt=[txt sprintf(<span class="string">'=== Parameter sets ===\n'</span>)];
+0025     fnames=fieldnames(aap.recipe);
+0026     <span class="keyword">for</span> j=1:size(fnames,1)
+0027         txt=[txt sprintf(<span class="string">'|| %s ||\n'</span>,getfield(aap.recipe,fnames{j}))];
+0028     <span class="keyword">end</span>;
+0029     
+0030     txt=[txt sprintf(<span class="string">'=== Tasklist ===\n'</span>)];
+0031     txt=[txt sprintf(<span class="string">'|| ''''stage'''' || ''''description'''' || ''''EPI prefix for input'''' ||\n'</span>)];
+0032     <span class="keyword">for</span> j=1:length(aap.tasklist.stages)
+0033         [aap resp]=feval(aap.tasklist.stages{j},aap,<span class="string">'description'</span>);
+0034         txt=[txt sprintf(<span class="string">'|| %s || %s || %s ||\n'</span>,aap.tasklist.stages{j},resp,aap.tasklist.epiprefix{j})];
+0035     <span class="keyword">end</span>;
+0036 
+0037 <span class="keyword">end</span>;
+0038 
+0039 fprintf(fid,<span class="string">'%s%s'</span>,contentstxt,txt);
+0040 fclose(fid);
+0041</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

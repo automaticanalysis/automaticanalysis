@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+   <aamod_secondlevel_model domain='study' desc='SPM second level model' modality='MRI'>
+       <inputstreams>
+           <stream>firstlevel_spm</stream>
+           <stream>firstlevel_cons</stream>
+       </inputstreams>
+       <outputstreams>
+           <stream>secondlevel_spm</stream>
+           <stream>secondlevel_betas</stream>
+       </outputstreams>
+   </aamod_secondlevel_model>
+  </tasksettings>
+</aap>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasksettings>
+   <aamod_dartel_all2mni domain='subject' desc='SPM dartel convert all images to MNI space' modality='MRI'>      
+   </aamod_dartel_all2mni>
+  </tasksettings>
+</aap>
+   

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+   	<aamod_converttmaps domain='subject' desc='Converting any real time t maps'/>
+   </tasksettings>
+</aap>
+   

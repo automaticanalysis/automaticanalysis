@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+   <tasksettings>
+       <aamod_copystructural domain='subject' desc='Copying structural'>
+           <inputstreams>
+               <stream>dicom_structural</stream>
+           </inputstreams>
+           <outputstreams>
+               <stream>structural</stream>
+               <stream>structural_dicom_header</stream>
+           </outputstreams>
+       </aamod_copystructural>
+   </tasksettings>
+</aap>
+   

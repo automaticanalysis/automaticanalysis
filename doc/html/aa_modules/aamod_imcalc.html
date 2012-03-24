@@ -1,0 +1,171 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_imcalc</title>
+  <meta name="keywords" content="aamod_imcalc">
+  <meta name="description" content="AA module - use imcalc to create a calculated image">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_imcalc.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_imcalc
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - use imcalc to create a calculated image</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_meanvarimg(aap,task,i,j) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - use imcalc to create a calculated image
+
+ The module will run each function included in 
+ aap.options.imcalc.functions separately for each subject
+ and session.
+
+ All files starting with the prefix in aap.options.imcalc.filefilt
+ will be included, and the output will be an image with 'aa_imcalc'
+ and the function name appended to the start of the first included
+ image name.
+
+ e.g.
+ aap.options.imcalc.functions = {'mean(X)','var(X)'}
+ aap.options.imcalc.filefilt = 'f'
+ will create a mean image aa_imcalc_mean_f* and a variance
+ image aa_imcalc_var_f*
+
+ aap.options.imcalc can also include a field 'flags' with
+ 4 values indicating:
+   whether or not to read image values to data matrix (0/1)
+   whether to implicitly mask zeros (0/1)
+   data type of output image (see spm_slice_vol)
+   interpolation hold
+ The first value must be set as 1 for this module to work. If
+ the field is not present aap.options.imcalc.flags defaults to
+ {1;0;4;1} - read values into matrix, don't mask zeros, 16 bit
+ integer, trilinear interpolation
+
+ i=subject num
+ j=session num</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - use imcalc to create a calculated image</span>
+0002 <span class="comment">%</span>
+0003 <span class="comment">% The module will run each function included in</span>
+0004 <span class="comment">% aap.options.imcalc.functions separately for each subject</span>
+0005 <span class="comment">% and session.</span>
+0006 <span class="comment">%</span>
+0007 <span class="comment">% All files starting with the prefix in aap.options.imcalc.filefilt</span>
+0008 <span class="comment">% will be included, and the output will be an image with 'aa_imcalc'</span>
+0009 <span class="comment">% and the function name appended to the start of the first included</span>
+0010 <span class="comment">% image name.</span>
+0011 <span class="comment">%</span>
+0012 <span class="comment">% e.g.</span>
+0013 <span class="comment">% aap.options.imcalc.functions = {'mean(X)','var(X)'}</span>
+0014 <span class="comment">% aap.options.imcalc.filefilt = 'f'</span>
+0015 <span class="comment">% will create a mean image aa_imcalc_mean_f* and a variance</span>
+0016 <span class="comment">% image aa_imcalc_var_f*</span>
+0017 <span class="comment">%</span>
+0018 <span class="comment">% aap.options.imcalc can also include a field 'flags' with</span>
+0019 <span class="comment">% 4 values indicating:</span>
+0020 <span class="comment">%   whether or not to read image values to data matrix (0/1)</span>
+0021 <span class="comment">%   whether to implicitly mask zeros (0/1)</span>
+0022 <span class="comment">%   data type of output image (see spm_slice_vol)</span>
+0023 <span class="comment">%   interpolation hold</span>
+0024 <span class="comment">% The first value must be set as 1 for this module to work. If</span>
+0025 <span class="comment">% the field is not present aap.options.imcalc.flags defaults to</span>
+0026 <span class="comment">% {1;0;4;1} - read values into matrix, don't mask zeros, 16 bit</span>
+0027 <span class="comment">% integer, trilinear interpolation</span>
+0028 <span class="comment">%</span>
+0029 <span class="comment">% i=subject num</span>
+0030 <span class="comment">% j=session num</span>
+0031 
+0032 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_meanvarimg(aap,task,i,j)</a>
+0033 
+0034 resp=<span class="string">''</span>;
+0035 
+0036 <span class="keyword">switch</span> task
+0037     <span class="keyword">case</span> <span class="string">'domain'</span>
+0038         resp=<span class="string">'session'</span>;   <span class="comment">% this module needs to be run once per session</span>
+0039     <span class="keyword">case</span> <span class="string">'whentorun'</span>
+0040         resp=<span class="string">'justonce'</span>;  <span class="comment">% should this be run everytime or justonce?</span>
+0041     <span class="keyword">case</span> <span class="string">'description'</span>
+0042         resp = <span class="string">'Imcalc '</span>;
+0043         <span class="keyword">for</span> c = 1:size(aap.options.imcalc.functions,2)
+0044             fn = aap.options.imcalc.functions{c};
+0045             fn =fn(1:findstr(<span class="string">'(X)'</span>,fn)-1);
+0046             <span class="keyword">if</span> c&gt;1; resp = [resp <span class="string">', '</span>];<span class="keyword">end</span>
+0047             resp = [resp fn];
+0048         <span class="keyword">end</span>
+0049     <span class="keyword">case</span> <span class="string">'summary'</span>
+0050         resp=<span class="string">'Create '</span>
+0051         <span class="keyword">for</span> c = 1:size(aap.options.imcalc.functions,2)
+0052             fn = aap.options.imcalc.functions{c};
+0053             fn =fn(1:findstr(<span class="string">'(X)'</span>,fn)-1);
+0054             <span class="keyword">if</span> c&gt;1; resp = [resp <span class="string">', '</span>];<span class="keyword">end</span>
+0055             resp = [resp fn];
+0056         <span class="keyword">end</span>
+0057 
+0058         resp = [resp <span class="string">'images using imcalc\n'</span>];
+0059     <span class="keyword">case</span> <span class="string">'report'</span>
+0060         aap.report.html=strcat(aap.report.html,<span class="string">'&lt;table&gt;&lt;tr&gt;&lt;td&gt;'</span>);
+0061         aap=aas_report_addimage(aap,fullfile(aas_getsesspath(aap,i,j),<span class="string">'diagnostic_aamod_imcalc(function).jpg'</span>));
+0062         aap.report.html=strcat(aap.report.html,<span class="string">'&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;'</span>);
+0063     <span class="keyword">case</span> <span class="string">'doit'</span>
+0064         subjpath=aas_getsubjpath(aap,i);
+0065         sesspath=aas_getsesspath(aap,i,j);
+0066 
+0067         <span class="keyword">if</span> (~length(dir(sesspath)))
+0068             aas_log(aap,1,sprintf(<span class="string">'Problem finding directory for session\n%s'</span>,sesspath));
+0069         <span class="keyword">end</span>;
+0070 
+0071         dirn = aas_getsesspath(aap,i,j);
+0072         imgs=aas_getimages(aap,i,j,aap.options.imcalc.filefilt,0,inf);
+0073         [p f e] =fileparts(imgs(1,:));
+0074         
+0075         <span class="keyword">if</span> isfield(aap.options.imcalc,<span class="string">'flags'</span>)
+0076             <span class="keyword">if</span> isempty(aap.options.imcalc.flags)
+0077                 aap.options.imcalc.flags = {1;0;4;1};
+0078             <span class="keyword">else</span>
+0079                 aap.options.imcalc.flags{1} = 1;
+0080             <span class="keyword">end</span>
+0081         <span class="keyword">else</span>
+0082             aap.options.imcalc.flags = {1;0;4;1};
+0083         <span class="keyword">end</span>
+0084 
+0085         <span class="keyword">for</span> c = 1:size(aap.options.imcalc.functions,2)
+0086             fn = aap.options.imcalc.functions{c};
+0087             outfile =fullfile(dirn, [<span class="string">'aa_imcalc_'</span> fn(1:findstr(<span class="string">'(X)'</span>,fn)-1) <span class="string">'_'</span> f e]);
+0088 
+0089             spm_imcalc_ui(imgs,outfile,fn,aap.options.imcalc.flags);
+0090         <span class="keyword">end</span>
+0091 
+0092     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0093 
+0094     <span class="keyword">otherwise</span>
+0095         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0096 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_copystructural</title>
+  <meta name="keywords" content="aamod_copystructural">
+  <meta name="description" content="AA module - converts strucural from DICOM and copies to central store">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_copystructural.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_copystructural
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - converts strucural from DICOM and copies to central store</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_copystructural(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - converts strucural from DICOM and copies to central store
+ If there is a structural for this subject, copy it to central store
+ Also makes 'structurals' directory
+ Rhodri Cusack MRC CBU Cambridge Aug 2004</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - converts strucural from DICOM and copies to central store</span>
+0002 <span class="comment">% If there is a structural for this subject, copy it to central store</span>
+0003 <span class="comment">% Also makes 'structurals' directory</span>
+0004 <span class="comment">% Rhodri Cusack MRC CBU Cambridge Aug 2004</span>
+0005 
+0006 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_copystructural(aap,task,i)</a>
+0007 
+0008 resp=<span class="string">''</span>;
+0009 
+0010 <span class="keyword">switch</span> task
+0011     <span class="keyword">case</span> <span class="string">'domain'</span>
+0012         resp=<span class="string">'subject'</span>;   <span class="comment">% this module needs to be run once per subject</span>
+0013 
+0014     <span class="keyword">case</span> <span class="string">'description'</span>
+0015         resp=<span class="string">'Structural dicom to nifti and copying'</span>;
+0016 
+0017     <span class="keyword">case</span> <span class="string">'summary'</span>
+0018         <span class="keyword">if</span> (length(aap.acq_details.structural{i})==0)
+0019             resp=sprintf(<span class="string">'No structural for subject %s\n'</span>,aap.acq_details.subjects{i});
+0020         <span class="keyword">else</span>
+0021             resp=sprintf(<span class="string">'Copied structural for subject %s to %s\n'</span>, aap.acq_details.subjects{i},aap.directory_conventions.centralstore_structurals);
+0022         <span class="keyword">end</span>;
+0023 
+0024     <span class="keyword">case</span> <span class="string">'report'</span>
+0025     <span class="keyword">case</span> <span class="string">'doit'</span>
+0026         subjpath=aas_getsubjpath(aap,i);
+0027         structdir=fullfile(subjpath,aap.directory_conventions.structdirname);
+0028         <span class="keyword">if</span> (~length(dir(structdir)))
+0029             [s w]=aas_shell([<span class="string">'mkdir '</span> structdir]);
+0030             <span class="keyword">if</span> (s)
+0031                 aas_log(aap,1,sprintf(<span class="string">'Problem making directory%s'</span>,structdir));
+0032             <span class="keyword">end</span>;
+0033         <span class="keyword">end</span>;
+0034 
+0035         structseriesnum=aap.acq_details.structural{i};
+0036         <span class="keyword">if</span> (length(structseriesnum)&gt;0)
+0037             <span class="keyword">if</span>(length(structseriesnum)&gt;1)
+0038                 multstructdir=fullfile(subjpath,aap.directory_conventions.structdirname,<span class="string">'multiplestructurals'</span>);
+0039                 <span class="keyword">if</span> (~length(dir(multstructdir)))
+0040                     [s w]=aas_shell([<span class="string">'mkdir '</span> multstructdir]);
+0041                     <span class="keyword">if</span> (s)
+0042                         aas_log(aap,1,sprintf(<span class="string">'Problem making directory%s'</span>,multstructdir));
+0043                     <span class="keyword">end</span>;
+0044                 <span class="keyword">end</span>;
+0045                 <span class="keyword">for</span> k=1:length(structseriesnum)
+0046                     [aap]=aas_convertseries(aap,i,structseriesnum(k),multstructdir);
+0047                     fn=fullfile(multstructdir,sprintf(<span class="string">'s%s-%04d*.nii'</span>,aap.acq_details.subjects_structuralfn{i},structseriesnum(k)));
+0048                     fn=dir(fn);
+0049                     V=spm_vol(fullfile(multstructdir,fn.name));
+0050                     <span class="keyword">if</span> (k==1)
+0051                         Vfirst=V;
+0052                         Ytot=spm_read_vols(V);
+0053                     <span class="keyword">else</span>
+0054                         <span class="comment">%                         if (any(V.mat~=Vfirst.mat))</span>
+0055                         <span class="comment">%                             aas_log(aap,1,sprintf('When averaging across structurals, all must have identical space. Series %d was different from the first structural %d\n',structseriesnum(k),structseriesnum(1)));</span>
+0056                         <span class="comment">%                         end;</span>
+0057                         T=spm_coreg(Vfirst,V);
+0058                         M  = inv(spm_matrix(T));
+0059                         newmat=M*V.mat;
+0060                         spm_get_space(V.fname,newmat);
+0061                         resliceflags=[];
+0062                         resliceflags.which=1;
+0063                         spm_reslice(strvcat(Vfirst.fname,V.fname),resliceflags);
+0064                         V=spm_vol(fullfile(multstructdir,[<span class="string">'r'</span> fn.name]));
+0065                         Y=spm_read_vols(V);
+0066                         Ytot=Ytot+Y;
+0067                     <span class="keyword">end</span>;
+0068                 <span class="keyword">end</span>;
+0069                 Ytot=Ytot/length(structseriesnum);
+0070                 V.fname=fullfile(structdir,sprintf(<span class="string">'s%s-average.nii'</span>,aap.acq_details.subjects_structuralfn{i}));
+0071                 spm_write_vol(V,Ytot);
+0072             <span class="keyword">else</span>
+0073                 [aap]=aas_convertseries(aap,i,structseriesnum,structdir);
+0074             <span class="keyword">end</span>;
+0075             <span class="keyword">if</span> (aap.options.copystructuraltocentralstore)
+0076                 <span class="comment">% now, try to copy or move</span>
+0077                 cmd=sprintf(<span class="string">'%s*.nii %s'</span>,fullfile(structdir,[<span class="string">'s*'</span> aap.acq_details.subjects_structuralfn{i}]),aap.directory_conventions.centralstore_structurals);
+0078                 <span class="keyword">if</span> (aap.options.deletestructuralaftercopyingtocentralstore)
+0079                     cmd=[<span class="string">'mv -f '</span> cmd];
+0080                 <span class="keyword">else</span>
+0081                     cmd=[<span class="string">'cp -f '</span> cmd];
+0082                 <span class="keyword">end</span>;
+0083                 [s w]=aas_shell(cmd);
+0084                 <span class="keyword">if</span> (s)
+0085                     aas_log(aap,1,sprintf(<span class="string">'Problem trying to move or copy structural to central store with command %s'</span>,cmd));
+0086                 <span class="keyword">end</span>;
+0087             <span class="keyword">end</span>;
+0088         <span class="keyword">end</span>;
+0089 
+0090     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0091 
+0092     <span class="keyword">otherwise</span>
+0093         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0094 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

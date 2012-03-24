@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Unnormalise ROIs from MNI to native and GM mask them' modality='MRI'>
+            <inputstreams>
+                <stream>meanepi</stream>
+                <stream>segmasksExclusive</stream>
+                <stream>normalisation_seg_inv_sn</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>rois</stream>
+            </outputstreams>
+            <diagnostic>1</diagnostic>
+            <maskNum>1</maskNum>
+            <ROIlist>Thresholded/Hippocampus_EC__P4.nii,Thresholded/Hippocampus_CA__P4.nii,Thresholded/Hippocampus_SUB__P4.nii</ROIlist>
+        </currenttask>
+    </tasklist>
+</aap>
+   

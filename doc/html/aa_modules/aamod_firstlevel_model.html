@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_firstlevel_model</title>
+  <meta name="keywords" content="aamod_firstlevel_model">
+  <meta name="description" content="AA module - first level statistics">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_firstlevel_model.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_firstlevel_model
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - first level statistics</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_model(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - first level statistics
+ You will need to make a local copy of this module into the same directory 
+  as your user script, or somewhere else on your matlab path, and then modify it to
+  reflect the particular experiment you conducted
+
+ Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
+ Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
+ Thanks to Rik Henson for various suggestions
+
+ This script may change</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - first level statistics</span>
+0002 <span class="comment">% You will need to make a local copy of this module into the same directory</span>
+0003 <span class="comment">%  as your user script, or somewhere else on your matlab path, and then modify it to</span>
+0004 <span class="comment">%  reflect the particular experiment you conducted</span>
+0005 <span class="comment">%</span>
+0006 <span class="comment">% Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006</span>
+0007 <span class="comment">% Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007</span>
+0008 <span class="comment">% Thanks to Rik Henson for various suggestions</span>
+0009 <span class="comment">%</span>
+0010 <span class="comment">% This script may change</span>
+0011 
+0012 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_model(aap,task,i)</a>
+0013 
+0014 resp=<span class="string">''</span>;
+0015 
+0016 <span class="keyword">switch</span> task
+0017     <span class="keyword">case</span> <span class="string">'domain'</span>
+0018         resp=<span class="string">'subject'</span>;   <span class="comment">% this module needs to be run once per subject</span>
+0019 
+0020     <span class="keyword">case</span> <span class="string">'description'</span>
+0021         resp=<span class="string">'SPM5 first level model'</span>;
+0022 
+0023     <span class="keyword">case</span> <span class="string">'summary'</span>
+0024         subjpath=aas_getsubjpath(i);
+0025         resp=sprintf(<span class="string">'First level model %s\n'</span>,subjpath);
+0026 
+0027     <span class="keyword">case</span> <span class="string">'report'</span>
+0028 
+0029     <span class="keyword">case</span> <span class="string">'doit'</span>
+0030 
+0031         <span class="comment">% WHEN YOU'VE MODIFIED THIS MODULE APPROPRIATELY, COMMENT OUT THE LINE BELOW</span>
+0032         aas_log(aap,1,<span class="string">'You must make a local copy of aamod_model_firstlevel.m and then modify it so that it describes the experiment you performed\n'</span>);
+0033 
+0034         <span class="comment">% YOU WILL NEED TO CHANGE THIS SECTION</span>
+0035         <span class="comment">% condition names</span>
+0036         cnames={<span class="string">'firstcue'</span>,<span class="string">'secondcue'</span>,<span class="string">'response'</span>};
+0037         <span class="comment">% high pass filter</span>
+0038         hpf = 128;
+0039 
+0040         ncond=length(cnames);
+0041 
+0042 
+0043         <span class="comment">%get subject directory</span>
+0044         cwd=pwd;
+0045         subj_dir = aas_getsubjpath(aap,i);
+0046 
+0047         <span class="comment">%number of blocks</span>
+0048         nsess = length(aap.acq_details.sessions);
+0049 
+0050 
+0051         <span class="comment">% retrieve TR from DICOM header</span>
+0052         <span class="keyword">if</span> (length(aap.spmanalysis.TRs)==0)
+0053             DICOMHEADERS=load(fullfile(aas_getsesspath(aap,i,1),<span class="string">'dicom_headers'</span>));
+0054             aap.spmanalysis.TRs=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+0055         <span class="keyword">end</span>;
+0056 
+0057 
+0058 
+0059         modeldur = 0;
+0060 
+0061         movefilt = <span class="string">'^rp_.*\.txt$'</span>;
+0062         mnames = {<span class="string">'x_trans'</span> <span class="string">'y_trans'</span> <span class="string">'z_trans'</span> <span class="string">'x_rot'</span> <span class="string">'y_rot'</span> <span class="string">'z_rot'</span>};
+0063 
+0064 
+0065 
+0066         <span class="comment">%-----------------------------------------------------------------------</span>
+0067         <span class="comment">%Design setup</span>
+0068         <span class="comment">%-----------------------------------------------------------------------</span>
+0069 
+0070         <span class="comment">% basis functions and timing parameters</span>
+0071         <span class="comment">%---------------------------------------------------------------------------</span>
+0072         <span class="comment">% OPTIONS:'hrf'</span>
+0073         <span class="comment">%         'hrf (with time derivative)'</span>
+0074         <span class="comment">%         'hrf (with time and dispersion derivatives)'</span>
+0075         <span class="comment">%         'Fourier set'</span>
+0076         <span class="comment">%         'Fourier set (Hanning)'</span>
+0077         <span class="comment">%         'Gamma functions'</span>
+0078         <span class="comment">%         'Finite Impulse Response'</span>
+0079         <span class="comment">%---------------------------------------------------------------------------</span>
+0080 
+0081         clear SPM
+0082 
+0083         <span class="comment">% Set up basis functions</span>
+0084         
+0085         SPM.xBF.T          = 16; <span class="comment">% number of time bins per scan</span>
+0086         SPM.xBF.UNITS      = <span class="string">'scans'</span>;           <span class="comment">% OPTIONS: 'scans'|'secs' for onsets</span>
+0087         SPM.xBF.Volterra   = 1;                 <span class="comment">% OPTIONS: 1|2 = order of convolution</span>
+0088         SPM.xBF.name       = <span class="string">'hrf'</span>;
+0089         SPM.xBF.length     = 32;              <span class="comment">% length in seconds</span>
+0090         SPM.xBF.order      = 1;                 <span class="comment">% order of basis set</span>
+0091         SPM.xY.RT = aap.spmanalysis.TRs;
+0092         SPM.xGX.iGXcalc = <span class="string">'None'</span>;
+0093         SPM.xVi.form = <span class="string">'AR(1)'</span>;
+0094 
+0095         <span class="comment">% Adjust time bin T0 according to reference slice &amp; slice order</span>
+0096         <span class="comment">%  implements email to CBU from Rik Henson 27/06/07</span>
+0097         <span class="comment">%  assumes timings are relative to beginning of scans</span>
+0098         refwhen=(find(aap.spmanalysis.sliceorder==aap.spmanalysis.refslice)-1)/(length(aap.spmanalysis.sliceorder)-1);
+0099         SPM.xBF.T0 = round(SPM.xBF.T*refwhen);        
+0100 
+0101 
+0102         subdata = aas_getsubjpath(aap,i);
+0103         
+0104         <span class="comment">% New option to allow suffix to output file in extraparameters</span>
+0105         <span class="keyword">if</span> (isfield(aap.tasklist.currenttask.extraparameters,<span class="string">'stats_suffix'</span>))
+0106             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
+0107         <span class="keyword">else</span>
+0108             stats_suffix=[];
+0109         <span class="keyword">end</span>;
+0110             
+0111             
+0112         anadir = fullfile(subdata,[aap.directory_conventions.stats_singlesubj stats_suffix]);
+0113         <span class="keyword">if</span> exist(anadir)~=7; mkdir(subdata,[aap.directory_conventions.stats_singlesubj stats_suffix]);<span class="keyword">end</span>
+0114         cd(anadir);
+0115 
+0116 
+0117         tc = 0;
+0118         allfiles=<span class="string">''</span>;
+0119 
+0120         cols_nuisance=[];
+0121         cols_interest=[];
+0122         currcol=1;
+0123         <span class="keyword">for</span> sess = 1:nsess
+0124             sessdata=aas_getsesspath(aap,i,sess);
+0125             tc = tc+1;
+0126             files = aas_getimages(aap,i,sess,aap.tasklist.currenttask.epiprefix);
+0127             <span class="keyword">if</span> aap.spmanalysis.firstlevelmovementparameters
+0128                 mfname = spm_select (<span class="string">'List'</span>, sessdata, movefilt);
+0129                 moves = load(fullfile(sessdata,mfname));
+0130             <span class="keyword">end</span>
+0131             SPM.nscan(tc) = size(files,1);
+0132 
+0133             allfiles = strvcat(allfiles,files);
+0134 
+0135             <span class="keyword">for</span> c = 1:ncond
+0136                 <span class="comment">% YOU MAY NEED TO CHANGE THIS</span>
+0137                 <span class="comment">% It currently expects onset files</span>
+0138                 <span class="comment">%  onsets_[conditionname].txt (e.g., onsets_cue.txt) for event onsets (in scans)</span>
+0139                 <span class="comment">%  and durations_[conditionname].txt for event durations (in scans)</span>
+0140                 <span class="comment">% These should be in the directory corresponding to the</span>
+0141                 <span class="comment">% session they refer to.</span>
+0142                 
+0143                 efile = fullfile(sessdata,[<span class="string">'onsets_'</span> cnames{c} <span class="string">'.txt'</span>]);
+0144                 ons = load(efile);
+0145                 efile = fullfile(sessdata,[<span class="string">'durrations_'</span> cnames{c} <span class="string">'.txt'</span>]);
+0146                 durs = load(efile);
+0147 
+0148                 SPM.Sess(tc).U(c) = struct(<span class="keyword">...</span>
+0149                     <span class="string">'ons'</span>,ons,<span class="keyword">...</span>
+0150                     <span class="string">'dur'</span>,durs,<span class="keyword">...</span>
+0151                     <span class="string">'name'</span>,{cnames(c)},<span class="keyword">...</span>
+0152                     <span class="string">'P'</span>,struct(<span class="string">'name'</span>,<span class="string">'none'</span>));
+0153                 cols_interest=[cols_interest currcol];
+0154                 currcol=currcol+1;
+0155             <span class="keyword">end</span>
+0156 
+0157             SPM.xX.K(tc).HParam = hpf;
+0158 
+0159 
+0160             <span class="keyword">if</span> aap.spmanalysis.firstlevelmovementparameters==1
+0161                 SPM.Sess(tc).C.C    = moves;     <span class="comment">% [n x c double] covariates</span>
+0162                 SPM.Sess(tc).C.name = mnames; <span class="comment">% [1 x c cell]   names</span>
+0163                 cols_nuisance=[cols_nuisance [currcol:(currcol+5)]];
+0164                 currcol=currcol+6;
+0165             <span class="keyword">else</span>
+0166                 SPM.Sess(tc).C.C = [];
+0167                 SPM.Sess(tc).C.name = {};
+0168             <span class="keyword">end</span>
+0169         <span class="keyword">end</span>
+0170 
+0171 
+0172         cons=[];
+0173         cd (anadir)
+0174 
+0175         SPM.xY.P = allfiles;
+0176         SPMdes = spm_fmri_spm_ui(SPM);
+0177 
+0178         <span class="comment">% now check real covariates and nuisance variables are</span>
+0179         <span class="comment">% specified correctly</span>
+0180         SPMdes.xX.iG=cols_nuisance;
+0181         SPMdes.xX.iC=cols_interest;
+0182         
+0183         <span class="comment">% Turn off masking if requested</span>
+0184         <span class="keyword">if</span> (~aap.spmanalysis.firstlevelmasking)
+0185             SPMdes.xM.I=0;
+0186             SPMdes.xM.TH=-inf(size(SPMdes.xM.TH));
+0187         <span class="keyword">end</span>;
+0188 
+0189         spm_unlink(fullfile(<span class="string">'.'</span>, <span class="string">'mask.img'</span>)); <span class="comment">% avoid overwrite dialog</span>
+0190         SPMest = spm_spm(SPMdes);
+0191 
+0192         cd (cwd);
+0193 
+0194     <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0195 
+0196     <span class="keyword">otherwise</span>
+0197         aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0198 <span class="keyword">end</span>;
+0199 
+0200 
+0201</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

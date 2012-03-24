@@ -1,0 +1,78 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aas_log</title>
+  <meta name="keywords" content="aas_log">
+  <meta name="description" content="Automatic analysis - log tool">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_engine</a> &gt; aas_log.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_engine&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aas_log
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic analysis - log tool</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function aas_log(aap,iserr,msg) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic analysis - log tool
+ Used to display messages
+ If iserr is true, an error is generated</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+<li><a href="aa_benchmark.html" class="code" title="function aa_benchmark(studyroot)">aa_benchmark</a>	Automatic analysis - display benchmark</li><li><a href="aa_closeallworkers.html" class="code" title="function aa_closeallworkers()">aa_closeallworkers</a>	aa parallel</li><li><a href="aa_doprocessing.html" class="code" title="function [aap]=aa_doprocessing(aap)">aa_doprocessing</a>	Automatic analysis - do processing</li><li><a href="aa_doprocessing_onetask.html" class="code" title="function aa_doprocessing_onetask(aap,task,k)">aa_doprocessing_onetask</a>	</li><li><a href="aa_doprocessing_parallel.html" class="code" title="function [aap]=aa_doprocessing_parallel(aap)">aa_doprocessing_parallel</a>	Automatic analysis - do processing</li><li><a href="aa_report.html" class="code" title="function [aap]=aa_report(studyroot,stages)">aa_report</a>	Automatic analysis - produces HTML summary of analysis</li><li><a href="aa_requiresversion.html" class="code" title="function aa_requiresversion(aap)">aa_requiresversion</a>	Automatic analysis - check version</li><li><a href="aas_convertdmdx.html" class="code" title="function [aap]=aas_convertdmdx(aap,i,seriesnum,outputpath)">aas_convertdmdx</a>	Automatic Analysis DMDX to .TXT convertor</li><li><a href="aas_convertseries.html" class="code" title="function [aap]=aas_convertseries(aap,i,seriesnum,outputpath,echonumbers)">aas_convertseries</a>	Automatic Analysis DICOM to NIFTI convertor</li><li><a href="aas_doprocessing_initialisationmodules.html" class="code" title="function [aap]=aas_doprocessing_initialisationmodules(aap)">aas_doprocessing_initialisationmodules</a>	THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN</li><li><a href="aas_findfiles.html" class="code" title="function [aap,resp]=aas_findfiles(aap,searchpath,minfiles,maxfiles)">aas_findfiles</a>	function [aap,resp]=aas_findfiles(aap,searchpath,minfiles,maxfiles)</li><li><a href="aas_getboredworker.html" class="code" title="function [aap workerid]=aas_getboredworker(aap)">aas_getboredworker</a>	</li><li><a href="aas_getsubjpath.html" class="code" title="function [subjpath]=aas_getsubjpath(aap,i)">aas_getsubjpath</a>	Automatic analysis - get subject path</li><li><a href="aas_launchworker.html" class="code" title="function [s]=aas_launchworker(aap,workernumber)">aas_launchworker</a>	</li><li><a href="aas_makedir.html" class="code" title="function [aap,resp]=aas_makedir(aap,dirname)">aas_makedir</a>	aas_makedir(aap,dirname)</li><li><a href="aas_parsepvshow.html" class="code" title="function  [aap,seriesnum,acqtype,acqtime,reps,recoed]=aas_parsepvshow(aap,rawdatasetpath)">aas_parsepvshow</a>	Automatic analysis - pvshow.pl</li><li><a href="aas_report_addimage.html" class="code" title="function [aap resp]=aas_report_addimage(aap,imgpath,scaling)">aas_report_addimage</a>	aa report helper function - adds an image to the HTML report</li><li><a href="aas_requiresversion.html" class="code" title="function aa_requiresversion(aap)">aas_requiresversion</a>	Automatic analysis - check version</li><li><a href="aaworker_poll.html" class="code" title="function aaworker_poll(obj,event)">aaworker_poll</a>	This is a message pump for the worker</li></ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic analysis - log tool</span>
+0002 <span class="comment">% Used to display messages</span>
+0003 <span class="comment">% If iserr is true, an error is generated</span>
+0004 
+0005 <a name="_sub0" href="#_subfunctions" class="code">function aas_log(aap,iserr,msg)</a>
+0006 
+0007 <span class="keyword">if</span> (iserr)
+0008     fprintf(<span class="string">'\n\n**** AUTOMATIC ANALYSIS FAILED - SEE REASON AND LINE NUMBERS BELOW\n'</span>);
+0009 <span class="keyword">end</span>;
+0010 
+0011 isworker=false;
+0012 <span class="keyword">if</span> (isfield(aap,<span class="string">'internal'</span>))
+0013     <span class="keyword">if</span> (isfield(aap.internal,<span class="string">'worker'</span>))
+0014         isworker=true;
+0015     <span class="keyword">end</span>;
+0016 <span class="keyword">end</span>;
+0017 
+0018 <span class="keyword">if</span> (isworker)
+0019         fprintf([msg <span class="string">'\n'</span>]);    
+0020 <span class="keyword">else</span>
+0021     <span class="keyword">if</span> (aap.options.verbose&gt;0 | iserr)
+0022         fprintf([msg <span class="string">'\n'</span>]);
+0023     <span class="keyword">end</span>;
+0024     <span class="keyword">if</span> (iserr)
+0025         cd(aap.internal.pwd)
+0026         disp(<span class="string">'Help pages are at http://imaging.mrc-cbu.cam.ac.uk/imaging/AutomaticAnalysisIntroduction'</span>)
+0027         pause
+0028         error(<span class="string">' '</span>);
+0029     <span class="keyword">end</span>
+0030 <span class="keyword">end</span>;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

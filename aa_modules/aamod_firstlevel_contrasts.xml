@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasklist>
+   <currenttask domain='subject' desc='First level contrasts' modality='MRI'>
+<!--
+You must specify one or more contrasts here using one of the following formats
+
+***Format 1: same contrast applied to all sessions
+    In this example, no name so automatically generated from column names 
+    (recommended as a good check that you've done the right contrast!)
+    Here we've also specified that this contrast is valid only
+     for one particular subject
+     -->
+<!--
+    <contrasts>
+        <subject>CBU110011</subject>
+        <con>
+            <format>sameforallsessions</format>
+            <vector>1 -1</vector>
+        </con>
+        <con>
+            <format>sameforallsessions</format>
+            <vector>1 0</vector>
+        </con>
+    </contrasts>
+-->
+
+<!--
+  ***Format 2: single session  
+  All other sessions given zero weighting
+  No need to specify movement parameters and session means
+-->
+<!--
+    <contrasts>
+        <con>
+            <format>singlesession</format>
+            <session>avtask</session>
+            <vector>1 -1</vector>
+        </con>
+    </contrasts>
+-->
+<!--
+***Format 3: contrast unique by session.
+    You don't need to put in zeros for the movement parameters (if they're 
+    present and means.
+    In this example, we specify the name
+    Wildcard for subject, so applies to all that don't have specific declaration
+
+-->
+<!--
+    <contrasts>
+        <subject>*</subject>
+        <automatic_movesandmeans>1</automatic_movesandmeans>
+        <con>
+            <name>stimulus-baseline</name>
+            <format>uniquebysession</format>
+            <vector>1 -1   1 -1</vector>
+        </con>
+    </contrasts>
+-->
+
+<!--
+  ***Format 4: movement_parameters and means can be added manually, if you 
+  want to do the same old way
+-->
+<!--
+    <contrasts>
+        <automatic_movesandmeans>0</automatic_movesandmeans>
+        <contrast>
+            <format>uniquebysession</format>
+            <vector>1 -1   0 0 0 0 0 0   1 -1   0 0 0 0 0 0  0 0</vector>
+        </contrast>
+    </contrasts>
+-->
+    <contrasts>
+        <subject></subject>
+        <automatic_movesandmeans></automatic_movesandmeans>
+        <con>
+            <format/>
+            <vector/>
+            <session/>
+            <type/>
+        </con>
+    </contrasts>
+    
+    <inputstreams>
+        <stream>firstlevel_spm</stream>
+        <stream>firstlevel_betas</stream>
+    </inputstreams>
+    <outputstreams>
+        <stream>firstlevel_spm</stream>
+        <stream>firstlevel_cons</stream>
+        <stream>firstlevel_spmts</stream>
+        <stream>firstlevel_spmts</stream>
+    </outputstreams>
+   </currenttask>
+  </tasklist>
+</aap>
+   

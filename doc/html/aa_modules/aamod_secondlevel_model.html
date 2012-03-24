@@ -1,0 +1,188 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aamod_secondlevel_model</title>
+  <meta name="keywords" content="aamod_secondlevel_model">
+  <meta name="description" content="AA module - second level statistics">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_modules</a> &gt; aamod_secondlevel_model.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_modules&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aamod_secondlevel_model
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>AA module - second level statistics</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap,resp]=aamod_model(aap,task,i) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> AA module - second level statistics
+ Only runs if all contrasts present in same order in all subjects at first
+ level. If so, makes model with basic t-test for each of contrasts.
+ Second-level model from Rik Henson
+ Modified for aa by Rhodri Cusack May 2006</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% AA module - second level statistics</span>
+0002 <span class="comment">% Only runs if all contrasts present in same order in all subjects at first</span>
+0003 <span class="comment">% level. If so, makes model with basic t-test for each of contrasts.</span>
+0004 <span class="comment">% Second-level model from Rik Henson</span>
+0005 <span class="comment">% Modified for aa by Rhodri Cusack May 2006</span>
+0006 <span class="comment">%</span>
+0007 
+0008 <a name="_sub0" href="#_subfunctions" class="code">function [aap,resp]=aamod_model(aap,task,i)</a>
+0009 
+0010 resp=<span class="string">''</span>;
+0011 
+0012 <span class="keyword">switch</span> task
+0013     <span class="keyword">case</span> <span class="string">'domain'</span>
+0014         resp=<span class="string">'study'</span>;   <span class="comment">% this module needs to be run once per study</span>
+0015 
+0016     <span class="keyword">case</span> <span class="string">'description'</span>
+0017         resp=<span class="string">'SPM5 second level (RFX) model'</span>;
+0018 
+0019     <span class="keyword">case</span> <span class="string">'summary'</span>
+0020         subjpath=aas_getsubjpath(i);
+0021         resp=sprintf(<span class="string">'Second level model %s\n'</span>,subjpath);
+0022 
+0023     <span class="keyword">case</span> <span class="string">'report'</span>
+0024 
+0025     <span class="keyword">case</span> <span class="string">'doit'</span>
+0026 
+0027 
+0028         <span class="keyword">global</span> defaults
+0029         <span class="keyword">global</span> UFp
+0030         UFp=0.001;
+0031 
+0032         defaults.modality=<span class="string">'FMRI'</span>; <span class="comment">% Some problems with the Results otherwise?</span>
+0033 
+0034         nsub=length(aap.acq_details.subjects);
+0035         aas_log(aap,false,sprintf(<span class="string">'%d subjects'</span>,nsub));
+0036         <span class="comment">% New option to allow suffix to output file in extraparameters</span>
+0037         <span class="keyword">if</span> (isfield(aap.tasklist.currenttask.extraparameters,<span class="string">'stats_suffix'</span>))
+0038             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
+0039         <span class="keyword">else</span>
+0040             stats_suffix=[];
+0041         <span class="keyword">end</span>;            
+0042         
+0043         <span class="comment">% And make analysis directory</span>
+0044         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
+0045         <span class="keyword">if</span> exist(rfxrootdir)~=7; mkdir(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);<span class="keyword">end</span>
+0046         cd(rfxrootdir);
+0047 
+0048         <span class="comment">% Now check all subjects have same number of contrasts and same</span>
+0049         <span class="comment">%   contrast names at first level</span>
+0050         clear flSPM
+0051         clear flSPMfn;
+0052         <span class="keyword">for</span> m=1:nsub
+0053             flSPMfn{m}=fullfile(aas_getsubjpath(aap,m),[aap.directory_conventions.stats_singlesubj stats_suffix],<span class="string">'SPM.mat'</span>);
+0054             flSPM{m}=load(flSPMfn{m});
+0055             <span class="keyword">if</span> (m~=1)
+0056                 <span class="keyword">if</span> (length(flSPM{m}.SPM.xCon)~=length(flSPM{1}.SPM.xCon))
+0057                     aas_log(aap,1,sprintf(<span class="string">'Number of contrasts in first level analysis for subject %d different from subject 1. They must be the same for aamod_model_secondlevel to work\n'</span>,m));
+0058                     <span class="keyword">for</span> n=1:length(flSPM(m).SPM.xCon)
+0059                         <span class="keyword">if</span> (flSPM{m}.SPM.xCon(n).name~=flSPM{1}.SPM.xCon(n).name);
+0060                             aas_log(aap,1,sprintf(<span class="string">'Names of contrasts at first level different. Contrast %d has name %s for subject %d but %s for subject 1. They must be the same for aamod_model_secondlevel to work\n'</span>,n,flSPM{m}.SPM.xCon(n).name,m,flSPM{1}.xCon(n).name));
+0061                         <span class="keyword">end</span>;
+0062                     <span class="keyword">end</span>;
+0063                 <span class="keyword">end</span>;
+0064             <span class="keyword">end</span>;
+0065         <span class="keyword">end</span>;
+0066         <span class="comment">%                phs = 1; conname='UF_S'</span>
+0067 
+0068         <span class="keyword">for</span> n=1:length(flSPM{1}.SPM.xCon)
+0069             conname=flSPM{1}.SPM.xCon(n).name;
+0070             <span class="comment">% take out characters that don't go well in filenames...</span>
+0071             conname(conname==<span class="string">':'</span>)=[];
+0072             conname(conname==<span class="string">' '</span>)=[];
+0073             conname(conname==<span class="string">'/'</span>)=[];
+0074             conname(conname==<span class="string">'\'</span>)=[];
+0075             rfxdir = fullfile(rfxrootdir,conname);
+0076             <span class="keyword">if</span> exist(rfxdir)~=7; mkdir(rfxrootdir,conname);<span class="keyword">end</span>
+0077                 cd(rfxdir);
+0078 
+0079                 clear SPM
+0080 
+0081                 <span class="comment">%-Assemble SPM structure</span>
+0082                 <span class="comment">%=======================================================================</span>
+0083 
+0084                 SPM.nscan = nsub;
+0085 
+0086                 <span class="keyword">for</span> s=1:nsub
+0087                     SPM.xY.P{s}   = sprintf(fullfile(aas_getsubjpath(aap,s),[aap.directory_conventions.stats_singlesubj stats_suffix],sprintf(<span class="string">'con_%04d.img'</span>,n)));
+0088                     SPM.xY.VY(s)   = spm_vol(SPM.xY.P{s});
+0089                 <span class="keyword">end</span>
+0090 
+0091                 SPM.xX = struct(    <span class="string">'X'</span>,    ones(nsub,1),<span class="keyword">...</span>
+0092                     <span class="string">'iH'</span>,1,<span class="string">'iC'</span>,zeros(1,0),<span class="string">'iB'</span>,zeros(1,0),<span class="string">'iG'</span>,zeros(1,0),<span class="keyword">...</span>
+0093                     <span class="string">'name'</span>,{{<span class="string">'mean'</span>}},<span class="string">'I'</span>,[[1:nsub]' ones(nsub,3)],<span class="keyword">...</span>
+0094                     <span class="string">'sF'</span>,{{<span class="string">'obs'</span>  <span class="string">''</span>  <span class="string">''</span>  <span class="string">''</span>}});
+0095 
+0096                 SPM.xC = [];
+0097 
+0098                 SPM.xGX = struct(<span class="keyword">...</span>
+0099                     <span class="string">'iGXcalc'</span>,1,    <span class="string">'sGXcalc'</span>,<span class="string">'omit'</span>,                <span class="string">'rg'</span>,[],<span class="keyword">...</span>
+0100                     <span class="string">'iGMsca'</span>,9,    <span class="string">'sGMsca'</span>,<span class="string">'&lt;no grand Mean scaling&gt;'</span>,<span class="keyword">...</span>
+0101                     <span class="string">'GM'</span>,0,        <span class="string">'gSF'</span>,ones(nsub,1),<span class="keyword">...</span>
+0102                     <span class="string">'iGC'</span>,    12,    <span class="string">'sGC'</span>,    <span class="string">'(redundant: not doing AnCova)'</span>,    <span class="string">'gc'</span>,[],<span class="keyword">...</span>
+0103                     <span class="string">'iGloNorm'</span>,9,    <span class="string">'sGloNorm'</span>,<span class="string">'&lt;no global normalisation&gt;'</span>);
+0104 
+0105                 SPM.xVi    = struct(<span class="string">'iid'</span>,1,<span class="string">'V'</span>,speye(nsub));
+0106 
+0107                 Mdes     = struct(    <span class="string">'Analysis_threshold'</span>,    {<span class="string">'None (-Inf)'</span>},<span class="keyword">...</span>
+0108                     <span class="string">'Implicit_masking'</span>,    {<span class="string">'Yes: NaNs treated as missing'</span>},<span class="keyword">...</span>
+0109                     <span class="string">'Explicit_masking'</span>,    {<span class="string">'Yes: SPM2 Brain Mask'</span>});
+0110 
+0111                 <span class="comment">%SPM.xM    = struct('T',-Inf,'TH',ones(nsub*2,1)*-Inf,...</span>
+0112                 <span class="comment">%         'I',1,'VM',spm_vol('/home/rh01/SPM/spm5/apriori/brainmask.nii'),'xs',Mdes);</span>
+0113 
+0114                 SPM.xM    = struct(<span class="string">'T'</span>,-Inf,<span class="string">'TH'</span>,ones(nsub*2,1)*-Inf,<span class="keyword">...</span>
+0115                     <span class="string">'I'</span>,1,<span class="string">'VM'</span>,[],<span class="string">'xs'</span>,Mdes);
+0116 
+0117                 Pdes     = {{<span class="string">'1 condition, +0 covariate, +0 block, +0 nuisance'</span>; <span class="string">'1 total, having 1 degrees of freedom'</span>; <span class="string">'leaving 8 degrees of freedom from 9 images'</span>}};
+0118 
+0119                 SPM.xsDes = struct(    <span class="string">'Design'</span>,        {<span class="string">'One sample t-test'</span>},<span class="keyword">...</span>
+0120                     <span class="string">'Global_calculation'</span>,    {<span class="string">'omit'</span>},<span class="keyword">...</span>
+0121                     <span class="string">'Grand_mean_scaling'</span>,    {<span class="string">'&lt;no grand Mean scaling&gt;'</span>},<span class="keyword">...</span>
+0122                     <span class="string">'Global_normalisation'</span>,    {<span class="string">'&lt;no global normalisation&gt;'</span>},<span class="keyword">...</span>
+0123                     <span class="string">'Parameters'</span>,        Pdes);
+0124 
+0125                 <span class="comment">% Estimate parameters</span>
+0126                 <span class="comment">%===========================================================================</span>
+0127                 spm_unlink(fullfile(<span class="string">'.'</span>, <span class="string">'mask.img'</span>)); <span class="comment">% avoid overwrite dialog</span>
+0128                 SPM = spm_spm(SPM);
+0129 
+0130             <span class="keyword">end</span>;
+0131             <span class="keyword">case</span> <span class="string">'checkrequirements'</span>
+0132 
+0133                 <span class="keyword">otherwise</span>
+0134                     aas_log(aap,1,sprintf(<span class="string">'Unknown task %s'</span>,task));
+0135         <span class="keyword">end</span>;
+0136 
+0137 
+0138</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>

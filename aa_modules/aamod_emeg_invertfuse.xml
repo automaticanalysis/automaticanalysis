@@ -1,0 +1,9 @@
+<aap>
+	<tasksettings>
+		<aamod_emeg_invertfuse domain='session' desc='Fusion of seperately inverted sensor types' modality='meg'>		
+			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^sace.*_BLOCK.*_grp\.mat$</InputFilter> 
+			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
+		</aamod_emeg_invertfuse>
+	</tasksettings>
+</aap>
+

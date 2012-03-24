@@ -1,0 +1,108 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                "http://www.w3.org/TR/REC-html40/loose.dtd">
+<html>
+<head>
+  <title>Description of aap_spmanalysis_autotr_resliceall_ver00</title>
+  <meta name="keywords" content="aap_spmanalysis_autotr_resliceall_ver00">
+  <meta name="description" content="Automatic analysis - standard recipe without statistical modelling">
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta name="generator" content="m2html &copy; 2003 Guillaume Flandin">
+  <meta name="robots" content="index, follow">
+  <link type="text/css" rel="stylesheet" href="../m2html.css">
+</head>
+<body>
+<a name="_top"></a>
+<div><a href="../index.html">Home</a> &gt;  <a href="#">aa_recipes_and_parametersets</a> &gt; aap_spmanalysis_autotr_resliceall_ver00.m</div>
+
+<!--<table width="100%"><tr><td align="left"><a href="../index.html"><img alt="<" border="0" src="../left.png">&nbsp;Master index</a></td>
+<td align="right"><a href="index.html">Index for ./aa_recipes_and_parametersets&nbsp;<img alt=">" border="0" src="../right.png"></a></td></tr></table>-->
+
+<h1>aap_spmanalysis_autotr_resliceall_ver00
+</h1>
+
+<h2><a name="_name"></a>PURPOSE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>Automatic analysis - standard recipe without statistical modelling</strong></div>
+
+<h2><a name="_synopsis"></a>SYNOPSIS <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="box"><strong>function [aap]=aap_spmanalysis_autotr_resliceall_ver00(aap) </strong></div>
+
+<h2><a name="_description"></a>DESCRIPTION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre class="comment"> Automatic analysis - standard recipe without statistical modelling
+  Slice order for slice timing no longer takes on default value, and must
+  be specified in user script. Use on of
+   aap.spmanalysis.sliceorder=[32:-1:1]; % 32 descending slices
+   aap.spmanalysis.sliceorder=[1:2:31 2:2:32]; % 32 slices ascending interleaved
+ Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003
+ MRC CBU</pre></div>
+
+<!-- crossreference -->
+<h2><a name="_cross"></a>CROSS-REFERENCE INFORMATION <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+This function calls:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+This function is called by:
+<ul style="list-style-image:url(../matlabicon.gif)">
+</ul>
+<!-- crossreference -->
+
+
+<h2><a name="_source"></a>SOURCE CODE <a href="#_top"><img alt="^" border="0" src="../up.png"></a></h2>
+<div class="fragment"><pre>0001 <span class="comment">% Automatic analysis - standard recipe without statistical modelling</span>
+0002 <span class="comment">%  Slice order for slice timing no longer takes on default value, and must</span>
+0003 <span class="comment">%  be specified in user script. Use on of</span>
+0004 <span class="comment">%   aap.spmanalysis.sliceorder=[32:-1:1]; % 32 descending slices</span>
+0005 <span class="comment">%   aap.spmanalysis.sliceorder=[1:2:31 2:2:32]; % 32 slices ascending interleaved</span>
+0006 <span class="comment">% Rhodri Cusack 2004 based on original scripts by Matthew Brett 2003</span>
+0007 <span class="comment">% MRC CBU</span>
+0008 
+0009 <a name="_sub0" href="#_subfunctions" class="code">function [aap]=aap_spmanalysis_autotr_resliceall_ver00(aap)</a>
+0010 
+0011 <span class="comment">% TR for each subject.</span>
+0012 aap.spmanalysis.TRs = []; <span class="comment">% read from DICOM header if empty</span>
+0013 <span class="comment">% Time to acquire one slice of data</span>
+0014 aap.spmanalysis.slicetime = [];  <span class="comment">% read from DICOM header if empty</span>
+0015 <span class="comment">% Slice acquisition order</span>
+0016 <span class="comment">%aap.spmanalysis.sliceorder=[32:-1:1]; % 32 descending</span>
+0017 <span class="comment">%aap.spmanalysis.sliceorder=[1:2:31 2:2:32]; % 32 slices ascending interleaved</span>
+0018 aap.spmanalysis.sliceorder=[]; <span class="comment">% no longer default this as multiple sequences in use</span>
+0019 aap.spmanalysis.refslice=1;    <span class="comment">% default reference slice [de 200606]</span>
+0020 aap.spmanalysis.reslicewhich=2;<span class="comment">% default reslicing in realignment [rh 200608] [rc 20060903 change to 2 (all) as most recipes have motion correction first]</span>
+0021 aap.spmanalysis.writemean=1;   <span class="comment">% default writing of mean in realignment [rh 200608]</span>
+0022 
+0023 <span class="comment">% Smoothing for normalized images</span>
+0024 aap.spmanalysis.FWHM = 10;
+0025 
+0026 <span class="comment">% Difference between echo times of field maps in ms</span>
+0027 aap.spmanalysis.evoltime=9.104;
+0028 
+0029 <span class="comment">% If no skull stripped structural is found, but a trimmed file is, then bet is used to skull strip</span>
+0030 <span class="comment">% The following line sets the -f parameter which determines how much stripping occurs</span>
+0031 aap.spmanalysis.structuralbetf=0.5;
+0032 
+0033 <span class="comment">% The following are defaults for fieldmap_undistort</span>
+0034 aap.spmanalysis.bp.interpol=<span class="string">'linear'</span>;
+0035 aap.spmanalysis.bp.acceptalldefaults=0;
+0036 aap.spmanalysis.bp.startstage = 0;      <span class="comment">% start at beginning</span>
+0037 aap.spmanalysis.bp.phasemappair = 2;  <span class="comment">% ac phasemap pair</span>
+0038 aap.spmanalysis.bp.realigntocom = 1;  <span class="comment">% realign fieldmap to centre of mass</span>
+0039 aap.spmanalysis.bp.manualshift = 0;   <span class="comment">% manual shift (not usually needed)</span>
+0040 aap.spmanalysis.bp.constrain = 1;     <span class="comment">% constrain coreg to translations</span>
+0041 aap.spmanalysis.bp.zerodisp=1;        <span class="comment">% zero mean displacement in map</span>
+0042 aap.spmanalysis.bp.phaseencodeaxis=2; <span class="comment">% phase encoding along y axis</span>
+0043 aap.spmanalysis.bp.padz=16; <span class="comment">% padding on top and bottom of fieldmap to preventing clipping during rotation</span>
+0044 
+0045 <span class="comment">% Individual subject values for manual shift in fieldmap_undistort</span>
+0046 aap.spmanalysis.fieldmap_manualshift=[];
+0047 
+0048 <span class="comment">% Now choose between segment or normalize</span>
+0049 aap.spmanalysis.usesegmentnotnormalise=1;
+0050 
+0051 <span class="comment">% Resolution for structural</span>
+0052 aap.spmanalysis.structuralwritevox=[3 3 3];
+0053 
+0054 <span class="comment">% First level modelling</span>
+0055 aap.spmanalysis.firstlevelmasking=1;
+0056 aap.spmanalysis.firstlevelmovementparameters=1;</pre></div>
+<hr><address>Generated on Fri 31-Aug-2007 16:39:50 by <strong><a href="http://www.artefact.tk/software/matlab/m2html/">m2html</a></strong> &copy; 2003</address>
+</body>
+</html>
