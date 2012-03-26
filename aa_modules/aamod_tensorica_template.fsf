@@ -39,7 +39,7 @@ set fmri(outputdir) "{{ outputdirectory }}"
 set fmri(tr) {{ TR }}
 
 # Total volumes
-set fmri(npts) 188
+set fmri(npts) {{ totalvolumes }}
 
 # Delete volumes
 set fmri(ndelete) 0
@@ -48,7 +48,7 @@ set fmri(ndelete) 0
 set fmri(tagfirst) 1
 
 # Number of first-level analyses
-set fmri(multiple) 10
+set fmri(multiple) {{ numsubjects }}
 
 # Higher-level input type
 # 1 : Inputs are lower-level FEAT directories
@@ -111,7 +111,7 @@ set fmri(st) 0
 set fmri(st_file) ""
 
 # BET brain extraction
-set fmri(bet_yn) 0
+set fmri(bet_yn) 1
 
 # Spatial smoothing FWHM (mm)
 set fmri(smooth) 5
@@ -230,7 +230,7 @@ set fmri(reginitial_highres_search) 90
 set fmri(reginitial_highres_dof) 3
 
 # Registration to main structural
-set fmri(reghighres_yn) 0
+set fmri(reghighres_yn) 1
 
 # Search space for registration to main structural
 # 0   : No search
@@ -242,7 +242,7 @@ set fmri(reghighres_search) 180
 set fmri(reghighres_dof) 6
 
 # Registration to standard image?
-set fmri(regstandard_yn) 0
+set fmri(regstandard_yn) 1
 
 # Standard image
 set fmri(regstandard) "/usr/local/fsl/data/standard/MNI152_T1_2mm_brain"
@@ -301,7 +301,7 @@ set fmri(thresh_yn) 1
 set fmri(mmthresh) 0.5
 
 # Output full stats folder
-set fmri(ostats) 0
+set fmri(ostats) 1
 
 # Timeseries and subject models
 set fmri(ts_model_mat) ""

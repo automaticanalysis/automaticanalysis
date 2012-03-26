@@ -145,6 +145,23 @@ aas_requiresversion(aap);
 % Run initialisation modules
 aap=aas_doprocessing_initialisationmodules(aap);
 
+% THE MODULES IN AAP.TASKLIST.STAGES ARE RUN IF A CORRESPONDING DONE_ FLAG
+% IS NOT FOUND. ONE IS CREATED AFTER SUCCESSFUL EXECUTION
+% Now run stage-by-stage tasks
+
+% get dependencies of stages, referenced in both directions (aap.internal.dependenton
+% and aap.internal.dependencyof)
+
+aap=aas_builddependencymap(aap);
+
+% Use input and output stream information in XML header to find
+% out what data comes from where and goes where
+aap=aas_findinputstreamsources(aap);
+
+% Store these initial settings before any module specific customisation
+aap.internal.aap_initial=aap;
+aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
+
 % Save AAP structure
 %  could save aaps somewhere on S3 too?
 studypath=aas_getstudypath(aap);
@@ -159,23 +176,6 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aap.internal.aapversion=which('aa_doprocessing');
     save(aapsavefn,'aap');
 end;
-
-% THE MODULES IN AAP.TASKLIST.STAGES ARE RUN IF A CORRESPONDING DONE_ FLAG
-% IS NOT FOUND. ONE IS CREATED AFTER SUCCESSFUL EXECUTION
-% Now run stage-by-stage tasks
-
-% get dependencies of stages, referenced in both directions (aap.internal.dependenton
-% and aap.internal.dependencyof)
-
-aap=builddependencymap(aap);
-
-% Use input and output stream information in XML header to find
-% out what data comes from where and goes where
-aap=findinputstreamsources(aap);
-
-% Store these initial settings before any module specific customisation
-aap.internal.aap_initial=aap;
-aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
 
 % Choose where to run all tasks
 switch (aap.options.wheretoprocess)
@@ -192,19 +192,19 @@ switch (aap.options.wheretoprocess)
         aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
 end;
 
-% Check registered with drupal
+% Check registered with django
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     % Get bucket nid
     [aap waserror aaworker.bucket_drupalnid]=drupal_checkexists(aap,'bucket',aaworker.bucket);
     
     % Check all subjects are specified as datasets that belong to the job...
-%     attr=[];
-%     for i=1:length(aap.acq_details.subjects)
-%         attr.datasetref(i).nid=aap.acq_details.subjects(i).drupalnid;
-%     end;
-%     
-%     % Register analysis (or "job") with Drupal
-%     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
+    %     attr=[];
+    %     for i=1:length(aap.acq_details.subjects)
+    %         attr.datasetref(i).nid=aap.acq_details.subjects(i).drupalnid;
+    %     end;
+    %
+    %     % Register analysis (or "job") with Drupal
+    %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end;
 
 mytasks={'checkrequirements','doit'}; %
@@ -276,36 +276,37 @@ for l=1:length(mytasks)
                             
                             % allow multiple dependecies
                             for k0i=1:length(completefirst)
-                                
-                                switch(completefirst(k0i).sourcedomain)
-                                    case 'study'
-                                        tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                    case 'subject'
-                                        for i=1:length(aap.acq_details.subjects)
-                                            tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                        end;
-                                    case 'session'
-                                        for i=1:length(aap.acq_details.subjects)
-                                            for j=aap.acq_details.selected_sessions
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                                if (completefirst(k0i).sourcenumber>0)
+                                    switch(completefirst(k0i).sourcedomain)
+                                        case 'study'
+                                            tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
+                                        case 'subject'
+                                            for i=1:length(aap.acq_details.subjects)
+                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
                                             end;
-                                        end;
-                                    case 'internal'
-                                        % Get parallel parts of stage on
-                                        % which this one is dependent
-                                        loopvar=getparallelparts(aap,k0i);
-                                        
-                                        for x=1:length(loopvar)
-                                            if ischar(loopvar{x})
-                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                            elseif isstruct(loopvar{x})
-                                                try c={loopvar{x}.id};
-                                                catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                        case 'session'
+                                            for i=1:length(aap.acq_details.subjects)
+                                                for j=aap.acq_details.selected_sessions
+                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                                                end;
+                                            end;
+                                        case 'internal'
+                                            % Get parallel parts of stage on
+                                            % which this one is dependent
+                                            loopvar=getparallelparts(aap,k0i);
+                                            
+                                            for x=1:length(loopvar)
+                                                if ischar(loopvar{x})
+                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
+                                                elseif isstruct(loopvar{x})
+                                                    try c={loopvar{x}.id};
+                                                    catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                                    end
+                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
                                                 end
-                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
+                                                tbcf=[tbcf {previousdoneflag}];
                                             end
-                                            tbcf=[tbcf {previousdoneflag}];
-                                        end
+                                    end;
                                 end;
                             end;
                             taskmask.tobecompletedfirst=tbcf;
@@ -350,30 +351,32 @@ for l=1:length(mytasks)
                                 completefirst=aap.internal.inputstreamsources{k}.stream;
                                 tbcf=[];
                                 for k0i=1:length(completefirst)
-                                    switch(completefirst(k0i).sourcedomain)
-                                        case 'study'
-                                            tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                        case 'subject'
-                                            tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                        case 'session'
-                                            for j=aap.acq_details.selected_sessions
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                            end;
-                                        case 'internal'
-                                            % Get parallel parts of stage on
-                                            % which this one is dependent
-                                            loopvar=getparallelparts(aap,k0i);
-                                            for x=1:length(loopvar)
-                                                if ischar(loopvar{x})
-                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                                elseif isstruct(loopvar{x})
-                                                    try c={loopvar{x}.id};
-                                                    catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                    if (completefirst(k0i).sourcenumber>0)
+                                        switch(completefirst(k0i).sourcedomain)
+                                            case 'study'
+                                                tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
+                                            case 'subject'
+                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
+                                            case 'session'
+                                                for j=aap.acq_details.selected_sessions
+                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                                                end;
+                                            case 'internal'
+                                                % Get parallel parts of stage on
+                                                % which this one is dependent
+                                                loopvar=getparallelparts(aap,k0i);
+                                                for x=1:length(loopvar)
+                                                    if ischar(loopvar{x})
+                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
+                                                    elseif isstruct(loopvar{x})
+                                                        try c={loopvar{x}.id};
+                                                        catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                                        end
+                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
                                                     end
-                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
+                                                    tbcf=[tbcf {previousdoneflag}];
                                                 end
-                                                tbcf=[tbcf {previousdoneflag}];
-                                            end
+                                        end;
                                     end;
                                 end;
                                 taskmask.tobecompletedfirst=tbcf;
@@ -431,28 +434,30 @@ for l=1:length(mytasks)
                                     completefirst=aap.internal.inputstreamsources{k}.stream;
                                     tbcf=[];
                                     for k0i=1:length(completefirst)
-                                        switch(completefirst(k0i).sourcedomain)
-                                            case 'study'
-                                                tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                            case 'subject'
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                            case 'session'
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                            case 'internal'
-                                                % Get parallel parts of stage on
-                                                % which this one is dependent
-                                                loopvar=getparallelparts(aap,k0i);
-                                                for x=1:length(loopvar)
-                                                    if ischar(loopvar{x})
-                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                                    elseif isstruct(loopvar{x})
-                                                        try c={loopvar{x}.id};
-                                                        catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                        if (completefirst(k0i).sourcenumber>0)
+                                            switch(completefirst(k0i).sourcedomain)
+                                                case 'study'
+                                                    tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
+                                                case 'subject'
+                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
+                                                case 'session'
+                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                                                case 'internal'
+                                                    % Get parallel parts of stage on
+                                                    % which this one is dependent
+                                                    loopvar=getparallelparts(aap,k0i);
+                                                    for x=1:length(loopvar)
+                                                        if ischar(loopvar{x})
+                                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
+                                                        elseif isstruct(loopvar{x})
+                                                            try c={loopvar{x}.id};
+                                                            catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                                            end
+                                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
                                                         end
-                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
+                                                        tbcf=[tbcf {previousdoneflag}];
                                                     end
-                                                    tbcf=[tbcf {previousdoneflag}];
-                                                end
+                                            end;
                                         end;
                                     end;
                                     taskmask.tobecompletedfirst=tbcf;
@@ -495,34 +500,37 @@ for l=1:length(mytasks)
                         tbcf=[];
                         % allow multiple dependecies
                         for k0i=1:length(completefirst)
-                            switch(completefirst(k0i).sourcedomain)
-                                case 'study'
-                                    tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                case 'subject'
-                                    for i=1:length(aap.acq_details.subjects)
-                                        tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                    end;
-                                case 'session'
-                                    for i=1:length(aap.acq_details.subjects)
-                                        for j=aap.acq_details.selected_sessions
-                                            tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                            if (completefirst(k0i).sourcenumber>0)
+                                
+                                switch(completefirst(k0i).sourcedomain)
+                                    case 'study'
+                                        tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
+                                    case 'subject'
+                                        for i=1:length(aap.acq_details.subjects)
+                                            tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
                                         end;
-                                    end;
-                                case 'internal'
-                                    % Get parallel parts of stage on
-                                    % which this one is dependent
-                                    loopvar=getparallelparts(aap,k0i);
-                                    for x=1:length(loopvar)
-                                        if ischar(loopvar{x})
-                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                        elseif isstruct(loopvar{x})
-                                            try c={loopvar{x}.id};
-                                            catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                    case 'session'
+                                        for i=1:length(aap.acq_details.subjects)
+                                            for j=aap.acq_details.selected_sessions
+                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
+                                            end;
+                                        end;
+                                    case 'internal'
+                                        % Get parallel parts of stage on
+                                        % which this one is dependent
+                                        loopvar=getparallelparts(aap,k0i);
+                                        for x=1:length(loopvar)
+                                            if ischar(loopvar{x})
+                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
+                                            elseif isstruct(loopvar{x})
+                                                try c={loopvar{x}.id};
+                                                catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+                                                end
+                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
                                             end
-                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
+                                            tbcf=[tbcf {previousdoneflag}];
                                         end
-                                        tbcf=[tbcf {previousdoneflag}];
-                                    end
+                                end;
                             end;
                         end;
                         doneflag=aas_doneflag_getpath(aap,k);% this will be a directory
@@ -585,165 +593,7 @@ return;
 
 
 
-%% BUILD DEPENDENCY MAP
-function [aap]=builddependencymap(aap)
 
-aap.internal.dependenton=cell(length(aap.tasklist.main.module),1);
-aap.internal.dependencyof=cell(length(aap.tasklist.main.module),1);
-
-for k1=1:length(aap.tasklist.main.module)
-    % Default is no dependencies
-    completefirst=[];
-    
-    % first stage has no dependencies
-    if (k1>1)
-        
-        tobecompletedfirst=aap.tasklist.main.module(k1).tobecompletedfirst;
-        
-        % Defaults to previous stage
-        if (isempty(tobecompletedfirst))
-            tobecompletedfirst={'[previous]'};
-        end;
-        if (~iscell(tobecompletedfirst) && ~isempty(tobecompletedfirst))
-            tobecompletedfirst={tobecompletedfirst};
-        end;
-        
-        for k0i=1:length(tobecompletedfirst)
-            % previous stage, or something elsE?
-            if (strcmp(tobecompletedfirst{k0i},'[previous]'))  % empty now same as [previous]
-                completefirst(k0i).stage=k1-1;
-            elseif (strcmp(tobecompletedfirst{k0i},'[none]'))   %... so none must be explcitly specified
-            else
-                for k0=1:k1
-                    % allow full path of module to be provided
-                    stagetag=aas_getstagetag(aap,k0);
-                    if strcmp(stagetag,tobecompletedfirst{k0i})
-                        break;
-                    end;
-                    if (k0==k1)
-                        aas_log(aap,1,sprintf('%s is only to be executed after %s, but this is not in the task list',aap.tasklist.main.module(k1).name,tobecompletedfirst{k0i}));
-                    end;
-                end;
-                completefirst(k0i).stage=k0;
-            end;
-            % now find out what domain the done flags need to cover
-            % allow full path of module to be provided
-            [stagepath stagename]=fileparts(aap.tasklist.main.module(completefirst(k0i).stage).name);
-            completefirst(k0i).sourcedomain=aap.schema.tasksettings.(stagename)(aap.tasklist.main.module(completefirst(k0i).stage).index).ATTRIBUTE.domain;
-        end;
-        
-        aap.internal.dependenton{k1}=completefirst;
-        
-        % now produce indexing the other way, to map
-        % aap.internal.dependencyof
-        [stagepath stagename]=fileparts(aap.tasklist.main.module(k1).name);
-        thisstage=[];
-        thisstage.stage=k1;
-        thisstage.domain=aap.schema.tasksettings.(stagename)(aap.tasklist.main.module(k1).index).ATTRIBUTE.domain;
-        for k0i=1:length(completefirst)
-            aap.internal.dependencyof{completefirst(k0i).stage}=[aap.internal.dependencyof{completefirst(k0i).stage} thisstage];
-        end;
-    end;
-    
-end;
-
-
-%% CONNECT DATA PIPELINE BY IDENTIFYING SOURCE OF INPUT FROM OUTPUT STREAMS
-%   Works back through dependencies to determine where inputs come from
-function [aap]=findinputstreamsources(aap)
-
-% Make empty cell structures for input and output streams
-aap.internal.inputstreamsources=cell(length(aap.tasklist.main.module),1);
-aap.internal.outputstreamdestinations=cell(length(aap.tasklist.main.module),1);
-for k1=1:length(aap.tasklist.main.module)
-    aap.internal.inputstreamsources{k1}.stream=[];
-    aap.internal.outputstreamdestinations{k1}.stream=[];
-end;
-
-% Now go through each module and find its input dependencies
-%  then make bi-directional connections in inputstreamsources and
-%  outputstreamdestinations
-for k1=1:length(aap.tasklist.main.module)
-    [stagepath stagename]=fileparts(aap.tasklist.main.module(k1).name);
-    index=aap.tasklist.main.module(k1).index;
-    if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
-        inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
-        
-        for i=1:length(inputstreams.stream)
-            [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreams.stream{i},true,0,inf);
-            if isempty(stagethatoutputs)
-                aas_log(aap,false,sprintf('Stage %s required input %s is not an output of any stage it is dependent on - so hopefully a primary input?',stagename,inputstreams.stream{i}));
-            else
-                [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
-                sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
-                aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreams.stream{i},sourcestagename,mindepth));
-                stream=[];
-                stream.name=inputstreams.stream{i};
-                stream.sourcenumber=stagethatoutputs;
-                stream.sourcestagename=sourcestagename;
-                stream.depth=mindepth;
-                stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
-                if (isempty(aap.internal.inputstreamsources{k1}.stream))
-                    aap.internal.inputstreamsources{k1}.stream=stream;
-                else
-                    aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
-                end;
-                
-                stream=[];
-                stream.name=inputstreams.stream{i};
-                stream.destnumber=k1;
-                stream.deststagename=stagename;
-                stream.depth=mindepth;
-                stream.destdomain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
-                if (isempty(aap.internal.outputstreamdestinations{stagethatoutputs}.stream))
-                    aap.internal.outputstreamdestinations{stagethatoutputs}.stream=stream;
-                else
-                    aap.internal.outputstreamdestinations{stagethatoutputs}.stream(end+1)=stream;
-                end;
-            end;
-        end;
-    end;
-end;
-
-
-% RECURSIVELY SEARCH DEPENDENCIES
-%  to see which will have outputted each
-%  input required for this stage
-%  note that inputs can be affected by dependency map
-function [aap,stagethatoutputs,mindepth]=searchforoutput(aap,currentstage,outputtype,notthislevelplease,depth,mindepth)
-
-% is this branch ever going to do better than we already have?
-if (depth>=mindepth)
-    return;
-end;
-
-stagethatoutputs=[];
-
-% Search the current level, see if it provides the required output
-if (~notthislevelplease)
-    depth=depth+1;
-    [stagepath stagename]=fileparts(aap.tasklist.main.module(currentstage).name);
-    stagetag=aas_getstagetag(aap,currentstage);
-    index=aap.tasklist.main.module(currentstage).index;
-    
-    if (isfield(aap.schema.tasksettings.(stagename)(index),'outputstreams'))
-        outputstreams=aap.schema.tasksettings.(stagename)(index).outputstreams;
-        for i=1:length(outputstreams.stream)
-            if (strcmp(outputtype,outputstreams.stream{i}) || strcmp(outputtype,[stagetag '.' outputstreams.stream{i}]))
-                stagethatoutputs=currentstage;
-                mindepth=depth;
-            end;
-        end;
-    end;
-end;
-
-% If not found, search backwards further
-if (isempty(stagethatoutputs))
-    dependenton=aap.internal.dependenton{currentstage};
-    for i=1:length(dependenton)
-        [aap stagethatoutputs mindepth]=searchforoutput(aap,dependenton(i).stage,outputtype,false,depth,mindepth);
-    end;
-end;
 
 
 

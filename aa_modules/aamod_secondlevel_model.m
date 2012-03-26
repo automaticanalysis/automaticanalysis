@@ -5,7 +5,7 @@
 % Modified for aa by Rhodri Cusack May 2006
 %
 
-function [aap,resp]=aamod_secondlevel_model(aap,task)
+function [aap,resp]=aamod_secondlevel_model(aap,task,i)
 
 resp='';
 
@@ -17,7 +17,8 @@ switch task
         resp='SPM5 second level (RFX) model';
         
     case 'summary'
-        resp=sprintf('Second level model\n');
+        subjpath=aas_getsubjpath(i);
+        resp=sprintf('Second level model %s\n',subjpath);
         
     case 'report'
         
@@ -85,7 +86,18 @@ switch task
             SPM.nscan = nsub;
             
             for s=1:nsub
-                SPM.xY.P{s}   = confiles{s}(n,:);
+                foundit=false;
+                for fileind=1:size(confiles{s},1);
+                    [pth nme ext]=fileparts(confiles{s}(fileind,:));
+                    if strcmp(nme,sprintf('con_%04d',n))
+                        foundit=true;
+                        break;
+                    end;
+                end;
+                if (~foundit)
+                    aas_log(aap,true,sprintf('Contrast %d not found in subject %s',n,aap.acq_details.subjects(s).mriname));
+                end;
+                SPM.xY.P{s}   = confiles{s}(fileind,:);
                 SPM.xY.VY(s)   = spm_vol(SPM.xY.P{s});
             end
             

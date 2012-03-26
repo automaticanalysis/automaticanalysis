@@ -167,7 +167,7 @@ end
 function outstages=checkhasrequiredfields(outstages)
 
 % Check all required fields are present
-reqflds={'index','name','epiprefix','tobecompletedfirst','extraparameters','aliasfor'};
+reqflds={'index','name','epiprefix','tobecompletedfirst','extraparameters','aliasfor','remotestream'};
 for reqfldsind=1:length(reqflds)
     if (~isfield(outstages.module,reqflds{reqfldsind}))
         outstages.module.(reqflds{reqfldsind})=[];

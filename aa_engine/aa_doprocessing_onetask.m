@@ -95,15 +95,15 @@ switch (domain)
                             inp=aap.internal.inputstreamsources{k}.stream(inpind);
                             
                             % check for inputs at study level
-                            gotinputs=aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs);
+                            gotinputs=aas_retrieve_inputs(aap,inp,allinputs);
                             % ... subject level
                             for i=1:length(aap.acq_details.subjects)
-                                gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i)];
+                                gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp,allinputs,i)];
                             end;
                             % ... and session level
                             for i=1:length(aap.acq_details.subjects)
                                 for j=aap.acq_details.selected_sessions
-                                    gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i,j)];
+                                    gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp,allinputs,i,j)];
                                 end;
                             end;
                             if (isempty(gotinputs))
@@ -157,12 +157,12 @@ switch (domain)
                             
                             gotinputs={};
                             % ... and at study level
-                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs)];
+                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp,allinputs)];
                             % ... and at subject level
-                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i)];
+                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp,allinputs,i)];
                             % check for inputs from this stream at session level
                             for j=aap.acq_details.selected_sessions
-                                gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i,j)];
+                                gotinputs=[gotinputs; aas_retrieve_inputs(aap,inp,allinputs,i,j)];
                             end;
                             if (isempty(gotinputs))
                                 aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
@@ -216,9 +216,9 @@ switch (domain)
                         allinputs={};
                         for inpind=1:length(aap.internal.inputstreamsources{k}.stream)
                             inp=aap.internal.inputstreamsources{k}.stream(inpind);
-                            gotinputs=aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i,j);
-                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs,i)];
-                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp.name,inp.sourcenumber,allinputs)];
+                            gotinputs=aas_retrieve_inputs(aap,inp,allinputs,i,j);
+                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp,allinputs,i)];
+                            gotinputs=[gotinputs;aas_retrieve_inputs(aap,inp,allinputs)];
                             if (isempty(gotinputs))
                                 aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
                             end;

@@ -36,7 +36,8 @@
       <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
       <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
       <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
-   </directory_conventions>
+      <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
+  </directory_conventions>
    <options>
       <verbose desc='How verbose to be' ui='yesno'>1</verbose>
       <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>

@@ -1,4 +1,5 @@
 % AA module - run melodic tensor ICA from
+%
 
 function [aap,resp]=aamod_tensor_ica(aap,task)
 
@@ -47,7 +48,7 @@ switch task
         parms=[];
         parms.TR=TR/1000;  % ms to seconds
         parms.feat_file_list=allfn;
-        parms.highres_files=structfn;
+        parms.highres_files=allstructfn;
         parms.outputdirectory=studypth;
         
         aap=aas_template(aap,'aamod_tensorica_template.fsf', parms, fsffn);

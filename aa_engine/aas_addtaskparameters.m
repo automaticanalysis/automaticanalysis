@@ -83,6 +83,7 @@ end;
 if ~isfield(tasksettings_schema.inputstreams,'stream')
     tasksettings_schema.inputstreams.stream={};
 end;
+
 % Turn single streams into cells
 if ~iscell(tasksettings_schema.inputstreams.stream)
     tasksettings_schema.inputstreams.stream={tasksettings_schema.inputstreams.stream};
