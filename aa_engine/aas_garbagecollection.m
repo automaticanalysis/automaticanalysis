@@ -4,6 +4,10 @@ if (~strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aas_log(aap,true,'Remote file systems not currently supported by garbage collection');
 end
 
+if (~strcmp(aap.directory_conventions.outputformat,'splitbymodule'))
+    aas_log(aap,false,sprintf('No garbage collection as aap.directory_conventions.outputformat is %s',aap.directory_conventions.outputformat));
+else
+
 if (~exist('modulestoscan','var'))
     modulestoscan=1:length(aap.tasklist.main.module);
 end
@@ -69,6 +73,7 @@ if (~actuallydelete)
     aas_log(aap,false,sprintf('Garbage collection would delete %d files',numdel));
 else
     aas_log(aap,false,sprintf('Garbage collection deleted %d files',numdel));
+end
 end
 end
 
