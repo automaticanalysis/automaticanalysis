@@ -17,10 +17,6 @@ if (~exist('modulestoscan','var'))
     modulestoscan=1:length(aap.tasklist.main.module);
 end
 
-if (~exist('actuallydelete','var'))
-    actuallydelete=false;
-end;
-
 numdel=0;
 
 for modind=modulestoscan
@@ -71,10 +67,9 @@ for modind=modulestoscan
                 numdel=numdel+1;
             end
         end
-        if (actuallydelete)
-            fprintf(fid,'---end---');
-            fclose(fid);
-        end;
+        if 
+        fprintf(fid,'---end---');
+        fclose(fid);
     end
 end
 
