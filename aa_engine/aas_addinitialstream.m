@@ -1,4 +1,12 @@
+% function aap=aas_addinitialstream(aap,streamname,varargin)
 % Add initial stream
+% Examples of use:
+%  aap=aas_addinitialstream(aap,'structural',1,'/home/rcusack/my_structural.nii');
+%     % subject 1
+%
+%  aap=aas_addinitialstream(aap,'fieldmaps',3,{'/home/rcusack/my_fm1.nii','/home/rcusack/my_fm1.nii'});
+%     % subject 3
+
 
 function aap=aas_addinitialstream(aap,streamname,varargin)
 

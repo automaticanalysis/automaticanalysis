@@ -1,4 +1,6 @@
-% AA module - IMPORT FILES AS STREAM from NIFTI
+% Import files as stream
+% This module is typically added automatically by aas_addinitialstream  in
+% your user script
 
 function [aap,resp]=aamod_importfilesasstream(aap,task,varargin)
 
