@@ -3,6 +3,8 @@
     <tasklist>
         <currenttask domain='[unknown]' desc='Import files as stream' modality='MRI'>
             <filestoimport></filestoimport>
+            <subject></subject>
+            <session></session>
             <inputstreams>
             </inputstreams>
             <outputstreams>

@@ -43,8 +43,11 @@ switch (length(varargin)-1)
     case 0
         domain='study'
     case 1
+        aap.tasksettings.aamod_importfilesasstream(end).subject=varargin{1};
         domain='subject'
     case 2
+        aap.tasksettings.aamod_importfilesasstream(end).subject=varargin{1};
+        aap.tasksettings.aamod_importfilesasstream(end).subject=varargin{2};
         domain='session'
 end;
 aap.schema.tasksettings.aamod_importfilesasstream(end).ATTRIBUTE.domain=domain;

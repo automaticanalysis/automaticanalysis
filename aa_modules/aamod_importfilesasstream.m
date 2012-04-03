@@ -16,10 +16,18 @@ switch task
             case 0
                 currpth=aas_getstudypath(aap);
             case 1
+                if (aap.tasklist.currenttask.settings.subject~=varargin{1})
+                    return;
+                end;
                 currpth=aas_getsubjpath(aap,varargin{1});
             case 2
+                if (aap.tasklist.currenttask.settings.subject~=varargin{1} || aap.tasklist.currenttask.settings.session~=varargin{2})
+                    return;
+                end;
                 currpth=aas_getsesspath(aap,varargin{1},varargin{2});
         end;
+        
+        aas_log(aap,false,sprintf('Importing %d files',length(aap.tasklist.currenttask.settings.filestoimport)));
 
         % Copy the files to import into the current module's directory
         allnames={};
