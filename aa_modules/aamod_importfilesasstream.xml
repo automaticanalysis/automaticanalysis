@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='[unknown]' desc='Import files as stream' modality='MRI'>
+            <filestoimport></filestoimport>
+            <inputstreams>
+            </inputstreams>
+            <outputstreams>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+
