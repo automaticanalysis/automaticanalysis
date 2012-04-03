@@ -1,9 +1,4 @@
-% AA module - realignment
-% Realignment using SPM5
-% i=subject num
-% Rhodri Cusack MRC CBU 2004-6 based on original by Matthew Brett
-% Modified by Rik Henson 2006-8 to accept reslice "which" option
-% 	(plus more defaults can be passed)
+% AA module - EPI from NIFTI
 
 function [aap,resp]=aamod_epifromnifti(aap,task,i)
 

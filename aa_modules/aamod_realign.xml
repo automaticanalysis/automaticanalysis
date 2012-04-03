@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasksettings>
-        <aamod_realign domain='subject' desc='SPM motion correction' modality='MRI'>
+        <aamod_realign domain='subject' desc='SPM motion correction' modality='MRI' >
             <writemean>1</writemean>
             <reslicewhich>2</reslicewhich>
             ﻿<inputstreams>

@@ -72,7 +72,7 @@ end;
 
 
 % ...and update before user changes to reflect new task options
-aap.aap_beforeuserchanges.tasksettings.(taskname)=tasksettings;
+aap.aap_beforeuserchanges.tasksettings.(taskname)=aap.tasksettings.(taskname)(index);
 
 % And update schema
 

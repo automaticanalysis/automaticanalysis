@@ -53,6 +53,7 @@ else % add as main module
     mystage.epiprefix=epiprefix;
     mystage.tobecompletedfirst=tobecompletedfirst;
     mystage.extraparameters=extraparameters;
+    mystage.remotestream=[];
     
     if isempty(aap.tasklist.main.module) % start from empty list
         aap.tasklist.main(1).module(1)=mystage;
@@ -61,6 +62,7 @@ else % add as main module
     else % append to existing tasks
         if ~isfield(mystage,'aliasfor'), mystage.aliasfor=[]; end % djm
         aap.tasklist.main.module=[aap.tasklist.main.module mystage];
+        aap.aap_beforeuserchanges.tasklist.main.module=[aap.aap_beforeuserchanges.tasklist.main.module mystage];
     end
     
 end
