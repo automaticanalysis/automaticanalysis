@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- This module should not be added manually, but using the aas_addinitialstream command -->
 <aap>
     <tasklist>
         <currenttask domain='[unknown]' desc='Import files as stream' modality='MRI'>
-            <filestoimport></filestoimport>
-            <subject></subject>
-            <session></session>
+            <match></match>
+            <!-- For example, if executed at session domain, contains
+            <match><subject>XXX</subject><session>1</session><filenames>/my/file</filenames>
+            <match><subject>YYY</subject><session>3</session><filenames>/my/otherfile</filenames>
+            -->
             <inputstreams>
             </inputstreams>
             <outputstreams>
