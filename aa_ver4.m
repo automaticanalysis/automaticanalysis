@@ -6,6 +6,7 @@ addpath(fullfile(aapath,'aa_engine'));
 addpath(fullfile(aapath,'aa_modules'));
 addpath(fullfile(aapath,'aa_recipes_and_parametersets'));
 addpath(fullfile(aapath,'aa_config'));
+addpath(genpath(fullfile(aapath,'aa_toolbox')));
 addpath(fullfile(aapath,'cbusoftware'));
 addpath(fullfile(aapath,'examples'));
 addpath(fullfile(aapath,'extrafunctions'));
