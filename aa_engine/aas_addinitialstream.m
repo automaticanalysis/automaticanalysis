@@ -1,8 +1,12 @@
 % function aap=aas_addinitialstream(aap,streamname,varargin)
 % Add initial stream
 % Examples of use:
-%  aap=aas_addinitialstream(aap,'structural',1,'/home/rcusack/my_structural.nii');
-%     % subject 1
+%  aap=aas_addinitialstream(aap,'structural','CBUtestme','/home/rcusack/my_structural.nii');
+% If you use named subjects, you must put this command after the
+% corresponding aas_addsubject command
+%     % subject "CBUtestme" (must match aap.acq_details.subjects.mriname
+%     exactly
+%  aap=aas_addinitialstream(aap,'structural',1,'/home/rcusack/Neonatal_fMRI/analaysis_v1/aamod_realign_00001/NNU1056/motor/meanNNU1056_fMRIbal_0001.nii');
 %
 %  aap=aas_addinitialstream(aap,'fieldmaps',3,{'/home/rcusack/my_fm1.nii','/home/rcusack/my_fm1.nii'});
 %     % subject 3
@@ -10,12 +14,21 @@
 
 function aap=aas_addinitialstream(aap,streamname,varargin)
 
+
 % Set domain based on number of inputs
 switch (length(varargin)-1)
     case 0
         domain='study'
     case 1
         domain='subject'
+        if ischar(varargin{1})
+            subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
+            if (isempty(subjnum))
+                aas_log(aap,true,sprintf('Cannot find subject %s in list - is aas_addinitialstream command after aas_addsubject command?',varargin{1}));
+            end;
+        else
+            subjnum=varargin{1};
+        end;
     case 2
         domain='session'
 end;
@@ -73,9 +86,9 @@ aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsetting
 % Set domain based on number of inputs
 switch (length(varargin)-1)
     case 1
-        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=varargin{1};
+        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
     case 2
-        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=varargin{1};
+        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=varargin{2};
 end;
 aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match
