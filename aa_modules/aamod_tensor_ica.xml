@@ -5,7 +5,6 @@
             <inputstreams>
 ﻿                <stream>epi</stream>
                 <stream>epi_header</stream>
-                <stream>dicom_epi</stream>
                 <stream>structural</stream>
             </inputstreams>
             

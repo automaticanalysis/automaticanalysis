@@ -48,7 +48,7 @@ for k1=1:length(aap.tasklist.main.module)
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreams.stream{i},true,0,inf);
                 if isempty(stagethatoutputs)
-                    aas_log(aap,false,sprintf('Stage %s required input %s is not an output of any stage it is dependent on - so hopefully a primary input?',stagename,inputstreams.stream{i}));
+                    aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreams.stream{i}));
                 else
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;

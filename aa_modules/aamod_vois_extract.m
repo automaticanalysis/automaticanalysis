@@ -1,107 +1,114 @@
-% AA module - first level statistics
-% function [aap,resp]=aamod_vois_extract(aap,task,i)
-% You will need to make a local copy of this module and then modify it to
-%  reflect the particular experiment you conducted
-% First-level model based on original by Adam Hampshire MRC CBU Cambridge Feb 2006
-% Modified for aa by Rhodri Cusack MRC CBU Mar-May 2006
-% @@@ THIS IS NOT YET TRANSFORMED TO AA4 @@@
+% AA module -
+% function [aap,resp]=aamod_vois_extract(aap,task,i,j)
+% Rhodri Cusack 2006-2012
 
-function [aap,resp]=aamod_vois_extract(aap,task,i)
+function [aap,resp]=aamod_vois_extract(aap,task,i,j)
 
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';   % this module needs to be run once per subject
-
-    case 'description'
-        resp='SPM5 VOI extract';
-
-    case 'summary'
-        subjpath=aas_getsubjpath(i);
-        resp=sprintf('SPM5 VOI extract for %s\n',subjpath);
-
-    case 'report'
-
     case 'doit'
-
-        for r=1:length(aap.spmanalysis.vois)
+        vois=aap.tasklist.currenttask.settings.vois;
+        for r=1:length(vois)
             YROI=[];
-            for sess = aap.acq_details.selected_sessions
-                % which files?
-                files = aas_getimages(aap,i,sess,aap.tasklist.currenttask.epiprefix);                
-                
-                % Define ROI if not already done
-                if (isempty(YROI))
-                    Vepi=spm_vol(files(1,:));
-                    switch aap.spmanalysis.vois{r}.type
-                        case 'sphere'
-                            [Yepi XYZ]=spm_read_vols(Vepi);
-                            XYZ=XYZ';
-                            YROI=false(size(Yepi));
-                            roiradsq=aap.spmanalysis.vois{r}.radius ^ 2;
-                            for reg=1:size(aap.spmanalysis.vois{r}.centres,1)
-                                d=XYZ-repmat(aap.spmanalysis.vois{r}.centres(reg,:),[size(XYZ,1) 1]);
-                                d=sum(d.^2,2);
-                                YROI=YROI | reshape(d<=roiradsq,size(Yepi));
-                            end;
-                        case 'image'
-                            VROI=spm_vol(aap.spmanalysis.vois{r}.filename);
-                            if (any(VROI.dim~=Vepi.dim))
-                                aas_log(aap,1,fprintf('VOI images must have same dimensions (i.e., matrix size) as EPIs. Not true for VOI %s\n',aap.spmanalysis.vois{r}.filename));
-                            end;
-                            if (any(VROI.mat~=Vepi.mat))
-                                aas_log(aap,1,fprintf('VOI images must have space (voxel sizes, centre in .mat file) as EPIs. Not true for VOI %s\n',aap.spmanalysis.vois{r}.filename));
-                            end;
-                            YROI=spm_read_vols(VROI);
-                        otherwise
-                            aas_log(aap,1,fprintf('VOI type %s unknown (VOI %s)\n',aap.spmanalysis.vois{r}.type,aap.spmanalysis.vois{r}.name));
-                    end;
+            % which files?
+            files = aas_getimages_bystream(aap,i,j,'epi');
+            
+            % Define ROI if not already done
+            if (isempty(YROI))
+                Vepi=spm_vol(files(1,:));
+                switch vois(r).type
+                    case 'sphere'
+                        [Yepi XYZ]=spm_read_vols(Vepi);
+                        XYZ=XYZ';
+                        YROI=false(size(Yepi));
+                        roiradsq=vois(r).radius ^ 2;
+                        for reg=1:size(vois(r).centres,1)
+                            d=XYZ-repmat(vois(r).centres(reg,:),[size(XYZ,1) 1]);
+                            d=sum(d.^2,2);
+                            YROI=YROI | reshape(d<=roiradsq,size(Yepi));
+                        end;
+                    case 'image'
+                        VROI=spm_vol(vois(r).filename);
+                        if (any(VROI.dim~=Vepi.dim))
+                            aas_log(aap,1,fprintf('VOI images must have same dimensions (i.e., matrix size) as EPIs. Not true for VOI %s\n',vois(r).filename));
+                        end;
+                        if (any(VROI.mat~=Vepi.mat))
+                            aas_log(aap,1,fprintf('VOI images must have space (voxel sizes, centre in .mat file) as EPIs. Not true for VOI %s\n',vois(r).filename));
+                        end;
+                        YROI=spm_read_vols(VROI);
+                    otherwise
+                        aas_log(aap,1,fprintf('VOI type %s unknown (VOI %s)\n',vois(r).type,vois(r).name));
                 end;
-                
-                [x y z]=ind2sub(size(YROI),find(YROI>0));
-                XYZROI=[x,y,z];
-                % now extract data
-                y=spm_get_data(files,XYZROI');
-                    
-                % compute mean response
-                av=mean(y');
-                
-                % compute regional response in terms of first eigenvariate
-                [m n]   = size(y);
-                if m > n
-                    [v s v] = svd(spm_atranspa(y));
-                    s       = diag(s);
-                    v       = v(:,1);
-                    u       = y*v/sqrt(s(1));
-                else
-                    [u s u] = svd(spm_atranspa(y'));
-                    s       = diag(s);
-                    u       = u(:,1);
-                    v       = y'*u/sqrt(s(1));
-                end
-                d       = sign(sum(v));
-                u       = u*d;
-                v       = v*d;
-                Y       = u*sqrt(s(1)/n);
-                
-                aap.spmanalysis.vois{r}.data{sess}.raw=y;
-                aap.spmanalysis.vois{r}.data{sess}.firsteigenvalue=Y;
-                aap.spmanalysis.vois{r}.data{sess}.mean=y;
-
             end;
-
-            % and save
-            outdir=fullfile(aas_getsubjpath(aap,i),aap.directory_conventions.voidirname);
-            aas_makedir(aap,outdir);
-            outfn=fullfile(outdir,aap.directory_conventions.voifilename);
-            vois=aap.spmanalysis.vois;  
-            save(outfn,'vois');
-                
+            
+            [x y z]=ind2sub(size(YROI),find(YROI>0));
+            XYZROI=[x,y,z];
+            % now extract data
+            y=spm_get_data(files,XYZROI');
+            
+            % SANITY CHECK - ADD SIMULATED DATA
+            sanitycheck=false;
+            if (sanitycheck)
+                fprintf('***** SANITY CHECK, ADDING SIMULATED DATA TO VOIS ******');
+                % add a stripe (for testing!)
+                stripepos=mod(i,6)*5+15;
+                sine=10*sin([1:193]/20*2*pi)';
+                mask=(XYZROI(:,2)>=stripepos) .* (XYZROI(:,2)<(stripepos+5));
+                y(:,mask~=0)=y(:,mask~=0)+repmat(sine,[1 sum(mask)]);
+            end;
+            
+            % compute mean response
+            av=mean(y');
+            
+            % compute regional response in terms of first eigenvariate
+            nev=aap.tasklist.currenttask.settings.numberofeigenvalues;
+            [m n]   = size(y);
+            if m > n
+                [v s v] = svd(y'*y);
+                s       = diag(s);
+                v       = v(:,1:nev);
+                u       = y*v./repmat(sqrt(s(1:nev)'),[size(y,2) 1]);
+            else
+                [u s u] = svd(y*y');
+                s       = diag(s);
+                u       = u(:,1:nev);
+                v       = y'*u./repmat(sqrt(s(1:nev)'),[size(y,2) 1]);
+            end
+            d       = sign(sum(v));
+            u       = u.*repmat(d,[size(u,1) 1]);
+            v       = v.*repmat(d,[size(v,1) 1]);
+            Y       = u.*repmat(sqrt(s(1:nev)'/n),[size(u,1) 1]);
+            
+            vois(r).data.raw=y;
+            if (nev==1)
+                vois(r).data.firsteigenvalue=Y;
+            else
+                vois(r).data.topeigenvalues=Y;
+            end;
+            vois(r).data.mean=y;
+            
+            % Need to understand how this differs from the eigenvariate
+            % above [RC]
+            [coeff score latent]=princomp(vois(r).data.raw);
+            vois(r).pca.coeff=coeff;
+            vois(r).pca.score=score;
+            vois(r).pca.latent=latent;
+            vois(r).xyz=XYZROI;
+            
         end;
-
+        
+        % and save
+        outdir=aas_getsesspath(aap,i,j);
+        aas_makedir(aap,outdir);
+        
+        outfn=fullfile(outdir,sprintf('vois_%s.mat',strtrim(aap.tasklist.currenttask.settings.name)));
+        vois=vois;
+        save(outfn,'vois');
+        aap=aas_desc_outputs(aap,i,j','voi',outfn);
+        
     case 'checkrequirements'
-
+        
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;

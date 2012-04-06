@@ -37,24 +37,37 @@ switch task
             fn = aas_getfiles_bystream(aap,i,1,'epi_header');
             D = load(fn);                       
             if TR~=D.DICOMHEADERS{1}.RepetitionTime;
-                aas_log(aap,true,'found different TR in sunjects');
+                aas_log(aap,true,'found different TR in subjects');
             end
         end
+        
+        % Number of volumes
+        [s w]=aas_runfslcommand(aap,sprintf('fslinfo %s',subjfn));
+        if (s)
+            aas_log(aap,true,sprintf('Error getting number of volumes with fslinfo %s',w));
+        else
+            pos=strfind(w,[10 'dim4']);
+            pos2=strfind(w((pos(1)+5):end),10);
+            totalvolumes=w((pos+5):(pos+pos2(1)+4));
+            totalvolumes=str2double(totalvolumes);
+        end;
         
         % Now run this fsf
         studypth=aas_getstudypath(aap);
         fsffn=fullfile(studypth,'melodic.fsf');
         
         parms=[];
+        parms.totalvolumes=totalvolumes;
         parms.TR=TR/1000;  % ms to seconds
         parms.feat_file_list=allfn;
+        parms.numsubjects=length(aap.acq_details.subjects);
         parms.highres_files=allstructfn;
-        parms.outputdirectory=studypth;
+        parms.outputdirectory=[fullfile(studypth,sprintf('melodicoutput_%s', datestr(now,30))) '/'];
         
         aap=aas_template(aap,'aamod_tensorica_template.fsf', parms, fsffn);
         
         [s w]=aas_runfslcommand(aap,sprintf('feat %s',fsffn));
         if (s)
-            aas_log(aap,true,sprintf('Error from FEAT while trying to run melodic %s',w));
+           aas_log(aap,true,sprintf('Error from FEAT while trying to run melodic %s',w));
         end;
 end;

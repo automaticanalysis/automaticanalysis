@@ -1,10 +1,7 @@
 % Automatic Analysis function to retrieve image lists
-% function [imagefns]=aas_getimages(aap,i,j,prefixes,minimg,maximg)
+% function [imagefns md5]=aas_getimages_bystream(aap,i,j,streamname,varargin)
 %  select images from subject i session j
-%  only images beginning with 'prefixes' are returned
-%  either provide range using minimg, maximg (0,inf for all) or provide
-%   single parameter to get one image
-% Rhodri Cusack MRC CBU Cambridge, Nov 2005
+% Rhodri Cusack MRC CBU Cambridge, Nov 2005-2012
 
 function [imagefns md5]=aas_getimages_bystream(aap,i,j,streamname,varargin)
 
