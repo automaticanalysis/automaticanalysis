@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Correlate each subjects timecourse with mean timecourse' modality='MRI'>
+            <meanincludeseachsubject>1</meanincludeseachsubject>
+            <inputstreams>
+﻿                <stream>epi</stream>  
+                <stream>meanepitimecourse</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>moviecorr_meantimecourse</stream>  
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

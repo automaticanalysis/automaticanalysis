@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Get mean timecourse across subjects' modality='MRI'>
+            <inputstreams>
+﻿                <stream>epi</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>meanepitimecourse</stream>  
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
+

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_bet_modified domain='subject' desc='Skull stripping with BET' modality='MRI'>
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>BETmask</stream>
+                <stream>BETmesh</stream>
+            </outputstreams>
+            <bet_f_parameter>0.5</bet_f_parameter>
+        </aamod_bet_modified>
+    </tasksettings>
+</aap>
+
