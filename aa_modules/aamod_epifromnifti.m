@@ -16,11 +16,31 @@ switch task
         end;
         for j=1:length(aap.acq_details.subjects(i).seriesnumbers)
             allfn={};
-            if (iscell(aap.acq_details.subjects(i).seriesnumbers{j}))
-                % lots of files 3D
-                for fn=aap.acq_details.subjects(i).seriesnumbers{j}
-                    allfn=[allfn fulfile(aap.directory_conventions.rawdatadir,fn)];
-                end;
+            if (iscell(aap.acq_details.subjects(i).seriesnumbers{j}))                
+                % lots of files 3D    
+                % [AVG] we cannot cocatenate the single root with
+                % multiple 3D image files, so this expects already the
+                % full location of the 3D images instead...
+                try
+                    imageFns = aap.acq_details.subjects(i).seriesnumbers{j}{:};
+                catch
+                    imageFns = aap.acq_details.subjects(i).seriesnumbers{j};
+                end
+                
+                subjPath = aas_getsubjpath(aap,i);
+                
+                if ~exist(fullfile(subjPath, aap.acq_details.sessions(j).name), 'dir')
+                    mkdir(fullfile(subjPath, aap.acq_details.sessions(j).name));
+                end
+                
+                for f = 1:length(imageFns)
+                    % [AVG] Expects a cell array of images at the moment
+                    [root, fn, ext] = fileparts(imageFns{f});
+                    % [AVG] Copy file to module location
+                    unix(['cp ' imageFns{f} ' ' fullfile(subjPath, aap.acq_details.sessions(j).name, [fn ext])]);
+                    % [AVG] Add file to what will be described as output...
+                    allfn = [allfn fullfile(subjPath, aap.acq_details.sessions(j).name, [fn ext])];
+                end
             else
                 %Only one file, assume 4D
                 V=spm_vol(fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(i).seriesnumbers{j}));

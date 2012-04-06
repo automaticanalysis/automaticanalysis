@@ -25,11 +25,15 @@ switch task
         tic
         
         Sfn = aas_getfiles_bystream(aap,p,'structural');
-        DCMfn = aas_getfiles_bystream(aap,p,'structural_dicom_header');
         
-        % dcmhdr{n}.SeriesDescription
-        dcmhdr = [];
-        load(DCMfn);
+        try
+            DCMfn = aas_getfiles_bystream(aap,p,'structural_dicom_header');
+            
+            % dcmhdr{n}.SeriesDescription
+            dcmhdr = [];
+            load(DCMfn);
+        catch
+        end
         
         %% Denoise the images
         
@@ -38,7 +42,11 @@ switch task
         
         for d = aap.tasklist.currenttask.settings.structurals
             fprintf('Denoise structural image %s!\n', Sfn(d,:))
-            fprintf('\t structural type %s!\n', dcmhdr{d}.SeriesDescription)
+            try
+                fprintf('\t structural type %s!\n', dcmhdr{d}.SeriesDescription)
+            catch
+                fprintf('\t structural type UNKNOWN!\n')
+            end
             
             V = spm_vol(Sfn(d,:));
             Y = spm_read_vols(V);
@@ -128,12 +136,16 @@ switch task
         
         %% DESCRIBE OUTPUTS!
         
-        dcmhdr = {dcmhdr{aap.tasklist.currenttask.settings.structurals}};
-        save(DCMfn, 'dcmhdr')
+        try
+            dcmhdr = {dcmhdr{aap.tasklist.currenttask.settings.structurals}};
+            save(DCMfn, 'dcmhdr')
+            
+            aap=aas_desc_outputs(aap,p,'structural_dicom_header', DCMfn);
+        catch
+        end
         
         % Structural image after denoising
         aap=aas_desc_outputs(aap,p,'structural', outstruct);
-        aap=aas_desc_outputs(aap,p,'structural_dicom_header', DCMfn);
         
         % Residual image after denoising
         aap=aas_desc_outputs(aap,p,'denoiseResidual', outresid);

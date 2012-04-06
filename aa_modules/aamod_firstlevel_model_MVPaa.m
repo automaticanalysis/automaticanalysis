@@ -231,7 +231,7 @@ switch task
         Tanadir = (fullfile(anadir, 'temp'));
         
         % Find out how large the model{sess} should be (per session)
-        sessRegs = 1:size(model{1}.event,2);
+        sessRegs = 1:size(model{aap.acq_details.selected_sessions(1)}.event,2);
         
         for n = sessRegs
             try rmdir(Tanadir); catch; end
