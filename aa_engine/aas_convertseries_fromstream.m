@@ -104,7 +104,7 @@ for subdirind=1:length(subdirs)
                         if isempty(n)
                             error('Could not find TR in the DICOM header!')
                         end
-                        [~, r] = strtok(xstr(n:n+100), '=');
+                        [junk, r] = strtok(xstr(n:n+100), '=');
                         TR = str2double(strtok(strtok(r, '=')));
                     else
                         % If 2D sequence...
@@ -144,7 +144,7 @@ for subdirind=1:length(subdirs)
             end
         end
         conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
-        out=[out;conv.files];
+        out=[out(:);conv.files(:)];
     end
     out_allechoes{subdirind}=unique(out);
     if strfind(inputstream, 'dicom_structural')
