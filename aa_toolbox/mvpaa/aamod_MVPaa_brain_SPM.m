@@ -36,6 +36,9 @@ switch task
             end
         end           
         
+        % FWHM in millimetres
+        FWHMmm = aap.tasklist.currenttask.settings.FWHM;
+        
         V = spm_vol(Mimg);
             
         brainSize = V.dim;
@@ -67,12 +70,9 @@ switch task
             spm_write_vol(V, squeeze(Stats(:,:,:,c,2)));
         end        
         
-        % Detect if images we work with are normalised (to SPM)
-        if brainSize(1) == 79 && brainSize(2) == 95 && ...
-                (brainSize(3) == 68 || brainSize(3) == 69)
-            % Looks like the images have been normalised already
-        elseif aap.tasklist.currenttask.settings.normalise == 1
-            %% NORMALISE IMAGES
+        %% NORMALISE
+        if aap.tasklist.currenttask.settings.normalise == 1
+            
             fprintf('Normalising images... \n')
             
             normPars = aap.spm.defaults.normalise.write;
@@ -83,13 +83,13 @@ switch task
         end
                 
         %% SMOOTH IMAGES
-        if aap.tasklist.currenttask.settings.FWHM > 0
+        if FWHMmm > 0
             
             fprintf('Smoothing images... \n')
             for f = 2:size(Flist,1);
                 Q = Flist(f,:);
                 U = Flist(f,:); % No prefixes!
-                spm_smooth(Q,U,aap.tasklist.currenttask.settings.FWHM);
+                spm_smooth(Q,U,FWHMmm);
             end
         end
         
@@ -116,19 +116,41 @@ switch task
         %% Modify SPM!
         % Clear SPM.xCon
         SPM.xCon = [];
+        
         % Set correct path
         SPM.swd = aas_getsubjpath(aap,p);
-        % Set world coordinates for visualisation
-        SPM.xVol.M = [-2 0 0 80; 0 2 0 -114; 0 0 2 -52; 0 0 0 1];
-        SPM.xVol.iM = [-0.5 0 0 40; 0 0.5 0 57; 0 0 0.5 26; 0 0 0 1];
+        
+        % Set world coordinates for visualisation...
+        % ...which should already be found in the images...
+        SPM.xVol.M = V.mat;
+        SPM.xVol.iM = inv(SPM.xVol.M);
+        
+        % Size of the volume
         SPM.xVol.DIM = brainSize';
-        % Stolen from univariate... [MAY BREAK?]
-        SPM.xVol.R = [1, 39.7, 403.5 1085.1];
-        % Minimal smoothness... FWE will NOT work!
-        SPM.xVol.FWHM = [eps eps eps];
+        
+        % Smoothness of the volume...
+        % ...Get the number of mm per voxel...
+        mmVox = vox2mm(V);
+        % ...then get the FWHM       
+        SPM.xVol.FWHM = [FWHMmm FWHMmm FWHMmm];
+        SPM.xVol.FWHM = SPM.xVol.FWHM ./ mmVox;
+        
+        % Spm_resels_vol function
+        % NOTE: This is probably not valid for FWE still, since the
+        % searchlight procedure means each voxels is already "smoothed" to
+        % some extent...
+        SPM.xVol.R = spm_resels_vol( ...
+            spm_vol(fullfile(aas_getsubjpath(aap,p), 'con_0001.img')), ...
+            SPM.xVol.FWHM);
+        
+        % Included voxels
         [X Y Z] = ind2sub(SPM.xVol.DIM',find(mask));
         SPM.xVol.XYZ = [X';Y';Z'];
+        
+        % Length of voxels in analysis
         SPM.xVol.S = length(X);
+        
+        % Filehandle of resels per voxel image (i.e. none!)
         SPM.xVol.VRpv = [];
                 
         for c = 1:length(EP.contrasts)

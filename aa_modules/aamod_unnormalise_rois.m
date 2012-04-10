@@ -10,6 +10,11 @@ switch task
     case 'doit'
         tic
         
+        % Structural directory...
+        if ~exist(fullfile(aas_getsubjpath(aap,p), 'structurals'), 'dir')
+            mkdir(fullfile(aas_getsubjpath(aap,p), 'structurals'))
+        end
+        
         % Get segmentation masks we wish to use
         try
             SEGimg = aas_getfiles_bystream(aap,p,'segmasksExclusive');
