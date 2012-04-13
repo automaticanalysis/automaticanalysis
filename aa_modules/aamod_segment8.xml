@@ -2,11 +2,18 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM8 segment8' modality='MRI'>
+        
             <samp desc='Sampling distance (mm)'>1</samp>
-            <tpm desc='Full path to tissue probability map file'>/imaging/local/spm/spm8/toolbox/Seg/TPM.nii</tpm>
+            <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank default to Seg/TPM.nii -->
+            <vox desc='Voxel size of segmented images'>1.5</vox>
+            <affreg desc='Initial affine registration'>mni</affreg>
+        	<biasfwhm desc='FWHM of the bias field'>60</biasfwhm>
+            <biasreg desc='regularization for the bias field'>.001</biasreg>
+
             <inputstreams>
                 <stream>structural</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>structural</stream>
                 <stream>tissue_density_grey</stream>
@@ -18,6 +25,7 @@
                 <stream>normalisation_seg_sn</stream>
                 <stream>normalisation_seg_inv_sn</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist> 
 </aap>

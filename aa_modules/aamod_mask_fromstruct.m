@@ -160,9 +160,9 @@ switch task
         end
         
         % DIFFERENT STREAMS FOR DIFFERENT
-        aas_desc_outputs(aap,p,'segmasksZero',Zoutstream);
-        aas_desc_outputs(aap,p,'segmasksStrict',Soutstream);
-        aas_desc_outputs(aap,p,'segmasksExclusive',Eoutstream);
+        aap = aas_desc_outputs(aap,p,'segmasksZero',Zoutstream);
+        aap = aas_desc_outputs(aap,p,'segmasksStrict',Soutstream);
+        aap = aas_desc_outputs(aap,p,'segmasksExclusive',Eoutstream);
         
         time_elapsed
 end

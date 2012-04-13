@@ -212,11 +212,11 @@ switch task
         
         %% Describe the outputs
         
-        aas_desc_outputs(aap,p,'structural',Simg);
-        aas_desc_outputs(aap,p,1,'meanepi',mEPIimg);
+        aap = aas_desc_outputs(aap,p,'structural',Simg);
+        aap = aas_desc_outputs(aap,p,1,'meanepi',mEPIimg);
         
         for s = aap.acq_details.selected_sessions
-            aas_desc_outputs(aap,p,s,'epi',EPIimg{s});
+            aap = aas_desc_outputs(aap,p,s,'epi',EPIimg{s});
         end
         
         time_elapsed

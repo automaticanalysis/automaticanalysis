@@ -242,9 +242,9 @@ switch task
         
         %% Describe the outputs
         
-        aas_desc_outputs(aap,p,1,'meanepi',fullfile(pthM, ['p' fnM extM]));
-        aas_desc_outputs(aap,p,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
-        aas_desc_outputs(aap,p,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
+        aap = aas_desc_outputs(aap,p,1,'meanepi',fullfile(pthM, ['p' fnM extM]));
+        aap = aas_desc_outputs(aap,p,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
+        aap = aas_desc_outputs(aap,p,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
         
         time_elapsed
     case 'checkrequirements'
