@@ -3,6 +3,9 @@
 %  stream may be at study, subject or session level depending on number of
 %  parameters
 %  streamname is name of stream
+%
+% See a;sp aas_getfiles_bystream, which is intended for EPI images. 
+%
 % Rhodri Cusack MRC CBU Cambridge, Feb 2010
 
 function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
