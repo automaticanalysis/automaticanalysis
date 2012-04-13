@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasksettings>
-        <aamod_convert_epis domain='session' desc='Convert EPIs'>
+        <currenttask domain='session' desc='Convert EPIs'>
             <echoweightmethod>
                 t2star
             </echoweightmethod>
@@ -42,6 +42,6 @@
                 <stream>dummyscans</stream>
                 <stream>dummyscans_nulled</stream>
             </outputstreams>
-        </aamod_convert_epis>
+        </currenttask>
     </tasksettings>
 </aap>
