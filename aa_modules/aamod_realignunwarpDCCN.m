@@ -126,19 +126,19 @@ switch task
                 [pth nme ext]=fileparts(jobs{1}.spatial{1}.realignunwarp.data(s).scans{k});
                 rimgs=strvcat(rimgs,fullfile(pth,['u' nme ext]));
             end
-            aas_desc_outputs(aap,p,s,'epi',rimgs);
+            aap = aas_desc_outputs(aap,p,s,'epi',rimgs);
             
             % Get the realignment parameters...
             fn=dir(fullfile(pth,'rp_*.txt'));
             outpars = fullfile(pth,fn(1).name);                                   
             fn=dir(fullfile(pth,'*uw.mat'));
             outpars = strvcat(outpars, fullfile(pth,fn(1).name));
-            aas_desc_outputs(aap,p,s,'realignment_parameter',outpars);
+            aap = aas_desc_outputs(aap,p,s,'realignment_parameter',outpars);
             
             if s==1
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
-                aas_desc_outputs(aap,p,1,'meanepi',fullfile(pth,fn(1).name));
+                aap = aas_desc_outputs(aap,p,1,'meanepi',fullfile(pth,fn(1).name));
             end
         end
         

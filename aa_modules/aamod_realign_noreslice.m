@@ -103,15 +103,15 @@ switch task
             rimgs=[];
             
             sessdir=aas_getsesspath(aap,i,j);
-            aas_desc_outputs(aap,i,j,'epi',imgs{j});
+            aap = aas_desc_outputs(aap,i,j,'epi',imgs{j});
             
             fn=dir(fullfile(sessdir,'rp_*.txt'));
-            aas_desc_outputs(aap,i,j,'realignment_parameter',fn(1).name);
+            aap = aas_desc_outputs(aap,i,j,'realignment_parameter',fn(1).name);
             
             if (j==1)
                 % mean only for first session
                 fn=dir(fullfile(sessdir,'mean*.nii'));
-                aas_desc_outputs(aap,i,j,'meanepi',fn(1).name);
+                aap = aas_desc_outputs(aap,i,j,'meanepi',fn(1).name);
             end;
             
         end;

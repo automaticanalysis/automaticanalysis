@@ -65,13 +65,13 @@ switch task
             rimgs=strvcat(rimgs,['a' nme ext]);
         end
         sessdir=aas_getsesspath(aap,i,j);
-        aas_desc_outputs(aap,i,j,'epi',rimgs);
+        aap = aas_desc_outputs(aap,i,j,'epi',rimgs);
         
         sliceorder=aap.tasklist.currenttask.settings.sliceorder;
         sliceorderfn=fullfile(dirn,'sliceorder.mat');
         refslice=aap.tasklist.currenttask.settings.refslice;
         save(sliceorderfn,'sliceorder','refslice');
-        aas_desc_outputs(aap,i,j,'sliceorder',sliceorderfn);
+        aap = aas_desc_outputs(aap,i,j,'sliceorder',sliceorderfn);
         
     case 'checkrequirements'
         if (length(aap.tasklist.currenttask.settings.sliceorder)==0) && aap.tasklist.currenttask.settings.autodetectSO == 0

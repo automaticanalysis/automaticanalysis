@@ -223,7 +223,7 @@ switch task
         
         %% Describe the outputs
         
-        aas_desc_outputs(aap,p,'structural',Simg);
+        aap = aas_desc_outputs(aap,p,'structural',Simg);
         
         time_elapsed
     case 'checkrequirements'

@@ -48,7 +48,7 @@ switch task
         end;
         
         % Create the output stream
-        aas_desc_outputs(aap,i,j,'epi',allimgs);
+        aap = aas_desc_outputs(aap,i,j,'epi',allimgs);
         
         
     case 'checkrequirements'

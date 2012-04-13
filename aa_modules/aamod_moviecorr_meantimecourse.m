@@ -64,7 +64,7 @@ switch task
         V1.fname=fullfile(aas_getsesspath(aap,i,j),'moviecorr_meantimecourse.nii');
         V1.dt(1)=spm_type('float32');
         spm_write_vol(V1,corr(:,:,:));
-        aas_desc_outputs(aap,i,j,'moviecorr_meantimecourse','moviecorr_meantimecourse.nii');
+        aap = aas_desc_outputs(aap,i,j,'moviecorr_meantimecourse','moviecorr_meantimecourse.nii');
     case 'checkrequirements'
         
     otherwise

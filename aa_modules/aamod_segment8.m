@@ -1,15 +1,8 @@
+function [aap,resp] = aamod_segment8(aap,task,i)
 % AAMOD_SEGMENT8 Perform SPM8's segment8 segmentation.
 % [aap,resp] = aamod_segment8(aap,task,i)
 % These segmentations can then be fed into DARTEL or used in
 % non-DARTEL VBM.
-% Note that as of now (August 2009) this segmentation routine is
-% still listed as being somewhat experimental/in-progress, so there
-% may be changes down the road.
-% Jonathan Peelle
-% MRC Cognition and Brain Sciences Unit
-% % @@@ THIS IS NOT YET TRANSFORMED TO AA4 @@@
-
-function [aap,resp] = aamod_segment8(aap,task,i)
 
 resp='';
 
@@ -21,13 +14,19 @@ switch task
     case 'doit'
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % defaults...there might be a more flexible way to specify these
-        cfg.biasfwhm = 60;
-        cfg.biasreg = .0001;
-        %cfg.tpm = fullfile(spm('dir'), 'toolbox', 'Seg', 'TPM.nii');
-        cfg.tpm = aap.tasklist.currenttask.settings.tpm;
+        % defaults
         
-        if ~exist(cfg.tpm)
+        cfg.biasfwhm = aap.tasklist.currenttask.settings.biasfwhm;
+		cfg.biasreg = aap.tasklist.currenttask.settings.biasreg;
+
+	    % If no full path to TPM specified, try to use the standard SPM one
+	    if isempty(aap.tasklist.currenttask.settings.tpm)
+			cfg.tpm = fullfile(spm('dir'), 'toolbox', 'Seg', 'TPM.nii');
+		else		
+			cfg.tpm = aap.tasklist.currenttask.settings.tpm;
+		end	
+        
+        if ~exist(cfg.tpm, 'file')
             aas_log(aap, true, sprintf('Specified TPM %s not found.', cfg.tpm));
         end
         
@@ -42,12 +41,11 @@ switch task
         cfg.native = [1 1]; % native and DARTEL imported
         cfg.warped = [0 1]; % normalised modulated (not unmodulated)
         cfg.warpreg = 4;
-        cfg.affreg = 'mni';
+        cfg.affreg = aap.tasklist.currenttask.settings.affreg; % 'mni';
         cfg.bb = {ones(2,3)*NaN};
-        cfg.vox = 1.5;  % what things get resampled to
-        cfg.writedeffields = [0 0]; %[1 1]; % why not write them out
-        
-        
+        cfg.vox = aap.tasklist.currenttask.settings.vox; %  1.5;  % what things get resampled to
+        cfg.writedeffields = [0 0]; % [1 1] would write them out
+                
         
         % structural directory for this subject
         subjdir = aas_getsubjpath(aap,i);
@@ -55,11 +53,11 @@ switch task
         
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        %- first make sure spm_preproc8 is in the path, as a toolbox it
-        %might not be
+        % first make sure spm_preproc8 is in the path, as a toolbox it
+        % might not be
         
         if ~strcmp(spm('ver'),'SPM8')
-            error('%s requires SPM8.', mfilename);
+            aas_log(aap, 1, sprintf('%s requires SPM8.', mfilename));
         end
         
         if ~exist('spm_preproc_run')
@@ -69,8 +67,9 @@ switch task
             catch
             end
         end
+        
         if ~exist('spm_preproc_run')
-            error('spm_preproc8 is not in your Matlab path but needs to be.')
+            aas_log(aap, true, 'spm_preproc8 is not in your Matlab path but needs to be.');
         end
         
         
@@ -82,33 +81,25 @@ switch task
             end
         end
         if ~exist('optimNn')
-            error('optimNn is not in your Matlab path but needs to be.');
+            aas_log(aap, true, 'optimNn is not in your Matlab path but needs to be.');
         end
         
-        
-        
-        
-        % get the structural image
-        
-        %% (the below failed due to structuralfn sometimes being CBU*, and
-        %% sometimes MR*)
-        %if ~isfield(aap.acq_details.subjects(i), 'structuralfn') || isempty(aap.acq_details.subjects(i).structuralfn)
-        %    aap.acq_details.subjects(i).structuralfn = '.*';
-        %end
-        
+                      
+        % get the structural image              
         img = aas_getfiles_bystream(aap,i,'structural');
         
+        
         if isempty(img) || strcmp(img,'/')
-            error('Did not find a structural image.');
+            aas_log(aap, true, 'Did not find a structural image.');
         end
         
         % if more than one found, use the first one and hope this is right
         img = strtok(img(1,:));
         
-        fprintf('Found structural image: %s\n', img);
+        aas_log(aap, false, sprintf('Found structural image: %s\n', img));
         
         
-        % First write out bias-corrected image
+        % Write out bias-corrected image
         
         fprintf('Doing initial bias correction...\n');
         
@@ -116,7 +107,7 @@ switch task
         out = spm_preproc(img,estopts);
         [sn,isn]   = spm_prep2sn(out);
         
-        % only write out attenuation corrected image
+        % only write out bias corrected image
         writeopts.biascor = 1;
         writeopts.GM  = [0 0 0];
         writeopts.WM  = [0 0 0];
@@ -128,7 +119,7 @@ switch task
         % get the name of the bias-corrected image
         [pth, nm, ext] = fileparts(img);
         img = fullfile(pth, ['m' nm ext]);
-        fprintf('Done with initial bias correction. Image saved to: %s.\n', img);
+        aas_log(aap, false, sprintf('Done with initial bias correction. Image saved to: %s.\n', img));
         
         
         
@@ -174,9 +165,9 @@ switch task
         fprintf('done in %.1f hours.\n', toc/60/60);
         
         seg8fn=[spm_str_manip(img,'sd') '_seg8.mat'];
-        aap=aas_desc_outputs(aap,i,'normalisation_seg8',seg8fn);
+        aap = aas_desc_outputs(aap,i,'normalisation_seg8',seg8fn);
 
-        aap=aas_desc_outputs(aap,i,'structural',img);
+        aap = aas_desc_outputs(aap,i,'structural',img);
 
         [pth nme ext]=fileparts(img);
         tiss={'grey','white','csf'};

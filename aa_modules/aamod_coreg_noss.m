@@ -53,7 +53,7 @@ switch task
           
         spm_get_space(structfn, M*spm_get_space(structfn));
        
-        aas_desc_outputs(aap,i,'structural',structfn);
+        aap = aas_desc_outputs(aap,i,'structural',structfn);
 
         % Save graphical output - this will now be done by report task
 %          figure(spm_figure('FindWin'));            
