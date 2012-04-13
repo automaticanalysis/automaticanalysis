@@ -21,46 +21,13 @@ for i=1:length(aap.acq_details.subjects)
     fprintf('Subject %s\n',aap.acq_details.subjects(i).mriname);
     for j=1:length(aap.acq_details.sessions)
         sesspth=aas_getsesspath(aap,i,j);
-        H=load(fullfile(sesspth,'dicom_headers.mat'));
-        H=H.DICOMHEADERS(1);        
-        ucMode=getpheonix(H,'sSliceArray.ucMode');
-        switch ucMode
-            case '0x1'
-                sliceorder='ascending sequential';
-            case '0x2'
-                sliceorder='descending sequential';
-            case '0x4'
-                sliceorder='ascending interleaved';
-            otherwise
-                sliceorder=sprintf('unrecognised (%s)',ucMode);
-        end;
-        fprintf('  Session %s slice order %s\n',aap.acq_details.sessions(j).name,sliceorder);
-                
+        fprintf('Session %s ',aap.acq_details.sessions(i).name);
+        aas_dumpsliceorder_fromdicom(fullfile(sesspth,'dicom_headers.mat'));
+
     end;
 end;
 
 end
 
-function [fieldvalue]=getpheonix(H,fieldname)
-fieldvalue='###FIELDNOTFOUND###';
-for i=1:length(H{1}.CSASeriesHeaderInfo)
-    if (strcmp(H{1}.CSASeriesHeaderInfo(i).name,'MrPhoenixProtocol')) 
-        value=H{1}.CSASeriesHeaderInfo(i).item(1).val;
-        break
-    end;
-end;
 
-pos1=strfind(value,'### ASCCONV BEGIN ###');
-value=value(pos1:end);
-[junk value]=strtok(value,10);
-while(length(value)>0)
-    [fld value]=strtok(value,10);
-    [nme rem]=strtok(fld);
-    [eq rem]=strtok(rem);
-    if (strcmp(fieldname,nme))
-        fieldvalue=strtrim(rem);
-        break;
-    end;
-end;
-end
     
