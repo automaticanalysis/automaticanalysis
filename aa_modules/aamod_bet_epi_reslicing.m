@@ -21,16 +21,11 @@ switch task
         
         % RESLICE THE MASKS & MESHES
         EPIfn = aas_getfiles_bystream(aap,i,1,'meanepi');
-        if size(EPIfn,1) > 1
-            % Not warped!
-            for a = 1:size(EPIfn,1)
-                if ~strcmp(EPIfn(a,1), 'w')
-                    EPIfn = EPIfn(a,:);
-                    break
-                end
-            end
-            EPIfn = EPIfn(1,:);
-            fprintf('\tSeveral mean EPIs found, considering: %s\n', EPIfn)
+        
+        % With the mean EPI, we just use the first one (there really should be only one)
+        if size(EPIimg,1) > 1
+            EPIimg = deblank(EPIimg(1,:));
+            fprintf('\tWARNING: Several mean EPIs found, considering: %s\n', EPIimg)
         end
         
         fprintf('Reslicing brain masks to mean EPI\n')
@@ -48,7 +43,9 @@ switch task
    
         % Get files to reslice
         outMask=aas_getfiles_bystream(aap,i,'BETmask');
-        spm_reslice(strvcat(EPIfn, outMask), resFlags);         
+        
+        spm_reslice(strvcat(EPIfn, outMask), resFlags);
+        
         % Get the images we resliced
         outMaskEPI = '';
         for d = 1:size(outMask,1)
@@ -57,7 +54,7 @@ switch task
         end
         
         %% DESCRIBE OUTPUTS!
-        aap=aas_desc_outputs(aap,i,'epiBETmask',outMask);
+        aap=aas_desc_outputs(aap,i,'epiBETmask',outMaskEPI);
         
         time_elapsed
 end

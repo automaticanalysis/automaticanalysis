@@ -10,7 +10,12 @@
                 <stream>BETmask</stream>
                 <stream>BETmesh</stream>
             </outputstreams>
+            
+            <!-- BET F parameter - from 0 to 1 (least to most agressive skull stripping -->
             <bet_f_parameter>0.5</bet_f_parameter>
+            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            <structural>1</structural>
+            
         </aamod_bet_modified>
     </tasksettings>
 </aap>

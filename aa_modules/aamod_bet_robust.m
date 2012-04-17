@@ -35,27 +35,15 @@ switch task
         Simg = aas_getfiles_bystream(aap,p,'structural');
         mEPIimg = aas_getfiles_bystream(aap,p,1,'meanepi');
         
-        % Cheap and cheerful way of ensuring only one file is considered!
+        % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
-            for a = 1:size(Simg,1)
-                % Not warped or betted!
-                if ~strcmp(Simg(a,1), 'w') && ~strcmp(Simg(a,1), 'b')
-                    Simg = deblank(Simg(a,:));
-                    break
-                end
-            end
-            fprintf('\tSeveral structurals found, considering: %s\n', Simg)
+            Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
+            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
         end
+        % With the mean EPI, we just use the first one (there really should be only one)
         if size(mEPIimg,1) > 1
-            % Not warped!
-            for a = 1:size(mEPIimg,1)
-                if ~strcmp(mEPIimg(a,1), 'w')
-                    mEPIimg = deblank(mEPIimg(a,:));
-                    break
-                end
-            end
-            mEPIimg = mEPIimg(1,:);
-            fprintf('\tSeveral mean EPIs found, considering: %s\n', mEPIimg)
+            mEPIimg = deblank(mEPIimg(1,:));
+            fprintf('\tWARNING: Several mean EPIs found, considering: %s\n', mEPIimg)
         end
         
         if aap.tasklist.currenttask.settings.premask
@@ -125,7 +113,7 @@ switch task
         outStruct=fullfile(pth,['bet_' nme ext]);
         % Run BET [-R Using robust setting to avoid neck!]   
         fprintf('1st BET pass (recursive) to find optimal centre of gravity and radius\n')
-        [~, w]=aas_runfslcommand(aap, ...
+        [junk, w]=aas_runfslcommand(aap, ...
             sprintf('bet %s %s -f %f -v -R',Simg,outStruct, ...
             aap.tasklist.currenttask.settings.bet_f_parameter));
         
@@ -150,7 +138,7 @@ switch task
         if aap.tasklist.currenttask.settings.masks
             fprintf('2nd BET pass extracting brain masks \n')
             % Run BET [-A Now let's get the brain masks and meshes!!]
-            [~, w]=aas_runfslcommand(aap, ...
+            [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('bet %s %s -f %f -c %0.4f %0.4f %0.4f -r %s -v -A',Simg,outStruct, ...
                 aap.tasklist.currenttask.settings.bet_f_parameter, COG(1), COG(2), COG(3), SRad)...
                 );
@@ -186,46 +174,6 @@ switch task
         V.fname = fullfile(pth, ['bet_' nme '_brain_mask' ext]);
         spm_write_vol(V,mY);
         
-        %% RESLICE THE MASKS & MESHES
-        
-        fprintf('Reslicing brain masks to mean EPI\n')
-        % Get realignment defaults
-        defs = aap.spm.defaults.realign;
-
-        % Flags to pass to routine to create resliced images
-        % (spm_reslice)
-        resFlags = struct(...
-            'interp', defs.write.interp,...       % interpolation type
-            'wrap', defs.write.wrap,...           % wrapping info (ignore...)
-            'mask', defs.write.mask,...           % masking (see spm_reslice)
-            'which', 1,...     % what images to reslice
-            'mean', 0);           % write mean image
-        
-        % Get the images to reslice
-        D = dir(fullfile(pth, 'bet*mask*'));
-        outMask = '';
-        for d = 1:length(D)
-            outMask = strvcat(outMask, fullfile(pth, D(d).name));
-        end
-        
-        % Reslice
-        spm_reslice(strvcat(mEPIimg, outMask), resFlags); 
-        
-        % Get the images we resliced
-        D = dir(fullfile(pth, 'rbet*mask*'));
-        outMaskEPI = '';
-        for d = 1:length(D)
-            % Additionally, convert into a binary image...
-            img2mask(fullfile(pth, D(d).name))
-            outMaskEPI = strvcat(outMaskEPI, fullfile(pth, D(d).name));
-        end
-        
-        % Get also the meshes
-        D = dir(fullfile(pth, 'bet*mesh*'));
-        outMesh = '';
-        for d = 1:length(D)
-            outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
-        end
         
         %% DIAGNOSTIC IMAGE
         % Save graphical output to common diagnostics directory
@@ -268,10 +216,23 @@ switch task
         
         %% DESCRIBE OUTPUTS!
         
+        % Get the mask images
+        D = dir(fullfile(pth, 'bet*mask*'));
+        outMask = '';
+        for d = 1:length(D)
+            outMask = strvcat(outMask, fullfile(pth, D(d).name));
+        end
+        
+        % Get also the meshes
+        D = dir(fullfile(pth, 'bet*mesh*'));
+        outMesh = '';
+        for d = 1:length(D)
+            outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
+        end
+        
         % Structural image after BETting
         aap=aas_desc_outputs(aap,p,'structural',outStruct);
         aap=aas_desc_outputs(aap,p,'BETmask',outMask);
-        aap=aas_desc_outputs(aap,p,'epiBETmask',outMaskEPI);
         if aap.tasklist.currenttask.settings.masks
             aap=aas_desc_outputs(aap,p,'BETmesh',outMesh);
         end
