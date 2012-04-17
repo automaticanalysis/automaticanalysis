@@ -71,12 +71,3 @@ switch task
 %     save(fullfile(dir_seg8,'structuralstats_seg8.mat'),'S_seg8');    
 %   end
 end
-
-
-
-
-
-
-
-
-

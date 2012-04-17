@@ -55,13 +55,15 @@ switch task
             SPM.xBF.order      = 1;                 % order of basis set
         end
         
+        firstsess=aap.acq_details.selected_sessions(1);
+        
         %% retrieve TR from DICOM header
         % if TR is manually specified (not recommended as source of error)
-        if (isfield(aap.tasklist.currenttask.settings,'TR'))
+        if isfield(aap.tasklist.currenttask.settings,'TR') && ...
+                ~isempty(aap.tasklist.currenttask.settings.TR)
             SPM.xY.RT =aap.tasklist.currenttask.settings.TR;
         else
             % Get TR from DICOM header checking they're the same for all sessions
-            firstsess=aap.acq_details.selected_sessions(1);
             for sess=aap.acq_details.selected_sessions
                 DICOMHEADERS=load(aas_getfiles_bystream(aap,p,sess,'epi_header'));
                 try
