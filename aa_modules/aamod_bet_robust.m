@@ -35,27 +35,15 @@ switch task
         Simg = aas_getfiles_bystream(aap,p,'structural');
         mEPIimg = aas_getfiles_bystream(aap,p,1,'meanepi');
         
-        % Cheap and cheerful way of ensuring only one file is considered!
+        % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
-            for a = 1:size(Simg,1)
-                % Not warped or betted!
-                if ~strcmp(Simg(a,1), 'w') && ~strcmp(Simg(a,1), 'b')
-                    Simg = deblank(Simg(a,:));
-                    break
-                end
-            end
-            fprintf('\tSeveral structurals found, considering: %s\n', Simg)
+            Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
+            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
         end
+        % With the mean EPI, we just use the first one (there really should be only one)
         if size(mEPIimg,1) > 1
-            % Not warped!
-            for a = 1:size(mEPIimg,1)
-                if ~strcmp(mEPIimg(a,1), 'w')
-                    mEPIimg = deblank(mEPIimg(a,:));
-                    break
-                end
-            end
-            mEPIimg = mEPIimg(1,:);
-            fprintf('\tSeveral mean EPIs found, considering: %s\n', mEPIimg)
+            mEPIimg = deblank(mEPIimg(1,:));
+            fprintf('\tWARNING: Several mean EPIs found, considering: %s\n', mEPIimg)
         end
         
         if aap.tasklist.currenttask.settings.premask
