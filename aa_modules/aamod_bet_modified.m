@@ -23,9 +23,9 @@ switch task
         Sfn = aas_getfiles_bystream(aap,i,'structural');
         
         % Which file is considered, as determined by the structural parameter!
-        if size(Simg,1) > 1
-            Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
+        if size(Sfn,1) > 1
+            Sfn = deblank(Sfn(aap.tasklist.currenttask.settings.structural, :));
+            fprintf('\tWARNING: Several structurals found, considering: %s\n', Sfn)
         end
         
         [pth nme ext]=fileparts(Sfn);
