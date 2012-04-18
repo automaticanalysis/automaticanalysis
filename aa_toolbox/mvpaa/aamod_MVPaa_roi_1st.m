@@ -50,9 +50,14 @@ switch task
         for r = 1:ROInum
             [Rpth Rfn Rext] = fileparts(deblank(ROIimg(r,:)));
             
-            % Need to extract betas from normalised brains for each: subject, ROI,
-            % voxel, epoch, quadrant, subblock
+            % Extract betas from each: ROI, voxel, condition, subblock, session
             ROI = int8(spm_read_vols(spm_vol(fullfile(Rpth, [Rfn Rext]))));
+            
+            % Check that the ROI size is equal to the data size
+            if any(size(ROI) ~= size(data{1,1,1}));
+                aas_log(aap, true, 'Your ROI size is different from your data size!');
+            end
+            
             % Trick for non-binary ROIs...
             if length(unique(ROI))>2
                 ROI = ROI > 0;
