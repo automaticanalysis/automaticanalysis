@@ -22,20 +22,11 @@ switch task
         % Let us use the native space...
         Sfn = aas_getfiles_bystream(aap,i,'structural');
         
-        aas_log(aap,false,'Bet modified working on normalized data');
-        % Cheap and cheerful way of ensuring only one file is considered!
-        if size(Sfn,1) > 1
-            for a = 1:size(Sfn,1)
-                [pth nme ext]=fileparts(Sfn(a,:));
-                % Not warped or betted!
-                if ~strcmp(nme(1), 'm') && ~strcmp(nme(1), 'b')
-                    Sfn = Sfn(a,:);
-                    break
-                end
-            end
-            fprintf('\tSeveral structurals found, considering: %s\n', Sfn)
+        % Which file is considered, as determined by the structural parameter!
+        if size(Simg,1) > 1
+            Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
+            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
         end
-        
         
         [pth nme ext]=fileparts(Sfn);
         
@@ -73,9 +64,7 @@ switch task
         outMesh = '';
         for d = 1:length(D)
             outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
-        end       
-        
-        
+        end
        
         % DESCRIBE OUTPUTS!
         % Structural image after BETting

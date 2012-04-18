@@ -1,5 +1,5 @@
 % MVPAA Shrinkage ==> THIS IS A FIRST LEVEL FUNCTION
-% This does not actually do shrinkage, but it does remove the residuals
+% This does not actually do shrinkage, but it does obtain the residuals
 % from the data, slightly aiding the analysis (sometimes)
 
 function Resid = mvpaa_shrinkage(aap, Betas)
