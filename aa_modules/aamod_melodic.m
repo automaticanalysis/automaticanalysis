@@ -8,15 +8,6 @@ function [aap,resp]=aamod_melodic(aap,task,p)
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';  % this module needs to be run once per subject
-        
-    case 'description'
-        resp='SPM5 align';
-        
-    case 'summary'
-        subjpath=aas_getsubjpath(p);
-        resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
@@ -39,8 +30,8 @@ switch task
         %% PLAN
         % 3) save all our important shenanigans
         
-        %% COCATENATE THE DATA...
-        fprintf('\nCocatenating the data')
+        %% CONCATENATE THE DATA...
+        fprintf('\nConcatenating the data')
         
         data4D = fullfile(aas_getsubjpath(aap,p), sprintf('4Ddata_%s.nii', mriname));
         

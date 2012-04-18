@@ -22,11 +22,13 @@ switch task
         % Let us use the native space...
         Sfn = aas_getfiles_bystream(aap,i,'structural');
         
+        aas_log(aap,false,'Bet modified working on normalized data');
         % Cheap and cheerful way of ensuring only one file is considered!
         if size(Sfn,1) > 1
             for a = 1:size(Sfn,1)
+                [pth nme ext]=fileparts(Sfn(a,:));
                 % Not warped or betted!
-                if ~strcmp(Sfn(a,1), 'w') && ~strcmp(Sfn(a,1), 'b')
+                if ~strcmp(nme(1), 'm') && ~strcmp(nme(1), 'b')
                     Sfn = Sfn(a,:);
                     break
                 end
