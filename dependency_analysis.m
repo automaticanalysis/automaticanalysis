@@ -1,9 +1,12 @@
+clc % Clear the screen before proceeding
+
 % We need to be inside the toolbox to work on it
 cd(fileparts(mfilename('fullpath')))
 
 toolboxPath = pwd;
 
 fldrDir = genpath(toolboxPath);
+addpath(fldrDir); % To add the path to this toolbox!
 
 ind = 0;
 
@@ -67,14 +70,17 @@ for ind = 1:length(Dependencies)
 end
 
 unused_deps = {};
+fprintf('\n')
 
 % Find out any functions that are not used by anything!
 for ind = 1:length(Dependencies)
     [path name] = fileparts(Dependencies(ind).name);
     if Dependencies(ind).number == 0 && ... % The number of uses of this function must be 0 in total...
-            ~strcmp(name(1:5), 'aamod') && ... % ...and it must not be a module...
-        ~strcmp(name(1:7), 'aa_user') % ... nor a user script
+            isempty(strfind(name, 'aamod')) && ... % ...and it must not be a module...
+        isempty(strfind(name, 'aa_user')) % ... nor a user script
         unused_deps{end+1} = Dependencies(ind).name;
+        
+        fprintf([Dependencies(ind).name '\n']);
     end         
 end
 
