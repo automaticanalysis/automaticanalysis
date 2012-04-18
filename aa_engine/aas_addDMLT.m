@@ -1,10 +1,10 @@
 % Adds an event to a model
-% function aap=aid_addcontrast(aap, modulename, subject, contrastname, matrix)
+% function aap=aid_addcontrast(aap, modulename, subject, DMLTname,DMLTvector)
 % 
 % modulename = name of module (e.g.,'aamod_MVPaa_roi_1st') for contrast
 % subject = subject for this contrast
-% contrastname = name of the contrast matrix
-% matrix = contrast matrix itself
+% DMLTname = name of the labelling (e.g. 'FacesVSHouses')
+% DMLTvector = vector containing category to image mapping (e.g. [1 2 2 1])
 
 function aap=aas_addDMLT(aap,modulename,subject,DMLTname,DMLTvector)
 
