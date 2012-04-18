@@ -32,7 +32,6 @@ resp='';
 
 switch task
     case 'doit'
-        tic
         
         % @@@ FURTHER IMPROVEMENTS?
         % DECIDE ORDER FROM DISCRETE FOURIER OF THE FIELDMAP ITSELF?  
@@ -246,7 +245,6 @@ switch task
         aap = aas_desc_outputs(aap,p,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
         aap = aas_desc_outputs(aap,p,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'Need to trim or skull strip structural\n' );
 end

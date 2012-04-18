@@ -23,8 +23,6 @@ switch task
         
     case 'doit'
         
-        tic
-        
         Simg = aas_getfiles_bystream(aap,p,'structural');
         
         % Which file is considered, as determined by the structural parameter!
@@ -118,5 +116,4 @@ switch task
         % Structural image after BETting
         aap=aas_desc_outputs(aap,p,'structural', Simg);
         
-        time_elapsed
 end

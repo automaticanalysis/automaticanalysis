@@ -26,10 +26,7 @@ switch task
     case 'report'
         
     case 'doit'
-        
-        tic
-        
-        
+                
         
         %% PLAN
         % 1) Get the raw data (or betas - usually)
@@ -52,12 +49,7 @@ switch task
         
         %% DESCRIBE OUTPUTS!
         
-        % Structural image after BETting
-        aap=aas_desc_outputs(aap,p,'structural', strvcat(... 
-            aas_getfiles_bystream(aap,p,'structural'), ...
-            outStruct));
-        aap=aas_desc_outputs(aap,p,'BETmask',outMask);
-        aap=aas_desc_outputs(aap,p,'epiBETmask',outMaskEPI);
+        % DMLT outputs
+        aap=aas_desc_outputs(aap,p,'DMLT',outDMLT);
         
-        time_elapsed
 end

@@ -22,7 +22,6 @@ switch task
     case 'report'
         
     case 'doit'
-        tic
         
         Sfn = aas_getfiles_bystream(aap,p,'structural');
         
@@ -150,5 +149,4 @@ switch task
         % Residual image after denoising
         aap=aas_desc_outputs(aap,p,'denoiseResidual', outresid);
         
-        time_elapsed
 end

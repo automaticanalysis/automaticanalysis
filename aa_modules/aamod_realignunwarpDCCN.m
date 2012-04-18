@@ -142,8 +142,6 @@ switch task
             end
         end
         
-        time_elapsed
-        
     case 'checkrequirements'
         
     otherwise

@@ -20,7 +20,6 @@ switch task
     case 'report'
         
     case 'doit'
-        tic
         
         % Defaults specified in this path
         % You can set your own settings in your own copy of the XML or recipe!
@@ -94,5 +93,4 @@ switch task
         
         aap=aas_desc_outputs(aap,p,'fieldmap',outstream);
         
-        time_elapsed
 end

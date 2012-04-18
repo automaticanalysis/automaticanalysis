@@ -32,7 +32,6 @@ resp='';
 
 switch task
     case 'doit'
-        tic
         
         % Load the parameters
         PEparams = []; order = [];
@@ -58,7 +57,6 @@ switch task
         %% Describe the outputs
         aas_desc_outputs(aap,p,s,'epi',PEimg);
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'Need to trim or skull strip structural\n' );
 end

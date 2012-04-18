@@ -13,8 +13,6 @@ switch task
         
     case 'doit'
         
-        tic
-        
         spaced_EPIimg = [];
         for s = aap.acq_details.selected_sessions
             % Let us use the native space...
@@ -26,9 +24,6 @@ switch task
         end
         
         mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
-        
-        %% PLAN
-        % 3) save all our important shenanigans
         
         %% CONCATENATE THE DATA...
         fprintf('\nConcatenating the data')
@@ -77,8 +72,6 @@ switch task
             end
         end
         
-        % Structural image after BETting
         aap=aas_desc_outputs(aap,p,'melodic', melodicFiles);
         
-        time_elapsed
 end

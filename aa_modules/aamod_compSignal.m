@@ -55,12 +55,8 @@ switch task
         
     case 'doit'
         
-        % NOT YET IMPLEMENTED @@@
-        % 1) FOR OOB, WE WANT TOP CORNERS RELATIVE TO HEAD, TO AVOID GHOSTING
-        % 2) DO 2nd STATS ON NUMBER OF VOXELS OF EACH COMPARTMENT?
-        
-        %% NEW
-        tic
+        % @@@ NOT YET IMPLEMENTED @@@ :
+        % 1 - FOR OOB, WE WANT TOP CORNERS RELATIVE TO HEAD, TO AVOID GHOSTING
         
         % Let us use the native space...
         SMimg = aas_getfiles_bystream(aap,p,'segmasksStrict');
@@ -200,6 +196,4 @@ switch task
         aas_garbagecollection(aap,true)
         catch
         end
-        
-        time_elapsed
 end

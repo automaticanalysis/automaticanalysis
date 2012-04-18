@@ -133,5 +133,4 @@ switch task
         
         aap=aas_desc_outputs(aap,p, s, 'epi', EPIimg);
         
-        time_elapsed
 end

@@ -14,7 +14,6 @@ resp='';
 
 switch task
     case 'doit'
-        tic
         
         %% VARIOUS DEFAULTS
         
@@ -225,7 +224,6 @@ switch task
         
         aap = aas_desc_outputs(aap,p,'structural',Simg);
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end

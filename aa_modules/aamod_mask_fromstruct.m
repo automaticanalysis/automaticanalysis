@@ -10,7 +10,6 @@ resp = '';
 
 switch task
     case 'doit'
-        tic
                 
         Simg = aas_getfiles_bystream(aap,p,'structural');
         SEGimg = aas_getfiles_bystream(aap,p,'segmentation');
@@ -164,5 +163,4 @@ switch task
         aap = aas_desc_outputs(aap,p,'segmasksStrict',Soutstream);
         aap = aas_desc_outputs(aap,p,'segmasksExclusive',Eoutstream);
         
-        time_elapsed
 end

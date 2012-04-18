@@ -5,7 +5,7 @@
 % If you do it before estimating the normalisation, make sure you normalise
 % to a scull-stripped template, if at all possible!]
 
-function [aap,resp]=aamod_bet_robust(aap,task,p)
+function [aap,resp]=aamod_bet(aap,task,p)
 
 resp='';
 
@@ -23,8 +23,6 @@ switch task
     case 'report'
         
     case 'doit'
-        
-        tic
         
         % Let us use the native space...
         Simg = aas_getfiles_bystream(aap,p,'structural');
@@ -170,6 +168,4 @@ switch task
         if aap.tasklist.currenttask.settings.masks
             aap=aas_desc_outputs(aap,p,'BETmesh',outMesh);
         end
-        
-        time_elapsed
 end

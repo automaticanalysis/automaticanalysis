@@ -8,7 +8,6 @@ resp='';
 
 switch task
     case 'doit'
-        tic
         
         % Structural directory...
         if ~exist(fullfile(aas_getsubjpath(aap,p), 'structurals'), 'dir')
@@ -155,6 +154,4 @@ switch task
         end
         
         aap=aas_desc_outputs(aap,p,'rois',outstream);
-        
-        time_elapsed
 end
