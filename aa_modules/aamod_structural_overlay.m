@@ -9,7 +9,6 @@ resp = '';
 
 switch task
     case 'doit'
-        tic
         
         %% CREATE SOME DIAGNOSTIC IMAGES OF NORMALISATION + STATS...
         
@@ -174,5 +173,4 @@ switch task
         %% DESCRIBE OUTPUTS
         aap=aas_desc_outputs(aap,'overlap_structural',outstream);
         
-        time_elapsed
 end

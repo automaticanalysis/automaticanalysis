@@ -2,7 +2,7 @@
 % Runs EPI slicing after BET
 % aamod_realign should be run before running this module 
 
-function [aap,resp]=aamod_bet(aap,task,i)
+function [aap,resp]=aamod_bet_epi_reslicing(aap,task,i)
 
 resp='';
 

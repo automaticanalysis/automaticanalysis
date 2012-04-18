@@ -8,11 +8,9 @@ resp='';
 
 switch task
     case 'doit'
-        tic
         
         aas_garbagecollection(aap,true)
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'Garbage needs to be taken out\n' );
 end

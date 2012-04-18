@@ -22,9 +22,7 @@ switch task
         
     case 'report'
         
-    case 'doit'
-                
-        tic        
+    case 'doit'     
         
         EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
         ROIimg = aas_getfiles_bystream(aap,p,'rois');
@@ -356,6 +354,4 @@ switch task
         %% DESCRIBE OUTPUTS
         
         aap=aas_desc_outputs(aap,p,'tSNR',sV.fname);
-        
-        time_elapsed
 end

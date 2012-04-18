@@ -1,6 +1,10 @@
 % Automatic Analysis function to retrieve image lists
 % function [imagefns md5]=aas_getimages_bystream(aap,i,j,streamname,varargin)
 %  select images from subject i session j
+%
+% aas_getimages_bystream is intended for EPI images. For other file types, see
+% aas_getfiles_bystream.
+%
 % Rhodri Cusack MRC CBU Cambridge, Nov 2005-2012
 
 function [imagefns md5]=aas_getimages_bystream(aap,i,j,streamname,varargin)

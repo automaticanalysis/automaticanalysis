@@ -11,7 +11,7 @@ resp='';
 
 switch task
     case 'doit'
-        tic
+
         global defaults
         flags = defaults.coreg;
         
@@ -219,7 +219,6 @@ switch task
             aap = aas_desc_outputs(aap,p,s,'epi',EPIimg{s});
         end
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end

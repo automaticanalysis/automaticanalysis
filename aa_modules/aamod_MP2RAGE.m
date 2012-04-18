@@ -25,9 +25,9 @@ switch task
     case 'report'
         
     case 'doit'
-        tic
         
-        % Increase robustness by removing neck?!
+        % @@@ FIGURE OUT WAY OF MAKING THIS WORK WITH DEFAULT BET FUNCTIONS?
+
         % Look for mean functional
         mEPIimg = aas_getimages_bystream(aap,p,1,'meanepi');
         if isempty(mEPIimg)
@@ -369,5 +369,4 @@ switch task
         aap=aas_desc_outputs(aap,p,'BETmesh',outMesh);
         aap=aas_desc_outputs(aap,p,'epiBETmask',outMaskEPI);
         
-        time_elapsed
 end
