@@ -4,7 +4,6 @@
         <currenttask domain='subject' desc='Use the FSL Brain Extraction Tool (BET)' modality='MRI'>
             <inputstreams>
                 <stream>structural</stream>
-                <stream>meanepi</stream>
             </inputstreams>
             <outputstreams>
                 <stream>structural</stream>                
