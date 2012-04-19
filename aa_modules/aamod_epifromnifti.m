@@ -21,11 +21,7 @@ switch task
                 % [AVG] we cannot cocatenate the single root with
                 % multiple 3D image files, so this expects already the
                 % full location of the 3D images instead...
-                try
-                    imageFns = aap.acq_details.subjects(i).seriesnumbers{j}{:};
-                catch
-                    imageFns = aap.acq_details.subjects(i).seriesnumbers{j};
-                end
+                imageFns = aap.acq_details.subjects(i).seriesnumbers{j};
                 
                 subjPath = aas_getsubjpath(aap,i);
                 
