@@ -5,7 +5,7 @@
 % 3) Coregister mean EPI to Structural
 % 4) Apply transformation matrix of mean EPI to all EPIs
 
-function [aap,resp]=aamod_coreg_extended(aap,task,p)
+function [aap,resp]=aamod_coreg_extended(aap,task,subj)
 
 resp='';
 
@@ -32,7 +32,7 @@ switch task
         %% 1) Structural to T1 template
         % Check local structural directory exists
         
-        Simg = aas_getfiles_bystream(aap,p,'structural');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
         if isempty(Simg)
             aas_log(aap, true, 'Problem finding structural image.');
         elseif size(Simg,1) > 1
@@ -59,7 +59,7 @@ switch task
         %% 2) Mean Functional to EPI template
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,p,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
                 
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
@@ -105,15 +105,15 @@ switch task
         
         EPIimg = cell(size(aap.acq_details.sessions));
         % Locate all the EPIs we want to coregister
-        for s = aap.acq_details.selected_sessions
-            EPIimg{s} = aas_getfiles_bystream(aap,p,s,'epi');
+        for sess = aap.acq_details.selected_sessions
+            EPIimg{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
             
             % For each image, apply the space of the mean EPI image
-            fprintf('\nCoregistering images for session: %s\n', aas_getsessname(aap,p,s))
-            for e = 1:size(EPIimg{s},1)
+            fprintf('\nCoregistering images for session: %s\n', aas_getsessname(aap,subj,sess))
+            for e = 1:size(EPIimg{sess},1)
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)
-                spm_get_space(deblank(EPIimg{s}(e,:)), MM);
+                spm_get_space(deblank(EPIimg{sess}(e,:)), MM);
             end
         end
         
@@ -122,13 +122,13 @@ switch task
             sTimg, ... % Get template T1
             deblank(Simg(aap.tasklist.currenttask.settings.structural,:)),... % Get structural
             mEPIimg, ... % Get mean EPI across sessions
-            EPIimg{s}(1,:))) % Get first image of last session EPI
+            EPIimg{sess}(1,:))) % Get first image of last session EPI
         
         % Save graphical output to common diagnostics directory
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');        
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');        
         figure(spm_figure('FindWin'));
         set(gcf,'PaperPositionMode','auto')        
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
@@ -212,11 +212,11 @@ switch task
         
         %% Describe the outputs
         
-        aap = aas_desc_outputs(aap,p,'structural',Simg);
-        aap = aas_desc_outputs(aap,p,1,'meanepi',mEPIimg);
+        aap = aas_desc_outputs(aap,subj,'structural',Simg);
+        aap = aas_desc_outputs(aap,subj,1,'meanepi',mEPIimg);
         
-        for s = aap.acq_details.selected_sessions
-            aap = aas_desc_outputs(aap,p,s,'epi',EPIimg{s});
+        for sess = aap.acq_details.selected_sessions
+            aap = aas_desc_outputs(aap,subj,sess,'epi',EPIimg{sess});
         end
         
     case 'checkrequirements'

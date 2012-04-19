@@ -46,8 +46,8 @@ switch task
                 histOverlayA = cell(2, 1);
                 segmentNames = cell(1, size(SEGimg,1));
                 
-                for sess = 1:length(structOverlay)
-                    structOverlay{sess} = 0;
+                for s = 1:length(structOverlay)
+                    structOverlay{s} = 0;
                 end
             end
             
@@ -56,26 +56,26 @@ switch task
             structOverlay{1} = structOverlay{1} + spm_read_vols(sV);
             
             % Then get segmentations...
-            for sess = 1:size(SEGimg,1)
+            for s = 1:size(SEGimg,1)
                 % Get common name bits...
-                [~, fn] = fileparts(SEGimg(sess,:));
+                [~, fn] = fileparts(SEGimg(s,:));
                 if subj == 1
-                    segmentNames{sess} = fn;
+                    segmentNames{s} = fn;
                 else
                     % Loop through the common bit of the name and select
                     booName = 0;
                     while booName == 0
-                        if strcmp(segmentNames{sess}, fn(1:length(segmentNames{sess})))
+                        if strcmp(segmentNames{s}, fn(1:length(segmentNames{s})))
                             booName = 1;
                         else
-                            segmentNames{sess} = segmentNames{sess}(1:end-1);
+                            segmentNames{s} = segmentNames{s}(1:end-1);
                         end
                     end
                 end
                 
                 
-                V = spm_vol(SEGimg(sess,:));
-                structOverlay{sess+1} = structOverlay{sess+1} + spm_read_vols(V);
+                V = spm_vol(SEGimg(s,:));
+                structOverlay{s+1} = structOverlay{s+1} + spm_read_vols(V);
             end
         end
         
@@ -84,26 +84,26 @@ switch task
         
         outstream = sV.fname;
         
-        for sess = 1:size(SEGimg,1)
-            V.fname = fullfile(aap.acq_details.root, [segmentNames{sess} '_structOverlay.nii']);
-            spm_write_vol(V, structOverlay{sess+1}./length(aap.acq_details.subjects));
+        for s = 1:size(SEGimg,1)
+            V.fname = fullfile(aap.acq_details.root, [segmentNames{s} '_structOverlay.nii']);
+            spm_write_vol(V, structOverlay{s+1}./length(aap.acq_details.subjects));
             
             outstream = strvcat(outstream, V.fname);
             
             %% Do some stats (maintly histograms of overlap...)
-            histOverlay{1,sess} = hist(structOverlay{1,sess}(structOverlay{1,sess}>0), ...
+            histOverlay{1,s} = hist(structOverlay{1,s}(structOverlay{1,s}>0), ...
                 1:length(aap.acq_details.subjects));
             % Normalise the histograms
-            histOverlay{1,sess} = histOverlay{1,sess}./sum(histOverlay{1,sess});    
+            histOverlay{1,s} = histOverlay{1,s}./sum(histOverlay{1,s});    
             
-            histOverlayA{1} = [histOverlayA{1} histOverlay{1,sess}'];
+            histOverlayA{1} = [histOverlayA{1} histOverlay{1,s}'];
                 
             %% Also do an alternative measure...
-            histOverlay{2,sess} = histOverlay{1,sess}.*(1:length(aap.acq_details.subjects));
+            histOverlay{2,s} = histOverlay{1,s}.*(1:length(aap.acq_details.subjects));
             % Normalise the histograms
-            histOverlay{2,sess} = histOverlay{2,sess}./sum(histOverlay{2,sess});
+            histOverlay{2,s} = histOverlay{2,s}./sum(histOverlay{2,s});
             
-            histOverlayA{2} = [histOverlayA{2} histOverlay{2,sess}'];
+            histOverlayA{2} = [histOverlayA{2} histOverlay{2,s}'];
             
         end
         
@@ -153,9 +153,9 @@ switch task
             windowSize = get(2,'Position');
             
             for y = 1:size(structOverlay{2},2)
-                for sess = 1:length(structOverlay)-1
-                    h = subplot(1,length(structOverlay)-1,sess);
-                    imagesc(rot90(squeeze(structOverlay{sess+1}(:,y,:))));
+                for s = 1:length(structOverlay)-1
+                    h = subplot(1,length(structOverlay)-1,s);
+                    imagesc(rot90(squeeze(structOverlay{s+1}(:,y,:))));
                     caxis([0 length(aap.acq_details.subjects)])
                     axis equal off
                     zoomSubplot(h, 1.2)

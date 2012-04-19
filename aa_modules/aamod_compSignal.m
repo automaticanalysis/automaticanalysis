@@ -36,7 +36,7 @@
 % L.Verhagen@fcdonders.ru.nl
 %--------------------------------------------------------------------------
 
-function [aap,resp]=aamod_compSignal(aap,task,p,s)
+function [aap,resp]=aamod_compSignal(aap,task,subj,sess)
 
 resp='';
 
@@ -48,7 +48,7 @@ switch task
         resp='Get signal from the CSF, WM, GM and OOB compartments';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Get signal from the CSF, WM, GM and OOB compartments %s\n',subjpath);
         
     case 'report'
@@ -59,9 +59,9 @@ switch task
         % 1 - FOR OOB, WE WANT TOP CORNERS RELATIVE TO HEAD, TO AVOID GHOSTING
         
         % Let us use the native space...
-        SMimg = aas_getfiles_bystream(aap,p,'segmasksStrict');
-        EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
-        BETimg = aas_getfiles_bystream(aap,p,'epiBETmask');
+        SMimg = aas_getfiles_bystream(aap,subj,'segmasksStrict');
+        EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
+        BETimg = aas_getfiles_bystream(aap,subj,'epiBETmask');
         
         % Sanity checks
         [~,fn] = fileparts(EPIimg(1,:));
@@ -146,14 +146,14 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         set(gcf,'PaperPositionMode','auto')
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.jpeg']));
             
             %% Diagnostic VIDEO of masks
         if aap.tasklist.currenttask.settings.diagnostic && ...
-                s == aap.acq_details.selected_sessions(end)
+                sess == aap.acq_details.selected_sessions(end)
             
             movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.avi']);
@@ -190,7 +190,7 @@ switch task
         
         EPIdir = fileparts(EPIimg(1,:));
         save(fullfile(EPIdir, 'compSignal.mat'), 'compTC')
-        aap=aas_desc_outputs(aap,p,s,'compSignal',fullfile(EPIdir, 'compSignal.mat'));
+        aap=aas_desc_outputs(aap,subj,sess,'compSignal',fullfile(EPIdir, 'compSignal.mat'));
         
         try
         aas_garbagecollection(aap,true)

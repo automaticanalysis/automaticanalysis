@@ -2,9 +2,9 @@
 % using aas_listdicomfiles, and copies them into the session directory of
 % this module, either across the local filesystem or from s3. It then
 % creates the output stream.
-% function aap=aamod_get_dicom_fieldmap(aap,task,i)
+% function aap=aamod_get_dicom_fieldmap(aap,task,subj)
 
-function [aap resp]=aamod_get_dicom_fieldmap(aap,task,i)
+function [aap resp]=aamod_get_dicom_fieldmap(aap,task,subj)
 global aaworker
 
 resp='';
@@ -18,14 +18,14 @@ switch task
         
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,i);
+        subjpath=aas_getsubjpath(aap,subj);
         fieldpath=fullfile(subjpath,aap.directory_conventions.fieldmapsdirname);
         
         fieldfolds = {'rawmag' 'rawphase'};
         
         % Manually specified value for fieldmaps series number over-rides automatically scanned value
-        if (~isempty(aap.acq_details.subjects(i).fieldmaps))
-            fieldseries=aap.acq_details.subjects(i).fieldmaps;
+        if (~isempty(aap.acq_details.subjects(subj).fieldmaps))
+            fieldseries=aap.acq_details.subjects(subj).fieldmaps;
         else
             % Load up automatically scanned value, validate
             aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
@@ -44,7 +44,7 @@ switch task
         % Go through each fieldmap
         out=[];
         for seriesind=1:length(fieldseries)
-            [aap dicom_files_src]=aas_listdicomfiles(aap,i,fieldseries(seriesind));
+            [aap dicom_files_src]=aas_listdicomfiles(aap,subj,fieldseries(seriesind));
             
             % Now copy files to this module's directory
             aas_makedir(aap,fullfile(fieldpath, fieldfolds{seriesind}));
@@ -68,5 +68,5 @@ switch task
             out=[out outstream];
         end;
         
-        aap=aas_desc_outputs(aap,i,'dicom_fieldmap',out);
+        aap=aas_desc_outputs(aap,subj,'dicom_fieldmap',out);
 end;

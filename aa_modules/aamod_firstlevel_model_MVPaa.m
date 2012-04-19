@@ -13,7 +13,7 @@
 % Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
 % Thanks to Rik Henson for various suggestions
 
-function [aap,resp]=aamod_firstlevel_model_MVPaa(aap,task,p)
+function [aap,resp]=aamod_firstlevel_model_MVPaa(aap,task,subj)
 
 resp='';
 
@@ -26,10 +26,10 @@ switch task
         % This does not work [AVG]
         %[~, subjname]=fileparts(subj_dir);
         % Try this instead!
-        subjname = aap.acq_details.subjects(p).mriname;
+        subjname = aap.acq_details.subjects(subj).mriname;
         
         %% Movement regressors (extended!) [AVG]
-        [moves, mnames] = aas_movPars(aap,p, aap.tasklist.currenttask.settings.moveMat);
+        [moves, mnames] = aas_movPars(aap,subj, aap.tasklist.currenttask.settings.moveMat);
         
         %% Compartment regressors [AVG]
         compRegNames = {'GM', 'WM', 'CSF', 'OOH'};
@@ -38,7 +38,7 @@ switch task
         for sess=aap.acq_details.selected_sessions
             % If we don't have compartment Signals, this should give up...
             try
-                load(aas_getfiles_bystream(aap,p,sess,'compSignal'));
+                load(aas_getfiles_bystream(aap,subj,sess,'compSignal'));
                 Cregs{sess} = compTC;
             catch
             end
@@ -68,7 +68,7 @@ switch task
         else
             % Get TR from DICOM header checking they're the same for all sessions
             for sess=aap.acq_details.selected_sessions
-                DICOMHEADERS=load(aas_getfiles_bystream(aap,p,sess,'epi_header'));
+                DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_header'));
                 try
                     TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
                 catch
@@ -90,7 +90,7 @@ switch task
         usesliceorder=aas_stream_has_contents(aap,'sliceorder');
         if (usesliceorder)
             for sess=aap.acq_details.selected_sessions
-                sliceorderstruct=load(aas_getfiles_bystream(aap,p,sess,'sliceorder'));
+                sliceorderstruct=load(aas_getfiles_bystream(aap,subj,sess,'sliceorder'));
                 if (sess==firstsess)
                     sliceorder=sliceorderstruct.sliceorder;
                     refslice=sliceorderstruct.refslice;
@@ -117,7 +117,7 @@ switch task
         end
         SPM.xBF.T0 = round(SPM.xBF.T*refwhen);
         
-        subdata = aas_getsubjpath(aap,p);
+        subdata = aas_getsubjpath(aap,subj);
         
         %% Deal with extraparameters. Not needed any more, as
         % aap.directory_conventions.stats_singlesubj
@@ -178,7 +178,7 @@ switch task
             
             model{sess}=aap.tasklist.currenttask.settings.model(modelnum);
                         
-            files{sess} = aas_getimages_bystream(aap,p,sess,'epi');
+            files{sess} = aas_getimages_bystream(aap,subj,sess,'epi');
             
             SPM.nscan(sessnuminspm) = size(files{sess},1);
             
@@ -362,7 +362,7 @@ switch task
         
         % Describe outputs
         %  firstlevel_spm
-        aap=aas_desc_outputs(aap,p,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
+        aap=aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
         
         %  firstlevel_betas (includes related statistical files)
         allbetas=dir(fullfile(anadir,'beta_*'));
@@ -374,7 +374,7 @@ switch task
         for otherind=1:length(otherfiles)
             betafns=strvcat(betafns,fullfile(anadir,otherfiles{otherind}));
         end
-        aap=aas_desc_outputs(aap,p,'firstlevel_betas',betafns);
+        aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
         
     case 'checkrequirements'
         

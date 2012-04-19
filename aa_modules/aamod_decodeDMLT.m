@@ -8,7 +8,7 @@
 %
 % This is WORK IN PROGRESS and thus UNFINISHED!
 
-function [aap,resp]=aamod_decodeDMLT(aap,task,p)
+function [aap,resp]=aamod_decodeDMLT(aap,task,subj)
 
 resp='';
 
@@ -20,7 +20,7 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
@@ -34,7 +34,7 @@ switch task
         
         %% IN PROGRESS
         
-        subjDir = aas_getsubjpath(aap,p);
+        subjDir = aas_getsubjpath(aap,subj);
         
         %% 1: Select the relevant DMLT object and classification labels
         
@@ -43,7 +43,7 @@ switch task
         
         % Classification labels
         % Name of subject...
-        subjname = aap.acq_details.subjects(p).mriname;
+        subjname = aap.acq_details.subjects(subj).mriname;
         % Get model data from aap
         subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.DMLT.subject});
         % If no exact spec found, try subject wildcard
@@ -70,7 +70,7 @@ switch task
                     ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'betas')) || ...
                     ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'epi')) || ...
                     try
-                    Bimg = aas_getfiles_bystream(aap,p,aap.tasklist.currenttask.inputstreams.stream{Sind});
+                    Bimg = aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.inputstreams.stream{Sind});
                     break
                     catch
                     end
@@ -84,7 +84,7 @@ switch task
         end
         
         %% 2: Get the ROIs from which we extract the voxels, etc.
-        ROIimg = aas_getfiles_bystream(aap,p,'rois');
+        ROIimg = aas_getfiles_bystream(aap,subj,'rois');
         ROInum = size(ROIimg,1);
         
         % Loop the entire routine over all ROIs
@@ -138,8 +138,8 @@ switch task
         save(fullfile(subjDir, 'decodeMat.mat'), 'decodeMat');
         
         % DMLT outputs
-        aap=aas_desc_outputs(aap,p,'decodeWeight', fullfile(subjDir, 'decodeWeight.mat'));
-        aap=aas_desc_outputs(aap,p,'decodeSig', fullfile(subjDir, 'decodeSig.mat'));
-        aap=aas_desc_outputs(aap,p,'decodeMat', fullfile(subjDir, 'decodeMat.mat'));
+        aap=aas_desc_outputs(aap,subj,'decodeWeight', fullfile(subjDir, 'decodeWeight.mat'));
+        aap=aas_desc_outputs(aap,subj,'decodeSig', fullfile(subjDir, 'decodeSig.mat'));
+        aap=aas_desc_outputs(aap,subj,'decodeMat', fullfile(subjDir, 'decodeMat.mat'));
         
 end

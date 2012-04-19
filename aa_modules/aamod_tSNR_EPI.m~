@@ -1,11 +1,11 @@
 % AA module
-% [aap,resp]=aamod_tSNR_EPI(aap,task,subj,sess)
+% [aap,resp]=aamod_tSNR_EPI(aap,task,subj,s)
 % Calculate the temporal SNR of a series of images within a particular ROI
 % Also plots the timecourses...
 % This is more accurate (but slower!) than the SNR calculation that is done
 % during epi conversion, since it removes signal drift!
 
-function [aap,resp]=aamod_tSNR_EPI(aap,task,subj,sess)
+function [aap,resp]=aamod_tSNR_EPI(aap,task,subj,s)
 
 resp='';
 
@@ -17,14 +17,14 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        sesspath=aas_getsesspath(aap,subj,sess);
+        sesspath=aas_getsesspath(aap,subj,s);
         resp=sprintf('Estimate tSNR of EPI series of %s\n',sesspath);
         
     case 'report'
         
     case 'doit'     
         
-        EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
+        EPIimg = aas_getfiles_bystream(aap,subj,s,'epi');
         ROIimg = aas_getfiles_bystream(aap,subj,'rois');
                 
         %% retrieve TR from DICOM header & set up the HiPass filter
@@ -33,7 +33,7 @@ switch task
             K.RT = aap.tasklist.currenttask.settings.TR;
         else
             % Get TR from DICOM header
-            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_header'));
+            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,s,'epi_header'));
             K.RT = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         end
         % High pass filter or detrend data
@@ -62,7 +62,7 @@ switch task
         EPIsignal = zeros(V.dim(1), V.dim(2), V.dim(3));
         EPInoise = zeros(V.dim(1), V.dim(2), V.dim(3));
         
-        fprintf('\nWorking on session %s', aap.acq_details.sessions(sess).name)
+        fprintf('\nWorking on session %s', aap.acq_details.sessions(s).name)
         
         fprintf('\n\tLoading ROIs')
         for r = 1:size(ROIimg,1)
@@ -189,7 +189,7 @@ switch task
         % Save the SNR image!
         sV = V;
         sV.fname = fullfile(aas_getsubjpath(aap,subj), ...
-            ['tSNR_' aap.acq_details.sessions(sess).name '.nii']);
+            ['tSNR_' aap.acq_details.sessions(s).name '.nii']);
         spm_write_vol(sV, EPIsnr);
         
         fprintf('\n\tFinalising ROI data')
@@ -303,7 +303,7 @@ switch task
         ylabel('Proportion of voxels')
         set(gca,'XTick', 0:ceil(maxI./50):maxI)
         title(sprintf('\nSNR for session %s, using %.0f scans and TR %.3f', ...
-            regexprep(aap.acq_details.sessions(sess).name, '[^a-zA-Z0-9]', ''), ...
+            regexprep(aap.acq_details.sessions(s).name, '[^a-zA-Z0-9]', ''), ...
             size(EPIimg,1), ...
             K.RT))
         eval(legStr);
@@ -341,7 +341,7 @@ switch task
             xlim([0 size(EPIimg,1)])
             ylim([mean(mROI{r} - 2*mean(sROI{r})) mean(mROI{r} + 2*mean(sROI{r}))])
             title(sprintf('\nTimecourse for session %s, using %.0f scans and TR %.3f', ...
-                regexprep(aap.acq_details.sessions(sess).name, '[^a-zA-Z0-9]', ''), ...
+                regexprep(aap.acq_details.sessions(s).name, '[^a-zA-Z0-9]', ''), ...
                 size(EPIimg,1), ...
                 K.RT))
             eval(legStr);
