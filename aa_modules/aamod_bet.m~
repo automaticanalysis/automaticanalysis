@@ -10,6 +10,16 @@ function [aap,resp]=aamod_bet(aap,task,subj)
 resp='';
 
 switch task
+    case 'domain'
+        resp='subject';  % this module needs to be run once per subject
+        
+    case 'description'
+        resp='SPM5 align';
+        
+    case 'summary'
+        subjpath=aas_getsubjpath(subj);
+        resp=sprintf('Align %s\n',subjpath);
+        
     case 'report'
         
     case 'doit'

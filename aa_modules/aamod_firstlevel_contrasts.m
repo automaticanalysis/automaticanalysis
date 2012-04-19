@@ -3,7 +3,7 @@
 % Modified for aa by Rhodri Cusack Mar 2006-2011
 % Additions by Rik Henson Mar 2011
 
-function [aap,resp]=aamod_firstlevel_contrasts(aap,task,i)
+function [aap,resp]=aamod_firstlevel_contrasts(aap,task,subj)
 
 resp='';
 
@@ -15,7 +15,7 @@ switch task
         resp='SPM5 contrasts';
         
     case 'summary'
-        subjpath=aas_getsubjpath(i);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Contrasts %s\n',subjpath);
         
     case 'report'
@@ -24,7 +24,7 @@ switch task
         
         cwd=pwd;
         % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,i);
+        subj_dir = aas_getsubjpath(aap,subj);
         
         % Maintained for backwards compatibility- better now now put
         % module-specific value in
@@ -37,7 +37,7 @@ switch task
         anadir = fullfile(subj_dir,[aap.directory_conventions.stats_singlesubj stats_suffix]);
         
         % Now set up contrasts...
-        SPM=load(aas_getfiles_bystream(aap,i,'firstlevel_spm'));
+        SPM=load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
         SPM=SPM.SPM;
         SPM.swd=anadir;
         
@@ -150,7 +150,7 @@ switch task
         
         % Describe outputs
         %  updated spm
-        aap=aas_desc_outputs(aap,i,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
+        aap=aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
         
         %  firstlevel_betas (includes related statistical files)
         filters={'con','spmT','spmF'};
@@ -161,7 +161,7 @@ switch task
             for betaind=1:length(allbetas);
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end;
-            aap=aas_desc_outputs(aap,i,['firstlevel_' lower(filters{filterind}) 's'],betafns);
+            aap=aas_desc_outputs(aap,subj,['firstlevel_' lower(filters{filterind}) 's'],betafns);
         end;
         cd (cwd);
         

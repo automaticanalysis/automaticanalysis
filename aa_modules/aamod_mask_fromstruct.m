@@ -4,16 +4,16 @@
 % 2) Threshold them at 3 different levels (zero level, strict [e.g. 99%],
 % or an exclusive [highest tissue probability wins])
 
-function [aap,resp] = aamod_mask_fromstruct(aap,task,p)
+function [aap,resp] = aamod_mask_fromstruct(aap,task,subj)
 
 resp = '';
 
 switch task
     case 'doit'
                 
-        Simg = aas_getfiles_bystream(aap,p,'structural');
-        SEGimg = aas_getfiles_bystream(aap,p,'segmentation');
-        mEPIimg = aas_getfiles_bystream(aap,p,1,'meanepi');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
+        SEGimg = aas_getfiles_bystream(aap,subj,'segmentation');
+        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
         
         % Whether the images in SEGimg are native (1) or warped (0)
         NWlogical = zeros(size(SEGimg,1), 1);
@@ -159,8 +159,8 @@ switch task
         end
         
         % DIFFERENT STREAMS FOR DIFFERENT
-        aap = aas_desc_outputs(aap,p,'segmasksZero',Zoutstream);
-        aap = aas_desc_outputs(aap,p,'segmasksStrict',Soutstream);
-        aap = aas_desc_outputs(aap,p,'segmasksExclusive',Eoutstream);
+        aap = aas_desc_outputs(aap,subj,'segmasksZero',Zoutstream);
+        aap = aas_desc_outputs(aap,subj,'segmasksStrict',Soutstream);
+        aap = aas_desc_outputs(aap,subj,'segmasksExclusive',Eoutstream);
         
 end

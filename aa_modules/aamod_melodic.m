@@ -3,7 +3,7 @@
 % This automatically transforms the 3D data into 4D data as well
 % [NOTE: This function may become obsolete later on]
 
-function [aap,resp]=aamod_melodic(aap,task,p)
+function [aap,resp]=aamod_melodic(aap,task,subj)
 
 resp='';
 
@@ -14,21 +14,21 @@ switch task
     case 'doit'
         
         spaced_EPIimg = [];
-        for s = aap.acq_details.selected_sessions
+        for sess = aap.acq_details.selected_sessions
             % Let us use the native space...
-            EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
+            EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
             
             for e = 1:size(EPIimg,1)
                 spaced_EPIimg = [spaced_EPIimg EPIimg(e,:) ' '];
             end
         end
         
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         
         %% CONCATENATE THE DATA...
         fprintf('\nConcatenating the data')
         
-        data4D = fullfile(aas_getsubjpath(aap,p), sprintf('4Ddata_%s.nii', mriname));
+        data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', mriname));
         
         [~, w]=aas_runfslcommand(aap, ...
             sprintf('fslmerge -t %s %s', ...
@@ -38,7 +38,7 @@ switch task
         %% RUN MELODIC
         fprintf('\nRunning MELODIC')
         
-        outDir = fullfile(aas_getsubjpath(aap,p), 'MELODIC');
+        outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
         if ~exist(outDir, 'dir')
             mkdir(outDir)
         end
@@ -72,6 +72,6 @@ switch task
             end
         end
         
-        aap=aas_desc_outputs(aap,p,'melodic', melodicFiles);
+        aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);
         
 end

@@ -4,7 +4,7 @@
 % 2) Reslices this T1 template to the structural
 % 3) Masks the structural by the T1 template matrix, cutting out neck
 
-function [aap,resp]=aamod_bet_premask(aap,task,p)
+function [aap,resp]=aamod_bet_premask(aap,task,subj)
 
 resp='';
 
@@ -16,14 +16,14 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
         
-        Simg = aas_getfiles_bystream(aap,p,'structural');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
         
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
@@ -96,7 +96,7 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         try
             %% Draw structural image...
             spm_check_registration(Simg)
@@ -114,6 +114,6 @@ switch task
         %% DESCRIBE OUTPUTS!
         
         % Structural image after BETting
-        aap=aas_desc_outputs(aap,p,'structural', Simg);
+        aap=aas_desc_outputs(aap,subj,'structural', Simg);
         
 end

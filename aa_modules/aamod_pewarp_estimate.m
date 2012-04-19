@@ -1,5 +1,5 @@
 % AA module - coregistration of EPI to structural with unwarping
-% [aap,resp]=aamod_pewarp_estimate(aap,task,p)
+% [aap,resp]=aamod_pewarp_estimate(aap,task,subj)
 % Ideally preceded by aamod_coreg_extended, to increase rigid alignment!
 %% README
 %   1) After running aamod_coregister_unwarp the functional and structural
@@ -26,7 +26,7 @@
 % Netherlands
 % Proc. Intl. Soc. Mag. Reson. Med. 18 (2010)
 %%
-function [aap,resp]=aamod_pewarp_estimate(aap,task,p)
+function [aap,resp]=aamod_pewarp_estimate(aap,task,subj)
 
 resp='';
 
@@ -36,14 +36,14 @@ switch task
         % @@@ FURTHER IMPROVEMENTS?
         % DECIDE ORDER FROM DISCRETE FOURIER OF THE FIELDMAP ITSELF?  
         
-        Simg = aas_getfiles_bystream(aap,p,'structural');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
         if size(Simg,1) > 1
             aas_log(aap, false, 'Found more than 1 structural images, using first.');
             Simg = deblank(Simg(1,:));
         end
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,p,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
         if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
             mEPIimg = deblank(mEPIimg(1,:));
@@ -67,7 +67,7 @@ switch task
         
         %% Brain mask the mean EPI
         % Select the mask
-        BETfn = aas_getfiles_bystream(aap,p,'epiBETmask');
+        BETfn = aas_getfiles_bystream(aap,subj,'epiBETmask');
         for d = 1:size(BETfn,1)
             if strfind(BETfn(d,:), 'brain')
                 BETfn = BETfn(d,:);
@@ -158,7 +158,7 @@ switch task
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
         figure(spm_figure('FindWin'));
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
         
@@ -241,9 +241,9 @@ switch task
         
         %% Describe the outputs
         
-        aap = aas_desc_outputs(aap,p,1,'meanepi',fullfile(pthM, ['p' fnM extM]));
-        aap = aas_desc_outputs(aap,p,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
-        aap = aas_desc_outputs(aap,p,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
+        aap = aas_desc_outputs(aap,subj,1,'meanepi',fullfile(pthM, ['p' fnM extM]));
+        aap = aas_desc_outputs(aap,subj,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
+        aap = aas_desc_outputs(aap,subj,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
         
     case 'checkrequirements'
         aas_log(aap,0,'Need to trim or skull strip structural\n' );

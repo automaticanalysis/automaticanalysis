@@ -50,7 +50,7 @@ switch task
             % Get structural for this subject
             structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
             structfn = dir( fullfile(structdir,['s' aap.acq_details.subjects_structuralfn{i} '*.nii']));
-            structfn=fullfile(structdir,structfn(1).name)
+            structfn = fullfile(structdir,structfn(1).name);
             feval(aap.options.fieldmapundistortversion,magfn,phasefn,epimean,epistoundistort,fieldmapsdir,structfn);
         end;
         % Save graphical output
@@ -62,15 +62,3 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
-
-
-
-
-
-
-
-
-
-
-
-
