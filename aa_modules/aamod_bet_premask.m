@@ -33,7 +33,7 @@ switch task
         
         Sdir = fileparts(Simg);
         
-        %% 0) Check that the tamplates we need exist!
+        %% 0) Check that the templates we need exist!
         % Get the template
         sTimg = fullfile(spm('dir'), 'templates', 'T1.nii');
         if ~exist(sTimg, 'file')
