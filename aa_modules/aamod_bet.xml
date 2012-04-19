@@ -9,7 +9,7 @@
             <outputstreams>
                 <stream>structural</stream>                
                 <stream>BETmask</stream>
-                <stream>epiBETmask</stream>
+                <stream>BETmesh</stream>
             </outputstreams>
             <!-- BET F parameter - from 0 to 1 (least to most agressive skull stripping -->
             <bet_f_parameter>0.5</bet_f_parameter>
