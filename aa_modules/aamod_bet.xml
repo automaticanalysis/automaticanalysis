@@ -4,14 +4,22 @@
         <currenttask domain='subject' desc='Use the FSL Brain Extraction Tool (BET)' modality='MRI'>
             <inputstreams>
                 <stream>structural</stream>
-                <stream>meanepi</stream>
             </inputstreams>
             <outputstreams>
                 <stream>structural</stream>                
                 <stream>BETmask</stream>
-                <stream>epiBETmask</stream>
+                <stream>BETmesh</stream>
             </outputstreams>
+            <!-- BET F parameter - from 0 to 1 (least to most agressive skull stripping -->
             <bet_f_parameter>0.5</bet_f_parameter>
+ 	    <!-- Robust bet (recursive BET)? 0 = no, 1 = yes -->
+            <robust>1</robust>
+            <!-- Do we want to output the masks from BET? -->
+            <masks>1</masks>
+            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            <structural>1</structural>
+            <!-- Diagnostic videos? -->
+            <diagnostic>1</diagnostic>
         </currenttask>
     </tasklist>
 </aap>

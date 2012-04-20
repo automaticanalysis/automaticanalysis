@@ -5,10 +5,17 @@
         <currenttask domain='subject' mfile_alias = 'aamod_decodeDMLT' desc='Use the FSL Brain Extraction Tool (BET)' modality='MRI'>
             <inputstreams>
                 <stream>epi</stream>
-                <stream>epiBETmask</stream>
-                <!-- We can use these other 2 masks, or multiple AND!
-                <stream>segmasksExclusive</stream>
+                <!-- We can use betas or T contrasts even
+                <stream>firstlevel_betas</stream>
+                <stream>firstlevel_cons</stream>
+                -->
+                <!-- ROIs that we want to test -->
                 <stream>rois</stream>
+                
+                <!-- Masks [IMPLEMENT LATER!] -->
+                <!-- 
+                <stream>epiBETmask</stream>
+                <stream>segmasksExclusive</stream>
                 -->
             </inputstreams>
             <outputstreams>
@@ -16,6 +23,18 @@
                 <stream>decodeSig</stream>
                 <stream>decodeMat</stream>
             </outputstreams>
+            
+            <!-- To add our DMLT vector -->
+            <model>
+                <subject></subject>
+                <session></session>
+                <DMLT>
+                    <name></name>
+                    <vector></vector>
+                </DMLT>
+            </model>
+            
+            <!-- Classifier! -->
             <DMLTobj>dml.crossvalidator(''mva'',{dml.svm},''type'',''nfold'',''folds'',5)</DMLTobj>
         </currenttask>
     </tasklist>

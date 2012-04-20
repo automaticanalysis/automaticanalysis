@@ -36,10 +36,12 @@
       <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
       <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
       <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
+      <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
       <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
   </directory_conventions>
    <options>
       <verbose desc='How verbose to be' ui='yesno'>1</verbose>
+      <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
       <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
       <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
       <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>

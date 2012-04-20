@@ -1,7 +1,7 @@
 % AA module - Converts fieldmaps maps to NIFTI format
 % Rhodri Cusack MRC CBU Cambridge Nov 2005
 
-function [aap,resp]=aamod_convertfieldmaps(aap,task,i)
+function [aap,resp]=aamod_convertfieldmaps(aap,task,subj)
 
 resp='';
 
@@ -10,18 +10,18 @@ switch task
         resp='Fieldmaps dicom to nifti and copying';
         
     case 'summary'
-        if (length(aap.acq_details.subjects(i).siemensfieldmap)==0)
-            resp=sprintf('No fieldmaps for subject %s\n',aap.acq_details.subjects(i).mriname);
+        if (length(aap.acq_details.subjects(subj).siemensfieldmap)==0)
+            resp=sprintf('No fieldmaps for subject %s\n',aap.acq_details.subjects(subj).mriname);
         else
-            resp=sprintf('Converted fieldmaps for subject %s \n', aas_getsubjname(aap,i));
+            resp=sprintf('Converted fieldmaps for subject %s \n', aas_getsubjname(aap,subj));
         end;
         
     case 'report'
     case 'doit'
         
-    [aap convertedfns dcmhdr]=aas_convertseries_fromstream(aap,i,'dicom_fieldmap');
+    [aap convertedfns dcmhdr]=aas_convertseries_fromstream(aap,subj,'dicom_fieldmap');
     
-    subjpath=aas_getsubjpath(aap,i);
+    subjpath=aas_getsubjpath(aap,subj);
 
     outstream = {};
     % Restructure outputs!
@@ -30,11 +30,11 @@ switch task
     end
     
     % Save outputs?
-    aap=aas_desc_outputs(aap,i,'fieldmap',outstream);
+    aap=aas_desc_outputs(aap,subj,'fieldmap',outstream);
             
     dcmhdrfn=fullfile(subjpath,'fieldmap_dicom_header.mat');
     save(dcmhdrfn,'dcmhdr');
-    aap=aas_desc_outputs(aap,i,'fieldmap_dicom_header',dcmhdrfn);
+    aap=aas_desc_outputs(aap,subj,'fieldmap_dicom_header',dcmhdrfn);
     
     case 'checkrequirements'
         

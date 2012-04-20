@@ -6,7 +6,10 @@ classdef aaq_condor<aaq
         function [obj]=aaq_condor(aap)
             obj.aap=aap;
         end
-        %% The default, Mono threaded...
+        %% Queue jobs on Condor:
+        %  Write small wrapper textfile (condor_q_job)
+        %  Queue job
+        %  Watch output files
         
         % Run all tasks on the queue, single threaded
         function [obj]=runall(obj,dontcloseexistingworkers)

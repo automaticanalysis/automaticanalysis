@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Masks the structural by the T1 template, removing the neck' modality='MRI'>
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            <structural>1</structural>
+        </currenttask>
+    </tasklist>
+</aap>

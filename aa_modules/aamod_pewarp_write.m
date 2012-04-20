@@ -1,5 +1,5 @@
 % AA module - coregistration of EPI to structural with unwarping
-% [aap,resp]=aamod_pewarp_write(aap,task,p,s)
+% [aap,resp]=aamod_pewarp_write(aap,task,subj,sess)
 % Ideally preceded by aamod_coreg_extended, to increase rigid alignment!
 %% README
 %   1) After running aamod_coregister_unwarp the functional and structural
@@ -26,25 +26,24 @@
 % Netherlands
 % Proc. Intl. Soc. Mag. Reson. Med. 18 (2010)
 %%
-function [aap,resp]=aamod_pewarp_write(aap,task,p,s)
+function [aap,resp]=aamod_pewarp_write(aap,task,subj,sess)
 
 resp='';
 
 switch task
     case 'doit'
-        tic
         
         % Load the parameters
         PEparams = []; order = [];
-        load(aas_getfiles_bystream(aap,p,'PEwarp_params'))
+        load(aas_getfiles_bystream(aap,subj,'PEwarp_params'))
         
         %% Now apply this transformation to all the EPI images
         
         % Locate all the EPIs we want to PEwarp
-        EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
+        EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
         
         % For each image, apply the warp of the mean EPI image
-        fprintf('\nPEwarping images for session: %s\n', aas_getsessname(aap,p,s))
+        fprintf('\nPEwarping images for session: %s\n', aas_getsessname(aap,subj,sess))
         
         PEimg=[];
         for f = 1:size(EPIimg, 1)
@@ -56,9 +55,8 @@ switch task
         end
         
         %% Describe the outputs
-        aas_desc_outputs(aap,p,s,'epi',PEimg);
+        aas_desc_outputs(aap,subj,sess,'epi',PEimg);
         
-        time_elapsed
     case 'checkrequirements'
         aas_log(aap,0,'Need to trim or skull strip structural\n' );
 end

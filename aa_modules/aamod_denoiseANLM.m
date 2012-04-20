@@ -4,7 +4,7 @@
 % (This is not provided with AA at this moment)
 % Please cite his work, as described within the MRIDenoisingAONLM function!
 
-function [aap,resp]=aamod_denoiseANLM(aap,task,p)
+function [aap,resp]=aamod_denoiseANLM(aap,task,subj)
 
 resp='';
 
@@ -16,18 +16,17 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
-        tic
         
-        Sfn = aas_getfiles_bystream(aap,p,'structural');
+        Sfn = aas_getfiles_bystream(aap,subj,'structural');
         
         try
-            DCMfn = aas_getfiles_bystream(aap,p,'structural_dicom_header');
+            DCMfn = aas_getfiles_bystream(aap,subj,'structural_dicom_header');
             
             % dcmhdr{n}.SeriesDescription
             dcmhdr = [];
@@ -81,7 +80,7 @@ switch task
             if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
                 mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
             end
-            mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+            mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
             try
                 %% Draw noisy and denoised structural...
                 spm_check_registration(strvcat(V.fname, dV.fname))
@@ -140,15 +139,14 @@ switch task
             dcmhdr = {dcmhdr{aap.tasklist.currenttask.settings.structurals}};
             save(DCMfn, 'dcmhdr')
             
-            aap=aas_desc_outputs(aap,p,'structural_dicom_header', DCMfn);
+            aap=aas_desc_outputs(aap,subj,'structural_dicom_header', DCMfn);
         catch
         end
         
         % Structural image after denoising
-        aap=aas_desc_outputs(aap,p,'structural', outstruct);
+        aap=aas_desc_outputs(aap,subj,'structural', outstruct);
         
         % Residual image after denoising
-        aap=aas_desc_outputs(aap,p,'denoiseResidual', outresid);
+        aap=aas_desc_outputs(aap,subj,'denoiseResidual', outresid);
         
-        time_elapsed
 end

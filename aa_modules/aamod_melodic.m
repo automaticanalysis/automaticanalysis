@@ -3,46 +3,32 @@
 % This automatically transforms the 3D data into 4D data as well
 % [NOTE: This function may become obsolete later on]
 
-function [aap,resp]=aamod_melodic(aap,task,p)
+function [aap,resp]=aamod_melodic(aap,task,subj)
 
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';  % this module needs to be run once per subject
-        
-    case 'description'
-        resp='SPM5 align';
-        
-    case 'summary'
-        subjpath=aas_getsubjpath(p);
-        resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
         
-        tic
-        
         spaced_EPIimg = [];
-        for s = aap.acq_details.selected_sessions
+        for sess = aap.acq_details.selected_sessions
             % Let us use the native space...
-            EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
+            EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
             
             for e = 1:size(EPIimg,1)
                 spaced_EPIimg = [spaced_EPIimg EPIimg(e,:) ' '];
             end
         end
         
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         
-        %% PLAN
-        % 3) save all our important shenanigans
+        %% CONCATENATE THE DATA...
+        fprintf('\nConcatenating the data')
         
-        %% COCATENATE THE DATA...
-        fprintf('\nCocatenating the data')
-        
-        data4D = fullfile(aas_getsubjpath(aap,p), sprintf('4Ddata_%s.nii', mriname));
+        data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', mriname));
         
         [~, w]=aas_runfslcommand(aap, ...
             sprintf('fslmerge -t %s %s', ...
@@ -52,7 +38,7 @@ switch task
         %% RUN MELODIC
         fprintf('\nRunning MELODIC')
         
-        outDir = fullfile(aas_getsubjpath(aap,p), 'MELODIC');
+        outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
         if ~exist(outDir, 'dir')
             mkdir(outDir)
         end
@@ -86,8 +72,6 @@ switch task
             end
         end
         
-        % Structural image after BETting
-        aap=aas_desc_outputs(aap,p,'melodic', melodicFiles);
+        aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);
         
-        time_elapsed
 end

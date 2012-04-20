@@ -1,7 +1,7 @@
 % AA module
 % High pass filter a timeseries of data
 
-function [aap,resp]=aamod_highpass(aap,task,p,s)
+function [aap,resp]=aamod_highpass(aap,task,subj,sess)
 
 resp='';
 
@@ -13,14 +13,14 @@ switch task
         resp='SPM highpass filter';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('\n\tHighpass %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
         
-        EPIimg = aas_getfiles_bystream(aap,p,s,'epi');
+        EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
         
         %% retrieve TR from DICOM header & set up the HiPass filter
         % if TR is manually specified (not recommended as source of error)
@@ -28,7 +28,7 @@ switch task
             K.RT =aap.tasklist.currenttask.settings.TR;
         else
             % Get TR from DICOM header
-            DICOMHEADERS=load(aas_getfiles_bystream(aap,p,s,'epi_header'));
+            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_header'));
             K.RT = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         end
         
@@ -131,7 +131,6 @@ switch task
         
         %% DESCRIBE THE OUTPUTS
         
-        aap=aas_desc_outputs(aap,p, s, 'epi', EPIimg);
+        aap=aas_desc_outputs(aap,subj, sess, 'epi', EPIimg);
         
-        time_elapsed
 end

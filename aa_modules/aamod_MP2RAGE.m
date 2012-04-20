@@ -1,5 +1,5 @@
 % AA module
-% [aap,resp]=aamod_MP2RAGE(aap,task,p)
+% [aap,resp]=aamod_MP2RAGE(aap,task,subj)
 % Take the Inverse Contrast 2 (IC2) and Flat images of an MP2RAGE and obtain a 
 % single, BETted (skull stripped) MP2RAGE structural image...
 % The IC2 image is useful for BET
@@ -7,7 +7,7 @@
 % This works similarly to bet_robust +
 % It corrects bias fields in the structural images!
 
-function [aap,resp]=aamod_MP2RAGE(aap,task,p)
+function [aap,resp]=aamod_MP2RAGE(aap,task,subj)
 
 resp='';
 
@@ -19,25 +19,25 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
-        tic
         
-        % Increase robustness by removing neck?!
+        % @@@ FIGURE OUT WAY OF MAKING THIS WORK WITH DEFAULT BET FUNCTIONS?
+
         % Look for mean functional
-        mEPIimg = aas_getimages_bystream(aap,p,1,'meanepi');
+        mEPIimg = aas_getimages_bystream(aap,subj,1,'meanepi');
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
         elseif size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
             mEPIimg = deblank(mEPIimg(1,:));
         end      
-        Simg = aas_getfiles_bystream(aap,p,'structural');
-        DCMfile = aas_getfiles_bystream(aap,p,'structural_dicom_header');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
+        DCMfile = aas_getfiles_bystream(aap,subj,'structural_dicom_header');
         
         % dcmhdr{n}.SeriesDescription
         dcmhdr = [];
@@ -230,7 +230,7 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         
             %% Draw mean EPI...
             spm_check_registration(FI_img)
@@ -258,7 +258,7 @@ switch task
                     IC2_img,... % Get structural
                     mEPIimg)); % Get mean EPI across sessions
             end
-            aas_checkreg_avi(aap, p, 2)
+            aas_checkreg_avi(aap, subj, 2)
         
             spm_orthviews('reposition', [0 0 0])
             
@@ -351,7 +351,7 @@ switch task
                 end
             end
             %% Diagnostic VIDEO of masks
-            aas_checkreg_avi(aap, p, 2)
+            aas_checkreg_avi(aap, subj, 2)
             
             spm_orthviews('reposition', [0 0 0])
             
@@ -364,10 +364,9 @@ switch task
         %% DESCRIBE OUTPUTS!
         
         % Structural image after BETting
-        aap=aas_desc_outputs(aap,p,'structural', FI_img);
-        aap=aas_desc_outputs(aap,p,'BETmask',outMask);
-        aap=aas_desc_outputs(aap,p,'BETmesh',outMesh);
-        aap=aas_desc_outputs(aap,p,'epiBETmask',outMaskEPI);
+        aap=aas_desc_outputs(aap,subj,'structural', FI_img);
+        aap=aas_desc_outputs(aap,subj,'BETmask',outMask);
+        aap=aas_desc_outputs(aap,subj,'BETmesh',outMesh);
+        aap=aas_desc_outputs(aap,subj,'epiBETmask',outMaskEPI);
         
-        time_elapsed
 end

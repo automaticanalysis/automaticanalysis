@@ -9,6 +9,10 @@ global aaworker
 
 aaworker.modulestarttime=now;
 
+if aap.options.timelog
+    tic
+end
+
 try
     aaworker.parmpath;
 catch
@@ -292,6 +296,9 @@ if (tempdirtodelete)
     end;
 end;
 
+if aap.options.timelog
+    time_elapsed
+end
 
 %%
 function checkmem

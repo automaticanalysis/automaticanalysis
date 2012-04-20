@@ -2,7 +2,7 @@
 % Convert the fieldmap images (2 mag and 1 phase) into a Voxel Displacement
 % Map (VDM) using the FieldMap toolbox of SPM
 
-function [aap,resp]=aamod_fieldmap2VDM(aap,task,p)
+function [aap,resp]=aamod_fieldmap2VDM(aap,task,subj)
 
 resp='';
 
@@ -14,13 +14,12 @@ switch task
         resp='SPM5 align';
         
     case 'summary'
-        subjpath=aas_getsubjpath(p);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
         
     case 'doit'
-        tic
         
         % Defaults specified in this path
         % You can set your own settings in your own copy of the XML or recipe!
@@ -35,20 +34,20 @@ switch task
             aap.tasklist.currenttask.settings.writeunwarpedEPI]; % (writeunwarpedEPI)
         
         % Fieldmap path
-        FMdir = fullfile(aas_getsubjpath(aap, p), aap.directory_conventions.fieldmapsdirname);
+        FMdir = fullfile(aas_getsubjpath(aap, subj), aap.directory_conventions.fieldmapsdirname);
         
         % The folder fieldmaps must exist...
         if ~exist(FMdir, 'dir')
             mkdir(FMdir)
         end
         
-        FMfn = aas_getfiles_bystream(aap,p,'fieldmap');
+        FMfn = aas_getfiles_bystream(aap,subj,'fieldmap');
         
         % This will work on all sessions (even those we have not selected)
         EPIdir = cell(size(aap.acq_details.sessions, 1));
         for s = aap.acq_details.selected_sessions
             % get files from stream
-            EPIdir{s} = aas_getsesspath(aap,p,s);
+            EPIdir{s} = aas_getsesspath(aap,subj,s);
         end
         
         % If we cannot find any images in the FMdir, move images there...
@@ -92,7 +91,6 @@ switch task
             aas_log(aap, true, 'Could not find a fieldmap VDM after processing!')
         end
         
-        aap=aas_desc_outputs(aap,p,'fieldmap',outstream);
+        aap=aas_desc_outputs(aap,subj,'fieldmap',outstream);
         
-        time_elapsed
 end

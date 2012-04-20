@@ -2,13 +2,13 @@
 % Runs EPI slicing after BET
 % aamod_realign should be run before running this module 
 
-function [aap,resp]=aamod_bet(aap,task,i)
+function [aap,resp]=aamod_bet_epi_reslicing(aap,task,subj)
 
 resp='';
 
 switch task        
     case 'summary'
-        subjpath=aas_getsubjpath(i);
+        subjpath=aas_getsubjpath(subj);
         resp=sprintf('Align %s\n',subjpath);
         
     case 'report'
@@ -20,7 +20,7 @@ switch task
         tic
         
         % RESLICE THE MASKS & MESHES
-        EPIfn = aas_getfiles_bystream(aap,i,1,'meanepi');
+        EPIfn = aas_getfiles_bystream(aap,subj,1,'meanepi');
         
         % With the mean EPI, we just use the first one (there really should be only one)
         if size(EPIimg,1) > 1
@@ -42,7 +42,7 @@ switch task
             'mean', 0);           % write mean image
    
         % Get files to reslice
-        outMask=aas_getfiles_bystream(aap,i,'BETmask');
+        outMask=aas_getfiles_bystream(aap,subj,'BETmask');
         
         spm_reslice(strvcat(EPIfn, outMask), resFlags);
         
@@ -54,7 +54,7 @@ switch task
         end
         
         %% DESCRIBE OUTPUTS!
-        aap=aas_desc_outputs(aap,i,'epiBETmask',outMaskEPI);
+        aap=aas_desc_outputs(aap,subj,'epiBETmask',outMaskEPI);
         
         time_elapsed
 end
