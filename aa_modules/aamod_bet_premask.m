@@ -35,9 +35,9 @@ switch task
         
         %% 0) Check that the templates we need exist!
         % Get the template
-        sTimg = fullfile(spm('dir'), 'templates', 'T1.nii');
+        sTimg = aap.directory_conventions.T1template;
         if ~exist(sTimg, 'file')
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', Timg));
+            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
         end
         
         %% 1) Structural to T1 template
@@ -47,7 +47,7 @@ switch task
         flags = defaults.coreg;
         
         % Copy template to structural location
-        copyfile(sTimg, Sdir);
+        copyfile(sTimg, fullfile(Sdir, 'T1.nii'));
         sTimg = fullfile(Sdir, 'T1.nii');
         
         % Coregister template to Structural
