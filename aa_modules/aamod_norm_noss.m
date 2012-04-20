@@ -26,6 +26,9 @@ switch task
         % [AVG] Changed to allow specification of any T1 template, does not
         % need to be in the SPM folder any more...
         temp_imgs = aap.directory_conventions.T1template;
+        if ~exist(temp_imgs, 'file')
+            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', temp_imgs));
+        end
         
         clear imgs;
         
