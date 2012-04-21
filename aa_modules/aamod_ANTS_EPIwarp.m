@@ -57,7 +57,7 @@ switch task
             
             for c=1:size(P,1)
                 [pth fn ext]=fileparts(P(c,:));
-                wimgs = strvcat(wimgs,fullfile(pth,['w' nme ext]));
+                wimgs = strvcat(wimgs,fullfile(pth,['w' fn ext]));
                 
                 % delete previous because otherwise nifti write routine doesn't
                 % save disc space when you reslice to a coarser voxel
