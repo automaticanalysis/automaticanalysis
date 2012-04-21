@@ -97,12 +97,14 @@ switch task
         fprintf([ANTS_command '\n'])
         [s w] = aas_shell(ANTS_command);
         
-        % Copy the warp, so that we can use it for the warped subject image!
-        copyfile(fullfile(Spth, 'antsWarp.nii'), fullfile(Spth, ['w' Sfn Sext]))
+        warpANTS_command = [ warpANTSpath Ndim ... % dimension number
+            Simg ' ' fullfile(Spth, ['w' Sfn Sext]) ... % moving image & output
+            ' -R ' sTimg ' '... % reference image
+            fullfile(Spth, 'antsWarp.nii')]; % transform
+        if exist(fullfile(Spth,'antsAffine.txt'), 'file')
+            warpANTS_command = [warpANTS_command ' antsAffine.txt']; % and affine, if this exists...
+        end    
         
-        % Warp the structural!
-        warpANTS_command = [ warpANTSpath Ndim Simg ' ' fullfile(Spth, ['w' Sfn Sext]) ' antsAffine.txt -R ' sTimg];
-            
         [s w] = aas_shell(warpANTS_command);
         
         %% Describe outputs
@@ -111,7 +113,7 @@ switch task
         fullfile(Spth,'antsWarp.nii'), ...
         fullfile(Spth, 'antsInverseWarp.nii'));
         if exist(fullfile(Spth,'antsAffine.txt'), 'file')
-        outANTS = strvcat(outANTS, fullfile(Spth,'antsAffine.txt'));
+            outANTS = strvcat(outANTS, fullfile(Spth,'antsAffine.txt'));
         end
         aap=aas_desc_outputs(aap,subj,'ANTs', outANTS);
         

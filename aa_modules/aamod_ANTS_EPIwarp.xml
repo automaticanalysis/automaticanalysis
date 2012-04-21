@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Use ANTS to warp EPI to template based on structural warp' modality='MRI'>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>ANTs</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
