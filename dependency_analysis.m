@@ -61,7 +61,7 @@ for ind = 1:length(Dependencies)
         if d ~= ind
             for e = 1:length(Dependencies(d).deps)
                 if strcmp(Dependencies(ind).name, Dependencies(d).deps{e})
-                    Dependencies(ind).depsI(end+1) = Dependencies(d).name;
+                    Dependencies(ind).depsI(end+1) = {Dependencies(d).name};
                     Dependencies(ind).number = Dependencies(ind).number + 1;
                 end
             end

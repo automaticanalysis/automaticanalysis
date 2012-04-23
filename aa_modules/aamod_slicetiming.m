@@ -81,12 +81,3 @@ switch task
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end
 return;
-
-
-
-
-
-
-
-
-

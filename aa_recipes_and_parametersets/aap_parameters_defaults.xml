@@ -36,6 +36,7 @@
       <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
       <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
       <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
+      <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
       <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
   </directory_conventions>
    <options>
