@@ -64,8 +64,8 @@ switch task
             % Check it's not a .svn folder
             D = dir(fldrCurr);
             for d = 1:length(D)
-                if ~D(d).isdir || isempty(strfind(D(d).name(1), '.'))
-                    melodicFiles = strvcat(melodicFiles, fullfile(outDir, D(d).name));
+                if ~D(d).isdir && isempty(strfind(D(d).name(1), '.'))
+                    melodicFiles = strvcat(melodicFiles, fullfile(fldrCurr, D(d).name));
                 else
                     % It is one of the . or .. folders
                 end
