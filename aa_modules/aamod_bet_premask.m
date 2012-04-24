@@ -53,6 +53,12 @@ switch task
         % Coregister template to Structural
         x = spm_coreg(spm_vol(Simg), spm_vol(sTimg), flags.estimate);
         
+        % Set entire template matrix to 1
+        V = spm_vol(sTimg);
+        Y = spm_read_vols(V);
+        Y(:) = 1;
+        spm_vol_write(V,Y);
+
         % Set the new space for the template
         MM = spm_get_space(sTimg);
         spm_get_space(sTimg, spm_matrix(x)\MM);
