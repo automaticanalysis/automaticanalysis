@@ -20,7 +20,7 @@ switch task
         tic
         
         % RESLICE THE MASKS & MESHES
-        EPIfn = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        EPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
         
         % With the mean EPI, we just use the first one (there really should be only one)
         if size(EPIimg,1) > 1
@@ -44,7 +44,7 @@ switch task
         % Get files to reslice
         outMask=aas_getfiles_bystream(aap,subj,'BETmask');
         
-        spm_reslice(strvcat(EPIfn, outMask), resFlags);
+        spm_reslice(strvcat(EPIimg, outMask), resFlags);
         
         % Get the images we resliced
         outMaskEPI = '';
