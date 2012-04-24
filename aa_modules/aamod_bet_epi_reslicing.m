@@ -17,8 +17,6 @@ switch task
         
         warning off
         
-        tic
-        
         % RESLICE THE MASKS & MESHES
         EPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
         
@@ -57,6 +55,4 @@ switch task
         
         %% DESCRIBE OUTPUTS!
         aap=aas_desc_outputs(aap,subj,'epiBETmask',outMaskEPI);
-        
-        time_elapsed
 end
