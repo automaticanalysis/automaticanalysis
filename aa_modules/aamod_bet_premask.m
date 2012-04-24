@@ -57,7 +57,7 @@ switch task
         V = spm_vol(sTimg);
         Y = spm_read_vols(V);
         Y(:) = 1;
-        spm_vol_write(V,Y);
+        spm_write_vol(V,Y);
 
         % Set the new space for the template
         MM = spm_get_space(sTimg);
