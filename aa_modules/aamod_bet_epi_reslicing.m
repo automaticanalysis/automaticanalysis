@@ -51,6 +51,8 @@ switch task
         for d = 1:size(outMask,1)
             [mpth mnme mext]=fileparts(outMask(d,:));
             outMaskEPI = strvcat(outMaskEPI, fullfile(mpth,['r' mnme mext]));
+            % Additionally, convert into a binary image...
+            img2mask(fullfile(mpth,['r' mnme mext]))
         end
         
         %% DESCRIBE OUTPUTS!
