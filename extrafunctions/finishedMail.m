@@ -21,5 +21,5 @@ if nargin < 2
 elseif nargin == 2
     sendmail(deliverto,sprintf('Your %s results are ready now', analysis))
 else
-    sendmail(deliveryto,sprintf('Your %s analysis broke because of...', analysis), errmsg)
+    sendmail(deliverto,sprintf('Your %s analysis broke because of...', analysis), errmsg)
 end
