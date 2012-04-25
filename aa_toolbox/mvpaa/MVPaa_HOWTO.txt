@@ -1,0 +1,138 @@
+To run an MVPaa analysis you need to follow a discrete number of steps:
+
+1) MODELLING
+
+Run an aamod_firstlevel_model (perhaps the aamod_firstlevel_model_MVPaa, 
+if you wish to use the procedure used by Mumford JA, Turner BO, Ashby FG, 
+Poldrack RA, 2011).
+
+You will need to specify the relevant event names in the following fashion:
+
+'conditionName_subN'
+
+Where 'conditionName' is the name of your condition of interest, and 'N' is
+a number defining the subdivision of the data within an imaging run.
+
+e.g.
+houses_sub1
+faces_sub1
+houses_sub2
+faces_sub2
+
+Events that do not have an "_subN" part will be considered nuisance events,
+and ignored by MVPaa.
+
+MVPaa will only consider pattern similarity between different "subdivisions"
+
+2) CONTRAST (optional)
+
+Optionally, if you wish to consider the T-values rather than the betas of
+the conditions as the source of MPVaa pattern information, then run
+contrasts on the betas of interest, using aamod_firstlevel_contrasts.
+
+Using the t-values may improve your MVPaa performance slightly (CITATION
+NEEDED!)
+
+3) MVPaa (ROI based)
+
+    A) ROIs
+
+You should run your MVPaa analysis on unnormalised data.
+
+To import a set of ROIs in (e.g. MNI) template space to the subject space, 
+you will need to have preprocessing up to and including aamod_norm_noss,
+which will give you the normalisation parameters of your structural.
+
+These normalisation parameters can be used by aamod_unnormalise_rois to move
+the ROIs into subject space and import them into the "rois" stream.
+Simply add the comma delimitted location/filenames (within your ROI folder, i.e.
+aap.directory_conventions.ROIdir) of your ROIs to the ROIlist field in the
+aamod_unnormalise_rois.xml:
+
+EXAMPLE:
+=====
+Assume your ROI dir, specified in aap.directory_conventions.ROIdir is:
+/home/scientist/ROIs
+Within this directory you have files:
+/home/scientist/ROIs/V1.nii
+/home/scientist/ROIs/V2.nii
+/home/scientist/ROIs/Kanwisher/FFA.nii
+
+Just set this in your aamod_unnormalise_rois:
+
+<ROIlist>V1.nii,V2.nii,Kanwisher/FFA.nii</ROIlist>
+=====
+
+    B) Modules needed in recipe
+
+You will need to add several modules to your recipe:
+
+aamod_MVPaa_roi_1st (for 1st level analysis)
+aamod_MVPaa_roi_2nd (for 2nd level, across subject analysis)
+
+    C) MVPaa preditions/hypotheses/contrasts
+
+You will need to add some MVPaa contrasts to your user script.
+The best way to think of an MVPaa contrast is as of a univariate contrast
+but in 2-D. This contrast will have a hypothesis comparing the similarity
+within and across your conditions.
+
+EXAMPLE:
+=====
+Assume you want to distinguish faces from houses, you would expect a high
+similarity for house-house and face-face, but a low for face-house.
+A matrix of our conditions would look like this:
+
+        face    house
+face    1       -1
+house   -1      1
+
+We can input a contrast into MVPaa by including something like this in the
+user script:
+
+aap = mvpaa_addcontrast(aap, ... % aap structure
+'aamod_MVPaa_roi_1st_00001', ... % MVPaa module
+'*', ... % Subject name to which we add contrast ('*' for all subjects)
+'FvsH', ... % Name of contrast
+[1 -1; -1 1]); % Matrix for contrast
+=====
+
+The absolute values in the matrix are of no consequence, just the relative
+values between conditions and the sign of the difference.
+Thus, [1 -1; -1 1] is exactly equivalent to [-pi -12; -12 -pi]
+
+Also, you can use the help function mvpaa_label2cont to transform a set of 
+discrete or continuous labels into a hypothesis matrix:
+
+EXAMPLE:
+=====
+MVPaa_con = mvpaa_label2cont([1 2 4], 0) % discrete labels
+% [1 -1 -1; -1 1 -1; -1 -1 1]
+
+MVPaa_con = mvpaa_label2cont([1 2 5], 0) % continuous labels
+% [2 1 -2; 1 2 -1; -2 -1 2]
+
+=====
+
+4) MVPaa (Brain searchlight based)
+
+    A) Modules needed in recipe
+    
+You will need to add several modules to your recipe:
+
+aamod_MVPaa_brain_1st (for 1st level analysis)
+aamod_MVPaa_brain_SPM (converts 1st level analysis to images, normalises and smoothes)
+aamod_secondlevel_model (for 2nd level, across subject analysis)
+
+    B) MVPaa preditions/hypotheses/contrasts
+
+[SEE ABOVE]
+
+EXAMPLE
+=====
+aap = mvpaa_addcontrast(aap, ... % aap structure
+'aamod_MVPaa_brain_1st_00001', ... % MVPaa module
+'*', ... % Subject name to which we add contrast ('*' for all subjects)
+'FvsH', ... % Name of contrast
+[1 -1; -1 1]); % Matrix for contrast
+=====

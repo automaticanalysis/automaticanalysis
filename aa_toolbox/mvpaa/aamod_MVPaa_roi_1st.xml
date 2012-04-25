@@ -6,8 +6,8 @@
                 <stream>rois</stream>
                 <stream>firstlevel_spm</stream>
                 <!--Depending on previous module (model or contrasts) we choose either betas or t-values -->
-                <stream>firstlevel_betas</stream>
                 <stream>firstlevel_cons</stream>
+                <stream>firstlevel_betas</stream>
             </inputstreams>
             <outputstreams>
                 <stream>MVPaa</stream>
