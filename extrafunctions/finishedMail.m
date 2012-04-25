@@ -1,4 +1,4 @@
-function finishedMail(deliverto, analysis)
+function finishedMail(deliverto, analysis, errmsg)
 % Deliver to is the email address to send the confirmation to!
 
 % Define these variables appropriately:
@@ -18,6 +18,8 @@ props.setProperty('mail.smtp.socketFactory.port','465');
 % Send the email. Note that the first input is the address you are sending the email to
 if nargin < 2
     sendmail(deliverto,'Your aa4 results are ready now!')
-else
+elseif nargin == 2
     sendmail(deliverto,sprintf('Your %s results are ready now', analysis))
+else
+    sendmail(deliveryto,sprintf('Your %s analysis broke because of...', analysis), errmsg)
 end

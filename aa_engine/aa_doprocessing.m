@@ -578,7 +578,6 @@ for l=1:length(mytasks)
     end;
 end;
 
-
 % Moved back to python as this thread doesn't have permissions to the queue
 % if (exist('receipthandle','var'))
 %     aas_log(aap,0,sprintf('Have run all jobs, now trying to delete message in queue %s with receipt handle %s.',aaworker.aapqname,receipthandle));
@@ -586,15 +585,15 @@ end;
 % end;
 % aas_log(aap,0,'Message deleted');
 
+if ~isempty(aap.options.email)
+    % In case the server is broken...
+    try
+    finishedMail(aap.options.email, aap.acq_details.root)
+    catch
+    end
+end
+
 return;
-
-
-
-
-
-
-
-
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
@@ -606,6 +605,3 @@ else
     prev_mfile_alias=prev_stagename;
 end;
 [aap,loopvar]=aa_feval(prev_mfile_alias,aap,'getparallelparts');
-
-
-
