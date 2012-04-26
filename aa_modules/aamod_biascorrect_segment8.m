@@ -145,6 +145,8 @@ switch task
             fprintf('Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!\n');
         end
 
+        spm_preproc_run(job);
+
         % get the filename for the bias-corrected image (which has 'm' prepended)
         [pth, nm, ext] = fileparts(img);
         mimgfn = fullfile(pth, sprintf('m%s%s', nm, ext));

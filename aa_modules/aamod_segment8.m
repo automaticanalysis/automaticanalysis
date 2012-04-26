@@ -179,6 +179,8 @@ switch task
             fprintf('Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!\n');
         end
 
+        spm_preproc_run(job);
+
         seg8fn = [spm_str_manip(img,'sd') '_seg8.mat'];
         aap = aas_desc_outputs(aap, subjind, 'normalisation_seg8', seg8fn);
 
