@@ -2,16 +2,19 @@
 <!-- Takes realignment parameters from one stream and applies them to another -->
 <!-- There must be the same number of images in each of the two input streams -->
 <aap>
-    <tasksettings>
-        <aamod_copy_image_orientation domain='session' desc='Apply realignment parameters from one stream to another' modality='MRI'>
+    <tasklist>
+        <currenttask domain='session' desc='Apply realignment parameters from one stream to another' modality='MRI'>
+            <permanenceofoutput>1</permanenceofoutput>
+            
             ﻿<inputstreams>
                 <stream>epi</stream>  
                 <stream>epi_nulled</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi_nulled</stream>
             </outputstreams>
-        </aamod_copy_image_orientation>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_dartel_copyseg8todartel domain='subject' desc='Copy segment8 results to DARTEL directory' modality='MRI'>
-   </aamod_dartel_copyseg8todartel>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='Copy segment8 results to DARTEL directory' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- INPUTS/OUTPUTS? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   
+

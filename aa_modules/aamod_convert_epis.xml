@@ -2,6 +2,9 @@
 <aap>
     <tasklist>
         <currenttask domain='session' desc='Convert EPIs'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <echoweightmethod>
                 t2star
             </echoweightmethod>
@@ -9,6 +12,7 @@
             <inputstreams>
                 <stream>dicom_epi</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>
                 <stream>epi_header</stream>
@@ -42,6 +46,7 @@
                 <stream>dummyscans</stream>
                 <stream>dummyscans_nulled</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

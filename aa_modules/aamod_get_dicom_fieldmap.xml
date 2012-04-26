@@ -2,12 +2,17 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Get DICOM files for fieldmap'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>autoidentifyseries</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>dicom_fieldmap</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

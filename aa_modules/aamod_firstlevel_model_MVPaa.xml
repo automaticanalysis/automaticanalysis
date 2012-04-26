@@ -2,6 +2,9 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='First level model (new)' modality='MRI'>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
             <!-- no firstlevelmasking here any more - use aap.spm.defaults.mask.thresh=-inf;-->
             <!-- includemovementpars 0=none; 1=realignment parms -->
             <includemovementpars>1</includemovementpars>
@@ -88,6 +91,7 @@
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_betas</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

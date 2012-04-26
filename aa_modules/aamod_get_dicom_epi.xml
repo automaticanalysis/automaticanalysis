@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_get_dicom_epi domain='session' desc='Get DICOM files for EPIs'>
+    <tasklist>
+        <currenttask domain='session' desc='Get DICOM files for EPIs'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>autoidentifyseries</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>dicom_epi</stream>
             </outputstreams>
-        </aamod_get_dicom_epi>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>

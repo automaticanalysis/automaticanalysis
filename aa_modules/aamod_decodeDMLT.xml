@@ -1,8 +1,10 @@
-<!-- THIS MODULE IS UNDER DEVELOPMENT! -->
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
         <currenttask domain='subject' mfile_alias = 'aamod_decodeDMLT' desc='Use the FSL Brain Extraction Tool (BET)' modality='MRI'>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <!-- We can use betas or T contrasts even
@@ -36,6 +38,7 @@
             
             <!-- Classifier! -->
             <DMLTobj>dml.crossvalidator(''mva'',{dml.svm},''type'',''nfold'',''folds'',5)</DMLTobj>
+            
         </currenttask>
     </tasklist>
 </aap>

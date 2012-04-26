@@ -2,18 +2,25 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM coregistration (finetune to higher precision)' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>meanepi</stream>  
                 <stream>structural</stream>
                 <stream>BETmask</stream>
                 <stream>epiBETmask</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>structural</stream>
             </outputstreams>
+            
             <structural>1</structural>
             <bias>1</bias>
+            
             <diagnostic>1</diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>

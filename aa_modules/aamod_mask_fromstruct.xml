@@ -2,19 +2,24 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Create differently thresholded masks from the segmentations' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>structural</stream>
                 <stream>segmentation</stream>
                 <stream>meanepi</stream>
             </inputstreams>
+            
             <outputstreams>               
                 <stream>segmasksZero</stream>
                 <stream>segmasksStrict</stream>
                 <stream>segmasksExclusive</stream>
             </outputstreams>
+            
             <Nthreshold> 0.99 </Nthreshold>
             <Wthreshold> 0.05 </Wthreshold>
+            
         </currenttask>
     </tasklist>
 </aap>
-   

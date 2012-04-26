@@ -2,13 +2,18 @@
 <aap>
    <tasklist>
        <currenttask domain='subject' desc='Converting fielmaps'>
+           
+           <permanenceofoutput>1</permanenceofoutput>
+           
            <inputstreams>
                <stream>dicom_fieldmap</stream>
            </inputstreams>
+           
            <outputstreams>
                <stream>fieldmap</stream>
                <stream>fieldmap_dicom_header</stream>
            </outputstreams>
+           
        </currenttask>
    </tasklist>
 </aap>

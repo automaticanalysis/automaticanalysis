@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_norm_vbm domain='subject' desc='SPM normalise VBM estimate parameters' modality='MRI'>
-     <samp desc='Sampling distance for segmentation'>3</samp>     
-   </aamod_norm_vbm>      
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM normalise VBM estimate parameters' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <samp desc='Sampling distance for segmentation'>3</samp>
+            
+            <!-- INPUTS? OUTPUTS? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   

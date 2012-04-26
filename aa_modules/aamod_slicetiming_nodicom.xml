@@ -2,6 +2,7 @@
 <aap>
     <tasklist>
         <currenttask domain='session' mfile_alias='aamod_slicetiming' desc='SPM slice timing' modality='MRI'>
+            <permanenceofoutput>1</permanenceofoutput>
             <TRs/>
             <slicetime/>
             <sliceorder></sliceorder>

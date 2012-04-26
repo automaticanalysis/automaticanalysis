@@ -2,6 +2,9 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Use ANTS to coregister structural to template' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>structural</stream>
                 <!--
@@ -14,6 +17,7 @@
                 <stream>mask</stream>
                 -->
             </inputstreams>
+            
             <outputstreams>
                 <stream>structural</stream>
                 <stream>ANTs</stream>
@@ -21,6 +25,7 @@
                 <stream>segmentation</stream>
                 -->
             </outputstreams>
+            
             <!-- This specifies which structural we want to use, typically the first, but can be changed -->
             <structural>1</structural>            
             <!-- This specifies which structural we want to use, typically the first, but can be changed -->

@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_dartel_createtemplate domain='study' desc='SPM dartel create template' modality='MRI'>
-      <rform desc='Regularisation type (0 1 or 2)'>0</rform>
-      <numtissueclasses desc='Number of tissue classes (probably 2 or 6)'>2</numtissueclasses>
-      <specialrequirements desc='need more memory'><highmemory/></specialrequirements>
-   </aamod_dartel_createtemplate>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='study' desc='SPM dartel create template' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <rform desc='Regularisation type (0 1 or 2)'>0</rform>
+            <numtissueclasses desc='Number of tissue classes (probably 2 or 6)'>2</numtissueclasses>
+            <specialrequirements desc='need more memory'><highmemory/></specialrequirements>
+            
+            <!-- INPUTS/OUTPUTS? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   

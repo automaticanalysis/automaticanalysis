@@ -1,16 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_bet_epi_reslicing domain='subject' desc='Skull stripping with BET' modality='MRI'>
+    <tasklist>
+        <currenttask domain='subject' desc='Skull stripping with BET' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>BETmask</stream>
                 <stream>BETmesh</stream>
                 <stream>meanepi</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epiBETmask</stream>
             </outputstreams>
-        </aamod_bet_epi_reslicing>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>
 

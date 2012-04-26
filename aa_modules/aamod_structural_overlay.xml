@@ -2,6 +2,7 @@
 <aap>
     <tasklist>
         <currenttask domain='study' desc='Diagnostic of overlapped structural' modality='MRI'>
+            <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
                 <stream>structural</stream>
                 <stream>segmentation</stream>

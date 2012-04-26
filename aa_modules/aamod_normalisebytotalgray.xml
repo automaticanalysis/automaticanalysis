@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_normalisebytotalgray domain='subject' desc='Normalise by total gray' modality='MRI'/>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='Normalise by total gray' modality='MRI'>
+            
+            <!-- INPUTS OUTPUTS? PERMANENCE? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

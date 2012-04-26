@@ -2,6 +2,9 @@
 <aap>
     <tasklist>
         <currenttask domain='session' desc='High pass filter the EPI images' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>epi_header</stream>

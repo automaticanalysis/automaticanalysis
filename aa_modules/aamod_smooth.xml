@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_smooth domain='session' desc='SPM smooth' modality='MRI'>
+    <tasklist>
+        <currenttask domain='session' desc='SPM smooth' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <FWHM>10</FWHM>
+            
             <inputstreams>
                 <stream>epi</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>
-            </outputstreams>           
-        </aamod_smooth>
-    </tasksettings>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_dartel_mnitransform domain='study' desc='SPM dartel - calculate transform to MNI space' modality='MRI'>
-   </aamod_dartel_mnitransform>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='study' desc='SPM dartel - calculate transform to MNI space' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- INPUTS/OUTPUTS? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   
+

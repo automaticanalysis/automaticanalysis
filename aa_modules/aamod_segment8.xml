@@ -2,7 +2,8 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM8 segment8' modality='MRI'>
-        
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <samp desc='Sampling distance (mm)'>1</samp>
             <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank default to Seg/TPM.nii -->
             <vox desc='Voxel size of segmented images'>1.5</vox>
@@ -29,4 +30,3 @@
         </currenttask>
     </tasklist> 
 </aap>
-

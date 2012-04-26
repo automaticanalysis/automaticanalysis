@@ -2,15 +2,20 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM unwarp and motion correction' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>fieldmap</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>realignment_parameter</stream>
                 <stream>meanepi</stream>
                 <stream>epi</stream>
             </outputstreams>  
+            
             <!--Realignment parameters-->
             <eoptions>
                 <quality>0.9</quality> <!-- quality; DEFAULT: 0.9000 -->
@@ -20,7 +25,8 @@
                 <einterp>2</einterp> <!-- interpolation method: DEFAULT: 2nd degree B-spline -->
                 <ewrap>[0 0 0]</ewrap> <!-- wrapping: DEFAULT is None -->
                 <weight>''</weight> <!-- NO weighting image -->
-            </eoptions>            
+            </eoptions>      
+            
             <!--Unwarp parameters-->            
             <uweoptions>
                 <basfcn>[12 12]</basfcn> <!-- number of basis functions -->
@@ -34,6 +40,7 @@
                 <noi>5</noi> <!-- maximum number of iterations -->
                 <expround>'Average'</expround> <!-- point in position space to perform Taylor-expansion around -->
             </uweoptions>
+            
             <!--Reslicing parameters-->            
             <uwroptions>
                 <uwwhich>[2 1]</uwwhich> <!-- reslices all images and creates mean image -->
@@ -42,6 +49,7 @@
                 <mask>1</mask> <!-- masking -->
                 <prefix>'u'</prefix> <!-- prefix for images -->
             </uwroptions>
+            
         </currenttask>        
     </tasklist>
 </aap>

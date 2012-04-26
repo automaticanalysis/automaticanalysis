@@ -2,19 +2,25 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_norm_noss' desc='SPM normalise estimate parameters (starting estimates for CBU 32 channel coil)' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
              <affinestartingestimate><x>0</x></affinestartingestimate>
-            <inputstreams>
+            
+             <inputstreams>
                 <stream>structural</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>structural</stream>
                 <stream>segmentation</stream>
                 <stream>normalisation_seg_sn</stream>
                 <stream>normalisation_seg_inv_sn</stream>
             </outputstreams>
+            
             <diagnostic>1</diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>
-

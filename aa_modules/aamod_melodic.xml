@@ -2,14 +2,20 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='FSL MELODIC' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             ﻿<inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>melodic</stream>
             </outputstreams>
+            
             <!-- MELODIC OPTIONS (default - make it verbose) -->
             <MELODICoptions>-v</MELODICoptions>
+            
         </currenttask>
     </tasklist>
 </aap>
