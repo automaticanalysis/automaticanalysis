@@ -278,7 +278,6 @@ switch (domain)
         end
         
         
-        
     otherwise
         aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',domain,stagename));
 end;
@@ -304,7 +303,3 @@ end
 function checkmem
 
 return
-
-
-
-

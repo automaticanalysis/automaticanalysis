@@ -118,12 +118,11 @@ classdef aaq_qsub<aaq
             end;
         end;
         
+        % SUBMIT JOB!!!! @@@@@
         function [obj]=qsub_q_job(obj,jobfn,job)
             global aaworker
             subfn=tempname;
             fid=fopen(subfn,'w');
-            fprintf(fid,'executable=%s\n',obj.aap.directory_conventions.qsubwrapper);
-            fprintf(fid,'universe=vanilla\n');
             [pth nme ext]=fileparts(subfn);
             
             qsubpath=fullfile(aaworker.parmpath,'qsub');
@@ -140,13 +139,17 @@ classdef aaq_qsub<aaq
             fprintf(fid,'arguments="/usr/local/MATLAB/R2010b %s"\n',jobfn);
             fprintf(fid,'queue\n');
             fclose(fid);
-            % Need to get rid of Matlab libraries from the path, or qsub
-            % flunks with incompatible libraries
-            cmd=sprintf('export LD_LIBRARY_PATH= ;qsub_submit %s',subfn);
-            [s w]=system(cmd);
+            
+            jobid = qsubcellfun(subfn, {1}, ... % qsubfeval
+                'memreq', 4*(1024^3), ...
+                'timreq', 1*24*60*60, ...
+                'diary', 'always');
+            
+            %{
             if (s)
                 fprintf('Error during qsub_submit of %s\n',w);
             end;
+            %}
             
             fles.name=job.description;
             fles.state='queued';

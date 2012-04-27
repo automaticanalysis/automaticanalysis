@@ -94,7 +94,7 @@ You must specify one or more contrasts here using one of the following formats
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_cons</stream>
                 <stream>firstlevel_spmts</stream>
-                <stream>firstlevel_spmts</stream>
+                <stream>firstlevel_spmfs</stream>
             </outputstreams>
             
         </currenttask>

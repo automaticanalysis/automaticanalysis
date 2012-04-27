@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_MVPaa_roi_1st' desc='1st level MVPaa analysis' modality='MRI'>
+            <inputstreams>
+                <stream>rois</stream>
+                <stream>firstlevel_spm</stream>
+                <!--Depending on previous module (model or contrasts) we choose either betas or t-values -->
+                <stream>firstlevel_spmts</stream>
+            </inputstreams>
+            <outputstreams>
+                <stream>MVPaa</stream>
+            </outputstreams>
+            
+            <!--SETTINGS-->
+        
+            <!--Is the MVPA performed in native space? (0 - no, 1 - yes)-->
+            <native>1</native>
+            <!--What basis functions do we use? '' - none; '_T' - time; '_TD' - time & dispersion -->
+            <basisF>''</basisF>
+            <!-- Minimum number of valid voxels present in ROI (otherwise error)-->
+            <minVoxels>30</minVoxels>
+            <!--Similarity measure type: 'Pearson', 'Spearman', 'Euclid', 'Mahalanobis' -->
+            <corrType>Pearson</corrType>
+            <!-- Stats to be used in the MVPA:
+        'GLM' - GLM on average contrast matrix
+        'rmGLM' - repeated measures GLM on each block-subblock comparison
+        'fullGLM' - rmGLM considering all contrasts at once
+        'ttest' 'signrank' - t-test/signrank of data using contrast as reference
+        'con-ttest' 'con-signrank' - mean contrast value across subblocks, then t-tests on this
+        'all-ttest' 'all-signrank' - probably not recommended? CHECK! @@@@@ -->
+            <statsType>rmGLM</statsType>
+            <!--Manner in which we balance contrasts: (0 - 0 baseline; 1 - equal intervals [DEFAULT])-->
+            <balanceCons>1</balanceCons>
+            <!--Convert correlation data into Z scores? (0 - no; 1 - yes) -->
+            <norm2z>0</norm2z>
+            <!--Triangulate the correlation data? (0 - no; 1 - yes) @@@ DOCUMENT OTHER OPTIONS!
+        This specifies which block-subblock comparisons are considered, and
+        whether they are averaged or not. More detail in... mvpaa_statisticsM-->
+            <triangulation>1</triangulation>
+            
+            <!-- Empty structure to put contrast matrices in... -->
+            <model>
+                <subject></subject>
+                <contrast>                
+                    <name></name>
+                    <matrix></matrix>
+                </contrast>
+            </model>
+            
+            <diagnostic>1</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

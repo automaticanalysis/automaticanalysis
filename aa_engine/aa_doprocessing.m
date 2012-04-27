@@ -185,6 +185,8 @@ switch (aap.options.wheretoprocess)
         taskqueue=aaq_localparallel(aap);
     case 'condor'
         taskqueue=aaq_condor(aap);
+    case 'qsub'
+        taskqueue=aaq_qsub(aap);
     case 'aws'
         taskqueue=aaq_aws(aap);
         %        taskqueue.clearawsqueue(); no longer cleared!
