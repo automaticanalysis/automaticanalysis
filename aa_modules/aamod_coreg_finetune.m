@@ -186,6 +186,7 @@ switch task
                 windowSize = get(2,'Position');
                 
                 for n = 1:size(sY,d)
+                    % Get outline of structural slice
                     h = subplot(1,1,1);
                     if d == 1
                         sOutline = edge(rot90(squeeze(sY(n,:,:))),'canny');
@@ -195,6 +196,7 @@ switch task
                         sOutline = edge(rot90(squeeze(sY(:,:,n))),'canny');
                     end
                     
+                    % Get image of EPI slice
                     if d == 1
                         sImage = rot90(squeeze(Y(n,:,:)));
                     elseif d == 2
@@ -203,7 +205,8 @@ switch task
                         sImage = rot90(squeeze(Y(:,:,n)));
                     end
                     
-                    sImage(sOutline) = EPIlims(2) * 2;
+                    % Overlay structural outline on EPI image
+                    sImage(logical(sOutline)) = EPIlims(2) * 2;
                     imagesc(sImage)
                     
                     caxis(EPIlims)
