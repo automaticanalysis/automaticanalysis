@@ -193,7 +193,7 @@ switch task
                         sImage = rot90(squeeze(Y(:,:,n)));
                     end
                     
-                    sImage(sOutline) = EPIlims(2) * 2;
+                    sImage(logical(sOutline)) = EPIlims(2) * 2;
                     imagesc(sImage)
                     
                     caxis(EPIlims)
