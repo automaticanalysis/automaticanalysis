@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='First level model (new)' modality='MRI'>
             
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>3</permanenceofoutput>
             
             <!-- no firstlevelmasking here any more - use aap.spm.defaults.mask.thresh=-inf;-->

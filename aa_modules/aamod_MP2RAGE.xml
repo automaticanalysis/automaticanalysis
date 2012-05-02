@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='Processes the MP2RAGE sequence and moves it into the structural folder' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>

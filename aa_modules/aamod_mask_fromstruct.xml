@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='Create differently thresholded masks from the segmentations' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>

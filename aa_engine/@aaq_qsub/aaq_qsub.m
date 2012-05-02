@@ -120,35 +120,34 @@ classdef aaq_qsub<aaq
             % Submit the job using qsubfeval
             warning off
 
+            % Check how much memory and time we should assign to the job
             try
-                jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
-                    'memreq', ...
-                    obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
+                memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3), ... % GB
-                    ...
-                    'timreq', ...
-                    obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
+                    (1024^3); % GB
+                timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60, ... % Hours
-                    ...
-                    'diary', 'always');
+                    60*60; % Hours
             catch
                 aas_log(obj.aap,false,...
                     sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
                     [1 0 0])
-                
-                jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
-                    'memreq', ...
+                memReq = ... % No module specific multiplier
                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3), ... % GB
-                    ...
-                    'timreq', ...
+                    (1024^3); % GB
+                timReq = ... % No module specific multiplier
                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60, ... % Hours
-                    ...
-                    'diary', 'always');
+                    60*60; % Hours
             end
+            
+            % Submit job
+            jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
+                    'memreq', memReq, ...
+                    'timreq', timReq, ...
+                    'diary', 'always');
+            % State what the assigned number of hours and GB is...
+            fprintf('Assigned %0.4f hours. and %0.9f GB', ...
+                                timReq./(60*60), memReq./(1024^3))
             warning on
             
             % And monitor for files with the job output

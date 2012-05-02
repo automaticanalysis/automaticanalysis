@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='SPM EPI coregistration with phase-encoding direction unwarping' modality='MRI'>
             
+            <qsub>
+                <timeBase>6</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

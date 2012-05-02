@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_norm_write' desc='SPM normalisation write (stream mean EPI)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <session>1</session>

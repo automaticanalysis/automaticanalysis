@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='FSL MELODIC' modality='MRI'>
             
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             ﻿<inputstreams>

@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='SPM coregistration (finetune to higher precision)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

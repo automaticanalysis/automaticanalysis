@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='session' desc='SPM compartment signal' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>

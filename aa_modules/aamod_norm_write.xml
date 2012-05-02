@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='session' desc='SPM normalisation write (stream EPI)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>

@@ -4,6 +4,11 @@
     <tasklist>
         <currenttask domain='[unknown]' desc='Import files as stream' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <match></match>

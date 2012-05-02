@@ -2,16 +2,26 @@
 <aap>
     <tasklist>
         <currenttask domain='session' mfile_alias='aamod_tSNR_EPI' desc='Calculate tSNR from a set of EPI images' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>epi_header</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>tSNR</stream>
             </outputstreams>
+            
             <HParam>100</HParam>
             <diagnostic>1</diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>

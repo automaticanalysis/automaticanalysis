@@ -2,15 +2,25 @@
 <aap>
     <tasklist>
         <currenttask domain='study' desc='Diagnostic of overlapped structural' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.3</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>3</permanenceofoutput>
+            
             <inputstreams>
                 <stream>structural</stream>
                 <stream>segmentation</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>overlap_structural</stream>
             </outputstreams>
+            
             <diagnostic>1</diagnostic>
+            
             </currenttask>
     </tasklist>
 </aap>
