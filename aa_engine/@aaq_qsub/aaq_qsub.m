@@ -7,19 +7,12 @@ classdef aaq_qsub<aaq
             obj.aap=aap;
         end
         %% Queue jobs on Qsub:
-<<<<<<< HEAD
-        %  Stop previous workers if these exist
-=======
->>>>>>> Improvements to qsub
         %  Queue job
         %  Watch output files (???)
         
         % Run all tasks on the queue, single threaded
         function [obj]=runall(obj,dontcloseexistingworkers)
-<<<<<<< HEAD
-=======
             global aaworker
->>>>>>> Improvements to qsub
             
             % Check number of jobs & monitored files
             obj.filestomonitor=[];
@@ -63,31 +56,6 @@ classdef aaq_qsub<aaq
                     % If output exists, check what it is...
                     if exist(obj.filestomonitor(ftmind).name, 'file')
                         JobLog = load(obj.filestomonitor(ftmind).name);
-<<<<<<< HEAD
-                        % Check the appropriate columns and print what
-                        % happened to the job...
-                        
-                        aas_log(obj.aap,false,...
-                            sprintf('Job %s finished\n', ...
-                            obj.filestomonitor(ftmind).name(1:end-11)), ...
-                            obj.aap.gui_controls.colours.running)
-                        
-                        aas_log(obj.aap,false,...
-                            sprintf('Job used %0.0f sec. and %0.9f GB\n', ...
-                            JobLog.optout{2}, JobLog.optout{4}./(1024^3)), ...
-                            obj.aap.gui_controls.colours.running)
-                        
-                        % Job finished, so no need to monitor
-                        donemonitoring(ftmind)=true;
-                        
-                        if ~isempty(JobLog.optout{8})
-                            % If a job had an error, it is usually fatal...
-                            
-                            aas_log(obj.aap,false,...
-                            sprintf('Job had an error:\n%s\n', ...
-                            JobLog.optout{8}), ...
-                            obj.aap.gui_controls.colours.running)
-=======
                         
                         % If we don't have any errors...
                         if ~strcmp(JobLog.optout{3}, 'lasterr')
@@ -123,7 +91,6 @@ classdef aaq_qsub<aaq
                                 JobLog.optout{4}.message), ...
                                 obj.aap.gui_controls.colours.running)
                             warning on
->>>>>>> Improvements to qsub
                             
                             fatalerrors = true;
                         end
@@ -155,12 +122,7 @@ classdef aaq_qsub<aaq
             
             % Submit the job using qsubfeval
             warning off
-<<<<<<< HEAD
-            jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
-                'memreq', 4*(1024^3), ...
-                'timreq', 1*24*60*60, ...
-                'diary', 'always');
-=======
+
             try
                 jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
                     'memreq', ...
@@ -190,7 +152,6 @@ classdef aaq_qsub<aaq
                     ...
                     'diary', 'always');
             end
->>>>>>> Improvements to qsub
             warning on
             
             % And monitor for files with the job output
