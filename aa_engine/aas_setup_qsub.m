@@ -3,7 +3,10 @@
 function aap = aas_setup_qsub(aap, matrixSize, numImages)
 
 % Add qsub path
-addpath(aap.options.fieldtripdir)
+addpath(aap.directory_conventions.fieldtripdir)
+
+% Remove previous workers
+qsublist('killall')
 
 aap.options.wheretoprocess = 'qsub';
 

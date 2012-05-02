@@ -58,6 +58,7 @@
       <qsub desc='Qsub options' ui='none'>
           <memoryMult desc='Memory multiplier for qsub' ui='double'>1</memoryMult>
           <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
+          <verbose desc='Verbose output for qsub?' ui='yesno'>0</verbose>
       </qsub>
   </options>
   
