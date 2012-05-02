@@ -1,0 +1,41 @@
+All scripts in the folder fall under the GNU public license.  A copy of the license has been included.
+
+I don't do a good job of commenting all of my scripts, but I'm working on a webpage to at least provide the overview of how to use these scripts.
+
+The website is still a work in progress, and can be found at:
+http://nmr.mgh.harvard.edu/~aschultz/Web/Aarons_Scripts/Aarons_Scripts.html
+
+You can also reach by email with questions, comments, feature requests, and bug reports at aschultz@martinos.org.
+
+This work was supported in parts by the Harvard Aging Brain Study ( NIH-P01AG036694), NIH-R01-AG027435, and the Mass. General Hospital Corp.
+
+I hope you enjoy the scripts and find the, useful!
+
+-Aaron P. Schultz
+
+The GPLv3 applies to all scripts within this package.  The list (as of 8-23-2011) is included below:
+
+BoxE.m
+CreateDesign.m            
+Examples.m                
+GLM_Flex.m                
+GLM_Flex_Contrasts.m      
+LoopCross.m               
+LoopEstimate.m            
+MakeContrastMatrix.m      
+MakePreCons.m             
+RunSPM8ana.m              
+aps_onesampt.m            
+aps_onewayanova_between.m 
+aps_onewayanova_repeated.m
+aps_pairedt.m             
+aps_twosampt.m            
+estimateError.m           
+estimateGLM.m        
+
+
+ChangeLog: 2011-11-11
+This update includes a few bug fixes, and enhancements to GLM Flex.  There are now some undocumented options in GLM Flex to control what is saved to disk and what is not.
+I also rearranged things in the script so that if I.Cons is specified prior to running GLM_Flex GLM_Flex_Contrasts will be called automatically to generate the contrast images.
+I.Cons.name will also now be used to name the output stat images, which now follows the form XXXX_ContrastName.nii
+
