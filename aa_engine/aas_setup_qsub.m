@@ -2,6 +2,9 @@
 
 function aap = aas_setup_qsub(aap, matrixSize, numImages)
 
+% Add qsub path
+addpath(aap.options.fieldtripdir)
+
 aap.options.wheretoprocess = 'qsub';
 
 % The timeBase and memoryBase estimates of the modules are based on typical

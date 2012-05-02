@@ -18,14 +18,11 @@ classdef aaq_qsub<aaq
             obj.filestomonitor=[];
             njobs=length(obj.jobqueue);
             
-            % Check that we have not had fatal errors
-            fatalerrors=false;
-            
             jobnotrun=true(njobs,1);
             jobcount=0;
             while(any(jobnotrun) || not(isempty(obj.filestomonitor)))
                 for i=1:njobs
-                    if (not(fatalerrors) && jobnotrun(i))
+                    if (jobnotrun(i))
                         % Find out whether this job is ready to be allocated by
                         % checking dependencies (done_ flags)
                         readytorun=true;
@@ -76,7 +73,7 @@ classdef aaq_qsub<aaq
                             % Also save to file with module name attached!
                             moduleName = strtok(JobLog.optout{10}, ':');
                             fid = fopen(fullfile(aaworker.parmpath,'qsub', 'time_estimates.txt'), 'a');
-                            fprintf(fid,'%s',moduleName(1:end-8));
+                            fprintf(fid,'%s',moduleName(8:end-8));
                             fprintf(fid,'Job used %0.4f hours. and %0.9f GB\n', ...
                                 JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3));
                             warning on
@@ -86,13 +83,11 @@ classdef aaq_qsub<aaq
                         else
                             % If a job had an error, it is usually fatal...
                             warning off
-                            aas_log(obj.aap,false,...
+                            aas_log(obj.aap,true,...
                                 sprintf('Job had an error:\n%s\n', ...
                                 JobLog.optout{4}.message), ...
                                 obj.aap.gui_controls.colours.running)
                             warning on
-                            
-                            fatalerrors = true;
                         end
                     end
                 end
@@ -104,10 +99,6 @@ classdef aaq_qsub<aaq
                 pause(0.5);
             end
             obj.emptyqueue;
-            
-            if (fatalerrors)
-                aas_log(obj.aap,true,'PARALLEL (qsub): Fatal errors executing jobs');
-            end
         end
         
         function [obj]=qsub_q_job(obj,job)

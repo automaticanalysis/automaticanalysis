@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' mfile_alias='aamod_tSNR_EPI' mfile_sdesc='Calculate tSNR from a set of EPI images' modality='MRI'>
+        <currenttask domain='session' mfile_alias='aamod_tSNR_EPI' desc='Calculate tSNR from a set of EPI images' modality='MRI'>
             <permanenceofoutput>2</permanenceofoutput>
             <inputstreams>
                 <stream>epi</stream>
