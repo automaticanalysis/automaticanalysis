@@ -99,6 +99,10 @@ if ~isfield(cfg, 'plot4pos') || isempty(cfg.plot4pos)
   cfg.plot4pos = [.37 .25 .25 .2];
 end
 
+if ~isfield(cfg, 'figname')
+    cfg.figname = '';
+end
+
 
 if ~isfield(cfg, 'inflate') || isempty(cfg.inflate)
   cfg.inflate = 5;
@@ -154,7 +158,7 @@ dat(1) = struct( 'XYZ',  XYZvox,...
 fprintf('Range of rendered data between %g and %g.\n', min(min(min(Y))), max(max(max(Y))));
 
 % create a blank window to put these brains in
-myfig = figure('color', 'w', 'position', [79 72 1034 850]);
+myfig = figure('color', 'w', 'position', [79 72 1034 850], 'name', cfg.figname);
 
 
 
