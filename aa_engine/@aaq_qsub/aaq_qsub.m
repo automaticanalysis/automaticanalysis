@@ -7,12 +7,19 @@ classdef aaq_qsub<aaq
             obj.aap=aap;
         end
         %% Queue jobs on Qsub:
+<<<<<<< HEAD
         %  Stop previous workers if these exist
+=======
+>>>>>>> Improvements to qsub
         %  Queue job
         %  Watch output files (???)
         
         % Run all tasks on the queue, single threaded
         function [obj]=runall(obj,dontcloseexistingworkers)
+<<<<<<< HEAD
+=======
+            global aaworker
+>>>>>>> Improvements to qsub
             
             % Check number of jobs & monitored files
             obj.filestomonitor=[];
@@ -56,6 +63,7 @@ classdef aaq_qsub<aaq
                     % If output exists, check what it is...
                     if exist(obj.filestomonitor(ftmind).name, 'file')
                         JobLog = load(obj.filestomonitor(ftmind).name);
+<<<<<<< HEAD
                         % Check the appropriate columns and print what
                         % happened to the job...
                         
@@ -79,6 +87,43 @@ classdef aaq_qsub<aaq
                             sprintf('Job had an error:\n%s\n', ...
                             JobLog.optout{8}), ...
                             obj.aap.gui_controls.colours.running)
+=======
+                        
+                        % If we don't have any errors...
+                        if ~strcmp(JobLog.optout{3}, 'lasterr')
+                            % Check the appropriate columns and print what
+                            % happened to the job...
+                            
+                            warning off
+                            aas_log(obj.aap,false,...
+                                sprintf('Job %s finished\n', ...
+                                obj.filestomonitor(ftmind).name(1:end-11)), ...
+                                obj.aap.gui_controls.colours.running)
+                            
+                            aas_log(obj.aap,false,...
+                                sprintf('Job used %0.4f hours. and %0.9f GB\n', ...
+                                JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3)), ...
+                                obj.aap.gui_controls.colours.running)
+                            
+                            % Also save to file with module name attached!
+                            moduleName = strtok(JobLog.optout{10}, ':');
+                            fid = fopen(fullfile(aaworker.parmpath,'qsub', 'time_estimates.txt'), 'a');
+                            fprintf(fid,'%s',moduleName(1:end-8));
+                            fprintf(fid,'Job used %0.4f hours. and %0.9f GB\n', ...
+                                JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3));
+                            warning on
+                            
+                            % Job finished, so no need to monitor
+                            donemonitoring(ftmind)=true;
+                        else
+                            % If a job had an error, it is usually fatal...
+                            warning off
+                            aas_log(obj.aap,false,...
+                                sprintf('Job had an error:\n%s\n', ...
+                                JobLog.optout{4}.message), ...
+                                obj.aap.gui_controls.colours.running)
+                            warning on
+>>>>>>> Improvements to qsub
                             
                             fatalerrors = true;
                         end
@@ -110,10 +155,42 @@ classdef aaq_qsub<aaq
             
             % Submit the job using qsubfeval
             warning off
+<<<<<<< HEAD
             jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
                 'memreq', 4*(1024^3), ...
                 'timreq', 1*24*60*60, ...
                 'diary', 'always');
+=======
+            try
+                jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
+                    'memreq', ...
+                    obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
+                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+                    (1024^3), ... % GB
+                    ...
+                    'timreq', ...
+                    obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
+                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
+                    60*60, ... % Hours
+                    ...
+                    'diary', 'always');
+            catch
+                aas_log(obj.aap,false,...
+                    sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
+                    [1 0 0])
+                
+                jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
+                    'memreq', ...
+                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+                    (1024^3), ... % GB
+                    ...
+                    'timreq', ...
+                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
+                    60*60, ... % Hours
+                    ...
+                    'diary', 'always');
+            end
+>>>>>>> Improvements to qsub
             warning on
             
             % And monitor for files with the job output
