@@ -9,6 +9,7 @@ addpath(aap.directory_conventions.fieldtripdir)
 qsublist('killall')
 
 aap.options.wheretoprocess = 'qsub';
+aap.options.timelog = 0; % Already timelogged by qsub
 
 % The timeBase and memoryBase estimates of the modules are based on typical
 % EPI data of 64x64x32 matrix size, and on ~2000 EPI images (in 2 sessions)

@@ -8,11 +8,6 @@
                 <memoryBase>0.1</memoryBase>
             </qsub>
             
-            <qsub>
-                <timeBase>0.2</timeBase>
-                <memoryBase>0.2</memoryBase>
-            </qsub>
-            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

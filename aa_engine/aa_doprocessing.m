@@ -39,7 +39,7 @@ if (exist('bucket','var'))
     % Get username
     [s w]=aas_shell('whoami');
     username=strtok(w);
-end;
+end
 % Defend against command insertion
 aap=aas_validatepaths(aap);
 
@@ -51,21 +51,21 @@ try
     utc_time();
 catch
     fprintf('You must compile the utc_time library\n')
-end;
+end
 
 if (isstr(aap))
     tmp=load(aap);
     aap=tmp.aap;
-end;
+end
 
 if (~exist('dontcloseexistingworkers','var'))
     dontcloseexistingworkers=[];
-end;
+end
 
 % Over-ride analysisid if provided in command line
 if (exist('analysisid','var'))
     aap.directory_conventions.analysisid=analysisid;
-end;
+end
 
 global defaults;
 global aaparallel
@@ -76,19 +76,19 @@ if (exist('username','var'))
     aap=aws_setupqnames(aap,username);
     if (exist('secretkey','var'))
         aaworker.aacc=aacc(username,secretkey);
-    end;
+    end
 end
 
 try
     aaworker.parmpath;
 catch
     aaworker.parmpath=aaworker_getparmpath(aap,0);
-end;
+end
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     aaworker.bucket=bucket;
     aaworker.bucketfordicom=bucketfordicom;
-end;
+end
 
 
 aap.internal.pwd=pwd;
@@ -106,7 +106,7 @@ if (isempty(aaparallel))
             aaparallel.processkey=workerid;
         else
             aaparallel.processkey=num2str(round(rand(1)*1e6));
-        end;
+        end
         aaparallel.nextworkernumber=num2str(aaparallel.processkey*1000);
         
         
@@ -116,21 +116,21 @@ if (isempty(aaparallel))
         fn=dir(fullfile(subpth,[sprintf('aaworker,%d',aaparallel.processkey) '*']));
         if (isempty(fn)) % No directories starting with this process key
             break;
-        end;
+        end
         
-    end;
+    end
 else
     % Clear out all of the old workers: this is non-unionised enterprise
     %     if (isempty(dontcloseexistingworkers))
     %         aa_closeallworkers;
-    %     end;
-end;
+    %     end
+end
 
 if (exist('jobid','var'))
     aaworker.jobid=jobid;
 else
     aaworker.jobid=aaparallel.processkey;
-end;
+end
 
 aas_log(aap,0,['AUTOMATIC ANALYSIS ' datestr(now)]);
 aas_log(aap,0,'=============================================================');
@@ -171,11 +171,11 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
         [s w]=aas_shell(['mkdir ' studypath]);
         if (s)
             aas_log(aap,1,sprintf('Problem making directory%s',studypath));
-        end;
-    end;
+        end
+    end
     aap.internal.aapversion=which('aa_doprocessing');
     save(aapsavefn,'aap');
-end;
+end
 
 % Choose where to run all tasks
 switch (aap.options.wheretoprocess)
@@ -192,7 +192,7 @@ switch (aap.options.wheretoprocess)
         %        taskqueue.clearawsqueue(); no longer cleared!
     otherwise
         aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
-end;
+end
 
 % Check registered with django
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
@@ -203,11 +203,11 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     attr=[];
     %     for i=1:length(aap.acq_details.subjects)
     %         attr.datasetref(i).nid=aap.acq_details.subjects(i).drupalnid;
-    %     end;
+    %     end
     %
     %     % Register analysis (or "job") with Drupal
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
-end;
+end
 
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)
@@ -221,7 +221,7 @@ for l=1:length(mytasks)
             mfile_alias=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.mfile_alias;
         else
             mfile_alias=stagename;
-        end;
+        end
         
         aap=aas_setcurrenttask(aap,k);
         
@@ -255,21 +255,21 @@ for l=1:length(mytasks)
                 if (aas_doneflagexists(aap,doneflag))
                     if (strcmp(task,'doit'))
                         aas_log(aap,0,sprintf('- done: %s',description));
-                    end;
+                    end
                 else
                     switch (task)
                         case 'checkrequirements'
                             [aap,resp]=aa_feval(mfile_alias,aap,task);
                             if (length(resp)>0)
                                 aas_log(aap,0,['\n***WARNING: ' resp]);
-                            end;
+                            end
                         case 'doit'
                             tic
                             % before starting current stage, delete done_
                             % flag for stages that are dependencies of it
                             for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                                 aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber);
-                            end;
+                            end
                             
                             % work out what needs to be done before we can
                             % execute this stage
@@ -285,13 +285,13 @@ for l=1:length(mytasks)
                                         case 'subject'
                                             for i=1:length(aap.acq_details.subjects)
                                                 tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                            end;
+                                            end
                                         case 'session'
                                             for i=1:length(aap.acq_details.subjects)
                                                 for j=aap.acq_details.selected_sessions
                                                     tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                                end;
-                                            end;
+                                                end
+                                            end
                                         case 'internal'
                                             % Get parallel parts of stage on
                                             % which this one is dependent
@@ -308,9 +308,9 @@ for l=1:length(mytasks)
                                                 end
                                                 tbcf=[tbcf {previousdoneflag}];
                                             end
-                                    end;
-                                end;
-                            end;
+                                    end
+                                end
+                            end
                             taskmask.tobecompletedfirst=tbcf;
                             taskmask.i=0;
                             taskmask.j=0;
@@ -320,9 +320,9 @@ for l=1:length(mytasks)
                             taskmask.doneflag=doneflag;
                             taskmask.description=description;
                             taskqueue.addtask(taskmask);
-                    end;
+                    end
                     
-                end;
+                end
             case 'subject'
                 msg='';
                 alldone=true;
@@ -331,7 +331,7 @@ for l=1:length(mytasks)
                     if (aas_doneflagexists(aap,doneflag))
                         if (strcmp(task,'doit'))
                             msg=[msg sprintf('- done: %s for %s \n',description,aas_getsubjname(aap,i))];
-                        end;
+                        end
                     else
                         alldone=false;
                         switch (task)
@@ -339,14 +339,14 @@ for l=1:length(mytasks)
                                 [aap,resp]=aa_feval(mfile_alias,aap,task,i);
                                 if (length(resp)>0)
                                     aas_log(aap,0,['\n***WARNING: ' resp]);
-                                end;
+                                end
                             case 'doit'
                                 tic
                                 % before starting current stage, delete done_
                                 % flag for next one
                                 for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                                     aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i);
-                                end;
+                                end
                                 
                                 % work out what needs to be done before we can
                                 % execute this stage
@@ -362,7 +362,7 @@ for l=1:length(mytasks)
                                             case 'session'
                                                 for j=aap.acq_details.selected_sessions
                                                     tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                                end;
+                                                end
                                             case 'internal'
                                                 % Get parallel parts of stage on
                                                 % which this one is dependent
@@ -378,9 +378,9 @@ for l=1:length(mytasks)
                                                     end
                                                     tbcf=[tbcf {previousdoneflag}];
                                                 end
-                                        end;
-                                    end;
-                                end;
+                                        end
+                                    end
+                                end
                                 taskmask.tobecompletedfirst=tbcf;
                                 
                                 % now queue current stage
@@ -390,20 +390,20 @@ for l=1:length(mytasks)
                                 taskmask.doneflag=doneflag;
                                 taskmask.description=sprintf('%s for %s',description,aas_getsubjname(aap,i));
                                 taskqueue.addtask(taskmask);
-                        end;
-                    end;
-                end;
+                        end
+                    end
+                end
                 if (strcmp(task,'doit'))
                     if (alldone)
                         aas_log(aap,false,sprintf('- done: %s for all subjects',description));
                     else
                         if (length(msg)>2)
                             msg=msg(1:length(msg-2));
-                        end;
+                        end
                         
                         aas_log(aap,false,msg);
-                    end;
-                end;
+                    end
+                end
             case 'session'
                 alldone=true;
                 msg='';
@@ -414,7 +414,7 @@ for l=1:length(mytasks)
                             if (strcmp(task,'doit'))
                                 msg=[msg sprintf('- done: %s for %s\n',description,aas_getsessname(aap,i,j))];
                                 alldone=true;
-                            end;
+                            end
                         else
                             alldone=false;
                             switch (task)
@@ -422,14 +422,14 @@ for l=1:length(mytasks)
                                     [aap,resp]=aa_feval(mfile_alias,aap,task,i,j);
                                     if (length(resp)>0)
                                         aas_log(aap,0,['\n***WARNING: ' resp]);
-                                    end;
+                                    end
                                 case 'doit'
                                     tic
                                     % before starting current stage, delete done_
                                     % flag for next one
                                     for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                                         aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i,j);
-                                    end;
+                                    end
                                     
                                     % work out what needs to be done before we can
                                     % execute this stage
@@ -459,9 +459,9 @@ for l=1:length(mytasks)
                                                         end
                                                         tbcf=[tbcf {previousdoneflag}];
                                                     end
-                                            end;
-                                        end;
-                                    end;
+                                            end
+                                        end
+                                    end
                                     taskmask.tobecompletedfirst=tbcf;
                                     
                                     % now queue current stage
@@ -472,10 +472,10 @@ for l=1:length(mytasks)
                                     taskmask.doneflag=doneflag;
                                     
                                     taskqueue.addtask(taskmask);
-                            end;
-                        end;
-                    end;
-                end;
+                            end
+                        end
+                    end
+                end
                 if (strcmp(task,'doit'))
                     
                     if (alldone)
@@ -483,10 +483,10 @@ for l=1:length(mytasks)
                     else
                         if (length(msg)>2)
                             msg=msg(1:length(msg-2));
-                        end;
+                        end
                         aas_log(aap,false,msg);
-                    end;
-                end;
+                    end
+                end
                 
             case 'internal' % e.g. for parallelising contrasts at group level [djm]
                 switch (task)
@@ -494,7 +494,7 @@ for l=1:length(mytasks)
                         [aap,resp]=aa_feval(mfile_alias,aap,task);
                         if (length(resp)>0)
                             aas_log(aap,0,['\n***WARNING: ' resp]);
-                        end;
+                        end
                     case 'doit'
                         % work out what needs to be done before we can
                         % execute this stage
@@ -510,13 +510,13 @@ for l=1:length(mytasks)
                                     case 'subject'
                                         for i=1:length(aap.acq_details.subjects)
                                             tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                        end;
+                                        end
                                     case 'session'
                                         for i=1:length(aap.acq_details.subjects)
                                             for j=aap.acq_details.selected_sessions
                                                 tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                            end;
-                                        end;
+                                            end
+                                        end
                                     case 'internal'
                                         % Get parallel parts of stage on
                                         % which this one is dependent
@@ -532,9 +532,9 @@ for l=1:length(mytasks)
                                             end
                                             tbcf=[tbcf {previousdoneflag}];
                                         end
-                                end;
-                            end;
-                        end;
+                                end
+                            end
+                        end
                         doneflag=aas_doneflag_getpath(aap,k);% this will be a directory
                         % Get parallel parts of the current
                         % stage
@@ -557,7 +557,7 @@ for l=1:length(mytasks)
                                 % flag for next one
                                 for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                                     aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i);
-                                end;
+                                end
                                 
                                 % now queue current stage
                                 aas_log(aap,0,sprintf('MODULE %s PENDING: for %s',stagename,desc));
@@ -567,24 +567,26 @@ for l=1:length(mytasks)
                                 taskmask.tobecompletedfirst=tbcf;
                                 taskmask.description=sprintf('%s for %s',description,desc);
                                 taskqueue.addtask(taskmask);
-                            end;
+                            end
                         end
-                end;
+                end
                 
             otherwise
                 aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s - check the domain="xxx" field in the .xml file associated with this module',domain,aap.tasklist.main.module(k).name));
-        end;
+        end
         % Get jobs started as quickly as possible - important on AWS as it
         % can take a while to scan all of the done flags
-        taskqueue.runall(dontcloseexistingworkers);
-    end;
-end;
+        taskqueue.runall(dontcloseexistingworkers, false);
+    end
+    % Wait until all the jobs have finished
+    taskqueue.runall(dontcloseexistingworkers, true);
+end
 
 % Moved back to python as this thread doesn't have permissions to the queue
 % if (exist('receipthandle','var'))
 %     aas_log(aap,0,sprintf('Have run all jobs, now trying to delete message in queue %s with receipt handle %s.',aaworker.aapqname,receipthandle));
 %     sqs_delete_message(aap,aaworker.aapqname,receipthandle);
-% end;
+% end
 % aas_log(aap,0,'Message deleted');
 
 if ~isempty(aap.options.email)
@@ -605,5 +607,5 @@ if (isfield(aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE,'mfil
     prev_mfile_alias=aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE.mfile_alias;
 else
     prev_mfile_alias=prev_stagename;
-end;
+end
 [aap,loopvar]=aa_feval(prev_mfile_alias,aap,'getparallelparts');

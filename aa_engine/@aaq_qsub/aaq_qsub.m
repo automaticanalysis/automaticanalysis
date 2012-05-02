@@ -1,6 +1,7 @@
 classdef aaq_qsub<aaq
     properties
         filestomonitor=[];
+        jobnotrun = []
     end
     methods
         function [obj]=aaq_qsub(aap)
@@ -8,21 +9,23 @@ classdef aaq_qsub<aaq
         end
         %% Queue jobs on Qsub:
         %  Queue job
-        %  Watch output files (???)
+        %  Watch output files
         
         % Run all tasks on the queue, single threaded
-        function [obj]=runall(obj,dontcloseexistingworkers)
+        function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
             global aaworker
             
             % Check number of jobs & monitored files
-            obj.filestomonitor=[];
             njobs=length(obj.jobqueue);
             
-            jobnotrun=true(njobs,1);
-            jobcount=0;
-            while(any(jobnotrun) || not(isempty(obj.filestomonitor)))
+            % We have already submitted some of these jobs
+            submittedJobs = 1:length(obj.jobnotrun);
+            obj.jobnotrun = true(njobs,1);
+            obj.jobnotrun(submittedJobs) = false;
+            
+            while(any(obj.jobnotrun) ) %|| not(isempty(obj.filestomonitor)))
                 for i=1:njobs
-                    if (jobnotrun(i))
+                    if (obj.jobnotrun(i))
                         % Find out whether this job is ready to be allocated by
                         % checking dependencies (done_ flags)
                         readytorun=true;
@@ -34,17 +37,20 @@ classdef aaq_qsub<aaq
                         
                         if (readytorun)
                             % Add a job to the queue
-                            jobcount=jobcount+1;
                             job=obj.jobqueue(i);
                             obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);
                             % Assign an aap to the job!
                             job.aap=obj.aap;
                             % Run the job
                             obj.qsub_q_job(job);
-                            jobnotrun(i)=false;
+                            obj.jobnotrun(i)=false;
                         end
                     end
                 end
+                
+                % Don't monitor by default
+                donemonitoring=true;
+                
                 % Monitor all of the output files
                 donemonitoring=false(size(obj.filestomonitor));
                 
@@ -59,10 +65,12 @@ classdef aaq_qsub<aaq
                             % Check the appropriate columns and print what
                             % happened to the job...
                             
-                            warning off
+                            moduleName = strtok(JobLog.optout{10}, ':');
+                            moduleName = moduleName(8:(end-8));
+                            
                             aas_log(obj.aap,false,...
-                                sprintf('Job %s finished', ...
-                                obj.filestomonitor(ftmind).name(1:end-11)), ...
+                                sprintf('Job %s: %s finished', ...
+                                obj.filestomonitor(ftmind).name(1:end-11), moduleName), ...
                                 obj.aap.gui_controls.colours.running)
                             
                             aas_log(obj.aap,false,...
@@ -76,24 +84,20 @@ classdef aaq_qsub<aaq
                                     JobLog.optout{10}))
                             end
                             
-                            % Also save to file with module name attached!
-                            moduleName = strtok(JobLog.optout{10}, ':');
+                            % Also save to file with module name attached!                            
                             fid = fopen(fullfile(aaworker.parmpath,'qsub', 'time_estimates.txt'), 'a');
-                            fprintf(fid,'%s\n',moduleName(8:end-8));
+                            fprintf(fid,'%s\n',moduleName);
                             fprintf(fid,'Job used %0.4f hours. and %0.9f GB\n', ...
                                 JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3));
-                            warning on
                             
                             % Job finished, so no need to monitor
                             donemonitoring(ftmind)=true;
                         else
                             % If a job had an error, it is usually fatal...
-                            warning off
                             aas_log(obj.aap,true,...
                                 sprintf('Job had an error:\n%s\n', ...
                                 JobLog.optout{4}.message), ...
                                 obj.aap.gui_controls.colours.running)
-                            warning on
                         end
                     end
                 end
@@ -103,8 +107,11 @@ classdef aaq_qsub<aaq
                 
                 % Lets not overload the filesystem
                 pause(0.5);
+                
             end
-            obj.emptyqueue;
+            if waitforalljobs == 1
+                obj.emptyqueue;
+            end
         end
         
         function [obj]=qsub_q_job(obj,job)
@@ -117,9 +124,7 @@ classdef aaq_qsub<aaq
             end
             cd(qsubpath);
             
-            % Submit the job using qsubfeval
-            warning off
-
+            % Submit the job using qsubfeval            
             % Check how much memory and time we should assign to the job
             try
                 memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
@@ -141,14 +146,15 @@ classdef aaq_qsub<aaq
             end
             
             % Submit job
+            warning off
             jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
-                    'memreq', memReq, ...
-                    'timreq', timReq, ...
-                    'diary', 'always');
-            % State what the assigned number of hours and GB is...
-            fprintf('Assigned %0.4f hours. and %0.9f GB', ...
-                                timReq./(60*60), memReq./(1024^3))
+                'memreq', memReq, ...
+                'timreq', timReq, ...
+                'diary', 'always');
             warning on
+            % State what the assigned number of hours and GB is...
+            fprintf('Assigned %0.4f hours. and %0.9f GB\n\n', ...
+                timReq./(60*60), memReq./(1024^3))
             
             % And monitor for files with the job output
             fles.name=[jobid '_output.mat'];
