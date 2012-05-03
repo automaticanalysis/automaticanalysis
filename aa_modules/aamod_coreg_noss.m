@@ -56,7 +56,7 @@ switch task
         aap = aas_desc_outputs(aap,i,'structural',structfn);
 
         % Save graphical output - this will now be done by report task
-        figure(spm_figure('FindWin', 'Graphics'));            
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;            
         print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
         
     case 'checkrequirements'

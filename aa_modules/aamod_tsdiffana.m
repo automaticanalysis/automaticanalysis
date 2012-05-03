@@ -36,7 +36,7 @@ switch task
         tsdiffana(imgs,0);
         
         % Now produce graphical check
-        figure(spm_figure('FindWin', 'Graphics'));
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         print('-djpeg','-r75',fullfile(sesspath,'diagnostic_aamod_tsdiffana'));
      
     

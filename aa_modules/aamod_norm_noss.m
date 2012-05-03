@@ -194,7 +194,7 @@ switch task
         
         %{
         % Now save graphical check
-        figure(spm_figure('FindWin', 'Graphics'));
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         % added graphical check for when segment is used [djm 20/01/06]
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
             myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
@@ -238,7 +238,7 @@ switch task
             
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin', 'Graphics'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '_N.jpeg']));
             
@@ -250,7 +250,7 @@ switch task
             end
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin', 'Graphics'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '_W.jpeg']));
         catch
@@ -259,14 +259,14 @@ switch task
                 %% Draw native template
                 spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); fullfile(Spth,['mm' Sfn Sext])}))
                 
-                figure(spm_figure('FindWin', 'Graphics'));
+                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                     [mfilename '__' mriname '_N.jpeg']));
                 
                 %% Draw warped template
                 spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); aap.directory_conventions.T1template}))
                 
-                figure(spm_figure('FindWin', 'Graphics'));
+                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 set(gcf,'PaperPositionMode','auto')
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                     [mfilename '__' mriname ' W.jpeg']));
