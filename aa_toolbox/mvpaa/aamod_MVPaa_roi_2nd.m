@@ -9,8 +9,6 @@ resp='';
 switch task
     case 'doit'
         
-        tic
-        
         Stats = []; meanSimil = [];% Statistic structure that we load for each participant
         for p = 1:length(aap.acq_details.subjects)
             load(aas_getfiles_bystream(aap,p,'MVPaa'));
@@ -47,6 +45,4 @@ switch task
         save(fullfile(aap.acq_details.root, 'MVPaa.mat'), ...
                 'indStats', 'aggrStats', 'aggrSimil', 'EP')
         aap=aas_desc_outputs(aap,'MVPaa_2nd', fullfile(aap.acq_details.root, 'MVPaa.mat'));
-        
-        time_elapsed
 end

@@ -4,8 +4,8 @@
         <currenttask domain='session' mfile_alias='aamod_slicetiming' desc='SPM slice timing' modality='MRI'>
             
             <qsub>
-                <timeBase>0.5</timeBase>
-                <memoryBase>1</memoryBase>
+                <timeBase>0.3</timeBase>
+                <memoryBase>0.3</memoryBase>
             </qsub>
             
             <permanenceofoutput>1</permanenceofoutput>
