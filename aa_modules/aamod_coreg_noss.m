@@ -56,8 +56,8 @@ switch task
         aap = aas_desc_outputs(aap,i,'structural',structfn);
 
         % Save graphical output - this will now be done by report task
-%          figure(spm_figure('FindWin'));            
-%          print('-djpeg','-r50',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
+        figure(spm_figure('FindWin', 'Graphics'));            
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
         
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );

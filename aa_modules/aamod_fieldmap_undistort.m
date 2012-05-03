@@ -54,8 +54,8 @@ switch task
             feval(aap.options.fieldmapundistortversion,magfn,phasefn,epimean,epistoundistort,fieldmapsdir,structfn);
         end;
         % Save graphical output
-        figure(spm_figure('FindWin'));
-        print('-djpeg','-r50',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_fieldmapundistort'));
+        figure(spm_figure('FindWin', 'Graphics'));
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_fieldmapundistort'));
 
     case 'checkrequirements'
 

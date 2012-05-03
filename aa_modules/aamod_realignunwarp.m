@@ -78,8 +78,8 @@ switch task
         spm_jobman('run',jobs);
         
         % Save graphical output
-        figure(spm_figure('FindWin'));
-        print('-djpeg','-r50',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_realignunwarp'));
+        figure(spm_figure('FindWin', 'Graphics'));
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_realignunwarp'));
                 
 case 'checkrequirements'
     
