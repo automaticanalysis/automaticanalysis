@@ -21,17 +21,32 @@ switch (length(varargin)-1)
         domain='study'
     case 1
         domain='subject'
-        if ischar(varargin{1})
-            subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
-            if (isempty(subjnum))
-                aas_log(aap,true,sprintf('Cannot find subject %s in list - is aas_addinitialstream command after aas_addsubject command?',varargin{1}));
-            end;
-        else
-            subjnum=varargin{1};
-        end;
     case 2
         domain='session'
 end;
+
+
+if strcmp(domain, 'subject') || strcmp(domain, 'session')
+    if ischar(varargin{1})
+        subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
+        if (isempty(subjnum))
+            aas_log(aap,true,sprintf('Cannot find subject %s in list - is aas_addinitialstream command after aas_addsubject command?',varargin{1}));
+        end;
+    else
+        subjnum=varargin{1};
+    end;
+end
+
+if strcmp(domain, 'session')
+    if ischar(varargin{2})
+        sessnum=find(strcmp(varargin{2},{aap.acq_details.sessions.name}));
+        if (isempty(sessnum))
+            aas_log(aap,true,sprintf('Cannot find session %s in list - is aas_addinitialstream command after aas_addsession command?',varargin{1}));
+        end;
+    else
+        sessnum=varargin{2};
+    end;
+end
 
 % First, see if a module at the appropriate domain for this stream already
 % exists
@@ -39,17 +54,17 @@ end;
 moduleexists=false;
 for modposintasklist=1:length(aap.tasklist.main.module)
     if strcmp(aap.tasklist.main.module(modposintasklist).name,'aamod_importfilesasstream') ...
-        && strcmp(streamname,aap.tasksettings.aamod_importfilesasstream(aap.tasklist.main.module(modposintasklist).index).outputstreams.stream) ...
-        && strcmp(domain,aap.schema.tasksettings.aamod_importfilesasstream(aap.tasklist.main.module(modposintasklist).index).ATTRIBUTE.domain)
-            moduleexists=true;
-            break;
+            && strcmp(streamname,aap.tasksettings.aamod_importfilesasstream(aap.tasklist.main.module(modposintasklist).index).outputstreams.stream) ...
+            && strcmp(domain,aap.schema.tasksettings.aamod_importfilesasstream(aap.tasklist.main.module(modposintasklist).index).ATTRIBUTE.domain)
+        moduleexists=true;
+        break;
     end;
 end;
 
 if (~moduleexists)
     % CREATE NEW MODULE AND PUT AT START OF TASKLIST
     aap=aas_addtask(aap,'aamod_importfilesasstream',varargin(1:(end-1)));
-
+    
     % Now we need to tailor with this
     if length(aap.tasklist.main.module)>1
         % First, lets move it to the beginning
@@ -57,7 +72,12 @@ if (~moduleexists)
         % and do same to "before user changes" to prevent error trapping
         aap.aap_beforeuserchanges.tasklist.main.module=[aap.aap_beforeuserchanges.tasklist.main.module(end) aap.aap_beforeuserchanges.tasklist.main.module(1:(end-1))];
     end;
-
+    
+    if strcmp(domain, 'session')
+        aap.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
+        aap.aap_beforeuserchanges.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
+    end
+    
     % It's a little involved changing the engine's details by hand. For each
     % change, also make change to "aap_beforeuserchanges" to prevent error
     % trapping
@@ -67,7 +87,7 @@ if (~moduleexists)
     % And change the schema
     aap.schema.tasksettings.aamod_importfilesasstream(end).outputstreams.stream{1}=streamname;
     aap.aap_beforeuserchanges.schema.tasksettings.aamod_importfilesasstream(end).outputstreams.stream{1}=streamname;
-
+    
     modposintasklist=1;
     modposinsettings=aap.tasklist.main.module(modposintasklist).index;
     aap.schema.tasksettings.aamod_importfilesasstream(modposinsettings).ATTRIBUTE.domain=domain;
@@ -89,7 +109,7 @@ switch (length(varargin)-1)
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
     case 2
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
-        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=varargin{2};
+        aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=sessnum; %varargin{2};
 end;
 aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match
 
