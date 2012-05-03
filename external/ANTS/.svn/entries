@@ -1,0 +1,64 @@
+8
+
+dir
+437
+https://advants.svn.sourceforge.net/svnroot/advants
+https://advants.svn.sourceforge.net/svnroot/advants
+
+
+
+2010-03-19T13:33:41.625548Z
+437
+stnava
+
+
+svn:special svn:externals svn:needs-lock
+
+
+
+
+
+
+
+
+
+
+
+fd2da0a4-d968-48df-9cb5-d8c496287cbf
+
+ImageSegmentation
+dir
+
+Temporary
+dir
+
+Scripts
+dir
+
+Documentation
+dir
+
+Tensor
+dir
+
+Utilities
+dir
+
+README.txt
+file
+
+
+
+
+2010-02-12T15:39:54.000000Z
+2397b37754b02a6a3f1072f67ba18f39
+2010-02-11T15:21:25.434084Z
+337
+stnava
+
+ImageRegistration
+dir
+
+Examples
+dir
+

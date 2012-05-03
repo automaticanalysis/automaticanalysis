@@ -1,0 +1,185 @@
+K 25
+svn:wc:ra_dav:version-url
+V 37
+/svnroot/advants/!svn/ver/415/Scripts
+END
+landmarkmatch.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/194/Scripts/landmarkmatch.sh
+END
+antsIntroduction.sh
+K 25
+svn:wc:ra_dav:version-url
+V 57
+/svnroot/advants/!svn/ver/415/Scripts/antsIntroduction.sh
+END
+buildtemplateparallel.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/415/Scripts/buildtemplateparallel.sh
+END
+removeskull.sh
+K 25
+svn:wc:ra_dav:version-url
+V 52
+/svnroot/advants/!svn/ver/194/Scripts/removeskull.sh
+END
+runprogramonimageset.pl
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/advants/!svn/ver/1/Scripts/runprogramonimageset.pl
+END
+waitForSGEQJobs.pl
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/advants/!svn/ver/401/Scripts/waitForSGEQJobs.pl
+END
+registerimages.pl
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/advants/!svn/ver/1/Scripts/registerimages.pl
+END
+antsaffine.sh
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svnroot/advants/!svn/ver/411/Scripts/antsaffine.sh
+END
+antsbashstats.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/229/Scripts/antsbashstats.sh
+END
+antsdeformationmag.sh
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/advants/!svn/ver/194/Scripts/antsdeformationmag.sh
+END
+sygnccavg.sh
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/advants/!svn/ver/194/Scripts/sygnccavg.sh
+END
+antswithdt.sh
+K 25
+svn:wc:ra_dav:version-url
+V 51
+/svnroot/advants/!svn/ver/243/Scripts/antswithdt.sh
+END
+geodesicinterpolation.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/194/Scripts/geodesicinterpolation.sh
+END
+ANTSpexec.sh
+K 25
+svn:wc:ra_dav:version-url
+V 50
+/svnroot/advants/!svn/ver/395/Scripts/ANTSpexec.sh
+END
+weightedaverage.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/1/Scripts/weightedaverage.sh
+END
+thickstudy.sh
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svnroot/advants/!svn/ver/1/Scripts/thickstudy.sh
+END
+guidedregistration.sh
+K 25
+svn:wc:ra_dav:version-url
+V 59
+/svnroot/advants/!svn/ver/194/Scripts/guidedregistration.sh
+END
+weightedaverage.pl
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/1/Scripts/weightedaverage.pl
+END
+lohmann.sh
+K 25
+svn:wc:ra_dav:version-url
+V 48
+/svnroot/advants/!svn/ver/194/Scripts/lohmann.sh
+END
+phantomstudy.sh
+K 25
+svn:wc:ra_dav:version-url
+V 53
+/svnroot/advants/!svn/ver/194/Scripts/phantomstudy.sh
+END
+ANTSAverage2DAffine.sh
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/advants/!svn/ver/203/Scripts/ANTSAverage2DAffine.sh
+END
+optimalsmooth.sh
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/194/Scripts/optimalsmooth.sh
+END
+antsbrainsegmentation.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/413/Scripts/antsbrainsegmentation.sh
+END
+antsqsub.sh
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svnroot/advants/!svn/ver/194/Scripts/antsqsub.sh
+END
+warpimages.pl
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svnroot/advants/!svn/ver/1/Scripts/warpimages.pl
+END
+ANTSAverage3DAffine.sh
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/advants/!svn/ver/203/Scripts/ANTSAverage3DAffine.sh
+END
+submitexperimentalbuild.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/1/Scripts/submitexperimentalbuild.sh
+END
+shapeupdatetotemplate.sh
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/247/Scripts/shapeupdatetotemplate.sh
+END
+apocrita.sh
+K 25
+svn:wc:ra_dav:version-url
+V 49
+/svnroot/advants/!svn/ver/200/Scripts/apocrita.sh
+END
+ants.sh
+K 25
+svn:wc:ra_dav:version-url
+V 45
+/svnroot/advants/!svn/ver/411/Scripts/ants.sh
+END

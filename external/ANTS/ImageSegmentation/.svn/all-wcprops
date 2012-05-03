@@ -1,0 +1,125 @@
+K 25
+svn:wc:ra_dav:version-url
+V 47
+/svnroot/advants/!svn/ver/437/ImageSegmentation
+END
+itkGrubbsRosnerListSampleFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGrubbsRosnerListSampleFilter.h
+END
+itkListSampleFunction.h
+K 25
+svn:wc:ra_dav:version-url
+V 71
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkListSampleFunction.h
+END
+itkManifoldParzenWindowsListSampleFunction.txx
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svnroot/advants/!svn/ver/436/ImageSegmentation/itkManifoldParzenWindowsListSampleFunction.txx
+END
+itkListSampleToListSampleFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkListSampleToListSampleFilter.h
+END
+itkManifoldParzenWindowsListSampleFunction.h
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svnroot/advants/!svn/ver/436/ImageSegmentation/itkManifoldParzenWindowsListSampleFunction.h
+END
+itkGaussianMembershipFunction.txx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGaussianMembershipFunction.txx
+END
+itkHistogramParzenWindowsListSampleFunction.txx
+K 25
+svn:wc:ra_dav:version-url
+V 95
+/svnroot/advants/!svn/ver/437/ImageSegmentation/itkHistogramParzenWindowsListSampleFunction.txx
+END
+itkBoxPlotQuantileListSampleFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 86
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkBoxPlotQuantileListSampleFilter.txx
+END
+itkGaussianMembershipFunction.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGaussianMembershipFunction.h
+END
+itkHistogramParzenWindowsListSampleFunction.h
+K 25
+svn:wc:ra_dav:version-url
+V 93
+/svnroot/advants/!svn/ver/434/ImageSegmentation/itkHistogramParzenWindowsListSampleFunction.h
+END
+itkBoxPlotQuantileListSampleFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkBoxPlotQuantileListSampleFilter.h
+END
+itkPassThroughListSampleFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 82
+/svnroot/advants/!svn/ver/431/ImageSegmentation/itkPassThroughListSampleFilter.txx
+END
+itkGaussianListSampleFunction.txx
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGaussianListSampleFunction.txx
+END
+itkAtroposSegmentationImageFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkAtroposSegmentationImageFilter.txx
+END
+itkPassThroughListSampleFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svnroot/advants/!svn/ver/431/ImageSegmentation/itkPassThroughListSampleFilter.h
+END
+itkGrubbsRosnerListSampleFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGrubbsRosnerListSampleFilter.txx
+END
+itkAtroposSegmentationImageFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkAtroposSegmentationImageFilter.h
+END
+itkGaussianListSampleFunction.h
+K 25
+svn:wc:ra_dav:version-url
+V 79
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkGaussianListSampleFunction.h
+END
+itkListSampleFunction.txx
+K 25
+svn:wc:ra_dav:version-url
+V 73
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkListSampleFunction.txx
+END
+itkListSampleToListSampleFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svnroot/advants/!svn/ver/421/ImageSegmentation/itkListSampleToListSampleFilter.txx
+END
