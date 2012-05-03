@@ -2,13 +2,23 @@
 <aap>
     <tasklist>
         <currenttask domain='session' desc='SPM EPI coregistration with phase-encoding direction unwarping' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>PEwarp_params</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

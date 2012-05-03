@@ -2,9 +2,18 @@
 <aap>
     <tasklist>
         <currenttask domain='study' desc='2nd level MVPaa analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
             <inputstreams>
                 <stream>MVPaa</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>MVPaa_2nd</stream>
             </outputstreams>

@@ -2,13 +2,18 @@
 <aap>
     <tasklist>
         <currenttask domain='session' desc='Use ANTS to warp EPI to template based on structural warp' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>ANTs</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

@@ -13,8 +13,6 @@ resp='';
 switch task
     case 'doit'
         
-        tic
-        
         fprintf('Working with data from participant %s. \n',aap.acq_details.subjects(p).mriname)
         
         Stats = []; EP = [];
@@ -181,6 +179,4 @@ switch task
             Flist = strvcat(Flist, fullfile(Froot, [Ffn '.hdr']));
         end
         aap=aas_desc_outputs(aap,p,'firstlevel_cons', Flist);
-        
-        time_elapsed
 end

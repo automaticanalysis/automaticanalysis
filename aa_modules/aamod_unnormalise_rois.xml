@@ -2,6 +2,13 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Unnormalise ROIs from MNI to native and GM mask them' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
                 <stream>meanepi</stream>
                 <stream>segmasksExclusive</stream>

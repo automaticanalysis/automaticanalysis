@@ -1,17 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_highpassfilter_epi domain='session' desc='High pass filter EPI' modality='MRI'>
+    <tasklist>
+        <currenttask domain='session' desc='High pass filter EPI' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <TRs/>
             <HParam desc='High pass filter cutoff, in seconds - as for SPM'>128</HParam>
+            
             <inputstreams>
 ﻿                <stream>epi</stream>  
                 <stream>epi_header</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>  
             </outputstreams>
-        </aamod_highpassfilter_epi>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

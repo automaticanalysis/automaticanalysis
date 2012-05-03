@@ -3,6 +3,9 @@
 <aap>
     <tasklist>
         <currenttask domain='internal' desc='Simulate EPI series' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputbrain>/home/rhodri128/mprage001.nii.gz</inputbrain>  
             <mrparameters>${FSLDIR}/data/possum/MRpar_3T</mrparameters>
             <sliceprofile>${FSLDIR}/data/possum/slcprof</sliceprofile>
@@ -30,12 +33,14 @@
                 <cover>100</cover>
                 <angle>90</angle>
             </pulse_commandlineparameters>
+            
             <inputstreams>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>  
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>
-

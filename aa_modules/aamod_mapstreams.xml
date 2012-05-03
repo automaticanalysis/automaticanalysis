@@ -1,14 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_mapstreams domain='session' desc='Map streams' modality='MRI'>
+    <tasklist>
+        <currenttask domain='session' desc='Map streams' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             ﻿<inputstreams>
                 <stream>epi_nulled</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>  
             </outputstreams>
-        </aamod_mapstreams>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

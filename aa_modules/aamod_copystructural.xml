@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-   <tasksettings>
-       <aamod_copystructural domain='subject' desc='Copying structural'>
-           <inputstreams>
-               <stream>dicom_structural</stream>
-           </inputstreams>
-           <outputstreams>
-               <stream>structural</stream>
-               <stream>structural_dicom_header</stream>
-           </outputstreams>
-       </aamod_copystructural>
-   </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='Copying structural'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>dicom_structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>structural_dicom_header</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   
+

@@ -2,12 +2,22 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Get DICOM files for fieldmap'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>autoidentifyseries</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>dicom_fieldmap</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

@@ -97,8 +97,8 @@ switch task
         
         if (~isdeployed)
             % Save graphical output
-            figure(spm_figure('FindWin'));
-            print('-djpeg','-r50',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_realign'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_realign'));
         end;
         
         % Run the reslicing

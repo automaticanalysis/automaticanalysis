@@ -37,11 +37,13 @@
       <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
       <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
       <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
+      <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'>/cn_apps/fieldtrip</fieldtripdir>
       <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
   </directory_conventions>
    <options>
       <verbose desc='How verbose to be' ui='yesno'>1</verbose>
       <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
+      <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
       <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
       <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
       <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
@@ -52,7 +54,12 @@
       <aa_minver desc='Minimum allowed aa version' ui='double'>1</aa_minver>
       <aa_maxver desc='Maximum allowed aa version' ui='double'>Inf</aa_maxver>
       <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
-      <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws' ui='optionlist'>localsingle</wheretoprocess>
+      <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
+      <qsub desc='Qsub options' ui='none'>
+          <memoryMult desc='Memory multiplier for qsub' ui='double'>1</memoryMult>
+          <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
+          <verbose desc='Verbose output for qsub?' ui='yesno'>0</verbose>
+      </qsub>
   </options>
   
   <gui_controls>

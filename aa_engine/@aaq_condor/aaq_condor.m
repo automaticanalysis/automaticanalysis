@@ -12,7 +12,7 @@ classdef aaq_condor<aaq
         %  Watch output files
         
         % Run all tasks on the queue, single threaded
-        function [obj]=runall(obj,dontcloseexistingworkers)
+        function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
             global aaparallel
             
             obj.filestomonitor=[];
@@ -31,8 +31,8 @@ classdef aaq_condor<aaq
                         for j=1:length(obj.jobqueue(i).tobecompletedfirst)
                             if (~exist(obj.jobqueue(i).tobecompletedfirst{j},'file'))
                                 readytorun=false;
-                            end;
-                        end;
+                            end
+                        end
                         
                         if (readytorun)
                             jobcount=jobcount+1;
@@ -43,9 +43,9 @@ classdef aaq_condor<aaq
                             save(jobfn,'job');
                             obj.condor_q_job(jobfn,job);
                             jobnotrun(i)=false;
-                        end;
-                    end;
-                end;
+                        end
+                    end
+                end
                 % Monitor all of the output files
                 donemonitoring=false(size(obj.filestomonitor));
                 for ftmind=1:length(obj.filestomonitor)
@@ -61,15 +61,15 @@ classdef aaq_condor<aaq
                                     state='executing';
                                 case 5
                                     state='terminated';
-                            end;
+                            end
                             while(not(feof(logfid)) && not(strcmp(deblank(ln),'...')))
                                 ln=fgetl(logfid);
-                            end;
-                        end;
+                            end
+                        end
                         fclose(logfid);
                     else
                         state='initialising';
-                    end;
+                    end
                     if (not(strcmp(state,obj.filestomonitor(ftmind).state)))
                         %
                         if (strcmp(state,'terminated'))
@@ -78,45 +78,47 @@ classdef aaq_condor<aaq
                                 ln=fgetl(fid);
                                 if (ln==-1)
                                     break;
-                                end;
+                                end
                                 
                                 aas_log(obj.aap,false,ln,obj.aap.gui_controls.colours.running);
-                            end;
+                            end
                             fid=fopen(obj.filestomonitor(ftmind).error);
                             while(not(feof(fid)))
                                 ln=fgetl(fid);
                                 if (ln==-1)
                                     break;
-                                end;
+                                end
                                 aas_log(obj.aap,false,ln,'Errors');
                                 if (not(isempty(deblank(ln))))
                                     fatalerrors=true;
-                                end;
-                            end;
+                                end
+                            end
                             donemonitoring(ftmind)=true;
-                        end;
+                        end
                         
                         aas_log(obj.aap,false,sprintf('PARALLEL (condor) %s:  %s',state,obj.filestomonitor(ftmind).name));
                         obj.filestomonitor(ftmind).state=state;
                         
-                    end;
+                    end
                     
                     
                     
-                end;
+                end
                 
                 % Clear out files we've finished monitoring
                 obj.filestomonitor(donemonitoring)=[];
                 
                 % Lets not overload the filesystem
                 pause(0.5);
-            end;
-            obj.emptyqueue;
+            end
+            if waitforalljobs == 1
+                obj.emptyqueue;
+            end
             
             if (fatalerrors)
                 aas_log(obj.aap,true,'PARALLEL (condor): Fatal errors executing jobs');
-            end;
-        end;
+            end
+        end
         
         function [obj]=condor_q_job(obj,jobfn,job)
             global aaworker
@@ -129,7 +131,7 @@ classdef aaq_condor<aaq
             condorpath=fullfile(aaworker.parmpath,'condor');
             if (exist(condorpath,'dir')==0)
                 mkdir(condorpath);
-            end;
+            end
             fles=[];
             fles.log=fullfile(condorpath,['log_' nme '.txt']);
             fles.output=fullfile(condorpath,['out_' nme '.txt']);
@@ -146,7 +148,7 @@ classdef aaq_condor<aaq
             [s w]=system(cmd);
             if (s)
                 fprintf('Error during condor_submit of %s\n',w);
-            end;
+            end
             
             fles.name=job.description;
             fles.state='queued';
@@ -154,7 +156,7 @@ classdef aaq_condor<aaq
                 obj.filestomonitor=fles;
             else
                 obj.filestomonitor(end+1)=fles;
-            end;
+            end
         end
-    end;
+    end
 end

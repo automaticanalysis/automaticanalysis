@@ -1,0 +1,83 @@
+K 25
+svn:wc:ra_dav:version-url
+V 36
+/svnroot/advants/!svn/ver/338/Tensor
+END
+itkDecomposeTensorFunction2.h
+K 25
+svn:wc:ra_dav:version-url
+V 64
+/svnroot/advants/!svn/ver/1/Tensor/itkDecomposeTensorFunction2.h
+END
+itkLogTensorImageFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/1/Tensor/itkLogTensorImageFilter.txx
+END
+itkWarpTensorImageMultiTransformFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 75
+/svnroot/advants/!svn/ver/1/Tensor/itkWarpTensorImageMultiTransformFilter.h
+END
+itkLogTensorImageFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/advants/!svn/ver/1/Tensor/itkLogTensorImageFilter.h
+END
+TensorFunctions.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 56
+/svnroot/advants/!svn/ver/258/Tensor/TensorFunctions.cxx
+END
+TensorFunctions.h
+K 25
+svn:wc:ra_dav:version-url
+V 54
+/svnroot/advants/!svn/ver/338/Tensor/TensorFunctions.h
+END
+itkPreservationOfPrincipalDirectionTensorReorientationImageFilter.cxx
+K 25
+svn:wc:ra_dav:version-url
+V 106
+/svnroot/advants/!svn/ver/264/Tensor/itkPreservationOfPrincipalDirectionTensorReorientationImageFilter.cxx
+END
+itkExpTensorImageFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 62
+/svnroot/advants/!svn/ver/1/Tensor/itkExpTensorImageFilter.txx
+END
+itkDecomposeTensorFunction2.txx
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svnroot/advants/!svn/ver/1/Tensor/itkDecomposeTensorFunction2.txx
+END
+itkRotationMatrixFromVectors.h
+K 25
+svn:wc:ra_dav:version-url
+V 65
+/svnroot/advants/!svn/ver/1/Tensor/itkRotationMatrixFromVectors.h
+END
+itkExpTensorImageFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 60
+/svnroot/advants/!svn/ver/1/Tensor/itkExpTensorImageFilter.h
+END
+itkPreservationOfPrincipalDirectionTensorReorientationImageFilter.h
+K 25
+svn:wc:ra_dav:version-url
+V 104
+/svnroot/advants/!svn/ver/264/Tensor/itkPreservationOfPrincipalDirectionTensorReorientationImageFilter.h
+END
+itkWarpTensorImageMultiTransformFilter.txx
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svnroot/advants/!svn/ver/1/Tensor/itkWarpTensorImageMultiTransformFilter.txx
+END

@@ -262,7 +262,7 @@ switch task
         
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.jpeg']));
         
@@ -284,39 +284,12 @@ switch task
         % Then write out actual BET mask
         V.fname = fullfile(pth, ['bet_' nme '_brain_mask' ext]);
         spm_write_vol(V,mY);
-        
-        %% RESLICE THE MASKS & MESHES
-        
-        fprintf('Reslicing brain masks to mean EPI\n')
-        % Get realignment defaults
-        defs = aap.spm.defaults.realign;
-        
-        % Flags to pass to routine to create resliced images
-        % (spm_reslice)
-        resFlags = struct(...
-            'interp', defs.write.interp,...       % interpolation type
-            'wrap', defs.write.wrap,...           % wrapping info (ignore...)
-            'mask', defs.write.mask,...           % masking (see spm_reslice)
-            'which', 1,...     % what images to reslice
-            'mean', 0);           % write mean image
-        
-        % Get the images to reslice
+                    
+        % Get the mask images
         D = dir(fullfile(pth, 'bet*mask*'));
         outMask = '';
         for d = 1:length(D)
             outMask = strvcat(outMask, fullfile(pth, D(d).name));
-        end
-        
-        % Reslice
-        spm_reslice(strvcat(mEPIimg, outMask), resFlags);
-        
-        % Get the images we resliced
-        D = dir(fullfile(pth, 'rbet*mask*'));
-        outMaskEPI = '';
-        for d = 1:length(D)
-            % Additionally, convert into a binary image...
-            img2mask(fullfile(pth, D(d).name))
-            outMaskEPI = strvcat(outMaskEPI, fullfile(pth, D(d).name));
         end
         
         % Get also the meshes
@@ -355,7 +328,7 @@ switch task
             
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.jpeg']));
         catch
@@ -366,7 +339,5 @@ switch task
         % Structural image after BETting
         aap=aas_desc_outputs(aap,subj,'structural', FI_img);
         aap=aas_desc_outputs(aap,subj,'BETmask',outMask);
-        aap=aas_desc_outputs(aap,subj,'BETmesh',outMesh);
-        aap=aas_desc_outputs(aap,subj,'epiBETmask',outMaskEPI);
-        
+        aap=aas_desc_outputs(aap,subj,'BETmesh',outMesh);        
 end

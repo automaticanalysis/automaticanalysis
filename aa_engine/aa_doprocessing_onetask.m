@@ -278,7 +278,6 @@ switch (domain)
         end
         
         
-        
     otherwise
         aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',domain,stagename));
 end;
@@ -297,14 +296,10 @@ if (tempdirtodelete)
 end;
 
 if aap.options.timelog
-    time_elapsed
+    aas_time_elapsed
 end
 
 %%
 function checkmem
 
 return
-
-
-
-

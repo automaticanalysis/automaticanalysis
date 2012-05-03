@@ -2,18 +2,30 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>meanepi</stream>  
                 <stream>structural</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>epi</stream>
                 <stream>meanepi</stream> 
                 <stream>structural</stream>
             </outputstreams>
+            
             <structural>1</structural>
+            
             <diagnostic>1</diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>

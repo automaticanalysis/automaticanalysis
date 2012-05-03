@@ -1,0 +1,39 @@
+All scripts in the folder fall under the GNU public license.  A copy of the license has been included.
+
+I don't do a good job of commenting all of my scripts, but I'm working on a webpage to at least provide the overview of how to use these scripts.
+
+The website is still a work in progress, and can be found at:
+http://nmr.mgh.harvard.edu/~aschultz/Web/Aarons_Scripts/Aarons_Scripts.html
+
+You can also reach by email with questions, comments, feature requests, and bug reports at aschultz@martinos.org.
+
+This work was supported in parts by the Harvard Aging Brain Study ( NIH-P01AG036694), NIH-R01-AG027435, and the Mass. General Hospital Corp.
+
+I hope you enjoy the scripts and find the, useful!
+
+-Aaron P. Schultz
+
+The GPLv3 applies to all scripts within this package.  A list (as of 8-23-2011) is included below:
+
+GrubbsMat.m   
+InterPlot.m   
+MatCorr.m     
+QuickSVD.m    
+SliceAndDice.m
+SliceAndDice3.m
+computeFDR.m  
+contains.m    
+dir_wfp.m     
+ind2sub_aps.m 
+interleave.m  
+isIn2.m       
+matInfo.m     
+openIMG.m     
+sub2ind_aps.m 
+world_bb.m    
+writeIMG.m   
+
+
+ChangeLog: 2011-11-11
+Not much has changed here with the excpetion of the new script SliceAndDice3 which fixes some shortcomings of SliceAndDice.
+

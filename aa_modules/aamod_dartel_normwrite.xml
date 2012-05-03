@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_dartel_normwrite domain='subject' desc='SPM dartel write normalised' modality='MRI'>
-      <vox desc='Voxel size'>1.5</vox>
-   </aamod_dartel_normwrite>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM dartel write normalised' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <vox desc='Voxel size'>1.5</vox>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   
+

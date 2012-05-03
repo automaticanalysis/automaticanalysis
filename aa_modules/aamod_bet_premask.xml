@@ -2,15 +2,25 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Masks the structural by the T1 template, removing the neck' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>structural</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>structural</stream>
             </outputstreams>
             
             <!-- This specifies which structural we want to use, typically the first, but can be changed -->
             <structural>1</structural>
+            
         </currenttask>
     </tasklist>
 </aap>

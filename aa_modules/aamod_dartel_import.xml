@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_dartel_import domain='subject' desc='SPM DARTEL import' modality='MRI'>
-      <vox desc='Voxel size'>1.5</vox>
-   </aamod_dartel_import>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM DARTEL import' modality='MRI'>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <vox desc='Voxel size'>1.5</vox>
+            
+            <!-- INPUTS/OUTPUTS? -->
+            
+        </currenttask>
+    </tasklist>
 </aap>
-   

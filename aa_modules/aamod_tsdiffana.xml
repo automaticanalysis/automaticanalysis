@@ -1,13 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_tsdiffana domain='session' desc='run tsdiffana' modality='MRI'>
-           <inputstreams>
-               <stream>epi</stream>
-           </inputstreams>
-           <outputstreams>
-           </outputstreams>
-       </aamod_tsdiffana>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='session' desc='run tsdiffana' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            <inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            <outputstreams>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
 </aap>
-   

@@ -3,15 +3,26 @@
 <aap>
     <tasklist>
         <currenttask domain='[unknown]' desc='Import files as stream' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <match></match>
             <!-- For example, if executed at session domain, contains
             <match><subject>XXX</subject><session>1</session><filenames>/my/file</filenames>
             <match><subject>YYY</subject><session>3</session><filenames>/my/otherfile</filenames>
             -->
+            
             <inputstreams>
             </inputstreams>
+            
             <outputstreams>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

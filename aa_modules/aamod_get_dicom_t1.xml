@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_get_dicom_t1 domain='subject' desc='Get DICOM files for T1 structural'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>autoidentifyseries</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dicom_t1</stream>
+            </outputstreams>
+            
+        </aamod_get_dicom_t1>
+    </tasksettings>
+</aap>

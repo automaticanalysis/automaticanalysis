@@ -1,18 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_realign domain='subject' desc='SPM motion correction' modality='MRI' >
+    <tasklist>
+        <currenttask domain='subject' desc='SPM motion correction' modality='MRI' >
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <writemean>1</writemean>
             <reslicewhich>2</reslicewhich>
+            
             ﻿<inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
+            
             <outputstreams>
                 <stream>realignment_parameter</stream>
                 <stream>meanepi</stream>
                 <stream>epi</stream>
             </outputstreams>
-        </aamod_realign>
-    </tasksettings>
+            
+        </currenttask>
+    </tasklist>
 </aap>
-

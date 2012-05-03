@@ -161,7 +161,7 @@ nuis = 0;
 
 Bimg = [];
 for Sind=1:length(aap.tasklist.currenttask.inputstreams.stream)
-    if ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'cons')) || ...
+    if ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'spmts')) || ...
             ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'betas'))
         try
             Bimg = aas_getfiles_bystream(aap,p,aap.tasklist.currenttask.inputstreams.stream{Sind});
@@ -171,42 +171,72 @@ for Sind=1:length(aap.tasklist.currenttask.inputstreams.stream)
     end
 end
 
-prevSess = 0; % Regressors from previous session...
-for s = 1:aap.tasklist.currenttask.settings.sessions
-    % Adding nuisance columns in design matrix...
-    % Ignore task-related "nuisance" regressors...
-    nuis = nuis + nuisanceNum{s};
-    % Works for movement parameters and spikes!
-    if s > 1
-        nuis = nuis + size(SPM.Sess(s - 1).C.C, 2);
-        prevSess = prevSess + size(SPM.Sess(s - 1).C.C, 2) + length(SPM.Sess(s - 1).U);
-    end
-    
-    % This assumes that from top to bottom levels...
-    %   sessions
-    %       conditions
-    %           blocks
-    for c=1:aap.tasklist.currenttask.settings.conditions
-        for b=1:aap.tasklist.currenttask.settings.blocks
-            
-            betanum = (s-1)*(aap.tasklist.currenttask.settings.conditions * aap.tasklist.currenttask.settings.blocks * mult) + ...
-                (c-1)*(aap.tasklist.currenttask.settings.blocks * mult) + ...
-                (b-1)* mult + ...
-                1 + nuis;
-            
-            % Sanity check to see if conditions have been correctly labelled, etc.
-            if isempty(strfind(SPM.Sess(s).U(betanum - prevSess).name{:}, ...
-                    aap.tasklist.currenttask.settings.conditionNames{c * aap.tasklist.currenttask.settings.blocks}))
-                error(['Something went wrong with the condition labelling' ...
-                    '\This is probably not your fault! Contact the developer!'])
+if ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'betas'))
+    dataType = 'betas';
+elseif ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'spmts'))
+    dataType = 'spmts';
+end
+
+if strcmp(dataType, 'betas')
+    prevSess = 0;
+    for s = 1:aap.tasklist.currenttask.settings.sessions
+        
+        % Works for movement parameters and spikes!
+        if s > 1
+            prevSess = prevSess + size(SPM.Sess(s - 1).C.C, 2) + length(SPM.Sess(s - 1).U);
+        end
+        
+        % This assumes no order...
+        %   sessions
+        %       conditions
+        %           blocks
+        for c=1:aap.tasklist.currenttask.settings.conditions
+            for b=1:aap.tasklist.currenttask.settings.blocks
+                
+                condStr =  [aap.tasklist.currenttask.settings.conditionNames{c} '_sub' num2str(b)];
+                
+                imageNum = find(strcmp([SPM.Sess(s).U(:).name], ...
+                    condStr));
+                imageNum = imageNum + prevSess;
+                                
+                % Sanity check to see if conditions have been correctly labelled, etc.
+                if isempty(strfind(SPM.Vbeta(imageNum).descrip, condStr))
+                    error(['Something went wrong with the condition labelling' ...
+                        '\This is probably not your fault! Contact the developer!'])
+                end
+                                
+                % Get either betas or or T values...
+                V = spm_vol(deblank(Bimg(imageNum*2,:))); % We want .img, not .hdr
+                data{c,b,s}=spm_read_vols(V);
+                
+                if ~isempty(SEGimg)
+                    data{c,b,s}(M==0) = NaN;
+                end
             end
-            
-            % Get either betas or or T values...
-            V = spm_vol(deblank(Bimg(betanum*2,:))); % We want .img, not .hdr
-            data{c,b,s}=spm_read_vols(V);
-            
-            if ~isempty(SEGimg)
-                data{c,b,s}(M==0) = NaN;
+        end
+    end
+elseif strcmp(dataType, 'spmts')
+    for s = 1:aap.tasklist.currenttask.settings.sessions
+        % This assumes no order...
+        %   sessions
+        %       conditions
+        %           blocks
+        for c=1:aap.tasklist.currenttask.settings.conditions
+            for b=1:aap.tasklist.currenttask.settings.blocks
+                
+                condStr =  [aap.tasklist.currenttask.settings.conditionNames{c} '_sub' num2str(b)];
+                
+                imageNum = find(strcmp({SPM.xCon.name}, ...
+                    condStr));
+                imageNum = imageNum(s);
+                                
+                % Get either betas or or T values...
+                V = spm_vol(deblank(Bimg(imageNum*2,:))); % We want .img, not .hdr
+                data{c,b,s}=spm_read_vols(V);
+                
+                if ~isempty(SEGimg)
+                    data{c,b,s}(M==0) = NaN;
+                end
             end
         end
     end

@@ -2,10 +2,20 @@
 <aap>
     <tasklist>
         <currenttask domain='study' desc='Clean up the garbage' modality='MRI'>
+            
+            <qsub>
+                <timeBase>2</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
             <inputstreams>
             </inputstreams>
+            
             <outputstreams>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

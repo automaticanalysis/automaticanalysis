@@ -65,6 +65,8 @@ if (~moduleexists)
     % CREATE NEW MODULE AND PUT AT START OF TASKLIST
     aap=aas_addtask(aap,'aamod_importfilesasstream',varargin(1:(end-1)));
     
+    aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream = aap.tasksettings.aamod_importfilesasstream;
+
     % Now we need to tailor with this
     if length(aap.tasklist.main.module)>1
         % First, lets move it to the beginning
@@ -100,7 +102,8 @@ end;
 % Add the files to import
 fti=varargin{end};
 if (~iscell(fti)), fti={fti}; end;
-matchind=length(aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match)+1
+%matchind=length(aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match)+1;
+matchind=length(aap.tasksettings.aamod_importfilesasstream(modposinsettings).match)+1;
 aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).filenames=fti;
 aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).filenames=fti;
 % Set domain based on number of inputs

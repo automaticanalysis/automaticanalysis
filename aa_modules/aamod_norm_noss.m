@@ -1,5 +1,5 @@
 % AA module - normalisation using normalise or two pass procedure with segment
-% [aap,resp]=aamod_norm_noss(aap,task,i)
+% [aap,resp]=aamod_norm_noss(aap,task,subj)
 % Depending on aap.tasksettings.aamod_norm_noss.usesegmentnotnormalise
 % If 0 - classic Normalisation
 % If 1 - use Segment with two pass procedure: a first pass to correct
@@ -7,11 +7,11 @@
 %  inhomogeneous SNR across space of 12 channel coil); and a second pass
 %  to then do the segmentation
 % _noss version does not use skull stripping
-% i=subject num
+% subj=subject num
 % Rhodri Cusack & Daniel Mitchell MRC CBU 2006
 % based on originals by Rik Henson, Matthew Brett
 
-function [aap,resp]=aamod_norm_noss(aap,task,i)
+function [aap,resp]=aamod_norm_noss(aap,task,subj)
 resp='';
 
 switch task
@@ -34,7 +34,7 @@ switch task
         
         %% Get structural
         % [AVG] Modified the way we get the structural, to be more aa4-like
-        Simg = aas_getfiles_bystream(aap,i,'structural');
+        Simg = aas_getfiles_bystream(aap,subj,'structural');
         % Cheap and cheerful way of ensuring only one file is considered!
         if size(Simg,1) > 1
             Simg = deblank(Simg(1,:));
@@ -148,15 +148,15 @@ switch task
             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             savefields(SNmat,sn);
             savefields(invSNmat,isn);
-            aap=aas_desc_outputs(aap,i,'normalisation_seg_sn',SNmat);
-            aap=aas_desc_outputs(aap,i,'normalisation_seg_inv_sn',invSNmat);
+            aap=aas_desc_outputs(aap,subj,'normalisation_seg_sn',SNmat);
+            aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
             
             % [AVG] this output is completely different from .xml
             %{
             tiss={'grey','white','csf'};
             for tissind=1:3
-                aap=aas_desc_outputs(aap,i,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,mSimg)));
-                aap=aas_desc_outputs(aap,i,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,mSimg)));
+                aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,mSimg)));
+                aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,mSimg)));
             end
             %}
             % [AVG] so instead, we group it all into segmentation stream
@@ -171,7 +171,7 @@ switch task
                     d = NaN;
                 end
             end
-            aap=aas_desc_outputs(aap,i,'segmentation',outSeg);
+            aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
         else
             % Make the default normalization parameters file name
             % Turn off template weighting
@@ -181,20 +181,20 @@ switch task
             spm_normalise(temp_imgs, Simg, SNmat,...
                 defs.estimate.weight, objMask, ...
                 defs.estimate);
-            aap=aas_desc_outputs(aap,i,'normalisation_seg_sn',SNmat);
-            aap=aas_desc_outputs(aap,i,'normalisation_seg_inv_sn',invSNmat);
+            aap=aas_desc_outputs(aap,subj,'normalisation_seg_sn',SNmat);
+            aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
         end
         
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
         % [AVG] It is probably best to save the 2ce bias-corrected image
-        aap=aas_desc_outputs(aap,i,'structural', strvcat( ...
+        aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
             fullfile(Spth,['mm' Sfn Sext]), ...
             fullfile(Spth,['w' Sfn Sext])));
         
         %{
         % Now save graphical check
-        figure(spm_figure('FindWin'));
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         % added graphical check for when segment is used [djm 20/01/06]
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
             myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
@@ -221,8 +221,8 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(i).mriname, '/');
-        try
+        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
+         try
             % This will only work for 1-7 segmentations
             OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
                 [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
@@ -234,11 +234,11 @@ switch task
                 spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('c%d%s',r, ['m' Sfn Sext])), OVERcolours{r})
             end
             %% Diagnostic VIDEO of segmentations
-            aas_checkreg_avi(aap, p, 2)
+            aas_checkreg_avi(aap, subj, 2)
             
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '_N.jpeg']));
             
@@ -250,28 +250,28 @@ switch task
             end
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '_W.jpeg']));
         catch
-            cprintf('r', '\n\tFailed display diagnostic image - Displaying template & segmentation 1');
+            fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
             try
                 %% Draw native template
                 spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); fullfile(Spth,['mm' Sfn Sext])}))
                 
-                figure(spm_figure('FindWin'));
+                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                     [mfilename '__' mriname '_N.jpeg']));
                 
                 %% Draw warped template
                 spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); aap.directory_conventions.T1template}))
                 
-                figure(spm_figure('FindWin'));
+                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 set(gcf,'PaperPositionMode','auto')
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                     [mfilename '__' mriname ' W.jpeg']));
             catch
-                cprintf('r', '\n\tFailed display backup diagnostic image!');
+                fprintf('\n\tFailed display backup diagnostic image!');
             end
         end
         
@@ -291,8 +291,8 @@ function savefields(fnam,p)
 if length(p)>1, error('Can''t save fields.'); end
 fn = fieldnames(p);
 if numel(fn)==0, return; end
-for i=1:length(fn),
-    eval([fn{i} '= p.' fn{i} ';']);
+for subj=1:length(fn),
+    eval([fn{subj} '= p.' fn{subj} ';']);
 end
 if str2double(version('-release'))>=14,
     save(fnam,'-V6',fn{:});

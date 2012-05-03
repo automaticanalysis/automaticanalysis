@@ -1,14 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasklist>
-   <currenttask domain='subject' desc='Create VDMs in fieldmaps' modality='MRI'>
+    <tasklist>
+        <currenttask domain='subject' desc='Create VDMs in fieldmaps' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>epi</stream>
                 <stream>fieldmap</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>fieldmap</stream>
             </outputstreams>
+            
             <te1>10.0</te1>
             <te2>12.46</te2>
             <epifm>0</epifm>
@@ -17,6 +27,7 @@
             <mask>1</mask>
             <match>1</match>
             <writeunwarpedEPI>0</writeunwarpedEPI>
-   </currenttask>
-  </tasklist>
+            
+        </currenttask>
+    </tasklist>
 </aap>

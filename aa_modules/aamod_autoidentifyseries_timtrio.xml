@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-      <aamod_autoidentifyseries_timtrio domain='subject' desc='Automatically identify series numbers'>
-              <outputstreams>
-                  <stream>autoidentifyseries</stream>
-              </outputstreams>
-          </aamod_autoidentifyseries_timtrio>    
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='Automatically identify series numbers'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <outputstreams>
+                <stream>autoidentifyseries</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
 </aap>
