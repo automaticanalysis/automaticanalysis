@@ -1,4 +1,4 @@
-function finishedMail(deliverto, analysis, errmsg)
+function aas_finishedMail(deliverto, analysis, errmsg)
 % Deliver to is the email address to send the confirmation to!
 
 % Define these variables appropriately:

@@ -93,7 +93,7 @@ switch task
 
 
         % Now save graphical check
-        figure(spm_figure('FindWin'));
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         % added graphical check for when segment is used [djm 20/01/06]
         myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
             fullfile(structdir,subj.P(1).name), ... % native T1

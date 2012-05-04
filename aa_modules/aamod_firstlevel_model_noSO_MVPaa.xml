@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='First level model (new)' modality='MRI'>
+        <currenttask domain='subject' mfile_alias='aamod_firstlevel_model_MVPaa' desc='First level model (new)' modality='MRI'>
             
             <qsub>
-                <timeBase>0.5</timeBase>
-                <memoryBase>0.25</memoryBase>
+                <timeBase>12</timeBase>
+                <memoryBase>1</memoryBase>
             </qsub>
             
             <permanenceofoutput>3</permanenceofoutput>
@@ -18,8 +18,8 @@
             <moveMat>[1 0 0; 0 0 0]</moveMat>
             
             <!-- include Compartment Regressors derived from aamod_compSignal 
-            By default filled with [] [no compartment regressors] if you have run aamoc_compSignal-->
-            <compRegs>[]</compRegs>
+            By default filled with [2 3] [i.e. WM and CSF signals] if you have run aamoc_compSignal-->
+            <compRegs>[2 3]</compRegs>
             
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
@@ -56,6 +56,7 @@
     Example if design differs by subject and session
     Exactly specified subjects or sessions override wildcards
             -->
+            
             <!--
 <model>
         <subject>CBU110011</subject>
@@ -71,7 +72,8 @@
             <dur>0</dur>
         </event>
     </model>
--->   
+    -->   
+                        
             <model>
                 <subject></subject>
                 <session></session>
@@ -80,24 +82,13 @@
                     <ons></ons>
                     <dur></dur>
                 </event>
-            </model>
-            
-            <modelC>
-                <subject></subject>
-                <session></session>
-                <covariate>
-                    <name></name>
-                    <vector></vector>
-                    <HRF></HRF>
-                    <interest></interest>
-                </covariate>
-            </modelC>
+            </model> 
             
             ﻿<inputstreams>
                 <stream>epi</stream>
                 <stream>epi_header</stream>
-                <stream>sliceorder</stream>
                 <stream>realignment_parameter</stream>
+                <stream>compSignal</stream>
             </inputstreams>
             
             <outputstreams>

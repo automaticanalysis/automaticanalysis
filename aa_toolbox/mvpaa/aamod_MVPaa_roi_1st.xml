@@ -2,6 +2,14 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='1st level MVPaa analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.02</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
             <inputstreams>
                 <stream>rois</stream>
                 <stream>firstlevel_spm</stream>
@@ -11,6 +19,7 @@
                 <stream>firstlevel_betas</stream>
                 -->
             </inputstreams>
+            
             <outputstreams>
                 <stream>MVPaa</stream>
             </outputstreams>

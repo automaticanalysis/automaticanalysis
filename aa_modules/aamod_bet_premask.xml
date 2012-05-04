@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='Masks the structural by the T1 template, removing the neck' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

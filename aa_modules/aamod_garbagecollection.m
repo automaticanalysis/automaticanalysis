@@ -9,7 +9,7 @@ resp='';
 switch task
     case 'doit'
         
-        aas_garbagecollection(aap,true)
+        aas_garbagecollection(aap,true);
         
     case 'checkrequirements'
         aas_log(aap,0,'Garbage needs to be taken out\n' );

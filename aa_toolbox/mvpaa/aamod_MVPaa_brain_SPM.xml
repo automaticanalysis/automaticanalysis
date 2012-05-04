@@ -2,12 +2,21 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='Convert images into "betas" and SPM.mat' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
             <inputstreams>
                 <stream>MVPaa</stream>
                 <stream>normalisation_seg_sn</stream>
                 <stream>firstlevel_spm</stream>
                 <stream>epiBETmask</stream>
             </inputstreams>
+            
             <outputstreams>
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_cons</stream>

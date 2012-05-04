@@ -23,7 +23,11 @@ classdef aaq_qsub<aaq
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
             
-            while(any(obj.jobnotrun) ) %|| not(isempty(obj.filestomonitor)))
+            while any(obj.jobnotrun) && ~waitforalljobs
+                
+                % Lets not overload the filesystem
+                pause(10);
+                
                 for i=1:njobs
                     if (obj.jobnotrun(i))
                         % Find out whether this job is ready to be allocated by
@@ -66,7 +70,7 @@ classdef aaq_qsub<aaq
                             % happened to the job...
                             
                             moduleName = strtok(JobLog.optout{10}, ':');
-                            moduleName = moduleName(8:(end-8));
+                            moduleName = moduleName(strfind(moduleName,'aamod_'):(end-8));
                             
                             aas_log(obj.aap,false,...
                                 sprintf('Job %s: %s finished', ...
@@ -94,6 +98,10 @@ classdef aaq_qsub<aaq
                             donemonitoring(ftmind)=true;
                         else
                             % If a job had an error, it is usually fatal...
+                            for e = 1:(length(JobLog.optout{4}.stack)-2)
+                                cprintf('r', 'Line %d of %s\n', ...
+                                    JobLog.optout{4}.stack(e).line, JobLog.optout{4}.stack(e).file )
+                            end                       
                             aas_log(obj.aap,true,...
                                 sprintf('Job had an error:\n%s\n', ...
                                 JobLog.optout{4}.message), ...
@@ -105,13 +113,13 @@ classdef aaq_qsub<aaq
                 % Clear out files we've finished monitoring
                 obj.filestomonitor(donemonitoring)=[];
                 
-                % Lets not overload the filesystem
-                pause(0.5);
-                
-            end
-            if waitforalljobs == 1
-                obj.emptyqueue;
-            end
+                % Loop if we are still waiting for jobs to finish...
+                if waitforalljobs == 1;
+                    if isempty(obj.filestomonitor)
+                        waitforalljobs = 0;
+                    end
+                end
+            end            
         end
         
         function [obj]=qsub_q_job(obj,job)
@@ -153,8 +161,8 @@ classdef aaq_qsub<aaq
                 'diary', 'always');
             warning on
             % State what the assigned number of hours and GB is...
-            fprintf('Assigned %0.4f hours. and %0.9f GB\n\n', ...
-                timReq./(60*60), memReq./(1024^3))
+            fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+                job.stagename, timReq./(60*60), memReq./(1024^3))
             
             % And monitor for files with the job output
             fles.name=[jobid '_output.mat'];

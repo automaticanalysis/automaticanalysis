@@ -296,7 +296,7 @@ if (tempdirtodelete)
 end;
 
 if aap.options.timelog
-    time_elapsed
+    aas_time_elapsed
 end
 
 %%

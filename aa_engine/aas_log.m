@@ -20,7 +20,7 @@ if (iserr)
         if ~isempty(aap.options.email)
             % In case the server is broken...
             try
-                finishedMail(aap.options.email, aap.acq_details.root, msg)
+                aas_finishedMail(aap.options.email, aap.acq_details.root, msg)
             catch
             end
         end
