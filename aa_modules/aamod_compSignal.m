@@ -191,9 +191,4 @@ switch task
         EPIdir = fileparts(EPIimg(1,:));
         save(fullfile(EPIdir, 'compSignal.mat'), 'compTC')
         aap=aas_desc_outputs(aap,subj,sess,'compSignal',fullfile(EPIdir, 'compSignal.mat'));
-        
-        try
-        aas_garbagecollection(aap,true)
-        catch
-        end
 end
