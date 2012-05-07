@@ -129,7 +129,10 @@ switch task
         % Smoothness of the volume...
         % ...Get the number of mm per voxel...
         mmVox = vox2mm(V);
-        % ...then get the FWHM       
+        % ...then get the FWHM
+        if FWHMmm < min(mmVox./2) % To avoid errors...
+            FWHMmm = min(mmVox./2);
+        end
         SPM.xVol.FWHM = [FWHMmm FWHMmm FWHMmm];
         SPM.xVol.FWHM = SPM.xVol.FWHM ./ mmVox;
         
