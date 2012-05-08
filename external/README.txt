@@ -7,7 +7,7 @@ Below is a list of all packages, date/version downloaded, and maintainer:
 Package		Version		Date Downloaded		URL											AA Maintainer
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-gPPI		v2012_1_22	13 April 2012		http://www.nitrc.org/projects/gppi							                            Jonathan Peelle
+gPPI		v2012_1_22	13 April 2012		http://www.nitrc.org/projects/gppi							               Jonathan Peelle
 Utilities			2 May 2012		http://nmr.mgh.harvard.edu/harvardagingbrain/People/AaronSchultz/Download_Page.html	Jonathan Peelle
 GLM_Flex			2 May 2012		http://nmr.mgh.harvard.edu/harvardagingbrain/People/AaronSchultz/Download_Page.html	Jonathan Peelle
 Utilities			2 May 2012		http://nmr.mgh.harvard.edu/harvardagingbrain/People/AaronSchultz/Download_Page.html	Jonathan Peelle
