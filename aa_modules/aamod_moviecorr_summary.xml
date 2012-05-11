@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasksettings>
+        <aamod_moviecorr_summary domain='study' desc='Movie correlation summary' modality='MRI'>
+            ﻿<inputstreams>
+                <stream>moviecorr_meantimecourse</stream>  
+            </inputstreams>
+            <outputstreams>
+                <stream>moviecorr_meantimecourse_summary</stream>  
+            </outputstreams>
+        </aamod_moviecorr_summary>
+    </tasksettings>
+</aap>
+
