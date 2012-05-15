@@ -155,18 +155,18 @@ switch task
 
 
         %% describe outputs
-
         aap = aas_desc_outputs(aap, subjind, 'structural', img);
 
+        [pth, nm, ext] = fileparts(img);
         seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));
         aap = aas_desc_outputs(aap, subjind, 'seg8', seg8fn);
 
         [pth nme ext]=fileparts(img);
         tiss={'grey','white','csf'};
         for tissind=1:3
-            aap = aas_desc_outputs(aap,subjind,sprintf('native_%s',tiss{tissind}),fullfile(structdir,sprintf('c%d%s',tissind,[nme ext])));
-            aap = aas_desc_outputs(aap,subjind,sprintf('dartelimported_%s',tiss{tissind}),fullfile(structdir,sprintf('rc%d%s',tissind,[nme ext])));
-            aap = aas_desc_outputs(aap,subjind,sprintf('normalised_density_%s',tiss{tissind}),fullfile(structdir,sprintf('wc%d%s',tissind,[nme ext])));
-            aap = aas_desc_outputs(aap,subjind,sprintf('normalised_volume_%s',tiss{tissind}),fullfile(structdir,sprintf('mwc%d%s',tissind,[nme ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{tissind}), fullfile(pth, sprintf('c%d%s', tissind, [nme ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{tissind}), fullfile(pth, sprintf('rc%d%s', tissind, [nme ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{tissind}), fullfile(pth, sprintf('wc%d%s', tissind, [nme ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{tissind}), fullfile(pth, sprintf('mwc%d%s', tissind, [nme ext])));
         end
 end
