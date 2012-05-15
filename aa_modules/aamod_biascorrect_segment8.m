@@ -57,11 +57,6 @@ switch task
         aas_log(aap, false, sprintf('Segmenting using TPMs from %s.', cfg.tpm));
 
 
-        % structural directory for this subject
-        subjdir = aas_getsubjpath(aap,subjind);
-        structdir = fullfile(subjdir, aap.directory_conventions.structdirname);
-
-
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % first make sure spm_preproc8 is in the path, as a toolbox it
         % might not be
@@ -100,13 +95,13 @@ switch task
 
 
         if isempty(img) || strcmp(img,'/')
-            aas_log(aap, true, 'Did not find a t1 image.');
+            aas_log(aap, true, 'Did not find a structural image.');
         end
 
         % if more than one found, use the first one and hope this is right
         img = strtok(img(1,:));
 
-        aas_log(aap, false, sprintf('Found t1 image: %s\n', img));
+        aas_log(aap, false, sprintf('Found structural image: %s\n', img));
 
 
 		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -146,6 +141,8 @@ switch task
         end
 
         spm_preproc_run(job);
+
+        %% describe outputs
 
         % get the filename for the bias-corrected image (which has 'm' prepended)
         [pth, nm, ext] = fileparts(img);

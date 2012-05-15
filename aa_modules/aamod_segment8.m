@@ -8,21 +8,22 @@ function [aap,resp] = aamod_segment8(aap, task, subjind)
 %
 % input stream:     structural
 % output streams:   structural
+%                    seg8
 %                   native_grey
 %                   native_white
 %                   native_csf
+%                   dartelimported_grey
+%                   dartelimported_white
+%                   dartelimported_csf
 %                   normalised_density_grey
 %                   normalised_density_white
 %                   normalised_density_csf
 %                   normalised_volume_grey
 %                   normalised_volume_white
 %                   normalised_volume_csf
-%                   (deformation field?)
 %
-%
-% See also AAMOD_BIASCORRECT_SEGMENT8 - performing bias correction prior to segmentation
+% A separate bias correction (e.g. with AAMOD_BIASCORRECT_SEGMENT8) prior to segmentation
 % can improve the robustness.
-
 
 resp='';
 
@@ -34,10 +35,24 @@ switch task
     case 'doit'
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-        % defaults
+        % options
 
-        cfg.biasfwhm = aap.tasklist.currenttask.settings.biasfwhm;
-		cfg.biasreg = aap.tasklist.currenttask.settings.biasreg;
+        cfg.biasfwhm = aap.tasklist.currenttask.settings.biasfwhm; % 60
+		cfg.biasreg = aap.tasklist.currenttask.settings.biasreg;   % .001
+		cfg.affreg = aap.tasklist.currenttask.settings.affreg;     % 'mni';
+        cfg.reg = aap.tasklist.currenttask.settings.reg;           % .001;
+        cfg.vox = aap.tasklist.currenttask.settings.vox;           % voxel size things get resampled to
+        cfg.mrf = aap.tasklist.currenttask.settings.mrf;           % markov random field cleanup
+        cfg.samp = aap.tasklist.currenttask.settings.samp;         % sampling distance
+
+        cfg.lkp = [1,1,2,2,3,3,4,4,4,5,5,5,5,6,6];
+        cfg.writebiascorrected = aap.tasklist.currenttask.settings.writebiascorrected; % [bias_field bias_corrected]
+        cfg.ngaus = aap.tasklist.currenttask.settings.ngaus;                           % [2 2 2 3 4 2];
+        cfg.native = [1 1];                                                            % [native DARTEL_imported]
+        cfg.warped = [1 1];                                                            % normalised [modulated unmodulated]
+        cfg.warpreg = 4;
+        cfg.bb = {ones(2,3)*NaN};
+        cfg.writedeffields = aap.tasklist.currenttask.settings.writedeffields;         % [1 1] would write them out
 
 	    % If no full path to TPM specified, try to use the standard SPM one
 	    if isempty(aap.tasklist.currenttask.settings.tpm)
@@ -51,25 +66,6 @@ switch task
         end
 
         aas_log(aap, false, sprintf('Segmenting using TPMs from %s.', cfg.tpm));
-
-
-        cfg.lkp = [1,1,2,2,3,3,4,4,4,5,5,5,5,6,6];
-        cfg.reg = aap.tasklist.currenttask.settings.reg;          % .001;
-        cfg.samp = aap.tasklist.currenttask.settings.samp; % sampling distance
-        cfg.writebiascorrected = [0 0]; %[1 1]; % save [biasfield biascorrected]
-        cfg.ngaus = [2 2 2 3 4 2];
-        cfg.native = [1 1]; % native and DARTEL imported
-        cfg.warped = [1 1]; % normalised modulated (not unmodulated)
-        cfg.warpreg = 4;
-        cfg.affreg = aap.tasklist.currenttask.settings.affreg;    % by default 'mni';
-        cfg.bb = {ones(2,3)*NaN};
-        cfg.vox = aap.tasklist.currenttask.settings.vox; %  1.5;  % voxel size things get resampled to
-        cfg.writedeffields = [0 0];                               % [1 1] would write them out
-        cfg.mrf = aap.tasklist.currenttask.settings.mrf;          % markov random field cleanup
-
-        % structural directory for this subject
-        subjdir = aas_getsubjpath(aap,subjind);
-        structdir = fullfile(subjdir, aap.directory_conventions.structdirname);
 
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -119,32 +115,9 @@ switch task
         aas_log(aap, false, sprintf('Found structural image: %s\n', img));
 
 
-        % Write out bias-corrected image
+		%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+		% do the segmentation
 
-        fprintf('Doing initial bias correction...\n');
-
-        estopts.regtype='';    % turn off affine:
-        out = spm_preproc(img,estopts);
-        [sn,isn]   = spm_prep2sn(out);
-
-        % only write out bias corrected image
-        writeopts.biascor = 1;
-        writeopts.GM  = [0 0 0];
-        writeopts.WM  = [0 0 0];
-        writeopts.CSF = [0 0 0];
-        writeopts.cleanup = [0];
-        spm_preproc_write(sn,writeopts);
-
-
-        % get the name of the bias-corrected image
-        [pth, nm, ext] = fileparts(img);
-        img = fullfile(pth, ['m' nm ext]);
-        aas_log(aap, false, sprintf('Done with initial bias correction. Image saved to: %s.\n', img));
-
-
-
-
-        % Now segment that image
         tpm_nam = cfg.tpm;
         ngaus   = cfg.ngaus;
         nval    = {[1 0],[1 0],[1 0],[1 0],[1 0],[0 0]};
@@ -153,7 +126,6 @@ switch task
             tissue(k).ngaus = ngaus(k);  % and the number of gaussians
             tissue(k).native = cfg.native;
             tissue(k).warped = cfg.warped;
-            % tissue.val{3}.val    = {nval{k}};   % and whatever this is
         end
 
         job.channel(1).vols{1} = img;
@@ -181,17 +153,20 @@ switch task
 
         spm_preproc_run(job);
 
-        seg8fn = [spm_str_manip(img,'sd') '_seg8.mat'];
-        aap = aas_desc_outputs(aap, subjind, 'normalisation_seg8', seg8fn);
+
+        %% describe outputs
 
         aap = aas_desc_outputs(aap, subjind, 'structural', img);
+
+        seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));
+        aap = aas_desc_outputs(aap, subjind, 'seg8', seg8fn);
 
         [pth nme ext]=fileparts(img);
         tiss={'grey','white','csf'};
         for tissind=1:3
-            aap=aas_desc_outputs(aap,subjind,sprintf('normalised_density_%s',tiss{tissind}),fullfile(structdir,sprintf('rc%d%s',tissind,[nme ext])));
-            aap=aas_desc_outputs(aap,subjind,sprintf('normalised_volume_%s',tiss{tissind}),fullfile(structdir,sprintf('mwc%d%s',tissind,[nme ext])));
-            aap=aas_desc_outputs(aap,subjind,sprintf('native_%s',tiss{tissind}),fullfile(structdir,sprintf('c%d%s',tissind,[nme ext])));
+            aap = aas_desc_outputs(aap,subjind,sprintf('native_%s',tiss{tissind}),fullfile(structdir,sprintf('c%d%s',tissind,[nme ext])));
+            aap = aas_desc_outputs(aap,subjind,sprintf('dartelimported_%s',tiss{tissind}),fullfile(structdir,sprintf('rc%d%s',tissind,[nme ext])));
+            aap = aas_desc_outputs(aap,subjind,sprintf('normalised_density_%s',tiss{tissind}),fullfile(structdir,sprintf('wc%d%s',tissind,[nme ext])));
+            aap = aas_desc_outputs(aap,subjind,sprintf('normalised_volume_%s',tiss{tissind}),fullfile(structdir,sprintf('mwc%d%s',tissind,[nme ext])));
         end
-
 end
