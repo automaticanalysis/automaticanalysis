@@ -22,7 +22,6 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>structural</stream>
                 <stream>seg8</stream>
 
                 <stream>native_grey</stream>
