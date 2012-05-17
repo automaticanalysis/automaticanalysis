@@ -1,4 +1,4 @@
-Automated Analysis software was developed by Dr Rhodri Cusack for supporting
+Automated Analysis software was initially developed by Dr Rhodri Cusack for supporting
 research at the MRC Cognition and Brain Science Unit. It is made available to
 the academic community in the hope that it may prove useful.
 
@@ -10,7 +10,6 @@ documentation whether electronic or printed.
 
 Use of this software is subject to the terms of the license, found in the
 license.txt file distributed with this software.
-
 
 
 # About
