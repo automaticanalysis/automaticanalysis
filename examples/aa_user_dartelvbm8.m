@@ -1,70 +1,50 @@
-% Jonathan Peelle - August 2009
-
-% To make sure SPM8 is used for DARTEL scripts, run this AA setup script
-% from a Matlab session that has SPM8 in the path (i.e., start a session
-% with 'spm 8'). This seemed to do the trick for me; even though an SPM5
-% job is still launched, spm8 is the first installation in the path.
+% AA_USER_DARTELVBM8 is an AA user script illustrating the preprocessing
+% for a voxel-based morphometric analysis, using the "new" segmentation
+% introduced in SPM8 and DARTEL registration routines.
 %
-% Most of the DARTEL AA modules will log the version of the DARTEL command
-% they are using, so it's a good idea to see if it's finding the one you
-% want it to find in your path. -JP
+% As with all AA user scripts, the actual stages of the analysis are
+% specified in an XML file - here, in aap_tasklist_dartelvbm8.xml. Although
+% pre-defined recipes are distributed with AA, it is easy to modify these
+% to suit your needs. You can either save a copy of the same file in your
+% matlab path such that it overrides the built-in recipe, or (probably
+% more easily) simply save a copy with a new name.
+%
+% Although the recipe file will set up the stages of analysis and default
+% options, additional options can be set for both the overall analysis and
+% specific modules.
 
 clear all
 
-% load the sample (subjects in S, id numbers S(i).id)
-load /imaging/local/structurals/nca/scripts/jp_sample_59perdecile_2009-8-2_18-30-10.mat
+%% Initialize AA and set basic recipe (aap_tasklist_dartelvbm8.xml)
 
+aa_ver4_nocloud()
+aap = aarecipe('aap_parameters_defaults.xml','aap_tasklist_dartelvbm8.xml');
 
-% Add this if not in your path
-%addpath /imaging/local/spm/aa_svn_new/devel/
-addpath /imaging/jp01/software/aa/devel
-aa_ver3_devel
-
-
-%% Analysis recipe
-% You may want to make a copy of the dartelvbm8.xml file in your local
-% directory and comment it so that it runs through segmentation but not
-% template creation; this gives you a chance to make sure all segmentations
-% look appropriate etc. before continuing. Alternatively, of course, you
-% can run it all the way through, and run it again if something needs to be
-% fixed.
-aap = aarecipe('aap_parameters_defaults.xml', 'aap_tasklist_dartelvbm8.xml');
-
-%% Define study-specific parameters
-
-aap.acq_details.root = '/imaging/jp01/examples/SPM8_aa_DARTEL'; % the study directory
+  
+%% Set options
+    
+% The name of your scanner
+%aap.directory_conventions.rawdatadir='Machine_MRC-CBU_MRC35119_TrioTim';
+aap.acq_details.root = '/imaging/jp01/aa4_vbm_example/subj'; % the study directory
 aap.options.autoidentifyfieldmaps = 0;
 aap.options.autoidentifystructural_chooselast = 1;
-aap.options.copystructuraltocentralstore = 0;
-aap.options.deletestructuralaftercopyingtocentralstore = 0;
-aap.options.aa_minver = 3;
+aap.options.aa_minver = 4;
+aap.directory_conventions.remotefilesystem = 'none';         % none, s3
+aap.options.wheretoprocess = 'localsingle';                  % aws, localsingle, localparallel
 
-% This is the subdirectory of structurals where the rc* and u_* files live
-aap.directory_conventions.dartelsubjdirname='dartel01';
-
-% make the timeout longer (needed probably just for the template stage)
-aap.timeouts.busy=24*60*4; % units are minutes, this is 4 days
-
-% Normal segmentation gives us GM/GM; with segment 8 we should be able to
-% use all tissue classes (although not entirely sure this matters/helps?)
-aap.tasksettings.aamod_dartel_createtemplate.numtissueclasses = 6;
-
-aap.tasksettings.aamod_segment8.samp = 1;              % sampling distance in mm
-aap.tasksettings.aamod_dartel_normmnistruct.fwhm = 12; % smoothing for output images
-
-
-%% NB. This keeps the AA output the 'old' way; otherwise output is saved in
-%% a separate directory for each stage. Ask me if questions. -JP
-aap.directory_conventions.outputformat = [];
+% Set any other options
+aap.tasksettings.aamod_segment8.samp = 2;
 
 
 %% Add subjects
-for i=1:2
-    aap = aas_addsubject(aap, sprintf('%s_*/*', S(i).id));
-end
+% For many subjects, this can also be scripted to loop through a list.
 
-
-
-%% Do processing
+aap = aas_addsubject(aap, 'CBU110656_MR1/*');
+aap = aas_addsubject(aap, 'CBU050015_*/*');
+aap = aas_addsubject(aap, 'CBU060593_*/*');
+    
+    
+%% Do the processing
 aap = aa_doprocessing(aap);
+    
 
