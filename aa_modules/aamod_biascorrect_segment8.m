@@ -1,5 +1,5 @@
 function [aap, resp] = aamod_biascorrect_segment8(aap, task, subjind)
-% AAMOD_BIASCORRECT_SEGMENT8 Bias corrects a structural image using SPM8's "new segment".
+%AAMOD_BIASCORRECT_SEGMENT8 Bias corrects a structural image using SPM8's "new segment".
 %
 % [aap, resp] = AAMOD_BIASCORRECT_SEGMENT8(aap, task, subjind) Performs the bias
 % correction for the first structural iamge found for this subject.
@@ -10,6 +10,7 @@ function [aap, resp] = aamod_biascorrect_segment8(aap, task, subjind)
 % and then pass the bias-corrected T1 image to segmentation.
 %
 % input stream:     structural
+%
 % output streams:   structural  the bias-corrected t1 image
 %                   seg8        the seg8.mat file generated from segmentation
 
