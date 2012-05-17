@@ -1,4 +1,4 @@
-function [aap,resp]=aamod_dartel_normmnisegmented_modulated(aap, task)
+function [aap, resp]=aamod_dartel_normmni(aap, task)
 %AAMOD_DARTEL_NORMMNISEGMENTED_MODULATED Normalise grey/white segmentations using DARTEL.
 %
 % After DARTEL template has been created, write out normalized
@@ -15,6 +15,7 @@ function [aap,resp]=aamod_dartel_normmnisegmented_modulated(aap, task)
 %
 % output streams:   dartelnormalised_grey
 %                   dartelnormalised_white
+
 
 resp='';
 
@@ -43,24 +44,30 @@ switch task
             job.data.subj(subjind).images = cellstr(strvcat(imgs1, imgs2));
         end % going through subjects
 
-        % set up job
+        % set up job, and run
         job.template{1} = template;
         job.bb = nan(2,3);
-        job.vox = ones(1,3) * aap.tasklist.currenttask.settings.vox;
-        job.fwhm = aap.tasklist.currenttask.settings.fwhm;
-        job.preserve = 1; % modulated
+        job.vox = ones(1,3) * aap.tasklist.currenttask.settings.vox;    % voxel size
+        job.fwhm = aap.tasklist.currenttask.settings.fwhm;              % smoothing
+        job.preserve = aap.tasklist.currenttask.settings.preserve;      % modulation
 
         aas_log(aap, false, sprintf('Running with %s...', which('spm_dartel_norm_fun')));
         spm_dartel_norm_fun(job);
 
-        % describe outputs
+        % describe outputs (differ depending on modulation)
+        if job.preserve==1
+            prefix = 'smw';
+        else
+            prefix = 'sw';
+        end
+
         for subjind = 1:length(aap.acq_details.subjects)
             [pth, nm, ext] = fileparts(job.data.subj(subjind).images{1});
-            greyimg = fullfile(pth, ['smw' nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'dartelnormalised_grey', greyimg);
+            greyimg = fullfile(pth, [prefix nm ext]);
+            aap = aas_desc_outputs(aap, subjind, 'normalised_grey', greyimg);
 
             [pth, nm, ext] = fileparts(job.data.subj(subjind).images{2});
-            whiteimg = fullfile(pth, ['smw' nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'dartelnormalised_white', whiteimg);
+            whiteimg = fullfile(pth, [prefix nm ext]);
+            aap = aas_desc_outputs(aap, subjind, 'normalised_white', whiteimg);
         end
 end
