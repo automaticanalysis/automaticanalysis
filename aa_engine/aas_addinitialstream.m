@@ -25,7 +25,10 @@ switch (length(varargin)-1)
         domain='session'
 end;
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> master
 if strcmp(domain, 'subject') || strcmp(domain, 'session')
     if ischar(varargin{1})
         subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
@@ -66,7 +69,7 @@ if (~moduleexists)
     aap=aas_addtask(aap,'aamod_importfilesasstream',varargin(1:(end-1)));
     
     aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream = aap.tasksettings.aamod_importfilesasstream;
-
+    
     % Now we need to tailor with this
     if length(aap.tasklist.main.module)>1
         % First, lets move it to the beginning
@@ -76,8 +79,13 @@ if (~moduleexists)
     end;
     
     if strcmp(domain, 'session')
+<<<<<<< HEAD
+       aap.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
+       aap.aap_beforeuserchanges.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
+=======
         aap.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
         aap.aap_beforeuserchanges.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
+>>>>>>> master
     end
     
     % It's a little involved changing the engine's details by hand. For each

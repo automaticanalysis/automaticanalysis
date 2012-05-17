@@ -35,7 +35,6 @@ aap.options.wheretoprocess = 'localsingle';                  % aws, localsingle,
 % Set any other options
 aap.tasksettings.aamod_segment8.samp = 2;
 
-
 %% Add subjects
 % For many subjects, this can also be scripted to loop through a list.
 
