@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-  <tasksettings>
-   <aamod_structuralstats domain='subject' desc='SPM structural statistics' modality='MRI'>
-   <prefix desc='Prefix for GM,WM,CSF images'>mwc</prefix>
-   </aamod_structuralstats>
-  </tasksettings>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM structural statistics' modality='MRI'>
+            <permanenceofoutput>2</permanenceofoutput>
+
+            <inputstreams>
+                <stream>native_grey</stream>
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
+            </inputstreams>
+
+            <outputstreams>
+                <stream>structuralstats</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
 </aap>
    

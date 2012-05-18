@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Normalise by total gray' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structuralstats</stream>
+                <stream>normalised_grey</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>tgmscaled_normalised_grey</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

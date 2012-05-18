@@ -38,7 +38,7 @@ switch task
             
             % Subtract this subject's contribution, if the mean includes
             % them
-            if (aap.tasklist.currenttask.meanincludesthissubject)
+            if (aap.tasklist.currenttask.meanincludeseachsubject)
                 Y2=Y2-Y1/nsubj;
             end;
             

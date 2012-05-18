@@ -275,8 +275,6 @@ switch task
             end
         end
         
-        time_elapsed
-        
     case 'checkrequirements'
         % Template image; here template image not skull stripped
         T1file = aap.directory_conventions.T1template;
