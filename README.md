@@ -33,3 +33,21 @@ AA is maintained on github. The most recent version can be found at:
 https://github.com/rhodricusack/automaticanalysis/
 
 
+# Help and support
+
+In addition to the wiki, there is also a discussion list:
+
+https://groups.google.com/d/forum/automaticanalysis
+
+
+
+
+# Software updates
+
+The master branch on github will always have the latest stable version. To
+be notified when a new version is available, please sign up for the 
+automaticanalysis-announce email list:
+
+https://groups.google.com/d/forum/automaticanalysis-announce
+
+
