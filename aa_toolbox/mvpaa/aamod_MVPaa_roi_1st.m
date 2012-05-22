@@ -9,8 +9,6 @@ resp='';
 switch task
     case 'doit'
         
-        tic
-        
         %% PREPARATIONS
         
         mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
@@ -131,6 +129,4 @@ switch task
         save(fullfile(aas_getsubjpath(aap,p), [mriname '.mat']), ...
             'meanSimil', 'Stats', 'EP')
         aap=aas_desc_outputs(aap,p,'MVPaa', fullfile(aas_getsubjpath(aap,p), [mriname '.mat']));
-        
-        time_elapsed
 end

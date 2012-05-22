@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='First level contrasts' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.3</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>3</permanenceofoutput>
             
             <!--
@@ -94,7 +99,7 @@ You must specify one or more contrasts here using one of the following formats
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_cons</stream>
                 <stream>firstlevel_spmts</stream>
-                <stream>firstlevel_spmts</stream>
+                <stream>firstlevel_spmfs</stream>
             </outputstreams>
             
         </currenttask>

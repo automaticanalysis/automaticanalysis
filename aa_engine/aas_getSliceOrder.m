@@ -16,7 +16,11 @@ dicomPath = (fullfile(aap.directory_conventions.rawdatadir, ...
 
 dicomFold = dir(dicomPath);
 
-dicomFold = dicomFold(aap.acq_details.subjects(p).seriesnumbers(s) + 2).name;
+try
+    dicomFold = dicomFold(aap.acq_details.subjects(p).seriesnumbers(s) + 2).name;
+catch % For multi-echo sequences
+    dicomFold = dicomFold(aap.acq_details.subjects(p).seriesnumbers{s}(1) + 2).name;
+end
 
 dicomDir = dir(fullfile(dicomPath, dicomFold));
 

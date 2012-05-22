@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='SPM motion correction' modality='MRI' >
             
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <writemean>1</writemean>

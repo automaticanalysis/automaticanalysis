@@ -1,0 +1,25 @@
+All scripts in the folder fall under the GNU public license.  A copy of the license has been included.
+
+I don't do a good job of commenting all of my scripts, but I'm working on a webpage to at least provide the overview of how to use these scripts.
+
+The website is still a work in progress, and can be found at:
+http://nmr.mgh.harvard.edu/~aschultz/Web/Aarons_Scripts/Aarons_Scripts.html
+
+You can also reach by email with questions, comments, feature requests, and bug reports at aschultz@martinos.org.
+
+This work was supported in parts by the Harvard Aging Brain Study ( NIH-P01AG036694), NIH-R01-AG027435, and the Mass. General Hospital Corp.
+
+I hope you enjoy the scripts and find the, useful!
+
+-Aaron P. Schultz
+
+The GPLv3 applies to all scripts within this package.  A list (as of 8-23-2011) is included below:
+
+OrthoView.m
+
+ChangeLog: 2011-11-11
+This update includes a few bug fixes, and enhancements to OrthoView.  Most notable is a rewrite of SliceAndDice, to SliceAndDice3 to deal with some issues of remapping image files when dealing with native space stuff.  SliceAndDice3 now replaces all calls to SliceAndDice within OrthoView.  
+I tweaked a few other things here and there, but mainly just to work out bugs, and make things opperate more smoothly.
+
+
+

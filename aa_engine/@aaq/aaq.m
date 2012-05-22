@@ -2,13 +2,13 @@ classdef aaq < handle
     properties
         aap;
         jobqueue=[];
-    end;
+    end
     methods
         function obj=aaq(aap)
             if (exist('aap','var'))
                 obj.aap=aap;
-            end;
-        end;
+            end
+        end
         
         %%==============================
         % Save self to a file
@@ -16,12 +16,12 @@ classdef aaq < handle
             jobqueue=obj.jobqueue;
             aap=obj.aap;
             save(fn,'jobqueue','aap')
-        end;
+        end
         %%==============================
         % Clear the task queue
         function obj=emptyqueue(obj)
             obj.jobqueue=[];
-        end;
+        end
         
         %%==============================
         % Add a task to the task queue
@@ -31,12 +31,12 @@ classdef aaq < handle
             for ind=1:length(taskmask.tobecompletedfirst)
                 if (~aas_doneflagexists(obj.aap,taskmask.tobecompletedfirst{ind}))
                     tbcf{end+1}=taskmask.tobecompletedfirst{ind};
-                end;
-            end;
+                end
+            end
             taskmask.tobecompletedfirst=tbcf;
             
             obj.jobqueue=[obj.jobqueue,taskmask];
-        end;
+        end
         
         %%==============================
         % Allocate a job from the task queue to a worker
@@ -49,7 +49,7 @@ classdef aaq < handle
                 %    specialrequirements={obj.aap.schema.tasksettings.(stagename)(obj.aap.tasklist.main.module(k).index).ATTRIBUTE.specialrequirements};
             catch
                 specialrequirements={};
-            end;
+            end
             if exist('highmem','var') % djm: so can try with highmem after 1st crash, even if not set
                 specialrequirements.highmemory=[];
                 specialrequirements.unlimit=[];
@@ -65,9 +65,9 @@ classdef aaq < handle
                     aaparallel.workerstatus.(sprintf('worker%d',workerid)).allocatedjobs={task};
                 else
                     aaparallel.workerstatus.(sprintf('worker%d',workerid)).allocatedjobs=[aaparallel.workerstatus.(sprintf('worker%d',workerid)).allocatedjobs,{task}];
-                end;
+                end
                 couldbeallocated=true;
-            end;
+            end
         end
         
         
@@ -89,13 +89,10 @@ classdef aaq < handle
             task.aap.acq_details.rootsuffix=obj.jobqueue(i).rootsuffix;
         end
         
-       
-     
-        
         %% The default, Mono threaded...
         
         % Run all tasks on the queue, single threaded
-        function [obj]=runall(obj,dontcloseexistingworkers)
+        function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
             global aaparallel
             
             njobs=length(obj.jobqueue);
@@ -106,22 +103,9 @@ classdef aaq < handle
                 obj.aap.acq_details.inputrootsuffix=job.inputrootsuffix;
                 
                 aa_doprocessing_onetask(obj.aap,job.task,job.k);
-            end;
+            end
             obj.emptyqueue;
-        end;
-        
-        
-      
-        
+        end
        
-        
-        
-        
-        
-        
-        
-        
-        
-       
-    end;
+    end
 end

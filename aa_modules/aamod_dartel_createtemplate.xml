@@ -3,14 +3,21 @@
     <tasklist>
         <currenttask domain='study' desc='SPM dartel create template' modality='MRI'>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>2</permanenceofoutput>
             
-            <rform desc='Regularisation type (0 1 or 2)'>0</rform>
-            <numtissueclasses desc='Number of tissue classes (probably 2 or 6)'>2</numtissueclasses>
+            <rform desc='Regularisation type (0 1 or 2)'>0</rform>            
             <specialrequirements desc='need more memory'><highmemory/></specialrequirements>
             
-            <!-- INPUTS/OUTPUTS? -->
+            <inputstreams>
+            	<stream>dartelimported_grey</stream>
+            	<stream>dartelimported_white</stream>
+            </inputstreams>
             
+            <outputstreams>
+            	<stream>dartel_template</stream>
+            	<stream>dartel_flowfield</stream>
+            </outputstreams>
+			            
         </currenttask>
     </tasklist>
 </aap>

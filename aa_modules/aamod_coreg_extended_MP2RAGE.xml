@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_coreg_extended' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

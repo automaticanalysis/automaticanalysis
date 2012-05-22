@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='Get DICOM files for structural'>
             
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

@@ -2,11 +2,11 @@ classdef aaq_localsingle<aaq
     methods
         function [obj]=aaq_localsingle(aap)
             obj.aap=aap;
-        end;
+        end
 %% The default, Mono threaded...
         
         % Run all tasks on the queue, single threaded
-        function [obj]=runall(obj,dontcloseexistingworkers)
+        function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
             global aaparallel
             
             njobs=length(obj.jobqueue);
@@ -14,9 +14,9 @@ classdef aaq_localsingle<aaq
                 job=obj.jobqueue(i);
                 obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);                
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.i,job.j);
-            end;
+            end
             obj.emptyqueue;
-        end;
-    end;
+        end
+    end
 end
         

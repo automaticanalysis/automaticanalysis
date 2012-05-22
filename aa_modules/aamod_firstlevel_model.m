@@ -244,7 +244,7 @@ switch task
                     % Do we convolve with HRF?
                     if modelC.covariate(c).HRF > 0
                         U =[];
-                        U.u = covVect;
+                        U.u = covVect(:);
                         U.name = {modelC.covariate(c).name};
                         covVect = spm_Volterra(U, xBF.bf);
                     end

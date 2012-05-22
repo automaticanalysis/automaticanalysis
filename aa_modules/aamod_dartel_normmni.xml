@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='SPM dartel write normalised segmentations to MNI space' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <fwhm desc='FWHM for smoothing DARTEL-normalized tissue class images'>8</fwhm>
+            <vox desc='Voxel size for normalized images'>1.5</vox>
+            <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>1</preserve>
+            
+            <inputstreams>
+                <stream>dartelimported_grey</stream>
+                <stream>dartelimported_white</stream>
+                <stream>dartel_flowfield</stream>
+                <stream>dartel_template</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>normalised_grey</stream>
+                <stream>normalised_white</stream>        
+            </outputstreams>            
+        </currenttask>
+    </tasklist>
+</aap>
+

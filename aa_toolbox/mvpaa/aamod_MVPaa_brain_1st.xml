@@ -2,12 +2,22 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='1st level MVPaa Brain searchlight analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>segmasksExclusive</stream>
                 <stream>firstlevel_spm</stream>
                 <!--Depending on previous module (model or contrasts) we choose either betas or t-values -->
-                <stream>firstlevel_cons</stream>
+                <stream>firstlevel_spmts</stream>
+                <!--
                 <stream>firstlevel_betas</stream>
+                -->
             </inputstreams>
             <outputstreams>
                 <stream>MVPaa</stream>

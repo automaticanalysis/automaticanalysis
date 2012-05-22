@@ -129,7 +129,7 @@ switch task
             
             spm_orthviews('reposition', [0 0 0])
             
-            figure(spm_figure('FindWin'));
+            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             set(gcf,'PaperPositionMode','auto')
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.jpeg']));

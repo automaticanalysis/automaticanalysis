@@ -13,8 +13,6 @@ resp='';
 switch task
     case 'doit'
         
-        tic
-        
         fprintf('Working with data from participant %s. \n',aap.acq_details.subjects(p).mriname)
         
         Stats = []; EP = [];
@@ -131,7 +129,10 @@ switch task
         % Smoothness of the volume...
         % ...Get the number of mm per voxel...
         mmVox = vox2mm(V);
-        % ...then get the FWHM       
+        % ...then get the FWHM
+        if FWHMmm < min(mmVox./2) % To avoid errors...
+            FWHMmm = min(mmVox./2);
+        end
         SPM.xVol.FWHM = [FWHMmm FWHMmm FWHMmm];
         SPM.xVol.FWHM = SPM.xVol.FWHM ./ mmVox;
         
@@ -141,7 +142,7 @@ switch task
         % some extent...
         SPM.xVol.R = spm_resels_vol( ...
             spm_vol(fullfile(aas_getsubjpath(aap,p), 'con_0001.img')), ...
-            SPM.xVol.FWHM);
+            SPM.xVol.FWHM)';
         
         % Included voxels
         [X Y Z] = ind2sub(SPM.xVol.DIM',find(mask));
@@ -181,6 +182,4 @@ switch task
             Flist = strvcat(Flist, fullfile(Froot, [Ffn '.hdr']));
         end
         aap=aas_desc_outputs(aap,p,'firstlevel_cons', Flist);
-        
-        time_elapsed
 end

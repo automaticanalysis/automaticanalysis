@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_norm_noss' desc='SPM normalise estimate parameters (starting estimates for CBU 32 channel coil)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <usesegmentnotnormalise>1</usesegmentnotnormalise>

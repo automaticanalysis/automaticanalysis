@@ -129,7 +129,7 @@ switch task
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
         mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');        
-        figure(spm_figure('FindWin'));
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         set(gcf,'PaperPositionMode','auto')        
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
@@ -176,6 +176,7 @@ switch task
                 windowSize = get(2,'Position');                
                 
                 for n = 1:size(sY,d)
+                    % Get outline of structural image slice
                     h = subplot(1,1,1);
                     if d == 1
                         sOutline = edge(rot90(squeeze(sY(n,:,:))),'canny');
@@ -185,6 +186,7 @@ switch task
                         sOutline = edge(rot90(squeeze(sY(:,:,n))),'canny');
                     end
                     
+                    % Get EPI image slice
                     if d == 1
                         sImage = rot90(squeeze(Y(n,:,:)));
                     elseif d == 2
@@ -193,7 +195,8 @@ switch task
                         sImage = rot90(squeeze(Y(:,:,n)));
                     end
                     
-                    sImage(sOutline) = EPIlims(2) * 2;
+                    % Draw overlay of structural image on EPI image
+                    sImage(logical(sOutline)) = EPIlims(2) * 2;
                     imagesc(sImage)
                     
                     caxis(EPIlims)
