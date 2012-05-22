@@ -1,10 +1,25 @@
 classdef aaq_condor<aaq
     properties
         filestomonitor=[];
+        compiledfile=[];
+        condorpath=[];
+        execdir=[];
     end
     methods
         function [obj]=aaq_condor(aap)
-            obj.aap=aap;
+             global aaworker
+             obj.aap=aap;
+            
+            obj.condorpath=fullfile(aaworker.parmpath,'condor');
+            if (exist(obj.condorpath,'dir')==0)
+                mkdir(obj.condorpath);
+            end;
+
+            % Compile system
+            [pth obj.execdir ext]=fileparts(tempname);
+            obj.execdir=fullfile(obj.condorpath,obj.execdir);
+            mkdir(obj.execdir);
+            [aap obj.compiledfile]=make_aws_compiled_tool(obj.aap,'/cn_developer/camneuro/release-beta-0.0/aws/devel/matlab/condor_process_jobq.m',obj.execdir)
         end
         %% Queue jobs on Condor:
         %  Write small wrapper textfile (condor_q_job)
@@ -14,12 +29,15 @@ classdef aaq_condor<aaq
         % Run all tasks on the queue, single threaded
         function [obj]=runall(obj,dontcloseexistingworkers)
             global aaparallel
+
             
+            
+
+            % Now run jobs
             obj.filestomonitor=[];
             njobs=length(obj.jobqueue);
             
-            fatalerrors=false;
-            
+            fatalerrors=false;            
             jobnotrun=true(njobs,1);
             jobcount=0;
             while(any(jobnotrun) || not(isempty(obj.filestomonitor)))
@@ -39,7 +57,7 @@ classdef aaq_condor<aaq
                             job=obj.jobqueue(i);
                             obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);
                             job.aap=obj.aap;
-                            jobfn=tempname;
+                            jobfn=obj.execdir;
                             save(jobfn,'job');
                             obj.condor_q_job(jobfn,job);
                             jobnotrun(i)=false;
@@ -122,22 +140,18 @@ classdef aaq_condor<aaq
             global aaworker
             subfn=tempname;
             fid=fopen(subfn,'w');
-            fprintf(fid,'executable=%s\n',obj.aap.directory_conventions.condorwrapper);
+            fprintf(fid,'executable=%s\n',obj.compiledfile);
             fprintf(fid,'universe=vanilla\n');
             [pth nme ext]=fileparts(subfn);
             
-            condorpath=fullfile(aaworker.parmpath,'condor');
-            if (exist(condorpath,'dir')==0)
-                mkdir(condorpath);
-            end;
             fles=[];
-            fles.log=fullfile(condorpath,['log_' nme '.txt']);
-            fles.output=fullfile(condorpath,['out_' nme '.txt']);
-            fles.error=fullfile(condorpath,['err_' nme '.txt']);
+            fles.log=fullfile(obj.condorpath,['log_' nme '.txt']);
+            fles.output=fullfile(obj.condorpath,['out_' nme '.txt']);
+            fles.error=fullfile(obj.condorpath,['err_' nme '.txt']);
             fprintf(fid,'log=%s\n',fles.log);
             fprintf(fid,'output=%s\n',fles.output);
             fprintf(fid,'error=%s\n',fles.error);
-            fprintf(fid,'arguments="/usr/local/MATLAB/R2010b %s"\n',jobfn);
+            fprintf(fid,['arguments="%s %s"\n'],getenv('MCR_ROOT'), jobfn);
             fprintf(fid,'queue\n');
             fclose(fid);
             % Need to get rid of Matlab libraries from the path, or condor

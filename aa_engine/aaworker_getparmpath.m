@@ -9,15 +9,20 @@ else
         [s w]=system('whoami');
         username=deblank(w);
     end;
-%     if (aas_ismac)
-%         aapth=fullfile('/Users',username,'.aa');
-%     else    
-%         aapth=fullfile('/home',username,'.aa');
-%     end;
-cd ~
-homePth = pwd;
-aapth = fullfile(homePth, '.aa');
-
+    %     if (aas_ismac)
+    %         aapth=fullfile('/Users',username,'.aa');
+    %     else
+    %         aapth=fullfile('/home',username,'.aa');
+    %     end;
+    
+    % Following doesn't work when compiled
+    % cd ~
+    % homePth = pwd;
+    % aapth = fullfile(homePth, '.aa');
+    
+    % I guess someone had a good reason for it, so how about this:
+    [s w]=aas_shell('cd ~; pwd');
+    aapth=fullfile(deblank(w));
 end;
 
 if (ischar(aaworkerid))

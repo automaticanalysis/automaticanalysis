@@ -10,34 +10,7 @@
 
 function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
 
-streamname=varargin{end};
-
-streamname=aas_remapstreamname(aap,streamname,true);
-
-switch (nargin)
-    case 2
-        localroot=aas_getstudypath(aap);
-    case 3
-        localroot=aas_getsubjpath(aap,varargin{1});
-    case 4
-        localroot=aas_getsesspath(aap,varargin{1},varargin{2});
-end;
-
-allfiles=[];
-
-% Load in all images by stream name
-inpstreamdesc=fullfile(localroot,sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
-
-if (~exist(inpstreamdesc,'file'))
-    % look for fully qualified inputs
-    fqi_filter=fullfile(localroot,sprintf('stream_*.%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
-    fqi=dir(fqi_filter);
-    if (length(fqi)>1)
-        aas_log(aap, true, sprintf('Found more than one stream matching filter %s - try fully qualifying stream inputs in this module?',fqi_filter));
-    elseif (length(fqi)==1)
-        inpstreamdesc=fullfile(localroot,fqi(1).name);
-    end;
-end;
+inpstreamdesc=aas_getinputstreamfilename(aap,varargin);
 
 if (~exist(inpstreamdesc,'file'))
     aas_log(aap,true,sprintf('Attempting to load stream %s from file %s, but not found',streamname,inpstreamdesc));
