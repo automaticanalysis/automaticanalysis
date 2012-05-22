@@ -31,7 +31,7 @@ switch task
         Cregs = cell(1,length(aap.acq_details.sessions));
         for sess = aap.acq_details.selected_sessions
             % If we have compartment Signals load them...
-            if (exist(aas_getinputstreamfilename(aap,subj,sess),'file'))
+            if (exist(aas_getinputstreamfilename(aap,subj,sess,'compSignal'),'file'))
                 load(aas_getfiles_bystream(aap,subj,sess,'compSignal'));
             end
         end
