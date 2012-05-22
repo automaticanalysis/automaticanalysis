@@ -22,6 +22,7 @@ ind=0;
 % There should be an MD5 at the top
 lne=fgetl(fid);
 if ((length(lne)>3) && strcmp(lne(1:3),'MD5'))
+    allfiles=[];
     md5=lne;
 else
     allfiles=lne;
