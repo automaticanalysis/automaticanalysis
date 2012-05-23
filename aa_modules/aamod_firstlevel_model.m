@@ -33,6 +33,7 @@ switch task
             % If we have compartment Signals load them...
             if (exist(aas_getinputstreamfilename(aap,subj,sess,'compSignal'),'file'))
                 load(aas_getfiles_bystream(aap,subj,sess,'compSignal'));
+                Cregs{sess} = compTC;
             end
         end
         
