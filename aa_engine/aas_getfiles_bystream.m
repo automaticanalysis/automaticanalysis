@@ -10,7 +10,7 @@
 
 function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
 
-inpstreamdesc=aas_getinputstreamfilename(aap,varargin);
+[inpstreamdesc localroot]=aas_getinputstreamfilename(aap,varargin{:});
 
 if (~exist(inpstreamdesc,'file'))
     aas_log(aap,true,sprintf('Attempting to load stream %s from file %s, but not found',streamname,inpstreamdesc));

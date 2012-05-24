@@ -1,7 +1,7 @@
 % Automatic Analysis function to get input filename for a stream
 % Rhodri Cusack Western University May 2012
 
-function [inpstreamdesc]=aas_getinputstreamfilename(aap,varargin)
+function [inpstreamdesc localroot]=aas_getinputstreamfilename(aap,varargin)
 
 streamname=varargin{end};
 

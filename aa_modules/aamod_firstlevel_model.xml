@@ -18,8 +18,8 @@
             <moveMat>[1 0 0; 0 0 0]</moveMat>
             
             <!-- include Compartment Regressors derived from aamod_compSignal 
-            By default filled with [] [no compartment regressors] if you have run aamoc_compSignal-->
-            <compRegs>[]</compRegs>
+            By default empty [no compartment regressors] -->
+            <compRegs></compRegs>
             
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
