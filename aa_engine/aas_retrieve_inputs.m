@@ -32,9 +32,11 @@ if (sourcestagenumber==-1)
     % Make sure it exists
     [s m mid]=mkdir(dest);
     
+    % Don't do this any more - let rsync handle the redundant copies one
+    % layer down
     % See if remote files have already been retrieved?
-    remotefetchfn=fullfile(dest,'done_remote_fetch');
-    doneremotefetch=exist(remotefetchfn,'file');
+    %remotefetchfn=fullfile(dest,sprintf('done_remote_fetch_of_%s',streamname));
+    doneremotefetch=false; %exist(remotefetchfn,'file');
     
     % First we need to get the previous aap file
     remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
@@ -199,11 +201,11 @@ if (sourcestagenumber==-1)
         gotinputs={};
     end;
     
-    if (~doneremotefetch)
-        fid=fopen(remotefetchfn,'w');
-        fprintf(fid,sprintf('%f',now));
-        fclose(fid);
-    end;
+%     if (~doneremotefetch)
+%         fid=fopen(remotefetchfn,'w');
+%         fprintf(fid,sprintf('%f',now));
+%         fclose(fid);
+%     end;
 else
     
     % Not remote pull
