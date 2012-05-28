@@ -18,11 +18,11 @@ function aap=aas_addinitialstream(aap,streamname,varargin)
 % Set domain based on number of inputs
 switch (length(varargin)-1)
     case 0
-        domain='study'
+        domain='study';
     case 1
-        domain='subject'
+        domain='subject';
     case 2
-        domain='session'
+        domain='session';
 end;
 
 if strcmp(domain, 'subject') || strcmp(domain, 'session')
@@ -113,5 +113,5 @@ switch (length(varargin)-1)
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=sessnum; %varargin{2};
 end;
-aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match
+aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match;
 
