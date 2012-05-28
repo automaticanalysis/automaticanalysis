@@ -90,9 +90,19 @@ aap.tasklist.currenttask.settings.conditions = factorNum{1};
 aap.tasklist.currenttask.settings.blocks = blockNum{1};
 aap.tasklist.currenttask.settings.nuisance = nuisanceNum{1};
 aap.tasklist.currenttask.settings.sessions = length(SPM.Sess);
-aap.tasklist.currenttask.settings.conditionNames = conditions{1}( ...
+% Get rid of repeated condition names...
+tempCond = conditions{1}( ...
     (1:aap.tasklist.currenttask.settings.conditions*aap.tasklist.currenttask.settings.blocks) + ...
     aap.tasklist.currenttask.settings.nuisance);
+for t1 = length(tempCond):-1:1
+    for t2 = t1-1:-1:1
+        if strcmp(tempCond{t1}, tempCond{t2})
+            tempCond(t1) = [];
+            break
+        end
+    end
+end
+aap.tasklist.currenttask.settings.conditionNames = tempCond;
 
 %% PREPARATION BEFORE LOADING DATA
 fprintf('\nThis experiment contains \n\t%d sessions\n\t%d blocks\n\t%d conditions', ...
@@ -166,7 +176,7 @@ for Sind=1:length(aap.tasklist.currenttask.inputstreams.stream)
         try
             Bimg = aas_getfiles_bystream(aap,p,aap.tasklist.currenttask.inputstreams.stream{Sind});
             break
-        catch            
+        catch
         end
     end
 end
@@ -198,13 +208,13 @@ if strcmp(dataType, 'betas')
                 imageNum = find(strcmp([SPM.Sess(s).U(:).name], ...
                     condStr));
                 imageNum = imageNum + prevSess;
-                                
+                
                 % Sanity check to see if conditions have been correctly labelled, etc.
                 if isempty(strfind(SPM.Vbeta(imageNum).descrip, condStr))
                     error(['Something went wrong with the condition labelling' ...
                         '\This is probably not your fault! Contact the developer!'])
                 end
-                                
+                
                 % Get either betas or or T values...
                 V = spm_vol(deblank(Bimg(imageNum*2,:))); % We want .img, not .hdr
                 data{c,b,s}=spm_read_vols(V);
@@ -229,11 +239,13 @@ elseif strcmp(dataType, 'spmts')
                 imageNum = find(strcmp({SPM.xCon.name}, ...
                     condStr));
                 imageNum = imageNum(s);
-                                
+                
                 % Get either betas or or T values...
                 V = spm_vol(deblank(Bimg(imageNum*2,:))); % We want .img, not .hdr
                 data{c,b,s}=spm_read_vols(V);
                 
+                % Set anything that is 0 to NaN
+                data{c,b,s}(data{c,b,s}==0) = NaN;
                 if ~isempty(SEGimg)
                     data{c,b,s}(M==0) = NaN;
                 end

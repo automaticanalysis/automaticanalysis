@@ -9,8 +9,6 @@ resp='';
 switch task
     case 'doit'
         
-        tic
-        
         %% PREPARATIONS...
         
         mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
@@ -57,7 +55,6 @@ switch task
             % We get the time that has ellapsed every 25000 voxels
             if rem(r, ROIcheck) == 0
                 fprintf('Working with data from roi %d / %d.', r, ROInum)
-                time_elapsed
             end            
             
             [x y z] = ind2sub(brainSize, r);            
@@ -85,6 +82,4 @@ switch task
         save(fullfile(aas_getsubjpath(aap,p), [mriname '.mat']), ...
             'Stats', 'EP')
         aap=aas_desc_outputs(aap,p,'MVPaa', fullfile(aas_getsubjpath(aap,p), [mriname '.mat']));
-        
-        time_elapsed
 end

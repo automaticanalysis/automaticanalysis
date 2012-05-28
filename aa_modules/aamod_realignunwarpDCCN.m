@@ -114,7 +114,7 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        figure(spm_figure('FindWin'));
+        figure(1);
         [~, mriname] = fileparts(aas_getsubjpath(aap,subj));
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));

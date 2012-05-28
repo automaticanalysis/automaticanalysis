@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='Skull stripping with BET' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>

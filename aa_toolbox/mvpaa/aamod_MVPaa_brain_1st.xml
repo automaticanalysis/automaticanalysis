@@ -2,6 +2,14 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='1st level MVPaa Brain searchlight analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
             <inputstreams>
                 <stream>segmasksExclusive</stream>
                 <stream>firstlevel_spm</stream>
