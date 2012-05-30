@@ -88,12 +88,12 @@ for subdirind=1:length(subdirs)
         DICOMHEADERS=[];
         while (k<=size(dicomdata_subdir,1))
             
-            tmp = spm_dicom_headers(dicomdata_subdir(k,:));
+            tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
             
             try
                 % [AVG] Let us use get the TR and save it to the DICOMHEADERS
                 if k == 1
-                    infoD = dicominfo(dicomdata_subdir(k,:));
+                    infoD = dicominfo(deblank(dicomdata_subdir(k,:)));
                     
                     if strcmp(infoD.MRAcquisitionType, '3D')
                         % In 3D sequence we can find a Private field
