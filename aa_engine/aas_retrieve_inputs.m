@@ -6,7 +6,7 @@ global aaworker
 
 streamname=inputstream.name;
 sourcestagenumber=inputstream.sourcenumber;
-
+ismodified=inputstream.ismodified;
 
 % Only take part of stream after last period
 pos=find(streamname=='.');
@@ -50,7 +50,7 @@ if (sourcestagenumber==-1)
     % Store these initial settings before any module specific customisation
     aap_remote.internal.aap_initial=aap_remote;
     aap_remote.internal.aap_initial.aap_remote.internal.aap_initial=[]; % Prevent recursively expanding storage
-
+    
     % Which module?
     gotit=false;
     for modind=1:length(aap_remote.tasklist.main.module)
@@ -65,7 +65,7 @@ if (sourcestagenumber==-1)
     
     % Set up remote aap for this module
     aap_remote=aas_setcurrenttask(aap_remote,modind);
-
+    
     % Get remote directory
     switch length(varargin)
         case 0
@@ -144,7 +144,7 @@ if (sourcestagenumber==-1)
         aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamname,inputstream.host,src,dest),aap.gui_controls.colours.inputstreams);
         
         oldpth='';
-       
+        
         if (~doneremotefetch)
             % rsync in chunks. It will then compress.
             chunksize=64;
@@ -168,7 +168,7 @@ if (sourcestagenumber==-1)
                     numtotransfer=numtotransfer+1;
                 end;
                 if (wasnamechange)
-                    aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind});            
+                    aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind});
                     numtotransfer=0;
                     inps='';
                 else
@@ -183,10 +183,10 @@ if (sourcestagenumber==-1)
         
         % Get read to write the stream file
         [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
-
+        
         fid_inp=fopen(inputstreamdesc,'w');
         fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
-
+        
         for ind=1:length(fns)
             % Write to stream file
             fprintf(fid_inp,'%s\n',fns_dest{ind});
@@ -201,11 +201,11 @@ if (sourcestagenumber==-1)
         gotinputs={};
     end;
     
-%     if (~doneremotefetch)
-%         fid=fopen(remotefetchfn,'w');
-%         fprintf(fid,sprintf('%f',now));
-%         fclose(fid);
-%     end;
+    %     if (~doneremotefetch)
+    %         fid=fopen(remotefetchfn,'w');
+    %         fprintf(fid,sprintf('%f',now));
+    %         fclose(fid);
+    %     end;
 else
     
     % Not remote pull
@@ -229,10 +229,10 @@ else
             % This is written by this routine - the input to the stage we're
             % working on
             
-            % Delete non-qualified stream name, if this exists, as this will
-            % override a qualified filename, which is dangerous
+            % If stream will not be qualified, delete non-qualified stream 
+            % name, if this exists, as this will override a qualified filename, which is dangerous
             non_qualified_fn=fullfile(dest,sprintf('stream_%s_inputto_%s.txt',fromstreamname,aap.tasklist.currenttask.name));
-            if (exist(non_qualified_fn,'file'))
+            if ~strcmp(streamname,fromstreamname) && exist(non_qualified_fn,'file')  
                 delete(non_qualified_fn);
             end;
             
@@ -312,15 +312,26 @@ else
                     fid_inp=fopen(inputstreamdesc,'w');
                     fprintf(fid,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
                     
+                    
+                    
                     for ind=1:length(fns)
                         % Copy file
                         [pth nme ext]=fileparts(fns_dest_full{ind});
                         newpth=pth;
                         if (~strcmp(oldpth,newpth))
                             aas_makedir(aap,newpth);
+                            %relativepath_src_from_dest=relativepath(src,newpth);
                             oldpth=newpth;
                         end;
-                        cmd=['cd ' src '; rsync -t ' fns{ind} ' ' fns_dest_full{ind}];
+                        if (ismodified)
+                            cmd=['cd ' src '; rsync -t ' fns{ind} ' ' fns_dest_full{ind}];
+                        else
+                            % This is a hard link, not a symlink. This
+                            % takes the timestamp of the destination file,
+                            % and won't be deleted if the destination is
+                            % deleted. So, more like a copy...
+                            cmd=['ln -f ' fullfile(src,fns{ind}) ' ' fns_dest_full{ind}];
+                        end;
                         aas_shell(cmd);
                         
                         % Write to stream file

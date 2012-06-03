@@ -37,6 +37,7 @@ classdef aaq_condor<aaq
             njobs=length(obj.jobqueue);
             
             fatalerrors=false;
+            errline={};
             jobnotrun=true(njobs,1);
             jobcount=0;
             while(any(jobnotrun) || not(isempty(obj.filestomonitor)))
@@ -108,6 +109,7 @@ classdef aaq_condor<aaq
                                     break;
                                 end
                                 aas_log(obj.aap,false,ln,'Errors');
+                                errline{end+1}=ln;
                                 if (not(isempty(deblank(ln))))
                                     fatalerrors=true;
                                 end
@@ -135,7 +137,11 @@ classdef aaq_condor<aaq
             end
             
             if (fatalerrors)
-                aas_log(obj.aap,true,'PARALLEL (condor): Fatal errors executing jobs');
+                aas_log(obj.aap,false,'PARALLEL (condor): Fatal errors executing jobs. The errors were:','Errors');
+                for errind=1:length(errline)
+                    aas_log(obj.aap,false,[' ' errline{errind}],'Errors');
+                end;
+                aas_log(obj.aap,true,'PARALLEL (condor): Terminating because of errors','Errors');
             end
         end
         
@@ -153,6 +159,7 @@ classdef aaq_condor<aaq
             fprintf(fid,'log=%s\n',fles.log);
             fprintf(fid,'output=%s\n',fles.output);
             fprintf(fid,'error=%s\n',fles.error);
+            fprintf(fid,'ImageSize=2000 Meg\n');
             fprintf(fid,['arguments="%s %s"\n'],getenv('MCR_ROOT'), jobfn);
             fprintf(fid,'queue\n');
             fclose(fid);

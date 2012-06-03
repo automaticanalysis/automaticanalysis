@@ -165,6 +165,14 @@ aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expa
 % Save AAP structure
 %  could save aaps somewhere on S3 too?
 studypath=aas_getstudypath(aap);
+
+% check disk space
+FileObj=java.io.File(studypath);
+GBFree=FileObj.getUsableSpace/1024/1000/1000;
+if (GBFree<10)
+    aas_log(aap,false,sprintf('WARNING: Only %f GB of disk space free on analysis drive',GBFree));
+end;
+
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aapsavefn=fullfile(studypath,'aap_parameters');
     if (isempty(dir(studypath)))
