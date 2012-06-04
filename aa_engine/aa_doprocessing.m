@@ -257,330 +257,68 @@ for l=1:length(mytasks)
         % starts on this session. If the latter is subject level, all of
         % the sessions must finish.
         % Now execute the module, and change the 'done' flags if task='doit'
-        switch (domain)
-            case 'study'
-                doneflag=aas_doneflag_getpath(aap,k);
-                if (aas_doneflagexists(aap,doneflag))
-                    if (strcmp(task,'doit'))
-                        aas_log(aap,0,sprintf('- done: %s',description));
-                    end
-                else
-                    switch (task)
-                        case 'checkrequirements'
-                            [aap,resp]=aa_feval(mfile_alias,aap,task);
-                            if (length(resp)>0)
-                                aas_log(aap,0,['\n***WARNING: ' resp]);
-                            end
-                        case 'doit'
-                            tic
-                            % before starting current stage, delete done_
-                            % flag for stages that are dependencies of it
-                            for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
-                                aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber);
-                            end
-                            
-                            % work out what needs to be done before we can
-                            % execute this stage
-                            completefirst=aap.internal.inputstreamsources{k}.stream;
-                            tbcf=[];
-                            
-                            % allow multiple dependecies
-                            for k0i=1:length(completefirst)
-                                if (completefirst(k0i).sourcenumber>0)
-                                    switch(completefirst(k0i).sourcedomain)
-                                        case 'study'
-                                            tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                        case 'subject'
-                                            for i=1:length(aap.acq_details.subjects)
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                            end
-                                        case 'session'
-                                            for i=1:length(aap.acq_details.subjects)
-                                                for j=aap.acq_details.selected_sessions
-                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                                end
-                                            end
-                                        case 'internal'
-                                            % Get parallel parts of stage on
-                                            % which this one is dependent
-                                            loopvar=getparallelparts(aap,k0i);
-                                            
-                                            for x=1:length(loopvar)
-                                                if ischar(loopvar{x})
-                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                                elseif isstruct(loopvar{x})
-                                                    try c={loopvar{x}.id};
-                                                    catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
-                                                    end
-                                                    previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
-                                                end
-                                                tbcf=[tbcf {previousdoneflag}];
-                                            end
-                                    end
-                                end
-                            end
-                            taskmask.tobecompletedfirst=tbcf;
-                            taskmask.i=0;
-                            taskmask.j=0;
-                            
-                            % now queue current stage
-                            aas_log(aap,0,sprintf('MODULE %s PENDING: %s',aap.tasklist.main.module(k).name,description));
-                            taskmask.doneflag=doneflag;
-                            taskmask.description=description;
-                            taskqueue.addtask(taskmask);
-                    end
-                    
-                end
-            case 'subject'
-                msg='';
-                alldone=true;
-                for i=1:length(aap.acq_details.subjects)
-                    doneflag=aas_doneflag_getpath(aap,i,k);
-                    if (aas_doneflagexists(aap,doneflag))
-                        if (strcmp(task,'doit'))
-                            msg=[msg sprintf('- done: %s for %s \n',description,aas_getsubjname(aap,i))];
-                        end
-                    else
-                        alldone=false;
-                        switch (task)
-                            case 'checkrequirements'
-                                [aap,resp]=aa_feval(mfile_alias,aap,task,i);
-                                if (length(resp)>0)
-                                    aas_log(aap,0,['\n***WARNING: ' resp]);
-                                end
-                            case 'doit'
-                                tic
-                                % before starting current stage, delete done_
-                                % flag for next one
-                                for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
-                                    aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i);
-                                end
-                                
-                                % work out what needs to be done before we can
-                                % execute this stage
-                                completefirst=aap.internal.inputstreamsources{k}.stream;
-                                tbcf=[];
-                                for k0i=1:length(completefirst)
-                                    if (completefirst(k0i).sourcenumber>0)
-                                        switch(completefirst(k0i).sourcedomain)
-                                            case 'study'
-                                                tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                            case 'subject'
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                            case 'session'
-                                                for j=aap.acq_details.selected_sessions
-                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                                end
-                                            case 'internal'
-                                                % Get parallel parts of stage on
-                                                % which this one is dependent
-                                                loopvar=getparallelparts(aap,k0i);
-                                                for x=1:length(loopvar)
-                                                    if ischar(loopvar{x})
-                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                                    elseif isstruct(loopvar{x})
-                                                        try c={loopvar{x}.id};
-                                                        catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
-                                                        end
-                                                        previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
-                                                    end
-                                                    tbcf=[tbcf {previousdoneflag}];
-                                                end
-                                        end
-                                    end
-                                end
-                                taskmask.tobecompletedfirst=tbcf;
-                                
-                                % now queue current stage
-                                aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,aas_getsubjname(aap,i)));
-                                taskmask.i=i;
-                                taskmask.j=0;
-                                taskmask.doneflag=doneflag;
-                                taskmask.description=sprintf('%s for %s',description,aas_getsubjname(aap,i));
-                                taskqueue.addtask(taskmask);
-                        end
-                    end
-                end
+        
+        % Get all of the possible instances (i.e., single subjects, or
+        % single sessions of single subjects) for this domain
+        deps=aas_dependencytree_allfromtrunk(aap,domain);
+        for depind=1:length(deps)
+            indices=deps{depind}{2};
+            msg='';
+            alldone=true;
+            doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
+            if (aas_doneflagexists(aap,doneflag))
                 if (strcmp(task,'doit'))
-                    if (alldone)
-                        aas_log(aap,false,sprintf('- done: %s for all subjects',description));
-                    else
-                        if (length(msg)>2)
-                            msg=msg(1:length(msg-2));
-                        end
-                        
-                        aas_log(aap,false,msg);
-                    end
+                    msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
                 end
-            case 'session'
-                alldone=true;
-                msg='';
-                for i=1:length(aap.acq_details.subjects)
-                    for j=aap.acq_details.selected_sessions
-                        doneflag=aas_doneflag_getpath(aap,i,j,k);
-                        if (aas_doneflagexists(aap,doneflag))
-                            if (strcmp(task,'doit'))
-                                msg=[msg sprintf('- done: %s for %s\n',description,aas_getsessname(aap,i,j))];
-                                alldone=true;
-                            end
-                        else
-                            alldone=false;
-                            switch (task)
-                                case 'checkrequirements'
-                                    [aap,resp]=aa_feval(mfile_alias,aap,task,i,j);
-                                    if (length(resp)>0)
-                                        aas_log(aap,0,['\n***WARNING: ' resp]);
-                                    end
-                                case 'doit'
-                                    tic
-                                    % before starting current stage, delete done_
-                                    % flag for next one
-                                    for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
-                                        aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i,j);
-                                    end
-                                    
-                                    % work out what needs to be done before we can
-                                    % execute this stage
-                                    completefirst=aap.internal.inputstreamsources{k}.stream;
-                                    tbcf=[];
-                                    for k0i=1:length(completefirst)
-                                        if (completefirst(k0i).sourcenumber>0)
-                                            switch(completefirst(k0i).sourcedomain)
-                                                case 'study'
-                                                    tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                                case 'subject'
-                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                                case 'session'
-                                                    tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                                case 'internal'
-                                                    % Get parallel parts of stage on
-                                                    % which this one is dependent
-                                                    loopvar=getparallelparts(aap,k0i);
-                                                    for x=1:length(loopvar)
-                                                        if ischar(loopvar{x})
-                                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                                        elseif isstruct(loopvar{x})
-                                                            try c={loopvar{x}.id};
-                                                            catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
-                                                            end
-                                                            previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
-                                                        end
-                                                        tbcf=[tbcf {previousdoneflag}];
-                                                    end
-                                            end
-                                        end
-                                    end
-                                    taskmask.tobecompletedfirst=tbcf;
-                                    
-                                    % now queue current stage
-                                    aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,aas_getsessname(aap,i,j)));
-                                    taskmask.i=i;
-                                    taskmask.j=j;
-                                    taskmask.description=sprintf('%s for %s',description,aas_getsessname(aap,i,j));
-                                    taskmask.doneflag=doneflag;
-                                    
-                                    taskqueue.addtask(taskmask);
-                            end
-                        end
-                    end
-                end
-                if (strcmp(task,'doit'))
-                    
-                    if (alldone)
-                        aas_log(aap,false,sprintf('- done: %s for all sessions of all subjects',description));
-                    else
-                        if (length(msg)>2)
-                            msg=msg(1:length(msg-2));
-                        end
-                        aas_log(aap,false,msg);
-                    end
-                end
-                
-            case 'internal' % e.g. for parallelising contrasts at group level [djm]
+            else
+                alldone=false;
                 switch (task)
                     case 'checkrequirements'
-                        [aap,resp]=aa_feval(mfile_alias,aap,task);
+                        [aap,resp]=aa_feval_withindices(mfile_alias,aap,task,indices);
                         if (length(resp)>0)
                             aas_log(aap,0,['\n***WARNING: ' resp]);
                         end
                     case 'doit'
+                        tic
+                        % before starting current stage, delete done_
+                        % flag for next one
+                        for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
+                            aas_delete_doneflag_bydomain(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,domain,indices);
+                        end
+                        
                         % work out what needs to be done before we can
                         % execute this stage
                         completefirst=aap.internal.inputstreamsources{k}.stream;
-                        tbcf=[];
-                        % allow multiple dependecies
+                        tbcf={};
                         for k0i=1:length(completefirst)
                             if (completefirst(k0i).sourcenumber>0)
-                                
-                                switch(completefirst(k0i).sourcedomain)
-                                    case 'study'
-                                        tbcf={aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber)};
-                                    case 'subject'
-                                        for i=1:length(aap.acq_details.subjects)
-                                            tbcf=[tbcf {aas_doneflag_getpath(aap,i,completefirst(k0i).sourcenumber)}];
-                                        end
-                                    case 'session'
-                                        for i=1:length(aap.acq_details.subjects)
-                                            for j=aap.acq_details.selected_sessions
-                                                tbcf=[tbcf {aas_doneflag_getpath(aap,i,j,completefirst(k0i).sourcenumber)}];
-                                            end
-                                        end
-                                    case 'internal'
-                                        % Get parallel parts of stage on
-                                        % which this one is dependent
-                                        loopvar=getparallelparts(aap,k0i);
-                                        for x=1:length(loopvar)
-                                            if ischar(loopvar{x})
-                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[loopvar{x} '.done']); % file in directory
-                                            elseif isstruct(loopvar{x})
-                                                try c={loopvar{x}.id};
-                                                catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
-                                                end
-                                                previousdoneflag=fullfile(aas_doneflag_getpath(aap,completefirst(k0i).sourcenumber),[c{:} 'done']); % file in directory
-                                            end
-                                            tbcf=[tbcf {previousdoneflag}];
-                                        end
-                                end
+                                tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices);
+                                for tbcf_depsind=1:length(tbcf_deps)
+                                    tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
+                                end;
                             end
                         end
-                        doneflag=aas_doneflag_getpath(aap,k);% this will be a directory
-                        % Get parallel parts of the current
-                        % stage
-                        loopvar=getparallelparts(aap,k);
-                        for x=1:length(loopvar)
-                            if ischar(loopvar{x})
-                                doneflag=fullfile(aas_doneflag_getpath(aap,k),[loopvar{x} '.done']); % file in directory
-                                desc=loopvar{x};
-                            elseif isstruct(loopvar{x})
-                                try c={loopvar{x}.id};
-                                catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
-                                end
-                                doneflag=fullfile(aas_doneflag_getpath(aap,k),[c{:} 'done']); % file in directory
-                                desc=[c{:}];
-                            end
-                            if (aas_doneflagexists(aap,doneflag))
-                                aas_log(aap,0,sprintf('- done: %s for %s',stagename,desc));
-                            else
-                                % before starting current stage, delete done_
-                                % flag for next one
-                                for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
-                                    aas_delete_doneflag(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,i);
-                                end
-                                
-                                % now queue current stage
-                                aas_log(aap,0,sprintf('MODULE %s PENDING: for %s',stagename,desc));
-                                taskmask.i=loopvar{x};
-                                taskmask.j=0;
-                                taskmask.doneflag=doneflag;
-                                taskmask.tobecompletedfirst=tbcf;
-                                taskmask.description=sprintf('%s for %s',description,desc);
-                                taskqueue.addtask(taskmask);
-                            end
-                        end
+                        taskmask.tobecompletedfirst=tbcf;
+                        
+                        % now queue current stage
+                        aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,doneflag));
+                        taskmask.indices=indices;
+                        taskmask.doneflag=doneflag;
+                        taskmask.description=sprintf('%s for %s',description,doneflag);
+                        taskqueue.addtask(taskmask);
+                end
+            end;
+        end
+        if (strcmp(task,'doit'))
+            if (alldone)
+                aas_log(aap,false,sprintf('- done: %s for all %s',description,domain));
+            else
+                if (length(msg)>2)
+                    msg=msg(1:length(msg-2));
                 end
                 
-            otherwise
-                aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s - check the domain="xxx" field in the .xml file associated with this module',domain,aap.tasklist.main.module(k).name));
+                aas_log(aap,false,msg);
+            end
         end
         % Get jobs started as quickly as possible - important on AWS as it
         % can take a while to scan all of the done flags
@@ -600,7 +338,7 @@ end
 if ~isempty(aap.options.email)
     % In case the server is broken...
     try
-    aas_finishedMail(aap.options.email, aap.acq_details.root)
+        aas_finishedMail(aap.options.email, aap.acq_details.root)
     catch
     end
 end

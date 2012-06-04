@@ -4,10 +4,10 @@
 % examples:
 %  pth=aas_getdependencies_bydomain(aap,'study','session',{1,2});  % source stage was at study domain, target stage is at session domain
 
-function [deps]=aas_getdependencies_bydomain(aap, sourcedomain, targetdomain, indices,varargin)
+function [deps]=aas_getdependencies_bydomain(aap, sourcedomain, targetdomain, indices, varargin)
 
-targetdomaintree=finddomain(targetdomain,aap.directory_conventions.parallel_dependencies,{});
-sourcedomaintree=finddomain(sourcedomain,aap.directory_conventions.parallel_dependencies,{});
+targetdomaintree=aas_dependencytree_finddomain(targetdomain,aap.directory_conventions.parallel_dependencies,{});
+sourcedomaintree=aas_dependencytree_finddomain(sourcedomain,aap.directory_conventions.parallel_dependencies,{});
 
 if length(indices)~=(length(targetdomaintree)-1)
     aas_log(aap,true,sprintf('Expected %d indicies for domain "%s" but got %d',length(sourcedomaintree)-1,domain,length(indices)));
@@ -36,42 +36,13 @@ for targetind=1:length(targetdomaintree)
 end;
 
 % 
-deps=findbranches(aap,tree,deps,indices);
+deps=[deps aas_dependencytree_findbranches(aap,tree,deps,indices)];
 
 end
 
-function [deps]=findbranches(aap,tree,deps,indices)
-% First we need to go through every node
-fn=fieldnames(tree);
-for fnind=1:length(fn)
-    % And follow every branch from that node
-    N=aas_getN_bydomain(aap,fn{fnind},indices);
-    for branchind=1:N
-        % Add this
-        deps{end+1}=[tree.fn{fnind} {indices{:} branchind}];
-        % And go through its branches
-        deps=findbranches(aap,tree.fn{fnind},deps,[indices {branchind}]);
-    end;
-end
-end
 
 
-function [domaintree]=finddomain(domain,tree,path)
 
-fn=fieldnames(tree);
 
-domaintree={};
-for fnind=1:length(fn)
-    if strcmp(fn{fnind},domain)
-        domaintree={path{:} domain};
-        return;
-    else
-        domaintree=finddomain(domain,tree.(fn{fnind}),{path{:} fn{fnind}});
-        if ~isempty(domaintree)
-            return;
-        end;
-    end;
-end;
-end
 
 

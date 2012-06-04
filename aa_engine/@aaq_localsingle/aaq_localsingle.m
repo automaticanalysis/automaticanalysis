@@ -13,7 +13,7 @@ classdef aaq_localsingle<aaq
             for i=1:njobs
                 job=obj.jobqueue(i);
                 obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);                
-                aa_doprocessing_onetask(obj.aap,job.task,job.k,job.i,job.j);
+                aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
             obj.emptyqueue;
         end

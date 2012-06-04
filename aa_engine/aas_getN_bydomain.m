@@ -11,7 +11,7 @@ switch (domain)
         if exist(Nfn,'file')
             N=load(Nfn);
         else
-            N=0
+            N=nan;
         end;
         
     case 'session'
@@ -19,5 +19,6 @@ switch (domain)
                
     case 'subject'
         N=length(aap.acq_details.subjects);
-        
+    case 'study'
+        N=0;
 end;

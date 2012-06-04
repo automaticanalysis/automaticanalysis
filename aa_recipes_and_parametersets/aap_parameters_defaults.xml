@@ -45,7 +45,6 @@
                     <session desc='A session' ui='custom'>
                         <searchlight desc='A searchlight' ui='custom'/>
                     </session>
-                    <first_level_contrast desc='A first level contrast'  ui='custom'/>
                 </subject>
             </study>
         </parallel_dependencies>
