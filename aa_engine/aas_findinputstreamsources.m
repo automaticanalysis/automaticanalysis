@@ -25,19 +25,28 @@ for k1=1:length(aap.tasklist.main.module)
         inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
         
         for i=1:length(inputstreams.stream)
+            inputstreamname=inputstreams.stream{i};
+            ismodified=1;
+            if isstruct(inputstreamname)
+                if isfield(inputstreamname.ATTRIBUTE,'ismodified')
+                    ismodified=inputstreamname.ATTRIBUTE.ismodified;
+                end;
+                inputstreamname=inputstreamname.CONTENT;
+            end;
             findremote=[];
             if ~isempty(remotestream)
-                findremote=find(strcmp(inputstreams.stream{i},{remotestream.stream}));
+                findremote=find(strcmp(inputstreamname,{remotestream.stream}));
             end;
             if ~isempty(findremote)
                 stream=[];
-                stream.name=inputstreams.stream{i};
+                stream.name=inputstreamname;
                 stream.sourcenumber=-1;
                 stream.sourcestagename=remotestream(findremote).stagetag;
                 stream.sourcedomain=remotestream(findremote).sourcedomain;
                 stream.depth=[];
                 stream.host=remotestream(findremote).host;
                 stream.aapfilename=remotestream(findremote).aapfilename;
+                stream.ismodified=ismodified;
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
@@ -46,21 +55,22 @@ for k1=1:length(aap.tasklist.main.module)
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
             else
                 
-                [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreams.stream{i},true,0,inf);
+                [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 if isempty(stagethatoutputs)
-                    aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreams.stream{i}));
+                    aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
                 else
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
-                    aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreams.stream{i},sourcestagename,mindepth));
+                    aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     stream=[];
-                    stream.name=inputstreams.stream{i};
+                    stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
                     stream.sourcestagename=sourcestagename;
                     stream.sourcedomain=[];
                     stream.depth=mindepth;
                     stream.host='';
                     stream.aapfilename='';
+                    stream.ismodified=ismodified;
                     stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
                     if (isempty(aap.internal.inputstreamsources{k1}.stream))
                         aap.internal.inputstreamsources{k1}.stream=stream;
@@ -69,7 +79,7 @@ for k1=1:length(aap.tasklist.main.module)
                     end;
                     
                     stream=[];
-                    stream.name=inputstreams.stream{i};
+                    stream.name=inputstreamname;
                     stream.destnumber=k1;
                     stream.deststagename=stagename;
                     stream.depth=mindepth;

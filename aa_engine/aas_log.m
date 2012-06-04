@@ -1,7 +1,7 @@
 % automatic analysis - log tool
 % used to display messages
 % if iserr is true, an error is generated
-% function aas_log(aap,iserr,msg)
+% function aas_log(aap,iserr,msg,style)
 
 function aas_log(aap,iserr,msg,style)
 
