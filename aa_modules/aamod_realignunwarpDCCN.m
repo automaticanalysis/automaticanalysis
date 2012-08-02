@@ -115,7 +115,7 @@ switch task
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
         figure(1);
-        [~, mriname] = fileparts(aas_getsubjpath(aap,subj));
+        [junk, mriname] = fileparts(aas_getsubjpath(aap,subj));
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
         

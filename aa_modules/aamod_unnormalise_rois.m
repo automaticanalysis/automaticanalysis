@@ -91,7 +91,7 @@ switch task
             % Copy to structural dir...
             unix(['cp ' ROIlist{r} ' ' fullfile(aas_getsubjpath(aap,subj), 'structurals') ]);
             
-            [~, fn, ext] = fileparts(ROIlist{r});
+            [junk, fn, ext] = fileparts(ROIlist{r});
             % New location for ROI...
             roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', [fn, ext]);
             

@@ -60,7 +60,7 @@ if strcmp(EP.statsType, 'ttest') ...
             pos = uSimil(Tcon>0);
             if ~isempty(findstr(EP.statsType, 'ttest'))
                 Stats(t,1) = mean(pos(:));
-                [junk, p , junk, stats] = ttest(pos(:));
+                [junk, p , ~, stats] = ttest(pos(:));
                 Stats(t,2) = stats.tstat;
                 Stats(t,3) = p;
                 Stats(t,4) = stats.sd / sqrt(stats.df);
@@ -78,7 +78,7 @@ if strcmp(EP.statsType, 'ttest') ...
             neg = uSimil(Tcon<0);
             if ~isempty(findstr(EP.statsType, 'ttest'))
                 Stats(t,1) = mean(pos(:)) - mean(neg(:));
-                [junk, p , junk, stats] = ttest2(pos(:), neg(:));
+                [junk, p , ~, stats] = ttest2(pos(:), neg(:));
                 Stats(t,2) = stats.tstat;
                 Stats(t,3) = p;
                 Stats(t,4) = stats.sd / sqrt(stats.df);
@@ -158,7 +158,7 @@ elseif strcmp(EP.statsType, 'con-ttest') ...
         
         if ~isempty(findstr(EP.statsType, 'ttest'))
             Stats(t,1) = mean(temp);
-            [junk, p , junk, stats] = ttest(temp);
+            [junk, p , ~, stats] = ttest(temp);
             Stats(t,2) = stats.tstat;
             Stats(t,3) = p;
             Stats(t,4) = stats.sd / sqrt(stats.df);
@@ -184,7 +184,7 @@ elseif strcmp(EP.statsType, 'all-ttest') ...
         
         if ~isempty(findstr(EP.statsType, 'ttest'))
             Stats(t,1) = mean(temp);
-            [junk, p , junk, stats] = ttest(temp);
+            [junk, p , ~, stats] = ttest(temp);
             Stats(t,2) = stats.tstat;
             Stats(t,3) = p;
             Stats(t,4) = stats.sd / sqrt(stats.df);

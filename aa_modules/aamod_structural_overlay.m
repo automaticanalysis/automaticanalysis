@@ -20,7 +20,7 @@ switch task
             % Cheap and cheerful way of ensuring only one file is considered!
             if size(Simg,1) > 1
                 for a = 1:size(Simg,1)
-                    [~, fn] = fileparts(Simg(a,:));
+                    [junk, fn] = fileparts(Simg(a,:));
                     % Warped!
                     if strcmp(fn(1), 'w')
                         Simg = deblank(Simg(a,:));
@@ -32,7 +32,7 @@ switch task
             
             % Cheap and cheerful way of ensuring only warped segmentations are considered!
             for a = size(SEGimg,1):-1:1
-                [~, fn] = fileparts(SEGimg(a,:));
+                [junk, fn] = fileparts(SEGimg(a,:));
                 % Ifnored unwarped!
                 if ~strcmp(fn(1), 'w')
                     SEGimg(a,:) = [];
@@ -58,7 +58,7 @@ switch task
             % Then get segmentations...
             for sess = 1:size(SEGimg,1)
                 % Get common name bits...
-                [~, fn] = fileparts(SEGimg(sess,:));
+                [junk, fn] = fileparts(SEGimg(sess,:));
                 if subj == 1
                     segmentNames{sess} = fn;
                 else

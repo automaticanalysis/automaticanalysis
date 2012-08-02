@@ -31,8 +31,8 @@ else
     fprintf('\nFailed not make conjunction: no overlap')
 end
 
-[~, nImg1] = fileparts(Img1);
-[~, nImg2] = fileparts(Img2);
+[junk, nImg1] = fileparts(Img1);
+[junk, nImg2] = fileparts(Img2);
 fprintf('\nVoxel count: \n\t%s: %.0f\n\t%s: %.0f\n\tConjunction: %.0f', ...
     nImg1, sum(Y1(:)>thresh(1)), nImg2, sum(Y2(:)>thresh(2)), sum(Yc(:)>0))
 catch
