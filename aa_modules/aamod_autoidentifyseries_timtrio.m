@@ -129,7 +129,9 @@ switch task
                 hdr=spm_dicom_headers(dicomfilepath);
                 
                 % Decide whether to ignore this series [djm 20/3/06]
-                if any(aap.acq_details.subjects(i).ignoreseries==j)==0
+                % absolute number rather than index (jc)
+                if ~any(aap.acq_details.subjects(i).ignoreseries == ...
+                        rawdata_allseries(j))
                     
                     if (aap.options.autoidentifyfieldmaps)
                         if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_fieldmap))
