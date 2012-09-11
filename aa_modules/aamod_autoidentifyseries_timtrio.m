@@ -146,6 +146,7 @@ switch task
                         if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_structural))
                             if (series_spgr & ...
                                     aap.options.autoidentifystructural_chooselast==0  & ...
+                                    aap.options.autoidentifystructural_choosefirst==0 & ...
                                     aap.options.autoidentifystructural_average==0 & ...
                                     aap.options.autoidentifystructural_multiple==0) %[AVG] for MP2RAGE, for instance
                                 aas_log(aap,1,'Automatic series id failed - more than one MPRAGE acquisition was found.');
@@ -195,8 +196,12 @@ switch task
         
         
         if (aap.options.autoidentifystructural)
-            if (aap.options.autoidentifystructural_chooselast & length(series_spgr)>1)
-                series_spgr=series_spgr(length(series_spgr));
+            if length(series_spgr)>1
+                if aap.options.autoidentifystructural_chooselast
+                    series_spgr=series_spgr(length(series_spgr));
+                elseif aap.options.autoidentifystructural_choosefirst
+                    series_spgr = series_spgr(1);
+                end
             end
             aap.acq_details.subjects(i).structural=series_spgr;
             comment=[comment sprintf(' Structural series %d ',series_spgr)];
