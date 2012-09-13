@@ -43,7 +43,12 @@ switch task
             switch(aap.directory_conventions.remotefilesystem)
                 case 'none'
                     for ind=1:length(dicom_files_src)
-                        copyfile(deblank(dicom_files_src{ind}),echopath);
+                        [success,msg,msgid] = copyfile(deblank(...
+                            dicom_files_src{ind}),echopath);
+                        % allow copyfile failures due to permissions issues
+                        % (e.g. if copying from networked system)
+                        assert(success || strfind(msg,'chflags'),...
+                            'copyfile failed!')
                         [pth nme ext]=fileparts(dicom_files_src{ind});
                         outstream{ind}=fullfile(echopath,[nme ext]);
                     end
