@@ -98,7 +98,12 @@ for subdirind=1:length(subdirs)
                     if strcmp(infoD.MRAcquisitionType, '3D')
                         % In 3D sequence we can find a Private field
                         % Works for Siemens scanners (not tested elsewhere)
-                        str =  infoD.Private_0029_1020;
+                        fi = 'Private_0029_1020';
+                        % let's make sure this solution has a chance of
+                        % working
+                        assert(isfield(infoD,fi),...
+                            '3D sequence but TR cannot be recovered');
+                        str =  infoD.(fi);
                         xstr = char(str');
                         n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
                         if isempty(n)
