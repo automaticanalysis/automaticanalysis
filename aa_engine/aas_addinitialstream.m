@@ -18,17 +18,13 @@ function aap=aas_addinitialstream(aap,streamname,varargin)
 % Set domain based on number of inputs
 switch (length(varargin)-1)
     case 0
-        domain='study'
+        domain='study';
     case 1
-        domain='subject'
+        domain='subject';
     case 2
-        domain='session'
+        domain='session';
 end;
 
-<<<<<<< HEAD
-=======
-
->>>>>>> master
 if strcmp(domain, 'subject') || strcmp(domain, 'session')
     if ischar(varargin{1})
         subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
@@ -79,13 +75,8 @@ if (~moduleexists)
     end;
     
     if strcmp(domain, 'session')
-<<<<<<< HEAD
-       aap.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
-       aap.aap_beforeuserchanges.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
-=======
         aap.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
         aap.aap_beforeuserchanges.tasklist.main.module(1).extraparameters.aap.acq_details.selected_sessions = sessnum;
->>>>>>> master
     end
     
     % It's a little involved changing the engine's details by hand. For each
@@ -122,5 +113,5 @@ switch (length(varargin)-1)
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=sessnum; %varargin{2};
 end;
-aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match
+aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match;
 
