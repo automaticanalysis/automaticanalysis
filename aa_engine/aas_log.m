@@ -6,6 +6,7 @@
 function aas_log(aap,iserr,msg,style)
 
 try
+    % don't attempt html tags if running outside of Matlab desktop
     if (~exist('style','var') || ~aap.gui_controls.usecolouroutput)
         style='text';
     end;
@@ -79,8 +80,8 @@ if (~isempty(strfind(msg,'parallel-manage-workers')))
     end;
 else
     try
-        % no colours when deployed...
-        if isdeployed
+        % no colours when deployed... (or when on command line)
+        if isdeployed || ~usejava('desktop')
             fprintf(msg);
         else
             cprintf(style,msg);

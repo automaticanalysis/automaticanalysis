@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='EPI movie' modality='MRI' >
+            <fps>8</fps>
+            <inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            <outputstreams>
+            </outputstreams>           
+        </currenttask>
+    </tasklist>
+</aap>

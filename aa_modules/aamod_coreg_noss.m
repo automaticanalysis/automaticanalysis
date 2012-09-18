@@ -38,10 +38,10 @@ switch task
         structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
         PF = dir( fullfile(structdir,['s' aap.acq_details.subjects(i).structuralfn '*.nii']));
         if (length(PF)>1)
-            aap=aas_log(aap,false,sprintf('Found more than one structural (%d), expected only one, but will continue with first',length(PF)));
+            aas_log(aap,false,sprintf('Found more than one structural (%d), expected only one, but will continue with first',length(PF)));
         end;
         if (isempty(PF))
-            aap=aas_log(aap,true,sprintf('Did not find structural image in %s',structdir));
+            aas_log(aap,true,sprintf('Did not find structural image in %s',structdir));
         end;
         structfn=fullfile(structdir,PF(1).name);
         VF = spm_vol(structfn);

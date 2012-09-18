@@ -20,9 +20,15 @@ else
     % homePth = pwd;
     % aapth = fullfile(homePth, '.aa');
     
-    % I guess someone had a good reason for it, so how about this:
-    [s w]=aas_shell('cd ~; pwd');
-    aapth=fullfile(deblank(w));
+    % this fails on a mac - weird whitespace that is difficult to remove
+    %[s w]=aas_shell('cd ~; pwd');
+    %aapth=fullfile(deblank(w));
+    if ispc
+        aapth = getenv('USERPROFILE');
+    else
+        aapth = getenv('HOME');
+    end
+    assert(~isempty(aapth),'failed to find home directory');
 end;
 
 if (ischar(aaworkerid))
