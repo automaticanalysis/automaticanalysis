@@ -89,6 +89,8 @@ switch task
         
         tmpdir=aas_gettempfilename();
         
+        protocolnames=[];
+        
         % Go through each series, and examine type
         for j=1:length(rawdata_allseries)
             % Get the path to a single dicom file from series "j", downloading from S3 first if necessary
@@ -129,7 +131,10 @@ switch task
                 hdr=spm_dicom_headers(dicomfilepath);
                 
                 % Decide whether to ignore this series [djm 20/3/06]
-                if any(aap.acq_details.subjects(i).ignoreseries==j)==0
+                if aap.acq_details.subjects(i).ignoreseries==j
+                    aas_log(aap,false,sprintf('Ignoring series %d',j));
+                else
+                    aas_log(aap,false,sprintf('Protocol name %s',hdr{1}.ProtocolName));
                     
                     if (aap.options.autoidentifyfieldmaps)
                         if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_fieldmap))

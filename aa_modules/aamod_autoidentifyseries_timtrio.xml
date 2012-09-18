@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Automatically identify series numbers'>
+        <currenttask domain='subject' mfile_alias='aamod_autoidentifyseries' desc='Automatically identify series numbers'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -9,6 +9,10 @@
             </qsub>
             
             <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- This is typically SeriesDescription for GE, and ProtocolName for Siemens -->
+            
+            <dicom_protocol_field>ProtocolName</dicom_protocol_field>
             
             <outputstreams>
                 <stream>autoidentifyseries</stream>

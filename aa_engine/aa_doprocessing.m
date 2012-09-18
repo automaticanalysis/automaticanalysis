@@ -292,7 +292,7 @@ for l=1:length(mytasks)
                         tbcf={};
                         for k0i=1:length(completefirst)
                             if (completefirst(k0i).sourcenumber>0)
-                                tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices);
+                                tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices,'doneflaglocations');
                                 for tbcf_depsind=1:length(tbcf_deps)
                                     tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
                                 end;

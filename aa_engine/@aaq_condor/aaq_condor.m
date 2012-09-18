@@ -1,6 +1,7 @@
 classdef aaq_condor<aaq
     properties
         filestomonitor=[];
+        filestomonitor_jobnum=[];
         compiledfile=[];
         condorpath=[];
     end
@@ -16,9 +17,15 @@ classdef aaq_condor<aaq
             
             % Compile system
             [pth compdir ext]=fileparts(tempname);
-            compdir=fullfile(obj.condorpath,compdir);  
+            compdir=fullfile(obj.condorpath,compdir);
             mkdir(compdir);
             [aap obj.compiledfile]=make_aws_compiled_tool(obj.aap,'/cn_developer/camneuro/release-beta-0.0/aws/devel/matlab/condor_process_jobq.m',compdir)
+            
+            % Clearing all existing Condor jobs for this user
+            aas_log(aap,false,'Clearing all existing Condor jobs for this user');
+            cmd='condor_rm -all';
+            aas_shell(cmd);
+            
         end
         %% Queue jobs on Condor:
         %  Write small wrapper textfile (condor_q_job)
@@ -35,11 +42,13 @@ classdef aaq_condor<aaq
             % Now run jobs
             obj.filestomonitor=[];
             njobs=length(obj.jobqueue);
-            
+            retrynum=zeros(njobs,1);
+            maxretries=5;
             fatalerrors=false;
             errline={};
             jobnotrun=true(njobs,1);
             jobcount=0;
+            flaggedretry=false(njobs,1);
             while(any(jobnotrun) || not(isempty(obj.filestomonitor)))
                 for i=1:njobs
                     if (not(fatalerrors) && jobnotrun(i))
@@ -61,27 +70,30 @@ classdef aaq_condor<aaq
                             job.aap=obj.aap;
                             jobfn=execdir;
                             save(jobfn,'job');
-                            obj.condor_q_job(jobfn,job);
+                            obj.condor_q_job(i,jobfn,job);
                             jobnotrun(i)=false;
+                            flaggedretry(i)=false;
                         end
                     end
                 end
                 % Monitor all of the output files
                 donemonitoring=false(size(obj.filestomonitor));
                 for ftmind=1:length(obj.filestomonitor)
-                    
+                    jobnum=obj.filestomonitor_jobnum(ftmind);
                     logfid=fopen(obj.filestomonitor(ftmind).log,'r');
                     if (logfid>0)
                         while(not(feof(logfid)))
                             ln=fgetl(logfid);
-                            switch(str2num(ln(1:3)))
-                                case 0
-                                    state='submitted';
-                                case 1
-                                    state='executing';
-                                case 5
-                                    state='terminated';
-                            end
+                            if length(ln)>3
+                                switch(str2num(ln(1:3)))
+                                    case 0
+                                        state='submitted';
+                                    case 1
+                                        state='executing';
+                                    case 5
+                                        state='terminated';
+                                end
+                            end;
                             while(not(feof(logfid)) && not(strcmp(deblank(ln),'...')))
                                 ln=fgetl(logfid);
                             end
@@ -110,10 +122,26 @@ classdef aaq_condor<aaq
                                 end
                                 aas_log(obj.aap,false,ln,'Errors');
                                 errline{end+1}=ln;
-                                if (not(isempty(deblank(ln))))
-                                    fatalerrors=true;
+                                if not(isempty(deblank(ln)))
+                                    if strcmp(deblank(ln),'Killed')
+                                        aas_log(obj.aap,false,'Job has been killed, but will assume Condor will restart so not marked as fatal error');
+                                    else
+                                        if ~flaggedretry(jobnum)
+                                            retrynum(jobnum)=retrynum(jobnum)+1;
+                                            flaggedretry(jobnum)=true;
+                                        end;
+                                    end;
                                 end
                             end
+                            if flaggedretry(jobnum)
+                                if retrynum(jobnum)>maxretries
+                                    fatalerrors=true;
+                                    aas_log(obj.aap,false,'Fatal error for job');
+                                else
+                                    aas_log(obj.aap,false,sprintf('Retry %d/%d for job',retrynum(jobnum),maxretries));
+                                    jobnotrun(jobnum)=true;
+                                end;
+                            end;
                             donemonitoring(ftmind)=true;
                         end
                         
@@ -145,7 +173,7 @@ classdef aaq_condor<aaq
             end
         end
         
-        function [obj]=condor_q_job(obj,jobfn,job)
+        function [obj]=condor_q_job(obj,jobnum,jobfn,job)
             global aaworker
             subfn=tempname;
             fid=fopen(subfn,'w');
@@ -159,8 +187,8 @@ classdef aaq_condor<aaq
             fprintf(fid,'log=%s\n',fles.log);
             fprintf(fid,'output=%s\n',fles.output);
             fprintf(fid,'error=%s\n',fles.error);
-            fprintf(fid,'ImageSize=2000 Meg\n');
-            fprintf(fid,['arguments="%s %s"\n'],getenv('MCR_ROOT'), jobfn);
+            %            fprintf(fid,'ImageSize=2000000\n');
+            fprintf(fid,['arguments="%s %s"\n'],getenv('MCRROOT'), jobfn);
             fprintf(fid,'queue\n');
             fclose(fid);
             % Need to get rid of Matlab libraries from the path, or condor
@@ -178,6 +206,7 @@ classdef aaq_condor<aaq
             else
                 obj.filestomonitor(end+1)=fles;
             end
+            obj.filestomonitor_jobnum(length(obj.filestomonitor))=jobnum;
         end
     end
 end

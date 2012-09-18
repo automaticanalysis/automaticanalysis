@@ -43,10 +43,15 @@
             <study desc='The whole study (root)' ui='custom'>
                 <subject desc='A subject' ui='custom'>
                     <session desc='A session' ui='custom'>
-                        <searchlight desc='A searchlight' ui='custom'/>
+                        <searchlight_package desc='A searchlight' ui='custom'/>
                     </session>
                 </subject>
+                <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
+                    <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
+                    </hyperalignment_subject>
+                </hyperalignment_searchlight_package>
             </study>
+                            
         </parallel_dependencies>
     </directory_conventions>
     <options>
@@ -69,7 +74,12 @@
             <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
             <verbose desc='Verbose output for qsub?' ui='yesno'>0</verbose>
         </qsub>
-        
+        <searchlight desc='Specification for searchlight' ui='custom'>
+            <N desc='Number of searchlights' ui='double'>5124</N>
+            <Npackage>128</Npackage>
+            <format desc='Format for searchlight' ui='text'>gifti</format>
+            <filename desc='Searchlight description file' ui='text'>/cn_user/spm8/canonical/cortex_5124.surf.gii</filename>
+        </searchlight>
     </options>
     
     <gui_controls>

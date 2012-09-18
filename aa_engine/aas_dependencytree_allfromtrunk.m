@@ -12,12 +12,16 @@ end
 function [deps]=allfromtrunk(aap,domaintree,indices,deps)
 N=aas_getN_bydomain(aap,domaintree{1},indices);
 if ~isnan(N)
-    for Nind=1:N
-        if length(domaintree)>1
-            deps=allfromtrunk(aap,domaintree(2:end),[indices Nind],deps);
-        else
-            deps{end+1}={domaintree{1} [indices Nind]};
+    if length(domaintree)>1
+        for Nind=1:N
+                deps=allfromtrunk(aap,domaintree(2:end),[indices Nind],deps);
         end;
+    else
+        newdeps=cell(N,1);
+        for Nind=1:N
+            newdeps{Nind}={domaintree{1} [indices Nind]};
+        end;
+        deps=[deps newdeps];
     end;
 end;
 end

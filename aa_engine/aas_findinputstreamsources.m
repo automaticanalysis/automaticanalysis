@@ -23,9 +23,17 @@ for k1=1:length(aap.tasklist.main.module)
     
     if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
         inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
-        
-        for i=1:length(inputstreams.stream)
-            inputstreamname=inputstreams.stream{i};
+        streamlist=inputstreams.stream;
+        if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE') 
+            streamlist=streamlist{1};
+        end;
+             
+        for i=1:length(streamlist)
+            if iscell(inputstreams.stream)  && ~isstruct(inputstreams.stream{1})
+                inputstreamname=inputstreams.stream{i};
+            else
+                inputstreamname=inputstreams.stream{1}(i);
+            end;
             ismodified=1;
             if isstruct(inputstreamname)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')

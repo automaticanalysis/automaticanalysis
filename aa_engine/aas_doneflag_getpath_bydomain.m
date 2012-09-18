@@ -10,19 +10,27 @@
 
 function [doneflag doneflagpath stagetag]=aas_doneflag_getpath_bydomain(aap,domain,indices,varargin)
 
-% last parameter is always the stage number
-stage=varargin{end};
-v=varargin(1:end-1);
-
-% penultimate parameter may specify filesystem
-if (~isempty(v) && ischar(v{end}))
-    filesystem=v{end};
-    v=v(1:end-1);
+[hit resp]=aas_cache_get(aap,mfilename,domain,indices,varargin{:});
+if (hit)
+    doneflag=resp{1};
+    doneflagpath=resp{2};
+    stagetag=resp{3};
 else
-    filesystem=aap.directory_conventions.remotefilesystem;
+    % last parameter is always the stage number
+    stage=varargin{end};
+    v=varargin(1:end-1);
+
+    % penultimate parameter may specify filesystem
+    if (~isempty(v) && ischar(v{end}))
+        filesystem=v{end};
+        v=v(1:end-1);
+    else
+        filesystem=aap.directory_conventions.remotefilesystem;
+    end;
+
+    stagetag=aas_getstagetag(aap,stage);
+    doneflagpath=aas_getpath_bydomain(aap,domain,indices,filesystem,stage);
+    doneflag=fullfile(doneflagpath, ['done_' stagetag]);
+
+    aas_cache_put(aap,mfilename,{doneflag doneflagpath stagetag},domain,indices,varargin{:});
 end;
-
-stagetag=aas_getstagetag(aap,stage);
-doneflagpath=aas_getpath_bydomain(aap,domain,indices,filesystem,stage);
-doneflag=fullfile(doneflagpath, ['done_' stagetag]);
-

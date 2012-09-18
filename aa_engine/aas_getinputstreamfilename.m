@@ -13,7 +13,11 @@ switch (nargin)
     case 3
         localroot=aas_getsubjpath(aap,varargin{1});
     case 4
-        localroot=aas_getsesspath(aap,varargin{1},varargin{2});
+        if ischar(varargin{1})
+            localroot=aas_getpath_bydomain(aap,varargin{1},varargin{2});
+        else
+            localroot=aas_getsesspath(aap,varargin{1},varargin{2});
+        end;
 end;
 
 % Get stream name
