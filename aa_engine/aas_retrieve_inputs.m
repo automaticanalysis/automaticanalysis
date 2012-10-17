@@ -8,6 +8,10 @@ for depind=1:length(deps)
     % I'm doing this for you, dear reader. More readable names!
     domain=deps{depind}{1};
     indices=deps{depind}{2};
+
+    fprintf('depind %d domain %s indices ',depind,domain);
+    fprintf('%d ',indices);
+    fprintf('\n');
     
     streamname=inputstream.name;
     sourcestagenumber=inputstream.sourcenumber;
@@ -190,7 +194,7 @@ for depind=1:length(deps)
             end;
             fclose(fid_inp);
             
-            gotinputs=[gotinputs fns];
+            gotinputs=[gotinputs;fns];
         end;
         
         %     if (~doneremotefetch)
@@ -325,7 +329,7 @@ for depind=1:length(deps)
                         end;
                         fclose(fid_inp);
                     end;
-                    gotinputs=[gotinputs fns];
+                    gotinputs=[gotinputs;fns];
                 end;
                 
                 
@@ -396,7 +400,7 @@ for depind=1:length(deps)
                         fns{gzitem}=fns{gzitem}(1:end-3);
                     end;
                     
-                    gotinputs=[gotinputs fns];
+                    gotinputs=[gotinputs;fns];
                 end;
         end;
     end;
