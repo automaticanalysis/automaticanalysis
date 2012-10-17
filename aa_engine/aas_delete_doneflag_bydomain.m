@@ -13,7 +13,7 @@ domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
 % The following was written to find where the inputs to a stage come from.
 % Here, we want to know where the outputs of a stage are going. So, the
 % "target" and "source" domains are reversed
-deps=aas_getdependencies_bydomain(aap,domain,outputdomain,indices);
+deps=aas_getdependencies_bydomain(aap,domain,outputdomain,indices,'doneflaglocations_thatexist',stage);
 for depind=1:length(deps)
     doneflag=aas_doneflag_getpath_bydomain(aap,deps{depind}{1},deps{depind}{2},stage);
     aas_delete_doneflag_bypath(aap,doneflag);

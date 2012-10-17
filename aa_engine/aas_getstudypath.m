@@ -8,6 +8,8 @@
 
 function [root]=aas_getstudypath(aap,varargin)
 global aaworker
+
+
 v=varargin;
 
 % First, see if filesystem explicitly specified
@@ -24,7 +26,7 @@ if (~isempty(v))
     
     % Get analysis id and analysis id suffix
     analysisid=aap.internal.aap_initial.directory_conventions.analysisid;
-    try 
+    try
         analysisid_suffix=aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix;
     catch
         analysisid_suffix=aap.internal.aap_initial.directory_conventions.analysisid_suffix;
@@ -48,7 +50,7 @@ if (~isempty(v))
     
     % Add suffixes
     root=fullfile(root,[analysisid analysisid_suffix]);
-%     fprintf('Root %s\n',root);
+    %     fprintf('Root %s\n',root);
     % Add split by module layer
     
     outputformat=aap.directory_conventions.outputformat;
@@ -60,7 +62,7 @@ if (~isempty(v))
             suffix='';
     end;
     root=fullfile(root,suffix);
-%     aas_log(aap,false,sprintf('Just made path %s',root));
+    %     aas_log(aap,false,sprintf('Just made path %s',root));
 else
     % otherwise, just use the root we've been given - will already have
     % been adorned approriately for the current module
@@ -70,7 +72,6 @@ else
         otherwise
             root=aap.acq_details.(remotefilesystem).root;
     end;
-%     aas_log(aap,false,sprintf('Using pre-calc path %s',root));
+    %     aas_log(aap,false,sprintf('Using pre-calc path %s',root));
 end;
-
 

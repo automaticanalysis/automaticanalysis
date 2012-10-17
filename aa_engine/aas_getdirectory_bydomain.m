@@ -6,15 +6,17 @@
 function [directory]=aas_getdirectory_bydomain(aap,domain,index)
 
 switch (domain)
-    case 'searchlight'
-        directory=sprintf('searchlight_%d',index);
-        
+    case 'searchlight_package'
+        directory=sprintf('searchlight_package_%d',index);
+    
+    case 'hyperalignment_searchlight_package'
+        directory=sprintf(['hyperalignment_searchlight_packages' filesep '%d'],index);
         
     case 'session'
         directory=aap.acq_details.sessions(index).name;
         
         
-    case 'subject'
+    case {'subject','hyperalignment_subject'}
         switch (aap.directory_conventions.subject_directory_format)
             case 1
                 if (isfield(aap.acq_details.subjects(index),'megname') && ~isempty(aap.acq_details.subjects(index).megname))

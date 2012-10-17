@@ -9,11 +9,7 @@ switch(aap.directory_conventions.remotefilesystem)
         attr=sdb_delete_attributes(aap,aaworker.doneflagtablename,doneflag);
         
     otherwise
-        if (exist(doneflag,'file'))
-            cmd=['rm ' doneflag];
-            [s w]=aas_shell(cmd);
-            if (s~=0)
-                aas_log(aap,1,w);
-            end;
+        if exist(doneflag,'file')
+            delete(doneflag)
         end;
 end;

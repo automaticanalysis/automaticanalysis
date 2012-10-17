@@ -1,3 +1,6 @@
+% Like princomp command in stats toolbox
+% Similar output, except that it doesn't reorder components
+%
 function [coeff score latent]=aas_princomp(x)
 
 % Zero columns, important to make SVD=princomp

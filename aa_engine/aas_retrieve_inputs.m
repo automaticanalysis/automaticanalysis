@@ -101,7 +101,7 @@ for depind=1:length(deps)
         %  next stage. A touch confusing!
         outputstreamdesc=fullfile(dest,sprintf('stream_%s_remoteoutputfrom_%s_%s.txt',fromstreamname,inputstream.host,inputstream.sourcestagename));
         
-        if (~doneremotefetch)
+        if ~doneremotefetch
             aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,true);
         end;
         
@@ -231,7 +231,7 @@ for depind=1:length(deps)
                 %  Note the src corresponds to the outputstream of the previous
                 %  stage, and the dest corresponds to the inputstream of the
                 %  next stage. A touch confusing!
-                if (exist(outputstreamdesc,'file'))
+                if exist(outputstreamdesc,'file')
                     % Make sure output directory exists
                     [s m mid]=mkdir(dest);
                     
@@ -270,18 +270,49 @@ for depind=1:length(deps)
                     % Check to see if there is already a stream file with the
                     % appropriate name in the destination, which has a matching
                     % MD5. If so, there won't be any need to copy
-                    if (exist(inputstreamdesc,'file'))
+                    
+                    if exist(inputstreamdesc,'file')
+                        % Check MD5s are the same across new and previous
+                        % input stream file
+                        fid_out=fopen(outputstreamdesc,'r');
+                        md5_lne_out=fgetl(fid_out);
                         fid_inp=fopen(inputstreamdesc,'r');
-                        
                         md5_lne=fgetl(fid_inp);
                         
+                        % Check that checksums in the two files are the same
+                        [junk rem]=strtok(md5_lne_out);
+                        md5_o=strtok(rem);
+                        [junk rem]=strtok(md5_lne);
+                        md5_i=strtok(rem);
                         
-                        if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
-                            [aap md5_inp datecheck]=loadmd5(aap,md5_lne,streamname);
-                            if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
-                                reloadfiles=false;
+                        
+                        if ~strcmp(md5_o,md5_i)
+                            aas_log(aap,false,sprintf('MD5 lines of stream files do not match, will recopy.'));
+                        else
+                            
+                            % Check same number of lines in input and
+                            % output files, in case copying failed half way
+                            % through
+                            filematch=true;
+                            while ~feof(fid_out)
+                                file_o=fgetl(fid_out);
+                                file_i=fgetl(fid_inp);
+                                if ~strcmp(deblank(file_o),deblank(file_i))
+                                    filematch=false;
+                                end;
                             end;
-                            %                    fprintf('Loaded datecheck was %s and calc %s\n',datecheck,datecheck_md5_recalc);
+                            
+                            if ~filematch
+                                aas_log(aap,false,'Previous copying of files did not complete, will recopy');
+                            else
+                                if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
+                                    [aap md5_inp datecheck]=loadmd5(aap,md5_lne,streamname);
+                                    if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
+                                        reloadfiles=false;
+                                    end;
+                                    %                    fprintf('Loaded datecheck was %s and calc %s\n',datecheck,datecheck_md5_recalc);
+                                end;
+                            end;
                         end;
                         fclose(fid_inp);
                         

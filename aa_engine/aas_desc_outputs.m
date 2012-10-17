@@ -1,4 +1,14 @@
-% function [aap]=aas_desc_outputs(aap,[subject,[session]],streamname,outputs)
+% aa describe files that form an output stream 
+% Preferred new syntax:
+%  function [aap]=aas_desc_outputs(aap,domain,indices,streamname,outputs)
+%  e.g., 
+%   aas_desc_outputs(aap,'subject',{1},'epi',fns)
+%   aas_desc_outputs(aap,'session',{1,1},'epi',fns)
+%   aas_desc_outputs(aap,'searchlight',{4,2,77},'epi',fns)
+%     [subject 4, session 2, searchligh 77]
+%
+% Old syntax (still alllowed): 
+%  function [aap]=aas_desc_outputs(aap,[subject,[session]],streamname,outputs)
 % Outputs may either be specified using a relative or absolute path. If the
 % latter, the path is trimmed to make it relative.
 % They may be provided in a cell array or as a matrix
@@ -30,12 +40,17 @@ switch(nargin)
         [pth nme ext]=fileparts(localroot);
         streamdesc=sprintf(' %s ',[nme ext]);
     case 5
-        i=varargin{1};
-        j=varargin{2};
-        localroot=aas_getsesspath(aap,i,j);
-        [pth nme1 ext1]=fileparts(localroot);
-        [pth nme2 ext2]=fileparts(pth);
-        streamdesc=sprintf(' %s %s ',[nme2 ext2],[nme1 ext1]);
+        if ischar(varargin{1})
+            localroot=aas_getpath_bydomain(aap,varargin{1},varargin{2});
+            streamdesc=localroot;
+        else
+            i=varargin{1};
+            j=varargin{2};
+            localroot=aas_getsesspath(aap,i,j);
+            [pth nme1 ext1]=fileparts(localroot);
+            [pth nme2 ext2]=fileparts(pth);
+            streamdesc=sprintf(' %s %s ',[nme2 ext2],[nme1 ext1]);
+        end;
 end;
 
 osd.desc=streamdesc;
