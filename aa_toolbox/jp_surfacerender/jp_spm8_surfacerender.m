@@ -30,7 +30,7 @@ function jp_spm8_surfacerender(img, cmap, cfg)
 %
 %
 % cfg.inflate = 5;        % # bigger number=more inflated. 0=don't inflate
-%
+% cfg.figname = 'my name'; % name the figure window
 %
 %
 % There are also options relating to the figure size and placement of plots
