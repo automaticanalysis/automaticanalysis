@@ -177,21 +177,30 @@ switch task
             % Turn off template weighting
             % SPM defaults
             SNmat = fullfile(Spth, [Sfn '_sn.mat']);
-            invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
+            
+            % SPM2 normalization doesn't generate the inverse transformation
+            %             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             spm_normalise(temp_imgs, Simg, SNmat,...
                 defs.estimate.weight, objMask, ...
                 defs.estimate);
+
             aap=aas_desc_outputs(aap,subj,'normalisation_seg_sn',SNmat);
-            aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
+
         end
         
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
         % [AVG] It is probably best to save the 2ce bias-corrected image
-        aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
-            fullfile(Spth,['mm' Sfn Sext]), ...
-            fullfile(Spth,['w' Sfn Sext])));
         
+        % [CW] But we don't have a bias corrected image if we didn't use
+        % segmentation.
+        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+            aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
+                fullfile(Spth,['mm' Sfn Sext]), ...
+                fullfile(Spth,['w' Sfn Sext])));
+        else
+            aap=aas_desc_outputs(aap,subj,'structural', fullfile(Spth,['w' Sfn Sext]));
+        end
         %{
         % Now save graphical check
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
