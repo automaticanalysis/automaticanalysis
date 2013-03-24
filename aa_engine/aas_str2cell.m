@@ -1,14 +1,14 @@
-function C = aas_string2cell(s, delim)
-%AAS_STRING2CELL Make cell array from delimited string
+function C = aas_str2cell(s, delim)
+%AAS_STR2CELL Make cell array from delimited string
 %
-% C = AAS_STRING2CELL(S) creates a cell array C from delimited string S.
+% C = AAS_STR2CELL(S) creates a cell array C from delimited string S.
 % For example:
 %
 %  S = 'one two three';
-%  C = STRING2CELL(S);
+%  C = STR2CELL(S);
 %  % C = {'one' 'two' 'three'}
 %
-% C = AAS_STRING2CELL(S, DELIM) uses the specified delimiter. If nothing is
+% C = AAS_STR2CELL(S, DELIM) uses the specified delimiter. If nothing is
 % specified a comma and then whitespace are tried (either should work).
 
 % First check that string isn't already a cell array. If so, we are done
