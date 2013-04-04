@@ -1,0 +1,1445 @@
+M       VBM8-Manual.pdf
+M       tbx_cfg_vbm8.m
+M       cg_vbm8_write.m
+M       VBM8-Manual.doc
+M       cg_vbm8_run.m
+
+(1) Weighting for MRF and ORNLM can now be selected in the GUI. This will solve
+    some problems with batch files, where changes of these parameters were not 
+    considered (thanks to Jose Manjon for pointing to that issue).
+(2) VBM8-Manual is also updated to describe the weighting parameters.
+------------------------------------------------------------------------
+r331 | gaser | 2010-05-15 03:00:51
+
+M       cg_vbm8_update.m
+M       cg_vbm8_write.m
+
+(1) Update function now clears the toolbox cache and refreshes function 
+    and file system caches.
+(2) Reordered some parameter initializations in cg_vbm8_write to save 
+    memory.
+------------------------------------------------------------------------
+r332 | gaser | 2010-05-17 22:56:55
+
+M      cg_vbm8_batch.sh
+M      tbx_cfg_vbm8.m
+M      cg_vbm8_batch.m
+M      cg_vbm8_tools.m
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+M      cg_noise_estimation.m
+
+(1) Added calculation of peak SNR to cg_noise_estimate.m.
+(2) Option for non-stationary cluster extent correction now depends on 
+    selection of cluster threshold.
+(3) Added check for empty indices to cg_spmT2x.m.
+(4) Added flag "-d" to cg_vbm8_batch.sh to define your own vbm8_defaults
+    file.
+------------------------------------------------------------------------
+r333 | gaser | 2010-05-18 16:10:35
+
+A      upfirdn2dMex.c
+A      upfirdn2dMex.m
+A      upfirdn2dMex.mexmaci64
+A      afb3D.m
+A      upfirdn2dMex.mexa64
+A      dwt3D.m
+A      upfirdn2dMex.mexw64
+A      kmeans3D.m
+A      farras.m
+A      upfirdn2dMex.mexw32
+A      cshift3D.m
+A      upfirdn2dMex.mexglx
+A      upfirdn2dMex.mexmaci
+M      cg_vbm8_write.m
+M      cg_noise_estimation.m
+
+(1) Noise estimation is now based on wavelet method of Coupe et al. 
+    Med Image Anal. 2010, that is more robust. Many files were added to
+    provide 3D discrete wavelet transformation.
+(2) Added calculation of SNR and CNR to cg_vbm8_write.m.
+------------------------------------------------------------------------
+r334 | gaser | 2010-05-19 12:55:39
+
+M      cg_vbm8_write.m
+
+Increased numbers of morphological closing steps to 20 for final
+masking in cg_vbm8_write. This will prevent holes in CSF segmentation.
+Thanks to Paul (dargonchow@HOTMAIL.COM) for pointing to this issue.
+
+------------------------------------------------------------------------
+r335 | gaser | 2010-05-23 11:22:20
+
+M       cg_vbm8_write.m
+
+Updated Dartel parameters rparam to actual values of SPM8 version.
+------------------------------------------------------------------------
+r336 | gaser | 2010-05-24 14:53:18
+
+M       upfirdn2dMex.mexw64
+
+Phil Kragel has recompiled upfirdn2dMex.c for Windows 64 bit because of some
+problems with Windows Server 2008 R2.
+------------------------------------------------------------------------
+r337 | gaser | 2010-05-25 20:03:48
+
+M       cg_vbm8_write.m
+
+Added path of New Segment toolbox to cg_vbm8_write.m.
+------------------------------------------------------------------------
+r338 | gaser | 2010-05-27 07:35:45
+
+M       kmeans3D.m
+M       upfirdn2dMex.mexw32
+M       cg_noise_estimation.m
+
+(1) Michael Bodnar has recompiled upfirdn2dMex.c for Windows 32 bit because 
+    of some problems with Windows XP and Vista.
+(2) Changed kmeans3D.m to decrease the large memory demand.
+------------------------------------------------------------------------
+r339 | gaser | 2010-05-28 17:24:47
+
+M       ornlmMex.mexw32
+M       upfirdn2dMex.mexw32
+M       AmapMex.mexw32
+M       cg_noise_estimation.m
+
+(1) Marko Wilke has recompiled the c-code for windows 32bit, which will
+    hopefully solve the problems with the mexw32 files.
+(2) Updated cg_noise_estimation.m to save memory.
+------------------------------------------------------------------------
+r340 | gaser | 2010-05-31 21:03:58
+
+M       cg_vbm8_write.m
+
+cg_vbm8_write.m now prints the correct revision number of VBM8.
+------------------------------------------------------------------------
+r341 | gaser | 2010-06-03 12:34:57
+
+M       kmeans3D.m
+M       cg_vbm8_write.m
+
+(1) Replaced kmeans3D.m by code from spm_kmeans1.m.
+(2) Get correct revision number in cg_vbm8_write.m.
+------------------------------------------------------------------------
+r342 | gaser | 2010-06-22 22:57:19
+
+M      cg_spmT2x.m
+
+Voxel values were always thresholded at uncorrected p-values in cg_spmT2x.m.
+------------------------------------------------------------------------
+r343 | gaser | 2010-06-25 09:12:42
+
+M      cg_spm8_batch.m
+M      cg_vbm8_batch.m
+
+Modified call to spm defaults in cg_*_batch.m. 
+------------------------------------------------------------------------
+r344 | gaser | 2010-07-26 08:39:17
+
+M       tbx_cfg_vbm8.m
+
+Corrected a typo in tbx_cfg_vbm8.m.
+------------------------------------------------------------------------
+r345 | gaser | 2010-07-28 18:54:58
+
+M       cg_vbm8_write.m
+M       cg_ornlm.m
+
+Added old noise estimation based on local statistics as alternative if
+robust noise estimation will fail due to memory issues.
+------------------------------------------------------------------------
+r347 | gaser | 2010-08-03 10:21:54
+
+M      afb3D.m
+M      cg_vbm8_write.m
+M      cg_ornlm.m
+
+Noise estimation is now based on a maximum bounding box of 256x256x256. This
+will save memory for images with larger dimensions. If this is not successful
+noise is estimated in a even more limited bounding box.
+------------------------------------------------------------------------
+r348 | gaser | 2010-08-04 17:10:12
+
+M      cg_vbm8_write.m
+
+(1) Removed experimental atlas ROI calculation.
+(2) Added *.mexw64 files to vbm8 website for manual download.
+------------------------------------------------------------------------
+r349 | gaser | 2010-08-05 10:07:24
+
+M      tbx_cfg_vbm8.m
+
+Removed some options for affine regularization to consider newest spm8 update
+r4010.
+------------------------------------------------------------------------
+r350 | gaser | 2010-08-05 12:24:15
+
+M      ornlmMex.mexw64
+M      upfirdn2dMex.mexw64
+M      AmapMex.mexw64
+
+Mex-files for Windows 64-bit are now created with Visual C++ 2005 Professional
+to solve issues with redistributable libraries (thanks to Guillaume Flandin
+for help).
+------------------------------------------------------------------------
+r351 | gaser | 2010-08-09 09:27:40
+
+A      cg_calculate_volume_ROI.m
+
+Added experimental cg_calculate_volume_ROI.m for Anatomy Toolbox.
+------------------------------------------------------------------------
+r352 | gaser | 2010-08-12 16:17:48
+
+M      cg_spmF2x.m
+M      cg_spmT2x.m
+
+Corrected cg_spmT2x.m and cg_spmF2x.m to allow conversion of maps without
+thresholding.
+------------------------------------------------------------------------
+r353 | gaser | 2010-08-17 16:24:28
+
+M      AmapMex.mexmaci64
+M      upfirdn2dMex.c
+M      upfirdn2dMex.mexmaci64
+M      ornlmMex.mexa64
+M      AmapMex.mexmaci
+M      afb3D.m
+M      upfirdn2dMex.mexa64
+M      ornlmMex.mexmaci
+M      ornlmMex.mexw64
+M      AmapMex.mexa64
+M      Kmeans.c
+M      upfirdn2dMex.mexw64
+M      AmapMex.mexw64
+M      ornlmMex.c
+M      ornlmMex.mexw32
+M      upfirdn2dMex.mexw32
+M      ornlmMex.mexmaci64
+M      Amap.c
+M      ornlmMex.mexglx
+M      Amap.h
+M      KmeansMex.c
+M      upfirdn2dMex.mexglx
+M      AmapMex.mexw32
+M      KmeansMex.m
+M      upfirdn2dMex.mexmaci
+M      AmapMex.mexglx
+M      AmapMex.c
+M      cg_noise_estimation.m
+
+(1) Replaced kmeans3d.m by faster mex-code KmeansMex.
+(2) upfirdn2dMex.c is now using floating numbers to save memory.
+(3) Changed cg_noise_estimate.m and afb3D.m to consider changes above.
+(4) Disabled output of Kmeans.c.
+(5) To the source image in AmapMex.c an offset is added for areas above
+    background. This prevents poor CSF segmentations for images, where CSF
+    values are too close to background.
+(6) Changed Amap.h and Amap.c to consider changes above. 
+(7) Re-compiled all c-code.
+------------------------------------------------------------------------
+r354 | gaser | 2010-08-19 16:52:53
+
+M       cg_vbm8_longitudinal.m
+
+Added batch for deleting temporary files in cg_vbm8_longitudinal.m
+------------------------------------------------------------------------
+r355 | gaser | 2010-08-24 13:51:34
+
+M      Kmeans.c
+M      Amap.h
+M      cg_vbm8_longitudinal.m
+
+(1) Temporary files in longitudinal batch mode are now removed after the final
+    segmentation.
+(2) Added flag for spline smoothing to Kmeans.c.
+(3) For windows systems mex.h is included in Amap.h to provide correct
+    printout.
+------------------------------------------------------------------------
+r356 | gaser | 2010-08-25 14:27:15
+
+M      AmapMex.mexmaci64
+M      upfirdn2dMex.c
+A      sanlm.c
+M      Makefile.vbm
+A      cg_vbm8_brainmask_ui.m
+M      cg_vbm8_defaults.m
+M      AmapMex.mexmaci
+M      spm_vbm8.m
+M      CHANGES.txt
+A      avgT1_Dartel_IXI550_MNI152.nii
+M      AmapMex.mexa64
+M      tbx_cfg_vbm8.m
+A      sanlmMex.c
+M      vollib.c
+A      cg_sanlm.m
+M      AmapMex.mexw64
+M      cg_vbm8_tools.m
+M      Amap.h
+A      cg_vbm8_brainmask.m
+M      KmeansMex.c
+M      AmapMex.mexw32
+M      compile.m
+M      cg_vbm8_write.m
+M      AmapMex.mexglx
+M      cg_vbm8_run.m
+
+(1) Replaced Optimized Blockwise Non Local Means (ORNLM) filter by Adaptive 
+    Non-Local Means (SANLM) filter to consider MR images with spatially 
+    varying noise levels (thanks to Jose V. Manjon for providing the source
+    code). This filter does not need pre-estimation of noise and is much
+    less memory demanding.
+(2) Removed wavelet and ornlm code, that is not necessary anymore.    
+(3) Updated cg_vbm8_write for changes above.
+------------------------------------------------------------------------
+r357 | gaser | 2010-08-31 17:24:36
+
+D       sanlm.c
+M       Makefile.vbm
+A       sanlmMex.m
+A  +    sanlm_float.c
+
+Renamed sanlm.c to sanlm_float.c to indicate the floating version.
+------------------------------------------------------------------------
+r358 | gaser | 2010-08-31 23:35:46
+
+A      sanlmMex.m
+M      AmapMex.mexw64
+M      AmapMex.mexw32
+M      AmapMex.mexw64
+M      AmapMex.mexw32
+
+Compiled mexw32 and mexw64 with OpenMP support.
+------------------------------------------------------------------------
+r359 | gaser | 2010-09-01 10:30:23
+
+M      CHANGES.txt
+M      sanlm_float.c
+M      AmapMex.mexw64
+M      AmapMex.mexw32
+M      compile.m
+
+Some cosmetic changes in sanlm_float.c.
+------------------------------------------------------------------------
+r360 | gaser | 2010-09-01 14:45:52
+
+A      sanlmMex.mexw32
+A      sanlmMex.mexglx
+A      sanlmMex.mexmaci64
+M      sanlm_float.c
+M      AmapMex.mexw64
+A      sanlmMex.mexmaci
+M      AmapMex.mexw32
+A      sanlmMex.mexa64
+A      sanlmMex.mexw64
+
+Some cosmetic changes in sanlm_float.c.
+------------------------------------------------------------------------
+r360 | gaser | 2010-09-01 14:48:36
+
+M      AmapMex.mexmaci64
+M      Makefile.vbm
+M      sanlmMex.mexw32
+M      AmapMex.mexmaci
+M      AmapMex.mexa64
+M      Kmeans.c
+M      AmapMex.mexw64
+M      AmapMex.mexw32
+M      AmapMex.mexglx
+M      sanlmMex.mexw64
+
+Improved bias correction in Kmeans.c that leads to better segmentation
+esp. of subcortical structures.
+------------------------------------------------------------------------
+r361 | gaser | 2010-09-03 09:12:14
+
+M      Bayes.c
+M      BayesMex.c
+M      cg_vbm8_brainmask_ui.m
+M      BayesMex.m
+M      WarpPriors.c
+M      Kmeans.c
+M      cg_vbm8_brainmask.m
+M      KmeansMex.c
+
+(1) Some cosmetic changes to Kmeans.c
+(2) cg_vbm8_brainmask.m is now based on an initial segmentation 
+    based on a Bayesian approach with warped priors.
+(3) Updated cg_vbm8_brainmask_ui.m to consider changes above.
+(4) Updated WarpPriors.c to allow upsampling of flow field.
+(5) Updated Bayes.c to include warping of priors.
+
+------------------------------------------------------------------------
+r362 | gaser | 2010-09-07 21:59:04
+
+M       cg_vbm8_brainmask.m
+
+Modified thresholds for inital opening in cg_vbm8_brainmask.m
+------------------------------------------------------------------------
+r363 | gaser | 2010-09-07 23:50:06
+
+M      VBM8-Manual.pdf
+M      cg_slice_overlay.m
+M      cg_vbm8_run.m
+
+(1) Added additionally fine affine registration with brainmask to 
+    cg_vbm8_run.m to make registration more stable.
+(2) Corrected overlay of maps with neg. values in cg_slice_overlay.m.
+(3) Updated VBM8 manual.
+------------------------------------------------------------------------
+r364 | gaser | 2010-09-09 13:01:42
+
+!      AmapMex.mexmaci64
+M      CHANGES.txt
+M      cg_spmT2x.m
+
+Added option for overlaying negative effects to interactive mode of cg_spmT2x.m.
+------------------------------------------------------------------------
+r365 | gaser | 2010-09-23 16:53:14
+
+M      cg_spmT2x.m
+
+Added option for overlaying negative effects to interactive mode of cg_spmT2x.m.
+------------------------------------------------------------------------
+r365 | gaser | 2010-09-23 16:53:38
+
+M      sanlmMex.mexw32
+A      sanlmMex_noopenmp.mexmaci
+M      sanlmMex.mexw64
+A      sanlmMex_noopenmp.mexglx
+M      sanlmMex.mexglx
+M      cg_sanlm.m
+A      sanlmMex.m
+M      sanlm_float.c
+M      sanlmMex.mexmaci64
+A      sanlmMex_noopenmp.mexmaci64
+A      sanlmMex_noopenmp.mexa64
+M      sanlmMex.mexmaci
+M      sanlmMex.mexa64
+M      cg_vbm8_write.m
+
+Compiled sanln-code with static gomp library if possible and additionally
+created a version without OpenMP support, that is used in case of trouble.
+------------------------------------------------------------------------
+r366 | gaser | 2010-09-24 09:52:30
+
+M      Makefile.vbm
+
+Added sanlm-filter without multi-processor support to distribution.
+
+------------------------------------------------------------------------
+r367 | gaser | 2010-10-01 15:28:43
+
+D      sanlmMex.m
+
+Corrected svn issues with  sanlmMex.m.
+
+------------------------------------------------------------------------
+r368 | gaser | 2010-10-01 16:43:49
+
+M      sanlmMex.mexw32
+M      sanlmMex_noopenmp.mexmaci
+M      AmapMex.mexw32
+M      sanlmMex.mexw64
+M      sanlmMex_noopenmp.mexglx
+M      sanlmMex.mexglx
+M      sanlmMex.mexmaci64
+M      AmapMex.mexw64
+M      sanlmMex_noopenmp.mexmaci64
+M      sanlmMex_noopenmp.mexa64
+M      sanlmMex.mexmaci
+M      sanlmMex.mexa64
+
+Recompiled sanlm-code without multi-processor support.
+------------------------------------------------------------------------
+r369 | gaser | 2010-10-04 08:41:47
+
+M      sanlmMex.mexw32
+M      sanlmMex_noopenmp.mexmaci
+M      AmapMex.mexw32
+M      sanlmMex.mexw64
+M      AmapMex.mexmaci64
+M      AmapMex.mexmaci
+M      sanlmMex.mexglx
+M      cg_spm8_batch.m
+M      vollib.c
+M      sanlm_float.c
+M      sanlmMex.mexmaci64
+M      AmapMex.mexw64
+M      sanlmMex_noopenmp.mexmaci64
+M      sanlmMex.mexmaci
+M      sanlmMex.mexa64
+M      cg_vbm8_write.m
+
+(1) Corrected typo in cg_spm8_batch.m (thanks to Douglas Greve for finding
+    this typo).
+(2) Number of morphological closings in cg_vbm8_write.m were to small for 0.5mm
+    resoluted data leading to partially unfilled large ventricles. Now the
+    number is selected according to the spatial resolution of the images.
+(3) Fine-tuning of skullstripping in cg_vbm8_write.m, which is now more
+    depended on cleanup flag.
+(4) Added own definition of isfinite to vollib.c to prevent compilation errors
+    on some windows systems.
+(5) Removed call of omp_set_num_threads in sanlm_float.c to prevent segmentation
+    violations on some systems.
+
+------------------------------------------------------------------------
+r370 | gaser | 2010-11-15 15:31:49
+
+M       cg_vbm8_defaults.m
+M       tbx_cfg_vbm8.m
+M       cg_sanlm.m
+M       cg_vbm8_write.m
+
+(1) In the results print-out the size of bias FWHM was not updated and
+    Matlab version was not always correctly printed (thanks to Darren Gitelman
+    for pointing to this issue).
+(2) Multi-threading for NLM-filter caused many difficulties with some Matlab
+    version. Thus, only single-threading is used as default. For multi-threading
+    the flag "warp.sanlm" in cg_vbm8_defaults should be set to "2".
+(3) Before NLM-filtering all NaN-values are replaced with "0". Furthermore, the
+    output data-type for cg_sanlm is now at least floating precision to prevent
+    rounding issues after filtering (thanks to Robert Dahnke for pointing to
+    this issue). 
+------------------------------------------------------------------------
+r371 | gaser | 2010-11-29 01:40:06
+
+M       cg_vbm8_write.m
+
+In the results print-out the TPM was not updated (thanks to Alan Huang for
+pointing to this issue).
+
+------------------------------------------------------------------------
+r372 | gaser | 2010-11-30 00:13:53
+
+M      cg_vbm8_write.m
+
+Corrected some typos in cg_vbm8_write.m
+------------------------------------------------------------------------
+r373 | gaser | 2010-12-01 16:17:13
+
+M      sanlmMex.mexw32
+M      sanlmMex_noopenmp.mexmaci
+M      AmapMex.mexa64
+M      AmapMex.mexw32
+M      sanlmMex.mexw64
+M      AmapMex.mexmaci64
+M      sanlmMex_noopenmp.mexglx
+M      AmapMex.mexmaci
+M      sanlmMex.mexglx
+M      vollib.c
+M      sanlmMex.mexmaci64
+M      sanlm_float.c
+M      AmapMex.mexw64
+M      sanlmMex_noopenmp.mexmaci64
+M      sanlmMex_noopenmp.mexa64
+M      sanlmMex.mexmaci
+M      sanlmMex.mexa64
+M      AmapMex.mexglx
+
+Removed a memory leak in sanlm_float.c and vollib.c.
+------------------------------------------------------------------------
+r374 | gaser | 2010-12-06 11:50:27
+
+M       spm_vbm8.m
+M       cg_vbm8_tools.m
+A       cg_vbm8_longitudinal_multi_run.m
+A       cg_vbm8_longitudinal_multi.m
+M       VBM8-Manual.pdf
+M       cg_vbm8_longitudinal.m
+
+(1) Added batch for processing longitudinal data for multiple subjects.
+(2) Updated VBM8 manual
+------------------------------------------------------------------------
+r375 | gaser | 2010-12-15 08:15:41
+
+M      cg_sanlm.m
+M      cg_spmF2x.m
+M      cg_spmT2x.m
+
+Replaced fileparts by spm_fileparts in some files, because the 4th output will
+be removed in the future.
+------------------------------------------------------------------------
+r376 | gaser | 2010-12-15 11:35:34
+
+M      cg_vbm8_defaults.m
+M      cg_vbm8_run.m
+M      CHANGES.txt
+M      tbx_cfg_vbm8.m
+M      cg_spmF2x.m
+M      cg_vbm8_longitudinal.m
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+
+Corrected typo in cg_spmT2x.m and cg_spmF2x.m.
+------------------------------------------------------------------------
+r377 | gaser | 2010-12-17 13:33:06
+
+M      cg_vbm8_defaults.m
+M      cg_vbm8_longitudinal_multi_run.m
+M      cg_vbm8_run.m
+M      tbx_cfg_vbm8.m
+M      cg_spmF2x.m
+M      cg_vbm8_longitudinal.m
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+
+(1) Added option for defining Dartel template.
+(2) Disabled warning for deletion of not found files in 
+    cg_vbm8_longitudinal_multi_run.m.
+(3) Corrected use of spm_fileparts in cg_spmT2x.m and cg_spmF2x.m.
+(4) Refused new longitudinal processing pipeline because no improvement could
+    be obtained.
+
+------------------------------------------------------------------------
+r377 | gaser | 2010-12-20 16:02:09
+
+M       cg_vbm8_tools.m
+M       cg_slice_overlay_ui.m
+M       cg_spmT2x.m
+
+(1) Corrected error in cg_spmT2x.m, where sometimes extent thresholds were
+    ignored.
+(2) Added some options to cg_slice_overlay_ui.m.
+------------------------------------------------------------------------
+r378 | gaser | 2010-12-23 22:58:55
+
+M       cg_vbm8_batch.m
+M       cg_vbm8_longitudinal_multi_run.m
+
+(1) Disabled warning for processing of longitudinal data.
+(2) Corrected typo in cg_vbm8_batch.m.
+------------------------------------------------------------------------
+r379 | gaser | 2010-12-24 00:54:35
+
+Bias correction in longitudinal processing pipeline is disabled if FWHM=0 or
+FWHM=Inf.
+------------------------------------------------------------------------
+r380 | gaser | 2010-12-29 02:01:45
+
+M       cg_vbm8_bias_run.m
+
+Bias correction in longitudinal processing pipeline is disabled if FWHM=0 or
+FWHM=Inf.
+------------------------------------------------------------------------
+r381 | gaser | 2010-12-29 02:10:12
+
+M       cg_vbm8_bias_run.m
+
+Bias correction in longitudinal processing pipeline is disabled if FWHM=0 or
+FWHM=Inf.
+------------------------------------------------------------------------
+r382 | gaser | 2010-12-29 02:12:24
+
+M       cg_vbm8_tools.m
+A       cg_vbm8_halfway_run.m
+A       cg_vbm8_halfway.m
+
+Added batch for halfway registration correction.
+------------------------------------------------------------------------
+r383 | gaser | 2011-01-04 01:52:10
+
+M       cg_vbm8_defaults.m
+A       cg_run_realign_estwrite.m
+M       cg_vbm8_tools.m
+A       cg_realign.m
+A       cg_run_realign_estimate.m
+A       cg_cfg_realign.m
+D       cg_vbm8_halfway_run.m
+D       cg_vbm8_halfway.m
+
+Implemented halfway registration based on a modified version of spm_realign.m.
+------------------------------------------------------------------------
+r384 | gaser | 2011-01-05 01:35:30
+
+M       cg_realign.m
+
+Updated halfway registration based on a modified version of spm_realign.m.
+------------------------------------------------------------------------
+r385 | gaser | 2011-01-05 09:31:27
+
+M      cg_vbm8_defaults.m
+M      cg_realign.m
+M      VBM8-Manual.pdf
+M      cg_cfg_realign.m
+M      cg_vbm8_longitudinal.m
+M      VBM8-Manual.doc
+
+(1) Updated halfway registration in cg_realign.m to deal with mixed
+    orientations.
+(2) Added option to weight registration with inverse standard deviation to
+    cg_realign.m.
+(3) Updated Manual.
+------------------------------------------------------------------------
+r386 | gaser | 2011-01-05 17:24:52
+
+M       cg_cfg_realign.m
+M       cg_vbm8_longitudinal.m
+
+(1) Corrected some dependency errors in cg_vbm8_longitudinal.m
+(2) Changed some names in cg_cfg_realign.m to indicate difference to spm
+    realignment.
+------------------------------------------------------------------------
+r387 | gaser | 2011-01-05 22:33:29
+
+M       cg_vbm8_batch.m
+M       cg_spm8_batch.m
+
+Corrected call of spm_get_defaults in cg_*_batch.m to prevent output of
+defaults.
+------------------------------------------------------------------------
+r388 | gaser | 2011-01-05 22:40:56
+
+M       VBM8-Manual.pdf
+M       VBM8-Manual.doc
+
+Updated VBM8-Manual.
+------------------------------------------------------------------------
+r389 | gaser | 2011-01-24 20:32:47
+
+A       VBM8-Manual_Japanese.doc
+A       VBM8-Manual_Japanese.pdf
+
+Added japanese version of manual.
+------------------------------------------------------------------------
+r390 | gaser | 2011-01-24 20:38:53
+
+M      sanlmMex.mexw32
+M      AmapMex.mexa64
+M      AmapMex.mexw32
+M      cg_realign.m
+M      sanlmMex.mexw64
+M      VBM8-Manual.pdf
+M      sanlmMex_noopenmp.mexglx
+M      sanlmMex.mexglx
+M      sanlmMex.mexmaci64
+M      AmapMex.mexw64
+M      sanlmMex_noopenmp.mexmaci64
+M      sanlmMex_noopenmp.mexa64
+M      sanlmMex.mexa64
+M      VBM8-Manual.doc
+M      AmapMex.mexglx
+
+(1) Corrected definition of groups/time points in VBM8 manual 
+    (statistical analysis of longitudinal data). Thanks to Pieter van de 
+    Vijver for finding this error.
+(2) Recompiled all c-files.
+------------------------------------------------------------------------
+r391 | gaser | 2011-01-27 22:59:47
+
+M      cg_spmT2x.m
+
+Implemented new spm correction for non-stationarity in cg_spmT2x.m.
+------------------------------------------------------------------------
+r392 | gaser | 2011-02-10 17:40:00
+
+M      VBM8-Manual.pdf
+M      VBM8-Manual.doc
+
+Added missing second main effect for statistical analysis of longitudinal data
+in one group.
+------------------------------------------------------------------------
+r393 | gaser | 2011-02-11 10:29:34
+
+M       VBM8-Manual_Japanese.doc
+M       VBM8-Manual_Japanese.pdf
+
+Updated japanese version of manual.
+------------------------------------------------------------------------
+r394 | gaser | 2011-02-24 23:22:20
+
+M      cg_morph_vol.m
+M      cg_vbm8_write.m
+
+(1) Added new morphological functions to cg_morph_vol.m.
+(2) Dartel template in cg_vbm8_write.m can be now also selected in batch mode
+    (thanks to Florian Kurth for adding this).
+------------------------------------------------------------------------
+r395 | gaser | 2011-03-04 14:14:07
+
+M      VBM8-Manual.pdf
+M      VBM8-Manual.doc
+
+Updated manual to consider changes with Dartel template.
+------------------------------------------------------------------------
+r396 | gaser | 2011-03-04 14:20:09
+
+M       cg_vbm8_write.m
+
+Updated selection of Dartel template in cg_vbm8_write.m.
+------------------------------------------------------------------------
+r397 | gaser | 2011-03-10 09:03:48
+
+M       cg_vbm8_write.m
+
+The exotic combination that only bias-corrected images and no segmentation are
+saved poduced an error if Dartel-normalization was selected. This error was
+corrected (thanks to Marko for finding out this interesting combination).
+
+------------------------------------------------------------------------
+r398 | gaser | 2011-03-10 09:27:50
+
+M      cg_vbm8_write.m
+
+Check for toolbox information in cg_vbm8_write.m.
+------------------------------------------------------------------------
+r399 | gaser | 2011-03-23 13:56:49
+
+M      cg_vbm8_defs.m
+M      optimizer3d.c
+M      cg_run_realign_estwrite.m
+M      cg_vbm8_bias_run.m
+M      cg_realign.m
+M      cg_ornlm.m
+M      cg_vbm8_run.m
+M      cg_run_realign_estimate.m
+M      cg_spm8_batch.m
+M      cg_check_sample_sd.m
+M      cg_sanlm.m
+M      cg_check_cov.m
+M      cg_showslice_all.m
+M      cg_vbm8_brainmask.m
+M      cg_spmF2x.m
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+
+(1) Replaced spm_matlab_version_chk by spm_check_version in cg_vbm8_run.m.
+(2) Replaced strvcat by char in most files.
+(3) Added use of spm_get_bbox.
+(4) Replaced spm_chi2_plot by spm_plot_convergence in all files.
+------------------------------------------------------------------------
+r400 | gaser | 2011-04-06 10:18:36
+
+A      down_cut01.mexmaci64
+A      vbdist.mexglx
+M      Makefile.vbm
+M      cg_vbm8_defaults.m
+M      sanlmMex.mexw32
+A      down_cut01.mexw64
+A      vbdist.mexmaci
+M      sanlmMex_noopenmp.mexmaci
+A      median3.mexa64
+M      AmapMex.mexa64
+A      eikonal3.mexa64
+A      down_cut01.mexglx
+A      eikonal3.mexmaci
+A      vbdist.mexa64
+M      Amap.h
+A      median3.mexw32
+A      down_cut01.mexmaci
+M      AmapMex.mexw32
+M      compile.m
+A      eikonal3.c
+A      eikonal3.mexw32
+A      eikonal3.mexmaci64
+A      median3.c
+M      cg_vbm8_run.m
+A      median3.mexmaci64
+M      sanlmMex.mexw64
+A      vbdist.mexw32
+M      AmapMex.mexmaci64
+A      down_cut01.mexa64
+M      sanlmMex_noopenmp.mexglx
+A      median3.mexmaci
+M      sanlmMex.mexglx
+A      GBM.m
+M      tbx_cfg_vbm8.m
+M      sanlmMex.c
+A      down_cut01.mexw32
+A      median3.mexw64
+A      vbdist.c
+M      sanlm_float.c
+M      sanlmMex.mexmaci64
+M      AmapMex.mexw64
+A      vbdist.mexmaci64
+M      sanlmMex_noopenmp.mexmaci64
+A      eikonal3.mexw64
+M      sanlmMex_noopenmp.mexa64
+M      sanlmMex.mexmaci
+A      checkinopt.m
+A      median3.mexglx
+A      vbdist.mexw64
+M      sanlmMex.mexa64
+M      cg_vbm8_write.m
+M      AmapMex.mexglx
+A      down_cut01.c
+A      eikonal3.mexglx
+
+Added GBM approach for skull-stripping.
+------------------------------------------------------------------------
+r401 | gaser | 2011-04-08 11:00:56
+
+M      median3.mexa64
+M      median3.c
+M      median3.mexmaci64
+M      median3.mexmaci
+M      median3.mexglx
+
+New compilation of median3.c
+------------------------------------------------------------------------
+r402 | gaser | 2011-04-08 11:49:10
+
+M      cg_vbm8_write.m
+
+Removed use of spm_get_bbox in cg_vbm8_write.m, because this function is only
+available after spm8 update 4290.
+------------------------------------------------------------------------
+r403 | gaser | 2011-04-08 15:14:43
+
+ M     cg_create_MPM.m
+ M     cg_vbm8_defs.m
+MM     AmapMexNu.m
+ M     Contents_info.txt
+ M     optimizer3d.c
+ M     optimizer3d.h
+MM     Makefile.vbm
+ M     cg_vbm8_defaults.m
+ M     PveAmap_ui.m
+ M     stat_thresh.m
+ M     spm_vbm8.m
+ M     slice_overlay.m
+ M     AmapMex.mexa64
+MM     cg_run_realign_estwrite.m
+MM     kmeans3D.m
+ M     Template_3_IXI550_MNI152.nii
+ M     farras.m
+ M     MrfPrior.c
+ M     cg_vbm8_batch.m
+MM     cg_vbm8_update.m
+MM     ornlmMex.c
+MM     cg_cleanup_gwc.m
+MM     ornlmMex.m
+ M     Amap.c
+ M     cg_vbm8_tools.m
+ M     VBM8-Manual_Japanese.doc
+ M     cshift3D.m
+MM     cg_vbm8_bias_run.m
+ M     Anatomy2Dartel.txt
+ M     Amap.h
+ M     diffeo3d.c
+MM     cg_vbm8_get_defaults.m
+ M     diffeo3d.h
+ M     Pve5Mex.c
+ M     AmapMex.mexw32
+ M     compile.m
+ M     Pve5Mex.m
+MM     cg_realign.m
+MM     eikonal3.c
+MM     cg_vbm8_longitudinal_multi_run.m
+MM     cg_ornlm.m
+MM     median3.c
+MM     cg_slice_overlay_ui.m
+ M     cg_calculate_volume_ROI.m
+MM     cg_vbm8_longitudinal_multi.m
+MM     cg_run_realign_estimate.m
+ M     cg_vbm8_run.m
+ M     SplineSmooth.cc
+ M     AmapMex.c
+ M     cg_morph_vol.m
+ M     PveAmap.c
+ M     Template_4_IXI550_MNI152.nii
+ M     cg_spm8_batch.sh
+MM     PveAmap.h
+ M     AmapMex.m
+ M     AmapMex.mexmaci64
+ M     Bayes.c
+MM     upfirdn2dMex.c
+ M     BayesMex.c
+ M     VBM8-Manual.pdf
+MM     upfirdn2dMex.m
+ M     cg_vbm8_brainmask_ui.m
+ M     BayesMex.m
+ M     AmapMex.mexmaci
+ M     afb3D.m
+ M     Makefile
+ M     dwt3D.m
+MM     CHANGES.txt
+MM     KmeansProper.c
+ M     WarpPriors.c
+ M     cg_spm8_batch.m
+A      dp.m
+ M     cg_vbm8_batch.sh
+ M     Kmeans.c
+MM     GBM.m
+ M     tbx_cfg_vbm8.m
+MM     sanlmMex.c
+ M     Template_1_IXI550_MNI152.nii
+ M     cg_check_sample_sd.m
+MM     vollib.c
+MM     ornlm.c
+ M     Template_5_IXI550_MNI152.nii
+MM     vbdist.c
+MM     cg_sanlm.m
+MM     sanlm_float.c
+ M     AmapMex.mexw64
+ M     PveAmapMex.c
+ M     cg_vbm8_debug.m
+MM     cg_check_cov.m
+ M     cg_showslice_all.m
+ M     PveAmapMex.m
+ M     spm_max_nS.m
+MM     cg_cfg_realign.m
+MM     cg_slice_overlay.m
+ M     cg_vbm8_brainmask.m
+ M     KmeansMex.c
+ M     cg_lat_index.m
+MM     cg_vbm8_bias.m
+MM     checkinopt.m
+ M     KmeansMex.m
+MM     cg_spmF2x.m
+MM     cg_vbm8_longitudinal.m
+ M     cg_vbm8_write.m
+ M     VBM8-Manual.doc
+ M     AmapMex.mexglx
+ M     cg_spmT2x.m
+ M     Makefile.var
+MM     down_cut01.c
+ M     VBM8-Manual_Japanese.pdf
+ M     test_vbm8.m
+ M     Template_2_IXI550_MNI152.nii
+ M     Pve.c
+MM     AmapMexNu.c
+ M     Template_6_IXI550_MNI152.nii
+ M     cg_noise_estimation.m
+
+Updated and added svn keywords to all files.
+------------------------------------------------------------------------
+r404 | gaser | 2011-04-11 12:03:10
+
+M      cg_vbm8_bias_run.m
+M      cg_realign.m
+M      cg_vbm8_run.m
+
+Call of spm_plot_convergence will be catched, because this function is
+only available since SPM8 release 4290.
+------------------------------------------------------------------------
+r405 | gaser | 2011-04-12 13:31:08
+
+M       GBM.m
+M       tbx_cfg_vbm8.m
+
+(1) Corrected setting of sanlm-filter in tbx_cfg_vbm8.m to allow values > 1.
+(2) Disabled ventricle filling in GBM if not all output parameters are
+    defined.
+------------------------------------------------------------------------
+r406 | gaser | 2011-04-12 23:48:00
+
+M      down_cut01.mexmaci64
+M      sanlmMex.mexw32
+M      down_cut01.mexw64
+M      median3.mexa64
+M      down_cut01.mexglx
+M      median3.mexw32
+M      down_cut01.mexmaci
+M      AmapMex.mexw32
+M      eikonal3.mexw32
+M      median3.c
+M      median3.mexmaci64
+M      sanlmMex.mexw64
+M      vbdist.mexw32
+M      down_cut01.mexa64
+M      median3.mexmaci
+M      GBM.m
+M      down_cut01.mexw32
+M      median3.mexw64
+M      AmapMex.mexw64
+M      eikonal3.mexw64
+M      median3.mexglx
+M      vbdist.mexw64
+M      down_cut01.c
+
+(1) Modified check for blood vessels in GBM.m, that occasionally caused
+    problems.
+(2) Corrected use of FLT_MIN and FLT_MAX in some c-functions.
+(3) Recompiled mex-files.
+------------------------------------------------------------------------
+r407 | gaser | 2011-04-13 16:46:45
+
+M      median3.mexa64
+M      median3.mexw32
+M      median3.c
+M      median3.mexmaci64
+M      median3.mexmaci
+M      median3.mexw64
+M      median3.mexglx
+
+Removed debug output from median3.c.
+------------------------------------------------------------------------
+r408 | gaser | 2011-04-13 17:27:39
+
+M      cg_vbm8_defs.m
+
+Removed bug in cg_vbm8_defs.m, where the output path was not defined.
+------------------------------------------------------------------------
+r409 | gaser | 2011-04-14 08:08:29
+
+M      GBM.m
+
+Some changes to GBM.m to better deal with blood vessels.
+------------------------------------------------------------------------
+r410 | gaser | 2011-04-14 13:57:32
+
+M      cg_vbm8_run.m
+
+Call of spm_check_version in cg_vbm8_run.m is now applied using "try".
+------------------------------------------------------------------------
+r411 | gaser | 2011-04-14 15:37:57
+
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+
+(1) Removed debugging code in cg_spmT2x.m.
+(2) Removed changes from r409 in GBM.m.
+------------------------------------------------------------------------
+r412 | gaser | 2011-05-02 17:58:45
+
+M       Contents_info.txt
+M       Makefile.vbm
+A       INSTALL_info.txt
+D       spm_max_nS.m
+
+(1) Updated Contents.m and added missing INSTALL.txt.
+(2) Removed spm_max_nS.m.
+------------------------------------------------------------------------
+r413 | gaser | 2011-05-02 21:34:57
+
+M      GBM.m
+
+Corrected out of range warning in GBM.m.
+------------------------------------------------------------------------
+r414 | gaser | 2011-05-03 15:21:26
+
+M      cg_vbm8_defs.m
+M      cg_vbm8_tools.m
+M      CHANGES.txt
+M      cg_vbm8_longitudinal.m
+M      cg_spmT2x.m
+
+(1) Do not delete deformation field in longitudinal batch mode in 
+    cg_vbm8_longitudinal.m.
+(2) Add multi-file option to deformation utility.
+------------------------------------------------------------------------
+r415 | gaser | 2011-05-23 16:37:37
+
+M       INSTALL_info.txt
+M       GBM.m
+M       cg_vbm8_write.m
+
+(1) Limit values for bias field to 100, because sometimes artefacts at the
+    borders can cause huge values in bias field.
+(2) Limit histograms in GBM.m (function create_TSEG) to 1000 entries 
+    to prevent memory issues.
+------------------------------------------------------------------------
+r416 | gaser | 2011-05-23 22:20:46
+
+M      median3.mexa64
+M      median3.mexw32
+M      median3.c
+M      median3.mexmaci64
+M      median3.mexmaci
+M      CHANGES.txt
+M      median3.mexw64
+M      median3.mexglx
+
+Improved speed of skull-stripping by optimizing median3.c.
+------------------------------------------------------------------------
+r417 | gaser | 2011-05-24 17:05:45
+
+M      cg_vbm8_defs.m
+M      cg_vbm8_tools.m
+M      VBM8-Manual.pdf
+M      cg_vbm8_longitudinal.m
+
+(1) Removed bug in longitudinal batch and deformation utility, where some
+    images were not warped.
+(2) Corrected example for statistical analysis for longitudinal batch in
+    VBM8-Manual.pdf.
+------------------------------------------------------------------------
+r418 | gaser | 2011-05-31 10:56:55
+
+D      down_cut01.mexmaci64
+M      sanlmMex.mexw32
+A  +   down_cut.mexw64
+D      down_cut01.mexw64
+M      median3.mexa64
+A  +   down_cut.mexmaci
+M      eikonal3.mexa64
+A  +   down_cut.mexglx
+D      down_cut01.mexglx
+M      eikonal3.mexmaci
+M      median3.mexw32
+D      down_cut01.mexmaci
+M      AmapMex.mexw32
+M      eikonal3.c
+M      eikonal3.mexw32
+M      median3.c
+M      eikonal3.mexmaci64
+M      median3.mexmaci64
+M      sanlmMex.mexw64
+M      vbdist.mexw32
+A  +   down_cut.mexa64
+D      down_cut01.mexa64
+M      median3.mexmaci
+A  +   down_cut.c
+A  +   down_cut.mexmaci64
+M      GBM.m
+A  +   down_cut.mexw32
+D      down_cut01.mexw32
+M      median3.mexw64
+M      AmapMex.mexw64
+M      eikonal3.mexw64
+M      median3.mexglx
+M      vbdist.mexw64
+D      down_cut01.c
+M      eikonal3.mexglx
+
+Improved speed of skull-stripping by updating many mex-functions.
+------------------------------------------------------------------------
+r419 | gaser | 2011-06-07 16:13:14
+
+MM     Contents_info.txt
+ M     vbdist.mexglx
+MM     Makefile.vbm
+ M     sanlmMex.mexw32
+ M     down_cut.mexw64
+ M     vbdist.mexmaci
+ M     sanlmMex_noopenmp.mexmaci
+ M     median3.mexa64
+ M     ornlmMex.mexmaci
+ M     submask.nii
+ M     vbm8.txt
+ M     ornlmMex.mexw64
+ M     AmapMex.mexa64
+ M     upfirdn2dMex.mexw64
+ M     down_cut.mexmaci
+ M     eikonal3.mexa64
+ M     Template_3_IXI550_MNI152.nii
+ M     down_cut.mexglx
+ M     eikonal3.mexmaci
+ M     ornlmMex.mexmaci64
+ M     vbdist.mexa64
+ M     VBM8-Manual_Japanese.doc
+ M     Anatomy2Dartel.txt
+ M     ornlmMex.mexglx
+ M     median3.mexw32
+ M     upfirdn2dMex.mexglx
+ M     AmapMex.mexw32
+ M     eikonal3.mexw32
+ M     eikonal3.mexmaci64
+ M     SplineSmooth.cc
+ M     Template_4_IXI550_MNI152.nii
+ M     median3.mexmaci64
+ M     sanlmMex.mexw64
+ M     vbdist.mexw32
+ M     brainmask_LPBA40_dartel.nii
+ M     AmapMex.mexmaci64
+ M     down_cut.mexa64
+ M     VBM8-Manual.pdf
+ M     sanlmMex_noopenmp.mexglx
+ M     median3.mexmaci
+ M     upfirdn2dMex.mexmaci64
+ M     ornlmMex.mexa64
+ M     upfirdn2dMex.mexa64
+ M     AmapMex.mexmaci
+ M     Makefile
+ M     down_cut.mexmaci64
+MM     CHANGES.txt
+ M     sanlmMex.mexglx
+ M     avgT1_Dartel_IXI550_MNI152.nii
+ M     INSTALL_info.txt
+ M     down_cut.mexw32
+ M     Template_1_IXI550_MNI152.nii
+ M     median3.mexw64
+ M     Template_5_IXI550_MNI152.nii
+ M     sanlmMex.mexmaci64
+ M     AmapMex.mexw64
+ M     ornlmMex.mexw32
+ M     brainmask_LPBA40.nii
+ M     vbdist.mexmaci64
+ M     upfirdn2dMex.mexw32
+ M     sanlmMex_noopenmp.mexmaci64
+ M     eikonal3.mexw64
+ M     sanlmMex_noopenmp.mexa64
+ M     sanlmMex.mexmaci
+MM     svn_ci_log
+ M     median3.mexglx
+ M     vbdist.mexw64
+ M     sanlmMex.mexa64
+ M     upfirdn2dMex.mexmaci
+ M     VBM8-Manual.doc
+ M     AmapMex.mexglx
+ M     Makefile.var
+ M     VBM8-Manual_Japanese.pdf
+ M     Template_2_IXI550_MNI152.nii
+ M     eikonal3.mexglx
+ M     Template_6_IXI550_MNI152.nii
+
+New mex-file compilation.
+------------------------------------------------------------------------
+r420 | gaser | 2011-07-04 16:26:13
+
+M      sanlmMex.m
+
+Removed weird character in sanlmMex.m, that caused errors.
+------------------------------------------------------------------------
+r421 | gaser | 2011-07-06 15:20:39
+
+M      sanlmMex.mexw32
+M      down_cut.mexw64
+M      median3.mexa64
+M      median3.mexw32
+M      AmapMex.mexw32
+M      eikonal3.mexw32
+M      median3.c
+M      median3.mexmaci64
+M      sanlmMex.mexw64
+M      vbdist.mexw32
+M      median3.mexmaci
+M      down_cut.mexw32
+M      median3.mexw64
+M      AmapMex.mexw64
+M      eikonal3.mexw64
+M      median3.mexglx
+M      vbdist.mexw64
+
+Removed bug in median3d.c and recompiled mex-files.
+------------------------------------------------------------------------
+r422 | gaser | 2011-07-06 16:35:23
+
+M      GBM.m
+
+Corrected overflow of uint8 values in GBM.m.
+------------------------------------------------------------------------
+r423 | gaser | 2011-07-07 14:15:34
+
+M       VBM8-Manual_Japanese.pdf
+
+Kiyotaka Nemoto updated the VBM8 manual.
+------------------------------------------------------------------------
+r424 | gaser | 2011-07-26 00:56:22
+
+M      cg_vbm8_defs.m
+M      spm_vbm8.m
+M      cg_vbm8_tools.m
+M      cg_check_cov.m
+M      cg_vbm8_longitudinal.m
+M      cg_noise_estimation.m
+
+(1) Allow gap for slices in cg_check_cov.m to speed up.
+(2) Added different GUI to apply deformation to many images as well as many 
+    subjects.
+(3) Some changes in longitudinal batch (interpolation, bias regularization).
+------------------------------------------------------------------------
+r425 | gaser | 2011-08-22 16:39:51
+
+M       spm_vbm8.m
+
+Added menu entry to open VBM8 manual.
+------------------------------------------------------------------------
+r426 | gaser | 2011-09-28 22:40:07
+
+M       spm_vbm8.m
+
+Added menu entry to open VBM8 manual.
+------------------------------------------------------------------------
+r426 | gaser | 2011-09-28 22:42:26
+
+M       cg_spmT2x.m
+
+Corrected error in cg_spmT2x.m where incorrect cluster values were estimated
+for correction of non-stationarity.
+------------------------------------------------------------------------
+r427 | gaser | 2011-09-29 02:01:15
+
+M      cg_vbm8_defaults.m
+M      spm_vbm8.m
+M      cg_realign.m
+M      cg_cfg_realign.m
+M      cg_vbm8_write.m
+M      cg_spmT2x.m
+
+(1) Corrected typo in cg_spmT2x.m, that caused crash while estimating numbers
+    of voxels per cluster.
+(2) The two different ways to apply deformations are bow better indicated
+    in the GUI.
+(3) Check whether graph-cut based skull-stripping failed in cg_vbm8_write.m.
+(4) Added option to cg_realign.m to skip pre-existing positional information
+    This will utilize halfway registration.
+------------------------------------------------------------------------
+r428 | gaser | 2011-09-29 07:59:11
+
+M      tbx_cfg_vbm8.m
+
+Added option for 'ICBM space template - East Asian brains' as affine
+regularization.
+------------------------------------------------------------------------
+r429 | gaser | 2011-09-29 09:47:11
+
+M      sanlmMex.mexw32
+M      down_cut.mexw64
+M      cg_run_realign_estwrite.m
+M      median3.mexw32
+M      AmapMex.mexw32
+M      cg_realign.m
+M      eikonal3.mexw32
+M      cg_run_realign_estimate.m
+M      sanlmMex.mexw64
+M      vbdist.mexw32
+M      down_cut.mexw32
+M      median3.mexw64
+M      AmapMex.mexw64
+M      eikonal3.mexw64
+M      vbdist.mexw64
+
+(1) Recompiled mex-files for windows with static linked libraries. This will
+    solve the issues on some systems where the runtime libraries for 
+    Microsoft Visual C++ are not redistributed with matlab.    
+(2) Removed some typos in new realignment code. 
+------------------------------------------------------------------------
+r430 | gaser | 2011-09-29 16:54:15
+
+M      cg_vbm8_longitudinal_multi_run.m
+M      CHANGES.txt
+
+Removed bug in cg_vbm8_longitudinal_multi_run.m that caused incorrect 
+processing of files if number of time points differs between subjects. 
+Thanks to Sonja Faust for finding this weird error.
+------------------------------------------------------------------------
+r431 | gaser | 2011-09-30 16:17:14
+
+M       cg_vbm8_defaults.m
+M       spm_vbm8.m
+M       cg_run_realign_estwrite.m
+A       cg_set_com.m
+M       cg_realign.m
+M       cg_run_realign_estimate.m
+M       cg_cfg_realign.m
+
+(1) Added function to automatically set origin ucenter-of-mass.
+(2) Removed option for ignoring mat-information for realignmnt from GUI.
+------------------------------------------------------------------------
+r432 | gaser | 2011-10-03 23:48:42
+
+M      cg_vbm8_defs.m
+
+Corrected erroneous inversion of modulated images while using function 
+"Apply deformations" with modulation. Thanks to Fumio Yamashita for
+finding this error.
+------------------------------------------------------------------------
+r433 | gaser | 2011-10-07 09:41:46
+
+M       VBM8-Manual_Japanese.doc
+M       VBM8-Manual.pdf
+M       VBM8-Manual.doc
+M       VBM8-Manual_Japanese.pdf
+
+Corrected longitudinal design with one group in VBM8-Manual. The first main
+effect "2" was missing.
+------------------------------------------------------------------------
+r434 | gaser | 2011-10-10 22:46:10
+
+M       cg_vbm8_write.m
+
+Use old skull-stripping approach if graph-cut skull-stripping fails.
+------------------------------------------------------------------------
+r435 | gaser | 2011-12-06 12:37:54
