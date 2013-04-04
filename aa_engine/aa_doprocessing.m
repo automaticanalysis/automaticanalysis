@@ -178,21 +178,12 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
 end
 
 % Choose where to run all tasks
-switch (aap.options.wheretoprocess)
-    case 'localsingle'
-        taskqueue=aaq_localsingle(aap);
-    case 'localparallel'
-        taskqueue=aaq_localparallel(aap);
-    case 'condor'
-        taskqueue=aaq_condor(aap);
-    case 'qsub'
-        taskqueue=aaq_qsub(aap);
-    case 'aws'
-        taskqueue=aaq_aws(aap);
-        %        taskqueue.clearawsqueue(); no longer cleared!
-    otherwise
-        aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
+try
+  eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
+catch
+  aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
 end
+  
 
 % Check registered with django
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
