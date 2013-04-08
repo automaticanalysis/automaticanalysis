@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='SPM8 segment8' modality='MRI'>
+        <currenttask domain='subject' desc='VBM8 segmentation' modality='MRI'>
         
             <permanenceofoutput>2</permanenceofoutput>
             
@@ -32,6 +32,7 @@
                 <stream>dartelimported_white</stream>
                 <stream>dartelimported_csf</stream>
 
+                <!--
                 <stream>normalised_density_grey</stream>
                 <stream>normalised_density_white</stream>
                 <stream>normalised_density_csf</stream>
@@ -39,6 +40,7 @@
                 <stream>normalised_volume_grey</stream>
                 <stream>normalised_volume_white</stream>
                 <stream>normalised_volume_csf</stream>                
+                -->
             </outputstreams>
         </currenttask>
     </tasklist> 
