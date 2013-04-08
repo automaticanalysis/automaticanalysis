@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_dartel_normmni' domain='study' desc='SPM dartel write normalised segmentations to MNI space' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <fwhm desc='FWHM for smoothing DARTEL-normalized tissue class images'>8</fwhm>
+            <vox desc='Voxel size for normalized images'>1.5</vox>
+            <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>1</preserve>
+            <tissues desc='Tissue classes to write out'>grey white csf softtissue skull</tissues>
+            <inputstreams>
+              <stream>dartelimported_grey</stream>
+              <stream>dartelimported_white</stream>
+              <stream>dartelimported_csf</stream>
+              <stream>dartelimported_softtissue</stream>
+              <stream>dartelimported_skull</stream>
+              
+              <stream>dartel_flowfield</stream>
+              <stream>dartel_template</stream>
+            </inputstreams>
+            
+            <outputstreams>
+              <stream>normalised_grey</stream>
+              <stream>normalised_white</stream>
+              <stream>normalised_csf</stream>
+              <stream>normalised_softtissue</stream>
+              <stream>normalised_skull</stream>
+            </outputstreams>            
+          </currenttask>
+        </tasklist>
+      </aap>
+
