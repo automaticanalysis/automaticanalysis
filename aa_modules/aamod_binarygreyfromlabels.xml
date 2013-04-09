@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_binaryfromlabels' domain='subject' desc='Create binary GM mask from labeled image' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <outputlabel desc='Label for output'>grey</outputlabel>
+            
+            <labels desc='Include these label numbers'>33 35 71 72 73 13 101 103 190 192 194</labels>
+			
+            <inputstreams>
+                <stream>labeled_brain</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>labeled_grey</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+
