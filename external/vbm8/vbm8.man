@@ -1,0 +1,92 @@
+% __________________________________________________________________________
+% Voxel Based Morphometry Toolbox for SPM8
+% Version  435  (VBM8)  2011-12-06
+%  http://dbm.neuro.uni-jena.de/vbm/
+% __________________________________________________________________________
+% Copyright (C) 2010 Christian Gaser christian.gaser@uni-jena.de
+% 
+% ==========================================================================
+% Description
+% ==========================================================================
+% This toolbox is a an extensions of the "New Segment Toolbox" 
+% in SPM8 (Wellcome Department of Cognitive Neurology) to provide voxel-
+% based morphometry (VBM). It is developed by Christian Gaser (University of 
+% Jena, Department of Psychiatry) and is available to the scientific 
+% community under the terms of the GNU General Public License.
+% 
+% ==========================================================================
+% Naming convention of output files
+% ==========================================================================
+%
+% segmented images:
+% -----------------
+% m[0]w[r]p[0123]*
+% m   - modulated
+% m0  - modulated non-linear only
+% w   - warped
+% r   - dartel warped 
+% p   - segmented
+% 0   - PVE label
+% 1   - GM
+% 2   - WM
+% 3   - CSF
+% _affine   - affine registered only
+% 
+% bias corrected image:
+% -----------------
+% wm[r]*
+% m   - bias corrected
+% w   - warped
+% r   - dartel warped 
+%
+% estimated raw volumes:
+% -----------------------
+% pxxx_seg.txt
+% 
+%
+% ==========================================================================
+% Technical information
+% ==========================================================================
+%
+% This toolbox is an extension of the "New Segment Toolbox" in SPM8, but 
+% uses a completely different segmentation approach.  
+% 
+% 1. The segmentation approach is based on an adaptive Maximum A Posterior 
+% (MAP) technique without the need for a priori information about tissue 
+% probabilities. That is, the Tissue Probability Maps are not used constantly 
+% in the sense of the classical unified segmentation approach, but just for 
+% spatial normalization3. The following MAP estimation is adaptive in the 
+% sense that local variations of the parameters (i.e., means and variance) 
+% are modelled as slowly varying spatial functions (Rajapakse et al. 1997). 
+% This not only accounts for intensity inhomogeneities but also for other 
+% local variations of intensity. 
+%
+% 2. Additionally, the segmentation approach uses a Partial Volume Estimation 
+% (PVE) with a simplified mixed model of at most two tissue types 
+% (Tohka et al. 2004). We start with an initial segmentation into three pure 
+% classes: gray matter (GM), white matter (WM), and cerebrospinal fluid (CSF) 
+% based on the above described MAP estimation. The initial segmentation is 
+% followed by a PVE of two additional mixed classes: GM-WM and GM-CSF. This 
+% results in an estimation of the amount (or fraction) of each pure tissue 
+% type present in every voxel (as single voxels - given by their size - 
+% probably contain more than one tissue type) and thus provides a more 
+% accurate segmentation.
+%
+% 3. Furthermore, we apply two denoising methods. The first method is an 
+% optimized block-wise non-local means (NLM) denoising filter 
+% (Coupe et al. 2008). This filter will remove noise while preserving edges 
+% and is implemented as preprocessing step. The second method is a classical 
+% Markov Random Field (MRF) approach, which incorporates spatial prior 
+% information of adjacent voxels into the segmentation estimation 
+% (Rajapakse et al. 1997).
+%
+% 4. Another important extension to the SPM8 segmentation is the integration 
+% of the Dartel normalisation (Ashburner 2007) into the toolbox. If 
+% high-dimensional spatial normalisation is chosen, an already existing Dartel 
+% template in MNI space will be used. This template was derived from 550 
+% healthy control subjects of the IXI-database (http://www.brain-development.org) 
+% and is provided in MNI space  for six different iteration steps of Dartel 
+% normalisation. Thus, for the majority of studies the creation of 
+% sample-specific Dartel templates is not necessary anymore. 
+% __________________________________________________________________________
+%                                                Christian Gaser 2010/10/05

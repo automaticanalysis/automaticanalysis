@@ -1,0 +1,8 @@
+% Voxel Based Morphometry Toolbox
+% Version  435  (VBM8)  2011-12-06
+
+======================================================================
+Installation
+======================================================================
+
+First, unpack the zip-file and copy or link the vbm8 folder to the spm8/toolbox directory. You can start the toolbox by choosing "vbm8" in the "Toolbox" selector. Alternatively you can use the "Batch" button: select SPM | Tools | VBM8. 

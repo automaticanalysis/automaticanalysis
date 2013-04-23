@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_binarizeimage' domain='subject' desc='Create binary image from continuous image' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+                        
+            <thresh desc='Threshold for binarizing'>0.8</thresh>
+            
+            <inputstreams>
+                <stream>native_grey</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>native_grey_binarized</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+

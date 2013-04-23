@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_comparebinaryoverlap' domain='subject' desc='Compare overlap of two binary images' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+                                    
+            <!--
+            NB First image is assumed to be target, second test, for
+            comparison methods in which this matters.
+            -->
+            <inputstreams>
+                <stream>labeled_grey</stream>
+                <stream>native_grey_binarized</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>binaryoverlapmeasures</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+

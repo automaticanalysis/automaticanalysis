@@ -1,18 +1,19 @@
+function aap=aas_addinitialstream(aap,streamname,varargin)
+%AAS_ADDINITIALSTREAM Add initial stream
+%
 % function aap=aas_addinitialstream(aap,streamname,varargin)
-% Add initial stream
-% Examples of use:
-%  aap=aas_addinitialstream(aap,'structural','CBUtestme','/home/rcusack/my_structural.nii');
+%
 % If you use named subjects, you must put this command after the
 % corresponding aas_addsubject command
-%     % subject "CBUtestme" (must match aap.acq_details.subjects.mriname
-%     exactly
-%  aap=aas_addinitialstream(aap,'structural',1,'/home/rcusack/Neonatal_fMRI/analaysis_v1/aamod_realign_00001/NNU1056/motor/meanNNU1056_fMRIbal_0001.nii');
 %
-%  aap=aas_addinitialstream(aap,'fieldmaps',3,{'/home/rcusack/my_fm1.nii','/home/rcusack/my_fm1.nii'});
-%     % subject 3
-
-
-function aap=aas_addinitialstream(aap,streamname,varargin)
+% Example of use for named subject CBUtestme:
+%
+%  aap=aas_addinitialstream(aap,'structural','CBUtestme','/home/rcusack/my_structural.nii');
+%
+% Or, some other examples:
+%
+%   aap=aas_addinitialstream(aap,'structural',1,'/home/rcusack/Neonatal_fMRI/analaysis_v1/aamod_realign_00001/NNU1056/motor/meanNNU1056_fMRIbal_0001.nii');
+%   aap=aas_addinitialstream(aap,'fieldmaps',3,{'/home/rcusack/my_fm1.nii','/home/rcusack/my_fm1.nii'});
 
 
 % Set domain based on number of inputs

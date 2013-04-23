@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Coregister structural image to MNI template' modality='MRI'>      
+                        
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+   
