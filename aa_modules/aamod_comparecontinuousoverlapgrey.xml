@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_comparecontinuousoverlap' domain='subject' desc='Compare overlap of a continuous vs. binary image' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+                                    
+            <!--
+            NB First image is assumed to be target, second test, for
+            comparison methods in which this matters.
+            -->
+            <inputstreams>
+                <stream>labeled_grey</stream>
+                <stream>native_grey</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>continousoverlapmeasures</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+
