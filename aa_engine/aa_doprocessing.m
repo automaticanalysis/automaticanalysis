@@ -77,7 +77,7 @@ clear global aacache;
 
 if (exist('bucket','var'))
     % Get username
-    [s w]=aas_shell('whoami');
+    [s w]=aas_shell(aap, 'whoami');
     username=strtok(w);
 end
 % Defend against command insertion
@@ -110,6 +110,7 @@ end
 global defaults;
 global aaparallel
 global aaworker
+
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -263,6 +264,8 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     % Register analysis (or "job") with Drupal
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end
+
+
 
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)
