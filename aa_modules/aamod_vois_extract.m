@@ -46,18 +46,7 @@ switch task
             XYZROI=[x,y,z];
             % now extract data
             y=spm_get_data(files,XYZROI');
-            
-            % SANITY CHECK - ADD SIMULATED DATA
-            sanitycheck=false;
-            if (sanitycheck)
-                fprintf('***** SANITY CHECK, ADDING SIMULATED DATA TO VOIS ******');
-                % add a stripe (for testing!)
-                stripepos=mod(i,6)*5+15;
-                sine=10*sin([1:193]/20*2*pi)';
-                mask=(XYZROI(:,2)>=stripepos) .* (XYZROI(:,2)<(stripepos+5));
-                y(:,mask~=0)=y(:,mask~=0)+repmat(sine,[1 sum(mask)]);
-            end;
-            
+        
             % compute mean response
             av=mean(y');
             

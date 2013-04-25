@@ -32,8 +32,48 @@
 % the current stage, but are earlier in the 'tobecompletedfirst' pipeline,
 % are not marked as dependencies.
 % [RC]
+%
+% Late 2012-Early 2013
+% 
+% Dependency engine rewritten, to allow task domains other than
+% study/subjects/session. For example: "epipackage" is a package of EPIs;
+% "searchlightpackage" is a package of searchlights
+% Dependencies are now defined by a tree structure defined within the
+% aap_defaults_parameters.xml file. This specifies how to breakdown a study
+% into parts according to different schemes. 
+%
+% Dependencies are now calculated by a set of helper functions - e.g.,
+%  deps=aas_dependencytree_allfromtrunk(aap,domain);
+%   given a task of domain "domain", return a list of all indices at this
+%   level - e.g., for "session", deps= {{'session', [1 1]},{'session', [1
+%   2]},{'session', [2,1]}....{'session',[nsubj nsess]}} 
+% 
+%  aas_doneflag_getpath_bydomain(aap,domain,indices,k)
+%   "domaind" specifies the domain (e.g., session, which branched below subject)
+%   "indicies" is an array with the number of parameters required for a
+%   given branch level (e.g., 2 parameters, subject & session for a
+%   session-level task)
+%  
+%  aas_getdependencies_bydomain(aap,sourcedomain,targetdomain,indices,'doneflaglocations');
+%   if a task of domain "targetdomain" and indices "indices" is waiting for 
+%   a task of a given sourcedomain, the stages it must wait for are
+%   returned
+%
+%  aas_getN_bydomain(aap,domain,[indices])
+%   get number of parts to domain 
+%
+%  aas_getdirectory_bydomain(aap,domain.index)
+%   get subdirectory name for a single example specified by index of this
+%   domain (e.g., 'movie' for session 1)
+%
+
+
+
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
+
+global aacache
+clear global aacache;
 
 if (exist('bucket','var'))
     % Get username
@@ -79,10 +119,16 @@ if (exist('username','var'))
     end
 end
 
+
+% No longer preserve aaworker across sessions
+aaworker=[];
+
 try
     aaworker.parmpath;
 catch
-    aaworker.parmpath=aaworker_getparmpath(aap,0);
+    [pth nme ext]=fileparts(tempname);
+    aaworker.parmpath=aaworker_getparmpath(aap,[filesep sprintf('%s_%s',datestr(now,30),nme)]);
+    aas_makedir(aap, aaworker.parmpath);
 end
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
@@ -174,11 +220,12 @@ if (GBFree<10)
 end;
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
-    aapsavefn=fullfile(studypath,'aap_parameters');
-    if (isempty(dir(studypath)))
-        [s w]=aas_shell(['mkdir ' studypath]);
+    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
+    aapsavefn=fullfile(aapsavepth,'aap_parameters');
+    if (isempty(dir(aapsavepth)))
+        [s w]=aas_shell(['mkdir ' aapsavepth]);
         if (s)
-            aas_log(aap,1,sprintf('Problem making directory%s',studypath));
+            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
         end
     end
     aap.internal.aapversion=which('aa_doprocessing');

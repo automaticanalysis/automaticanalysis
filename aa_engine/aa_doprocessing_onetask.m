@@ -113,8 +113,7 @@ else
             aas_log(aap,false,' executing',aap.gui_controls.colours.executing);
             [aap,resp]=aa_feval_withindices(mfile_alias,aap,task,indices);
             aas_writedoneflag(aap,doneflag);
-            aas_log(aap,0,sprintf('MODULE %s COMPLETED',stagename),aap.gui_controls.colours.completed);
-            
+            aas_log(aap,0,sprintf('MODULE %s COMPLETED',stagename),aap.gui_controls.colours.completed);            
     end;
 end;
 % Tidy up by deleting temporary directory created locally
@@ -134,3 +133,4 @@ if aap.options.timelog
     aas_time_elapsed
 end
 
+aas_log(aap,0,sprintf('*-*-'));

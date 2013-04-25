@@ -10,6 +10,13 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <!-- Only accept first X scans where X=multipleof*floor(nscans/multipleof) -->
+            <!-- Used when scanning may have been truncated part way through a volume on GE -->
+            <multipleof>1</multipleof>
+            
+            <!-- Only take this many files -->
+            <ignoreafter>9999999</ignoreafter>
+            
             <inputstreams>
                 <stream>autoidentifyseries</stream>
             </inputstreams>

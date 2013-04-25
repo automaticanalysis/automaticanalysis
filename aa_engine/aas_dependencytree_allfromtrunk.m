@@ -21,7 +21,7 @@ if ~isnan(N)
         for Nind=1:N
             newdeps{Nind}={domaintree{1} [indices Nind]};
         end;
-        deps=[deps newdeps];
+        deps=[deps;newdeps];
     end;
 end;
 end

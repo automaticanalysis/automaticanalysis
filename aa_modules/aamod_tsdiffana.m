@@ -20,7 +20,6 @@ switch task
         aap=aas_report_addimage(aap,fullfile(aas_getsesspath(aap,i,j),'diagnostic_aamod_tsdiffana.jpg'));     
         aap.report.html=strcat(aap.report.html,'</td></tr></table>');
     case 'doit'
-        subjpath=aas_getsubjpath(aap,i);
         sesspath=aas_getsesspath(aap,i,j);
 
         aas_makedir(aap,sesspath);
@@ -28,15 +27,17 @@ switch task
         % imgs=spm_get('files',sesspath,[aap.directory_conventions.subject_filenames{i} '*nii']); % changed img to nii [djm160206]
  
         % added in place of previous line [djm 160206]...
-            % get the subdirectories in the main directory
-            dirn = aas_getsesspath(aap,i,j);
             % get files in this directory
             imgs=aas_getimages_bystream(aap,i,j,'epi');
             
         tsdiffana(imgs,0);
         
         % Now produce graphical check
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+        try 
+            figure(spm_figure('FindWin', 'Graphics')); 
+        catch cerr; 
+            figure(1); 
+        end;
         print('-djpeg','-r75',fullfile(sesspath,'diagnostic_aamod_tsdiffana'));
      
     

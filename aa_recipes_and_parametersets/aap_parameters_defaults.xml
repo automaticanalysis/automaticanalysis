@@ -30,7 +30,7 @@
         <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
-        <fsldir desc='Path to fsl' ui='dir'>/cn_apps/fsl</fsldir>
+        <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
         <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
         <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
@@ -44,12 +44,15 @@
                 <subject desc='A subject' ui='custom'>
                     <session desc='A session' ui='custom'>
                         <searchlight_package desc='A searchlight' ui='custom'/>
+                        <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
                 </subject>
                 <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
                     <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
                     </hyperalignment_subject>
                 </hyperalignment_searchlight_package>
+                <splitsession_cv_fold_hyper desc='Hyperalignment of an ROI' ui='custom'>
+                </splitsession_cv_fold_hyper>
             </study>
                             
         </parallel_dependencies>
@@ -80,6 +83,9 @@
             <format desc='Format for searchlight' ui='text'>gifti</format>
             <filename desc='Searchlight description file' ui='text'>/cn_user/spm8/canonical/cortex_5124.surf.gii</filename>
         </searchlight>
+        <splitsession_cv>
+            <N desc='Number of splits in session crossvalidation' ui='double'>16</N>
+        </splitsession_cv>
     </options>
     
     <gui_controls>

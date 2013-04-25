@@ -21,6 +21,7 @@ aap.tasklist.currenttask.outputstreams=aap.schema.tasksettings.(aap.tasklist.mai
 aap.tasklist.currenttask.name=stagename;
 aap.tasklist.currenttask.index=aap.tasklist.main.module(k).index;
 aap.tasklist.currenttask.modulenumber=k;
+aap.tasklist.currenttask.domain=aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.domain;
 
 % Recursively copy and parameters in extraparameters.aap for this task on
 % top of aap if provided

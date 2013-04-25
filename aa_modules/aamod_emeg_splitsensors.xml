@@ -1,9 +1,0 @@
-<aap>
-	<tasksettings>
-		<aamod_emeg_splitsensors domain='session' desc='Split MEG data into seperate files for magnetometers and gradiometers' modality='meg'>		
-			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^ace_.*BLOCK.*\.mat$</InputFilter>
-			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
-		</aamod_emeg_splitsensors>
-	</tasksettings>
-</aap>
-

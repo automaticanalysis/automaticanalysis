@@ -1,9 +1,0 @@
-<aap>
-	<tasksettings>
-		<aamod_emeg_epoch domain='session' desc='Extract epochs from continuous data' modality='meg'>		
-			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^pi.*BLOCK.*\.mat$</InputFilter> 
-			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
-		</aamod_emeg_epoch>
-	</tasksettings>
-</aap>
-

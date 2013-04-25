@@ -27,6 +27,14 @@ switch task
         out=[];
         for seriesind=1:length(seriesnum)
             [aap dicom_files_src]=aas_listdicomfiles(aap,i,seriesnum(seriesind));
+
+            % trim number of files to a multiple of "multipleof"
+            multipleof=aap.tasklist.currenttask.settings.multipleof;
+            nfiles=floor(length(dicom_files_src)/multipleof)*multipleof;
+            
+            % and trim according to ignoreafter
+            nfiles=min(nfiles,aap.tasklist.currenttask.settings.ignoreafter);
+            dicom_files_src=dicom_files_src(1:nfiles);
             
             %    Put this in to accelerate testing - but remove before use!!!
             %        fprintf('Truncating to first 10 DICOMs\n');

@@ -1,9 +1,0 @@
-<aap>
-	<tasksettings>
-		<aamod_emeg_contrasts domain='session' desc='Create ERFs/ERPs and contrasts of event types' modality='meg'>		
-			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^ace.*_BLOCK.*\.mat$</InputFilter> 
-			<Overwrite desc='Overwrite?' ui='yesno'>1</Overwrite>
-		</aamod_emeg_contrasts>
-	</tasksettings>
-</aap>
-

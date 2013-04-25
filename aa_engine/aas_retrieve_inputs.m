@@ -8,10 +8,6 @@ for depind=1:length(deps)
     % I'm doing this for you, dear reader. More readable names!
     domain=deps{depind}{1};
     indices=deps{depind}{2};
-
-    fprintf('depind %d domain %s indices ',depind,domain);
-    fprintf('%d ',indices);
-    fprintf('\n');
     
     streamname=inputstream.name;
     sourcestagenumber=inputstream.sourcenumber;
@@ -68,9 +64,15 @@ for depind=1:length(deps)
         % Set up remote aap for this module
         aap_remote=aas_setcurrenttask(aap_remote,modind);
         
+        % Check for recent additions to aap in case we're using an older
+        % version on the remote machine
+        if ~isfield(aap_remote.directory_conventions,'parallel_dependencies')
+            aap_remote.directory_conventions.parallel_dependencies=aap.directory_conventions.parallel_dependencies;
+            aas_log(aap,false,'Remote aap does not contain parallel_dependencies field - probably from older aa');
+        end;
         % Get remote directory
         remoteindices=indices;
-        if indices>2
+        if length(indices)>2
             findsession=find(strcmp(aap.acq_details.sessions(indices(2)).name,{aap_remote.acq_details.sessions.name}));
             if isempty(findsession)
                 aas_log(aap,true,sprintf('Error loading remote file with stage tag %s as could not find session called %s',inputstream.sourcestagename,aap.acq_details.sessions(indices(2)).name));
@@ -181,7 +183,9 @@ for depind=1:length(deps)
             
             % Get read to write the stream file
             [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
-            
+            if exist(inputstreamdesc,'file')
+                delete(inputstreamdesc);
+            end;
             fid_inp=fopen(inputstreamdesc,'w');
             fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
             
@@ -315,16 +319,17 @@ for depind=1:length(deps)
                             end;
                         end;
                         fclose(fid_inp);
-                        
+                        fclose(fid_out);
                         
                     end;
+                    
+                    fclose(fid);
                     
                     if (~reloadfiles)
                         aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
                     else
                         aas_log(aap,false,sprintf(' retrieve stream %s from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
                         
-                        fclose(fid);
                         oldpth='';
                         % Get read to write the stream file
                         fid_inp=fopen(inputstreamdesc,'w');
