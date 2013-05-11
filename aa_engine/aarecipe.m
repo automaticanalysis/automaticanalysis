@@ -52,7 +52,11 @@ if (exist('tasklistxml','var'))
     
     aap.tasklist.main.module = pruneEmptyBranches(aap.tasklist.main.module);
     
+<<<<<<< HEAD
+    aap.tasklist.main.module = rmfield(aap.tasklist.main.module, {'branchID', 'branchDepth', 'ignorebranches'});
+=======
     aap.tasklist.main.module = rmfield(aap.tasklist.main.module, {'branchID', 'ignorebranches'});
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
     
     % Calculate task parameters and indices for modules
     % e.g., aamod_smooth_01, aamod_smooth_02 etc
@@ -112,7 +116,12 @@ if (~isfield(branch,'module') || isempty(branch.module))
     extrastages.module.extraparameters.aap.directory_conventions.analysisid_suffix=analysisid_suffix;
     extrastages.module.extraparameters.aap.acq_details.selected_sessions=selected_sessions;
     extrastages.module.branchID = branchID;
+<<<<<<< HEAD
+    extrastages.module.branchDepth = 1; %branchDepth;
+    
+=======
     extrastages.module.tobecompletedfirst = 0;
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
     extrastages = checkhasrequiredfields(extrastages);
     outstages = extrastages;
     
@@ -128,6 +137,10 @@ else
             extrastages.module.extraparameters.aap.acq_details.selected_sessions=selected_sessions;
             extrastages.module.tobecompletedfirst = 0;
             extrastages.module.branchID = branchID;
+<<<<<<< HEAD
+            extrastages.module.branchDepth = 1; % branchDepth;
+=======
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
             
             %...or a set of branches
         else
@@ -148,7 +161,11 @@ else
                     selected_sessions='*';
                 end
                 
+<<<<<<< HEAD
+                [extrastages_added] = processbranch(aap,[analysisid_suffix analysisid_suffix_append],selected_sessions,branch.module(stagenum).branch(branchnum),1);
+=======
                 [extrastages_added] = processbranch(aap, [analysisid_suffix analysisid_suffix_append],selected_sessions,branch.module(stagenum).branch(branchnum),1);
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
                 
                 
                 if (~isempty(extrastages_added))
@@ -167,6 +184,7 @@ else
                         
                         % Update the branchIDs in the current branch to account for the number in the previous branch number of branches in the previous branch
                         numPrevBranches = length(unique([extrastages.module.branchID]));
+                        
                         extrastages_added.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID + numPrevBranches), extrastages_added.module);
                         
                         extrastages.module=[extrastages.module extrastages_added.module];
@@ -200,10 +218,69 @@ else
             % Number of stages in the new stuff
             numNewStages = length(extrastages.module);
             
+<<<<<<< HEAD
+            if numInputBranches > 1
+                maxPrevBranchDepth = max([outstages.module.branchDepth]);
+                extrastages.module = arrayfun(@(x) setfield(x, 'branchDepth', maxPrevBranchDepth + x.branchDepth), extrastages.module);
+            end
+            
+            % Basically, we 'repmat' the extrastages to add them to
+            % each branch that exists in the output.
+            branchRepeatedStages = struct([]);
+=======
             % Basically, we repeat the extrastages and them to each branch that exists in the output.
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
             for oB = 1 : numOutBranches
                 newStages = extrastages;
                 
+<<<<<<< HEAD
+                outBranchSuffix = outstages.module(oIndex(oB)).extraparameters.aap.directory_conventions.analysisid_suffix;
+                
+                % Create a copy of all the modules to be added
+                branchStages = extrastages;
+                
+                % For each branch in the new stages...
+                for iB = 1 : numInputBranches
+                    
+                    % Get the indices of stages that belong to this branch
+                    iBInd = find(iBranchIDs == iLabels(iB));
+                    
+                    % Now, for each of these stages update the IDs, path
+                    % suffix, and dependency
+                    for m = 1 : length(iBInd)
+                        
+                        % Set the branch ID
+                        branchStages.module(iBInd(m)).branchID = (oB-1)*numInputBranches + iB + branchID-1;
+                        
+                        % Concatenate the path suffixes, but only if we are connecting up different branches
+                        thisBranchSuffix = branchStages.module(iBInd(m)).extraparameters.aap.directory_conventions.analysisid_suffix;
+                        %                         if ~strcmp(outBranchSuffix, thisBranchSuffix)
+                        %                             branchStages.module(iBInd(m)).extraparameters.aap.directory_conventions.analysisid_suffix = strcat(outBranchSuffix, thisBranchSuffix);
+                        %                         end
+                        
+                        if (outstages.module(oIndex(oB)).branchDepth <= branchStages.module(iBInd(m)).branchDepth) && ~strcmp(outBranchSuffix, thisBranchSuffix)
+                            branchStages.module(iBInd(m)).extraparameters.aap.directory_conventions.analysisid_suffix = strcat(outBranchSuffix, thisBranchSuffix);
+                        else
+                            branchStages.module(iBInd(m)).extraparameters.aap.directory_conventions.analysisid_suffix = outBranchSuffix;
+                        end
+                        
+                        % Set the dependencies... gets a little tricky
+                        
+                        % Connect the first stage of the new branch to the
+                        % last stage of the current output branch.
+                        if m == 1
+                            branchStages.module(iBInd(m)).tobecompletedfirst = oIndex(oB);
+                            % But we might already point to a previous
+                            % stage, especicially if we are using lots of
+                            % sub branches. So correct for that...
+                        elseif isfield(branchStages.module(iBInd(m)), 'tobecompletedfirst') && ~isempty(branchStages.module(iBInd(m)).tobecompletedfirst)
+                            branchStages.module(iBInd(m)).tobecompletedfirst = branchStages.module(iBInd(m)).tobecompletedfirst + length(branchRepeatedStages) + length(outstages.module);
+                        end
+                        
+                    end % End for m = 1 : length(iBInd)
+                    
+                end % End for iB = 1 : numInputBranches
+=======
                 % Update the dependencies: some stages will have no
                 % dependencies (e.g., the first stage of a new branch),
                 % they will point to the last stage of the output branch.
@@ -230,6 +307,7 @@ else
                 
                 
                 outstages.module = [outstages.module newStages.module];
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
                 
                 
             end % End for oB = 1 : numOutputBranches
@@ -249,12 +327,21 @@ function outstages = pruneEmptyBranches(outstages)
 eBranchInd = find(strcmp({outstages.name}, 'emptybranch'));
 
 for m = 1 : length(outstages)
+<<<<<<< HEAD
+   if isstr(outstages(m).ignorebranches)
+       bNames = regexp(outstages(m).ignorebranches, '\w+', 'match');
+        if find(strcmpi(bNames, outstages(m).extraparameters.aap.directory_conventions.analysisid_suffix))
+            eBranchInd(end+1) = m;
+        end
+   end
+=======
     if isstr(outstages(m).ignorebranches)
         bNames = regexp(outstages(m).ignorebranches, '\w+', 'match');
         if find(strcmpi(bNames, outstages(m).extraparameters.aap.directory_conventions.analysisid_suffix))
             eBranchInd(end+1) = m;
         end
     end
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
 end
 
 eBranchInd = sort(eBranchInd);
@@ -284,7 +371,11 @@ end
 function outstages=checkhasrequiredfields(outstages)
 
 % Check all required fields are present
+<<<<<<< HEAD
+reqflds={'index','name','epiprefix','tobecompletedfirst','extraparameters','aliasfor','remotestream','branchID','branchDepth', 'ignorebranches'};
+=======
 reqflds={'index','name','epiprefix','tobecompletedfirst','extraparameters','aliasfor','remotestream','branchID', 'ignorebranches'};
+>>>>>>> c71b509be7b591da4669e7e639ba43c795cc5ebf
 
 for stagenum=1:length(outstages.module)
     for reqfldsind=1:length(reqflds)

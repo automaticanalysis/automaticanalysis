@@ -389,6 +389,17 @@ switch task
             % Find temporal SNR
             for fileind=1:length(fns)
                 V=spm_vol(fns{fileind});
+                if fileind==1
+                    V1=V;
+                else
+                    if ~all(V1.dim==V.dim)
+                        finalepis=finalepis(1:fileind-1);
+                        aas_log(aap,false,sprintf('EPIs with too few slices detected, rejecting from %d to %d',fileind,length(fns)));
+                        fns=finalepis;
+                        V=V1;
+                        break;
+                    end;
+                end;
                 if (fileind==1)
                     [Y XYZ]=spm_read_vols(V);
                     Ytot=Y;

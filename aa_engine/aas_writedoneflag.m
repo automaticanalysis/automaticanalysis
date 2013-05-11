@@ -113,13 +113,25 @@ switch(aap.directory_conventions.remotefilesystem)
             end;
         end;
     otherwise
+        
+
         [pth nme ext]=fileparts(fn);
         aas_makedir(aap,pth);
         fid=fopen(fn,'w');
         if (~fid)
             aas_log(aap,1,['Error writing done flag ' fn])
         end;
-        fprintf(fid,'%f',toc);
+        
+        % Execution time
+        fprintf(fid,'%f\n',toc);
+        
+        % And dump IP of this machine to done flag
+        cmd='ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
+        [s w]=aas_shell(cmd);
+        if (~s)
+            [ipaddress junk]=strtok(w);
+            fprintf(fid,'%s\n',ipaddress);
+        end;
         fclose(fid);
         
 end;

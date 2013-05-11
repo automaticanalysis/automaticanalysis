@@ -159,68 +159,72 @@ switch task
         %% Diagnostic VIDEO of coregistration
         
         if aap.tasklist.currenttask.settings.diagnostic
-            
-            Ydims = {'X', 'Y', 'Z'};
-            
-            % Get mean EPI
-            Y = spm_read_vols(spm_vol(mEPIimg));
-            
-            % Get resliced structural
-            warning off
-            spm_reslice(strvcat(mEPIimg, Simg), resFlags);
-            sY = spm_read_vols(spm_vol(fullfile(Spth, ['r' Sfn Sext])));
-            warning on
-            
-            EPIlims = [min(Y(:)) max(Y(:))];
-            
-            for d = 1:length(Ydims)
-                movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' Ydims{d} '.avi']);
-                % Create movie file by defining aviObject
-                try delete(movieFilename); catch; end
-                aviObject = avifile(movieFilename,'compression','none');
+            if isempty(which('edge'))
+                aas_log(aap,false,'Can''t find "edge" function - perhaps because you don''t have the image processing toolbox. Skipping diagnostic video');
+            else
+                Ydims = {'X', 'Y', 'Z'};
                 
-                try close(2); catch; end
-                figure(2)
-                set(2, 'Position', [0 0 1000 800])
-                windowSize = get(2,'Position');
+                % Get mean EPI
+                Y = spm_read_vols(spm_vol(mEPIimg));
                 
-                for n = 1:size(sY,d)
-                    % Get outline of structural slice
-                    h = subplot(1,1,1);
-                    if d == 1
-                        sOutline = edge(rot90(squeeze(sY(n,:,:))),'canny');
-                    elseif d == 2
-                        sOutline = edge(rot90(squeeze(sY(:,n,:))),'canny');
-                    elseif d == 3
-                        sOutline = edge(rot90(squeeze(sY(:,:,n))),'canny');
+                % Get resliced structural
+                warning off
+                spm_reslice(strvcat(mEPIimg, Simg), resFlags);
+                sY = spm_read_vols(spm_vol(fullfile(Spth, ['r' Sfn Sext])));
+                warning on
+                
+                EPIlims = [min(Y(:)) max(Y(:))];
+                
+                for d = 1:length(Ydims)
+                    movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
+                        [mfilename '__' mriname '_' Ydims{d} '.avi']);
+                    % Create movie file by defining aviObject
+                    try delete(movieFilename); catch; end
+                    aviObject = avifile(movieFilename,'compression','none');
+                    
+                    try close(2); catch; end
+                    figure(2)
+                    set(2, 'Position', [0 0 1000 800])
+                    windowSize = get(2,'Position');
+                    
+                    for n = 1:size(sY,d)
+                        % Get outline of structural slice
+                        h = subplot(1,1,1);
+                        if d == 1
+                            sOutline = edge(rot90(squeeze(sY(n,:,:))));
+                        elseif d == 2
+                            sOutline = edge(rot90(squeeze(sY(:,n,:))));
+                        elseif d == 3
+                            sOutline = edge(rot90(squeeze(sY(:,:,n))));
+                        end
+                        
+                        % Get image of EPI slice
+                        if d == 1
+                            sImage = rot90(squeeze(Y(n,:,:)));
+                        elseif d == 2
+                            sImage = rot90(squeeze(Y(:,n,:)));
+                        elseif d == 3
+                            sImage = rot90(squeeze(Y(:,:,n)));
+                        end
+                        
+                        % Overlay structural outline on EPI image
+                        sImage(logical(sOutline)) = EPIlims(2) * 2;
+                        imagesc(sImage)
+                        
+                        caxis(EPIlims)
+                        axis equal off
+                        zoomSubplot(h, 1.2)
+                        
+                        % Capture frame and store in aviObject
+                        pause(0.01)
+                        aviObject = addframe(aviObject,getframe(2,windowSize));
                     end
                     
-                    % Get image of EPI slice
-                    if d == 1
-                        sImage = rot90(squeeze(Y(n,:,:)));
-                    elseif d == 2
-                        sImage = rot90(squeeze(Y(:,n,:)));
-                    elseif d == 3
-                        sImage = rot90(squeeze(Y(:,:,n)));
-                    end
-                    
-                    % Overlay structural outline on EPI image
-                    sImage(logical(sOutline)) = EPIlims(2) * 2;
-                    imagesc(sImage)
-                    
-                    caxis(EPIlims)
-                    axis equal off
-                    zoomSubplot(h, 1.2)
-                    
-                    % Capture frame and store in aviObject
-                    pause(0.01)
-                    aviObject = addframe(aviObject,getframe(2,windowSize));
+                    aviObject = close(aviObject);
                 end
+                try close(2); catch; end
                 
-                aviObject = close(aviObject);
-            end
-            try close(2); catch; end
+            end;
         end
         
         %% Describe the outputs

@@ -1,8 +1,0 @@
-<aap>
-	<tasksettings>
-		<aamod_emeg_deleteinversions domain='session' desc='Delete inversions and contrasts.' modality='meg'>		
-			<InputFilter desc='Filter for files to process (regular expression)' help='(BLOCK will be replaced with appropriate block name)' ui='text'>^sace.*_BLOCK.*\.mat$</InputFilter> 
-		</aamod_emeg_deleteinversions>
-	</tasksettings>
-</aap>
-

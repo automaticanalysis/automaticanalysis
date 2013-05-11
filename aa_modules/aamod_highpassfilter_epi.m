@@ -1,5 +1,5 @@
 % AA module - temporal filtering for EPIs
-% Uses butterworth filter, and requires loading of entire series in one
+% Uses SPM style filter, and requires loading of entire series in one
 %  go. This will strain the memory of some machines.
 %  Rhodri Cusack Nov 2010
 

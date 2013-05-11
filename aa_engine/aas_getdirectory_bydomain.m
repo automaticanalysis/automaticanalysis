@@ -12,6 +12,9 @@ switch (domain)
     case 'hyperalignment_searchlight_package'
         directory=sprintf(['hyperalignment_searchlight_packages' filesep '%d'],index);
         
+    case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
+        directory=sprintf('splitsession_cv_fold_%d',index);
+        
     case 'session'
         directory=aap.acq_details.sessions(index).name;
         

@@ -4,7 +4,7 @@
 % Rhodri Cusack MRC CBU Cambridge 2004
 
 function aa_benchmark(studyroot)
-
+ 
 if (~exist('studyroot','var'))
     studyroot=pwd;
 end;
@@ -23,49 +23,30 @@ aas_log(aap,0,['============================================================='])
 % THE MODULES IN AAP.TASKLIST.STAGES ARE RUN IF A CORRESPONDING DONE_ FLAG
 % IS NOT FOUND. ONE IS CREATED AFTER SUCCESSFUL EXECUTION
 % Now run stage-by-stage tasks
-aap.internal.total=0;
-aap.internal.stagesnotdone=0;
-for k=1:length(aap.tasklist.stages)
-    doneflag=fullfile(aap.acq_details.root,['done_' aap.tasklist.stages{k}]);
-
-    % find out whether this module needs to be executed once per study, subject or session
-    [aap,domain]=feval(aap.tasklist.stages{k},aap,'domain');
-
-
-    switch (domain)
-        case 'study'
-            doneflag=fullfile(aap.acq_details.root,['done_' aap.tasklist.stages{k}]);
-            aap=processflag(aap, doneflag);
-        case 'subject'
-            for i=1:length(aap.acq_details.subjects)
-                doneflag=fullfile(aas_getsubjpath(aap,i),['done_' aap.tasklist.stages{k}]);
-                aap=processflag(aap, doneflag);
-            end;
-        case 'session'
-
-            for i=1:length(aap.acq_details.subjects)
-                for j=aap.acq_details.selected_sessions
-                    doneflag=fullfile(aas_getsesspath(aap,i,j),['done_' aap.tasklist.stages{k}]);
-                    aap=processflag(aap, doneflag);
-                end;
-            end;
-        otherwise
-            aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',aap.tasklist.domain{k},aap.tasklist.stages{k}));
+benchmark=[];
+benchmark.total=0;
+benchmark.stagesnotdone=0;
+for k=1:length(aap.tasklist.main.module)
+    aap=aas_setcurrenttask(aap,k);
+    deps=aas_dependencytree_allfromtrunk(aap,aap.tasklist.currenttask.domain);
+    for depind=1:length(deps)
+        doneflag=aas_doneflag_getpath_bydomain(aap,deps{depind}{1},deps{depind}{2},k);
+        benchmark=processflag(benchmark, aap, doneflag);
     end;
 end;
 
-
-fprintf('STAGES NOT COMPLETED: %d  TOTAL TIME SO FAR: %f\n',aap.internal.stagesnotdone,aap.internal.total);
+fprintf('STAGES NOT COMPLETED: %d  PROCESSING TIME SO FAR: %f\n',benchmark.stagesnotdone,benchmark.total);
 return;
 
-function [aap]=processflag(aap, doneflag)
+function [benchmark]=processflag(benchmark,aap, doneflag)
 fid=fopen(doneflag,'r');
 if (fid==-1)
-    aap.internal.stagesnotdone=aap.internal.stagesnotdone+1;
+    benchmark.stagesnotdone=benchmark.stagesnotdone+1;
     fprintf('Stage %s not completed?\n',doneflag);
 else
-    tme=fscanf(fid,'%f');
-    aap.internal.total=aap.internal.total+tme;
+    ln=fgetl(fid);
+    tme=str2num(ln);
+    benchmark.total=benchmark.total+tme;
     fprintf('%f\ttaken to complete stage %s\n',tme,doneflag);
 end;
 return;

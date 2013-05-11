@@ -13,7 +13,7 @@
             <!-- This is typically SeriesDescription for GE, and ProtocolName for Siemens -->
             
             <dicom_protocol_field>SeriesDescription</dicom_protocol_field>
-            
+            <orderdicomsby>InstanceNumber</orderdicomsby>
             <outputstreams>
                 <stream>autoidentifyseries</stream>
             </outputstreams>

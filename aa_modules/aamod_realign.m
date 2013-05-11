@@ -10,10 +10,6 @@ function [aap,resp]=aamod_realign(aap,task,i)
 resp='';
 
 switch task
-    case 'description'
-        resp='SPM5 realignment';
-    case 'summary'
-        resp='Done SPM5 realignment\n';
     case 'report'
         mvmean=[];
         mvmax=[];
@@ -116,7 +112,7 @@ switch task
                 if aap.tasklist.currenttask.settings.reslicewhich == 0            
                     rimgs=strvcat(rimgs,fullfile(pth,[nme ext]));
                 else
-                    rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]))
+                    rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
                 end
             end;
             sessdir=aas_getsesspath(aap,i,j);

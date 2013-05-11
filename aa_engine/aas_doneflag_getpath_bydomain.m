@@ -10,7 +10,8 @@
 
 function [doneflag doneflagpath stagetag]=aas_doneflag_getpath_bydomain(aap,domain,indices,varargin)
 
-[hit resp]=aas_cache_get(aap,mfilename,domain,indices,varargin{:});
+%[hit resp]=aas_cache_get(aap,mfilename,domain,indices,varargin{:});
+hit=false;
 if (hit)
     doneflag=resp{1};
     doneflagpath=resp{2};
@@ -32,5 +33,5 @@ else
     doneflagpath=aas_getpath_bydomain(aap,domain,indices,filesystem,stage);
     doneflag=fullfile(doneflagpath, ['done_' stagetag]);
 
-    aas_cache_put(aap,mfilename,{doneflag doneflagpath stagetag},domain,indices,varargin{:});
+%    aas_cache_put(aap,mfilename,{doneflag doneflagpath stagetag},domain,indices,varargin{:});
 end;
