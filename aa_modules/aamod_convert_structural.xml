@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Convert T1 image from DICOMs'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- NB. The order of the streams is important;
+            aamod_convert_structural assumes one input stream which is the
+            DICOM images, and two output streams: the first output is the 
+            converted structural, the second the DICOM headers. -->
+            
+            <inputstreams>
+                <stream>dicom_structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>structural_dicom_header</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+
