@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='seed-based functional connectivity' modality='MRI' >
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- Can be a file, or a coordinate -->
+            <ROIdesc></ROIdesc>
+            
+            <!-- Inflate the ROI using a sphere of this radius -->
+            <radius>0</radius>
+            
+            <!-- Correct seed time series for nuisance variables?  If yes, which contrast specificies the confounds? -->
+            <IC></IC>
+            
+            <!-- How to summarize voxels in the ROI? Mean, median, eigen1 -->
+            <summaryFun>mean</summaryFun>
+            
+            <!-- Coordinates (or filename) to use a CSF regressor -->
+            <CSFSeed></CSFSeed>
+            
+            <!-- Coordinates (or filename) to use as a WM regressor -->
+            <WMSeed></WMSeed>
+                
+            <!-- Include a global regressor? -->
+            <globalRegress>1</globalRegress>
+            
+            ﻿<inputstreams>
+                <stream>epi</stream>
+                <stream>firstlevel_spm</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_cons</stream>
+                <stream>firstlevel_spmts</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
