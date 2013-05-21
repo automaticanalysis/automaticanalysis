@@ -26,8 +26,9 @@ switch task
         volterraMovement = aap.tasklist.currenttask.settings.volterramovementpars; % include Volterra expansion of movement parameters? (passed to aas_movPars)        
         moveMat = aap.tasklist.currenttask.settings.moveMat;                       % what sort of movement we want based on aas_movPars
         bandPass = aap.tasklist.currenttask.settings.bandpass;                     % for resting state functional connectivity
-        svdThresh = aap.tasklist.currenttask.settings.svdthresh;                    % if < 1, do dimension reduction on confounds
-        
+        svdThresh = aap.tasklist.currenttask.settings.svdthresh;                   % if < 1, do dimension reduction on confounds
+        explicitMask = aap.tasklist.currenttask.settings.explicitmask;
+        maskThreshold = aap.tasklist.currenttask.settings.maskthreshold;
         
         subjname = aap.acq_details.subjects(subjInd).mriname;
         
@@ -48,7 +49,19 @@ switch task
             mkdir(analysisDir);
         end
         cd(analysisDir);
-                                        
+        
+        
+        
+        % Explicit masking, if requested
+        if explicitMask
+            maskImg = aas_getfiles_bystream(aap, 'groupbrainmask');
+            SPM.xM.VM = spm_vol(maskImg);            
+        end % dealing with explicit mask
+        
+        
+        global defaults
+        defaults.stats.threshold = maskThreshold;        
+        
         
         % Movement regressors
         if includeMovement

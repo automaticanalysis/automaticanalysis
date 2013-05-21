@@ -11,12 +11,12 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>
-                <stream>normalisation_seg_sn</stream>  
+                <stream>normalisation_seg_sn</stream>                  
                 <stream>epi</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>epi</stream>
+                <stream>epi</stream>                
             </outputstreams>
             
         </currenttask>

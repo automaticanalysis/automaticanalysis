@@ -91,9 +91,11 @@ switch task
         end
 
 
-        % get the structural image
-        img = aas_getfiles_bystream(aap, subjind, 'structural');
-
+        % get the structural image        
+        %img = aas_getfiles_bystream(aap, subjind, 'structural');
+        inStream = aap.tasklist.currenttask.inputstreams.stream{1};
+        img = aas_getfiles_bystream(aap, subjind, inStream);
+        
 
         if isempty(img) || strcmp(img,'/')
             aas_log(aap, true, 'Did not find a structural image.');
@@ -150,7 +152,7 @@ switch task
         mimgfn = fullfile(pth, sprintf('m%s%s', nm, ext));
 
         % the bias-corrected structural image replaces the input image in the stream
-        aap = aas_desc_outputs(aap, subjind, 'structural', mimgfn);
+        aap = aas_desc_outputs(aap, subjind, inStream, mimgfn);
 
         % get file name for *seg8.mat file
         seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));

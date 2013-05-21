@@ -15,12 +15,16 @@
 			<mrf desc='Markov Random Field argument'>0</mrf>
 			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
 			
+            <!-- NB. The order of the streams is important;
+            the aa module assumes one input stream which is the
+            image to segment. -->
+            
 			<inputstreams>
-				<stream>structural</stream>
+				<stream>t1</stream>
 			</inputstreams>
 			
 			<outputstreams>
-				<stream>structural</stream>
+				<stream>t1</stream>
 				<stream>seg8</stream>
 			</outputstreams>
 	

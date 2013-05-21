@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='SPM coregistration' modality='MRI'>
+        <currenttask mfile_alias='aamod_coreg_noss' domain='subject' desc='SPM coregistration' modality='MRI'>
             
             <qsub>
                 <timeBase>0.05</timeBase>
@@ -14,12 +14,12 @@
             name is used as the input stream (e.g., 'structural' or 't1'). -->
             
             <inputstreams>
-                <stream>structural</stream>
-                <stream>meanepi</stream>                    
+                <stream>t1</stream>  
+                <stream>meanepi</stream>                  
             </inputstreams>
             
             <outputstreams>
-                <stream>structural</stream>
+                <stream>t1</stream>
             </outputstreams>
             
         </currenttask>

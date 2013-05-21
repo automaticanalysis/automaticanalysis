@@ -31,13 +31,15 @@ switch task
         
         for streamind=1:length(streams)
             subj.imgs = [];
-            
+                        
             % Image to reslice
             if (exist('j','var'))
                 P = aas_getfiles_bystream(aap,i,j,streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,i,streams{streamind});
-            end;
+            end
+            
+            
             subj.imgs = strvcat(subj.imgs, P);
             % delete previous because otherwise nifti write routine doesn't
             % save disc space when you reslice to a coarser voxel

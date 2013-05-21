@@ -4,7 +4,7 @@
 %  parameters
 %  streamname is name of stream
 %
-% See a;sp aas_getfiles_bystream, which is intended for EPI images. 
+% See also aas_getfiles_bystream, which is intended for EPI images. 
 %
 % Rhodri Cusack MRC CBU Cambridge, Feb 2010
 

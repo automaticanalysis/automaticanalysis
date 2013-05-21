@@ -59,6 +59,10 @@ switch task
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
         
+        
+        % Note starting directory so we can get back here in the end
+        startingDir = pwd;
+        
         % Flags to pass to routine to calculate realignment parameters
         % (spm_realign)
         reaFlags = struct(...
@@ -128,6 +132,8 @@ switch task
             end;
             
         end;
+        
+        cd(startingDir);
         
     case 'checkrequirements'
         

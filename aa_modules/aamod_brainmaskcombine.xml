@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Combine binary gray masks across group to only look at common voxels' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+                        
+            
+            <inputstreams>
+                <stream>brainmask</stream>                
+            </inputstreams>
+            
+            <outputstreams>                                
+                <stream>groupbrainmask</stream>
+            </outputstreams>                        
+        
+            </currenttask>
+    </tasklist>
+</aap>

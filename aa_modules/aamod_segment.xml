@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM normalise estimate parameters' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <cleanup>1</cleanup><!-- 0 | 1 | 2 -->
+            
+            <!-- NB. The order of the streams is important;
+            aamod_norm_noss assumes one input stream which is the
+            structural images. -->
+            
+            <inputstreams>
+                <stream>t1</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <!-- <stream>t1</stream> -->                                
+                
+                <stream>segmentation</stream>
+                
+                <stream>native_grey</stream>
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
+                
+                <stream>normalised_density_grey</stream>
+                <stream>normalised_density_white</stream>
+                <stream>normalised_density_csf</stream>
+
+                <stream>normalised_volume_grey</stream>
+                <stream>normalised_volume_white</stream>
+                <stream>normalised_volume_csf</stream>
+                
+                <stream>normalisation_seg_sn</stream>
+                <stream>normalisation_seg_inv_sn</stream>
+            </outputstreams>
+            
+            <diagnostic>0</diagnostic>
+        
+            </currenttask>
+    </tasklist>
+</aap>

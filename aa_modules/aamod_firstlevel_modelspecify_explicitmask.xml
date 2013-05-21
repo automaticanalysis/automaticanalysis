@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='First level model design' modality='MRI'>
+        <currenttask mfile_alias='aamod_firstlevel_modelspecify' domain='subject' desc='First level model design' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -24,8 +24,8 @@
             <svdthresh>1</svdthresh><!-- if < 1, do dimensionality reduction on confounds (movement, any global signal, etc.) -->
             
             <maskthreshold>0.8</maskthreshold><!-- SPM threshold for masking fMRI (default 0.8) (of global value)-->
-            <explicitmask>0</explicitmask>
-            
+            <explicitmask>1</explicitmask>
+                        
             <xBF>
                 <T>16</T>              <!-- how many time bins used for making the model -->
                 <T0>1</T0>             <!-- which time bin to choose (may want middle) -->
@@ -66,10 +66,11 @@
                 <stream>epi</stream>
                 <stream>epi_header</stream>                
                 <stream>realignment_parameter</stream>                
+                <stream>groupbrainmask</stream><!-- NB need to change groupbrainmask input stream if want another type of mask -->
             </inputstreams>
             
             <outputstreams>
-                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_spm</stream>                
             </outputstreams>
             
         </currenttask>
