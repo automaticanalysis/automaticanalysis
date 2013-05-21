@@ -12,6 +12,8 @@ switch task
     case 'report'
     case 'doit'
         
+        voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
+        
         % get the subdirectories in the main directory
         subj_dir = aas_getsubjpath(aap,i); 
         
@@ -48,9 +50,14 @@ switch task
                 [s w]=aas_shell(['rm ' fullfile(pth,['w' fle ext])],true); % quietly
             end;
             
+            
+            % set defaults
+            flags = aap.spm.defaults.normalise.write;
+            flags.vox = voxelSize; 
+            
             % now write normalised
             if (length(subj.imgs)>0)
-                spm_write_sn(subj.imgs,subj.matname,aap.spm.defaults.normalise.write);
+                spm_write_sn(subj.imgs,subj.matname, flags);
             end;
             wimgs=[];
             

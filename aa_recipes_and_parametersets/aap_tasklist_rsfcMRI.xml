@@ -18,13 +18,25 @@
             <module><name>aamod_coreg_noss_t1</name></module>
             <module><name>aamod_biascorrect_segment8</name></module>            
             <module><name>aamod_segment</name></module>
-            <module><name>aamod_norm_write</name></module> <!-- normalize EPIs based on segmentation parameters -->
+            
+            <module>
+                <name>aamod_norm_write</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                                    <vox>3 3 3</vox><!-- don't reseample -->
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module> <!-- normalize EPIs based on segmentation parameters -->
+            
+            <!--
             <module><name>aamod_norm_write_meanepi</name></module>            
+            -->
+            
             <module>
                 <name>aamod_brainmask</name>
                 <extraparameters>
                     <aap><tasklist><currenttask><settings>
-                         <thresh>.75</thresh>
+                         <thresh>.85</thresh>
                                     <fwhm>4</fwhm>
                     </settings></currenttask></tasklist></aap>
                 </extraparameters>
@@ -45,7 +57,7 @@
                          <highpassfilter>Inf</highpassfilter>
                          <bandpass>100 10</bandpass>
                          <svdthresh>.99</svdthresh>
-                         <maskthreshold>-Inf</maskthreshold>                                    
+                         <maskthreshold>0.8</maskthreshold>                                    
                     </settings></currenttask></tasklist></aap>
                 </extraparameters>
             </module>

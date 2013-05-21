@@ -10,7 +10,7 @@ switch task
     case 'doit'
         
         % options
-        saveResids = aap.tasklist.currenttask.settings.saveresids
+        saveResids = aap.tasklist.currenttask.settings.saveresids;
         
         
         % keep track of original directory so we can go back here

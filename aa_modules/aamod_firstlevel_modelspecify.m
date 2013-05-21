@@ -50,19 +50,12 @@ switch task
         end
         cd(analysisDir);
         
-        
-        
-        % Explicit masking, if requested
-        if explicitMask
-            maskImg = aas_getfiles_bystream(aap, 'groupbrainmask');
-            SPM.xM.VM = spm_vol(maskImg);            
-        end % dealing with explicit mask
-        
-        
+        SPM = [];
+        SPM.swd = analysisDir;
+                
         global defaults
-        defaults.stats.threshold = maskThreshold;        
-        
-        
+        defaults.mask.thresh = maskThreshold;        
+                        
         % Movement regressors
         if includeMovement
             [moves, mnames] = aas_movPars(aap, subjInd, moveMat, volterraMovement);
@@ -71,8 +64,7 @@ switch task
         % Other covariates ("compartment" regressors, globals, etc.)
         % [coming soon]
 
-        SPM = [];
-        SPM.swd = analysisDir;
+        
 
         % Get basis functions from task settings
         SPM.xBF = aap.tasklist.currenttask.settings.xBF;
@@ -349,6 +341,15 @@ switch task
         SPM.xX.iC = interestCols;
         SPM = spm_fmri_spm_ui(SPM);
         
+        % Explicit masking, if requested
+        % (NB spm_fmri_spm_ui seems to rest xM.VM, so adding it here.)
+        if explicitMask
+            maskImg = aas_getfiles_bystream(aap, 'groupbrainmask')
+            SPM.xM.VM = spm_vol(maskImg);
+        end % dealing with explicit mask
+        
+        
+        
         SPMpath = fullfile(analysisDir, 'SPM.mat');
         save(SPMpath, 'SPM');
         
@@ -357,7 +358,7 @@ switch task
         
         cd(startingDir); % go back where we started
         
-        % (NB estimate with aamod_firstlevel_modelestimate)
+        % (estimate with aamod_firstlevel_modelestimate)
 
     case 'checkrequirements'
 
