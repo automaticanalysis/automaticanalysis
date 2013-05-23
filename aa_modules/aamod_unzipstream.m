@@ -3,29 +3,36 @@
 %
 function [aap, resp] = aamod_unzipstream(aap, task, varargin)
 
-
 resp='';
 
 switch task
     case 'report'
+        
     case 'doit'
-                        
-        if ~isfield(aap.tasklist.currenttask.settings, 'split4d') || isempty(aap.tasklist.currenttask.settings.split4d)
+        
+        settings = aap.tasklist.currenttask.settings;
+        
+        % Each input stream should have a corresponding output stream
+        if length(settings.inputstreams) ~= length(settings.outputstreams)
+            aas_log(aap, true, 'For each (zipped) input stream you need a corresponding (unzipped) output stream.');
+        end
+        
+        if ~isfield(settings, 'split4d') || isempty(settings.split4d)
             split4d = true;        
-        elseif isfield(aap.tasklist.currenttask.settings, 'split4d')
-            split4d = aap.tasklist.currenttask.settings.split4d;        
+        elseif isfield(settings, 'split4d')
+            split4d = settings.split4d;        
         end
                 
         % There may be more than one stream at this level, so loop through
         % each. Assume matched input and output streams (i.e. input stream
         % 1 gets unzipped to output stream 1, and so on.        
-        for thisStream = 1:length(aap.tasklist.currenttask.settings.inputstreams)
+        for thisStream = 1:length(settings.inputstreams)
             
             unzippedNames = {};
             
-            inStream = aap.tasklist.currenttask.settings.inputstreams(thisStream).stream;
-            outStream = aap.tasklist.currenttask.settings.outputstreams(thisStream).stream;
-            cmd = aap.tasklist.currenttask.settings.unzipcmd; % typically 'gunzip -f'
+            inStream = settings.inputstreams(thisStream).stream;
+            outStream = settings.outputstreams(thisStream).stream;
+            cmd = settings.unzipcmd; % typically 'gunzip -f'
             
             inFiles = cellstr(aas_getfiles_bystream(aap, varargin{:}, inStream));
             
@@ -38,7 +45,7 @@ switch task
                 system(unzipCmd);
                 outFile = fullfile(pth, nm);
                 
-                %TODO TOFIX HACK - find any files ending in .nii-? and
+                %TODO TOFIX HACK - find any files ending in .nii-0 and
                 %rename them to .nii
                 if strcmp(outFile(end-5:end), '.nii-0')
                     system(sprintf('mv %s %s', outFile, outFile(1:end-2)));
@@ -60,6 +67,7 @@ switch task
             
             % describeoutputs
             aap = aas_desc_outputs(aap, varargin{:}, outStream, unzippedNames);
+            
         end % looping through streams
         
     case 'checkrequirements'

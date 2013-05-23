@@ -15,7 +15,8 @@ switch task
         
         % Input stream could be e.g. normalized to MNI or subject-specific,
         % which have different stream names
-        inStream = aap.tasklist.currenttask.inputstreams.stream{1};
+        inStream = aap.tasklist.currenttask.inputstreams(1).stream;
+        outStream = aap.tasklist.currenttask.outputstreams(1).stream;
         
         gmImg = aas_getfiles_bystream(aap, subjInd, inStream);
         
@@ -81,7 +82,7 @@ switch task
         end
         
         
-        aap = aas_desc_outputs(aap, subjInd, 'brainmask', threshFilename);
+        aap = aas_desc_outputs(aap, subjInd, outStream, threshFilename);
         
     case 'checkrequirements'
         

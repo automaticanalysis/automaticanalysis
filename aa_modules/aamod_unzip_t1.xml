@@ -8,10 +8,11 @@
                 <memoryBase>0.2</memoryBase>
             </qsub>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>3</permanenceofoutput>
             
             <unzipcmd desc='Used for unzipping'>gunzip -f</unzipcmd>
-            <split4d>0</split4d>
+            
+             <split4d desc='Convert 4d nifti to 3d?'>0</split4d>            
             
             <!-- Can specify multiple streams, but should be in the same
                  order for input and output. I.e., input stream 1 gets unzipped
