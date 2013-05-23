@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias='aamod_unzipstream' domain='subject' desc='Unzip T1 image' modality='MRI'>
+        <currenttask mfile_alias='aamod_unzipstream' domain='subject' desc='Unzip T1 and T2 images' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
@@ -11,7 +11,6 @@
             <permanenceofoutput>1</permanenceofoutput>
             
             <unzipcmd desc='Used for unzipping'>gunzip -f</unzipcmd>
-            <split4d>0</split4d>
             
             <!-- Can specify multiple streams, but should be in the same
                  order for input and output. I.e., input stream 1 gets unzipped
@@ -20,10 +19,12 @@
             
             <inputstreams>
                 <stream>t1_gz</stream>
+                <stream>t2_gz</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>t1</stream>
+                <stream>t2</stream>
             </outputstreams>
             
         </currenttask>
