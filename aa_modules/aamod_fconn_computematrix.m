@@ -83,14 +83,14 @@ switch task
             Y = Y(goodVoxelInd);
             
           
-            % [fconn.rBySession(:,:,thisSess), fconn.pBySession(:,:,thisSess)] = corrcoef(Y);
+            [fconn.rBySession(:,:,thisSess), fconn.pBySession(:,:,thisSess)] = corrcoef(Y);
             
-            for m = 1:nVoxels
-                for n=m:Nvoxels-1
-                    [r, p] = corrcoef(Y(:,m), Y(:,n));
-                    fconn.rBySession(m,n,thisSess) = r(2);
-                end
-            end
+            %             for m = 1:nVoxels
+            %                 for n=m:Nvoxels-1
+            %                     [r, p] = corrcoef(Y(:,m), Y(:,n));
+            %                     fconn.rBySession(m,n,thisSess) = r(2);
+            %                 end
+            %             end
             
             
         end % looping through sessions
