@@ -68,7 +68,7 @@ switch task
         
         
         % If requested, smooth outname and re-threshold > 0
-        if ~isempty(fwhm)
+        if ~isempty(fwhm) && fwhm>0
             [threshPath, threshName, threshExt] = fileparts(threshFilename);
             smoothImg = fullfile(threshPath, ['s' threshName threshExt]);
             spm_smooth(threshFilename, smoothImg, fwhm);

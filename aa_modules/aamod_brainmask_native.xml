@@ -18,7 +18,7 @@
             will use the first stream below to do calculations on. -->
             
             <inputstreams>
-                <stream>native_density_grey</stream>                
+                <stream>native_grey</stream>                
             </inputstreams>
             
             <outputstreams>                                

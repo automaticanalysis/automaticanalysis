@@ -15,20 +15,22 @@ switch task
 
     case 'doit'
         
+        settings = aap.tasklist.currenttask.settings;
+        
         startingDir = pwd();
         
         % Get options
-        highpassFilter = aap.tasklist.currenttask.settings.highpassfilter;
-        TR = aap.tasklist.currenttask.settings.TR; 
-        globalScaling = aap.tasklist.currenttask.settings.globalscaling;
-        autocorrelation = aap.tasklist.currenttask.settings.autocorrelation;     
-        includeMovement = aap.tasklist.currenttask.settings.includemovementpars;   % include movement parameters?     
-        volterraMovement = aap.tasklist.currenttask.settings.volterramovementpars; % include Volterra expansion of movement parameters? (passed to aas_movPars)        
-        moveMat = aap.tasklist.currenttask.settings.moveMat;                       % what sort of movement we want based on aas_movPars
-        bandPass = aap.tasklist.currenttask.settings.bandpass;                     % for resting state functional connectivity
-        svdThresh = aap.tasklist.currenttask.settings.svdthresh;                   % if < 1, do dimension reduction on confounds
-        explicitMask = aap.tasklist.currenttask.settings.explicitmask;
-        maskThreshold = aap.tasklist.currenttask.settings.maskthreshold;
+        highpassFilter = settings.highpassfilter;
+        TR = settings.TR; 
+        globalScaling = settings.globalscaling;
+        autocorrelation = settings.autocorrelation;     
+        includeMovement = settings.includemovementpars;   % include movement parameters?     
+        volterraMovement = settings.volterramovementpars; % include Volterra expansion of movement parameters? (passed to aas_movPars)        
+        moveMat = settings.moveMat;                       % what sort of movement we want based on aas_movPars
+        bandPass = settings.bandpass;                     % for resting state functional connectivity
+        svdThresh = settings.svdthresh;                   % if < 1, do dimension reduction on confounds
+        explicitMask = settings.explicitmask;
+        maskThreshold = settings.maskthreshold;
         
         subjname = aap.acq_details.subjects(subjInd).mriname;
         
@@ -67,12 +69,12 @@ switch task
         
 
         % Get basis functions from task settings
-        SPM.xBF = aap.tasklist.currenttask.settings.xBF;
+        SPM.xBF = settings.xBF;
 
         firstsess = aap.acq_details.selected_sessions(1);
 
         % if TR is manually specified, use that, otherwise try to get from DICOMs.
-        if isfield(aap.tasklist.currenttask.settings,'TR') && ~isempty(TR)
+        if isfield(settings,'TR') && ~isempty(TR)
             SPM.xY.RT = TR;
         else
             % Get TR from DICOM header checking they're the same for all sessions
@@ -129,16 +131,16 @@ switch task
             
             
             % Get model data from aap
-            subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.model.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{aap.tasklist.currenttask.settings.model.session});
+            subjmatches=strcmp(subjname,{settings.model.subject});
+            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{settings.model.session});
             % If no exact spec found, try session wildcard, then subject
             % wildcard, then wildcard for both
             if (~any(sessmatches & subjmatches))
-                sesswild=strcmp('*',{aap.tasklist.currenttask.settings.model.session});
+                sesswild=strcmp('*',{settings.model.session});
                 if (any(sesswild & subjmatches))
                     sessmatches=sesswild;
                 else
-                    subjwild=strcmp('*',{aap.tasklist.currenttask.settings.model.subject});
+                    subjwild=strcmp('*',{settings.model.subject});
                     if (any(sessmatches & subjwild))
                         subjmatches=subjwild;
                     else
@@ -152,16 +154,16 @@ switch task
             modelnum=find(sessmatches & subjmatches);
             
             %% Get modelC (covariate) data from aap
-            subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.modelC.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{aap.tasklist.currenttask.settings.modelC.session});
+            subjmatches=strcmp(subjname,{settings.modelC.subject});
+            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{settings.modelC.session});
             % If no exact spec found, try session wildcard, then subject
             % wildcard, then wildcard for both
             if (~any(sessmatches & subjmatches))
-                sesswild=strcmp('*',{aap.tasklist.currenttask.settings.modelC.session});
+                sesswild=strcmp('*',{settings.modelC.session});
                 if (any(sesswild & subjmatches))
                     sessmatches=sesswild;
                 else
-                    subjwild=strcmp('*',{aap.tasklist.currenttask.settings.modelC.subject});
+                    subjwild=strcmp('*',{settings.modelC.subject});
                     if (any(sessmatches & subjwild))
                         subjmatches=subjwild;
                     else
@@ -184,7 +186,7 @@ switch task
             
             
             if ~isempty(modelnum)
-                model=aap.tasklist.currenttask.settings.model(modelnum);
+                model=settings.model(modelnum);
                 for c = 1:length(model.event);
                     if (isempty(model.event(c).parametric))
                         parametric=struct('name','none');
@@ -210,7 +212,7 @@ switch task
             
             if ~isempty(modelCnum)
                 
-                modelC = aap.tasklist.currenttask.settings.modelC(modelCnum);
+                modelC = settings.modelC(modelCnum);
                 
                 %% Set up the convolution vector...
                 % xBF.dt      - time bin length {seconds}
@@ -344,7 +346,7 @@ switch task
         % Explicit masking, if requested
         % (NB spm_fmri_spm_ui seems to rest xM.VM, so adding it here.)
         if explicitMask
-            maskImg = aas_getfiles_bystream(aap, 'groupbrainmask')
+            maskImg = aas_getfiles_bystream(aap, 'native_brainmask')
             SPM.xM.VM = spm_vol(maskImg);
         end % dealing with explicit mask
         

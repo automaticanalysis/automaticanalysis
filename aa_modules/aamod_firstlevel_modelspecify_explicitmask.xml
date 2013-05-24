@@ -64,9 +64,11 @@
             <!-- streams -->
             <inputstreams>
                 <stream>epi</stream>
+                <!--
                 <stream>epi_header</stream>                
-                <stream>realignment_parameter</stream>                
-                <stream>groupbrainmask</stream><!-- NB need to change groupbrainmask input stream if want another type of mask -->
+                -->
+                <stream>realignment_parameter</stream>
+                <stream>native_brainmask</stream>
             </inputstreams>
             
             <outputstreams>
