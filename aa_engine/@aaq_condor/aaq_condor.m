@@ -53,33 +53,46 @@ classdef aaq_condor<aaq
             
             errline={};
             
+            itnum=0;
+            lsevery=20; % To reduce disc load, only run "ls" every 20 loops, to pick up stragglers
             
             while(any(obj.jobnotrun) || not(isempty(obj.filestomonitor)))
-                mon={};
-                mon.jobs=obj.jobqueue;
+                itnum=itnum+1;
+                mon_jobs=obj.jobqueue;
                 for i=1:njobs
-                    mon.jobs(i).jobnotrun=obj.jobnotrun(i);
+                    mon_jobs(i).jobnotrun=obj.jobnotrun(i);
                     if (not(obj.fatalerrors) && obj.jobnotrun(i))
                         
                         % Find out whether this job is ready to be allocated by
                         % checking dependencies (done_ flags)
                         readytorun=true;
+                        gotdoneflag=false(size(obj.jobqueue(i).tobecompletedfirst));
                         for j=1:length(obj.jobqueue(i).tobecompletedfirst)
                             [tbcpth tbcfle tbcext]=fileparts(obj.jobqueue(i).tobecompletedfirst{j});
-                            mon.jobs(i).tobecompletedfirst_status{j}='done';
+                            mon_jobs(i).tobecompletedfirst_status{j}='done';
                             % Check for done file
                             if ~exist(obj.jobqueue(i).tobecompletedfirst{j},'file')
                                 % I've no idea why, but NFS or Matlab seems to cache the
                                 % directory listing sometimes unless you do
                                 % this
-                                [s w]=unix(['ls ' tbcpth]);
-                                % Still not there?
-                                if ~exist(obj.jobqueue(i).tobecompletedfirst{j},'file')
+                                if mod(itnum,lsevery)==0                                    
+                                    [s w]=unix(['ls ' tbcpth]);
+                                    % Still not there?
+                                    if ~exist(obj.jobqueue(i).tobecompletedfirst{j},'file')
+                                        readytorun=false;
+                                        mon_jobs(i).tobecompletedfirst_status{j}='waiting';
+                                    end
+                                else
                                     readytorun=false;
-                                    mon.jobs(i).tobecompletedfirst_status{j}='waiting';
-                                end
+                                    mon_jobs(i).tobecompletedfirst_status{j}='waiting';
+                                end;
+                            else
+                                gotdoneflag(j)=true;
                             end
                         end;
+                        
+                        % Don't look again for flags we've already found
+                        obj.jobqueue(i).tobecompletedfirst(gotdoneflag)=[];
                         
                         if (readytorun)
                             obj.jobcount=obj.jobcount+1;
@@ -90,7 +103,7 @@ classdef aaq_condor<aaq
                             obj.jobnotrun(i)=false;
                             flaggedretry(i)=false;
                         end
-                        mon.jobs(i).readytorun=readytorun;
+                        mon_jobs(i).readytorun=readytorun;
                     end
                 end
                 % Monitor all of the output files
@@ -115,7 +128,7 @@ classdef aaq_condor<aaq
                             
                             % Process the next condor status code
                             if length(ln)>3
-                                aas_log(obj.aap,false,ln,0.5+0.5*obj.aap.gui_controls.colours.running);
+%                                 aas_log(obj.aap,false,ln,0.5+0.5*obj.aap.gui_controls.colours.running);
                                 switch(str2num(ln(1:3)))
                                     case 0
                                         state='submitted';
@@ -185,7 +198,6 @@ classdef aaq_condor<aaq
                                     break;
                                 end
                                 aas_log(obj.aap,false,ln,'Errors');
-                                errline{end+1}=ln;
                                 if not(isempty(deblank(ln)))
                                     if strcmp(deblank(ln),'Killed')
                                         aas_log(obj.aap,false,'Job has been killed, but will assume Condor will restart so not marked as fatal error');
@@ -223,10 +235,13 @@ classdef aaq_condor<aaq
                     
                 end
                 
-                mon.filestomonitor=obj.filestomonitor;
-                
-                % Save status monitor
-                savejson('mon',mon,fullfile(obj.aap.internal.aap_initial.acq_details.root,[obj.aap.internal.aap_initial.directory_conventions.analysisid obj.aap.internal.aap_initial.directory_conventions.analysisid_suffix],'aastatus.json'));
+                mon_filestomonitor=obj.filestomonitor;
+
+                if mod(itnum,20)==0
+                    % Save status monitor
+                    savejson('mon_jobs',mon_jobs,fullfile(obj.aap.internal.aap_initial.acq_details.root,[obj.aap.internal.aap_initial.directory_conventions.analysisid obj.aap.internal.aap_initial.directory_conventions.analysisid_suffix],'aastatus.json'));
+                    savejson('mon_filestomonitor',mon_filestomonitor,fullfile(obj.aap.internal.aap_initial.acq_details.root,[obj.aap.internal.aap_initial.directory_conventions.analysisid obj.aap.internal.aap_initial.directory_conventions.analysisid_suffix],'aastatus.json'));
+                end;
                 
                 % Clear out files we've finished monitoring
                 obj.filestomonitor(donemonitoring)=[];
@@ -236,7 +251,7 @@ classdef aaq_condor<aaq
                     break;
                 end;
                 % Lets not overload the filesystem
-                pause(0.5);
+                pause(0.1);
             end
             if waitforalljobs == 1
                 obj.emptyqueue;

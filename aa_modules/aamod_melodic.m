@@ -35,43 +35,43 @@ switch task
             data4D, ...
             spaced_EPIimg));
         
-        %% RUN MELODIC
-        fprintf('\nRunning MELODIC')
-        
-        outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
-        if ~exist(outDir, 'dir')
-            mkdir(outDir)
-        end
-        
-        [~, w]=aas_runfslcommand(aap, ...
-            sprintf('melodic -i %s %s -o %s', ...
-            data4D, ...
-            aap.tasklist.currenttask.settings.MELODICoptions, ...
-            outDir));
-        
-        % Delete 4D file once we finish!
-        unix(['rm ' data4D])
-        
-        %% DESCRIBE OUTPUTS!
-        
-        % MAKE A SEPARATE FUNCTION OF THIS SOMETIME?
-        melodicFiles = [];
-        fldrDir = genpath(outDir);
-        % Then recurse inside each directory until you run out of paths
-        while ~isempty(strtok(fldrDir, ':'))
-            % Get each of the directories made by gendir
-            [fldrCurr fldrDir] = strtok(fldrDir, ':');
-            % Check it's not a .svn folder
-            D = dir(fldrCurr);
-            for d = 1:length(D)
-                if ~D(d).isdir && isempty(strfind(D(d).name(1), '.'))
-                    melodicFiles = strvcat(melodicFiles, fullfile(fldrCurr, D(d).name));
-                else
-                    % It is one of the . or .. folders
-                end
-            end
-        end
-        
-        aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);
+%         %% RUN MELODIC
+%         fprintf('\nRunning MELODIC')
+%         
+%         outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
+%         if ~exist(outDir, 'dir')
+%             mkdir(outDir)
+%         end
+%         
+%         [~, w]=aas_runfslcommand(aap, ...
+%             sprintf('melodic -i %s %s -o %s', ...
+%             data4D, ...
+%             aap.tasklist.currenttask.settings.MELODICoptions, ...
+%             outDir));
+%         
+%         % Delete 4D file once we finish!
+%         unix(['rm ' data4D])
+%         
+%         %% DESCRIBE OUTPUTS!
+%         
+%         % MAKE A SEPARATE FUNCTION OF THIS SOMETIME?
+%         melodicFiles = [];
+%         fldrDir = genpath(outDir);
+%         % Then recurse inside each directory until you run out of paths
+%         while ~isempty(strtok(fldrDir, ':'))
+%             % Get each of the directories made by gendir
+%             [fldrCurr fldrDir] = strtok(fldrDir, ':');
+%             % Check it's not a .svn folder
+%             D = dir(fldrCurr);
+%             for d = 1:length(D)
+%                 if ~D(d).isdir && isempty(strfind(D(d).name(1), '.'))
+%                     melodicFiles = strvcat(melodicFiles, fullfile(fldrCurr, D(d).name));
+%                 else
+%                     % It is one of the . or .. folders
+%                 end
+%             end
+%         end
+%         
+%         aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);
         
 end
