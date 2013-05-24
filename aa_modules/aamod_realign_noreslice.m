@@ -68,6 +68,11 @@ switch task
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
         
+        % For some reasion weight not here by default
+        if ~isfield(defs.estimate, 'weight')
+            defs.estimate.weight = [];
+        end
+        
         % Flags to pass to routine to calculate realignment parameters
         % (spm_realign)
         reaFlags = struct(...
