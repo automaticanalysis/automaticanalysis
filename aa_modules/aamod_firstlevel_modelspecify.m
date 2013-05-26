@@ -78,22 +78,23 @@ switch task
             SPM.xY.RT = TR;
         else
             % Get TR from DICOM header checking they're the same for all sessions
-            for sess = aap.acq_details.selected_sessions
-                DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_header'));
-                try
-                    TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
-                catch
-                    % [AVG] This is for backwards compatibility!
-                    TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
-                end
-                if (sess==firstsess)
-                    SPM.xY.RT = TR;
-                else
-                    if (SPM.xY.RT~=TR)
-                        aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
-                    end
-                end
-            end
+            
+                %             for sess = aap.acq_details.selected_sessions
+                %                 DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_header'));
+                %                 try
+                %                     TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+                %                 catch
+                %                     % [AVG] This is for backwards compatibility!
+                %                     TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+                %                 end
+                %                 if (sess==firstsess)
+                %                     SPM.xY.RT = TR;
+                %                 else
+                %                     if (SPM.xY.RT~=TR)
+                %                         aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
+                %                     end
+                %                 end
+                %             end
         end
 
         % NB Previous versions tried to set T0 using sliceorder; I've left this out
@@ -121,7 +122,7 @@ switch task
             
             % Get files (do this first as some other options need to know
             % how many files)
-            thisSessFiles = aas_getfiles_bystream(aap, subjInd, sess, 'epi');
+            thisSessFiles = aas_getfiles_bystream(aap, subjInd, thisSess, 'epi');
             allFiles = strvcat(allFiles, thisSessFiles);
             nScans = size(thisSessFiles, 1);
             SPM.nscan(spmSession) = nScans;
@@ -132,7 +133,7 @@ switch task
             
             % Get model data from aap
             subjmatches=strcmp(subjname,{settings.model.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{settings.model.session});
+            sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.model.session});
             % If no exact spec found, try session wildcard, then subject
             % wildcard, then wildcard for both
             if (~any(sessmatches & subjmatches))
@@ -155,7 +156,7 @@ switch task
             
             %% Get modelC (covariate) data from aap
             subjmatches=strcmp(subjname,{settings.modelC.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(sess).name,{settings.modelC.session});
+            sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.modelC.session});
             % If no exact spec found, try session wildcard, then subject
             % wildcard, then wildcard for both
             if (~any(sessmatches & subjmatches))
@@ -344,9 +345,9 @@ switch task
         SPM = spm_fmri_spm_ui(SPM);
         
         % Explicit masking, if requested
-        % (NB spm_fmri_spm_ui seems to rest xM.VM, so adding it here.)
+        % (NB spm_fmri_spm_ui seems to reset xM.VM, so adding it here.)
         if explicitMask
-            maskImg = aas_getfiles_bystream(aap, 'native_brainmask')
+            maskImg = aas_getfiles_bystream(aap, subjInd, 'native_brainmask')
             SPM.xM.VM = spm_vol(maskImg);
         end % dealing with explicit mask
         

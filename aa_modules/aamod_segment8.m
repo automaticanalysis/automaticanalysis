@@ -33,31 +33,33 @@ switch task
         resp='SPM8 segment8 for structural images.'
     case 'doit'
 
+        settings = aap.tasklist.currenttask.settings;
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % options
 
-        cfg.biasfwhm = aap.tasklist.currenttask.settings.biasfwhm; % 60
-		cfg.biasreg = aap.tasklist.currenttask.settings.biasreg;   % .001
-		cfg.affreg = aap.tasklist.currenttask.settings.affreg;     % 'mni';
-        cfg.reg = aap.tasklist.currenttask.settings.reg;           % .001;
-        cfg.vox = aap.tasklist.currenttask.settings.vox;           % voxel size things get resampled to
-        cfg.mrf = aap.tasklist.currenttask.settings.mrf;           % markov random field cleanup
-        cfg.samp = aap.tasklist.currenttask.settings.samp;         % sampling distance
+        cfg.biasfwhm = settings.biasfwhm; % 60
+		cfg.biasreg = settings.biasreg;   % .001
+		cfg.affreg = settings.affreg;     % 'mni';
+        cfg.reg = settings.reg;           % .001;
+        cfg.vox = settings.vox;           % voxel size things get resampled to
+        cfg.mrf = settings.mrf;           % markov random field cleanup
+        cfg.samp = settings.samp;         % sampling distance
 
         cfg.lkp = [1,1,2,2,3,3,4,4,4,5,5,5,5,6,6];
-        cfg.writebiascorrected = aap.tasklist.currenttask.settings.writebiascorrected; % [bias_field bias_corrected]
-        cfg.ngaus = aap.tasklist.currenttask.settings.ngaus;                           % [2 2 2 3 4 2];
+        cfg.writebiascorrected = settings.writebiascorrected; % [bias_field bias_corrected]
+        cfg.ngaus = settings.ngaus;                           % [2 2 2 3 4 2];
         cfg.native = [1 1];                                                            % [native DARTEL_imported]
         cfg.warped = [1 1];                                                            % normalised [modulated unmodulated]
         cfg.warpreg = 4;
         cfg.bb = {ones(2,3)*NaN};
-        cfg.writedeffields = aap.tasklist.currenttask.settings.writedeffields;         % [1 1] would write them out
+        cfg.writedeffields = settings.writedeffields;         % [1 1] would write them out
 
 	    % If no full path to TPM specified, try to use the standard SPM one
-	    if isempty(aap.tasklist.currenttask.settings.tpm)
+	    if isempty(settings.tpm)
 			cfg.tpm = fullfile(spm('dir'), 'toolbox', 'Seg', 'TPM.nii');
 		else
-			cfg.tpm = aap.tasklist.currenttask.settings.tpm;
+			cfg.tpm = settings.tpm;
 		end
 
         if ~exist(cfg.tpm, 'file')
@@ -67,6 +69,8 @@ switch task
         aas_log(aap, false, sprintf('Segmenting using TPMs from %s.', cfg.tpm));
 
 
+        inStream = settings.inputstreams(1).stream;
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % first make sure spm_preproc8 is in the path, as a toolbox it
         % might not be
@@ -101,7 +105,7 @@ switch task
 
 
         % get the structural image
-        img = aas_getfiles_bystream(aap, subjind, 'structural');
+        img = aas_getfiles_bystream(aap, subjind, inStream);
 
 
         if isempty(img) || strcmp(img,'/')

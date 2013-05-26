@@ -17,6 +17,10 @@
 			<writebiascorrected desc='write out bias field or corrected image?'>0 0</writebiascorrected>
 			<writedeffields desc='write out deformation fields?'>0 0</writedeffields>
 			
+            <!-- NB aamod_segment8 will segment the first input stream,
+                 allowing for an XML wrapper to specify a different stream
+                 name. -->
+            
             <inputstreams>
                 <stream>t1</stream>
             </inputstreams>

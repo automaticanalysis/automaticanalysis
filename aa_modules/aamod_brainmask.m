@@ -15,8 +15,8 @@ switch task
         
         % Input stream could be e.g. normalized to MNI or subject-specific,
         % which have different stream names
-        inStream = aap.tasklist.currenttask.inputstreams(1).stream;
-        outStream = aap.tasklist.currenttask.outputstreams(1).stream;
+        inStream = aap.tasklist.currenttask.inputstreams(1).stream{1};
+        outStream = aap.tasklist.currenttask.outputstreams(1).stream{1};
         
         gmImg = aas_getfiles_bystream(aap, subjInd, inStream);
         
