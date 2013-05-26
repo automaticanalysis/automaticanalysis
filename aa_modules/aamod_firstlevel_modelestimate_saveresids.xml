@@ -10,9 +10,9 @@
             </inputstreams>
             
             <outputstreams>
+                <stream>epi</stream>
                 <stream>firstlevel_spm</stream>
-                <stream>firstlevel_brainmask</stream>
-                <stream>firstlevel_residuals</stream>
+                <stream>firstlevel_brainmask</stream>                
             </outputstreams>
                           
         </currenttask>

@@ -9,8 +9,10 @@ switch task
         
     case 'doit'
         
+        settings = aap.tasklist.currenttask.settings;
+        
         % options
-        saveResids = aap.tasklist.currenttask.settings.saveresids;
+        saveResids = settings.saveresids;
         
         
         % keep track of original directory so we can go back here
@@ -29,19 +31,20 @@ switch task
         % residuals or not        
         
         if saveResids
-
-            % change SPM defaults to save more than 64 images
-            originalMaxres = spm_get_defaults('stats.maxres');
             
             global defaults;
             if isempty(defaults)
-                spm_defaults;
+                spm_get_defaults;
             end
-            defaults.stats.maxres = Inf;
+            
+            % change SPM defaults to save more than 64 images
+            originalMaxres = defaults.stats.maxres;
+            
+            defaults.stats.maxres = Inf;            
             
             spm_spm_saveresids(SPM);            
             residualImages = spm_select('fplist', analysisDir, '^ResI_.{4}\..{3}$');            
-            aap = aas_desc_outputs(aap, subjInd, 'firstlevel_residuals', residualImages);            
+            aap = aas_desc_outputs(aap, subjInd, 'epi', residualImages);
             
             % change SPM defaults back
             defaults.stats.maxres = originalMaxres;
@@ -62,7 +65,7 @@ switch task
         
         otherfiles={'mask', 'ResMS', 'ResMS', 'RPV'};
         for thisFile = otherfiles
-            betafns = strvcat(betafns, spm_select('fplist', analysisDir, sprintf('^%s\..{3}$', thisFile{:})));
+            betafns = strvcat(betafns, spm_select('fplist', analysisDir, sprintf('^%s\\..{3}$', thisFile{:})));
         end
         aap = aas_desc_outputs(aap, subjInd, 'firstlevel_betas', betafns);
         
