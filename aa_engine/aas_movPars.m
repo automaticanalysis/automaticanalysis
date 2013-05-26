@@ -18,7 +18,7 @@ function [moveRegs Rnames] = aas_movPars(aap, p, moveMat, volterraMovement)
 
 
 if nargin<4 || isempty(volterraMovement)
-    volterraMovemenet = 0;
+    volterraMovement = 0;
 end
 
 if nargin<3 || isempty(moveMat)
@@ -48,6 +48,11 @@ for s = aap.acq_details.selected_sessions
         end
     end
     moves = load(Mfn);
+    
+    % If more than 6 columns, just use first 6 (e.g. for HCP data)
+    if size(moves,2) > 6
+        moves = moves(:,1:6);
+    end
     
     movesN = cell(size(moveMat));
     
