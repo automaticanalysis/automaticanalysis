@@ -15,7 +15,7 @@
             <interp desc='interpolation'>0</interp>
             
             <inputstreams>
-                <stream>meanepi</stream>
+                <stream>firstlevel_brainmask</stream>
                 <stream>roi</stream>
             </inputstreams>
             

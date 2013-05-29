@@ -58,16 +58,15 @@ switch task
         global defaults
         defaults.mask.thresh = maskThreshold;        
                         
-        % Movement regressors
+        % Movement regressors (including volterraExpansion, if requested)
         if includeMovement
             [moves, mnames] = aas_movPars(aap, subjInd, moveMat, volterraMovement);
         end
 
         % Other covariates ("compartment" regressors, globals, etc.)
-        % [coming soon]
+        % [coming eventually]
 
         
-
         % Get basis functions from task settings
         SPM.xBF = settings.xBF;
 
@@ -76,25 +75,30 @@ switch task
         % if TR is manually specified, use that, otherwise try to get from DICOMs.
         if isfield(settings,'TR') && ~isempty(TR)
             SPM.xY.RT = TR;
-        else
+        else            
+            try
+            
             % Get TR from DICOM header checking they're the same for all sessions
             
-                %             for sess = aap.acq_details.selected_sessions
-                %                 DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_header'));
-                %                 try
-                %                     TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
-                %                 catch
-                %                     % [AVG] This is for backwards compatibility!
-                %                     TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
-                %                 end
-                %                 if (sess==firstsess)
-                %                     SPM.xY.RT = TR;
-                %                 else
-                %                     if (SPM.xY.RT~=TR)
-                %                         aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
-                %                     end
-                %                 end
-                %             end
+            for sess = aap.acq_details.selected_sessions
+                DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_header'));
+                try
+                    TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+                catch
+                    % [AVG] This is for backwards compatibility!
+                    TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+                end
+                if (sess==firstsess)
+                    SPM.xY.RT = TR;
+                else
+                    if (SPM.xY.RT~=TR)
+                        aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
+                    end
+                end
+            end
+            catch
+                aas_log(aap, true, 'No epi_header information available - please set TR yourself');
+            end
         end
 
         % NB Previous versions tried to set T0 using sliceorder; I've left this out
@@ -127,10 +131,6 @@ switch task
             nScans = size(thisSessFiles, 1);
             SPM.nscan(spmSession) = nScans;
             
-            
-            
-            
-            
             % Get model data from aap
             subjmatches=strcmp(subjname,{settings.model.subject});
             sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.model.session});
@@ -157,6 +157,7 @@ switch task
             %% Get modelC (covariate) data from aap
             subjmatches=strcmp(subjname,{settings.modelC.subject});
             sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.modelC.session});
+            
             % If no exact spec found, try session wildcard, then subject
             % wildcard, then wildcard for both
             if (~any(sessmatches & subjmatches))
@@ -181,10 +182,6 @@ switch task
             if (length(modelnum)>1) || (length(modelCnum)>1)
                 aas_log(aap,true,sprintf('Error while getting model details as more than one specification for subject %s session %s',subjname,aap.acq_details.sessions(sess).name));
             end
-            
-            
-            
-            
             
             if ~isempty(modelnum)
                 model=settings.model(modelnum);
@@ -215,7 +212,7 @@ switch task
                 
                 modelC = settings.modelC(modelCnum);
                 
-                %% Set up the convolution vector...
+                % Set up the convolution vector...
                 % xBF.dt      - time bin length {seconds}
                 % xBF.name    - description of basis functions specified
                 % xBF.length  - window length (seconds)
@@ -256,17 +253,18 @@ switch task
             
             
       
-            % Confounds/covariates of no interes/whatever you want to call
+            % Confounds/covariates of no interest/whatever you want to call
             % them. These are collected together in case one wants to do
             % dimensionality reduction.
             
             C = []; % confounds
             Cnames = []; % names
             
-            % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping thorugh sessions)            
+            % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping through sessions)            
             if includeMovement                
                 C = [C moves{thisSess}];
                 Cnames = [Cnames mnames];                                                      
+                aas_log(aap, false, sprintf('%d movement regressors added for this session.', size(moves{thisSess},2)));
             end
             
             % Bandpass filtering (using DCT)            
@@ -291,8 +289,9 @@ switch task
                 for thisK=1:numColK
                     Cnames{end+1} = sprintf('bandpass col %d', thisK);
                 end
-            end 
-            
+                
+                aas_log(aap, false, sprintf('%d temporal filtering regressors added for this session.', size(K,2)));
+            end             
             
             % Scale confoundes using spm_en?
             C = spm_en(C, 0); % scale confounds by sum of squares
@@ -324,7 +323,7 @@ switch task
                 if svdThresh==1
                     msg = [msg ' Try SVD reduction (in xml file, set svdthresh to .99 instead of 1)?'];
                 end
-                aas_log(aap, 0, msg);                
+                aas_log(aap, false, msg);                
             end
                        
             

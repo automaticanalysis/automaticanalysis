@@ -14,30 +14,46 @@ if nargin < 2 || isempty(deleteafter)
     deleteafter = true;
 end
 
+useFSL = true;
+
+[sts, r] = system('which fslsplit');
+if isempty(r)
+    useFSL = false;
+end
+
 Vin = spm_vol(inFile);
 [pth, nm, ext] = fileparts(inFile);
 
 
 % If only one volume, don't split, but return this same file. Otherwise,
-% split, and delete 4d (if requiested).
+% split, and delete 4d (if requested).
 if length(Vin)==1
     outFiles = inFile;
 else
     
     outFiles = [];
     
-    % choose how many places to write out volumes (important if more than 4)
-    nZeros = max(4, length(num2str(length(Vin))));
-    formatString = sprintf('%%s_%%0%dd%%s', nZeros);
-    
-    for volInd = 1:length(Vin)
-        Y = spm_read_vols(Vin(volInd));
-        thisFile = fullfile(pth, sprintf(formatString, nm, volInd, ext));
-        Vin(volInd).fname = thisFile;
-        Vin(volInd).n = [1 1];
-        spm_write_vol(Vin(volInd), Y);
+    if useFSL
+        setenv('FSLOUTPUTTYPE', 'NIFTI'); % .nii
+        cmd = sprintf('fslsplit %s %s_ -t', inFile, fullfile(pth, nm));
+        system(cmd);
+        outFiles = spm_select('fplist', pth, sprintf('%s_[0-9]*.nii', nm));
+    else
+        % choose how many places to write out volumes (important if more than 4)
+        nZeros = max(4, length(num2str(length(Vin))));
+        formatString = sprintf('%%s_%%0%dd%%s', nZeros);
         
-        outFiles = strvcat(outFiles, thisFile);
+        for volInd = 1:length(Vin)
+            Y = spm_read_vols(Vin(volInd));
+            thisFile = fullfile(pth, sprintf(formatString, nm, volInd, ext));
+            Vin(volInd).fname = thisFile;
+            Vin(volInd).n = [1 1];
+            spm_write_vol(Vin(volInd), Y);
+            
+            outFiles = strvcat(outFiles, thisFile);
+        end
+        
+        
     end
     
     if deleteafter
