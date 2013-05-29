@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_fslmaths' domain='session' desc='Bandpass filtering using fslmaths' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            <!--
+            In the aamod_fslmaths.m file, command is generated run using:
+            sprintf(cmd, inFile, outputprefix, inFile)
+
+            So to run:
+
+               fslmaths infile -bptf 1 10 prefixinfile
+
+            your command would  be
+
+               fslmaths %s -bptf 1 10 %s%s
+
+            NB for temporal filtering, cutoff is in volumes, not seconds.
+            -->        
+        
+            <fsloutputtype>NIFTI</fsloutputtype>
+            <outputprefix>bpf</outputprefix>
+            <cmd>fslmaths %s -bptf 154.2 17.4 %s%s</cmd>        
+            
+            <inputstreams>            
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>                        
+                <stream>epi</stream>                        
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
