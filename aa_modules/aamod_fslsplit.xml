@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Split 4d EPI file into 3d files' modality='MRI'>
+            
+            <permanenceofoutput>3</permanenceofoutput>                        
+            
+            <fsloutputtype>NIFTI</fsloutputtype>
+            
+            <inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
