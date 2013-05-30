@@ -39,7 +39,7 @@ switch task
                     aas_log(aap, true, sprintf('Error running fslmaths: %s', result));
                 end
                 
-                outFiles{end+1} = spm_select('fplist', fileparts(thisFile), sprintf('^%s%s.*', settings.outputprefix, thisFile));
+                outFiles{end+1} = spm_select('fplist', fileparts(thisFile), sprintf('^%s%s.*', settings.outputprefix, nm));
          end
         
         % Describe outputs

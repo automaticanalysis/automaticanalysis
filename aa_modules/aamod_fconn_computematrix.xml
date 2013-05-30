@@ -6,8 +6,9 @@
         <permanenceofoutput>3</permanenceofoutput>
         
         <concatenate desc='Run correlations across all sessions'>1</concatenate>
-        
-        <matrixfarm desc='Put resulting matrix here'></matrixfarm>
+       
+        <matrixsuffix desc='Append to filename'></matrixsuffix>         
+        <matrixfarm desc='Put resulting matrix here'></matrixfarm>       
         <matrixfarmlink desc='0 = use cp, 1 = use ln -s'>1</matrixfarmlink>
         
         <inputstreams>            

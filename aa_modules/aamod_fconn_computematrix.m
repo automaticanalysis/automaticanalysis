@@ -77,7 +77,12 @@ switch task
             [Y, XYZ] = spm_read_vols(V);
             sizeY = size(Y);
             
+            tic
+            
             for s = 1:nSourceVoxels
+                
+                fprintf('Source voxel %d/%d...', s, nSourceVoxels);
+                
                 [si, sj, sk, sz] = ind2sub(size(sourceMask), sourceInd(s));
                 sourceData = Y(si,sj,sk,:);
                 
@@ -93,10 +98,14 @@ switch task
                         targetData = Y(ti,tj,tk,:);
                         
                         [r,p] = corrcoef(sourceData, targetData);
-                        fconn.rSingle(s,t) = single(double(fconn.rSingle(s,t)) + r(1,2));
+                        fconn.rSingle(s,t) = single(r(1,2));
                         
                     end % target
                 end % checking for source NaN
+                
+                hElapsed = toc/60/60;
+                fprintf('done. %.2f%% done in %.2f hours (estimate %.2f h remaining).\n', 100*s/nSourceVoxels, hElapsed, (hElapsed/s)*(nSourceVoxels-s));
+                
             end % source            
         else            
             % For each session, read in data and do correlations. We'll sum
@@ -151,7 +160,7 @@ switch task
         % output
         [pth, nm, ext] = fileparts(spmName);
         subName = aap.acq_details.subjects(subjInd).mriname;
-        fconnName = sprintf('%s-fconn-v00.mat', subName);
+        fconnName = sprintf('%s-fconn%s.mat', subName, settings.matrixsuffix);
         fconnPath = fullfile(pth, fconnName);
         
         % Add descriptives
