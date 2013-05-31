@@ -9,9 +9,7 @@ resp='';
 switch task
     case 'report'
         
-    case 'doit'        
-        
-        
+    case 'doit'                        
         settings = aap.tasklist.currenttask.settings;
         
         fconn = [];

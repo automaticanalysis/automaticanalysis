@@ -9,12 +9,6 @@ switch task
         
     case 'doit'
    
-        % Make sure fslmaths in path
-        [sts, r] = system('which fslmaths');
-        if isempty(r)
-            aas_log(aap, true, 'Required fslmaths not found - make sure FSL is in your path.');
-        end
-        
         settings = aap.tasklist.currenttask.settings;
         
         inStream = settings.inputstreams(1).stream;
@@ -33,7 +27,7 @@ switch task
                 
                 cmd = sprintf(settings.cmd, thisFile, outFile);
                 aas_log(aap, false, sprintf('Running: %s', cmd));
-                [status, result] = system(cmd);
+                [status, result] = aas_runfslcommand(cmd);
                 
                 if status > 0
                     aas_log(aap, true, sprintf('Error running fslmaths: %s', result));

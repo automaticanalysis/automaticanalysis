@@ -16,11 +16,6 @@ end
 
 useFSL = true;
 
-[sts, r] = system('which fslsplit');
-if isempty(r)
-    useFSL = false;
-end
-
 Vin = spm_vol(inFile);
 [pth, nm, ext] = fileparts(inFile);
 
@@ -33,10 +28,9 @@ else
     
     outFiles = [];
     
-    if useFSL
-        setenv('FSLOUTPUTTYPE', 'NIFTI'); % .nii
+    if useFSL        
         cmd = sprintf('fslsplit %s %s_ -t', inFile, fullfile(pth, nm));
-        system(cmd);
+        aas_runfslcommand(cmd);
         outFiles = spm_select('fplist', pth, sprintf('%s_[0-9]*.nii', nm));
     else
         % choose how many places to write out volumes (important if more than 4)
