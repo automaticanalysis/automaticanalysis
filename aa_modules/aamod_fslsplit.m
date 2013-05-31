@@ -8,13 +8,7 @@ switch task
     case 'report'
         
     case 'doit'
-        
-          % Make sure fslmaths in path
-        [sts, r] = system('which fslmaths');
-        if isempty(r)
-            aas_log(aap, true, 'Required fslmaths not found - make sure FSL is in your path.');
-        end
-        
+           
         settings = aap.tasklist.currenttask.settings;
         
         %inStream = settings.inputstreams(1).stream;
@@ -31,7 +25,7 @@ switch task
             thisFile = strtok(inFiles(fileInd,:));
             [pth, nm] = fileparts(thisFile);
             cmd = sprintf('fslsplit %s %s', thisFile, fullfile(pth, nm));
-            [status, result] = system(cmd);
+            [status, result] = aas_runfslcommand(cmd);
             if status > 0
                 aas_log(aap, true, sprintf('Error using fslsplit: %s', result));
             end
