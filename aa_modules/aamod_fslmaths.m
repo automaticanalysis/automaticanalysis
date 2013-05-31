@@ -27,7 +27,7 @@ switch task
                 
                 cmd = sprintf(settings.cmd, thisFile, outFile);
                 aas_log(aap, false, sprintf('Running: %s', cmd));
-                [status, result] = aas_runfslcommand(cmd);
+                [status, result] = aas_runfslcommand(aap, cmd);
                 
                 if status > 0
                     aas_log(aap, true, sprintf('Error running fslmaths: %s', result));

@@ -51,27 +51,37 @@ switch task
         
         x = spm_coreg(Vref, Vest); % TODO: add flags option? 
         M  = inv(spm_matrix(x));
-          
-                       
-        % now apply transformations, and describe outputs            
-        for streamInd = 1:length(outStreams.stream)
-            thisStream = outStreams.stream{streamInd}
         
-            if strcmp(thisStream, 'epi')
-                imgs = [];
-                for sess=aap.acq_details.selected_sessions                    
-                    imgs = strvcat(imgs, aas_getfiles_bystream(aap, subjInd, sess, thisStream));
-                end
-            else                
+        
+        % now apply transformations, and describe outputs (by session for
+        % EPI)
+        for streamInd = 1:length(outStreams.stream)
+            thisStream = outStreams.stream{streamInd};
+            
+            if ismember(thisStream, {'epi'})                
+                for sess=aap.acq_details.selected_sessions
+                    imgs = aas_getfiles_bystream(aap, subjInd, sess, thisStream);
+                    
+                    for imgInd = 1:size(imgs,1)
+                        thisImg = strtok(imgs(imgInd,:));
+                        spm_get_space(thisImg, M*spm_get_space(thisImg));
+                    end
+                    
+                    aap = aas_desc_outputs(aap, subjInd, sess, thisStream, imgs);
+                end % going through sessions
+                
+            else
                 imgs = aas_getfiles_bystream(aap, subjInd, thisStream);
+                
+                for imgInd = 1:size(imgs,1)
+                    thisImg = strtok(imgs(imgInd,:));
+                    spm_get_space(thisImg, M*spm_get_space(thisImg));
+                end
+                
+                aap = aas_desc_outputs(aap, subjInd, thisStream, imgs);
             end
             
-            for imgInd = 1:size(imgs,1)
-                thisImg = strtok(imgs(imgInd,:));
-                spm_get_space(thisImg, M*spm_get_space(thisImg));
-            end            
             
-            aap = aas_desc_outputs(aap, subjInd, outStreams.stream{streamInd}, imgs);
         end
     case 'checkrequirements'
         

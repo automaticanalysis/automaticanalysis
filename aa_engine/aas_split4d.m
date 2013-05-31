@@ -30,7 +30,7 @@ else
     
     if useFSL        
         cmd = sprintf('fslsplit %s %s_ -t', inFile, fullfile(pth, nm));
-        aas_runfslcommand(cmd);
+        aas_runfslcommand(aap, cmd);
         outFiles = spm_select('fplist', pth, sprintf('%s_[0-9]*.nii', nm));
     else
         % choose how many places to write out volumes (important if more than 4)

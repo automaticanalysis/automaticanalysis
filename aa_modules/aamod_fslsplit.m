@@ -25,7 +25,7 @@ switch task
             thisFile = strtok(inFiles(fileInd,:));
             [pth, nm] = fileparts(thisFile);
             cmd = sprintf('fslsplit %s %s', thisFile, fullfile(pth, nm));
-            [status, result] = aas_runfslcommand(cmd);
+            [status, result] = aas_runfslcommand(aap, cmd);
             if status > 0
                 aas_log(aap, true, sprintf('Error using fslsplit: %s', result));
             end
