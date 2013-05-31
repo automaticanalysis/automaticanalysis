@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='trim slices from a sequence of EPIs' modality='MRI' >
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <data>
+                <subject>*</subject>
+                <session>*</session>
+                <trimSlices></trimSlices>
+                <dropImgs></dropImgs>
+            </data>            
+            
+            ﻿<inputstreams>
+                <stream>epi</stream>  
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
