@@ -11,6 +11,9 @@ switch task
         
     case 'doit'        
         
+        
+        settings = aap.tasklist.currenttask.settings;
+        
         fconn = [];
         fconn.measure = 'pearson'; % to be used later?
         

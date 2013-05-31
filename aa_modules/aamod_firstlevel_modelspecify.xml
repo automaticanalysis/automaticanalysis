@@ -63,8 +63,7 @@
             
             <!-- streams -->
             <inputstreams>
-                <stream>epi</stream>
-                <stream>epi_header</stream>                
+                <stream>epi</stream>                
                 <stream>realignment_parameter</stream>                
             </inputstreams>
             
