@@ -3,7 +3,7 @@
 % level. If so, makes model with basic t-test for each of contrasts.
 % Second-level model from Rik Henson
 % Modified for aa by Rhodri Cusack May 2006
-%
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_secondlevel_model(aap,task,i)
 
@@ -21,6 +21,18 @@ switch task
         resp=sprintf('Second level model %s\n',subjpath);
         
     case 'report'
+        if ~exist(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
+            load(aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}));
+            spm_DesRep('DesOrth',SPM.xX);
+            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
+            close all;
+        end
+        fdiag = dir(fullfile(aas_getstudypath(aap),'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,'<table><tr><td>');
+            aap=aas_report_addimage(aap,fullfile(aas_getstudypath(aap),fdiag(d).name));
+            aap = aas_report_add(aap,'</td></tr></table>');
+        end
         
     case 'doit'
         
@@ -164,6 +176,4 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
-
-
-
+end
