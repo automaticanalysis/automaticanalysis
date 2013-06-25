@@ -56,7 +56,7 @@ switch task
         print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
 
         % Reslice images
-        fsl_diag(aap,i);
+        fsl_diag(aap,subjInd);
 
 	case 'checkrequirements'
         
