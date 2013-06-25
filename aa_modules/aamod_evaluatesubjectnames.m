@@ -1,7 +1,7 @@
 % AA initialisation module - evaluate wildcards in subject names
 % Performs search using unix ls to convert wildcards into filenames
 % Rhodri Cusack MRC CBU Cambridge 2004
-
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_evaluatesubjectnames(aap,task,i)
 
@@ -38,7 +38,15 @@ switch task
                         aap.acq_details.subjects(i).mriname='missing';
                     end
                 else
-                    aap.acq_details.subjects(i).mriname=deblank(strtok(w));
+					% [TA}
+                    [a,b] = strtok(w);
+                    % on some shells w will have 2 lines (one feedbacking
+                    % the new dir after cd, another with the ls result) -
+                    % in this case we want the second output from strtok
+                    if ~isempty(b) && (numel(b) > 8)
+                        a = b;
+                    end
+                    aap.acq_details.subjects(i).mriname=deblank(strtok(a));
                 end;
             case 's3'
                 global aaworker
