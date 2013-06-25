@@ -2,6 +2,7 @@
 % First-level model Adam Hampshire MRC CBU Cambridge Feb 2006
 % Modified for aa by Rhodri Cusack Mar 2006-2011
 % Additions by Rik Henson Mar 2011
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_firstlevel_contrasts(aap,task,subj)
 
@@ -18,7 +19,16 @@ switch task
         subjpath=aas_getsubjpath(subj);
         resp=sprintf('Contrasts %s\n',subjpath);
         
-    case 'report'
+    case 'report' % [TA]
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg'),'file')
+            efficiency(aap,subj);
+        end
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
         
     case 'doit'
         
@@ -140,13 +150,16 @@ switch task
         % Make the con images
         SPM.xCon =[];
         for conind = 1:size(cons,2)
-            if length(SPM.xCon)==0
+            if isempty(SPM.xCon)
                 SPM.xCon = spm_FcUtil('Set',cname{conind},type{conind},'c',cons{conind}',SPM.xX.xKXs);
             else
                 SPM.xCon(end+1) = spm_FcUtil('Set',cname{conind},type{conind},'c',cons{conind}',SPM.xX.xKXs);
             end
         end
         spm_contrasts(SPM);
+        
+		% Efficiency based on Rik Henson's script [TA]
+        efficiency(aap,subj);
         
         % Describe outputs
         %  updated spm
@@ -170,6 +183,85 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
+end
 
+function f = efficiency(aap,subj)
+% Based on Rik Henson's script
+
+% Note this calculation of efficiency takes the 'filtered and whitened'
+% design matrix (X) as it is in SPM.
+load(aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.outputstreams.stream{1}));
+X = SPM.xX.xKXs.X;
+iXX=inv(X'*X);
+
+Sessions = {aap.acq_details.sessions.name};
+sCM = aap.tasklist.currenttask.settings.contrasts(subj+1).con;
+% CNames = {sCM.name};
+f = figure; set(f,'Position',[0 0 1200 400]); 
+a = subplot(1,numel(aap.acq_details.selected_sessions)+1,numel(aap.acq_details.selected_sessions)+1);
+set(a,'YTickLabel',[]); set(a,'FontSize',16,'FontWeight','Bold'); hold on;
+cmap = colorcube(numel(sCM));
+
+CText{1,1} = sprintf('C');
+for s = 1:numel(aap.acq_details.selected_sessions)
+    sEV = aap.tasksettings.aamod_firstlevel_model.model(1+(subj-1)*numel(aap.acq_details.selected_sessions)+s).event;
+    lCon(s) = numel(sEV) + aap.tasksettings.aamod_firstlevel_model.includemovementpars*6;
+    EVs = {sEV.name};
+    for e = 1:numel(EVs)
+        CText = horzcat(CText,EVs{e});
+    end
+    if aap.tasksettings.aamod_firstlevel_model.includemovementpars
+        CText = horzcat(CText,{'x' 'y' 'z' 'r' 'p' 'j'});
+    end
+end
+for s = 1:numel(aap.acq_details.selected_sessions)
+    CText = horzcat(CText,sprintf('S%d',s));
+end
+
+for c = 1:numel(sCM)
+    % Create Contrast
+    CM = zeros(1,size(X,2));
+    nSess = find(strcmp(sCM(c).session,Sessions)); 
+    if numel(sCM(c).vector) <= lCon(nSess) % single session contrast
+        CM(sum(lCon(1:nSess-1))+1:sum(lCon(1:nSess))) = sCM(c).vector;
+    else % multi session contrast
+        CM(1:numel(sCM(c).vector)) = sCM(c).vector;
+    end
+    
+    % Print Contrast
+    CText{c+1,1} = sprintf('%02d',c);
+    for cc = 1:numel(CM)
+        if CM(cc) > 0
+            CText{c+1,1+cc} = sprintf(' %1.1f',CM(cc));
+        elseif CM(cc) < 0
+            CText{c+1,1+cc} = sprintf('%1.1f',CM(cc));
+        else
+            CText{c+1,1+cc} = sprintf(' %d',CM(cc));
+        end        
+    end
+    
+    % Normalize Contrast
+    CM = CM / max(sum(CM(CM>0)),sum(CM(CM<0)));
+    
+    e(c)=trace(CM*iXX*CM')^-1;    
+    barh(numel(sCM)-c,e(c),'FaceColor',cmap(c,:));
+end
+
+xl = xlim;
+yl = ylim;
+ylim([-1 yl(2)])
+x0 = -numel(aap.acq_details.selected_sessions)*(xl(2)+1)-0.5; 
+dx = abs(x0/(size(CText,2)+1));
+for y = 1:size(CText,1)
+    for x = 1:size(CText,2)
+        text(x0+x*dx,numel(sCM)-y+1,CText{y,x},'FontSize',8);
+    end
+    if y == 1
+        text(x0+(x+1)*dx,numel(sCM)-y+1,'Efficiency','FontSize',8);
+    end
+end
+print(f,'-djpeg','-r150',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast'));
+close(f);
+end
 
 
