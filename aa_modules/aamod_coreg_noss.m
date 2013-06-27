@@ -16,14 +16,14 @@ resp='';
 
 switch task
 	case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,i),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
-            fsl_diag(aap,i);
+        if ~exist(fullfile(aas_getsubjpath(aap,subjInd),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
+            fsl_diag(aap,subjInd);
         end
-        fdiag = dir(fullfile(aas_getsubjpath(aap,i),'diagnostic_*.jpg'));
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,i,'<table><tr><td>');
-            aap=aas_report_addimage(aap,i,fullfile(aas_getsubjpath(aap,i),fdiag(d).name));
-            aap = aas_report_add(aap,i,'</td></tr></table>');
+            aap = aas_report_add(aap,subjInd,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subjInd,fullfile(aas_getsubjpath(aap,subjInd),fdiag(d).name));
+            aap = aas_report_add(aap,subjInd,'</td></tr></table>');
         end
     case 'doit'
         global defaults;
