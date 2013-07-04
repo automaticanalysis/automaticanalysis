@@ -130,6 +130,6 @@ aap = aas_report_add(aap,0,'EOF');
 fclose all;
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
-save('aap_parameters.mat', 'aap');
+save('aap_parameters_reported.mat', 'aap');
 
 end
