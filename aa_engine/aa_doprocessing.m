@@ -237,8 +237,6 @@ end
 switch (aap.options.wheretoprocess)
     case 'localsingle'
         taskqueue=aaq_localsingle(aap);
-    case 'localparallel'
-        taskqueue=aaq_localparallel(aap);
     case 'condor'
         taskqueue=aaq_condor(aap);
     case 'qsub'
