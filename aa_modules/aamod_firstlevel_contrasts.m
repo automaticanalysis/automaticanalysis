@@ -199,7 +199,7 @@ sCM = aap.tasklist.currenttask.settings.contrasts(subj+1).con;
 % CNames = {sCM.name};
 f = figure; set(f,'Position',[0 0 1200 400]); 
 a = subplot(1,numel(aap.acq_details.selected_sessions)+1,numel(aap.acq_details.selected_sessions)+1);
-set(a,'YTickLabel',[]); set(a,'FontSize',16,'FontWeight','Bold'); hold on;
+set(a,'YTickLabel',[]); set(a,'FontSize',8,'FontWeight','Bold'); hold on;
 cmap = colorcube(numel(sCM));
 
 CText{1,1} = sprintf('C');
@@ -249,8 +249,8 @@ end
 
 xl = xlim;
 yl = ylim;
-ylim([-1 yl(2)])
-x0 = -numel(aap.acq_details.selected_sessions)*(xl(2)+1)-0.5; 
+ylim([-0.5 yl(2)+1])
+x0 = -numel(aap.acq_details.selected_sessions)*(xl(2)+1); 
 dx = abs(x0/(size(CText,2)+1));
 for y = 1:size(CText,1)
     for x = 1:size(CText,2)
@@ -260,6 +260,7 @@ for y = 1:size(CText,1)
         text(x0+(x+1)*dx,numel(sCM)-y+1,'Efficiency','FontSize',8);
     end
 end
+set(f,'PaperPosition',get(f,'PaperPosition').*[1 1 1 0.2]+[-10 0 0 0]);
 print(f,'-djpeg','-r150',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast'));
 close(f);
 end
