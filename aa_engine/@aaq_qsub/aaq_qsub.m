@@ -1,17 +1,26 @@
 classdef aaq_qsub<aaq
     properties
+        scheduler = [];
         filestomonitor=[];
-        jobnotrun = []
+        jobnotrun = [];
     end
     methods
         function [obj]=aaq_qsub(aap)
+            global aaworker;
+            global aaparallel;
+            try
+                obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,aaworker.parmpath});
+            catch err
+                warning('Cluster computing is not supported!\n%s',err.message);
+                obj.scheduler=[];
+            end
             obj.aap=aap;
         end
         %% Queue jobs on Qsub:
         %  Queue job
         %  Watch output files
         
-        % Run all tasks on the queue, single threaded
+        % Run all tasks on the queue
         function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
             global aaworker
             
@@ -154,24 +163,31 @@ classdef aaq_qsub<aaq
             end
             
             % Submit job
-            warning off
-            jobid = qsubfeval('aa_doprocessing_onetask', obj.aap,job.task,job.k,job.i,job.j, ... % qsubfeval
-                'memreq', memReq, ...
-                'timreq', timReq, ...
-                'diary', 'always');
-            warning on
-            % State what the assigned number of hours and GB is...
-            fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                job.stagename, timReq./(60*60), memReq./(1024^3))
-            
-            % And monitor for files with the job output
-            fles.name=[jobid '_output.mat'];
-            fles.state='queued';
-            if (isempty(obj.filestomonitor))
-                obj.filestomonitor=fles;
+            if ~isempty(obj.scheduler)
+                warning off
+                J = createJob(obj.scheduler);
+                cj = @aa_doprocessing_onetask;
+                nrtn = 0;
+                inparg = {obj.aap,job.task,job.k,job.indices};
+                createTask(J,cj,nrtn,inparg);
+                J.submit;
+                warning on
+                % State what the assigned number of hours and GB is...
+                fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+                    job.stagename, timReq./(60*60), memReq./(1024^3))
+                
+                % And monitor for files with the job output
+                fles.name=sprintf('%04d_output.mat',J.ID);
+                fles.state='queued';
+                if (isempty(obj.filestomonitor))
+                    obj.filestomonitor=fles;
+                else
+                    obj.filestomonitor(end+1)=fles;
+                end
             else
-                obj.filestomonitor(end+1)=fles;
+                aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
         end
+        
     end
 end
