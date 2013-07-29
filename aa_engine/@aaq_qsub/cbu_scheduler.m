@@ -63,6 +63,8 @@ function scheduler=cbu_scheduler(varargin)
 %       scheduler=cbu_scheduler('custom',{[],24,[],[],'/hpc-software/matlab/r2009a'},'-q gpu -l mem=96gb');
 %
 %       cbu_qsub(my_jobs,cbu_scheduler('gpu'));
+%
+%	Supplied by Russell Thompson
 
 if nargin <1
     varargin{1}='compute';
