@@ -1,7 +1,7 @@
-% Automatic analysis - add subject to a planned analysis
+% Automatic analysis - add session to a planned analysis
 % Usually in your user script.
-% Using this function supercedes separately filling
-% aap_acq_details.subjects and aap.acq_details_brukersessionnums. It is
+% Using this function supercedes separately filling 
+% aap_acq_details.sessions and aap.acq_details_brukersessionnums. It is
 % more convenient when you have many subjects as the correspondence between
 % subject name and series numbers is more transparent.
 %
@@ -10,6 +10,8 @@
 % ignoreseries parameter=series numbers of any series to be ignored in the
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
+%
+% name= session name (e.g. Visual)
 
 function [aap]=aas_addsession(aap,name)
 
@@ -17,8 +19,14 @@ function [aap]=aas_addsession(aap,name)
 thissess.name=name;
 
 % And put into acq_details, replacing a single blank entry if it exists
-if (length(aap.acq_details.sessions)==1 & length(aap.acq_details.sessions.name)==0)
+if (numel(aap.acq_details.sessions)==1 && isempty(aap.acq_details.sessions.name))
     aap.acq_details.sessions=thissess;
 else
-    aap.acq_details.sessions(end+1)=thissess;
+    doAdd = true;
+    for iSess = 1:numel(aap.acq_details.sessions)
+        if strcmp(aap.acq_details.sessions(iSess).name,thissess.name)
+            doAdd = false;
+        end
+    end
+    if doAdd, aap.acq_details.sessions(end+1) = thissess; end
 end;
