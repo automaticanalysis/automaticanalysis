@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='First level thresholding' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.3</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+			
+			<threshold>
+				<correction>none</correction> <!-- FWE/FDR/iTT/none -->
+				<p>0.05</p>
+				<extent>0</extent>
+			</threshold>
+			
+			<overlay>
+				<transparency>0</transparency>
+				<nth_slice>3</nth_slice>
+			</overlay>
+            
+            <inputstreams>
+                <stream>firstlevel_spm</stream>
+            </inputstreams>
+            <outputstreams>
+			    <stream>firstlevel_thr</stream>
+                <stream>firstlevel_thrslice</stream>
+                <stream>firstlevel_thr3D</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

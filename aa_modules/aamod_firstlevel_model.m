@@ -5,15 +5,26 @@
 % **********************************************************************
 % Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
 % Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
-% Thanks to Rik Henson for various suggestions
+% Thanks to Rik Henson for various suggestions (modified) [TA]
 
 function [aap,resp]=aamod_firstlevel_model(aap,task,subj)
 
 resp='';
 
 switch task
-    case 'report'
-        
+    case 'report' % [TA]
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
+            load(aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.outputstreams.stream{1}));
+            spm_DesRep('DesOrth',SPM.xX);
+            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
+            close all;
+        end
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
     case 'doit'
         %get subject directory
         cwd=pwd;
@@ -45,9 +56,9 @@ switch task
         %% Set up basis functions
         if (isfield(aap.tasklist.currenttask.settings,'xBF'))
             SPM.xBF=aap.tasklist.currenttask.settings.xBF;
-        else
-            SPM.xBF.T          = 16; % number of time bins per scan
-            SPM.xBF.UNITS      = 'scans';           % OPTIONS: 'scans'|'secs' for onsets
+        else % defaults
+			% Specify units [TA}
+            SPM.xBF.UNITS      = aap.tasklist.currenttask.settings.UNITS;    % OPTIONS: 'scans'|'secs' for onsets
             SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
             SPM.xBF.name       = 'hrf';
             SPM.xBF.length     = 32;                % length in seconds
@@ -111,6 +122,7 @@ switch task
             aas_log(aap,false,'No stream sliceorder found, defaulting timing to SPM.xBF.T0=0 in model');
             refwhen=0;
         end
+        SPM.xBF.T = numel(sliceorder);
         SPM.xBF.T0 = round(SPM.xBF.T*refwhen);
         
         subdata = aas_getsubjpath(aap,subj);
@@ -139,6 +151,9 @@ switch task
         currcol=1;
         for sess = aap.acq_details.selected_sessions
             sessnuminspm=sessnuminspm+1;
+            nnui(sess) = 0;
+            ncon(sess) = 0;
+            npar(sess) = 0;
             
             %% Get model data from aap
             subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.model.subject});
@@ -203,6 +218,7 @@ switch task
                         parametric=struct('name','none');
                     else
                         parametric=model.event(c).parametric;
+                        npar(sess) = npar(sess) + 1;
                     end
                     SPM.Sess(sessnuminspm).U(c) = struct(...
                         'ons',model.event(c).ons,...
@@ -210,6 +226,7 @@ switch task
                         'name',{{model.event(c).name}},...
                         'P',parametric);
                     cols_interest=[cols_interest currcol];
+                    ncon(sess) = ncon(sess) + 1;
                     currcol=currcol+1;
                 end
             else
@@ -258,8 +275,10 @@ switch task
                     % Is the covariate of interest or nuisance
                     if modelC.covariate(c).interest > 0
                         cols_interest=[cols_interest currcol];
+                        ncon(sess) = ncon(sess) + 1;
                     else
                         cols_nuisance=[cols_nuisance currcol];
+                        nnui(sess) = nnui(sess) + 1;
                     end
                     currcol=currcol + 1;
                 end
@@ -273,17 +292,23 @@ switch task
                 SPM.Sess(sessnuminspm).C.name = [SPM.Sess(sessnuminspm).C.name ...
                     mnames ...
                     compRegNames{aap.tasklist.currenttask.settings.compRegs}]; % [1 x c cell]   names
-                cols_nuisance=[cols_nuisance [currcol:(currcol + ...
-                    length(mnames) ...
-                    + length(aap.tasklist.currenttask.settings.compRegs) - 1)]];
-                currcol=currcol ...
-                    + length(mnames) ...
-                    + length(aap.tasklist.currenttask.settings.compRegs);
+                naddnui = length(mnames) + length(aap.tasklist.currenttask.settings.compRegs);
+                cols_nuisance=[cols_nuisance [currcol:(currcol + naddnui - 1)]];
+                currcol=currcol + naddnui;
+                nnui(sess) = nnui(sess) + naddnui;
             end
             
             %% SETTINGS & GET FILES
             
             files = aas_getfiles_bystream(aap,subj,sess,'epi');
+            if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D
+                V = spm_vol(files);
+                f0 = files;
+                files = '';
+                for f = 1:numel(V)
+                    files = strvcat(files,[f0 ',' num2str(V(f).n(1))]);
+                end
+            end
             allfiles = strvcat(allfiles,files);
             
             SPM.xX.K(sessnuminspm).HParam = aap.tasklist.currenttask.settings.highpassfilter;
@@ -296,10 +321,17 @@ switch task
         SPM.xY.P = allfiles;
         SPMdes = spm_fmri_spm_ui(SPM);
         
-        % now check real covariates and nuisance variables are
-        % specified correctly
-        SPMdes.xX.iG=cols_nuisance;
-        SPMdes.xX.iC=cols_interest;
+        % save design
+        saveas(spm_figure('GetWin','Graphics'),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']);
+        
+        % Update real/nuisance in design matrix (for nonsphericity correction) [TA]
+        % Based on Rik Henson's script        
+        if sum(nnui)>0
+            for sess = aap.acq_details.selected_sessions
+                SPMdes.xX.iG = [SPMdes.xX.iG  [1:nnui(sess)] + (sum(ncon(1:sess))+sum(npar(1:sess)))*SPMdes.xBF.order + sum(nnui(1:(sess-1)))];
+                SPMdes.xX.iC = setdiff(SPMdes.xX.iC,SPMdes.xX.iG);
+            end
+        end
         
         spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
         SPMest = spm_spm(SPMdes);

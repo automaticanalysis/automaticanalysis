@@ -1,6 +1,7 @@
 % AA module - tsdiffana - tool to assess time series variance
 % [aap,resp]=aamod_tsdiffana(aap,task,i,j)
 % Rhodri Cusack MRC CBU Cambridge Aug 2004
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_tsdiffana(aap,task,i,j)
 
@@ -15,10 +16,10 @@ switch task
         resp='Run tsdiffana';
     case 'summary'
         resp='Check time series variance using tsdiffana\n';
-    case 'report'
-        aap.report.html=strcat(aap.report.html,'<table><tr><td>');
-        aap=aas_report_addimage(aap,fullfile(aas_getsesspath(aap,i,j),'diagnostic_aamod_tsdiffana.jpg'));     
-        aap.report.html=strcat(aap.report.html,'</td></tr></table>');
+    case 'report' % Updated [TA]
+        aap = aas_report_add(aap,i,'<table><tr><td>');
+        aap=aas_report_addimage(aap,i,fullfile(aas_getsesspath(aap,i,j),'diagnostic_aamod_tsdiffana.jpg'));     
+        aap = aas_report_add(aap,i,'</td></tr></table>');
     case 'doit'
         sesspath=aas_getsesspath(aap,i,j);
 
@@ -33,11 +34,7 @@ switch task
         tsdiffana(imgs,0);
         
         % Now produce graphical check
-        try 
-            figure(spm_figure('FindWin', 'Graphics')); 
-        catch cerr; 
-            figure(1); 
-        end;
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         print('-djpeg','-r75',fullfile(sesspath,'diagnostic_aamod_tsdiffana'));
      
     

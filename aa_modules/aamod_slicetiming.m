@@ -4,6 +4,7 @@
 % Do not use on 3D EPI (it will not work!)
 % Rhodri Cusack MRC CBU 2004 based on original by Matthew Brett
 % Batching slice timing in SPM5
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_slicetiming(aap,task,i,j)
 resp='';
@@ -35,6 +36,9 @@ switch task
         % get information from first file
         first_img = deblank(imgs(1,:));
         V = spm_vol(first_img);
+        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D support [TA]
+			V = V(1); 
+		end
         
         % retrieve stuff from DICOM header
         if (length(aap.tasklist.currenttask.settings.TRs)==0)

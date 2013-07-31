@@ -6,6 +6,7 @@
 % aas_getfiles_bystream.
 %
 % Rhodri Cusack MRC CBU Cambridge, Nov 2005-2012
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [imagefns md5]=aas_getimages_bystream(aap,i,j,streamname,varargin)
 
@@ -73,6 +74,10 @@ for inputrootnumber=1:length(roots)
     end;
     
     fid=fopen(inpstreamdesc,'r');
+	% Give error if not found [TA]
+    if fid == -1
+        aas_log(aap, true, sprintf('%s not found!',inpstreamdesc));
+    end
     
     ind=0;
     

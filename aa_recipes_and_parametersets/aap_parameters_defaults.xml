@@ -9,6 +9,7 @@
         <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir'>/mridata/cbu/</rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
+		<Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
         <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
         <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>1
         </subject_directory_format>
@@ -16,14 +17,15 @@
         </subject_filenames_format>
         <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
         <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
-        <reportname desc='Name of output from aa_report' ui='file' ext='.htm'>fullreport.htm</reportname>
-        <stats_singlesubj desc='Directory for single subject statistics' ui='dir'></stats_singlesubj>
-        <rfx desc='Directory for random effects statistics' ui='dir'></rfx>
+		<reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
+		<stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
+		<rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
         <dartelsubjdirname desc='Name of DARTEL subject directory' ui='dir'>dartel</dartelsubjdirname>
         <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
         <analysisid ui='dir_part'></analysisid>
         <analysisid_suffix ui='dir_part'></analysisid_suffix>
-        <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
+      	<continueanalysis desc='Continue previous analysis?' ui='yesno'>1</continueanalysis>
+		<remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
         <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
         <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
         <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
@@ -58,7 +60,8 @@
         </parallel_dependencies>
     </directory_conventions>
     <options>
-        <verbose desc='How verbose to be' ui='yesno'>1</verbose>
+		<NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
+		<verbose desc='How verbose to be' ui='yesno'>1</verbose>
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
@@ -107,7 +110,13 @@
         </s3>
         <numdummies desc='Number of dummy scans' ui='int'>5</numdummies>
         <topscannumber desc='Ignore EPI scans after this one' ui='int'/>
-        
+ 	  
+		<input>
+			<list desc='List of subjects and sessions' ui='dir'></list>
+			<selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
+			<referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+		</input>
+	  
         <subjects>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>

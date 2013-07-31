@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
+            <module><name>aamod_get_dicom_structural</name></module>
+            <module><name>aamod_get_dicom_epi</name></module>
+			<module><name>aamod_get_dicom_fieldmap</name></module>
+            <module><name>aamod_copystructural</name></module>
+            <module><name>aamod_convert_epis</name></module>
+			<module><name>aamod_convertfieldmaps</name></module>
+			<module><name>aamod_fieldmap2VDM</name></module>
+            <module><name>aamod_tsdiffana</name></module>			
+            <module><name>aamod_realignunwarp</name></module>
+            <module><name>aamod_slicetiming</name></module>
+            <module><name>aamod_tsdiffana</name></module>
+            <module><name>aamod_coreg_noss</name></module>
+			<module><name>aamod_norm_noss_cbu32channel</name></module>
+            <module><name>aamod_norm_write</name></module>
+            <module><name>aamod_smooth</name></module>
+            
+            <!-- Modelling. Now no need to make local copies of the first level model and contrasts -->
+            <module><name>aamod_firstlevel_model</name></module>
+            <module><name>aamod_firstlevel_contrasts</name></module>
+			<module><name>aamod_firstlevel_threshold</name></module>			
+            <module><name>aamod_secondlevel_model</name></module>
+        </main>
+    </tasklist>
+</aap>

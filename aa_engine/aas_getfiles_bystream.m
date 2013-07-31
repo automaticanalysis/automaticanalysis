@@ -7,11 +7,15 @@
 % See also aas_getfiles_bystream, which is intended for EPI images. 
 %
 % Rhodri Cusack MRC CBU Cambridge, Feb 2010
+% Tibor Auer MRC CBU Cambridge, 2012-2013
 
 function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
 
 [inpstreamdesc localroot]=aas_getinputstreamfilename(aap,varargin{:});
 
+if (~exist(inpstreamdesc,'file')) % Try output [TA]
+    [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin{:});
+end
 if (~exist(inpstreamdesc,'file'))
     aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
 end;

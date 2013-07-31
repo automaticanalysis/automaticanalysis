@@ -7,12 +7,24 @@
 % 
 % Major changes Aug 2010: removed support for central store of structrual
 % images. This code was very long in tooth, and unloved.
+%
+% Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_coreg(aap,task,i)
+function [aap,resp] = aamod_coreg_noss(aap, task, subjInd)
 
 resp='';
 
 switch task
+	case 'report' % [TA]
+        if ~exist(fullfile(aas_getsubjpath(aap,subjInd),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
+            fsl_diag(aap,subjInd);
+        end
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subjInd,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subjInd,fullfile(aas_getsubjpath(aap,subjInd),fdiag(d).name));
+            aap = aas_report_add(aap,subjInd,'</td></tr></table>');
+        end
     case 'doit'
         global defaults;
         flags = defaults.coreg;
@@ -30,7 +42,7 @@ switch task
         % get the subdirectories in the main directory
         dirn = aas_getsesspath(aap,i,1);
         % get mean EPI stream
-        PG = aas_getimages_bystream(aap,i,1,'meanepi');
+        PG = aas_getimages_bystream(aap, subjInd,1,'meanepi');
         VG = spm_vol(PG);
         
         % Get path to structural for this subject
@@ -43,14 +55,48 @@ switch task
         
         M  = inv(spm_matrix(x));
           
-        spm_get_space(structfn, M*spm_get_space(structfn));
+        spm_get_space(structImg, M*spm_get_space(structImg));
        
-        aap = aas_desc_outputs(aap,i,'structural',structfn);
+        aap = aas_desc_outputs(aap, subjInd, inStream, structImg);
 
         % Save graphical output - this will now be done by report task
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;            
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
+        try
+            figure(spm_figure('FindWin', 'Graphics'));
+        catch
+            figure(1);
+        end
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+
+        % Reslice images
+        fsl_diag(aap,subjInd);
+
+	case 'checkrequirements'
         
-    case 'checkrequirements'
-        aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end
+end
+
+function fsl_diag(aap,i)
+fP = aas_getimages_bystream(aap,i,1,'meanepi');
+subj_dir=aas_getsubjpath(aap,i);
+structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
+sP = dir( fullfile(structdir,['s' aap.acq_details.subjects(i).structuralfn '*.nii']));
+sP = fullfile(structdir,sP(1).name);
+spm_reslice({fP,sP},aap.spm.defaults.coreg.write)
+delete(fullfile(fileparts(fP),['mean' basename(fP) '.nii']));
+% Create FSL-like overview
+rfP = fullfile(fileparts(fP),[aap.spm.defaults.coreg.write.prefix basename(fP) '.nii']);
+rsP = fullfile(fileparts(sP),[aap.spm.defaults.coreg.write.prefix basename(sP) '.nii']);
+iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi']);
+system(sprintf('slices %s %s -s 3 -o %s.gif',rfP,rsP,iP));
+[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
+img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
+imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_meanepi2structural']);
+system(sprintf('slices %s %s -s 3 -o %s.gif',rsP,rfP,iP));
+[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
+img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
+imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+% Clean
+delete(rsP); delete(rfP);
+end
+
