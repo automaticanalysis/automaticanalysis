@@ -209,7 +209,7 @@ switch task
         end
         mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         for r = 1:size(ROIimg,1)
-            [~, ROIname{r}] = fileparts(ROIimg(r,:));
+            [junk, ROIname{r}] = fileparts(ROIimg(r,:));
             
             %% Diagnostic VIDEO of masks
             if aap.tasklist.currenttask.settings.diagnostic

@@ -24,7 +24,7 @@ end;
 
 % Both MEG & MRI or just MRI?
 try
-    if (length(name)==2)
+    if (length(name)==2) && iscell(name);
         thissubj.megname=name{1};
         thissubj.mriname=name{2};
     else

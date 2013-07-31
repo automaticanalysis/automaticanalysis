@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='VBM8 segmentation' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <samp desc='Sampling distance (mm)'>1</samp>
+            <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank default to Seg/TPM.nii -->
+            <vox desc='Voxel size of segmented images'>1.5</vox>
+            <affreg desc='Initial affine registration'>mni</affreg>
+            <biasfwhm desc='FWHM of the bias field'>60</biasfwhm>
+            <biasreg desc='regularization for the bias field'>.001</biasreg>
+            <reg desc='regularization'>.001</reg>
+            <mrf desc='Markov Random Field argument'>1</mrf>
+			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
+			<writebiascorrected desc='write out bias field or corrected image?'>0 0</writebiascorrected>
+			<writedeffields desc='write out deformation fields?'>0 0</writedeffields>
+			
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>seg8</stream>
+
+                <stream>native_grey</stream>
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
+
+                <stream>dartelimported_grey</stream>
+                <stream>dartelimported_white</stream>
+                <stream>dartelimported_csf</stream>
+
+                <!--
+                <stream>normalised_density_grey</stream>
+                <stream>normalised_density_white</stream>
+                <stream>normalised_density_csf</stream>
+
+                <stream>normalised_volume_grey</stream>
+                <stream>normalised_volume_white</stream>
+                <stream>normalised_volume_csf</stream>                
+                -->
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+

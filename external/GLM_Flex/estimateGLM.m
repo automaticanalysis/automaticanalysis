@@ -62,7 +62,7 @@ if numel(groupID)>1 && exist('vartestn.m','file')>0
 end
 skip = 0;
 % if numel(F.IN.Within)>0
-%     [~, ~, groups] = unique(F.FM(:,2:end),'rows');
+%     [junk, junk, groups] = unique(F.FM(:,2:end),'rows');
 %     list = unique(groups);
 %     cvd = [];
 %     for ii = 1:length(list);

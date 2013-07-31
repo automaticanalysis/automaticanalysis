@@ -111,7 +111,6 @@ global defaults;
 global aaparallel
 global aaworker
 
-
 if (exist('username','var'))
     aaworker.username=username;
     aap=aws_setupqnames(aap,username);
@@ -234,18 +233,10 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
 end
 
 % Choose where to run all tasks
-switch (aap.options.wheretoprocess)
-    case 'localsingle'
-        taskqueue=aaq_localsingle(aap);
-    case 'condor'
-        taskqueue=aaq_condor(aap);
-    case 'qsub'
-        taskqueue=aaq_qsub(aap);
-    case 'aws'
-        taskqueue=aaq_aws(aap);
-        %        taskqueue.clearawsqueue(); no longer cleared!
-    otherwise
-        aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
+try
+  eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
+catch
+  aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
 end
 
 % Check registered with django
@@ -262,8 +253,6 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     % Register analysis (or "job") with Drupal
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end
-
-
 
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)

@@ -67,7 +67,7 @@ switch task
         % Rename VDM files to their correspondent run names
         if length(EPIdir) == 1
             VDMs = dir(fullfile(FMdir, 'vdm*.nii'));
-            [~, fn, ext] = fileparts(VDMs.name);
+            [junk, fn, ext] = fileparts(VDMs.name);
             unix(['mv ' fullfile(FMdir, VDMs.name) ' ' ...
                 fullfile(FMdir, [fn '_session1' ext])]);
         end

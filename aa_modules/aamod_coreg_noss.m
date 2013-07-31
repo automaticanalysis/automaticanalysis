@@ -28,7 +28,19 @@ switch task
     case 'doit'
         global defaults;
         flags = defaults.coreg;
-                
+        % check local structural directory exists
+        subjpath=aas_getsubjpath(aap,subjInd);
+        structdir=fullfile(subjpath,aap.directory_conventions.structdirname);
+        if (~length(dir(structdir)))
+            [s w]=aas_shell(['mkdir ' structdir]);
+            if (s)
+                aas_log(aap,1,sprintf('Problem making directory%s',structdir));
+            end;
+        end;
+        
+        % dirnames,
+        % get the subdirectories in the main directory
+        dirn = aas_getsesspath(aap,subjInd,1);
         % get mean EPI stream
         PG = aas_getimages_bystream(aap, subjInd,1,'meanepi');
         VG = spm_vol(PG);
@@ -48,18 +60,11 @@ switch task
         aap = aas_desc_outputs(aap, subjInd, inStream, structImg);
 
         % Save graphical output - this will now be done by report task
-        try
-            figure(spm_figure('FindWin', 'Graphics'));
-        catch
-            figure(1);
-        end
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
-
-        % Reslice images
-        fsl_diag(aap,subjInd);
-
-	case 'checkrequirements'
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;            
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
         
+    case 'checkrequirements'
+        aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end
 end
 

@@ -25,13 +25,13 @@ for r = 1:size(indStats,1) % ROIs
         
         if strcmp(aap.tasklist.currenttask.settings.statsType2nd, 'ttest')
             aggrStats(r,c,1) = mean(data);
-            [~, p, ~, stats] = ttest(data);
+            [junk, p, junk, stats] = ttest(data);
             aggrStats(r,c,2) = stats.tstat;
             aggrStats(r,c,3) = p;
             aggrStats(r,c,4) = stats.sd / sqrt(stats.df);
             % JB test on all values of correlations? (or absolute values?)
             warning off
-            [~, aggrStats(r,c,5)] = jbtest(data);
+            [junk, aggrStats(r,c,5)] = jbtest(data);
             warning on
         elseif strcmp(aap.tasklist.currenttask.settings.statsType2nd, 'signrank')
             aggrStats(r,c,1) = median(data);

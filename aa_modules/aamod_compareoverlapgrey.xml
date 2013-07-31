@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_compareoverlap' domain='subject' desc='Compare overlap of a test vs. target image' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <thresh desc='Threshold(s) for binarizing'>0.85</thresh> <!-- can have more than one, e.g.: 0.8 0.85 0.9 -->
+            <binary desc='Whether test image is binary'>0</binary>
+            
+            <!--
+            NB First image is assumed to be target, second test, for
+            comparison methods in which this matters.
+            -->
+            <inputstreams>
+                <stream>labeled_grey</stream>
+                <stream>native_grey</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>overlapmeasures</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+

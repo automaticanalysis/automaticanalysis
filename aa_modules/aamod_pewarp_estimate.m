@@ -56,7 +56,7 @@ switch task
             
             V = spm_vol(mEPIimg);            
             
-            [~, mmFOV] = vox2mm(V);
+            [junk, mmFOV] = vox2mm(V);
             
             % Eelke Visser suggested dividing field of view by
             % approximately 20 mm to get the order

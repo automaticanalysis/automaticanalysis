@@ -1,7 +1,7 @@
 % AA initialisation module - evaluate wildcards in subject names
 % Performs search using unix ls to convert wildcards into filenames
 % Rhodri Cusack MRC CBU Cambridge 2004
-% Tibor Auer MRC CBU Cambridge 2012-2013
+
 
 function [aap,resp]=aamod_evaluatesubjectnames(aap,task,i)
 

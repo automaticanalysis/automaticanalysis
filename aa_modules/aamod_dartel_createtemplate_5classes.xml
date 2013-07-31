@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_dartel_createtemplate' domain='study' desc='SPM dartel create template' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <rform desc='Regularisation type (0 1 or 2)'>0</rform>
+            <tissues desc='Names of tissue classes'>grey white csf softtissue skull</tissues>
+            <specialrequirements desc='need more memory'><highmemory/></specialrequirements>
+            
+            <inputstreams>
+            	<stream>dartelimported_grey</stream>
+            	<stream>dartelimported_white</stream>
+              <stream>dartelimported_csf</stream>
+              <stream>dartelimported_softtissue</stream>
+              <stream>dartelimported_skull</stream>
+            </inputstreams>
+            
+            <outputstreams>
+            	<stream>dartel_template</stream>
+            	<stream>dartel_flowfield</stream>
+            </outputstreams>
+			            
+        </currenttask>
+    </tasklist>
+</aap>

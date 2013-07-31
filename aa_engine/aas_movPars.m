@@ -60,7 +60,7 @@ for s = aap.acq_details.selected_sessions
         movesN{o,1} = moves.^o;
         % Movement derivatives
         for d = 2:(maxD+1)
-            [~, movesN{o,d}] = gradient(movesN{o,d-1});
+            [junk, movesN{o,d}] = gradient(movesN{o,d-1});
         end
         % Spin history is difference between current and old...
         % It is also awfully similar to the gradient...
