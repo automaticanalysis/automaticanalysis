@@ -55,7 +55,7 @@ switch task
             'mean', 0);           % write mean image
         
         for a = 1:size(SEGimg,1)
-            [~, fn] = fileparts(SEGimg(a,:));
+            [junk, fn] = fileparts(SEGimg(a,:));
             if strcmp(fn(1), 'w')
                 % Reslice warped segmentations to  warped structural image
                 spm_reslice(strvcat(Simg,SEGimg(a,:)))

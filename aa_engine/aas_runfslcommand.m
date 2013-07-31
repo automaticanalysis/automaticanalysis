@@ -2,15 +2,24 @@ function [s w]=aas_runfslcommand(aap,fslcmd)
 
 setenv('FSLDIR',aap.directory_conventions.fsldir);
 setenv('FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype)
-pth=getenv('PATH');
+
+% Add to path
+[s pth]=system('echo $PATH');
+if s
+    pth=getenv('PATH');
+else
+    pth=deblank(pth);
+end;
 % Check whether ${FSLDIR}/bin is already in there
 fslbin=fullfile(aap.directory_conventions.fsldir,'bin');
 % Add colons to beginning and end of path in case fslbin is at beginning or
 % end and not bracketed by them
 sf=strfind([':' pth ':'],[':' fslbin ':']);
-if (isempty(sf))
-    setenv('PATH',[pth ':' fslbin]);
+if isempty(sf)
+    combinedpath=[pth ':' fslbin];
+    setenv('PATH',combinedpath);
 end;
+
 
 fslsetup=deblank(aap.directory_conventions.fslsetup);
 
@@ -24,7 +33,10 @@ switch (aap.directory_conventions.fslshell)
         [s w]=aas_shell(cmd);
     case 'csh'
         cmd=['csh -c "' fslsetup  fslcmd '"'];
-        [s w]=aas_shell(fslcmd);
+        [s w]=aas_shell(cmd);
+    case 'bash'
+        cmd=['bash -c "' fslsetup  fslcmd '"'];
+        [s w]=aas_shell(cmd);
 end;
 
 % Display error if there was one

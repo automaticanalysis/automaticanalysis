@@ -5,9 +5,25 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <samp desc='Sampling distance for segmentation'>3</samp>
+            <samp desc='Sampling distance for segmentation'>3</samp>            
             
-            <!-- INPUTS? OUTPUTS? -->
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>native_grey</stream>
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
+                
+                <stream>normalised_density_grey</stream>
+                <stream>normalised_density_white</stream>
+                <stream>normalised_density_csf</stream>
+                
+                <stream>normalised_volume_grey</stream>
+                <stream>normalised_volume_white</stream>
+                <stream>normalised_volume_csf</stream>                
+            </outputstreams>
             
         </currenttask>
     </tasklist>

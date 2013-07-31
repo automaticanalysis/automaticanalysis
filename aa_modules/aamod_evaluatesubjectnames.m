@@ -38,7 +38,17 @@ switch task
                         aap.acq_details.subjects(i).mriname='missing';
                     end
                 else
-                    aap.acq_details.subjects(i).mriname=deblank(strtok(w));
+                    [a,b] = strtok(w);
+                    a=deblank(a); % added by Rhodri 2013-06-10
+                    b=deblank(b); % added by Rhodri 2013-06-10
+                    
+                    % on some shells w will have 2 lines (one feedbacking
+                    % the new dir after cd, another with the ls result) -
+                    % in this case we want the second output from strtok
+                    if ~isempty(b)
+                        a = b;
+                    end
+                    aap.acq_details.subjects(i).mriname=deblank(strtok(a));
                 end;
             case 's3'
                 global aaworker

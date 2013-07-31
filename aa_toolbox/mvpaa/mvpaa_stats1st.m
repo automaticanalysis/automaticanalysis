@@ -60,12 +60,12 @@ if strcmp(EP.statsType, 'ttest') ...
             pos = uSimil(Tcon>0);
             if ~isempty(findstr(EP.statsType, 'ttest'))
                 Stats(t,1) = mean(pos(:));
-                [~, p , ~, stats] = ttest(pos(:));
+                [junk, p , junk, stats] = ttest(pos(:));
                 Stats(t,2) = stats.tstat;
                 Stats(t,3) = p;
                 Stats(t,4) = stats.sd / sqrt(stats.df);
                 % JB test on all values of correlations? (or absolute values?)
-                [~, Stats(t,5)] = jbtest(pos(:)); %jbtest([pos(:) abs(neg(:))])
+                [junk, Stats(t,5)] = jbtest(pos(:)); %jbtest([pos(:) abs(neg(:))])
             else
                 Stats(t,1) = median(pos(:));
                 % Signed Rank for one samples
@@ -78,12 +78,12 @@ if strcmp(EP.statsType, 'ttest') ...
             neg = uSimil(Tcon<0);
             if ~isempty(findstr(EP.statsType, 'ttest'))
                 Stats(t,1) = mean(pos(:)) - mean(neg(:));
-                [~, p , ~, stats] = ttest2(pos(:), neg(:));
+                [junk, p , junk, stats] = ttest2(pos(:), neg(:));
                 Stats(t,2) = stats.tstat;
                 Stats(t,3) = p;
                 Stats(t,4) = stats.sd / sqrt(stats.df);
                 % JB test on all values of correlations? (or absolute values?)
-                [~, Stats(t,5)] = jbtest([pos(:); neg(:)]); %jbtest([pos(:) abs(neg(:))])
+                [junk, Stats(t,5)] = jbtest([pos(:); neg(:)]); %jbtest([pos(:) abs(neg(:))])
             else
                 Stats(t,1) = median(pos(:)) - median(neg(:));
                 % Signed Rank is for paired samples, so we use Rank Sum
@@ -99,7 +99,7 @@ elseif strcmp(EP.statsType, 'GLM') ...
         % Temporary contrast
         Tcon = con(:,t);
         
-        [~,~,stats] = glmfit( Tcon, uSimil(:));
+        [junk,junk,stats] = glmfit( Tcon, uSimil(:));
         if length(unique(Tcon(~isnan(Tcon)))) == 1
             % If bulk effect
             Stats(t,1) = stats.beta(1);
@@ -122,7 +122,7 @@ elseif strcmp(EP.statsType, 'fullGLM')
     % Zero those things that are NaNs...
     con(isnan(con)) = 0;
     
-    [~,~,stats] = glmfit( con, uSimil(:)');
+    [junk,junk,stats] = glmfit( con, uSimil(:)');
     try
         % If normal bulk effect...
         Stats(:,1) = stats.beta(:);
@@ -158,12 +158,12 @@ elseif strcmp(EP.statsType, 'con-ttest') ...
         
         if ~isempty(findstr(EP.statsType, 'ttest'))
             Stats(t,1) = mean(temp);
-            [~, p , ~, stats] = ttest(temp);
+            [junk, p , junk, stats] = ttest(temp);
             Stats(t,2) = stats.tstat;
             Stats(t,3) = p;
             Stats(t,4) = stats.sd / sqrt(stats.df);
             % JB test on all values of correlations? (or absolute values?)
-            [~, Stats(t,5)] = jbtest(temp); %jbtest([pos(:) abs(neg(:))])
+            [junk, Stats(t,5)] = jbtest(temp); %jbtest([pos(:) abs(neg(:))])
         else
             Stats(t,1) = median(temp);
             % Signed Rank for one samples
@@ -184,12 +184,12 @@ elseif strcmp(EP.statsType, 'all-ttest') ...
         
         if ~isempty(findstr(EP.statsType, 'ttest'))
             Stats(t,1) = mean(temp);
-            [~, p , ~, stats] = ttest(temp);
+            [junk, p , junk, stats] = ttest(temp);
             Stats(t,2) = stats.tstat;
             Stats(t,3) = p;
             Stats(t,4) = stats.sd / sqrt(stats.df);
             % JB test on all values of correlations? (or absolute values?)
-            [~, Stats(t,5)] = jbtest(temp); %jbtest([pos(:) abs(neg(:))])
+            [junk, Stats(t,5)] = jbtest(temp); %jbtest([pos(:) abs(neg(:))])
         else
             Stats(t,1) = median(temp);
             % Signed Rank for one samples

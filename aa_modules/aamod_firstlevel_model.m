@@ -18,7 +18,7 @@ switch task
         %get subject directory
         cwd=pwd;
         % This does not work [AVG]
-        %[~, subjname]=fileparts(subj_dir);
+        %[junk, subjname]=fileparts(subj_dir);
         % Try this instead!
         subjname = aap.acq_details.subjects(subj).mriname;
         

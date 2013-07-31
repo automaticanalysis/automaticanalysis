@@ -64,7 +64,7 @@ switch task
         BETimg = aas_getfiles_bystream(aap,subj,'epiBETmask');
         
         % Sanity checks
-        [~,fn] = fileparts(EPIimg(1,:));
+        [junk,fn] = fileparts(EPIimg(1,:));
         indx = strfind(fn, aap.directory_conventions.rawdataafterconversionprefix);
         indx = indx(1);
         if strfind(fn(1:indx-1), 'w')
@@ -84,7 +84,7 @@ switch task
         mGM = []; mWM = []; mCSF = [];
         for m = 1:size(SMimg,1)
             % The ones *not* including string 'rwc' are the native masks
-            [~,fn] = fileparts(SMimg(m,:));
+            [junk,fn] = fileparts(SMimg(m,:));
             if isempty(strfind(fn, 'rwc'))
                 indx = strfind(fn, 'rc');
                 eval(['m' MOlist{str2num(fn(indx + 2))} ' = spm_read_vols(spm_vol(SMimg(m,:)));'])
@@ -93,7 +93,7 @@ switch task
         
         % Try to load the BET masks
         for m = 1:size(BETimg,1)
-            [~,fn] = fileparts(BETimg(m,:));
+            [junk,fn] = fileparts(BETimg(m,:));
             if strfind(fn, 'outskin_mask')
                 mOOH = spm_read_vols(spm_vol(BETimg(m,:)));
                 mOOH = ~mOOH; % BET MASK IS INCLUSIVE HEAD...

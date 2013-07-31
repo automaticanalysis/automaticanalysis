@@ -35,6 +35,9 @@ switch task
                 elseif aap.options.autoidentifystructural_chooselast
                     aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with last, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
                     structseries=ais.series_spgr(end);
+                elseif aap.options.autoidentifystructural_choosefirst
+                    aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with first, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
+                    structseries = ais.series_spgr(1);
                 else
                     aas_log(aap,true,sprintf('Was expecting only one structural, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
                 end

@@ -30,10 +30,10 @@ classdef aaq_condor<aaq
             mkdir(compdir);
             [aap obj.compiledfile]=make_aws_compiled_tool(obj.aap,'/cn_developer/camneuro/release-beta-0.0/aws/devel/matlab/condor_process_jobq.m',compdir)
             
-            % Clearing all existing Condor jobs for this user
-            aas_log(aap,false,'Clearing all existing Condor jobs for this user');
-            cmd='condor_rm -all';
-            aas_shell(cmd);
+%            % Clearing all existing Condor jobs for this user
+%            aas_log(aap,false,'Clearing all existing Condor jobs for this user');
+%            cmd='condor_rm -all';
+%            aas_shell(cmd);
             
         end
         %% Queue jobs on Condor:
@@ -288,6 +288,15 @@ classdef aaq_condor<aaq
             fprintf(fid,'executable=%s\n',obj.compiledfile);
             fprintf(fid,'universe=vanilla\n');
             
+            % Check on special requirements
+            [stagepath stagename]=fileparts(obj.aap.tasklist.main.module(job.k).name);
+            try
+                specialrequirements=obj.aap.tasksettings.(stagename)(obj.aap.tasklist.main.module(job.k).index).specialrequirements;
+                %    specialrequirements={obj.aap.schema.tasksettings.(stagename)(obj.aap.tasklist.main.module(k).index).ATTRIBUTE.specialrequirements};
+            catch
+                specialrequirements={};
+            end
+            
             % Set up filenames of logs
             fles=[];
             fles.log=fullfile(condorjobpth,[ nme '_log.txt']);
@@ -297,6 +306,13 @@ classdef aaq_condor<aaq
             fprintf(fid,'log=%s\n',[ nme '_log.txt']);
             fprintf(fid,'output=%s\n',[ nme '_out.txt']);
             fprintf(fid,'error=%s\n',[nme '_err.txt']);
+            if isfield(specialrequirements,'imagesize')
+                fprintf(fid,'ImageSize=%d\n',specialrequirements.imagesize);
+            end;
+            if isfield(specialrequirements,'jobtype')
+                fprintf(fid,'+JobType="%s"\n',specialrequirements.jobtype);
+            end;
+            
             %            fprintf(fid,'ImageSize=2000000\n');
             fprintf(fid,['arguments="%s %s"\n'],getenv('MCRROOT'), jobfn);
             fprintf(fid,'queue\n');

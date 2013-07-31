@@ -13,6 +13,10 @@
             <writemean>1</writemean>
             <reslicewhich>2</reslicewhich>
             
+            <specialrequirements>
+                <jobtype>fMRI</jobtype>
+            </specialrequirements>
+            
             ﻿<inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
