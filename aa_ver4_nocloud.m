@@ -6,4 +6,4 @@ addpath(genpath(aapath)); % recursively add AA subfolders
 
 [pth nme ext]=fileparts(aapath);
 
-fprintf('Welcome to aa version 4 on github May 2012\n',nme);
+fprintf('Welcome to aa version 4.1 on github July 2012\n',nme);
