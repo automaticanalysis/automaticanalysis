@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='SPM motion correction' modality='MRI' >
+        <currenttask domain='session' desc='trim slices from a sequence of EPIs' modality='MRI' >
             
             <qsub>
                 <timeBase>1</timeBase>
@@ -10,20 +10,18 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            <writemean>1</writemean>
-            <reslicewhich>2</reslicewhich>
-            
-            <specialrequirements>
-                <jobtype>fMRI</jobtype>
-            </specialrequirements>
+            <data>
+                <subject>*</subject>
+                <session>*</session>
+                <trimSlices></trimSlices>
+                <dropImgs></dropImgs>
+            </data>            
             
             ﻿<inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
             
             <outputstreams>
-                <stream>realignment_parameter</stream>
-                <stream>meanepi</stream>
                 <stream>epi</stream>
             </outputstreams>
             

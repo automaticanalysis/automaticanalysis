@@ -24,9 +24,10 @@ aap=aas_setcurrenttask(aap,modulenum);
 
 if (~strcmp(aap.directory_conventions.remotefilesystem,'none'))
     [pth nme ext]=fileparts(tempname);
-    tempdirtodelete=datestr(now,30);
+    tempdirtodelete=[datestr(now,30) '_' nme];
     [s w]=system('whoami');
-    aap.acq_details.root=fullfile('/cn_data',deblank(w),tempdirtodelete,nme,aap.acq_details.root);
+    tempdirtodelete=fullfile('/cn_data',deblank(w),tempdirtodelete);
+    aap.acq_details.root=fullfile(tempdirtodelete,aap.acq_details.root);
 else
     tempdirtodelete=[];
 end;
@@ -119,8 +120,7 @@ end;
 % Tidy up by deleting temporary directory created locally
 % This could be shifted to a cache manager
 if (tempdirtodelete)
-    aap.acq_details.root=tempdirtodelete;
-    rmdir(aas_getstudypath(aap),'s');
+    rmdir(tempdirtodelete,'s');
     % If the directory was changed into this path we'll now get a shell
     % error, so cd
     [s w]=aas_shell('pwd');

@@ -21,6 +21,7 @@ for depind=1:length(deps)
         fromstreamname=streamname;
     end;
     
+    %% REMOTE STREAM - this is stored on another machine and retrieved with rsync+ssh
     % Is it a remote stream?
     if (sourcestagenumber==-1)
         % Input data are on a remote machine
@@ -207,11 +208,12 @@ for depind=1:length(deps)
         %         fclose(fid);
         %     end;
     else
-        
+        %% LOCALLY - local disc or S3
         % Not remote pull
         sourcestagetag=aas_getstagetag(aap,sourcestagenumber);
         switch(aap.directory_conventions.remotefilesystem)
-            case 'none'
+            case 'none'                
+                % Source and destination directories
                 src= aas_getpath_bydomain(aap,domain,indices,sourcestagenumber);
                 dest=aas_getpath_bydomain(aap,domain,indices);
                 

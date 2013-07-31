@@ -28,6 +28,15 @@ else
     else
         aapth = getenv('HOME');
     end
+    
+    if isempty(aapth)
+        if (aas_ismac)
+            aapth=fullfile('/Users',username,'.aa');
+        else
+            aapth=fullfile('/home',username,'.aa');
+        end;
+    end;
+    
     assert(~isempty(aapth),'failed to find home directory');
 end;
 

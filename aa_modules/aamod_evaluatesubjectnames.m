@@ -40,6 +40,9 @@ switch task
                 else
 					% [TA}
                     [a,b] = strtok(w);
+                    a=deblank(a); % added by Rhodri 2013-06-10
+                    b=deblank(b); % added by Rhodri 2013-06-10
+                    
                     % on some shells w will have 2 lines (one feedbacking
                     % the new dir after cd, another with the ls result) -
                     % in this case we want the second output from strtok

@@ -7,14 +7,15 @@ if (~exist('quiet','var'))
     quiet=false;
 end;
 
-[s,w]=unix('echo $SHELL');
-if (~isempty(strfind(w,'bash')))
+[s,wshell]=system('echo $0');
+wshell=deblank(wshell);
+if (~isempty(strfind(wshell,'bash')))
     prefix='export TERM=dumb;'; % stops colours
 else
     prefix='setenv TERM dumb;'; % stops colours
 end;
-[s,w]=unix([prefix cmd]);
 
+[s,w]=system([prefix cmd]);
 if (~quiet)
     if (strcmp('shell-init: error',w))
         aas_log(aap,false,sprintf('Likely Linux error %s\n',w));
@@ -22,8 +23,9 @@ if (~quiet)
 end;
 
 if (s && ~quiet)
+    [s,wenv]=system('/usr/bin/env');
     aap=[];
-    aas_log(aap,false,sprintf('***LINUX ERROR\n%s\n***WHILE RUNNING COMMAND\n%s\n***END, CONTINUING\n',w,[prefix cmd]));
+    aas_log(aap,false,sprintf('***LINUX ERROR FROM SHELL "%s"\n%s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',wshell,w,[prefix cmd],wenv));
 end;
 % strip off tcsh: errors at start (see http://www.mathworks.com/support/solutions/data/1-18DNL.html?solution=1-18DNL)
 [l r]=strtok(w,10);

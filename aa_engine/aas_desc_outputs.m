@@ -128,4 +128,4 @@ switch(aap.directory_conventions.remotefilesystem)
 end;
 
 
-aas_log(aap,false,sprintf(' output stream %s %swritten with %d file(s)',streamname,streamdesc,size(outputs,1)),aap.gui_controls.colours.outputstreams);
+aas_log(aap,false,sprintf(' output stream %s %s written with %d file(s)',streamname,streamdesc,size(outputs,1)),aap.gui_controls.colours.outputstreams);

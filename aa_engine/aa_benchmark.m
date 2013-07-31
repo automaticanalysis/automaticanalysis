@@ -3,11 +3,13 @@
 % taken to perform each of the stages
 % Rhodri Cusack MRC CBU Cambridge 2004
 
-function aa_benchmark(studyroot)
+function [time, flags] = aa_benchmark(studyroot)
  
 if (~exist('studyroot','var'))
     studyroot=pwd;
 end;
+
+time = []; flags = {};
 
 % First, load AAP structure
 aaploadfn=fullfile(studyroot,'aap_parameters');
@@ -32,6 +34,8 @@ for k=1:length(aap.tasklist.main.module)
     for depind=1:length(deps)
         doneflag=aas_doneflag_getpath_bydomain(aap,deps{depind}{1},deps{depind}{2},k);
         benchmark=processflag(benchmark, aap, doneflag);
+        time = [time; benchmark];
+        flags = strvcat(flags, doneflag);
     end;
 end;
 

@@ -60,11 +60,18 @@ switch task
         aap = aas_desc_outputs(aap, subjInd, inStream, structImg);
 
         % Save graphical output - this will now be done by report task
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;            
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_coreg'));
+        try
+            figure(spm_figure('FindWin', 'Graphics'));
+        catch
+            figure(1);
+        end
+        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+
+        % Reslice images
+        fsl_diag(aap,subjInd);
+
+	case 'checkrequirements'
         
-    case 'checkrequirements'
-        aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end
 end
 
