@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_unzipstream' domain='session' desc='Unzip EPI images' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <unzipcmd desc='Used for unzipping'>gunzip -f</unzipcmd>
+            
+            <split4d desc='Convert 4d nifti to 3d?'>1</split4d>
+            
+            <!-- Can specify multiple streams, but should be in the same
+                 order for input and output. I.e., input stream 1 gets unzipped
+                 and added as output stream 1, and so on. These all need to
+                 be at the same level (subject, session, etc.) -->
+            
+            <inputstreams>
+                <stream>epi_gz</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

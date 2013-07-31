@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <!-- <module><name>aamod_evaluatesubjectnames</name></module> -->
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+                    
+            <module><name>aamod_convert_t1</name></module>
+            <module><name>aamod_convert_t2</name></module>
+            <module><name>aamod_convert_epis</name></module>
+                                            
+            <module><name>aamod_tsdiffana</name></module>
+            <module><name>aamod_realign</name></module>
+            <module><name>aamod_coreg_noss_t1</name></module>
+            <module><name>aamod_biascorrect_segment8</name></module>            
+            <module><name>aamod_segment</name></module>
+            
+            <module>
+                <name>aamod_norm_write</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                                    <vox>3 3 3</vox><!-- don't reseample -->
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module> <!-- normalize EPIs based on segmentation parameters -->
+            
+            <!--
+            <module><name>aamod_norm_write_meanepi</name></module>            
+            -->
+            
+            <module>
+                <name>aamod_brainmask</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                         <thresh>.85</thresh>
+                                    <fwhm>4</fwhm>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+            <module><name>aamod_brainmaskcombine</name></module> <!-- combines binary masks across subjects - assume voxel-matched, etc. -->
+            
+            <!--                                                                        
+            <module><name>aamod_smooth</name></module>
+            -->
+            
+            <!-- pass explicit mask to firstlevel_modelspecify! -->
+            
+            
+            <module>
+            <name>aamod_firstlevel_modelspecify_explicitmask</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                         <highpassfilter>Inf</highpassfilter>
+                         <bandpass>100 10</bandpass>
+                         <svdthresh>.99</svdthresh>
+                         <maskthreshold>0.8</maskthreshold>                                    
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+            
+        
+            
+            <module><name>aamod_firstlevel_modelestimate_saveresids</name></module>
+            
+            
+            <module><name>aamod_fconn_computematrix</name></module>
+            
+            
+            
+            <!-- summarize group connectivity data -->
+
+        </main>
+    </tasklist>
+</aap>

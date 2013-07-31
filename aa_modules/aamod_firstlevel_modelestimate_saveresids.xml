@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_modelestimate' domain='subject' desc='Estimate a specified model' modality='MRI'>
+
+            <saveresids>1</saveresids> <!-- save all residual images -->
+            
+            <inputstreams>
+                <stream>firstlevel_spm</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_brainmask</stream>                
+            </outputstreams>
+                          
+        </currenttask>
+    </tasklist>
+</aap>

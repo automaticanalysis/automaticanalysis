@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Coregister T1 (and EPI) images to roughly match template' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <template desc='Image to coregister to - if blank assume avg152T1.nii'></template>
+            
+            <!-- First stream assumed to be T1 or other structural image;
+                 other streams assumed to be co-registered and brought along
+                 as "other" images so they stay in line.-->
+            
+            <inputstreams>
+                <stream>t1</stream>                
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>t1</stream>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

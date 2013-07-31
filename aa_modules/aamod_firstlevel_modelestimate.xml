@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Estimate a specified model' modality='MRI'>
+
+            <saveresids>0</saveresids> <!-- by default SPM deletes residual images -->
+            
+            <inputstreams>
+                <stream>firstlevel_spm</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_brainmask</stream>                
+            </outputstreams>
+                          
+        </currenttask>
+    </tasklist>
+</aap>

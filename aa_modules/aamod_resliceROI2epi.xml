@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_resliceROI' domain='subject' desc='Reslice an ROI to subject image' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <which desc='0 = no reslice, 1 = reslice all but first, 2 = reslice all images'>1</which>
+            <mean desc='0 = do not create mean image, 1 = create mean'>0</mean>
+            <interp desc='interpolation'>0</interp>
+            
+            <inputstreams>
+                <stream>firstlevel_brainmask</stream>
+                <stream>roi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>roi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

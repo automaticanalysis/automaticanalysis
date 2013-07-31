@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Compute single subject functional connectivity matrix' modality='MRI'>
+                    
+        <permanenceofoutput>3</permanenceofoutput>
+        
+        <concatenate desc='Run correlations across all sessions'>1</concatenate>
+       
+        <matrixsuffix desc='Append to filename'></matrixsuffix>         
+        <matrixfarm desc='Put resulting matrix here'></matrixfarm>       
+        <matrixfarmlink desc='0 = use cp, 1 = use ln -s'>1</matrixfarmlink>
+        
+        <inputstreams>            
+            <stream>firstlevel_brainmask</stream>
+            <stream>epi</stream>
+            <stream>roi</stream>
+            <stream>firstlevel_spm</stream>
+        </inputstreams>
+        
+        <outputstreams>                        
+            <stream>firstlevel_fconn_matrix_mat</stream>                        
+        </outputstreams>
+            
+            
+            
+        </currenttask>
+    </tasklist>
+</aap>

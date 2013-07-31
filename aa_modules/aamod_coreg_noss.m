@@ -34,17 +34,9 @@ switch task
         VG = spm_vol(PG);
         
         % Get path to structural for this subject
-        subj_dir=aas_getsubjpath(aap,i);
-        structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
-        PF = dir( fullfile(structdir,['s' aap.acq_details.subjects(i).structuralfn '*.nii']));
-        if (length(PF)>1)
-            aas_log(aap,false,sprintf('Found more than one structural (%d), expected only one, but will continue with first',length(PF)));
-        end;
-        if (isempty(PF))
-            aas_log(aap,true,sprintf('Did not find structural image in %s',structdir));
-        end;
-        structfn=fullfile(structdir,PF(1).name);
-        VF = spm_vol(structfn);
+        inStream = aap.tasklist.currenttask.inputstreams.stream{1};
+        structImg = aas_getfiles_bystream(aap, subjInd, inStream);                
+        VF = spm_vol(structImg);
 
         % do coregistration
         x  = spm_coreg(VG, VF,flags.estimate);

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_brainmask' domain='subject' desc='Create native space binary brain mask from segmented grey matter' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+                        
+            <reslice></reslice> <!-- if stream, should also appear in inputstreams below -->
+            <thresh>.8</thresh>
+            <fwhm desc='If set, smooth thresholded image and re-threshold > 0. In mm.'></fwhm>
+            
+            <!-- NB. The order of the streams is important; the .m module
+            will use the first stream below to do calculations on. -->
+            
+            <inputstreams>
+                <stream>native_grey</stream>                
+            </inputstreams>
+            
+            <outputstreams>                                
+                <stream>native_brainmask</stream>
+            </outputstreams>                        
+        
+            </currenttask>
+    </tasklist>
+</aap>

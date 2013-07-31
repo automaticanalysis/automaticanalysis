@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='SPM normalisation write (stream EPI)' modality='MRI'>
+        <currenttask domain='session' desc='Merge 3D files into 4D' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -10,15 +10,12 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <vox desc='voxel size of normalised images'>2 2 2</vox>
-            
             <inputstreams>
-                <stream>normalisation_seg_sn</stream>                  
                 <stream>epi</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>epi</stream>                
+                <stream>epi</stream>
             </outputstreams>
             
         </currenttask>

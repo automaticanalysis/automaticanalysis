@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_firstlevel_modelspecify' domain='subject' desc='First level model design' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.25</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+                        
+            <TR></TR><!-- if not specified, AA tries to get from DICOM images -->
+
+            <globalscaling>None</globalscaling> <!-- SPM.xGX.iGXcalc; 'None' or ... -->
+            <autocorrelation>AR(1)</autocorrelation> <!-- SPM.xVi.form; 'None' or 'AR(1)' -->
+            <highpassfilter>128</highpassfilter>
+            
+            <includemovementpars>1</includemovementpars>
+            <volterramovementpars>1</volterramovementpars>
+            <moveMat>[1 1 0; 1 1 0]</moveMat>            
+            <bandpass></bandpass><!-- Bandpass filter using DCT, e.g. for resting state - NB in seconds -->
+            <svdthresh>1</svdthresh><!-- if < 1, do dimensionality reduction on confounds (movement, any global signal, etc.) -->
+            
+            <maskthreshold>0.8</maskthreshold><!-- SPM threshold for masking fMRI (default 0.8) (of global value)-->
+            <explicitmask>1</explicitmask>
+                        
+            <xBF>
+                <T>16</T>              <!-- how many time bins used for making the model -->
+                <T0>1</T0>             <!-- which time bin to choose (may want middle) -->
+                <UNITS>scans</UNITS>   <!-- 'scans' | 'secs' -->
+                <Volterra>1</Volterra> <!-- 1|1 = order of convolution -->
+                <name>hrf</name>       <!-- basis function -->
+                <length>32</length>
+                <order>1</order>
+            </xBF>
+            
+                    
+            
+            <!-- statistical model - adjust for each person -->
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
+            <modelC>
+                <subject></subject>
+                <session></session>
+                <covariate>
+                    <name></name>
+                    <vector></vector>
+                    <HRF></HRF>
+                    <interest></interest>
+                </covariate>
+            </modelC>
+            
+            
+            <!-- streams -->
+            <inputstreams>
+                <stream>epi</stream>
+                <!--
+                <stream>epi_header</stream>                
+                -->
+                <stream>realignment_parameter</stream>
+                <stream>native_brainmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>        
+</aap>
