@@ -65,7 +65,11 @@ for i=1:numel(aap.acq_details.subjects)
         mfile = stages{k};
         if ~exist(mfile,'file'), mfile = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
         domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
+        
+        % handle repetition
+        all_stage = cell_index(stages, stages{k});
         istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+        istage = istage(all_stage==k);
         
         switch (domain)
             case 'study'
