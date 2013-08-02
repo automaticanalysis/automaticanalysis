@@ -29,9 +29,9 @@ switch task
         end
         fdiag = dir(fullfile(aas_getstudypath(aap),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,'<table><tr><td>');
-            aap=aas_report_addimage(aap,fullfile(aas_getstudypath(aap),fdiag(d).name));
-            aap = aas_report_add(aap,'</td></tr></table>');
+            aap = aas_report_add(aap,[],'<table><tr><td>');
+            aap=aas_report_addimage(aap,[],fullfile(aas_getstudypath(aap),fdiag(d).name));
+            aap = aas_report_add(aap,[],'</td></tr></table>');
         end
         
     case 'doit'
