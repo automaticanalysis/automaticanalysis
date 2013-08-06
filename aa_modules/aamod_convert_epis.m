@@ -453,6 +453,7 @@ switch task
                 aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
             end
         end
+		finalepis = finalepis{d+1:end};
 		% 4D conversion [TA]
 		if aap.options.NIFTI4D
 			finalepis = finalepis{1};
