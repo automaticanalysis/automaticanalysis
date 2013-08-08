@@ -166,14 +166,12 @@ classdef aaq_qsub<aaq
             
             % Submit job
             if ~isempty(obj.scheduler)
-                warning off
                 J = createJob(obj.scheduler);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
                 createTask(J,cj,nrtn,inparg);
                 J.submit;
-                warning on
 %                 % State what the assigned number of hours and GB is...
 % Not in use [TA]
 %                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
