@@ -33,13 +33,13 @@ switch task
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
             
-			% Custom plotting [TA]
-			mv = plot_parameters(aap,subj,sess,~exist(fn,'file'));
-
-            aap.report.mvmax(subj,sess,:)=max(mv);           
-%             mvmean(sess,:)=mean(mv);            
-%             mvstd(sess,:)=std(mv);
-%             mvall=[mvall;mv];            
+            % Custom plotting [TA]
+            mv = plot_parameters(aap,subj,sess,~exist(fn,'file'));
+            
+            aap.report.mvmax(subj,sess,:)=max(mv);
+            %             mvmean(sess,:)=mean(mv);
+            %             mvstd(sess,:)=std(mv);
+            %             mvall=[mvall;mv];
             aap=aas_report_addimage(aap,subj,fn);
             
             aap = aas_report_add(aap,subj,'<h4>Movement maximums</h4>');
@@ -60,7 +60,7 @@ switch task
         aap = aas_report_add(aap,subj,'</tr></table>');
         
         aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-    
+        
         % Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
@@ -79,7 +79,7 @@ switch task
                 for ibp = 1:numel(meas)
                     bp = boxValPlot(ibp,:);
                     subjs = ' None';
-                    if bp.numFiniteHiOutliers                        
+                    if bp.numFiniteHiOutliers
                         subjs = [' ' num2str(sort(cell2mat(bp.outlierrows)'))];
                     end
                     aap = aas_report_add(aap,'moco',sprintf('<h4>Outlier(s) in %s:%s</h4>',meas{ibp},subjs));
@@ -192,55 +192,50 @@ for i=1:numel(P),
 end
 RealPar = horzcat(Params(:,1:3),Params(:,4:6)*180/pi);
 if toDisp
-    if (isempty(spm_figure('FindWin')))
-        spm('fmri');
-    end;
-    fg=spm_figure('FindWin','Graphics');
-    if ~isempty(fg)
-        % display results
-        %-------------------------------------------------------------------
-        spm_figure('Clear','Graphics');
-        
-		% translation over time series
-        ax=axes('Position',[0.1 0.65 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-        plot(Params(:,1:3),'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax) 
-        plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax) 
-        s = ['x translation';'y translation';'z translation'];
-        legend(ax, s, 0, 'Location','NorthWest')
-        set(get(ax,'Title'),'String','translation','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','mm');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
-        
-		% rotation over time series
-        ax=axes('Position',[0.1 0.35 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-        plot(Params(:,4:6)*180/pi,'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_ROT*ones(1,size(Params,1)),'k','Parent',ax) 
-        plot(1:size(Params,1),QA_ROT*ones(1,size(Params,1)),'k','Parent',ax) 
-        s = ['pitch';'roll ';'yaw  '];
-        legend(ax, s, 0, 'Location','NorthWest')
-        set(get(ax,'Title'),'String','rotation','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','degrees');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_ROT+0.5),YL(1)) max((QA_ROT+0.5),YL(2))]);
-
-        % scan-to-scan displacement over time series
-        ax=axes('Position',[0.1 0.05 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-		% scale rotation to translation based on the ratio of thresholds (see above)
-        plot(diff(sum(abs(horzcat(RealPar(:,1:3),RealPar(:,4:6)/(QA_ROT/QA_TRANSL))),2)),'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
-        plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
-        set(get(ax,'Title'),'String','Scan-to-scan displacement','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','a.u. (mm + scaled degrees)');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
-        
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),...
-            ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']));
-    end
+    fg= spm_figure;
+    
+    % display results
+    %-------------------------------------------------------------------
+    
+    % translation over time series
+    ax=axes('Position',[0.1 0.65 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
+    plot(Params(:,1:3),'Parent',ax); hold on;
+    plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
+    plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
+    s = ['x translation';'y translation';'z translation'];
+    legend(ax, s, 0, 'Location','NorthWest')
+    set(get(ax,'Title'),'String','translation','FontSize',16,'FontWeight','Bold');
+    set(get(ax,'Xlabel'),'String','image');
+    set(get(ax,'Ylabel'),'String','mm');
+    YL = get(ax,'YLim');
+    ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
+    
+    % rotation over time series
+    ax=axes('Position',[0.1 0.35 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
+    plot(Params(:,4:6)*180/pi,'Parent',ax); hold on;
+    plot(1:size(Params,1),-QA_ROT*ones(1,size(Params,1)),'k','Parent',ax)
+    plot(1:size(Params,1),QA_ROT*ones(1,size(Params,1)),'k','Parent',ax)
+    s = ['pitch';'roll ';'yaw  '];
+    legend(ax, s, 0, 'Location','NorthWest')
+    set(get(ax,'Title'),'String','rotation','FontSize',16,'FontWeight','Bold');
+    set(get(ax,'Xlabel'),'String','image');
+    set(get(ax,'Ylabel'),'String','degrees');
+    YL = get(ax,'YLim');
+    ylim([min(-(QA_ROT+0.5),YL(1)) max((QA_ROT+0.5),YL(2))]);
+    
+    % scan-to-scan displacement over time series
+    ax=axes('Position',[0.1 0.05 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
+    % scale rotation to translation based on the ratio of thresholds (see above)
+    plot(diff(sum(abs(horzcat(RealPar(:,1:3),RealPar(:,4:6)/(QA_ROT/QA_TRANSL))),2)),'Parent',ax); hold on;
+    plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
+    plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
+    set(get(ax,'Title'),'String','Scan-to-scan displacement','FontSize',16,'FontWeight','Bold');
+    set(get(ax,'Xlabel'),'String','image');
+    set(get(ax,'Ylabel'),'String','a.u. (mm + scaled degrees)');
+    YL = get(ax,'YLim');
+    ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
+    
+    print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),...
+        ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']));
 end
 end
