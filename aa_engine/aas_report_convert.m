@@ -17,7 +17,7 @@ p1 = patt{(~l2w)+1};
 p2 = patt{l2w+1};
 
 % First, load AAP structure
-load('aap_parameters');
+load('aap_parameters_reported');
 
 fields = fieldnames(aap.report);
 for f = 1:numel(fields)
