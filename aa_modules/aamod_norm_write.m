@@ -115,12 +115,12 @@ fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
 
 % Overlays
 iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI']);
-system(sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
 imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
 iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2epi']);
-system(sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
 imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
