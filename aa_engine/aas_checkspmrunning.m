@@ -6,4 +6,5 @@ try
 catch
     spm('fmri');
 end;
+addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))),'extrafunctions','spm_mods'),'-begin');
 end
