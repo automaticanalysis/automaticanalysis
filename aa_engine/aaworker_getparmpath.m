@@ -9,20 +9,7 @@ else
         [s w]=system('whoami');
         username=deblank(w);
     end;
-    %     if (aas_ismac)
-    %         aapth=fullfile('/Users',username,'.aa');
-    %     else
-    %         aapth=fullfile('/home',username,'.aa');
-    %     end;
-    
-    % Following doesn't work when compiled
-    % cd ~
-    % homePth = pwd;
-    % aapth = fullfile(homePth, '.aa');
-    
-    % this fails on a mac - weird whitespace that is difficult to remove
-    %[s w]=aas_shell('cd ~; pwd');
-    %aapth=fullfile(deblank(w));
+  
     if ispc
         aapth = getenv('USERPROFILE');
     else
