@@ -39,7 +39,7 @@ switch task
             aap = aas_report_add(aap,i,'<table cellspacing="10">');
             aap = aas_report_add(aap,i,sprintf('<tr><td align="right">Sess</td><td align="right">x</td><td align="right">y</td><td align="right">z</td><td align="right">rotx</td><td align="right">roty</td><td align="right">rotz</td></tr>',sess));
             aap = aas_report_add(aap,i,sprintf('<tr><td align="right">%d</td>',sess));
-            aap = aas_report_add(aap,i,sprintf('<td align="right">%8.3f</td>',aap.report.mvmax(subj,sess,:)));
+            aap = aas_report_add(aap,i,sprintf('<td align="right">%8.3f</td>',aap.report.mvmax(i,sess,:)));
             aap = aas_report_add(aap,i,sprintf('</tr>',sess));
             aap = aas_report_add(aap,i,'</table>');
             
@@ -55,7 +55,7 @@ switch task
         aap=aas_report_addimage(aap,i,fullfile(aas_getsubjpath(aap,i),'diagnostic_aamod_realign.jpg'));
 
 		% Summary in case of more subjects [TA]
-        if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
+        if (i > 1) && (i == numel(aap.acq_details.subjects)) % last subject
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
             for sess=1:nsess
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));

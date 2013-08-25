@@ -116,6 +116,9 @@ for i=1:numel(aap.acq_details.subjects)
                     aap = aas_report_add(aap,i,'</td>');
                 end;
                 aap = aas_report_add(aap,i,'</tr></table>');
+                
+            case '[unknown]'
+                aas_log(aap,0,'Domain unknown');                
             otherwise
                 aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',aap.tasklist.domain{k},stages{k}));
         end;

@@ -13,6 +13,8 @@ for depind=1:length(deps)
     sourcestagenumber=inputstream.sourcenumber;
     ismodified=inputstream.ismodified;
     
+%     fprintf('%s %s %s\n', streamname, sourcestagenumber, ismodified);
+    
     % Only take part of stream after last period
     pos=find(streamname=='.');
     if (~isempty(pos))
@@ -259,16 +261,16 @@ for depind=1:length(deps)
 %                         [TA]: Suffixing causes errors when the module
 %                         tries to load the files with the original
 %                         (non-suffixed) names.
-%                         suffix=1;
-%                         while (1)
-%                             pos=[strcmp(fns_dest{ind},gotinputs)];
-%                             if (~any(pos))
-%                                 break;
-%                             end;
-%                             [pth nme ext]=fileparts(fns{ind});
-%                             fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
-%                             suffix=suffix+1;
-%                         end;
+                        suffix=1;
+                        while (1)
+                            pos=[strcmp(fns_dest{ind},gotinputs)];
+                            if (~any(pos))
+                                break;
+                            end;
+                            [pth nme ext]=fileparts(fns{ind});
+                            fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
+                            suffix=suffix+1;
+                        end;
                         
                         % Create full path
                         fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
