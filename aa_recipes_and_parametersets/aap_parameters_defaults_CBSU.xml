@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>    
+    <directory_conventions>
+        <fieldmapsdirname desc='Subdirectory in subject dir for fieldmaps' ui='dir'>fieldmaps</fieldmapsdirname>
+        <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
+        <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
+        <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
+        <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
+        <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir'>/mridata/cbu/</rawdatadir>
+        <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
+        <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
+		<Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
+        <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
+        <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>1
+        </subject_directory_format>
+        <subject_filenames_format desc='Format of filenames within session directory' ui='optionlist' options='manual|CBU060500|S01'>1
+        </subject_filenames_format>
+        <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
+        <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
+		<reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
+		<stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
+		<rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
+        <dartelsubjdirname desc='Name of DARTEL subject directory' ui='dir'>dartel</dartelsubjdirname>
+        <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
+        <analysisid ui='dir_part'></analysisid>
+        <analysisid_suffix ui='dir_part'></analysisid_suffix>
+      	<continueanalysis desc='Continue previous analysis?' ui='yesno'>1</continueanalysis>
+		<remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
+        <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
+        <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
+        <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
+        <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
+        <protocol_structural ui='text'>MPRAGE</protocol_structural>
+        <dicomfilter ui='text'>*.dcm</dicomfilter>
+        <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
+        <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
+        <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
+        <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
+        <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
+        <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
+        <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
+        <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'>/cn_apps/fieldtrip</fieldtripdir>
+        <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
+        <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
+            <study desc='The whole study (root)' ui='custom'>
+                <subject desc='A subject' ui='custom'>
+                    <session desc='A session' ui='custom'>
+                        <searchlight_package desc='A searchlight' ui='custom'/>
+                        <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
+                    </session>
+                </subject>
+                <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
+                    <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
+                    </hyperalignment_subject>
+                </hyperalignment_searchlight_package>
+                <splitsession_cv_fold_hyper desc='Hyperalignment of an ROI' ui='custom'>
+                </splitsession_cv_fold_hyper>
+            </study>
+                            
+        </parallel_dependencies>
+    </directory_conventions>
+    <options>
+		<NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
+		<verbose desc='How verbose to be' ui='yesno'>1</verbose>
+        <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
+        <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
+        <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
+        <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
+        <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
+        <autoidentifystructural_multiple desc='We require several structurals to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifystructural_multiple>
+        <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>1</autoidentifyfieldmaps>
+        <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='yesno'>2</autoidentifyfieldmaps_number>
+        <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
+        <aa_minver desc='Minimum allowed aa version' ui='double'>1</aa_minver>
+        <aa_maxver desc='Maximum allowed aa version' ui='double'>Inf</aa_maxver>
+        <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
+        <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
+        <qsub desc='Qsub options' ui='none'>
+            <memoryMult desc='Memory multiplier for qsub' ui='double'>1</memoryMult>
+            <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
+            <verbose desc='Verbose output for qsub?' ui='yesno'>0</verbose>
+        </qsub>
+        <searchlight desc='Specification for searchlight' ui='custom'>
+            <N desc='Number of searchlights' ui='double'>5124</N>
+            <Npackage>128</Npackage>
+            <format desc='Format for searchlight' ui='text'>gifti</format>
+            <filename desc='Searchlight description file' ui='text'>/cn_user/spm8/canonical/cortex_5124.surf.gii</filename>
+        </searchlight>
+        <splitsession_cv>
+            <N desc='Number of splits in session crossvalidation' ui='double'>16</N>
+        </splitsession_cv>
+    </options>
+    
+    <gui_controls>
+        <usecolouroutput desc='use colour to organise text output written to display' ui='yesno'>1</usecolouroutput>
+        <colours>
+            <completedpreviously ui='rgb'>1 0 1</completedpreviously>
+            <running ui='rgb'>0.5 0 0.5</running>
+            <completed ui='rgb'>0.5 0 0.5</completed>
+            <inputstreams ui='rgb'>0.5 0.5 0.5</inputstreams>
+            <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>
+            <executing ui='rgb'>0 0.5 0</executing>
+        </colours>
+    </gui_controls>
+    
+    <acq_details>
+        <root desc='Root on local machine for processed data' ui='dir'></root>
+        <s3>
+            <root desc='Root on S3 for processed data' ui='dir'>teststudy</root>
+        </s3>
+        <numdummies desc='Number of dummy scans' ui='int'>5</numdummies>
+        <topscannumber desc='Ignore EPI scans after this one' ui='int'/>
+ 	  
+		<input>
+			<list desc='List of subjects and sessions' ui='dir'></list>
+			<selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
+			<referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+		</input>
+	  
+        <subjects>
+            <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
+            <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
+            <structural desc='Structural session number in raw data' ui='int'/>
+            <tmaps desc='Real time t maps session number in raw data' ui='int'/>
+            <specialseries desc='special series session number in raw data' ui='int'/>
+            <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
+            <fieldmaps ui='intarray'/>
+            <newfieldmap ui='dir_part'/>
+            <structuralfn ui='dir_part'/>
+            <siemensfieldmap ui='intarray'/>
+            <seriesnumbers desc='Session numbers for EPI' ui='intarray' />
+        </subjects>
+        <sessions desc='Functional sessions' ui='intarray'>
+            <name desc='Session name' ui='dir_part'/>
+        </sessions>
+        <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
+    </acq_details>
+    
+    <timeouts>
+        <starting desc='timeout period for spm startup (mins)' ui='int'>2</starting>
+        <joballocated desc='timeout period for worker prepare (mins)' ui='int'>2</joballocated> 
+        <busy desc='timeout period for worker job (mins)' ui='int'>600</busy>
+        <bored desc='timeout period for bored worker (mins)' ui='int'>10</bored>
+    </timeouts>      
+    
+</aap>

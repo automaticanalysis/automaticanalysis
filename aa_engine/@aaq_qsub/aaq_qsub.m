@@ -9,9 +9,10 @@ classdef aaq_qsub<aaq
             global aaworker;
             global aaparallel;
             try
-                obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,aaworker.parmpath});
-            catch err
-                warning('Cluster computing is not supported!\n%s',err.message);
+                obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,4*3600,aaworker.parmpath});
+            catch ME
+                warning('Cluster computing is not supported!\n');
+                warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
                 obj.scheduler=[];
             end
             obj.aap=aap;
@@ -142,39 +143,39 @@ classdef aaq_qsub<aaq
             cd(qsubpath);
             
             % Submit the job using qsubfeval            
-            % Check how much memory and time we should assign to the job
-            try
-                memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
-                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3); % GB
-                timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
-                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60; % Hours
-            catch
-                aas_log(obj.aap,false,...
-                    sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
-                    [1 0 0])
-                memReq = ... % No module specific multiplier
-                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3); % GB
-                timReq = ... % No module specific multiplier
-                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60; % Hours
-            end
+%             % Check how much memory and time we should assign to the job
+% Not in use [TA]
+%             try
+%                 memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
+%                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+%                     (1024^3); % GB
+%                 timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
+%                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
+%                     60*60; % Hours
+%             catch
+%                 aas_log(obj.aap,false,...
+%                     sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
+%                     [1 0 0])
+%                 memReq = ... % No module specific multiplier
+%                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+%                     (1024^3); % GB
+%                 timReq = ... % No module specific multiplier
+%                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
+%                     60*60; % Hours
+%             end
             
             % Submit job
             if ~isempty(obj.scheduler)
-                warning off
                 J = createJob(obj.scheduler);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
                 createTask(J,cj,nrtn,inparg);
                 J.submit;
-                warning on
-                % State what the assigned number of hours and GB is...
-                fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                    job.stagename, timReq./(60*60), memReq./(1024^3))
+%                 % State what the assigned number of hours and GB is...
+% Not in use [TA]
+%                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+%                     job.stagename, timReq./(60*60), memReq./(1024^3))
                 
                 % And monitor for files with the job output
                 fles.name=sprintf('%04d_output.mat',J.ID);

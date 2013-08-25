@@ -13,8 +13,6 @@ for depind=1:length(deps)
     sourcestagenumber=inputstream.sourcenumber;
     ismodified=inputstream.ismodified;
     
-%     fprintf('%s %s %s\n', streamname, sourcestagenumber, ismodified);
-    
     % Only take part of stream after last period
     pos=find(streamname=='.');
     if (~isempty(pos))
@@ -128,9 +126,10 @@ for depind=1:length(deps)
                 % Check to see whether a filename with this name has
                 % already been loaded. If so, add unique suffix
                 fns_dest{ind}=fns{ind};
+                fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                 suffix=1;
                 while (1)
-                    pos=[strcmp(fns_dest{ind},gotinputs)];
+                    pos=[strcmp(fns_dest_full{ind},gotinputs)];
                     if (~any(pos))
                         break;
                     end;
@@ -138,6 +137,7 @@ for depind=1:length(deps)
                     [pth nme ext]=fileparts(fns{ind});
                     fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
                     suffix=suffix+1;
+                    fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                 end;
                 
                 % Create full path
@@ -201,7 +201,7 @@ for depind=1:length(deps)
             end;
             fclose(fid_inp);
             
-            gotinputs=[gotinputs;fns];
+            gotinputs=[gotinputs;fns_dest_full];
         end;
         
         %     if (~doneremotefetch)
@@ -258,22 +258,18 @@ for depind=1:length(deps)
                         % Check to see whether a filename with this name has
                         % already been loaded. If so, add unique suffix
                         fns_dest{ind}=fns{ind};
-%                         [TA]: Suffixing causes errors when the module
-%                         tries to load the files with the original
-%                         (non-suffixed) names.
+                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                         suffix=1;
                         while (1)
-                            pos=[strcmp(fns_dest{ind},gotinputs)];
+                            pos=[strcmp(fns_dest_full{ind},gotinputs)];
                             if (~any(pos))
                                 break;
                             end;
                             [pth nme ext]=fileparts(fns{ind});
                             fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
                             suffix=suffix+1;
+                            fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                         end;
-                        
-                        % Create full path
-                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                     end;
                     
                     % Also check last modified dates and file size
@@ -372,7 +368,7 @@ for depind=1:length(deps)
                         end;
                         fclose(fid_inp);
                     end;
-                    gotinputs=[gotinputs;fns];
+                    gotinputs=[gotinputs;fns_dest_full];
                 end;
                 
                 

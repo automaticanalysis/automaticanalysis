@@ -5,22 +5,39 @@
 % 	ni:	returns location only if "str" is a substring starting from "ni"th character (default = none --> any match)
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function i = cell_index(lines, str, nl, ni)
-if (nargin < 3) || isempty(nl)
-    nl = 1;
+function r = cell_index(varargin)
+i = sub(varargin{:});
+r = [];
+while true
+    r(end+1) = i;
+    if i == numel(varargin{1}), break, end
+    i = sub(varargin{:},i+1);    
+    if ~i, break, end
 end
+end
+    
+function i = sub(varargin)
+lines = varargin{1};
+str = varargin{2};
+if (nargin < 3) || isempty(varargin{3})
+    nl = 1;
+else
+    nl = varargin{3};
+end
+
 for i = nl:numel(lines)
-    test = lines{i};
-    if iscell(test) || (size(test,1) > 1)
-        test = [];
+    sample = lines{i};
+    if iscell(sample) || (size(sample,1) > 1)
+        sample = [];
         continue; 
     end
-    if size(test,1) > size(test,2), test = test';  end
-    if ~ischar(test), test = num2str(test); end
+    if size(sample,1) > size(sample,2), sample = sample';  end
+    if ~ischar(sample), sample = num2str(sample); end
 
-    test = strfind(test,str);
-    if ~isempty(test) && ((nargin < 4) || ((nargin > 3) && any(test == ni))), break, end
+    sample = strfind(sample,str);
+    if ~isempty(sample) && ((nargin < 4) || ((nargin > 3) && any(sample == varargin{4}))), break, end
 end
-if isempty(test)
+if isempty(sample)
     i = 0;
+end
 end

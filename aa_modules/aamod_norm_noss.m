@@ -17,16 +17,16 @@ resp='';
 switch task
     case 'report' % [TA]
         if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '.jpg']),'file')
-            fsl_diag(aap,subj);
+            diag(aap,subj);
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
             aap = aas_report_add(aap,subj,'<table><tr><td>');
             aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
             aap = aas_report_add(aap,subj,'</td></tr></table>');
-        end       
+        end
     case 'doit'
-
+        
         defs =aap.spm.defaults.normalise;
         defs.estimate.weight = '';
         
@@ -235,60 +235,6 @@ switch task
         end
         %}
         
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-         try
-            % This will only work for 1-7 segmentations
-            OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
-                [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
-            
-            %% Draw native template
-            spm_check_registration(fullfile(Spth,['mm' Sfn Sext]))
-            % Add normalised segmentations...
-            for r = 1:(size(outSeg,1)/2)
-                spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('c%d%s',r, ['m' Sfn Sext])), OVERcolours{r})
-            end
-            %% Diagnostic VIDEO of segmentations
-            aas_checkreg_avi(aap, subj, 2)
-            
-            spm_orthviews('reposition', [0 0 0])
-            
-			try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            print('-djpeg','-r75',...
-                fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
-            
-            %% Draw warped template
-            spm_check_registration(aap.directory_conventions.T1template)
-            % Add normalised segmentations...
-            for r = 1:(size(outSeg,1)/2)
-                spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('wc%d%s',r,['m' Sfn Sext])), OVERcolours{r})
-            end
-            spm_orthviews('reposition', [0 0 0])
-            
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            print('-djpeg','-r75',...
-                fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
-        catch
-            fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
-            try
-                %% Draw native template
-                spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); fullfile(Spth,['mm' Sfn Sext])}))
-                
-                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-                print('-djpeg','-r75',...
-                    fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
-                
-                %% Draw warped template
-                spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); aap.directory_conventions.T1template}))
-                
-                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-                set(gcf,'PaperPositionMode','auto')
-                print('-djpeg','-r75',...
-                    fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
-            catch
-                fprintf('\n\tFailed display backup diagnostic image!');
-            end
-        end
-        
     case 'checkrequirements'
         % Template image; here template image not skull stripped
         T1file = aap.directory_conventions.T1template;
@@ -315,19 +261,81 @@ else
 end
 end
 %------------------------------------------------------------------------
-function fsl_diag(aap,i) % [TA]
+function diag(aap,subj) % [TA]
+% SPM, AA
+Simg = aas_getfiles_bystream(aap,subj,'structural');
+[Spth, Sfn, Sext] = fileparts(Simg);
+outSeg = aas_getfiles_bystream(aap,subj,'segmentation');
+try
+    % This will only work for 1-7 segmentations
+    OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
+        [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
+    
+    %% Draw native template
+    spm_check_registration(fullfile(Spth,['mm' Sfn Sext]))
+    % Add normalised segmentations...
+    for r = 1:(size(outSeg,1)/2)
+        spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('c%d%s',r, ['m' Sfn Sext])), OVERcolours{r})
+    end
+    %% Diagnostic VIDEO of segmentations
+    aas_checkreg_avi(aap, subj, 2)
+    
+    spm_orthviews('reposition', [0 0 0])
+    
+    try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+    print('-djpeg','-r75',...
+        fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
+    
+    %% Draw warped template
+    tmpfile = aap.directory_conventions.T1template;
+    if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+    spm_check_registration(tmpfile)
+    % Add normalised segmentations...
+    for r = 1:(size(outSeg,1)/2)
+        spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('wc%d%s',r,['m' Sfn Sext])), OVERcolours{r})
+    end
+    spm_orthviews('reposition', [0 0 0])
+    
+    try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+    print('-djpeg','-r75',...
+        fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
+catch
+    fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
+    try
+        %% Draw native template
+        spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); fullfile(Spth,['mm' Sfn Sext])}))
+        
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+        print('-djpeg','-r75',...
+            fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
+        
+        %% Draw warped template
+        tmpfile = aap.directory_conventions.T1template;
+        if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+        spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); tmpfile}))
+        
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+        set(gcf,'PaperPositionMode','auto')
+        print('-djpeg','-r75',...
+            fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
+    catch
+        fprintf('\n\tFailed display backup diagnostic image!');
+    end
+end
+
+% FSL
 % Obtain FSL T1 template
 tP = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_2mm_brain.nii.gz');
 
 % Obtain normalized GM segmentation
-subj_dir=aas_getsubjpath(aap,i);
+subj_dir=aas_getsubjpath(aap,subj);
 segdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
-sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(i).structuralfn '*.nii']));
+sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(subj).structuralfn '*.nii']));
 sP = fullfile(segdir,sP(1).name);
 
 % Create FSL-like overview
 iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name]);
-system(sprintf('slices %s %s -s 2 -o %s.gif',tP,sP,iP));
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',tP,sP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
 imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);

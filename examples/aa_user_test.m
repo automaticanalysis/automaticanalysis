@@ -17,6 +17,7 @@ aa_ver4_nocloud
 aap=aarecipe('aap_parameters_defaults.xml','aap_tasklist_fmri.xml');
 
 % Modify standard recipe module selection here if you'd like
+aap.options.wheretoprocess = 'qsub'; % parallel; typical localsingle
 aap.options.NIFTI4D = 1; % 4D support; typical value 0
 aap.options.autoidentifyfieldmaps=1;  % required for unwarping; typical value 1
 aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';

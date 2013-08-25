@@ -33,11 +33,13 @@ switch task
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
                 sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',C,CON(C).name));
             if exist(f{1},'file')
+                tstat = dlmread(strrep(f{1},'_overlay.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,CON(C).name));
                 
                 % Add images to Single subject report
                 aap = aas_report_add(aap,subj,'<table><tr>');
+                aap = aas_report_add(aap,subj,sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap,subj,'<td>');
                     aap=aas_report_addimage(aap,subj,f{i});
@@ -47,6 +49,7 @@ switch task
                 
                 % Add images to Study summary
                 aap = aas_report_add(aap,sprintf('C%02d',C),'<table><tr>');
+                aap = aas_report_add(aap,sprintf('C%02d',C),sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap,sprintf('C%02d',C),'<td>');
                     aap=aas_report_addimage(aap,sprintf('C%02d',C),f{i});
@@ -171,17 +174,12 @@ switch task
             iYepi = img_rot90(iYepi);
             iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
             [img cm v] = map_overlay(iYtemplate,iYepi,1-tra);
-            mon = tr_RGBtoMontage(img);
-            f = figure;
-            montage(mon);
-            colormap(cm);
-            cb = colorbar;
-            yT = [walley(v) find(v<0, 1, 'last' ) find(v>0, 1 ) peak(v)];
-            set(cb,'YTick',yT,'YTickLabel',v(yT));
+            mon = tr_3Dto2D(img(:,:,:,1));
+            mon(:,:,2) = tr_3Dto2D(img(:,:,:,2));
+            mon(:,:,3) = tr_3Dto2D(img(:,:,:,3));
             fnsl = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',c,SPM.xCon(c).name));
-            print(f,'-djpeg','-r150',fnsl);
-            
-            close(f);
+            imwrite(mon,fnsl);
+            dlmwrite(strrep(fnsl,'_overlay.jpg','.txt'),[min(v(v~=0)), max(v)]);
             
             % Render
             if numel(Z)  < 2 % Render fails with only one active voxel
@@ -194,10 +192,13 @@ switch task
             dat.dim = dim;
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-            spm_render(dat,0.5,rendfile);
             fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
-            saveas(spm_figure('GetWin','Graphics'),fn3d);
-            img = imread(fn3d); img = img(size(img,1)/2:end,:,:); imwrite(img,fn3d);
+            img = spm_render(dat,0.5,rendfile);
+            mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
+            mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
+            mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
+            mon = imresize(mon(1:size(mon,2)*2/3,:,:),0.5);
+            imwrite(mon,fn3d);
             
             % Outputs
             if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr,fullfile(anadir,V.fname)); end
