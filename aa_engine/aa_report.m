@@ -3,7 +3,7 @@
 % Rhodri Cusack MRC CBU Cambridge 2004
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap]=aa_report_new(studyroot,stages)
+function [aap]=aa_report(studyroot,stages)
 
 if exist('studyroot','var')
     cd(studyroot);
@@ -20,6 +20,11 @@ end;
 
 if isfield(aap,'report'), aap = rmfield(aap,'report'); end
 aap.report.numdependencies=0;
+aap.report.dependency={};
+
+aap.internal.total=0;
+aap.internal.stagesnotdone=0;
+stage_study_done = false;
 
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))
@@ -112,4 +117,5 @@ fclose all;
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
 save('aap_parameters_reported.mat', 'aap');
+
 end

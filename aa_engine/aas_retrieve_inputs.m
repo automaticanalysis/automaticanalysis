@@ -139,6 +139,9 @@ for depind=1:length(deps)
                     suffix=suffix+1;
                     fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                 end;
+                
+                % Create full path
+                fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
             end;
             
             aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamname,inputstream.host,src,dest),aap.gui_controls.colours.inputstreams);

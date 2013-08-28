@@ -52,7 +52,7 @@ end;
 
 numdel=0;
 
-garbagelog=fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid,sprintf('garbage_collection.txt'));
+garbagelog=fullfile(aas_getstudypath(aap),sprintf('garbage_collection.txt'));
 fprintf('Logfile: %s\n',garbagelog);
 fid=fopen(garbagelog,'w');
 fprintf(fid,'Garbage collected: %s\n',datestr(now,31));
