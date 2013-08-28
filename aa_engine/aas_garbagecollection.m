@@ -4,16 +4,37 @@
 %  Rhodri Cusack  www.cusacklab.org  March 2012
 %  Tibor Auer MRC CBU Cambridge 2012-2013
 
-function aap=aas_garbagecollection(aap, actuallydelete, modulestoscan )
+function aap=aas_garbagecollection(varargin)
+% Inputs parsed based on their type:
+% - string: studyroot
+% - logical: actuallydelete
+% - numeric: modulestoscan 
+for i = 1:nargin
+    if ischar(varargin{i})
+        studyroot = varargin{i};
+    elseif islogical(varargin{i})
+        actuallydelete = varargin{i};
+    elseif isnumeric(varargin{i})
+        modulestoscan = varargin{i};
+    end
+end
+
+% First, load AAP structure
+if exist('studyroot','var')
+    cd(studyroot);
+end;
+if ~exist('aap_parameters','file')
+    error('aap structure not found');    
+else
+    load('aap_parameters');
+end
 
 if ~exist(aas_getstudypath(aap),'dir')
     aas_log(aap,true,sprintf('Study %s not found',aas_getstudypath(aap)));
 end
-
 if ~strcmp(aap.directory_conventions.remotefilesystem,'none')
     aas_log(aap,true,'Remote file systems not currently supported by garbage collection');
 end
-
 if ~strcmp(aap.directory_conventions.outputformat,'splitbymodule')
     aas_log(aap,true,sprintf('No garbage collection as aap.directory_conventions.outputformat is %s',aap.directory_conventions.outputformat));
 end
