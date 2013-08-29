@@ -5,6 +5,9 @@
 %  Tibor Auer MRC CBU Cambridge 2012-2013
 
 function aap=aas_garbagecollection(varargin)
+
+fprintf('Garbage collection started...\n');
+
 % Inputs parsed based on their type:
 % - string: studyroot
 % - logical: actuallydelete
@@ -23,7 +26,7 @@ end
 if exist('studyroot','var')
     cd(studyroot);
 end;
-if ~exist('aap_parameters','file')
+if ~exist('aap_parameters.mat','file')
     error('aap structure not found');    
 else
     load('aap_parameters');
