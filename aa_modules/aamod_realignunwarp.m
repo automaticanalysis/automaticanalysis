@@ -142,9 +142,11 @@ switch task
         spm_jobman('run',jobs);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-        for sess = aap.acq_details.selected_sessions
-            plot_parameters(aap,subj,sess,true);
+        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
+            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
+            for sess = aap.acq_details.selected_sessions
+                plot_parameters(aap,subj,sess,true);
+            end
         end
         
         %% Describe outputs

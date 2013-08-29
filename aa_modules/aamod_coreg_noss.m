@@ -65,7 +65,9 @@ switch task
         catch
             figure(1);
         end
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
+            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+        end
 
         % Reslice images
         fsl_diag(aap,subjInd);

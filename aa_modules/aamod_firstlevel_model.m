@@ -322,7 +322,9 @@ switch task
         SPMdes = spm_fmri_spm_ui(SPM);
         
         % save design
-        saveas(spm_figure('GetWin','Graphics'),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']);
+        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
+            saveas(spm_figure('GetWin','Graphics'),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']);
+        end
         
         % Update real/nuisance in design matrix (for nonsphericity correction) [TA]
         % Based on Rik Henson's script        
