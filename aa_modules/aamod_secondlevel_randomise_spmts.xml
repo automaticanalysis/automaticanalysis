@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' mfile_alias='aamod_secondlevel_randomise' desc='SPM second level model' modality='MRI'>
+            
+            <qsub>
+                <timeBase>6</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>firstlevel_spmts</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>secondlevel_fslts</stream>
+            </outputstreams>
+            
+            <options>-T -v 5</options>
+            
+            <parallel desc='Parallelisation mode [serial/none, torque]'
+            >torque</parallel>
+            
+        </currenttask>
+    </tasklist>
+</aap>

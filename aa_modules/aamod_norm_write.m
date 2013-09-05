@@ -1,11 +1,11 @@
 % AA module - write normalised EPIs
-% [aap,resp]=aamod_norm_write(aap,task,i,j)
+% [aap,resp]=aamod_norm_write(aap,task,subj,sess)
 % Rhodri Cusack MRC CBU Cambridge Jan 2006-Aug 2007
 % Resamples EPIs using *_seg_sn.mat file [if present] or *_sn.mat file
 % Changed domain to once per session for improved performance when parallel
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write(aap,task,i,j)
+function [aap,resp]=aamod_norm_write(aap,task,subj,sess)
 
 resp='';
 
@@ -32,39 +32,38 @@ switch task
         voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
         
         % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,i); 
+        subj_dir = aas_getsubjpath(aap,subj); 
         
         % get sn mat file from normalisation
-        subj.matname = aas_getfiles_bystream(aap,i,'normalisation_seg_sn');
+        matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
         
         streams=aap.tasklist.currenttask.inputstreams;
         
         % find out what streams we should normalise
-        streams=streams.stream(~[strcmp('normalisation_seg_sn',streams.stream)]);
+        streams=streams.stream(~strcmp('normalisation_seg_sn',streams.stream));
         
-        % Is session specified in task header (used for meanepi, which only
-        % occurs in session 1
+        % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
-            j=aap.tasklist.currenttask.settings.session;
-        end;
+           sess = aap.tasklist.currenttask.settings.session; 
+        end
         
         for streamind=1:length(streams)
-            subj.imgs = [];
-                        
+            imgs = [];
             % Image to reslice
-            if (exist('j','var'))
-                P = aas_getfiles_bystream(aap,i,j,streams{streamind});
+            if (exist('sess','var'))
+                P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
             else
-                P = aas_getfiles_bystream(aap,i,streams{streamind});
-            end
+
+                P = aas_getfiles_bystream(aap,subj,streams{streamind});
+            end            
             
+            imgs = strvcat(imgs, P);
             
-            subj.imgs = strvcat(subj.imgs, P);
             % delete previous because otherwise nifti write routine doesn't
-            % save disc space when you reslice to a coarser voxel
+            % save disc space when you reslice to a coarser voxel            
             for c=1:size(P,1)
                 [pth fle ext]=fileparts(P(c,:));
-                [s w]=aas_shell(['rm ' fullfile(pth,['w' fle ext])],true); % quietly
+                [s w] = aas_shell(['rm ' fullfile(pth,['w' fle ext])],true); % quietly
             end;
             
             
@@ -73,23 +72,30 @@ switch task
             flags.vox = voxelSize; 
             
             % now write normalised
-            if (length(subj.imgs)>0)
-                spm_write_sn(subj.imgs,subj.matname, flags);
-            end;
+            if ~isempty(imgs)
+                % Ignore .hdr files from this list...
+                imgsGood = imgs;
+                for n = size(imgsGood,1):-1:1
+                    if ~isempty(strfind(imgsGood(n,:), '.hdr'))
+                        imgsGood(n,:) = [];
+                    end
+                end
+                spm_write_sn(imgsGood,matname,aap.spm.defaults.normalise.write);
+            end
+
             wimgs=[];
             
             % describe outputs
-            for fileind=1:size(subj.imgs,1)
-                [pth nme ext]=fileparts(subj.imgs(fileind,:));
-                wimgs=strvcat(wimgs,fullfile(pth,['w' nme ext]));
-            end;
-            if (exist('j','var'))
-                aap=aas_desc_outputs(aap,i,j,streams{streamind},wimgs);
+            for fileind=1:size(imgs,1)
+                [pth, nme, ext] = fileparts(imgs(fileind,:));
+                wimgs = strvcat(wimgs,fullfile(pth,['w' nme ext]));
+            end
+            if (exist('sess','var'))
+                aap=aas_desc_outputs(aap,subj,sess,streams{streamind},wimgs);
             else
-                aap=aas_desc_outputs(aap,i,streams{streamind},wimgs);
-            end;
-        end;
-        
+                aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
+            end
+        end
         
     case 'checkrequirements'
         
@@ -115,13 +121,15 @@ fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
 
 % Overlays
 iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -a %s.gif',sP,fP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+imwrite(img, [iP '.jpg']); delete([iP '.gif']);
+
 iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2epi']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -a %s.gif',fP,sP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+imwrite(img, [iP '.jpg']); delete([iP '.gif']);
+
 end

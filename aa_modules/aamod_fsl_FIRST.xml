@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use the FSL subcortical segmentation tool (FIRST)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.3</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>rois</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed 
+            Can add multiple, but then only first one will be used for BETting, but operation will be applied on both -->
+            <structural>1</structural>
+            
+            <!-- Options? -->
+            <options>-v</options>
+            
+            <!-- Mode [normal/robust]-->
+            <mode>normal</mode>
+            
+            <!-- Cost function FLIRT -->
+            <cost desc='Cost function for normalisation [mutualinfo,corratio,normcorr,normmi,leastsq,labeldiff]'
+            >normcorr</cost>
+            
+            <!-- Betted Brains? -->
+            <bet desc='Not skull stripped = 0; skull stripped = 1'
+            >0</bet>
+            
+            <!-- Diagnostic videos? -->
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='GGMfit to normalise the value (e.g. T-value) distributions in an image' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.4</timeBase>
+                <memoryBase>2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <!-- -->
+                <stream>firstlevel_spmts</stream>
+               <!--
+                <stream>firstlevel_betas</stream>
+                -->
+            </inputstreams>
+            
+            <outputstreams>
+                <!---->
+                <stream>firstlevel_spmts</stream>
+                <!--
+                <stream>firstlevel_betas</stream>
+                -->
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

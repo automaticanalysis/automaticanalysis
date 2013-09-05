@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_smooth' desc='SPM smooth contrast images' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>firstlevel_cons</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_cons</stream>
+            </outputstreams>
+            
+            <FWHM>8</FWHM>
+            
+        </currenttask>
+    </tasklist>
+</aap>

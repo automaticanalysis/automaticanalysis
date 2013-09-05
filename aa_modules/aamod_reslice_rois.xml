@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_reslice_rois' desc='SPM reslice' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            ﻿<inputstreams>
+                <stream>meanepi</stream> 
+                <stream>rois</stream>                 
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>rois</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
