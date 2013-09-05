@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_freesurfer_autorecon' desc='Segment the brain using the freesurfer pipeline' modality='MRI'>
+            
+            <qsub>
+                <timeBase>3</timeBase>
+                <memoryBase>5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>freesurfer</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>freesurfer</stream>
+            </outputstreams>
+            
+            <extraoptions desc='This specifies the extra options/modules for recon-all'
+            >-autorecon3</extraoptions>
+            
+            <!-- Diagnostic videos? Verbosity? -->
+            <diagnostic desc='Do we display diagnostic videos?'
+            >0</diagnostic>
+            <verbose desc='Do we display Freesurfer output?'
+            >1</verbose>
+            
+        </currenttask>
+    </tasklist>
+</aap>

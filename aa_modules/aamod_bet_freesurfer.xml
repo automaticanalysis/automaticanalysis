@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use the Freesurfer MRI_Watershed' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>                
+                <stream>BETmask</stream>
+            </outputstreams>
+            
+            <maskBrain desc='Do we apply the brain masking on the structural...? 0 - NO; 1 - YES'
+            >1</maskBrain>
+            
+            <structural desc='This specifies which structural we want to use, typically the first, but can be changed'
+            >1</structural>
+            
+            <extraoptions desc='This specifies which MRI watershed options we want to use'
+            >-atlas</extraoptions>
+            
+            <gcut desc='Do we run gcut to clean up the skull stripping?'
+            >1</gcut>
+            
+            <jaccart desc='How much overlap should we have between Hybrid Watershed and Graph Cut to combine'
+            >0.8</jaccart>
+            <dominant desc='Which technique is dominant if Jaccart fails? 0 - HW; 1 - GC'
+            >1</dominant>
+            
+            <!-- Diagnostic videos? Verbosity? -->
+            <diagnostic>0</diagnostic>
+            <verbose>0</verbose>
+            
+        </currenttask>
+    </tasklist>
+</aap>
