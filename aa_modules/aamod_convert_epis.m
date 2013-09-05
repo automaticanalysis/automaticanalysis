@@ -466,8 +466,8 @@ switch task
 			spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
         end
         % And describe outputs
-        aap=aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn=fullfile(sesspath,'dicom_headers.mat');
+        aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
+        dcmhdrfn = fullfile(sesspath,'dicom_headers.mat');
         save(dcmhdrfn,'DICOMHEADERS');
 
         % [TA modification]

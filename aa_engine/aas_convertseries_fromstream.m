@@ -143,13 +143,15 @@ for subdirind=1:length(subdirs)
                     end
                     fprintf('Sequence has a %s slice order\n', sliceorder);
                 end
-                
-                % [AVG] Add the TR to the DICOMHEADERS explicitly before
-                % saving (and in seconds!)
-                tmp{1}.volumeTR = TR/1000;
-                tmp{1}.sliceorder = sliceorder;
             catch
+                warning('Could not find the TR and sliceorder')
+                tmp{1}.volumeTR = [];
+                tmp{1}.sliceorder = [];
             end
+            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before
+            % saving (and in seconds!)
+            tmp{1}.volumeTR = TR/1000;
+            tmp{1}.sliceorder = sliceorder;
             
             DICOMHEADERS=[DICOMHEADERS tmp];
             
@@ -175,7 +177,14 @@ for subdirind=1:length(subdirs)
                 end
             end
         end
-        conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+        % [AVG] to cope with modern cutting edge scanners, and other probs
+        % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
+         if isfield(aap.options, 'customDCMconvert') && ~isempty(aap.options.customDCMconvert)
+            aas_log(aap, false, sprintf('Using alternate %s script...', aap.options.customDCMconvert))
+            eval(sprintf('conv=%s(DICOMHEADERS_selected,''all'',''flat'',''nii'')', aap.options.customDCMconvert));
+        else
+            conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+        end
         out=[out(:);conv.files(:)];
     end
     out_allechoes{subdirind}=unique(out);
