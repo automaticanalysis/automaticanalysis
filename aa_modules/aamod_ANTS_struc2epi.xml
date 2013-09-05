@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use ANTS to coregister structural to epi' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>meanepi</stream>
+                <stream>epiBETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <!--
+                <stream>structural</stream>
+                -->
+                <stream>ANTs</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            <structural>1</structural>            
+            
+            <maxiterations desc='Number of ANTS iterations at relative coarseness levels, can be more than 3...'
+            >[30 90 20]</maxiterations>
+            <regularisation desc='Regularisation parameters'
+            >Gauss[3,0]</regularisation>
+            <transformation desc='Type of deformation metric and parameters (typically SyN)'
+            >SyN[4.0]</transformation>
+            <extraoptions desc='Extra options for deformation metric'
+            >--use-Histogram-Matching  --number-of-affine-iterations 10000x10000x10000x10000x10000 --MI-option 32x16000</extraoptions>
+            
+            <metric1 desc='ANTS similarity metric type [CC, MI, PR, MSQ]'
+            >MI</metric1>
+            <weight1 desc='Metric weight'
+            >1</weight1>
+            <parameters1 desc='Other metric parameters (must have ] at the end!)'
+            >32]</parameters1>            
+            <!-- NOTE: More metrics & weights and parameters can be added up to 9 -->
+                        
+            <maskBrain desc='Which mask do we use on the meanepi image with BET (if any)?'>brain_mask</maskBrain>
+            
+            <!-- Diagnostic videos? -->
+            <diagnostic>0</diagnostic>
+            
+            
+        </currenttask>
+    </tasklist>
+</aap>
