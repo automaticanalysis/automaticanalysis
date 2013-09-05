@@ -10,7 +10,7 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <session>1</session>
+            <vox desc='voxel size of normalised images'>2 2 2</vox>
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>  

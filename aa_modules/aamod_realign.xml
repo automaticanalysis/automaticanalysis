@@ -8,11 +8,12 @@
                 <memoryBase>1</memoryBase>
             </qsub>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>-1</permanenceofoutput>
             
             <writemean>1</writemean>
             <reslicewhich>2</reslicewhich>
             
+
             <specialrequirements>
                 <jobtype>fMRI</jobtype>
             </specialrequirements>
@@ -26,7 +27,7 @@
                 <stream>meanepi</stream>
                 <stream>epi</stream>
             </outputstreams>
-            
+                
         </currenttask>
     </tasklist>
 </aap>
