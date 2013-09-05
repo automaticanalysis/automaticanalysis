@@ -59,7 +59,7 @@ switch task
         %% 2) Mean Functional to EPI template
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
                 
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
@@ -216,7 +216,7 @@ switch task
         %% Describe the outputs
         
         aap = aas_desc_outputs(aap,subj,'structural',Simg);
-        aap = aas_desc_outputs(aap,subj,1,'meanepi',mEPIimg);
+        aap = aas_desc_outputs(aap,subj,'meanepi',mEPIimg);
         
         for sess = aap.acq_details.selected_sessions
             aap = aas_desc_outputs(aap,subj,sess,'epi',EPIimg{sess});

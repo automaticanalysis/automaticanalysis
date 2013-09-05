@@ -53,7 +53,6 @@ switch task
             if (exist('sess','var'))
                 P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
             else
-
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end            
             

@@ -13,7 +13,7 @@ switch task
                 
         Simg = aas_getfiles_bystream(aap,subj,'structural');
         SEGimg = aas_getfiles_bystream(aap,subj,'segmentation');
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         
         % Whether the images in SEGimg are native (1) or warped (0)
         NWlogical = zeros(size(SEGimg,1), 1);

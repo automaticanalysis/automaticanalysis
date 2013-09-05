@@ -42,7 +42,7 @@ switch task
         % get the subdirectories in the main directory
         dirn = aas_getsesspath(aap,subjInd,1);
         % get mean EPI stream
-        PG = aas_getimages_bystream(aap, subjInd,1,'meanepi');
+        PG = aas_getimages_bystream(aap, subjInd,'meanepi');
         VG = spm_vol(PG);
         
         % Get path to structural for this subject
@@ -78,7 +78,7 @@ end
 end
 
 function fsl_diag(aap,i)
-fP = aas_getimages_bystream(aap,i,1,'meanepi');
+fP = aas_getimages_bystream(aap,i,'meanepi');
 subj_dir=aas_getsubjpath(aap,i);
 structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
 sP = dir( fullfile(structdir,['s' aap.acq_details.subjects(i).structuralfn '*.nii']));
