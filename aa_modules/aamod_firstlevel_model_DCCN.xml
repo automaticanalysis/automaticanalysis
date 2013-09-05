@@ -98,7 +98,7 @@
             
             ﻿<inputstreams>
                 <stream>epi</stream>
-                <stream>epi_header</stream>
+                <stream>epi_dicom_header</stream>
                 <stream>sliceorder</stream>
                 <stream>realignment_parameter</stream>
                 <stream>compSignal</stream>

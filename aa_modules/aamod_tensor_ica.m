@@ -16,7 +16,7 @@ switch task
         allstructfn='';
         
         % Get TR from first subject
-        fn = aas_getfiles_bystream(aap,1,1,'epi_header');
+        fn = aas_getfiles_bystream(aap,1,1,'epi_dicom_header');
         D = load(fn);
         TR = D.DICOMHEADERS{1}.RepetitionTime;
         
@@ -34,7 +34,7 @@ switch task
             allstructfn=[allstructfn sprintf('set highres_files(%d) "%s"\n',i,structfn)];
             
             % Check TR same in all other subjects
-            fn = aas_getfiles_bystream(aap,i,1,'epi_header');
+            fn = aas_getfiles_bystream(aap,i,1,'epi_dicom_header');
             D = load(fn);                       
             if TR~=D.DICOMHEADERS{1}.RepetitionTime;
                 aas_log(aap,true,'found different TR in subjects');

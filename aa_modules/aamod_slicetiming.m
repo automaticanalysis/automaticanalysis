@@ -1,12 +1,12 @@
 % AA module - slice timing
-% [aap,resp]=aamod_slicetiming(aap,task,i,j)
+% [aap,resp]=aamod_slicetiming(aap,task,subj,sess)
 % Corrects the slice time difference in 2D EPI sequences
 % Do not use on 3D EPI (it will not work!)
 % Rhodri Cusack MRC CBU 2004 based on original by Matthew Brett
 % Batching slice timing in SPM5
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_slicetiming(aap,task,i,j)
+function [aap,resp]=aamod_slicetiming(aap,task,subj,sess)
 resp='';
 
 switch task
@@ -20,18 +20,13 @@ switch task
     case 'doit'
         
         % get the subdirectories in the main directory
-        dirn = aas_getsesspath(aap,i,j);
+        dirn = aas_getsesspath(aap,subj,sess);
         
         % get files in this directory
         % Old style, by prefix (still supported for now)
-        %imgs=aas_getimages(aap,i,j,aap.tasklist.currenttask.epiprefix,0,inf);
+        %imgs=aas_getimages(aap,subj,sess,aap.tasklist.currenttask.epiprefix,0,inf);
         % New style, by stream
-        imgs=aas_getimages_bystream(aap,i,j,'epi');
-        
-        if aap.tasklist.currenttask.settings.autodetectSO == 1
-            V = spm_vol(deblank(imgs(1,:)));
-            aap = aas_getSliceOrder(aap, i, j, V);
-        end
+        imgs=aas_getimages_bystream(aap,subj,sess,'epi');
         
         % get information from first file
         first_img = deblank(imgs(1,:));
@@ -41,8 +36,14 @@ switch task
 		end
         
         % retrieve stuff from DICOM header
+        if aap.tasklist.currenttask.settings.autodetectSO == 1
+            % Get the headers from the file, so that we don't have to guess...
+            DICOMHEADERS=load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header'));
+            V = spm_vol(deblank(imgs(1,:)));
+            aap = aas_getSliceOrder(aap, V, DICOMHEADERS.DICOMHEADERS{1});            
+        end
         if (length(aap.tasklist.currenttask.settings.TRs)==0)
-            DICOMHEADERS=load(fullfile(dirn,'dicom_headers'));
+            DICOMHEADERS=load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header'));
             aap.tasklist.currenttask.settings.TRs=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end
         if (length(aap.tasklist.currenttask.settings.slicetime)==0)
@@ -68,14 +69,14 @@ switch task
             [pth nme ext]=fileparts(imgs(k,:));
             rimgs=strvcat(rimgs,['a' nme ext]);
         end
-        sessdir=aas_getsesspath(aap,i,j);
-        aap = aas_desc_outputs(aap,i,j,'epi',rimgs);
+        sessdir=aas_getsesspath(aap,subj,sess);
+        aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
         
         sliceorder=aap.tasklist.currenttask.settings.sliceorder;
         sliceorderfn=fullfile(dirn,'sliceorder.mat');
         refslice=aap.tasklist.currenttask.settings.refslice;
         save(sliceorderfn,'sliceorder','refslice');
-        aap = aas_desc_outputs(aap,i,j,'sliceorder',sliceorderfn);
+        aap = aas_desc_outputs(aap,subj,sess,'sliceorder',sliceorderfn);
         
     case 'checkrequirements'
         if (length(aap.tasklist.currenttask.settings.sliceorder)==0) && aap.tasklist.currenttask.settings.autodetectSO == 0

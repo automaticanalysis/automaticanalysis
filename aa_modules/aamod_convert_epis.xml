@@ -4,11 +4,11 @@
         <currenttask domain='session' desc='Convert EPIs'>
             
             <qsub>
-                <timeBase>0.5</timeBase>
-                <memoryBase>0.5</memoryBase>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.40</memoryBase>
             </qsub>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>-1</permanenceofoutput>
             
             <echoweightmethod>
                 t2star
@@ -20,7 +20,7 @@
             
             <outputstreams>
                 <stream>epi</stream>
-                <stream>epi_header</stream>
+                <stream>epi_dicom_header</stream>
                 <stream>epi_nulled</stream>
                 <stream>epi_echo_1</stream>
                 <stream>epi_echo_2</stream>

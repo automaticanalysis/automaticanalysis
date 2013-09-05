@@ -81,7 +81,7 @@ switch task
             % Get TR from DICOM header checking they're the same for all sessions
             
             for sess = aap.acq_details.selected_sessions
-                DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_header'));
+                DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_dicom_header'));
                 try
                     TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
                 catch
@@ -97,7 +97,7 @@ switch task
                 end
             end
             catch
-                aas_log(aap, true, 'No epi_header information available - please set TR yourself');
+                aas_log(aap, true, 'No epi_dicom_header information available - please set TR yourself');
             end
         end
 

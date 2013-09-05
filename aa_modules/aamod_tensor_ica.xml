@@ -5,7 +5,7 @@
             <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
 ﻿                <stream>epi</stream>
-                <stream>epi_header</stream>
+                <stream>epi_dicom_header</stream>
                 <stream>structural</stream>
             </inputstreams>
             <outputstreams>
