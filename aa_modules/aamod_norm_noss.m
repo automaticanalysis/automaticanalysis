@@ -263,10 +263,10 @@ try
     OVERcolours = aas_colours(size(outSeg,1)/2);
     
     %% Draw native template
-    spm_check_registration(fullfile(mSpth,['m' mSfn mSext]))
+    spm_check_registration(fullfile(Spth,['m' Sfn Sext]))
     % Add segmentations...
-    for t = 1:(size(outSeg,1)/2)
-        spm_orthviews('addcolouredimage',1,fullfile(mSpth,sprintf('c%d%s',t, [mSfn mSext])), OVERcolours{t})
+    for t = 1:2:size(outSeg,1)
+        spm_orthviews('addcolouredimage',1,outSeg(t,:), OVERcolours{ceil(t/2)})
     end
     
     spm_orthviews('reposition', [0 0 0])
@@ -278,8 +278,8 @@ try
     %% Draw warped template
     spm_check_registration(aap.directory_conventions.T1template)
     % Add normalised segmentations...
-    for t = 1:(size(outSeg,1)/2)
-        spm_orthviews('addcolouredimage',1,fullfile(mSpth,sprintf('wc%d%s',t,[mSfn mSext])), OVERcolours{t})
+    for t = 2:2:size(outSeg,1)
+        spm_orthviews('addcolouredimage',1,outSeg(t,:), OVERcolours{ceil(t/2)})
     end
     spm_orthviews('reposition', [0 0 0])
     
@@ -290,15 +290,15 @@ catch
     fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
     try
         %% Draw native template
-        spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); ...
-            fullfile(Spth,['mm' Sfn Sext])}))
+        spm_check_registration(char({outSeg(1,:); ...
+            fullfile(Spth, ['m' Sfn, Sext])}))
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '_N.jpeg']));
         
         %% Draw warped template
-        spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); ...
+        spm_check_registration(char({outSeg(2,:); ...
             aap.directory_conventions.T1template}))
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
@@ -314,7 +314,7 @@ end
 if aap.tasklist.currenttask.settings.usesegmentnotnormalise
     Pthresh = 0.95;
     
-    ROIdata = roi2hist(fullfile(Spth,['m' Sfn Sext]), ...
+    ROIdata = roi2hist(fullfile(Spth, ['m' Sfn, Sext]), ...
         outSeg(1:2:end,:), Pthresh);
     
     [h, pv, ci, stats] = ttest2(ROIdata{2}, ROIdata{1});
@@ -331,7 +331,7 @@ if aap.tasklist.currenttask.settings.diagnostic
     
     for d = 1:length(Ydims)
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            aas_image_avi(fullfile(mSpth,['m' mSfn mSext]), ...
+            aas_image_avi(fullfile(Spth, ['m' Sfn, Sext]), ...
                 outSeg([1:2:size(outSeg,1)],:), ...
                 fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_' Ydims{d} '.avi']), ...
                 d, ... % Axis

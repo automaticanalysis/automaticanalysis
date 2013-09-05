@@ -10,6 +10,9 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             
+            <!-- Once for the whole module! [AVG] -->
+            <automatic_movesandmeans></automatic_movesandmeans>
+                
             <!--
 You must specify one or more contrasts here using one of the following formats
 
@@ -82,7 +85,6 @@ You must specify one or more contrasts here using one of the following formats
 -->
             <contrasts>
                 <subject></subject>
-                <automatic_movesandmeans></automatic_movesandmeans>
                 <con>
                     <format/>
                     <vector/>

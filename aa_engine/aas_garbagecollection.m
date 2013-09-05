@@ -4,23 +4,9 @@
 %  Rhodri Cusack  www.cusacklab.org  March 2012
 %  Tibor Auer MRC CBU Cambridge 2012-2013
 
-function aap=aas_garbagecollection(varargin)
+function aap=aas_garbagecollection(aap, actuallydelete, modulestoscan, permanencethreshold)
 
 fprintf('Garbage collection started...\n');
-
-% Inputs parsed based on their type:
-% - string: studyroot
-% - logical: actuallydelete
-% - numeric: modulestoscan 
-for i = 1:nargin
-    if ischar(varargin{i})
-        studyroot = varargin{i};
-    elseif islogical(varargin{i})
-        actuallydelete = varargin{i};
-    elseif isnumeric(varargin{i})
-        modulestoscan = varargin{i};
-    end
-end
 
 % First, load AAP structure
 if exist('studyroot','var')
@@ -42,16 +28,23 @@ if ~strcmp(aap.directory_conventions.outputformat,'splitbymodule')
     aas_log(aap,true,sprintf('No garbage collection as aap.directory_conventions.outputformat is %s',aap.directory_conventions.outputformat));
 end
 
-if ~exist('modulestoscan','var')
+if ~exist('modulestoscan','var') || isempty(modulestoscan)
     modulestoscan=1:length(aap.tasklist.main.module);
     %     exclude modelling modules, if any
     ind = cell_index(strfind({aap.tasklist.main.module.name}, 'level'),'1');
     if ind, modulestoscan=1:ind-1; end
 end
 
+if (~exist('permanencethreshold','var')) || isempty(permanencethreshold)
+    permanencethreshold = 0;
+end
+
 if ~exist('actuallydelete','var')
     actuallydelete=false;
 end;
+
+% What things fall under the image category?
+imgCategory = {'.IMA' '.dcm' '.nii' '.img' '.hdr'};
 
 numdel=0;
 
@@ -65,6 +58,9 @@ for modind=modulestoscan
     outs={};
     % Get all the input and output stream files
     aap=aas_setcurrenttask(aap,modind);
+    
+    fprintf('\nWorking on task %s\n', aap.tasklist.currenttask.name)
+    
     for streamname=aap.tasklist.currenttask.inputstreams.stream
         streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1},aap.tasklist.currenttask.name);
         inps=[inps findstreamfiles(aap,streamfn)];
@@ -91,7 +87,26 @@ for modind=modulestoscan
         inpnotout(inpind)=~any(strcmp(inpfn{inpind},outfn));
     end
     
-    % Garbage collect
+    % Garbage collect outputs
+    if ~isfield(aap.tasklist.currenttask.settings, 'permanenceofoutput')
+        % To be on the safe side keep stuff without a permanenceofoutput flag!
+        aap.tasklist.currenttask.settings.permanenceofoutput = Inf;
+    end
+    if abs(aap.tasklist.currenttask.settings.permanenceofoutput) <= permanencethreshold
+        delete_outputs = 1;
+    else
+        delete_outputs = 0;
+    end
+    if aap.tasklist.currenttask.settings.permanenceofoutput < 0
+        % If permanenceofoutput has negative value, delete only images
+        % .nii .img .hdr files
+        delete_onlyImg = 1;
+    else
+        % Otherwise delete also non-image outputs...
+        delete_onlyImg = 0;
+    end
+    
+    % Garbage collect inputs
     if ~isempty(inpfn)
         fprintf(fid,'Garbage collection in module: %s\n',aap.tasklist.currenttask.name);
         if actuallydelete
@@ -106,6 +121,30 @@ for modind=modulestoscan
         end
         fprintf(fid,'---end---\n\n');
     end
+    
+    % Garbage collect outputs
+    if (~isempty(outfn) && exist(aas_getstudypath(aap),'file') && delete_outputs)
+        if actuallydelete
+            fprintf(fid,'---following files deleted---\n');
+        end
+        for fn=outfn
+            if (exist(fn{1},'file'))
+                if actuallydelete
+                    if exist(fn{1},'file')
+                        fprintf(fid,'%s\n',fn{1});
+                        if actuallydelete, delete(fn{1}); end
+                        numdel=numdel+1;
+                    end
+                end
+                numdel=numdel+1;
+            end
+        end
+        if (actuallydelete)
+            fprintf(fid,'---end---');
+        end
+    end
+    
+    
 end
 
 fprintf(fid,'---end---\n');
@@ -117,7 +156,6 @@ else
     aas_log(aap,false,sprintf('Garbage collection deleted %d files',numdel));
 end
 end
-
 
 function [streampths]=findstreamfiles(aap,streamfn)
 % Make a list of all the places the stream file might be
@@ -136,7 +174,6 @@ for pthind=1:length(pthstocheck)
     end
 end
 end
-
 
 function [imgfns]=loadstreamfile(aap,streampth)
 fid=fopen(streampth,'r');

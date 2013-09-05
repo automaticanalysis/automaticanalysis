@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='First level thresholding' modality='MRI'>
+        <currenttask domain='subject' mfile_alias='aamod_firstlevel_threshold' desc='First level thresholding' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -12,7 +12,7 @@
 			
 			<threshold>
 				<correction>none</correction> <!-- FWE/FDR/iTT/none -->
-				<p>0.05</p>
+				<p>0.001</p>
 				<extent>0</extent>
 			</threshold>
 			
@@ -23,6 +23,8 @@
             
             <inputstreams>
                 <stream>firstlevel_spm</stream>
+                <stream>firstlevel_spmts</stream>
+                <stream>firstlevel_spmfs</stream>
             </inputstreams>
             <outputstreams>
 			    <stream>firstlevel_thr</stream>

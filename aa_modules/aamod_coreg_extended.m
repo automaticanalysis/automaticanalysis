@@ -10,6 +10,16 @@ function [aap,resp]=aamod_coreg_extended(aap,task,subj)
 resp='';
 
 switch task
+    case 'report' % [TA]
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
+            aas_fsl_coreg_diag(aap,subj);
+        end
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
     case 'doit'
 
         global defaults
@@ -33,11 +43,9 @@ switch task
         % Check local structural directory exists
         
         Simg = aas_getfiles_bystream(aap,subj,'structural');
-        if isempty(Simg)
-            aas_log(aap, true, 'Problem finding structural image.');
-        elseif size(Simg,1) > 1
-            aas_log(aap, false, 'Found more than 1 structural images, using structural %d', ...
-                aap.tasklist.currenttask.settings.structural);
+        if size(Simg,1) > 1
+            aas_log(aap, false, sprintf('Found more than 1 structural images, using structural %d', ...
+                aap.tasklist.currenttask.settings.structural));
         end
         
         % Coregister T1 to template
@@ -53,7 +61,7 @@ switch task
         end
         
         fprintf(['\tstructural to template realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
             x(1), x(2), x(3), x(4), x(5), x(6))
         
         %% 2) Mean Functional to EPI template
@@ -61,12 +69,10 @@ switch task
         % Look for mean functional
         mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
                 
-        if isempty(mEPIimg)
-            aas_log(aap, true, 'Problem finding mean functional image.');
-        elseif size(mEPIimg,1) > 1
+        if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
+            mEPIimg = deblank(mEPIimg(1,:));
         end
-        mEPIimg = deblank(mEPIimg(1,:));
         
         % Coregister mean functional to template
         x = spm_coreg(spm_vol(eTimg), spm_vol(mEPIimg), flags.estimate);
@@ -77,7 +83,7 @@ switch task
         spm_get_space(mEPIimg, Me*MM);
         
         fprintf(['\tmean EPI to template realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
             x(1), x(2), x(3), x(4), x(5), x(6))
         
         %% 3) Mean Functional to Structural
@@ -93,7 +99,7 @@ switch task
         spm_get_space(mEPIimg, Mf*MM);
         
         fprintf(['\tmean EPI to structural realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
             x(1), x(2), x(3), x(4), x(5), x(6))
         
         %% 4) Now apply this transformation to all the EPI images
@@ -118,27 +124,23 @@ switch task
         end
         
         %% Some diagnostic images
+        mriname = aas_prepare_diagnostic(aap,subj);
+        
         spm_check_registration(strvcat( ...
             sTimg, ... % Get template T1
             deblank(Simg(aap.tasklist.currenttask.settings.structural,:)),... % Get structural
             mEPIimg, ... % Get mean EPI across sessions
             EPIimg{sess}(1,:))) % Get first image of last session EPI
         
-        % Save graphical output to common diagnostics directory
-        if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
-            mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
-        end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');        
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        set(gcf,'PaperPositionMode','auto')        
-        print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
+        % Outline of structural!
+        spm_ov_reorient('context_init', 2)
+        
+        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
         
-        %% Diagnostic VIDEO of coregistration
-        
-        warning off
+        %% Diagnostic VIDEO
         if aap.tasklist.currenttask.settings.diagnostic
-            %% Realignment params
+            % Realignment params
             defs = aap.spm.defaults.realign;
             
             % ...flags to pass to routine to create resliced images
@@ -150,68 +152,22 @@ switch task
                 'which', 1,...     % what images to reslice
                 'mean', 0);           % write mean image
             
-            %% Video
+            % Get resliced mean EPI
+            [mEPIpth, mEPIfn, mEPIext] = fileparts(deblank(mEPIimg(aap.tasklist.currenttask.settings.structural,:)));
+            spm_reslice(strvcat(Simg, mEPIimg), resFlags);
+            
             Ydims = {'X', 'Y', 'Z'};
-            
-            % Get mean EPI
-            Y = spm_read_vols(spm_vol(mEPIimg));
-            
-            % Get resliced structural
-            [Spth, Sfn, Sext] = fileparts(deblank(Simg(aap.tasklist.currenttask.settings.structural,:)));
-            spm_reslice(strvcat(mEPIimg, fullfile(Spth, [Sfn Sext])), resFlags);
-            sY = spm_read_vols(spm_vol(fullfile(Spth, ['r' Sfn Sext])));            
-            
-            EPIlims = [min(Y(:)) max(Y(:))];
-            
             for d = 1:length(Ydims)
-                movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' Ydims{d} '.avi']);
-                % Create movie file by defining aviObject
-                try delete(movieFilename); catch; end
-                aviObject = avifile(movieFilename,'compression','none');
-                
-                try close(2); catch; end
-                figure(2)
-                set(2, 'Position', [0 0 1000 800])
-                windowSize = get(2,'Position');                
-                
-                for n = 1:size(sY,d)
-                    % Get outline of structural image slice
-                    h = subplot(1,1,1);
-                    if d == 1
-                        sOutline = edge(rot90(squeeze(sY(n,:,:))),'canny');
-                    elseif d == 2
-                        sOutline = edge(rot90(squeeze(sY(:,n,:))),'canny');
-                    elseif d == 3
-                        sOutline = edge(rot90(squeeze(sY(:,:,n))),'canny');
-                    end
-                    
-                    % Get EPI image slice
-                    if d == 1
-                        sImage = rot90(squeeze(Y(n,:,:)));
-                    elseif d == 2
-                        sImage = rot90(squeeze(Y(:,n,:)));
-                    elseif d == 3
-                        sImage = rot90(squeeze(Y(:,:,n)));
-                    end
-                    
-                    % Draw overlay of structural image on EPI image
-                    sImage(logical(sOutline)) = EPIlims(2) * 2;
-                    imagesc(sImage)
-                    
-                    caxis(EPIlims)
-                    axis equal off
-                    zoomSubplot(h, 1.2)
-                    
-                    % Capture frame and store in aviObject
-                    pause(0.01)
-                    aviObject = addframe(aviObject,getframe(2,windowSize));
-                end
-                
-                aviObject = close(aviObject);
+                aas_image_avi( fullfile(mEPIpth, ['r' mEPIfn mEPIext]), ...
+                Simg, ...
+                fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_' Ydims{d} '.avi']), ...
+                d, ... % Axis
+                [800 600], ...
+                2); % Rotations
             end
             try close(2); catch; end
-        end      
+            delete(fullfile(mEPIpth, ['r' mEPIfn mEPIext]))
+        end
         
         %% Describe the outputs
         

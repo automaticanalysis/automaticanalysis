@@ -83,7 +83,7 @@ switch task
         tmpfile = aap.directory_conventions.T1template;
         if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
         Vtemplate=spm_vol(tmpfile);
-        [Ytemplate tXYZ]=spm_read_vols(Vtemplate);
+        [Ytemplate, tXYZ]=spm_read_vols(Vtemplate);
         tXYZ=[tXYZ;ones(1,size(tXYZ,2))];
         % work out threshold for template
         threshprop=0.10;
@@ -93,26 +93,16 @@ switch task
         thresh=bright3*(1-threshprop)+bright97*threshprop;
         Ytemplate=Ytemplate.*(Ytemplate>thresh);
         
-        % Collect first-level spms
-        cType = {aap.tasksettings.aamod_firstlevel_contrasts.contrasts(2).con.type};
-        con_dir = aas_getsubjpath(aap,subj,cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_contrast'));
-        con_dir=fullfile(con_dir,aap.directory_conventions.stats_singlesubj);
-        if cell_index(cType,'T')
-            copyfile(fullfile(con_dir,'spmT*'),anadir);
-        end
-        if cell_index(cType,'F')
-            copyfile(fullfile(con_dir,'spmF*'),anadir);
-        end
-        
         % Now get contrasts...
-        SPM=load(aas_getfiles_bystream(aap,subj,'firstlevel_spm')); SPM = SPM.SPM;
+        SPM=[]; load(aas_getfiles_bystream(aap, subj,'firstlevel_spm'));
+        
         for c = 1:numel(SPM.xCon)
             STAT = SPM.xCon(c).STAT;
             df = [SPM.xCon(c).eidf SPM.xX.erdf];
             XYZ  = SPM.xVol.XYZ;
             S    = SPM.xVol.S;   % Voxel
             R    = SPM.xVol.R;   % RESEL
-            V = spm_vol(SPM.xCon(c).Vspm.fname);
+            V = spm_vol(fullfile(anadir, SPM.xCon(c).Vspm.fname));
             Z = spm_get_data(SPM.xCon(c).Vspm,XYZ);
             dim = SPM.xCon(c).Vspm.dim;
             VspmSv   = cat(1,SPM.xCon(c).Vspm);
@@ -122,6 +112,7 @@ switch task
             switch corr
                 case 'iTT'
                     % TODO
+                    [Z, XYZ, th] = spm_uc_iTT(Z,XYZ,u0,1);
                 case 'FWE'
                     u = spm_uc(u0,df,STAT,R,n,S);
                 case 'FDR'
@@ -143,7 +134,9 @@ switch task
             Q     = [];
             for i = 1:max(A)
                 j = find(A == i);
-                if length(j) >= k; Q = [Q j]; end
+                if length(j) >= k;
+                    Q = [Q j];
+                end
             end
             Z     = Z(:,Q);
             XYZ   = XYZ(:,Q);
@@ -158,7 +151,7 @@ switch task
             indx = sub2ind(dim,XYZ(1,:)',XYZ(2,:)',XYZ(3,:)');
             Yepi(indx) = Z;
             V.fname = strrep(V.fname,'spm','thr');
-            V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(findstr(V.descrip,'}')+1:end));
+            V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
             spm_write_vol(V,Yepi);
             
             % Resize
@@ -173,7 +166,7 @@ switch task
             end
             iYepi = img_rot90(iYepi);
             iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
-            [img cm v] = map_overlay(iYtemplate,iYepi,1-tra);
+            [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);
             mon = tr_3Dto2D(img(:,:,:,1));
             mon(:,:,2) = tr_3Dto2D(img(:,:,:,2));
             mon(:,:,3) = tr_3Dto2D(img(:,:,:,3));
@@ -193,7 +186,7 @@ switch task
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
             fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
-            img = spm_render(dat,0.5,rendfile);
+            img = spm_render_aa(dat,0.5,rendfile);
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
@@ -201,9 +194,9 @@ switch task
             imwrite(mon,fn3d);
             
             % Outputs
-            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr,fullfile(anadir,V.fname)); end
-            if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl,fnsl); end
-            if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend,fn3d); end
+            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr, fullfile(anadir,V.fname)); end
+            if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
+            if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             
         end
         cd (cwd);

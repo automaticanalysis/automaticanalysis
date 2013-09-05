@@ -89,7 +89,6 @@ for m = 1 : length(moduleindex)
     if (~any(whichcontrast))
         emptycon=[];
         emptycon.subject=subject;
-        emptycon.automatic_movesandmeans=automatic_movesandmeans;
         emptycon.con.format=format;
         emptycon.con.vector=vector;
         emptycon.con.session=session;
