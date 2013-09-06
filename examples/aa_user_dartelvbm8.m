@@ -18,30 +18,30 @@ clear all
 %% Initialize AA and set basic recipe (aap_tasklist_dartelvbm8.xml)
 
 aa_ver4_nocloud()
-aap = aarecipe('aap_parameters_defaults.xml','aap_tasklist_dartelvbm8.xml');
+aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_dartelvbm8.xml');
 
   
 %% Set options
-    
-% The name of your scanner
-%aap.directory_conventions.rawdatadir='Machine_MRC-CBU_MRC35119_TrioTim';
-aap.acq_details.root = '/imaging/jp01/aa4_vbm_example/subj'; % the study directory
 aap.options.autoidentifyfieldmaps = 0;
 aap.options.autoidentifystructural_chooselast = 1;
-aap.options.aa_minver = 4;
-aap.directory_conventions.remotefilesystem = 'none';         % none, s3
-aap.options.wheretoprocess = 'localsingle';                  % aws, localsingle, localparallel
+aap.options.wheretoprocess = 'qsub'; % parallel; typical localsingle
+aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
 
 % Set any other options
 aap.tasksettings.aamod_segment8.samp = 2;
 
+%% Study directory
+aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything';
+aap.directory_conventions.analysisid = 'Nature_Paper';
+
 %% Add subjects
 % For many subjects, this can also be scripted to loop through a list.
-
-aap = aas_addsubject(aap, 'CBU110656_MR1/*');
-aap = aas_addsubject(aap, 'CBU050015_*/*');
-aap = aas_addsubject(aap, 'CBU060593_*/*');
-    
+% cbu
+aap = aas_addsubject(aap,90952); 
+aap = aas_addsubject(aap,90971);
+% camcan
+aap = aas_addsubject(aap,110220);
+aap = aas_addsubject(aap,110252);
     
 %% Do the processing
 aap = aa_doprocessing(aap);
