@@ -39,7 +39,7 @@ switch task
         aisfn=fullfile(aas_getsubjpath(aap,i),'autoidentifyseries_saved.mat');
         
         % Get a listing of all of the series for this subject
-        rawdata_subj=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(i).mriname);
+        rawdata_subj=aas_findvol(aap,i);
         switch (aap.directory_conventions.remotefilesystem)
             case 'none'
                 % Looks for DICOMs in here and in all subdirectories

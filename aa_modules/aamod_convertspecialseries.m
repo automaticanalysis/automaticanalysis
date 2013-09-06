@@ -32,8 +32,7 @@ switch task
         aas_makedir(aap,specialseriesdir);
 
         for k=1:length(aap.acq_details.specialseries{i})
-            subjpath=aas_getsubjpath(aap,i);
-            dicomdirsearchpath=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(i).mriname,sprintf('Series_%03d*',aap.acq_details.specialseries{i}(k)));
+            dicomdirsearchpath=fullfile(aas_findvol(aap,subj),sprintf(aap.directory_conventions.seriesoutputformat,aap.acq_details.specialseries{i}(k)));
             [aap dicomdatadir]=aas_findfiles(aap,dicomdirsearchpath,1,1);
             specialseriesdir_sub=fullfile(specialseriesdir,sprintf('series_%d',aap.acq_details.specialseries{i}(k)));
             aas_makedir(aap,specialseriesdir_sub);

@@ -39,18 +39,15 @@ head = study_header(aap.acq_details.input.list);
 LIST = importdata(aap.acq_details.input.list);
 for v = 2:size(LIST,1)
     ID = str2double(list_index(LIST{v},head.ID));
-    VOL = list_index(LIST{v},head.FMRI1);
+    VOL = str2double(list_index(LIST{v},head.FMRI1));
     nSess = 2; aSess = [];
     while ~isempty(list_index(LIST{1},head.FMRI1,nSess))
         aSess = horzcat(aSess,str2double(list_index(LIST{v},head.FMRI1,nSess)));
         nSess = nSess + 1;
     end
     nSess = nSess - 2;
-    strSubj = mri_findvol(str2double(VOL));
-    
-    % Obtain TR from the first session
-    h = dicominfo(mri_finddcm(str2double(VOL),aSess(1)));
-    TR = h.RepetitionTime/1000; % in seconds
+       
+    strSubj = mri_findvol(aap,VOL);
     
     % One or more sessions
     if isfield(aap.acq_details.input, 'referencedirectory_tmpl')
@@ -60,6 +57,11 @@ for v = 2:size(LIST,1)
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
     aap=aas_addsubject(aap,strSubj,aSess(aap.acq_details.input.selected_sessions));
+   
+    % Obtain TR from the first session
+    h = dicominfo(mri_finddcm(aap,VOL,aSess(1)));
+    TR = h.RepetitionTime/1000; % in seconds
+    
     for i = aap.acq_details.input.selected_sessions
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);

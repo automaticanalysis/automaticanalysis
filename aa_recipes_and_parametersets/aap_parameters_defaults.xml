@@ -27,6 +27,7 @@
       	<continueanalysis desc='Continue previous analysis?' ui='yesno'>1</continueanalysis>
 		<remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
         <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
+        <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>CBU%06d*</subjectoutputformat>
         <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
         <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
         <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
@@ -96,7 +97,8 @@
         <colours>
             <completedpreviously ui='rgb'>1 0 1</completedpreviously>
             <running ui='rgb'>0.5 0 0.5</running>
-            <completed ui='rgb'>0.5 0 0.5</completed>
+            <completed ui='rgb'>0 1 0</completed>
+            <error ui='rgb'>1 0 0</error>
             <inputstreams ui='rgb'>0.5 0.5 0.5</inputstreams>
             <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>
             <executing ui='rgb'>0 0.5 0</executing>
