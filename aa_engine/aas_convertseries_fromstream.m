@@ -150,8 +150,8 @@ for subdirind=1:length(subdirs)
             end
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before
             % saving (and in seconds!)
-            tmp{1}.volumeTR = TR/1000;
-            tmp{1}.sliceorder = sliceorder;
+            if exist('TR','var'), tmp{1}.volumeTR = TR/1000; end
+            if exist('sliceorder','var'), tmp{1}.sliceorder = sliceorder; end
             
             DICOMHEADERS=[DICOMHEADERS tmp];
             
