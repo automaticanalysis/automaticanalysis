@@ -223,9 +223,6 @@ switch task
             delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
         end
         
-        %% Save graphical output to common diagnostics directory
-        diag(aap,subj);
-        
     case 'checkrequirements'
         % Template image; here template image not skull stripped
         T1file = aap.directory_conventions.T1template;
@@ -272,8 +269,8 @@ try
     spm_orthviews('reposition', [0 0 0])
     
     try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-    print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-        [mfilename '__' mriname '_N.jpeg']));
+    print('-djpeg','-r75',...
+        fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
     
     %% Draw warped template
     spm_check_registration(aap.directory_conventions.T1template)
@@ -284,8 +281,8 @@ try
     spm_orthviews('reposition', [0 0 0])
     
     try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-    print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-        [mfilename '__' mriname '_W.jpeg']));
+    print('-djpeg','-r75',...
+        fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
 catch
     fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
     try
@@ -294,8 +291,8 @@ catch
             fullfile(Spth, ['m' Sfn, Sext])}))
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '_N.jpeg']));
+        print('-djpeg','-r75',...
+            fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
         
         %% Draw warped template
         spm_check_registration(char({outSeg(2,:); ...
@@ -303,8 +300,8 @@ catch
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         set(gcf,'PaperPositionMode','auto')
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '_W.jpeg']));
+        print('-djpeg','-r75',...
+            fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
     catch
         fprintf('\n\tFailed display backup diagnostic image!');
     end
@@ -321,8 +318,8 @@ if aap.tasklist.currenttask.settings.usesegmentnotnormalise
     
     title(sprintf('GM vs WM... T-val: %0.2f (df = %d)', stats.tstat, stats.df))
     
-    print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-        [mfilename '__' mriname '_Hist.jpeg']));
+    print('-djpeg','-r75',...
+		fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
 end
 
 %% Diagnostic VIDEO
@@ -333,7 +330,7 @@ if aap.tasklist.currenttask.settings.diagnostic
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
             aas_image_avi(fullfile(Spth, ['m' Sfn, Sext]), ...
                 outSeg([1:2:size(outSeg,1)],:), ...
-                fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_' Ydims{d} '.avi']), ...
+				fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' Ydims{d} '.avi'])
                 d, ... % Axis
                 [800 600], ...
                 2, ... % Rotations
@@ -348,15 +345,15 @@ end
 tP = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_2mm_brain.nii.gz');
 
 % Obtain normalized GM segmentation
-Spth=aas_getsubjpath(aap,subj);
-segdir=fullfile(Spth,aap.directory_conventions.structdirname);
+subj_dir=aas_getsubjpath(aap,subj);
+segdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
 sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(subj).structuralfn '*.nii']));
 sP = fullfile(segdir,sP(1).name);
 
 % Create FSL-like overview
-iP = fullfile(Spth,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name]);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -a %s.gif',tP,sP,iP));
+iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name]);
+aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',tP,sP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
 img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,[iP '.jpg']); delete([iP '.gif']);
+imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
 end
