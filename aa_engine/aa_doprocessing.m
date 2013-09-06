@@ -108,8 +108,8 @@ if (exist('analysisid','var'))
 end
 
 global defaults;
-global aaparallel
-global aaworker
+global aaparallel;
+global aaworker;
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -380,7 +380,10 @@ if ~isempty(aap.options.email)
     end
 end
 
-return;
+% cleanup 
+clear global defaults aaparallel aaworker;
+
+end
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
@@ -392,3 +395,4 @@ else
     prev_mfile_alias=prev_stagename;
 end
 [aap,loopvar]=aa_feval(prev_mfile_alias,aap,'getparallelparts');
+end
