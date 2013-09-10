@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasklist>
+    <initialisation>
+      <module><name>aamod_checkparameters</name></module>
+      <module><name>aamod_evaluatesubjectnames</name></module>            
+      <module><name>aamod_study_init</name></module>
+      <module><name>aamod_newsubj_init</name></module>
+    </initialisation>
+    
+    <main>      
+      <module><name>aamod_autoidentifyseries_timtrio</name></module>
+      <module><name>aamod_get_dicom_structural</name></module>
+      <module><name>aamod_copystructural</name></module>
+      <module><name>aamod_freesurfer_initialise</name></module>                       
+      <module><name>aamod_freesurfer_autorecon_all</name></module>                       
+    </main>
+  </tasklist>
+</aap>

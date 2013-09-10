@@ -34,6 +34,7 @@
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
+		<freesurferdir desc='Path to freesurfer' ui='dir'>/usr/share/freesurfer</freesurferdir>        
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
         <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
         <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
