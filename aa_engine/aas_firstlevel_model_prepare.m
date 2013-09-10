@@ -12,11 +12,11 @@ modelC = cell(size(aap.acq_details.sessions));
 for sess = aap.acq_details.selected_sessions
     files{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
     if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D
-        V = spm_vol(files);
-        f0 = files;
-        files = '';
+        V = spm_vol(files{sess});
+        f0 = files{sess};
+        files{sess} = '';
         for f = 1:numel(V)
-            files = strvcat(files,[f0 ',' num2str(V(f).n(1))]);
+            files{sess} = strvcat(files{sess},[f0 ',' num2str(V(f).n(1))]);
         end
     end
     allfiles = strvcat(allfiles,files{sess});

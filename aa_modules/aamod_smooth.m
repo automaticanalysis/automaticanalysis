@@ -9,6 +9,8 @@ function [aap,resp]=aamod_smooth(aap,task,subj,sess)
 resp='';
 
 switch task
+    case 'report'
+        
     case 'doit'
         
         % Is session specified in task header?

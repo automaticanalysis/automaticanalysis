@@ -305,7 +305,7 @@ subplot('Position', [0.1 0.25 0.35 0.7]);
 imagesc(columnsCon)
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
     'Xtick', 1:length(nameCols))
-xlab = rotate_xlabel(90, nameCols);
+xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',8,'FontWeight','Bold');
 set(xlab,'FontSize',8,'FontWeight','Bold');
 
