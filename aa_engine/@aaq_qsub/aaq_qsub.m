@@ -67,6 +67,7 @@ classdef aaq_qsub<aaq
                     % If output exists, check what it is...
                     if ~obj.filestomonitor(ftmind).reported
                         if exist(obj.filestomonitor(ftmind).name, 'file')
+                            pause(5); % give time to finish saving logs
                             JobID = sscanf(basename(fileparts(obj.filestomonitor(ftmind).name)),'Job%d');
                             JobLog = load(obj.filestomonitor(ftmind).name);
                             thisJob = load(strrep(obj.filestomonitor(ftmind).name,'out.mat','in.mat'));
