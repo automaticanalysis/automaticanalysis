@@ -11,22 +11,22 @@ resp='';
 
 switch task
 	case 'report' % [TA]
-        if ~exist('j','var'), j = 1; end
+        if ~exist('sess','var'), sess = 1; end
         fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI.jpg'];
-        if ~exist(fullfile(aas_getsesspath(aap,i,j),fn),'file')
-            fsl_diag(aap,i,j);
+        if ~exist(fullfile(aas_getsesspath(aap,subj,sess),fn),'file')
+            fsl_diag(aap,subj,sess);
         end
         % Single-subjetc
-        fdiag = dir(fullfile(aas_getsesspath(aap,i,j),'diagnostic_*.jpg'));
+        fdiag = dir(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,i,'<table><tr><td>');
-            aap=aas_report_addimage(aap,i,fullfile(aas_getsesspath(aap,i,j),fdiag(d).name));
-            aap = aas_report_add(aap,i,'</td></tr></table>');
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),fdiag(d).name));
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
         end
         % Study summary
         aap = aas_report_add(aap,'reg',...
-            ['Subject: ' basename(aas_getsubjpath(aap,i)) '; Session: ' basename(aas_getsesspath(aap,i,j)) ]);
-        aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,i,j),fn));
+            ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' basename(aas_getsesspath(aap,subj,sess)) ]);
+        aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,subj,sess),fn));
     case 'doit'
         
         voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
