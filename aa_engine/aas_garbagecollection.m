@@ -8,19 +8,28 @@ function aap=aas_garbagecollection(aap, actuallydelete, modulestoscan, permanenc
 
 fprintf('Garbage collection started...\n');
 
-% First, load AAP structure
-if exist('studyroot','var')
-    cd(studyroot);
-end;
-if ~exist('aap_parameters.mat','file')
-    error('aap structure not found');    
-else
-    load('aap_parameters');
+% First, load AAP structure and make sure that the one loaded is already
+% processed
+if ~exist('aap','var')
+    if ~exist('aap_parameters.mat','file')
+        error('aap structure not found');
+    else
+        load('aap_parameters');
+    end
+end
+studypath = fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid);
+if ~exist(studypath,'dir')
+    aas_log(aap,true,sprintf('Study %s not found',studypath));
+end
+cd(studypath);
+if ~isfield(aap,'internal')
+    if ~exist('aap_parameters.mat','file')
+        error('aap structure not found');
+    else
+        load('aap_parameters');
+    end
 end
 
-if ~exist(aas_getstudypath(aap),'dir')
-    aas_log(aap,true,sprintf('Study %s not found',aas_getstudypath(aap)));
-end
 if ~strcmp(aap.directory_conventions.remotefilesystem,'none')
     aas_log(aap,true,'Remote file systems not currently supported by garbage collection');
 end
@@ -48,7 +57,7 @@ imgCategory = {'.IMA' '.dcm' '.nii' '.img' '.hdr'};
 
 numdel=0;
 
-garbagelog=fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid,sprintf('garbage_collection.txt'));
+garbagelog=fullfile(studypath,sprintf('garbage_collection.txt'));
 fprintf('Logfile: %s\n',garbagelog);
 fid=fopen(garbagelog,'w');
 fprintf(fid,'Garbage collected: %s\n',datestr(now,31));
@@ -123,7 +132,7 @@ for modind=modulestoscan
     end
     
     % Garbage collect outputs
-    if (~isempty(outfn) && exist(aas_getstudypath(aap),'file') && delete_outputs)
+    if (~isempty(outfn) && exist(studypath,'dir') && delete_outputs)
         if actuallydelete
             fprintf(fid,'---following files deleted---\n');
         end

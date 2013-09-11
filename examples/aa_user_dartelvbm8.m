@@ -45,5 +45,6 @@ aap = aas_addsubject(aap,110252);
     
 %% Do the processing
 aap = aa_doprocessing(aap);
+aas_garbagecollection(aap,true);
     
 

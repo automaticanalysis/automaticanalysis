@@ -46,5 +46,5 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession: Loc',
 %% DO ANALYSIS
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-aas_garbagecollection(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid),true);
+aas_garbagecollection(aap,true);
 % clear all;
