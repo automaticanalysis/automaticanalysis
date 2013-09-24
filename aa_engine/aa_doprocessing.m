@@ -297,6 +297,9 @@ for l=1:length(mytasks)
         
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
+        
+        % I don't think this supports "selectedsessions" branches but it should do
+        % - RC 2013-09-19
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
