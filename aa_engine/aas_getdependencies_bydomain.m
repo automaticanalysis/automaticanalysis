@@ -65,17 +65,29 @@ else
         case 'possiblestreamlocations'
             % First, lets go up the tree as far as the source domain
             deps={};
-            for targetind=length(targetdomaintree):-1:commonind
-                deps{end+1}={targetdomaintree{targetind}, indices(1:(targetind-1))};
+            targetInd = length(targetdomaintree);
+            for t=targetInd:-1:commonind
+                deps{end+1}={targetdomaintree{t}, indices(1:(t-1))};
             end;
             
-            % And down the tree, sucking everything along the way
+            % Start with the full tree
             tree=aap.directory_conventions.parallel_dependencies;
-            for targetind=1:commonind
-                tree=tree.(sourcedomaintree{targetind});
-            end;
             
-            deps=[deps aas_dependencytree_findbranches(aap,{tree,targetdomaintree(2:end),indices(commonind:end)},indices(1:(commonind-1)))];
+            % Collect everythinng from the target and below
+            for t=1:targetInd
+                tree=tree.(targetdomaintree{t});
+            end;  
+            
+            deps=[deps aas_dependencytree_findbranches(aap,{tree,targetdomaintree(2:end),indices(targetInd:end)},indices(1:(targetInd-1)))]; 
+
+            % If we have dependencies across subtrees things are slightly messier, and we need to collect everything from the source on down
+            if commonind < minlen
+                for t=1:commonind
+                    tree=tree.(sourcedomaintree{t});
+                end;
+                deps=[deps aas_dependencytree_findbranches(aap,{tree,sourcedomaintree(2:end),indices(commonind:end)},indices(1:(commonind-1)))];
+            end
+            
         case 'doneflaglocations_thatexist'
             % Is the common point in the source & target trees the one we're
             % looking for?
