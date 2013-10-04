@@ -9,6 +9,7 @@
         <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir'>
             <paths>/mridata/cbu/</paths>
             <paths>/mridata/camcan/</paths>
+			<paths>/mridata/cbu_cne/</paths>
         </rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
