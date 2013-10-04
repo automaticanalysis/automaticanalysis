@@ -37,10 +37,20 @@ if ~isFound
     return;
 end
 
-strSubj = dir(fullfile(SEARCHPATH{i},subjpath)); strSubj = strSubj(end); % in case of multiple entries
-strSubjDir = dir(fullfile(SEARCHPATH{i},strSubj.name));
+if exist(fullfile(SEARCHPATH{i},subjpath),'dir') % exact match
+    strSubj = subjpath;
+else % pattern
+    strSubj = dir(fullfile(SEARCHPATH{i},subjpath)); strSubj = strSubj(end).name; % in case of multiple entries
+end
+strSubjDir = dir(fullfile(SEARCHPATH{i},strSubj));
+f1 = strSubjDir(3).name; % first entry
+try
+    junk = datenum(f1,'yyyymmdd_HHMMSS'); % test if it is a 'date_time' folder
+catch
+    f1 = '';
+end
 if fp
-    strSubj = fullfile(SEARCHPATH{i},strSubj.name,strSubjDir(3).name);
+    strSubj = fullfile(SEARCHPATH{i},strSubj,f1);
 else
-    strSubj = fullfile(strSubj.name,strSubjDir(3).name);
+    strSubj = fullfile(strSubj,f1);
 end
