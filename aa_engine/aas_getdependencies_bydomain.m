@@ -44,7 +44,7 @@ if (~hit)
     end;
     
     if (commonind<length(targetdomaintree))
-        cacheindices=indices(1:(commonind-1));
+        cacheindices=indices(1:(commonind));
         [hit resp]=aas_cache_get(aap,mfilename,sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
     else
         cacheindices=indices;
