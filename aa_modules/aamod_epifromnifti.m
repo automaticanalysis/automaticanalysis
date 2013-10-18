@@ -39,7 +39,12 @@ switch task
                 end
             else
                 %Only one file, assume 4D
-                V=spm_vol(fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(subj).seriesnumbers{sess}));
+				niftifile = '';
+				niftisearchpth=aas_findvol(aap,'');
+				if ~isempty(niftisearchpth)
+					niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).seriesnumbers{sess});
+				end
+                V=spm_vol(niftifile);
                 sesspth=aas_getsesspath(aap,subj,sess);
                 aas_makedir(aap,sesspth);
                 [pth fle ext]=fileparts(aap.acq_details.subjects(subj).seriesnumbers{sess});

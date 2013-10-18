@@ -55,10 +55,11 @@ if (isempty(dicomdata))
     aas_log(aap,1,sprintf('Did not find a dicom series called %s',dicomdirsearchpth));
 end;
 
-dicomsearchpth=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(i).mriname,dicomdatadir.name,aap.directory_conventions.dicomdatafilter);
-dicomdata=dir(dicomsearchpth);
-
-
+dicomdata = [];
+dicomsearchpth=aas_findvol(aap,fullfile(aap.acq_details.subjects(i).mriname,dicomdatadir.name));
+if ~isempty(dicomsearchpth)
+	dicomdata = dir(fullfile(dicomsearchpth,aap.directory_conventions.dicomdatafilter));
+end
 if (length(dicomdata)==0)
     aas_log(aap,1,sprintf('Did not find any dicom data (%s) in %s',aap.directory_conventions.dicomdatafilter,dicomsearchpth));
 end;
