@@ -14,7 +14,7 @@ for i = 1:numel(SEARCHPATH)
 		subjdir=fullfile(SEARCHPATH{i},aap.acq_details.subjects(subj).mriname);
 	elseif ischar(subj) % custom search
 		subjdir=fullfile(SEARCHPATH{i},subj);
-	elseif
+    else
         aas_log(aap,1,sprintf('Input must be either integer or string!'));
 	end
     if exist(subjdir,'dir')
