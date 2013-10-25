@@ -22,7 +22,7 @@
                  name. -->
             
             <inputstreams>
-                <stream>t1</stream>
+                <stream>structural</stream>
             </inputstreams>
             
             <outputstreams>

@@ -11,6 +11,17 @@ function [aap,resp]=aamod_listspikes(aap,task,subj,sess)
 resp='';
 
 switch task
+    case 'domain'
+        resp='session';   % this module needs to be run once per session
+    case 'description'
+        resp='Run list spikes';
+    case 'summary'
+        resp='List spikes\n';
+    case 'report'
+        dirn = aas_getsesspath(aap,i,j);
+        spfn = fullfile(dirn,'spikesandmoves.mat');
+        load(spfn);
+        aap.report.html=strcat(aap.report.html,sprintf('Spikes %d   Moves %d<br>',size(spikes,1),size(moves,1)));
     case 'doit'
         
         mriname = aas_prepare_diagnostic(aap,subj);
@@ -129,7 +140,7 @@ switch task
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
     case 'checkrequirements'
-        
+
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;

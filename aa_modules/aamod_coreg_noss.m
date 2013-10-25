@@ -38,13 +38,11 @@ switch task
             end;
         end;
         
-        % dirnames,
-        % get the subdirectories in the main directory
-        dirn = aas_getsesspath(aap,subjInd,1);
         % get mean EPI stream
-        PG = aas_getimages_bystream(aap, subjInd,1,'meanepi');
-        VG = spm_vol(PG);
-        
+        inStream = aap.tasklist.currenttask.inputstreams.stream{2};
+        meanepiImg = aas_getfiles_bystream(aap, subjInd, inStream);                
+        VG = spm_vol(meanepiImg);
+       
         % Get path to structural for this subject
         inStream = aap.tasklist.currenttask.inputstreams.stream{1};
         structImg = aas_getfiles_bystream(aap, subjInd, inStream);                
@@ -65,7 +63,9 @@ switch task
         catch
             figure(1);
         end
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
+            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+        end
 
         % Reslice images
         fsl_diag(aap,subjInd);
@@ -76,11 +76,9 @@ end
 end
 
 function fsl_diag(aap,i)
-fP = aas_getimages_bystream(aap,i,1,'meanepi');
+fP = aas_getfiles_bystream(aap,i,'meanepi');
 subj_dir=aas_getsubjpath(aap,i);
-structdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
-sP = dir( fullfile(structdir,['s' aap.acq_details.subjects(i).structuralfn '*.nii']));
-sP = fullfile(structdir,sP(1).name);
+sP = aas_getfiles_bystream(aap,i,'structural');
 spm_reslice({fP,sP},aap.spm.defaults.coreg.write)
 delete(fullfile(fileparts(fP),['mean' basename(fP) '.nii']));
 % Create FSL-like overview

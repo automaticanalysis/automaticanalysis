@@ -138,7 +138,7 @@ switch task
             if sess==1
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
-                aap = aas_desc_outputs(aap,subj,1,'meanepi',fullfile(pth,fn(1).name));
+                aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
             end
         end
         

@@ -24,6 +24,9 @@
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
             
+            <!-- First level model masking -->
+            <firstlevelmasking>1</firstlevelmasking>
+            
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
@@ -86,7 +89,7 @@
             
             ﻿<inputstreams>
                 <stream>epi</stream>
-                <stream>epi_header</stream>
+                <stream>epi_dicom_header</stream>
                 <stream>realignment_parameter</stream>
                 <stream>compSignal</stream>
             </inputstreams>

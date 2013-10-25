@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_biascorrect_ANTS' desc='Use ANTS to bias correct a structural' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            <structural>1</structural>            
+            
+            <!-- Extra options! -->
+            <extraoptions></extraoptions>
+            
+            <!-- Diagnostic videos? -->
+            <diagnostic>0</diagnostic>
+            <verbose>1</verbose>
+            
+        </currenttask>
+    </tasklist>
+</aap>

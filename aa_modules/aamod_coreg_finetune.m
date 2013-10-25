@@ -58,7 +58,7 @@ switch task
         end
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
         end

@@ -14,7 +14,15 @@ if (isfield(mystruct,'ATTRIBUTE'))
 %     fprintf('Found %s leaf type %s\n',nme,ui);
     switch(ui)
         case {'dir','filename','dir_part'}
-            aap=aas_checkpath(aap,values,nme);
+            if isstruct(values) % multiple values
+                f = fieldnames(values);
+                values = values.(f{1});
+                for i = 1:numel(values)
+                    aap=aas_checkpath(aap,values{i},nme);    
+                end
+            else
+                aap=aas_checkpath(aap,values,nme);
+            end
     end;
 else
     if (~strcmp(nme,'aap.tasksettings'))

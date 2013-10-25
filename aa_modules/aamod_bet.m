@@ -1,5 +1,5 @@
 % AA module
-% Runs BET (FSL Brain Extration Toolbox) on structural
+% Runs BET (FSL Brain Extration Toolbox) on structural (usually)
 % [For best functionality, it is recommended you run this after
 % realignment and before writing the normalised EPI image
 % If you do it before estimating the normalisation, make sure you normalise

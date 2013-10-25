@@ -27,9 +27,7 @@ switch (aap.directory_conventions.subject_directory_format)
         if (isfield(aap.acq_details.subjects(i),'megname') && ~isempty(aap.acq_details.subjects(i).megname))
             tmp=aap.acq_details.subjects(i).megname;
         else
-            numpos=findstr('CBU',aap.acq_details.subjects(i).mriname);
-            tmp=aap.acq_details.subjects(i).mriname(numpos(1):length(aap.acq_details.subjects(i).mriname));
-            tmp=strtok(tmp,' /\\_,.');
+            tmp = aas_mriname2subjname(aap.acq_details.subjects(i).mriname);
         end
         subjpath=fullfile(root, tmp);
     case 2

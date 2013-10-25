@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='GLM denoising of data...' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>8</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+              
+            <!-- TR, if we wish to define it within the first level model 
+            If empty, we try to find from DICOM headers... -->
+            <TR></TR>
+            
+            <!-- high pass filter in seconds -->
+            <highpassfilter>128</highpassfilter>
+            
+            <!-- GLM denoise parameters -->
+            <!---->
+            <session_split desc='Which sessions should be denoised together? (default=all sessions at once)'
+            ></session_split>
+            <stimdur desc='Stimulus duration in GLMdenoise terms'
+            ></stimdur>  
+            <GDmode desc='Way in which to run GLMdenoise [onsets, GDdesign, SPMdesign]'
+            ></GDmode>
+            <opt>
+                <extraregressors></extraregressors>
+                <maxpolydeg></maxpolydeg>
+                <seed></seed>
+                <bootgroups></bootgroups>
+                <numforhrf></numforhrf>
+                <hrffitmask></hrffitmask>
+                <brainthresh></brainthresh>
+                <brainR2></brainR2>
+                <brainexclude></brainexclude>
+                <numpcstotry></numpcstotry>
+                <pcR2cutoff></pcR2cutoff>
+                <pcR2cutoffmask></pcR2cutoffmask>
+                <pcstop></pcstop>
+                <numboots></numboots>
+                <denoisespec></denoisespec>
+                <denoiseddata></denoiseddata>
+                <wantpercentbold></wantpercentbold>
+                <chunknum></chunknum>
+            </opt>
+            
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
+            <modelC>
+                <subject></subject>
+                <session></session>
+                <covariate>
+                    <name></name>
+                    <vector></vector>
+                    <HRF></HRF>
+                    <interest></interest>
+                </covariate>
+            </modelC>
+                                    
+            ﻿<inputstreams>
+                <stream>epi</stream>
+                <stream>epi_dicom_header</stream>
+                <stream>epiBETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

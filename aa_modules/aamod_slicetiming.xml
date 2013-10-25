@@ -8,7 +8,7 @@
                 <memoryBase>0.3</memoryBase>
             </qsub>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>-1</permanenceofoutput>
             
             <TRs/>
             <slicetime/>
@@ -21,7 +21,7 @@
             
             <inputstreams>
                 <stream>epi</stream>  
-                <stream>epi_header</stream>  
+                <stream>epi_dicom_header</stream>  
             </inputstreams>
             
             <outputstreams>

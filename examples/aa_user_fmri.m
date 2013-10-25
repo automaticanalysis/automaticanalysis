@@ -4,7 +4,7 @@
 % Example (aa version 4.*)
 %
 % Tibor Auer, MRC-CBSU
-% 08-05-2013
+% 20-03-2013
 
 %% INITIALISE
 clear
@@ -14,13 +14,18 @@ aa_ver4_nocloud
 %% DEFINE SPECIFIC PARAMETERS
 % ANALYSIS RECIPE
 %  Default recipe without model
-aap=aarecipe('aap_parameters_defaults.xml','aap_tasklist_fmri.xml');
+aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
 
 % Modify standard recipe module selection here if you'd like
-aap.options.wheretoprocess = 'qsub'; % parallel; typical localsingle
-aap.options.NIFTI4D = 1; % 4D support; typical value 0
-aap.options.autoidentifyfieldmaps=1;  % required for unwarping; typical value 1
+aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value local_single
+aap.options.autoidentifyfieldmaps=1;  							% typical value 1
+aap.options.NIFTI4D = 1;										% typical value 0
 aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
+% Set slice order for slice timing correction
+aap.tasksettings.aamod_slicetiming.sliceorder=[32:-1:1];       	% descending
+aap.tasksettings.aamod_slicetiming.refslice = 16;              	% reference slice (first acquired)
+aap.tasksettings.aamod_firstlevel_model.UNITS = 'secs';        	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
+aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclude Moco params in/from DM, typical value 1
 
 % STUDY
 % Directory for analysed data

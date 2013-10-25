@@ -1,12 +1,12 @@
-function [aap,resp]=aas_listdicomfiles(aap,i,seriesnum)
+function [aap,resp]=aas_listdicomfiles(aap,subj,seriesnum)
 global aaworker
 resp={};
 
-dicomdirsearchpth=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects(i).mriname,sprintf(aap.directory_conventions.seriesoutputformat,seriesnum));
+dicomdirsearchpth=fullfile(aas_findvol(aap,subj),sprintf(aap.directory_conventions.seriesoutputformat,seriesnum));
 
 switch(aap.directory_conventions.remotefilesystem)
     case 'none'
-        subjpath=aas_getsubjpath(aap,i);
+        subjpath=aas_getsubjpath(aap,subj);
         aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
         ais=load(aisfn);
         resp=ais.alldicomfiles{seriesnum};
@@ -18,8 +18,8 @@ switch(aap.directory_conventions.remotefilesystem)
             aas_log(aap,false,sprintf('Can''t find dicom files for series %d in path %s',seriesnum,fullfile(dicomdirsearchpth,aap.directory_conventions.dicomfilter)));
         else
             
-            for i=1:length(s3resp.Contents)
-                resp=[resp s3resp.Contents(i).Key];
+            for subj=1:length(s3resp.Contents)
+                resp=[resp s3resp.Contents(subj).Key];
             end
         end
 end

@@ -106,7 +106,11 @@ switch task
             % as requested in task settings
             StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
             ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
-            fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+            if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
+                fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+            else
+                fnames = [];
+            end
             for fieldind=1:length(fnames)
                 % Which element in StartingParameters does this refer to?
                 whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
@@ -327,6 +331,39 @@ catch
             fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
     catch
         fprintf('\n\tFailed display backup diagnostic image!');
+    end
+end
+
+% Another diagnostic image, looking at how well the segmentation worked...
+if aap.tasklist.currenttask.settings.usesegmentnotnormalise
+    Pthresh = 0.95;
+    
+    ROIdata = roi2hist(fullfile(Spth, ['m' Sfn, Sext]), ...
+        outSeg(1:2:end,:), Pthresh);
+    
+    [h, pv, ci, stats] = ttest2(ROIdata{2}, ROIdata{1});
+    
+    title(sprintf('GM vs WM... T-val: %0.2f (df = %d)', stats.tstat, stats.df))
+    
+    print('-djpeg','-r75',...
+		fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
+end
+
+%% Diagnostic VIDEO
+if aap.tasklist.currenttask.settings.diagnostic
+    Ydims = {'X', 'Y', 'Z'};
+    
+    for d = 1:length(Ydims)
+        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+            aas_image_avi(fullfile(Spth, ['m' Sfn, Sext]), ...
+                outSeg([1:2:size(outSeg,1)],:), ...
+				fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' Ydims{d} '.avi']),...
+                d, ... % Axis
+                [800 600], ...
+                2, ... % Rotations
+                'none'); % No outline...
+            try close(2); catch; end
+        end
     end
 end
 

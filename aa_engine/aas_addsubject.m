@@ -33,6 +33,9 @@ try
 catch
     aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
 end;
+
+if isnumeric(thissubj.mriname), thissubj.mriname = mri_findvol(aap,thissubj.mriname); end 
+
 try
     thissubj.seriesnumbers=seriesnumbers;
 catch

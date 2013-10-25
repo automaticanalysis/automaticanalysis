@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Segment the brain using the freesurfer pipeline' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>freesurfer</stream>
+            </outputstreams>
+                        
+            <structural desc='Which structural do we use?'
+            >1</structural>
+            
+        </currenttask>
+    </tasklist>
+</aap>

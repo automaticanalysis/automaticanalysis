@@ -52,7 +52,7 @@ switch task
             end
         end
         
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
         elseif size(mEPIimg,1) > 1

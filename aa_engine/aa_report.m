@@ -5,14 +5,19 @@
 
 function [aap]=aa_report(studyroot,stages)
 
+fprintf('Fetching report started...\n');
+
+% First, load AAP structure
 if exist('studyroot','var')
     cd(studyroot);
 else
     studyroot=pwd;
 end;
-
-% First, load AAP structure
-load('aap_parameters');
+if ~exist('aap_parameters.mat','file')
+    error('aap structure not found');    
+else
+    load('aap_parameters');
+end
 
 if ~exist('stages','var')
     stages={aap.tasklist.main.module.name};

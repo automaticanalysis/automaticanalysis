@@ -10,6 +10,18 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             
+            <!-- Once for the whole module! [AVG] -->
+            <automatic_movesandmeans></automatic_movesandmeans>
+            
+            <useaasessions>1</useaasessions>
+
+            <!-- add contrasts for each task regressor v baseline -->
+            <eachagainstbaseline>0</eachagainstbaseline>
+
+            <!-- run-specific contrasts -->
+            <oneconperrun>0</oneconperrun>
+
+            
             <!--
 You must specify one or more contrasts here using one of the following formats
 
@@ -82,7 +94,6 @@ You must specify one or more contrasts here using one of the following formats
 -->
             <contrasts>
                 <subject></subject>
-                <automatic_movesandmeans></automatic_movesandmeans>
                 <con>
                     <format/>
                     <vector/>

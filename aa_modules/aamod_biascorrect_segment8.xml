@@ -20,11 +20,11 @@
             image to segment. -->
             
 			<inputstreams>
-				<stream>t1</stream>
+				<stream>structural</stream>
 			</inputstreams>
 			
 			<outputstreams>
-				<stream>t1</stream>
+				<stream>structural</stream>
 				<stream>seg8</stream>
 			</outputstreams>
 	

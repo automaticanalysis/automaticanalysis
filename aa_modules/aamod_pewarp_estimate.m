@@ -43,7 +43,7 @@ switch task
         end
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
             mEPIimg = deblank(mEPIimg(1,:));
@@ -241,7 +241,7 @@ switch task
         
         %% Describe the outputs
         
-        aap = aas_desc_outputs(aap,subj,1,'meanepi',fullfile(pthM, ['p' fnM extM]));
+        aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pthM, ['p' fnM extM]));
         aap = aas_desc_outputs(aap,subj,'dPEwarp_meanepi',fullfile(pthM, ['d' fnM extM]));
         aap = aas_desc_outputs(aap,subj,'PEwarp_params',fullfile(pthM, 'PEparams.mat'));
         

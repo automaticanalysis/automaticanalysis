@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_norm_write' desc='SPM normalisation write (stream EPI)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>normalisation_seg_sn</stream>  
+                <stream>firstlevel_spmts</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spmts</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<aap>
+    <tasklist>
+        <!-- These modules are run every time -->
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        
+        <!-- The main modules, executed once each only (unless done_... flag is removed) -->
+        <main>

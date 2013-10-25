@@ -4,6 +4,8 @@ function aa_ver4_nocloud
 aapath = fileparts(mfilename('fullpath'));
 addpath(genpath(aapath)); % recursively add AA subfolders
 
-[pth nme ext]=fileparts(aapath);
+% remove GitHub-related path
+rmpath(genpath(fullfile(aapath,'.git')));
 
-fprintf('Welcome to aa version 4.1 on github July 2012\n',nme);
+[pth nme ext]=fileparts(aapath);
+fprintf('Welcome to aa version 4.1 on github July 2013\n',nme);

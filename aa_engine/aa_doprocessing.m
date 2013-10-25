@@ -108,8 +108,8 @@ if (exist('analysisid','var'))
 end
 
 global defaults;
-global aaparallel
-global aaworker
+global aaparallel;
+global aaworker;
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -297,6 +297,9 @@ for l=1:length(mytasks)
         
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
+        
+        % I don't think this supports "selectedsessions" branches but it should do
+        % - RC 2013-09-19
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
@@ -380,7 +383,10 @@ if ~isempty(aap.options.email)
     end
 end
 
-return;
+% cleanup 
+clear global defaults aaparallel aaworker;
+
+end
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
@@ -392,3 +398,4 @@ else
     prev_mfile_alias=prev_stagename;
 end
 [aap,loopvar]=aa_feval(prev_mfile_alias,aap,'getparallelparts');
+end

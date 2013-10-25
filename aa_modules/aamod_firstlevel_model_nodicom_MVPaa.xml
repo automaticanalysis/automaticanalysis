@@ -24,6 +24,9 @@
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
             
+            <!-- First level model masking -->
+            <firstlevelmasking>1</firstlevelmasking>
+            
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
