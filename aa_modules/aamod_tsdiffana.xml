@@ -13,6 +13,7 @@
                 <stream>epi</stream>
             </inputstreams>
             <outputstreams>
+                <stream>tsdiffana</stream>
             </outputstreams>
         </currenttask>
     </tasklist>

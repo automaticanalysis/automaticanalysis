@@ -45,7 +45,14 @@ switch task
         
         %% Get structural
         % [AVG] Modified the way we get the structural, to be more aa4-like
-        Simg = aas_getfiles_bystream(aap,subj,'structural');
+        inStream = aap.tasklist.currenttask.inputstreams(1).stream{1};
+
+        try 
+            Simg = aas_getfiles_bystream(aap,subj,inStream);
+        catch
+            Simg = aas_getfiles_bystream(aap,subj,1,inStream);
+        end
+        
         % Cheap and cheerful way of ensuring only one file is considered!
         if size(Simg,1) > 1
             Simg = deblank(Simg(1,:));

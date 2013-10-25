@@ -18,6 +18,7 @@ switch (domain)
                
     case {'subject','hyperalignment_subject'}
         N=length(aap.acq_details.subjects);
+        
     case 'study'
         N=0;
 end;

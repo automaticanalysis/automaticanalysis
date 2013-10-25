@@ -26,7 +26,11 @@ switch task
         
         for streamind=1:length(streams)
             
+            if isstruct(streams{streamind})
+                streams{streamind} = streams{streamind}.CONTENT;
+            end
             subj.imgs=aas_getimages_bystream(aap,i,j,streams{streamind});
+            
             
             % now smooth
             s   = aap.tasklist.currenttask.settings.FWHM;

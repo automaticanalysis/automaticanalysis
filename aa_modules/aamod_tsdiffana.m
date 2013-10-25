@@ -37,6 +37,8 @@ switch task
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         print('-djpeg','-r75',fullfile(sesspath,'diagnostic_aamod_tsdiffana'));
      
+        subjpth=aas_getsesspath(aap,i,j); 
+        aap=aas_desc_outputs(aap,i,j,'tsdiffana',fullfile(subjpth,'timediff.mat')); 
     
     case 'checkrequirements'
         

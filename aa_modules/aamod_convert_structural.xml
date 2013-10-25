@@ -15,6 +15,8 @@
             DICOM images, and two output streams: the first output is the 
             converted structural, the second the DICOM headers. -->
             
+            <struct_vols></struct_vols>
+            
             <inputstreams>
                 <stream>dicom_structural</stream>
             </inputstreams>

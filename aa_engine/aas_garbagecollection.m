@@ -42,7 +42,11 @@ for modind=modulestoscan
     % Get all the input and output stream files
     aap=aas_setcurrenttask(aap,modind);
     for streamname=aap.tasklist.currenttask.inputstreams.stream
+        try
         streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1},aap.tasklist.currenttask.name);
+        catch
+            disp('asdf');
+        end
         inps=[inps findstreamfiles(aap,streamfn)];
     end
     for streamname=aap.tasklist.currenttask.outputstreams.stream

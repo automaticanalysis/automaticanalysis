@@ -17,7 +17,7 @@ switch task
         % Get inputs
         for sind=1:length(aap.tasklist.currenttask.inputstreams.stream)
             
-            subj_imgs=aas_getfiles_bystream(aap,varargin{:},aap.tasklist.currenttask.inputstreams.stream{sind});
+            subj_imgs=aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],aap.tasklist.currenttask.inputstreams.stream{sind});
             
             % Find common part to filenames and use this as the base of the output
             incommon=subj_imgs==repmat(subj_imgs(1,:),[size(subj_imgs,1) 1]);
@@ -43,7 +43,7 @@ switch task
             
             [pth nme ext]=fileparts(outputname);
             
-            aap=aas_desc_outputs(aap,varargin{:},aap.tasklist.currenttask.outputstreams.stream{sind},fullfile(pth,outfns(1).name));
+            aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],aap.tasklist.currenttask.outputstreams.stream{sind},fullfile(pth,outfns(1).name));
             
         end;
 end;

@@ -15,7 +15,7 @@
             </echoweightmethod>
                 
             <inputstreams>
-                <stream>dicom_epi</stream>  
+                <stream ismodified='0'>dicom_epi</stream>  
             </inputstreams>
             
             <outputstreams>

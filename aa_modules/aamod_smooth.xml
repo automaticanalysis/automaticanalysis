@@ -13,7 +13,7 @@
             <FWHM>10</FWHM>
             
             <inputstreams>
-                <stream>epi</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>
