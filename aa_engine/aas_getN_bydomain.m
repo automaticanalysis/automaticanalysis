@@ -18,7 +18,12 @@ switch (domain)
                
     case {'subject','hyperalignment_subject'}
         N=length(aap.acq_details.subjects);
-        
     case 'study'
         N=0;
-end;
+        
+    case {'diffusion_session', 'diffusion_session_bedpostx'}
+        N=length(aap.acq_details.diffusion_sessions);
+    
+    case 'diffusion_session_probtrackx'
+        N=aap.options.probtrackx.nsplits;        
+end;    
