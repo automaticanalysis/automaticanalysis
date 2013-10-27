@@ -52,6 +52,12 @@
                         <searchlight_package desc='A searchlight' ui='custom'/>
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
+                    <diffusion_session desc='Diffusion acquisition' ui='custom'>
+                    </diffusion_session>                        
+                    <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
+                            <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
+                            </diffusion_session_probtrackx>
+                        </diffusion_session_bedpostx>                        
                 </subject>
                 <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
                     <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
@@ -134,10 +140,14 @@
             <structuralfn ui='dir_part'/>
             <siemensfieldmap ui='intarray'/>
             <seriesnumbers desc='Session numbers for EPI' ui='intarray' />
+            <diffusion_seriesnumbers desc='Session numbers for diffusion data' ui='intarray' />
         </subjects>
         <sessions desc='Functional sessions' ui='intarray'>
             <name desc='Session name' ui='dir_part'/>
         </sessions>
+        <diffusion_sessions desc='Diffusion sessions' ui='intarray'>
+            <name desc='Diffusion session name' ui='dir_part'/>
+        </diffusion_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
     </acq_details>
     
