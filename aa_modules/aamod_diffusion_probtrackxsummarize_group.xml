@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Probtrackx group summary'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+
+            <inputstreams>
+                 <stream ismodified="0">seeds_to_mni_space</stream>
+                 <stream ismodified="0">tractography_seeds_mni</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dtimatrix_groupsummary</stream>               
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

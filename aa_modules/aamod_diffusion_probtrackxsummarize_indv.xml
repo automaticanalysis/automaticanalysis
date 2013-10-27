@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='Probtrackx summary'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+
+            <rewrite>0</rewrite>
+            
+            <inputstreams>
+                <stream ismodified="0">tractography_seeds</stream>
+                <stream ismodified="0">normalisation_seg_sn</stream>
+                <stream ismodified="0">seeds_to_diffusion_space</stream> 
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>seeds_to_diffusion_space</stream>
+                <stream>seeds_to_mni_space</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
