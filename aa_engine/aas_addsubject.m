@@ -12,7 +12,7 @@
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
 
-function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries)
+function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,diffusion_seriesnumbers)
 
 % Blank template for a subject entry
 f=fieldnames(aap.schema.acq_details.subjects);
@@ -24,7 +24,7 @@ end;
 
 % Both MEG & MRI or just MRI?
 try
-    if (length(name)==2) && iscell(name);
+    if (length(name)==2)
         thissubj.megname=name{1};
         thissubj.mriname=name{2};
     else
@@ -33,13 +33,11 @@ try
 catch
     aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
 end;
-
-if isnumeric(thissubj.mriname), thissubj.mriname = mri_findvol(aap,thissubj.mriname); end 
-
 try
     thissubj.seriesnumbers=seriesnumbers;
 catch
 end;
+
 
 % [djm 20/3/06]
 if nargin>=4
@@ -48,6 +46,10 @@ end;
 
 if nargin>=5
     thissubj.specialseries=specialseries;
+end;
+
+if nargin>=6
+    thissubj.diffusion_seriesnumbers=diffusion_seriesnumbers;
 end;
 
 % And put into acq_details, replacing a single blank entry if it exists
