@@ -15,7 +15,7 @@
 %  outputpath=place to write NIFTI
 % Rhodri Cusack MRC CBU, Cambridge 2005
 %
-function [aap out_allechoes dicomheader subdirs]=aas_convertseries_fromstream(aap,varargin)
+function [aap out_allechoes dicomheader subdirs dicomdata]=aas_convertseries_fromstream(aap,varargin)
 v=varargin;
 % if (length(v)>3 && ischar(v{end-2}))
 %     outputpathsuffix=v{end};
@@ -72,6 +72,7 @@ end
 
 out_allechoes=[];
 for subdirind=1:length(subdirs)
+    dicomheader{subdirind}=[];
     out=[];
     outputpath_withsuffix=fullfile(subdirs{subdirind}); %,outputpathsuffix
     aap=aas_makedir(aap,outputpath_withsuffix);
@@ -95,9 +96,14 @@ for subdirind=1:length(subdirs)
                 if k == 1
                     infoD = dicominfo(deblank(dicomdata_subdir(k,:)));
                     
-                    % Private field containing info about TR and slices
-                    fi = 'Private_0029_1020';
-                    if isfield(infoD, fi)
+                    if strcmp(infoD.MRAcquisitionType, '3D')
+                        % In 3D sequence we can find a Private field
+                        % Works for Siemens scanners (not tested elsewhere)
+                        fi = 'Private_0029_1020';
+                        % let's make sure this solution has a chance of
+                        % working
+                        assert(isfield(infoD,fi),...
+                            '3D sequence but TR cannot be recovered');
                         str =  infoD.(fi);
                         xstr = char(str');
                     else
@@ -111,7 +117,7 @@ for subdirind=1:length(subdirs)
                         
                         n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
                         if isempty(n)
-                            error('Could not find TR in DICOM header!')
+                            error('Could not find TR in the DICOM header!')
                         end
                         [junk, r] = strtok(xstr(n:n+100), '=');
                         TR = str2double(strtok(strtok(r, '=')));
@@ -143,6 +149,10 @@ for subdirind=1:length(subdirs)
                     end
                     fprintf('Sequence has a %s slice order\n', sliceorder);
                 end
+                
+                % [AVG] Add the TR to the DICOMHEADERS explicitly before
+                % saving (and in seconds!)
+                tmp{1}.volumeTR = TR/1000;
             catch
                 warning('Could not find the TR and sliceorder')
                 tmp{1}.volumeTR = [];
@@ -186,6 +196,8 @@ for subdirind=1:length(subdirs)
             conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
         end
         out=[out(:);conv.files(:)];
+
+        dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
     out_allechoes{subdirind}=unique(out);
     if strfind(inputstream, 'dicom_structural')
@@ -201,8 +213,7 @@ for subdirind=1:length(subdirs)
             end
         end
         dicomheader={DICOMHEADERS{DCMnumbers}};
-    else
-        dicomheader{subdirind}=DICOMHEADERS{1};
+   
     end
 end
 
