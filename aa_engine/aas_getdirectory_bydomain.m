@@ -14,10 +14,18 @@ switch (domain)
         
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
         directory=sprintf('splitsession_cv_fold_%d',index);
-        
+
+    case 'diffusion_session_probtrackx'
+        directory=sprintf('probtrackx_%d',index);
+
     case 'session'
         directory=aap.acq_details.sessions(index).name;
         
+    case 'diffusion_session'
+        directory=aap.acq_details.diffusion_sessions(index).name;
+
+    case 'diffusion_session_bedpostx'
+        directory=[aap.acq_details.diffusion_sessions(index).name '.bedpostX'];
         
     case {'subject','hyperalignment_subject'}
         switch (aap.directory_conventions.subject_directory_format)
