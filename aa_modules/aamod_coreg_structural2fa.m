@@ -1,14 +1,6 @@
 % AA module - coregister structural to diffusion images (dti_FA)
 % Coregistration of structural to dti_FA output by realignment
-% Does not require skull stripping any more
-% Modified for sparse imaging since prefix for mean is different
-% i=subject num
-% Rhodri Cusack MRC CBU 2004-6 based on original by Matthew Brett
-% 
-% Major changes Aug 2010: removed support for central store of structrual
-% images. This code was very long in tooth, and unloved.
-%
-% Tibor Auer MRC CBU Cambridge 2012-2013
+% Rhodri Cusack BMI, Western, Canada, 2013
 
 function [aap,resp] = aamod_coreg_structural2fa(aap,task,subjInd,diffsess)
 
