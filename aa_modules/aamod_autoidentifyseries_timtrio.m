@@ -70,6 +70,13 @@ switch task
                     
                 end
                 
+                %  Check that at least one dicom found, or paths are
+                %  probably wrong
+                if isempty(serieslist)
+                    aas_log(aap,true,sprintf('No DICOM files found in directory\n %s\nusing dicom filter\n %s, quitting.',rawdata_subj, aap.directory_conventions.dicomfilter));
+                end;
+                
+                % Go through all of the series we've found
                 rawdata_allseries=unique(serieslist)
                 
                 for j=1:length(rawdata_allseries);

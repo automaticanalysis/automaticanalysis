@@ -8,14 +8,19 @@ function strSubj = mri_findvol(aap,subjpath,fp)
 
 if nargin < 3, fp = false; end
 
-% convert to new format
-if ~isstruct(aap.directory_conventions.rawdatadir)
-    SEARCHPATH{1} = aap.directory_conventions.rawdatadir;
-elseif ~iscell(aap.directory_conventions.rawdatadir.paths)
-    SEARCHPATH{1} = aap.directory_conventions.rawdatadir.paths;
-else
-    SEARCHPATH = aap.directory_conventions.rawdatadir.paths;
-end
+
+%% Changed to comma separated list format [RC]
+if isstruct(aap.directory_conventions.rawdatadir)
+    aas_log(aap,true,'Structure formate for rawdatadir no longer supported - use comma separated list');
+end;
+
+% Parse comma separated list
+SEARCHPATH={};
+rem=aap.directory_conventions.rawdatadir;
+while length(rem)>0
+    [pth rem]=strtok(rem,':');
+    SEARCHPATH{end+1}=pth;
+end;
 
 % get subjname
 if isnumeric(subjpath)

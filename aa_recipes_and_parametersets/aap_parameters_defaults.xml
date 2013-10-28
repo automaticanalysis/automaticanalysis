@@ -6,9 +6,7 @@
         <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
         <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
         <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-        <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir'>
-            <paths>/mridata/cbu/</paths>
-        </rawdatadir>
+        <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
 		<Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
@@ -92,10 +90,11 @@
         </qsub>
         <searchlight desc='Specification for searchlight' ui='custom'>
             <N desc='Number of searchlights' ui='double'>5124</N>
-            <Npackage>128</Npackage>
+            <Npackage>0</Npackage>
             <format desc='Format for searchlight' ui='text'>gifti</format>
-            <filename desc='Searchlight description file' ui='text'>/cn_user/spm8/canonical/cortex_5124.surf.gii</filename>
+            <filename desc='Searchlight description file' ui='text'>canonical/cortex_5124.surf.gii</filename>
         </searchlight>
+        <probtrackx><nsplits desc='Number of parallel splits for probtrackx' ui='double'>20</nsplits></probtrackx>
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>16</N>
         </splitsession_cv>

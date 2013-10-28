@@ -72,10 +72,7 @@ else
             
             % Start with the full tree
             tree=aap.directory_conventions.parallel_dependencies;
-            for targetind=1:commonind
-                tree=tree.(sourcedomaintree{targetind});
-            end;
-            
+                        
             % Collect everythinng from the target and below
             for t=1:targetInd
                 tree=tree.(targetdomaintree{t});

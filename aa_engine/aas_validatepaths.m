@@ -13,16 +13,21 @@ if (isfield(mystruct,'ATTRIBUTE'))
     ui=mystruct.('ATTRIBUTE').ui;
 %     fprintf('Found %s leaf type %s\n',nme,ui);
     switch(ui)
-        case {'dir','filename','dir_part'}
+        case {'dir','filename','dir_part','dir_list'}
+            % allow colons in dir_list type
+            allowcolons=strcmp('dir_list',ui);
+                
             if isstruct(values) % multiple values
                 f = fieldnames(values);
                 values = values.(f{1});
                 for i = 1:numel(values)
-                    aap=aas_checkpath(aap,values{i},nme);    
+                    aap=aas_checkpath(aap,values{i},nme,[],allowcolons);    
                 end
             else
-                aap=aas_checkpath(aap,values,nme);
+                aap=aas_checkpath(aap,values,nme,[],allowcolons);
             end
+            
+        
     end;
 else
     if (~strcmp(nme,'aap.tasksettings'))
