@@ -6,11 +6,7 @@
         <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
         <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
         <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-        <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir'>
-            <paths>/mridata/cbu/</paths>
-            <paths>/mridata/camcan/</paths>
-			<paths>/mridata/cbu_cne/</paths>
-        </rawdatadir>
+        <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
 		<Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
