@@ -5,12 +5,8 @@ if isstruct(aap.directory_conventions.rawdatadir)
 end;
 
 % Parse comma separated list
-SEARCHPATH={};
-rem=aap.directory_conventions.rawdatadir;
-while length(rem)>0
-    [pth rem]=strtok(rem,':');
-    SEARCHPATH{end+1}=pth;
-end;
+SEARCHPATH = textscan(aap.directory_conventions.rawdatadir,'%s','delimiter', ':');
+SEARCHPATH = SEARCHPATH{1};
 
 isFound = false;
 for i = 1:numel(SEARCHPATH)
