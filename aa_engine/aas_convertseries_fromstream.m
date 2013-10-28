@@ -217,6 +217,10 @@ for subdirind=1:length(subdirs)
     end
 end
 
+if ~strfind(inputstream, 'dicom_structural')
+    dicomheader=dicomheader{1};
+end;
+
 % Single echo, no echo dimension to cell array
 if (length(out_allechoes)==1)
     out_allechoes=out_allechoes{1};
