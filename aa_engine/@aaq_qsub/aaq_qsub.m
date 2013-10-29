@@ -80,7 +80,7 @@ classdef aaq_qsub<aaq
                             
                             switch obj.filestomonitor(ftmind).state
                                 case 'finished'
-                                    pause(5); % give time to finish saving logs
+                                    if isempty(JobLog.finishtime), continue; end
                                     dtvs = dts2dtv(thisJob.createtime);
                                     dtvf = dts2dtv(JobLog.finishtime);
                                     msg = sprintf('MODULE %s FINISHED: Job%d used %s.',...
