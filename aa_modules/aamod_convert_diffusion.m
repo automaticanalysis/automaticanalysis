@@ -13,11 +13,11 @@ switch task
         % Get DICOM filenames from stream and bvals and bvecs from the
         % header
         [aap niifiles dicomheader subdirs]=aas_convertseries_fromstream(aap,'diffusion_session',[subjind diffsessind],'dicom_diffusion');
-        bvecs=zeros(length(dicomheader{1}),3);
-        for headerind=1:length(dicomheader{1})
-                bvals(headerind)=aas_get_numaris4_numval(dicomheader{1}{headerind}.CSAImageHeaderInfo,'B_value');
+        bvecs=zeros(length(dicomheader),3);
+        for headerind=1:length(dicomheader)
+                bvals(headerind)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'B_value');
                 if bvals(headerind)~=0
-                    bvecs(headerind,:)=aas_get_numaris4_numval(dicomheader{1}{headerind}.CSAImageHeaderInfo,'DiffusionGradientDirection');
+                    bvecs(headerind,:)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'DiffusionGradientDirection');
                 end;
         end;
         

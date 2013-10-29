@@ -200,7 +200,7 @@ for subdirind=1:length(subdirs)
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
     out_allechoes{subdirind}=unique(out);
-    if strfind(inputstream, 'dicom_structural')
+    if ~isempty(strfind(inputstream, 'dicom_structural'))
         % [AVG] This is to cope with a number of strucutral images, so we
         % may have the DICOM header of each of them...
         SeriesDescription = '';
@@ -216,6 +216,10 @@ for subdirind=1:length(subdirs)
    
     end
 end
+
+if isempty(strfind(inputstream, 'dicom_structural'))
+    dicomheader=dicomheader{1};
+end;
 
 % Single echo, no echo dimension to cell array
 if (length(out_allechoes)==1)

@@ -51,7 +51,7 @@ switch task
         cmd='probtrackx2';
         cmd=[cmd sprintf(' -x %s',aas_getfiles_bystream(aap,'diffusion_session',[subjind sessind],'tractography_seeds'))];
         cmd=[cmd ' -l --onewaycondition --omatrix2'];
-        cmd=[cmd sprintf(' -c 0.2 -S 2000 --steplength=0.5 -P %d --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd --os2t',nstreamlines)];
+        cmd=[cmd sprintf(' -c 0.2 -S 2000 --steplength=0.5 -P %d --fibthresh=0.01 --distthresh=0.0 --sampvox=0.0 --forcedir --opd --os2t --rseed=%d',nstreamlines,floor(toc))];
         cmd=[cmd sprintf(' --target2=%s',aas_getfiles_bystream(aap,'diffusion_session',[subjind sessind],'dti_FA'))];
         cmd=[cmd sprintf(' -s %s',fullfile(bedpostpath,'merged'))];
         cmd=[cmd sprintf(' -m %s', nodif_brain_mask)] 
