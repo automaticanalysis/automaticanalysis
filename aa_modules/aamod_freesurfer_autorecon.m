@@ -8,11 +8,10 @@ switch task
     case 'doit'
         
         % Set subject paths
-        subjname = aap.acq_details.subjects(subj).mriname;
         subjpath = aas_getsubjpath(aap,subj);
+        subjname = basename(subjpath);
         
         setenv('SUBJECTS_DIR', fileparts(subjpath))
-        setenv('FREESURFER_DIR', aap.directory_conventions.freesurferdir)
         
         %% Try to delete old freesurfer running flags
         if exist(fullfile(subjpath, 'ANAT', subjname, 'scripts', 'IsRunning.lh+rh'), 'file')

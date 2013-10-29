@@ -34,10 +34,13 @@
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
-		<freesurferdir desc='Path to freesurfer' ui='dir'>/usr/share/freesurfer</freesurferdir>        
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
         <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
         <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
+		<freesurferdir desc='Path to freesurfer' ui='dir'>/usr/share/freesurfer</freesurferdir>
+		<freesurfershell desc='Shell used to run FreeSurfer' ui='text'>csh</freesurfershell>
+		<freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
+		<freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
