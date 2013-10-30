@@ -114,6 +114,11 @@ else
     SPM.xBF.order      = 1;                 % order of basis set
 end
 
+%% Allow specifying UNITS
+if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
+        ~isempty(aap.tasklist.currenttask.settings.UNITS)
+    SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
+end
 %% retrieve TR from DICOM header
 % TR is manually specified (not recommended as source of error)
 if isfield(aap.tasklist.currenttask.settings,'TR') && ...
@@ -126,9 +131,13 @@ else
         try
             TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         catch
-            % [AVG] This is for backwards compatibility!
+        end
+        % [AVG] This is for backwards compatibility!
+        % [TA] volumeTR might be valid but empty!
+        if ~exist('TR','var') || isempty(TR)
             TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end
+
         if (sess==aap.acq_details.selected_sessions(1))
             SPM.xY.RT = TR;
         else
@@ -163,10 +172,11 @@ SPM.xVi.form = 'AR(1)';
 %  assumes timings are relative to beginning of scans
 
 if (usesliceorder)
-    refwhen=(find(sliceorder==refslice)-1)/(length(sliceorder)-1);
+    refwhen=(find(sliceorder==refslice))/(length(sliceorder));
+    SPM.xBF.T = numel(sliceorder);
 else
-    aas_log(aap,false,'No stream sliceorder found, defaulting timing to SPM.xBF.T0=0 in model');
-    refwhen=0;
+    aas_log(aap,false,'No stream sliceorder found, defaulting timing to SPM.xBF.T0=1 in model');
+    refwhen=1;
 end
 SPM.xBF.T0 = round(SPM.xBF.T*refwhen);
 
