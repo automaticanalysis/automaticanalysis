@@ -19,6 +19,8 @@ global aaworker
 osd=[];
 
 streamname=varargin{end-1};
+if isstruct(streamname), streamname = streamname.CONTENT; end
+    
 pos=find(streamname=='.');
 if (~isempty(pos))
     streamname=streamname(pos(end)+1:end);
