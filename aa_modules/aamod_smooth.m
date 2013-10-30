@@ -18,8 +18,6 @@ switch task
             sess = aap.tasklist.currenttask.settings.session;
         end
         
-    case 'doit'
-                
         streams=aap.tasklist.currenttask.inputstreams.stream;
         
         for streamind=1:length(streams)
@@ -30,7 +28,6 @@ switch task
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end
-            subj.imgs=aas_getimages_bystream(aap,i,j,streams{streamind});
             
             % now smooth
             s   = aap.tasklist.currenttask.settings.FWHM;
