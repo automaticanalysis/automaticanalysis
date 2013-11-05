@@ -12,7 +12,7 @@
 % branches for which the subdirectory exists
 %  i.e., where there might be a doneflag
 
-function [deps]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps)
+function [deps desc]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps)
 if ~exist('modulenum','var')
     modulenum=[];
 end;
@@ -82,4 +82,11 @@ if isstruct(tree)
     end;
 end;
 
+%% And report
+if nargout==2
+    desc='';
+    for depind=1:length(deps)
+        desc=[desc deps{depind}{1} '[' sprintf('%d ',deps{depind}{2}) '] '];
+    end;
+end;
 end

@@ -81,7 +81,7 @@ else
             deps=[deps aas_dependencytree_findbranches(aap,{tree,targetdomaintree(2:end),indices(targetInd:end)},indices(1:(targetInd-1)))]; 
 
             % If we have dependencies across subtrees things are slightly messier, and we need to collect everything from the source on down
-            if (commonind < minlen) && ~isempty(tree)
+            if commonind < minlen
                 for t=1:commonind
                     tree=tree.(sourcedomaintree{t});
                 end;
