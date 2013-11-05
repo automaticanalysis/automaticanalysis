@@ -66,6 +66,8 @@
 %   get subdirectory name for a single example specified by index of this
 %   domain (e.g., 'movie' for session 1)
 %
+% 2013-10-29: Set paths to FSL in here, not each time aas_runfslcommand is
+% called [RC]
 
 
 
@@ -253,6 +255,23 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     % Register analysis (or "job") with Drupal
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end
+
+
+% Set FSL environment variable
+setenv('FSLDIR',aap.directory_conventions.fsldir);
+setenv('FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype)
+
+% Add FSL to path
+[s pth]=system('echo $PATH');
+if s
+    pth=getenv('PATH');
+else
+    pth=deblank(pth);
+end;
+fslbin=fullfile(aap.directory_conventions.fsldir,'bin');
+combinedpath=[fslbin ':' pth ];
+setenv('PATH',combinedpath);
+
 
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)

@@ -1,26 +1,6 @@
 function [s w]=aas_runfslcommand(aap,fslcmd)
 
-setenv('FSLDIR',aap.directory_conventions.fsldir);
-setenv('FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype)
-
-% Add to path
-[s pth]=system('echo $PATH');
-if s
-    pth=getenv('PATH');
-else
-    pth=deblank(pth);
-end;
-% Check whether ${FSLDIR}/bin is already in there
-fslbin=fullfile(aap.directory_conventions.fsldir,'bin');
-% Add colons to beginning and end of path in case fslbin is at beginning or
-% end and not bracketed by them
-sf=strfind([':' pth ':'],[':' fslbin ':']);
-if isempty(sf)
-    combinedpath=[pth ':' fslbin];
-    setenv('PATH',combinedpath);
-end;
-
-
+% Setting paths now done in aa_doprocessing
 fslsetup=deblank(aap.directory_conventions.fslsetup);
 
 if not(isempty(fslsetup)) && not(fslsetup(end)==';')
