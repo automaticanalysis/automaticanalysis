@@ -19,6 +19,9 @@ switch task
         
         cmd=sprintf('eddy_correct %s %s 0',diffinput,eddyoutput);
         [s w]=aas_runfslcommand(aap,cmd);
+        if s 
+            aas_log(aap,true,sprintf('Error executing\n  %s\nof\n%s',cmd,w));
+        end  
         
         % Describe outputs
         aap=aas_desc_outputs(aap,'diffusion_session',[subjind diffsessind],'diffusion_data',eddyoutput);   

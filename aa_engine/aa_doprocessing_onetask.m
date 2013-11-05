@@ -94,7 +94,7 @@ else
             aas_log(aap,0,sprintf('MODULE %s RUNNING: %s for %s',stagename,description,doneflagpath),aap.gui_controls.colours.running);
             
             % ...fetch inputs
-            if (~isempty(aap.internal.inputstreamsources{modulenum}))
+            if ~isempty(aap.internal.inputstreamsources{modulenum})
                 
                 allinputs={};
                 for inpind=1:length(aap.internal.inputstreamsources{modulenum}.stream)
@@ -102,7 +102,7 @@ else
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,domain,indices);
                     gotinputs=aas_retrieve_inputs(aap,inp,allinputs,deps);
-                    if (isempty(gotinputs))
+                    if isempty(gotinputs)
                         aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
                     end;
                     allinputs=[allinputs;gotinputs];

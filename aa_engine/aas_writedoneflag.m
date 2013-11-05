@@ -126,7 +126,7 @@ switch(aap.directory_conventions.remotefilesystem)
         fprintf(fid,'%f\n',toc);
         
         % And dump IP of this machine to done flag
-        cmd='ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
+        cmd='/sbin/ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
         [s w]=aas_shell(cmd);
         if (~s)
             [ipaddress junk]=strtok(w);

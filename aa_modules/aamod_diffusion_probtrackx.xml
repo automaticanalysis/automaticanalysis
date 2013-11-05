@@ -18,6 +18,15 @@
             <totalstreamlines>5000</totalstreamlines>
                 
             <inputstreams>
+                <stream ismodified="0">tractography_seeds</stream>
+                
+                <stream ismodified="0">tractography_targets</stream>
+                
+                <stream ismodified="0">diffusion_data</stream>
+                
+                <stream ismodified="0">dti_FA</stream>
+                <stream ismodified="0">BETmask</stream>
+
                 <stream ismodified="0">dyads1</stream>
                 <stream ismodified="0">dyads1_dispersion</stream>
                 <stream ismodified="0">dyads2_dispersion</stream>
@@ -40,14 +49,6 @@
                 <stream ismodified="0">merged_f2samples</stream>
                 <stream ismodified="0">merged_ph1samples</stream>
                 
-                <stream ismodified="0">tractography_seeds</stream>
-                
-                <stream ismodified="0">tractography_targets</stream>
-                
-                <stream ismodified="0">diffusion_data</stream>
-                
-                <stream ismodified="0">dti_FA</stream>
-                <stream ismodified="0">BETmask</stream>
             </inputstreams>
             
             <outputstreams>
