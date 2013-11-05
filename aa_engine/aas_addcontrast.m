@@ -87,7 +87,7 @@ for m = 1 : length(moduleindex)
     
     whichcontrast=[strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subject)];
     if (~any(whichcontrast))
-        emptycon=[];
+        emptycon=aap.tasksettings.(modulename)(mInd).contrasts(1); % The first one is usually empty.  Better to do it this way, rather than construct from scratch, to avoid dissimilar strucutre errors
         emptycon.subject=subject;
         emptycon.con.format=format;
         emptycon.con.vector=vector;
