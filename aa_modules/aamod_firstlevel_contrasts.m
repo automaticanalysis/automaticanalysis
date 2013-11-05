@@ -231,10 +231,10 @@ switch task
                 SPM.xCon(end+1) = spm_FcUtil('Set', connames{conind}, contype{conind},'c', cons{conind}', SPM.xX.xKXs);
             end
         end
-        spm_contrasts(SPM);
+        SPM = spm_contrasts(SPM);
         
         % Efficiency based on Rik Henson's script [TA]
-        efficiency(aap, subj, cons);
+        efficiency(aap, subj, cons, SPM);
         
         % Describe outputs
         %  updated spm
@@ -274,12 +274,15 @@ switch task
 end
 end
 
-function h = efficiency(aap,subj, cons)
+function h = efficiency(aap,subj,cons,SPM)
 % Based on Rik Henson's script
 
 % Note this calculation of efficiency takes the 'filtered and whitened'
 % design matrix (X) as it is in SPM.
-load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
+
+% SPM gets passed in now, because this will load the input stream SPM file,
+% which doesn't (always) have the contrasts.
+% load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
 X = SPM.xX.xKXs.X;
 iXX=inv(X'*X);
 
