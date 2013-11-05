@@ -1,16 +1,29 @@
 % Traverse 'tree' (a structure), picking out all instances at each level -
 % e.g., every subject or session
-%  If optional parameter '
+% 
 % First level to be fully traversed is all those fields of tree
 %  So, for example, if structure is:
 %   tree.subjects.sessions
 %  then all subjects and all sessions of those subjects will be returned
-%  The indices should correspond to the parts of the tree not provided (i.e. no
-%  indices in the above example)
+%  The indices should correspond to the parts of the tree not provided 
+%
+% onlyreportdomain can be a string, specifying the single domain to be reported 
 %
 % If you provide a modulenum then it assumes you only want to return
 % branches for which the subdirectory exists
-%  i.e., where there might be a doneflag
+%  i.e., where there might be a doneflag already written
+%
+% If two outputs, the 'desc' is filled with a text description of the
+% dependencies. This is useful for debugging
+%
+% e.g., [deps desc]=aas_dependencytree_findbranches(aap,aap.directory_conventions.parallel_dependencies.study.subject,[1])
+%  desc='session[ 1 1 ] session[ 1 2 ] session[ 1 3 ] session[ 1 4 ]'
+% e.g., [deps desc]=aas_dependencytree_findbranches(aap,aap.directory_conventions.parallel_dependencies.study,[])
+%  desc='subject[ 1 ] session[ 1 1 ] session[ 1 2 ] session[ 1 3 ] session[ 1 4 ] subject[ 2 ] session[ 2 1 ] session[ 2 2 ] session[ 2 3 ] session[ 2 4 ]';
+% e.g., [deps desc]=aas_dependencytree_findbranches(aap,aap.directory_conventions.parallel_dependencies.study,[],'subject')
+%  ...which had onlyreportdomain='subject', so get...
+%  desc='subject[ 1 ] subject[ 2 ] subject[ 3 ] subject[ 4 ] subject[ 5 ]';
+
 
 function [deps desc]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps)
 if ~exist('modulenum','var')
@@ -86,7 +99,7 @@ end;
 if nargout==2
     desc='';
     for depind=1:length(deps)
-        desc=[desc deps{depind}{1} '[' sprintf('%d ',deps{depind}{2}) '] '];
+        desc=[desc deps{depind}{1} '[ ' sprintf('%d ',deps{depind}{2}) '] '];
     end;
 end;
 end
