@@ -1,3 +1,5 @@
+% function [deps desc]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps,requiredancestor,hasancestory,onlyrequiredancestor)
+%
 % Traverse 'tree' (a structure), picking out all instances at each level -
 % e.g., every subject or session
 % 
@@ -16,6 +18,9 @@
 % If two outputs, the 'desc' is filled with a text description of the
 % dependencies. This is useful for debugging
 %
+% Set hasancestory=false and requiredancestor='adomain' to return only
+% dependencies at or beneath this ancestor.
+%
 % e.g., [deps desc]=aas_dependencytree_findbranches(aap,aap.directory_conventions.parallel_dependencies.study.subject,[1])
 %  desc='session[ 1 1 ] session[ 1 2 ] session[ 1 3 ] session[ 1 4 ]'
 % e.g., [deps desc]=aas_dependencytree_findbranches(aap,aap.directory_conventions.parallel_dependencies.study,[])
@@ -25,15 +30,24 @@
 %  desc='subject[ 1 ] subject[ 2 ] subject[ 3 ] subject[ 4 ] subject[ 5 ]';
 
 
-function [deps desc]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps)
+function [deps desc]=aas_dependencytree_findbranches(aap,tree,indices,onlyreportdomain,modulenum,deps,requiredancestor,hasancestory)
 if ~exist('modulenum','var')
     modulenum=[];
 end;
 if ~exist('deps','var')
     deps={};
 end;
+if ~exist('requiredancestor','var')
+    requiredancestor=[];
+end;
+if ~exist('hasancestory','var')
+    hasancestory=true;
+end;
 if ~exist('onlyreportdomain','var')
     onlyreportdomain=[];
+end;
+if ~exist('onlyrequiredancestor','var')
+    onlyrequiredancestor=false;
 end;
 
 % Can provide tree as cell array with 3 elements, first of which is a tree,
@@ -74,9 +88,16 @@ if isstruct(tree)
             end;
             if traverse
                 
+                % Have we reached the required ancestor? 
+                if strcmp(fn{fnind},requiredancestor)
+                    hasancestory=true;
+                end;
+                
                 % Add this
-                if isempty(onlyreportdomain) || strcmp(onlyreportdomain,fn{fnind})
-                    deps{end+1}={fn{fnind} [indices branchind]};
+                if hasancestory
+                    if isempty(onlyreportdomain) || strcmp(onlyreportdomain,fn{fnind}) 
+                        deps{end+1}={fn{fnind} [indices branchind]};
+                    end;
                 end;
                 
                 % And go through its branches, making sure not to traverse
@@ -88,7 +109,10 @@ if isstruct(tree)
                     else
                         treecell={tree.(fn{fnind}) filter_domainlist filter_indices};
                     end;
-                    deps=aas_dependencytree_findbranches(aap,treecell,[indices branchind],onlyreportdomain,modulenum,deps);
+                    
+                    
+                        deps=aas_dependencytree_findbranches(aap,treecell,[indices branchind],onlyreportdomain,modulenum,deps,requiredancestor,hasancestory);
+                    
                 end;
             end;
         end;
