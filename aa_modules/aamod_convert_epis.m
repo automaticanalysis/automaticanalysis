@@ -459,7 +459,7 @@ switch task
         end
 		finalepis = {finalepis{d+1:end}};
 		% 4D conversion [TA]
-		if aap.options.NIFTI4D
+		if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
 			finalepis = finalepis{1};
 			ind = find(finalepis=='-');
 			finalepis = [finalepis(1:ind(2)-1) '.nii'];
