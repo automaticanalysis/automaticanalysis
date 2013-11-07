@@ -457,13 +457,16 @@ switch task
                 aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
             end
         end
+        if isempty(dummylist)
+           d = 0; 
+        end
 		finalepis = {finalepis{d+1:end}};
 		% 4D conversion [TA]
-		if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
-			finalepis = finalepis{1};
-			ind = find(finalepis=='-');
-			finalepis = [finalepis(1:ind(2)-1) '.nii'];
-			spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
+        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
+            finalepis = finalepis{1};
+            ind = find(finalepis=='-');
+            finalepis = [finalepis(1:ind(2)-1) '.nii'];
+            spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
         end
         % And describe outputs
         aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
