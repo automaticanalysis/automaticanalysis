@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_epifromnifti domain='subject' desc='Find EPI input files from nifti' modality='MRI'>
+    <tasklist>
+        <currenttask domain='subject' desc='Find EPI input files from nifti' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
@@ -17,9 +17,11 @@
             
             <outputstreams>
                 <stream>epi</stream>
+                <stream>dummyscans</stream>
+                <stream>epi_dicom_header</stream>
             </outputstreams>
             
-        </aamod_epifromnifti>
-    </tasksettings>
+        </currenttask>
+    </tasklist>
 </aap>
 
