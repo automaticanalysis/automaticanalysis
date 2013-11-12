@@ -103,22 +103,37 @@ end
 clear SPM
 
 %% Set up basis functions
-if (isfield(aap.tasklist.currenttask.settings,'xBF'))
-    SPM.xBF=aap.tasklist.currenttask.settings.xBF;
-else
-    SPM.xBF.T          = 16; % number of time bins per scan
-    SPM.xBF.UNITS      = 'scans';           % OPTIONS: 'scans'|'secs' for onsets
-    SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
-    SPM.xBF.name       = 'hrf';
-    SPM.xBF.length     = 32;                % length in seconds
-    SPM.xBF.order      = 1;                 % order of basis set
+
+% Start with defaults.  Some, none, or all of these might be changed in the
+% .xml or the user script.
+SPM.xBF.T          = 17;                % number of time bins per scan
+SPM.xBF.UNITS      = 'scans';           % OPTIONS: 'scans'|'secs' for onsets
+SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
+SPM.xBF.name       = 'hrf';
+SPM.xBF.length     = 32;                % length in seconds
+SPM.xBF.order      = 1;                 % order of basis set
+
+% SPM.xBF.T0 is dealt with a bit further down
+
+% Collect values from the .xml or user script
+if isfield(aap.tasklist.currenttask.settings,'xBF')
+    fields = fieldnames(aap.tasklist.currenttask.settings.xBF);
+    for f = 1 : numel(fields)
+        % Overwrite the default if something is specified
+        if ~isempty(aap.tasklist.currenttask.settings.xBF.(fields{f}))
+            SPM.xBF.(fields{f}) = aap.tasklist.currenttask.settings.xBF.(fields{f});
+        end
+    end
 end
 
+
 %% Allow specifying UNITS
+% This should probably disappear, because UNITS is specified in xBF
 if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
         ~isempty(aap.tasklist.currenttask.settings.UNITS)
     SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
 end
+
 %% retrieve TR from DICOM header
 % TR is manually specified (not recommended as source of error)
 if isfield(aap.tasklist.currenttask.settings,'TR') && ...
@@ -171,14 +186,17 @@ SPM.xVi.form = 'AR(1)';
 %  implements email to CBU from Rik Henson 27/06/07
 %  assumes timings are relative to beginning of scans
 
-if (usesliceorder)
-    refwhen=(find(sliceorder==refslice))/(length(sliceorder));
-    SPM.xBF.T = numel(sliceorder);
-else
-    aas_log(aap,false,'No stream sliceorder found, defaulting timing to SPM.xBF.T0=1 in model');
-    refwhen=1;
+if isempty(SPM.xBF.T0) % Allow T0 override in .xml, or settings
+    if (usesliceorder)
+        refwhen=(find(sliceorder==refslice))/(length(sliceorder));
+        SPM.xBF.T = numel(sliceorder);
+    else
+        % Otherwise, default to halfway through the volume
+        aas_log(aap,false,'No stream sliceorder found, defaulting timing to SPM.xBF.T0 to halfway through a volume.');
+        refwhen = 0.5;
+    end
+    SPM.xBF.T0 = round(SPM.xBF.T*refwhen);
 end
-SPM.xBF.T0 = round(SPM.xBF.T*refwhen);
 
 %% Deal with extraparameters. Not needed any more, as
 % aap.directory_conventions.stats_singlesubj

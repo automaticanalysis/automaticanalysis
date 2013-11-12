@@ -99,6 +99,16 @@
                 </covariate>
             </modelC>
             
+            <xBF>
+                <T>17</T>
+                <UNITS>secs</UNITS>
+                <Volterra>1</Volterra>
+                <name>hrf</name>
+                <length>32</length>
+                <order>1</order>
+                <T0>9</T0>
+            </xBF>
+            
             ﻿<inputstreams>
                 <stream>epi</stream>
                 <stream>epi_dicom_header</stream>
