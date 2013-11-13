@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<aap xmlns="http://docbook.org/ns/docbook"
-      xmlns:xi="http://www.w3.org/2001/XInclude">
+<aap xmlns:xi="http://www.w3.org/2001/XInclude">
     <xi:include href="aap_parameters_defaults.xml" parse="xml"/>
     <mod>
         <directory_conventions>
