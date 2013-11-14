@@ -160,12 +160,29 @@ classdef aaq_qsub<aaq
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
                 
-                % [RT 2013-09-04] Make workers self-sufficient by passing
+                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
-                mfp=strread(mfilename('fullpath'),'%s','delimiter',filesep); %#ok<*FPARK>
+                % AA
+                mfp=textscan(mfilename('fullpath'),'%s','delimiter',filesep); mfp = mfp{1};
                 mfpi=find(strcmp('aa_engine',mfp));
-                aapath=strread(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); %#ok<FPARK>
+                aapath=textscan(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); aapath = aapath{1};
+                % SPM
+                aapath{end+1}=fileparts(which('spm'));
+                if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
+                    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
+                    SPMTools = SPMTools{1};
+                    for p = SPMTools'
+                        if exist(p{1},'dir'), aapath{end+1}=p{1};end        
+                    end
+                end   
+                % MNE
+                if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
+                    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
+                        aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','toolbox');
+                        aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','examples');
+                    end
+                end 
                 aapath=aapath(strcmp('',aapath)==0);
                 
                 if isprop(J,'AdditionalPaths')

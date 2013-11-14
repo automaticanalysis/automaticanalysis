@@ -187,8 +187,8 @@ if (~isempty(GlobalTextNodes))
   RootName = GlobalTextNodes;
 end
 
-if isfield(tree,'aap') % XInclude used
-    tree = mergeStructs(tree.aap,tree.mod);
+if isfield(tree,'local') % locals used
+    tree = mergeStructs(tree.aap,tree.local);
 end
 
 %% =======================================================================
