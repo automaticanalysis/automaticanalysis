@@ -76,6 +76,7 @@
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
         <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
+        <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
         <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
         <autoidentifystructural_multiple desc='We require several structurals to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifystructural_multiple>
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>1</autoidentifyfieldmaps>
