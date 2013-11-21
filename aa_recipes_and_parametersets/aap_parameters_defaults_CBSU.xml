@@ -41,6 +41,7 @@
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
         </directory_conventions>
         <options>
+			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
         </options>
     </local>

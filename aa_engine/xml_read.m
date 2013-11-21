@@ -187,9 +187,7 @@ if (~isempty(GlobalTextNodes))
   RootName = GlobalTextNodes;
 end
 
-if isfield(tree,'local') % locals used
-    tree = mergeStructs(tree.aap,tree.local);
-end
+tree = expand_tree(tree);
 
 %% =======================================================================
 %  === DOMnode2struct Function ===========================================
@@ -431,6 +429,17 @@ switch (node.getNodeType)
     warning('xml_io_tools:read:unkNode', ...
       'Unknown node type encountered: %s_NODE (%s)', NodeType{node.getNodeType}, Name);
     LeafNode = -1;
+end
+
+%% =======================================================================
+%  === expand_tree Function =================================================
+%  =======================================================================
+function otree = expand_tree(itree)
+if isfield(itree,'local') % locals used
+    otree = expand_tree(itree.aap);
+    otree = mergeStructs(otree,itree.local);
+else
+    otree = itree;
 end
 
 %% =======================================================================
