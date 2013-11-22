@@ -188,6 +188,7 @@ if (~isempty(GlobalTextNodes))
 end
 
 tree = expand_tree(tree);
+if isfield(tree,'ATTRIBUTE'), tree = rmfield(tree,'ATTRIBUTE'); end
 
 %% =======================================================================
 %  === DOMnode2struct Function ===========================================
