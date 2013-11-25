@@ -56,7 +56,7 @@ for v = 2:size(LIST,1)
     if ~isfield(aap.acq_details.input, 'selected_sessions') || ~any(aap.acq_details.input.selected_sessions),...
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
-    aap=aas_addsubject(aap,strSubj,aSess(aap.acq_details.input.selected_sessions));
+    aap=aas_addsubject(aap,VOL,aSess(aap.acq_details.input.selected_sessions));
    
     % Obtain TR from the first session
     h = dicominfo(mri_finddcm(aap,VOL,aSess(1)));
