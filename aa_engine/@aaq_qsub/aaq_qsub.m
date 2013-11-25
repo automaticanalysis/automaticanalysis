@@ -169,18 +169,18 @@ classdef aaq_qsub<aaq
                 aapath=textscan(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); aapath = aapath{1};
                 % SPM
                 aapath{end+1}=fileparts(which('spm'));
-                if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
-                    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
+                if isfield(obj.aap.directory_conventions,'spmtoolsdir') && ~isempty(obj.aap.directory_conventions.spmtoolsdir)
+                    SPMTools = textscan(obj.aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
                     SPMTools = SPMTools{1};
                     for p = SPMTools'
                         if exist(p{1},'dir'), aapath{end+1}=p{1};end        
                     end
                 end   
                 % MNE
-                if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
-                    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
-                        aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','toolbox');
-                        aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','examples');
+                if isfield(obj.aap.directory_conventions,'mnedir') && ~isempty(obj.aap.directory_conventions.mnedir)
+                    if exist(fullfile(obj.aap.directory_conventions.mnedir,'matlab'),'dir')
+                        aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','toolbox');
+                        aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','examples');
                     end
                 end 
                 aapath=aapath(strcmp('',aapath)==0);
