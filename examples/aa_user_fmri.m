@@ -24,7 +24,7 @@ aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
 % Set slice order for slice timing correction
 aap.tasksettings.aamod_slicetiming.sliceorder=[32:-1:1];       	% descending
 aap.tasksettings.aamod_slicetiming.refslice = 16;              	% reference slice (first acquired)
-aap.tasksettings.aamod_firstlevel_model.UNITS = 'secs';        	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
+aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';    	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclude Moco params in/from DM, typical value 1
 
 % STUDY
