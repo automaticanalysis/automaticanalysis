@@ -286,7 +286,8 @@ function h = efficiency(aap,subj,cons,SPM)
 X = SPM.xX.xKXs.X;
 iXX=inv(X'*X);
 
-nameCols = SPM.xX.name(SPM.xX.iC);
+[junk, nameCols] = strtok(SPM.xX.name(SPM.xX.iC),' ');
+nameCols = strtok(nameCols,'*');
 nameCons = {SPM.xCon.name}';
 effic = nan(numel(cons), 1);
 columnsCon = nan(numel(cons), length(nameCols));
@@ -302,19 +303,21 @@ for conind = 1:numel(cons)
     effic(conind) = trace(fullCon*iXX*fullCon')^-1;    
 end
 
-h = figure;
+h = figure; set(h, 'Position', [1 1 1280 720]); % HD
 
-subplot('Position', [0.1 0.25 0.35 0.7]);
+subplot('Position', [0.15 0.5 0.3 0.5/10*numel(cons)]); % assume not more then 10 contrast
 imagesc(columnsCon)
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
-    'Xtick', 1:length(nameCols))
+    'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
+set(gca, 'XAxisLocation','top');
 xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',8,'FontWeight','Bold');
 set(xlab,'FontSize',8,'FontWeight','Bold');
 
-subplot('Position', [0.6 0.25 0.35 0.7]);
+subplot('Position', [0.65 0.5 0.3 0.5/10*numel(cons)]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',flipud(nameCons))
-set(gca,'FontSize',8,'FontWeight','Bold'); hold on;
+set(gca,'FontSize',8,'FontWeight','Bold');
+hold on;
 cmap = colorcube(numel(cons));
 
 for conind = 1:numel(cons)        
@@ -326,7 +329,17 @@ xlabel('Log Efficiency')
 efficiencyVals = -3:1:8;
 set(gca, 'Xtick', efficiencyVals, 'XtickLabel', exp(efficiencyVals))
 
-set(h,'PaperPosition',get(h,'PaperPosition').*[1 1 1 0.2]+[-10 0 0 0]);
-print(h,'-djpeg','-r150',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast'));
+fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
+print(h,'-djpeg','-r150',fname);
 close(h);
+
+% cut image assuming (1,1) to be empty
+cdata = imread(fname);
+img = sum(cdata,3); rows = sum(img,2); columns = sum(img,1);
+row1 = find(rows ~= rows(1),1,'first');
+row2 = find(rows ~= rows(1),1,'last');
+column1 = find(columns ~= columns(1),1,'first');
+column2 = find(columns ~= columns(1),1,'last');
+cdata = cdata(row1:row2,column1:column2,:);
+imwrite(cdata,fname);
 end

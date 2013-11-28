@@ -18,6 +18,7 @@ function th=rotateticklabel(h,rot)
 
 %   Written Oct 14, 2005 by Andy Bliss
 %   Modified Dec 6, 2011 by Alejandro Vicente Grabovetsky
+%   Modified Nov 28, 2013 by Tibor Auer
 %   Copyright 2005 by Andy Bliss
 
 %set the default rotation if user doesn't specify
@@ -39,4 +40,9 @@ set(h,'XTickLabel',[]);
 b=get(h,'XTick');
 c=get(h,'YTick');
 %make new tick labels
-th=text(b,repmat(c(end),length(b),1)*1.03 + 1/2,a,'HorizontalAlignment','right','rotation',rot);
+switch get(gca, 'XAxisLocation')
+    case 'top'
+        th=text(b,repmat(c(1),length(b),1)*1.03 - 1/2,a,'HorizontalAlignment','left','rotation',rot);
+    case 'bottom'
+        th=text(b,repmat(c(end),length(b),1)*1.03 + 1/2,a,'HorizontalAlignment','right','rotation',rot);
+end
