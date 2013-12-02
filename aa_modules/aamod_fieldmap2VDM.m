@@ -57,7 +57,6 @@ switch task
                 unix(['mv ' squeeze(FMfn(f,:)) ' ' FMdir])
             end
         end
-        
         FieldMap_preprocess(FMdir,EPIdir,...
             pm_defs,...
             'session');
