@@ -26,7 +26,7 @@
             <dicomfilter ui='text'>*.dcm</dicomfilter>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/latest/x86_64/</freesurferdir>        
