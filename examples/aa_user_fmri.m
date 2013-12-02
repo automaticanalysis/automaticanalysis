@@ -20,7 +20,7 @@ aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
 aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value localsingle
 aap.options.autoidentifyfieldmaps=1;  							% typical value 1
 aap.options.NIFTI4D = 1;										% typical value 0
-aap.options.email='Tibor.Auer@mrc-cbu.cam.ac.uk';
+aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
 % Set slice order for slice timing correction
 aap.tasksettings.aamod_slicetiming.sliceorder=[32:-1:1];       	% descending
 aap.tasksettings.aamod_slicetiming.refslice = 16;              	% reference slice (first acquired)
@@ -29,8 +29,8 @@ aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclud
 
 % STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/ta02/Workshop';
-aap.directory_conventions.analysisid = 'AA_fMRI';
+aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
+aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
 aap=aas_addsubject(aap,90952,[7]);
 aap = aas_addsession(aap,'Loc');
