@@ -1,12 +1,23 @@
-function [aap,resp]=aamod_firstlevel_modelspecify(aap, task, subjInd)
+function [aap,resp]=aamod_firstlevel_scrubbingmodel(aap, task, subjInd)
 %
+% This module creates a first level model intended to denoise fMRI
+% timeseries.  Columns of the GLM can include: Bandpass filter regressors,
+% CSF and WM signals, motion parameters, their lag-3 2nd order volteraa 
+% expansion, and "spike" regressors".  If you don't want to include any of
+% those things, set the apporporiate option in the corresponding .xml file,
+% and comment out any streams you don't need.
 %
-% One goal is to be as flexible as possible, allowing for multiple types of
-% analyses using the same script but different settings (task-based fMRI,
-% resting state functional connectivity, ISSS sparse imaging, etc.).
+% It should also be possible to include task-related regressors if you wish
+% to regress those out the data, too.
 %
-% NB Currently this function is in alpha mode, just getting it to do
-% resting state. - JP
+% Once the model is created, aamod_firstlevel_modelestimate_saveresids
+% should be rrun to actually estimate the model and save the residual time
+% series.
+%
+% This module is based on one originally created by Jonathan Peelle, and
+% includes snippets of code supplied by Rik Henson.  Thank you!
+%
+% -- conorwild -- 02/12/2013 
 
 resp='';
 
