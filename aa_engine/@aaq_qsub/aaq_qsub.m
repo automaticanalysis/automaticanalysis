@@ -36,7 +36,7 @@ classdef aaq_qsub<aaq
             while any(obj.jobnotrun) && ~waitforalljobs
                 
                 % Lets not overload the filesystem
-                pause(10);
+                pause(1);
                 
                 for i=1:njobs
                     if (obj.jobnotrun(i))
@@ -168,7 +168,12 @@ classdef aaq_qsub<aaq
                 mfpi=find(strcmp('aa_engine',mfp));
                 aapath=textscan(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); aapath = aapath{1};
                 % SPM
-                aapath{end+1}=fileparts(which('spm'));
+                aapath{end+1}=fileparts(which('spm')); % SPM dir
+                p = textscan(path,'%s','delimiter',':'); p = p{1};
+                p_ind = cell_index(p,aapath{end}); % SPM-related dir
+                for ip = p_ind
+                    aapath{end+1} = p{ip};
+                end
                 if isfield(obj.aap.directory_conventions,'spmtoolsdir') && ~isempty(obj.aap.directory_conventions.spmtoolsdir)
                     SPMTools = textscan(obj.aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
                     SPMTools = SPMTools{1};

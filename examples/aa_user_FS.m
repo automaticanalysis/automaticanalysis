@@ -19,12 +19,13 @@ aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_freesurfer.xml');
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub';
 aap.options.autoidentifyfieldmaps=0;  % typical value 1
-aap.options.email='Tibor.Auer@mrc-cbu.cam.ac.uk';
+aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/ta02/AA';
-aap.directory_conventions.analysisid = 'AA_FS';
+aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
+aap.directory_conventions.analysisid = 'Nature_Paper'; 
+
 aap.directory_conventions.continueanalysis = 1;
 
 % cbu

@@ -112,13 +112,12 @@ SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
 SPM.xBF.name       = 'hrf';
 SPM.xBF.length     = 32;                % length in seconds
 SPM.xBF.order      = 1;                 % order of basis set
-
 % SPM.xBF.T0 is dealt with a bit further down
 
 % Collect values from the .xml or user script
 if isfield(aap.tasklist.currenttask.settings,'xBF')
     fields = fieldnames(aap.tasklist.currenttask.settings.xBF);
-    for f = 1 : numel(fields)
+    for f = 1:numel(fields)
         % Overwrite the default if something is specified
         if ~isempty(aap.tasklist.currenttask.settings.xBF.(fields{f}))
             SPM.xBF.(fields{f}) = aap.tasklist.currenttask.settings.xBF.(fields{f});
@@ -185,8 +184,7 @@ SPM.xVi.form = 'AR(1)';
 %% Adjust time bin T0 according to reference slice & slice order
 %  implements email to CBU from Rik Henson 27/06/07
 %  assumes timings are relative to beginning of scans
-
-if isempty(SPM.xBF.T0) % Allow T0 override in .xml, or settings
+if ~isfield(SPM.xBF,'T0') || isempty(SPM.xBF.T0) % Allow T0 override in .xml, or settings
     if (usesliceorder)
         refwhen=(find(sliceorder==refslice))/(length(sliceorder));
         SPM.xBF.T = numel(sliceorder);
