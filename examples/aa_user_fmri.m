@@ -32,7 +32,7 @@ aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclud
 aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
 aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
-aap=aas_addsubject(aap,90952,[7]);
+aap = aas_addsubject(aap,90952,[7]);
 aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,90971,[7]);
 aap = aas_addsession(aap,'Loc');
@@ -41,8 +41,10 @@ aap = aas_addsession(aap,'Loc');
 h = dicominfo(mri_finddcm(aap, 90952,7));
 TR = h.RepetitionTime/1000; % in seconds
 
-aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','RightFinger',[70.130 140.288 170.339 240.480 310.605 340.671]-aap.acq_details.numdummies*TR,[10 10 10 10 10 10]);
-aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','Rest',[30.057 100.198 160.318 200.390 270.531 330.649]-aap.acq_details.numdummies*TR,[10 10 10 10 10 10]);
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90952),'*','RightFinger',[70.044 130.078 350.204 450.261]-aap.acq_details.numdummies*TR,[20.011 20.012 20.011 20.012]);
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90952),'*','Rest',[50.033 170.101 330.193 410.238]-aap.acq_details.numdummies*TR,[20.011 20.012 20.011 20.012]);
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90971),'*','RightFinger',[70.087 140.178 170.212 240.319 310.442 340.492]-aap.acq_details.numdummies*TR,[10.007 10.006 10.022 10.022 10.022 10.022]);
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90971),'*','Rest',[30.032 100.123 160.206 200.262 270.385 330.471]-aap.acq_details.numdummies*TR,[10.005 10.021 10.006 10.006 10.007 10.022]);
 aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[1 -1],'Loc_RightFinger-Rest','T');
 
 %% DO ANALYSIS
