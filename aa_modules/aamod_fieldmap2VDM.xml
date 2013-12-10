@@ -12,7 +12,9 @@
             
             <inputstreams>
                 <stream>epi</stream>
+				<stream>epi_dicom_header</stream>
                 <stream>fieldmap</stream>
+				<stream>fieldmap_dicom_header</stream>
             </inputstreams>
             
             <outputstreams>

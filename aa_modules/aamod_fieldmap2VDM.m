@@ -32,6 +32,24 @@ switch task
             aap.tasklist.currenttask.settings.mask, ... % (mask)
             aap.tasklist.currenttask.settings.match, ... % (match)
             aap.tasklist.currenttask.settings.writeunwarpedEPI]; % (writeunwarpedEPI)
+
+        % retrieve actual values
+        try % tert (based on the first EPI) --> TODO: session-specific fieldmaps
+            EPI_DICOMHEADERS=load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header'));
+            pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberofPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
+        catch
+            aas_log(aap,0,'Error during retrieving Total EPI Readout Time - Default is used!');
+        end
+        try % te1 and te2
+            FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,'fieldmap_dicom_header'));
+            dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
+            tes = sort(unique([dcmhdrs.EchoTime]),'ascend');
+            if numel(tes) > 2, error('wrong!'); end
+            pm_defs(1:2) = tes;
+        catch
+            aas_log(aap,0,'Error during retrieving Fieldmap Echo Times - Defaults are used!');
+        end
+        
         
         % Fieldmap path
         FMdir = fullfile(aas_getsubjpath(aap, subj), aap.directory_conventions.fieldmapsdirname);
@@ -54,7 +72,7 @@ switch task
         FMfns = dir(fullfile(FMdir, '*.nii'));
         if isempty(FMfns)
             for f = 1:size(FMfn,1)
-                unix(['mv ' squeeze(FMfn(f,:)) ' ' FMdir])
+                aas_shell(['mv ' squeeze(FMfn(f,:)) ' ' FMdir]);
             end
         end
         FieldMap_preprocess(FMdir,EPIdir,...
@@ -67,7 +85,7 @@ switch task
         if length(EPIdir) == 1
             VDMs = dir(fullfile(FMdir, 'vdm*.nii'));
             [junk, fn, ext] = fileparts(VDMs.name);
-            unix(['mv ' fullfile(FMdir, VDMs.name) ' ' ...
+            aas_shell(['mv ' fullfile(FMdir, VDMs.name) ' ' ...
                 fullfile(FMdir, [fn '_session1' ext])]);
         end
         
@@ -81,7 +99,7 @@ switch task
             % This gets the selected sessions!
             newfn = [VDMs(v).name(1:indx-1), ...
                 aap.acq_details.sessions(aap.acq_details.selected_sessions(s)).name,'.nii'];
-            unix(['mv ' fullfile(FMdir, VDMs(v).name)...
+            aas_shell(['mv ' fullfile(FMdir, VDMs(v).name)...
                 ' ' fullfile(FMdir, newfn)]);
             outstream = [outstream fullfile(FMdir, newfn)];
         end
