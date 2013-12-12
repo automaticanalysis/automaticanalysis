@@ -66,11 +66,11 @@ switch task
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
             for sess=1:nsess
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
-                figure; boxplot(mvmax,'label',meas);
+                f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
                 print('-djpeg','-r75',fn);
-                close(gcf);
+                close(f);
                 
                 aap = aas_report_add(aap,'moco','<td>');
                 aap = aas_report_add(aap,'moco',['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
@@ -239,5 +239,6 @@ if toDisp
     
     print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),...
         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']));
+	close(fg);
 end
 end
