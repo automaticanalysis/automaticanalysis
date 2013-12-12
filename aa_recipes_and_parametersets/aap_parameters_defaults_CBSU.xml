@@ -8,7 +8,7 @@
             <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-            <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
+            <rawdatadir desc='Subdirectories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
             <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>1</subject_directory_format>

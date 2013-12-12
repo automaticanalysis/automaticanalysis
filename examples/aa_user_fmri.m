@@ -4,7 +4,7 @@
 % Example (aa version 4.*)
 %
 % Tibor Auer, MRC-CBSU
-% 20-03-2013
+% 09-12-2013
 
 %% INITIALISE
 clear
@@ -12,7 +12,6 @@ clear
 aa_ver4_nocloud
 
 %% DEFINE SPECIFIC PARAMETERS
-% ANALYSIS RECIPE
 %  Default recipe without model
 aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
 
@@ -27,26 +26,43 @@ aap.tasksettings.aamod_slicetiming.refslice = 16;              	% reference slic
 aap.tasksettings.aamod_firstlevel_model.UNITS = 'secs';        	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclude Moco params in/from DM, typical value 1
 
-% STUDY
+%% STUDY
 % Directory for analysed data
 aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
 aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
-aap=aas_addsubject(aap,90952,[7]);
+% Add data
+aap = aas_addsubject(aap,90952,[7]);
 aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,90971,[7]);
 aap = aas_addsession(aap,'Loc');
 
+% Add model
 % Obtain TR from the first session
 h = dicominfo(mri_finddcm(aap, 90952,7));
 TR = h.RepetitionTime/1000; % in seconds
 
-aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','RightFinger',[70.130 140.288 170.339 240.480 310.605 340.671]-aap.acq_details.numdummies*TR,[10 10 10 10 10 10]);
-aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','Rest',[30.057 100.198 160.318 200.390 270.531 330.649]-aap.acq_details.numdummies*TR,[10 10 10 10 10 10]);
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[1 -1],'Loc_RightFinger-Rest','T');
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90973),'*',...
+    'REST',...                                                                                  % name
+    [30.0560 100.1620 160.2800 200.3700 280.5340 340.6670]-aap.acq_details.numdummies*TR,...    % onsets
+    [10.0070  10.0230  10.0230  10.0220  10.0210  10.0230]);                                    % durations
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90973),'*',...
+    'RIGHTFINGER',...                                                                           % name
+    [70.0960 140.2360 170.3030 240.4600 320.6220 350.6890]-aap.acq_details.numdummies*TR,...    % onsets
+    [10.0220  10.0220  10.0220  10.0220  10.0230  10.0230]);                                    % durations
+
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90979),'*',...
+    'REST',...                                                                                  % name
+    [30.0570 100.1310 160.1990 200.2380 270.3610 330.4300]-aap.acq_details.numdummies*TR,...    % onsets
+    [10.0070  10.0220  10.0060  10.0220  10.0070  10.0220]);                                    % durations
+aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90979),'*',...
+    'RIGHTFINGER',...                                                                           % name
+    [70.0970 140.1860 170.2050 240.3110 310.4020 340.4510]-aap.acq_details.numdummies*TR,...    % onsets
+    [10.0060  10.0070  10.0210  10.0220  10.0210  10.0220]);                                    % durations
+
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[-1 1],'Loc_RightFinger-Rest','T');
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
 aas_garbagecollection(aap,true);
-% clear all;

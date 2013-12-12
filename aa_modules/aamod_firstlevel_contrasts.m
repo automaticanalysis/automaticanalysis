@@ -234,7 +234,7 @@ switch task
         SPM = spm_contrasts(SPM);
         
         % Efficiency based on Rik Henson's script [TA]
-        efficiency(aap, subj, cons, SPM);
+        efficiency(aap, subj, SPM);
         
         % Describe outputs
         %  updated spm
@@ -274,7 +274,7 @@ switch task
 end
 end
 
-function h = efficiency(aap,subj,cons,SPM)
+function h = efficiency(aap,subj,SPM)
 % Based on Rik Henson's script
 
 % Note this calculation of efficiency takes the 'filtered and whitened'
@@ -282,18 +282,22 @@ function h = efficiency(aap,subj,cons,SPM)
 
 % SPM gets passed in now, because this will load the input stream SPM file,
 % which doesn't (always) have the contrasts.
-% load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
+
+if nargin < 3 % SPM is not passed (e.g. reporting)
+    load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
+end
 X = SPM.xX.xKXs.X;
 iXX=inv(X'*X);
 
 [junk, nameCols] = strtok(SPM.xX.name(SPM.xX.iC),' ');
 nameCols = strtok(nameCols,'*');
 nameCons = {SPM.xCon.name}';
+cons = {SPM.xCon.c};
 effic = nan(numel(cons), 1);
 columnsCon = nan(numel(cons), length(nameCols));
 
 for conind = 1:numel(cons)    
-    fullCon = cons{conind};
+    fullCon = cons{conind}';
     selCon = fullCon(SPM.xX.iC);    
     columnsCon(conind, :) = selCon;    
     
@@ -303,20 +307,26 @@ for conind = 1:numel(cons)
     effic(conind) = trace(fullCon*iXX*fullCon')^-1;    
 end
 
+% get Text size
 h = figure; set(h, 'Position', [1 1 1280 720]); % HD
+ht = text(1,1,nameCons,'FontSize',12,'FontWeight','Bold','interpreter','none');
+set(ht,'Unit','normalized');
+tSize = get(ht,'Extent'); tWidth = tSize(3);
+close(h);
 
-subplot('Position', [0.15 0.5 0.3 0.5/10*numel(cons)]); % assume not more then 10 contrast
+h = figure; set(h, 'Position', [1 1 1280 720]); % HD
+subplot('Position', [tWidth 0.5 0.6-tWidth 0.5/10*numel(cons)]); % assume not more then 10 contrast
 imagesc(columnsCon)
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
 set(gca, 'XAxisLocation','top');
 xlab = rotateticklabel(gca,90);
-set(gca,'FontSize',8,'FontWeight','Bold');
-set(xlab,'FontSize',8,'FontWeight','Bold');
+set(gca,'FontSize',12,'FontWeight','Bold');
+set(xlab,'FontSize',12,'FontWeight','Bold');
 
-subplot('Position', [0.65 0.5 0.3 0.5/10*numel(cons)]);
-set(gca, 'YTick', 1:numel(cons), 'YTickLabel',flipud(nameCons))
-set(gca,'FontSize',8,'FontWeight','Bold');
+subplot('Position', [0.6 0.5 0.35 0.5/10*numel(cons)]);
+set(gca, 'YTick', 1:numel(cons), 'YTickLabel','');
+set(gca,'FontSize',12,'FontWeight','Bold');
 hold on;
 cmap = colorcube(numel(cons));
 
@@ -324,10 +334,10 @@ for conind = 1:numel(cons)
     barh(numel(cons) - conind + 1, log(effic(conind)), 'FaceColor',cmap(conind,:));
 end
 
-ylim([-0.5 numel(cons)+1])
+ylim([0.5 numel(cons)+0.5])
 xlabel('Log Efficiency')
-efficiencyVals = -3:1:8;
-set(gca, 'Xtick', efficiencyVals, 'XtickLabel', exp(efficiencyVals))
+efficiencyVals = floor(log(min(effic))):0.1:ceil(log(max(effic)));
+set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
 
 fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
 print(h,'-djpeg','-r150',fname);
