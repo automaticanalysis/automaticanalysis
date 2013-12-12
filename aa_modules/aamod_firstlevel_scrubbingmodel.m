@@ -122,7 +122,8 @@ switch task
             % Get files (do this first as some other options need to know
             % how many files)
             thisSessFiles = aas_getfiles_bystream(aap, subjInd, thisSess, 'epi');
-            nScans = size(thisSessFiles, 1);      
+            Vs = spm_vol(thisSessFiles);
+            nScans = numel(Vs);      
             
             % Get model data from aap
             subjmatches=strcmp(subjName,{settings.model.subject});
