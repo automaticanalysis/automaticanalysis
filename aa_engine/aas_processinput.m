@@ -34,6 +34,10 @@ if ~aap.directory_conventions.continueanalysis
     end
 end
 
+% get module name for first-level analysis
+modulenames = fieldnames(aap.tasksettings);
+firstlevel = modulenames{cell_index(modulenames,'firstlevel_model')};
+
 % Reads in header
 head = study_header(aap.acq_details.input.list);
 LIST = importdata(aap.acq_details.input.list);
@@ -69,7 +73,7 @@ for v = 2:size(LIST,1)
             load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
             for iEV = 1:numel(names)
                 % Event onsets has to be corrected accoring to the number of dummies
-                aap=aas_addevent(aap,'aamod_firstlevel_model',strSubj,session,names{iEV},onsets{iEV}-aap.acq_details.numdummies*TR,durations{iEV});
+                aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-aap.acq_details.numdummies*TR,durations{iEV});
             end
         end
     end
