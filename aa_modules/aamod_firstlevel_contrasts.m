@@ -315,7 +315,7 @@ tSize = get(ht,'Extent'); tWidth = tSize(3);
 close(h);
 
 h = figure; set(h, 'Position', [1 1 1280 720]); % HD
-subplot('Position', [tWidth 0.5 0.6-tWidth 0.5/10*numel(cons)]); % assume not more then 10 contrast
+subplot('Position', [tWidth 0.1 0.6-tWidth 0.9/20*numel(cons)]); % assume not more then 20 contrast
 imagesc(columnsCon)
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
@@ -324,7 +324,7 @@ xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',12,'FontWeight','Bold');
 set(xlab,'FontSize',12,'FontWeight','Bold');
 
-subplot('Position', [0.6 0.5 0.35 0.5/10*numel(cons)]);
+subplot('Position', [0.6 0.1 0.35 0.9/20*numel(cons)]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel','');
 set(gca,'FontSize',12,'FontWeight','Bold');
 hold on;
