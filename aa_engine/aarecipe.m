@@ -14,7 +14,7 @@ end;
 clear aap
 
 % First work on default parameters
-if (~length(which(defaultparameters)))
+if ~exist(defaultparameters,'file')
     fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
 end;
 
@@ -24,8 +24,8 @@ aap.schema=xml_read(defaultparameters);
 
 
 % And now load up task list
-if (exist('tasklistxml','var'))
-    if (~length(which(tasklistxml)))
+if exist('tasklistxml','var')
+    if ~exist(tasklistxml,'file')
         aas_log(aap,true,sprintf('Cannot find file %s as specified in call to aarecipe',tasklistxml));
     end;
     Pref.ReadAttr=1;
