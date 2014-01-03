@@ -32,7 +32,7 @@
             <TR></TR>
             
             <!-- units for design scans/secs -->
-            <UNITS>secs</UNITS>
+            <UNITS></UNITS>
 
             <!-- Describe model for design matrix
     You may do this in your own copy of this .xml file, or programmatically in your user script.
