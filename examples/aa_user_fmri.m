@@ -32,14 +32,14 @@ aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything';
 aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
 % Add data
-aap = aas_addsubject(aap,90952,[7]);
+aap = aas_addsubject(aap,90973,[7]);
 aap = aas_addsession(aap,'Loc');
-aap = aas_addsubject(aap,90971,[7]);
+aap = aas_addsubject(aap,90979,[7]);
 aap = aas_addsession(aap,'Loc');
 
 % Add model
 % Obtain TR from the first session
-h = dicominfo(mri_finddcm(aap, 90952,7));
+h = dicominfo(mri_finddcm(aap, 90973,7));
 TR = h.RepetitionTime/1000; % in seconds
 
 aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90973),'*',...
