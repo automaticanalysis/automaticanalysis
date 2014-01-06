@@ -20,7 +20,7 @@ switch task
         aas_makedir(aap,sesspth);
         [pth fle ext]=fileparts(aap.acq_details.subjects(subj).structural{1});
         Y=spm_read_vols(V(1));
-        fn=fullfile(sesspth,[sprintf('%s_%04d',fle,1) ext]);
+        fn=fullfile(sesspth,[sprintf('%s_%04d',fle,1) '.nii']);
         V(1).fname=fn;
         V(1).n=[1 1];
         spm_write_vol(V(1),Y);
