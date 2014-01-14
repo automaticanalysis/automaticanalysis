@@ -7,6 +7,7 @@ for fnind=1:length(fn)
         destaap.(fn{fnind})=aas_copyparameters(srcaap.(fn{fnind}),destaap.(fn{fnind}),[nme '.' fn{fnind}]);
     else
         if (~isfield(destaap,fn{fnind}))
+            fprintf('Error when copying extra parameters, field %s is present in %s of extraparameters.aap  but not in normal aap structure',fn{fnind},nme)
             aas_log(srcaap,true,sprintf('Error when copying extra parameters, field %s is present in %s of extraparameters.aap  but not in normal aap structure',fn{fnind},nme));
         end;
         destaap.(fn{fnind})=srcaap.(fn{fnind});

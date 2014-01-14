@@ -52,6 +52,7 @@ if exist('tasklistxml','var')
     
     aap.tasklist.main.module = pruneEmptyBranches(aap.tasklist.main.module);
     
+    % These fields were only used for creating the branching structures
     aap.tasklist.main.module = rmfield(aap.tasklist.main.module, {'branchID', 'ignorebranches'});
     
     % Calculate task parameters and indices for modules
