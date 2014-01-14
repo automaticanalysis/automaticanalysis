@@ -1,6 +1,6 @@
 function [SPM, cols_interest, cols_nuisance, currcol] = aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
     cols_interest, cols_nuisance, currcol, ...
-    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs)
+    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
 
 %% Define model{sess} events
 if ~isempty(model{sess})
@@ -113,4 +113,17 @@ if ~isempty(spikeRegs)
     
     cols_nuisance=[cols_nuisance currcol:(currcol+length(spikeRegs(sess).names) - 1)];
     currcol = currcol + length(spikeRegs(sess).names);
+end
+
+%% GLMdenoise regressors, if they exist... [CW]
+if ~isempty(GLMDNregs)
+    SPM.Sess(sessnuminspm).C.C = [SPM.Sess(sessnuminspm).C.C ...
+        GLMDNregs(sess).regs];
+    SPM.Sess(sessnuminspm).C.name = [SPM.Sess(sessnuminspm).C.name ...
+        GLMDNregs(sess).names];
+    
+    cols_nuisance=[cols_nuisance currcol:(currcol+length(GLMDNregs(sess).names) - 1)];
+    currcol = currcol + length(GLMDNregs(sess).names);
+end
+
 end

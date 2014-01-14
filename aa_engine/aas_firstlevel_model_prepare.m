@@ -112,6 +112,7 @@ SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
 SPM.xBF.name       = 'hrf';
 SPM.xBF.length     = 32;                % length in seconds
 SPM.xBF.order      = 1;                 % order of basis set
+SPM.xBF.bf         = [];                % Custom basis functions?
 % SPM.xBF.T0 is dealt with a bit further down
 
 % Collect values from the .xml or user script
@@ -125,12 +126,15 @@ if isfield(aap.tasklist.currenttask.settings,'xBF')
     end
 end
 
+% If no custom bf is specified, remove this field so SPM uses default behaviour
+if isempty(SPM.xBF.bf), SPM.xBF = rmfield(SPM.xBF, 'bf'); end
 
 %% Allow specifying UNITS
 % This should probably disappear, because UNITS is specified in xBF
 if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
         ~isempty(aap.tasklist.currenttask.settings.UNITS)
     SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
+    warning('UNITS should be specified in xBF.UNITS, not as it''s own setting. This setting may be removed in the future.');
 end
 
 %% retrieve TR from DICOM header

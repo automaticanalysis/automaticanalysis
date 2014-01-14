@@ -1,4 +1,4 @@
-function [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs] = ...
+function [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
     aas_firstlevel_model_nuisance(aap, subj, files)
 
 streamIn = aap.tasklist.currenttask.inputstreams.stream;
@@ -77,5 +77,17 @@ if ~isempty(SPstreams)
             spikeRegs(sess).regs(regrscans(r),r) = 1;    % scan regrscan(r) is at one for scan r
             spikeRegs(sess).names{r} = sprintf('SpikeMov%d', r);
         end
+    end
+end
+
+%% GLMdenoise regressors [CW]
+GLMDNregs = [];
+GLMDNstream = streamIn(strcmp('gd_results', streamIn));
+if ~isempty(GLMDNstream)
+    GLMDNfile = aas_getfiles_bystream(aap, subj, GLMDNstream{:});
+    load(GLMDNfile);
+    for sess = aap.acq_details.selected_sessions
+        GLMDNregs(sess).names = arrayfun(@(x) sprintf('GLMDN_%02d', x), [1:gd_results.pcnum], 'UniformOutput', false);
+        GLMDNregs(sess).regs = gd_results.pcregressors{sess}(:, 1:gd_results.pcnum);
     end
 end
