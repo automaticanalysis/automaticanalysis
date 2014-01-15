@@ -2,6 +2,25 @@ function [SPM, cols_interest, cols_nuisance, currcol] = aas_firstlevel_model_def
     cols_interest, cols_nuisance, currcol, ...
     movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
 
+%% Get Information about Basis functions 
+%  could have more than one column:
+%  e.g., time derivatives or a FLOBS-type basis set
+
+xBF = SPM.xBF;
+
+% Use an SPM BF if one is isn't specified
+if ~isfield(xBF, 'bf') || isempty(xBF.bf)
+    xBF = [];
+    xBF.dt = SPM.xY.RT;
+    xBF.name = SPM.xBF.name;
+    xBF.length = SPM.xBF.length;
+    xBF.order = SPM.xBF.order;
+    xBF = spm_get_bf(xBF);
+end
+
+% How many regressors make up this BF?
+numBFregs = size(xBF.bf, 2);
+
 %% Define model{sess} events
 if ~isempty(model{sess})
     for c = 1:length(model{sess}.event);
@@ -12,13 +31,14 @@ if ~isempty(model{sess})
             parametric=model{sess}.event(c).parametric;
             parLen = length(parametric);
         end
+        
         SPM.Sess(sessnuminspm).U(c) = struct(...
             'ons', model{sess}.event(c).ons,...
             'dur', model{sess}.event(c).dur,...
             'name', {{model{sess}.event(c).name}},...
             'P',parametric);
-        cols_interest=[cols_interest currcol:(currcol+parLen)];
-                    currcol=currcol+1+parLen;
+        cols_interest=[cols_interest [1:(1+parLen)*numBFregs]+currcol-1];
+        currcol=currcol+(1+parLen)*numBFregs;
     end
 end 
 
@@ -29,14 +49,7 @@ if ~isempty(modelC{sess})
     % xBF.name    - description of basis functions specified
     % xBF.length  - window length (seconds)
     % xBF.order   - order
-    
-    xBF = [];
-    xBF.dt = SPM.xY.RT;
-    xBF.name = SPM.xBF.name;
-    xBF.length = SPM.xBF.length;
-    xBF.order = SPM.xBF.order;
-    xBF = spm_get_bf(xBF);
-    
+
     for c = 1:length(modelC{sess}.covariate);
         covVect = modelC{sess}.covariate(c).vector;
         
