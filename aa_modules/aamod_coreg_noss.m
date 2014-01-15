@@ -45,6 +45,7 @@ switch task
        
         % Get path to structural for this subject
         inStream = aap.tasklist.currenttask.inputstreams.stream{1};
+        outStream = aap.tasklist.currenttask.outputstreams.stream{1};
         structImg = aas_getfiles_bystream(aap, subjInd, inStream);                
         VF = spm_vol(structImg);
 
@@ -55,7 +56,7 @@ switch task
           
         spm_get_space(structImg, M*spm_get_space(structImg));
        
-        aap = aas_desc_outputs(aap, subjInd, inStream, structImg);
+        aap = aas_desc_outputs(aap, subjInd, outStream, structImg);
 
         % Save graphical output - this will now be done by report task
         try
@@ -68,8 +69,12 @@ switch task
         end
 
         % Reslice images
-        fsl_diag(aap,subjInd);
-
+        try
+            fsl_diag(aap,subjInd);
+        catch
+            aas_log(aap, 0, 'Error running diagnostics for aamod_coreg_noss, but coregistration completed ok.');
+        end
+            
 	case 'checkrequirements'
         
 end
@@ -78,7 +83,10 @@ end
 function fsl_diag(aap,i)
 fP = aas_getfiles_bystream(aap,i,'meanepi');
 subj_dir=aas_getsubjpath(aap,i);
-sP = aas_getfiles_bystream(aap,i,'structural');
+
+inStream = aap.tasklist.currenttask.inputstreams.stream{1};
+
+sP = aas_getfiles_bystream(aap,i,inStream);
 spm_reslice({fP,sP},aap.spm.defaults.coreg.write)
 delete(fullfile(fileparts(fP),['mean' basename(fP) '.nii']));
 % Create FSL-like overview
