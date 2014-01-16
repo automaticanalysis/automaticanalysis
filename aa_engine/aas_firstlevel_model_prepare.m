@@ -102,41 +102,6 @@ end
 %%%%%%%%%%%%%%%%%%%
 clear SPM
 
-%% Set up basis functions
-
-% Start with defaults.  Some, none, or all of these might be changed in the
-% .xml or the user script.
-SPM.xBF.T          = 17;                % number of time bins per scan
-SPM.xBF.UNITS      = 'scans';           % OPTIONS: 'scans'|'secs' for onsets
-SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
-SPM.xBF.name       = 'hrf';
-SPM.xBF.length     = 32;                % length in seconds
-SPM.xBF.order      = 1;                 % order of basis set
-SPM.xBF.bf         = [];                % Custom basis functions?
-% SPM.xBF.T0 is dealt with a bit further down
-
-% Collect values from the .xml or user script
-if isfield(aap.tasklist.currenttask.settings,'xBF')
-    fields = fieldnames(aap.tasklist.currenttask.settings.xBF);
-    for f = 1:numel(fields)
-        % Overwrite the default if something is specified
-        if ~isempty(aap.tasklist.currenttask.settings.xBF.(fields{f}))
-            SPM.xBF.(fields{f}) = aap.tasklist.currenttask.settings.xBF.(fields{f});
-        end
-    end
-end
-
-% If no custom bf is specified, remove this field so SPM uses default behaviour
-if isempty(SPM.xBF.bf), SPM.xBF = rmfield(SPM.xBF, 'bf'); end
-
-%% Allow specifying UNITS
-% This should probably disappear, because UNITS is specified in xBF
-if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
-        ~isempty(aap.tasklist.currenttask.settings.UNITS)
-    SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
-    warning('UNITS should be specified in xBF.UNITS, not as it''s own setting. This setting may be removed in the future.');
-end
-
 %% retrieve TR from DICOM header
 % TR is manually specified (not recommended as source of error)
 if isfield(aap.tasklist.currenttask.settings,'TR') && ...
@@ -164,6 +129,43 @@ else
             end
         end
     end
+end
+
+%% Set up basis functions
+
+% Start with defaults.  Some, none, or all of these might be changed in the
+% .xml or the user script.
+SPM.xBF.T          = 17;                % number of time bins per scan
+SPM.xBF.UNITS      = 'scans';           % OPTIONS: 'scans'|'secs' for onsets
+SPM.xBF.Volterra   = 1;                 % OPTIONS: 1|2 = order of convolution
+SPM.xBF.name       = 'hrf';
+SPM.xBF.length     = 32;                % length in seconds
+SPM.xBF.order      = 1;                 % order of basis set
+SPM.xBF.bf         = [];                % Custom basis functions?
+% SPM.xBF.T0 is dealt with a bit further down
+
+% Collect values from the .xml or user script
+if isfield(aap.tasklist.currenttask.settings,'xBF')
+    fields = fieldnames(aap.tasklist.currenttask.settings.xBF);
+    for f = 1:numel(fields)
+        % Overwrite the default if something is specified
+        if ~isempty(aap.tasklist.currenttask.settings.xBF.(fields{f}))
+            SPM.xBF.(fields{f}) = aap.tasklist.currenttask.settings.xBF.(fields{f});
+        end
+    end
+end
+
+SPM.xBF.dt = SPM.xY.RT / SPM.xBF.T; % Time bin length in secs
+
+% If no custom bf is specified, remove this field so SPM uses default behaviour
+if isempty(SPM.xBF.bf), SPM.xBF = rmfield(SPM.xBF, 'bf'); end
+
+%% Allow specifying UNITS
+% This should probably disappear, because UNITS is specified in xBF
+if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
+        ~isempty(aap.tasklist.currenttask.settings.UNITS)
+    SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
+    warning('UNITS should be specified in xBF.UNITS, not as it''s own setting. This setting may be removed in the future.');
 end
 
 %% Get slice order from sliceorder stream if it exists, check same
