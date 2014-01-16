@@ -252,24 +252,30 @@ switch task
             C = []; % confounds
             Cnames = []; % names
           
-            % Compartment signals (GM, WM, CSF)
-            compFiles = aas_getfiles_bystream(aap, subjInd, spmSession, 'compSignal');
-            compSignals = load(compFiles);
             
-            if size(compSignals.compTC, 1) ~= nScans, aas_log(aap, 'compSig is wrong length!', 1); end
+            % Only get compFiles if requested (allows more flexibility in
+            % XML files)
             
-            % Include a CSF signal?
-            if settings.includeCSF
-                fprintf('Adding CSF signal as covariate.\n');
-                C = [C compSignals.compTC(:,3)];
-                Cnames = [Cnames 'CSF'];
-            end
-            
-            % Include a WM signal?
-            if settings.includeCSF
-                fprintf('Adding WM signal as covariate.\n');
-                C = [C compSignals.compTC(:,2)];
-                Cnames = [Cnames 'WM'];
+            if settings.includeCSF || settings.includeWM
+                % Compartment signals (GM, WM, CSF)
+                compFiles = aas_getfiles_bystream(aap, subjInd, spmSession, 'compSignal');
+                compSignals = load(compFiles);
+                
+                if size(compSignals.compTC, 1) ~= nScans, aas_log(aap, 'compSig is wrong length!', 1); end
+                
+                % Include a CSF signal?
+                if settings.includeCSF
+                    fprintf('Adding CSF signal as covariate.\n');
+                    C = [C compSignals.compTC(:,3)];
+                    Cnames = [Cnames 'CSF'];
+                end
+                
+                % Include a WM signal?
+                if settings.includeWM
+                    fprintf('Adding WM signal as covariate.\n');
+                    C = [C compSignals.compTC(:,2)];
+                    Cnames = [Cnames 'WM'];
+                end
             end
             
             % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping through sessions)
@@ -317,6 +323,7 @@ switch task
                 aas_log(aap, false, sprintf('%d temporal filtering regressors added for this session.', size(K,2)));
             end
             
+            settings.includeSpikes=0; % hack because includeSpikes was a cell?!? -JP
             if settings.includeSpikes
                 
                 % Get the spikes and moves
