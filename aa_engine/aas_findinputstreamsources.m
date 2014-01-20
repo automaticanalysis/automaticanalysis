@@ -24,9 +24,11 @@ for k1=1:length(aap.tasklist.main.module)
     if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
         inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
         streamlist=inputstreams.stream;
-        if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE') 
-            streamlist=streamlist{1};
-        end;
+
+        % Random evil check?  Why is this here??
+%         if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE')
+%             streamlist=streamlist{1};
+%         end;
              
         for i=1:length(streamlist)
             if iscell(inputstreams.stream)  && ~isstruct(inputstreams.stream{1})
