@@ -1,13 +1,4 @@
-% AA module - first level statistics
-% **********************************************************************
-% You should no longer need to change this module - you may just
-% modify the .xml or model in your user script
-% **********************************************************************
-% Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
-% Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
-% Thanks to Rik Henson for various suggestions
-
-function [aap,resp]=aamod_GLMdenoise(aap,task,subj)
+function [aap,resp] = aamod_GLMdenoise(aap, task, subjInd)
 
 resp='';
 
@@ -15,20 +6,29 @@ switch task
     case 'report'
         
     case 'doit'
-        memtic
+
+        settings = aap.tasklist.currenttask.settings;
+
+        % Get mask, if it's an input
+        if ismember('epiBETmask', settings.inputstreams.stream)
+            Mimg = aas_getfiles_bystream(aap,subj, 'epiBETmask');
+            Mimg = Mimg(1,:); % Only first one
+            M = ~logical(spm_read_vols(spm_vol(Mimg)));
+        else 
+            M = 0;
+        end
         
-        % Get mask
-        Mimg = aas_getfiles_bystream(aap,subj, 'epiBETmask');
-        Mimg = Mimg(1,:); % Only first one
-        M = logical(spm_read_vols(spm_vol(Mimg)));
+        opt.brainexclude = M;
         
         % Session Split
         session_split = aap.tasklist.currenttask.settings.session_split;
         if isempty(session_split)
             session_split{1} = aap.acq_details.selected_sessions;
         end
+        
         % Stimulus Duration in seconds...
         stimdur = aap.tasklist.currenttask.settings.stimdur;
+        
         % Options for GLMdenoise
         opt = aap.tasklist.currenttask.settings.opt;
         optFN = fieldnames(opt);
@@ -37,37 +37,36 @@ switch task
                 opt = rmfield(opt, optFN{o});
             end
         end
-        opt.brainmask = M;
-        
-        for z = 1:length(session_split)
+
+        for split = 1:length(session_split)
             aapSPM = aap;
-            aapSPM.acq_details.selected_sessions = session_split{z};
+            aapSPM.acq_details.selected_sessions = session_split{split};
+            
             % Prepare basic SPM model...
-            [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aapSPM, subj);
+            [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aapSPM, subjInd);
             TR = SPM.xY.RT;
             
-            gd_data = cell(1, length(session_split{z}));
-            for s = 1:length(session_split{z});
-                sess = session_split{z}(s);
+            gd_data = cell(1, length(session_split{split}));
+            
+            % Load the data for each session split
+            for s = 1:length(session_split{split});
+                sess = session_split{split}(s);
                 aas_log(aap, 0,  sprintf('Loading gd_data and model of sess %d', sess));
                 
                 % Get gd_data
-                V = spm_vol(files{sess}(1,:));
-                %gd_data{s} = single(nan(V.dim(1), V.dim(2), V.dim(3), size(files{sess},1)));
-                gd_data{s} = single(nan(sum(M(:)), size(files{sess},1)));
-                for f = 1:size(files{sess},1)
-                    %gd_data{s}(:,:,:,f) = spm_read_vols(spm_vol(files{sess}(f,:)));
-                    Y = spm_read_vols(spm_vol(files{sess}(f,:)));
-                    gd_data{s}(:,f) = Y(M);
-                end
+                Vs = spm_vol(files{sess});
+                gd_data{s} = single(spm_read_vols(Vs));
             end
             
-            memtoc
-            
             switch aap.tasklist.currenttask.settings.GDmode
+                
                 case ''
                     aas_log(aap, 1, 'You must specify the GDmode parameter, which sets how we use GLMdenoise')
+                    
                 case 'onsets'
+                    
+                    warning('GDmode ''onsets'' has not yet been tested extensively.  You might be better off trying GDmode = SPMdesign');
+                    
                     hrfmodel = 'assume';
                     hrfknobs = [];
                     
@@ -77,26 +76,26 @@ switch task
                         aas_log(aap, 1, 'You should specify the stimulus duration (in seconds) in your recipe');
                     end
                     
-                    gd_design = cell(1, length(session_split{z}));
-                    for s = 1:length(session_split{z});
-                        sess = session_split{z}(s);
+                    gd_design = cell(1, length(session_split{split}));
+                    for s = 1:length(session_split{split});
+                        sess = session_split{split}(s);
                         
                         % Set up model
                         gd_ons = cell(1, length(model{sess}.event));
-                        for e = 1:length(model{sess}.event)
-                            ons = (model{sess}.event(e).ons - 1) * TR; % in seconds & -1 to be in same coordinate system as GLMdenoise
-                            dur = ceil(model{sess}.event(e).dur * TR ./ stimdur); % in seconds / stimulus duration
-                            dur(dur == 0) = 1;
-                            
-                            gd_ons{e} = [];
-                            for o = 1:length(ons)
-                                for d = 1:dur(o);
-                                    gd_ons{e} = [gd_ons{e}; ons(o) + (d - 1) * stimdur];
-                                end
-                            end
-                        end
+                        %                         for e = 1:length(model{sess}.event)
+                        %                             ons = (model{sess}.event(e).ons);% - 1) * TR; % in seconds & -1 to be in same coordinate system as GLMdenoise
+                        %                             dur = ceil(model{sess}.event(e).dur * TR ./ stimdur); % in seconds / stimulus duration
+                        %                             dur(dur == 0) = 1;
+                        %
+                        %                             gd_ons{e} = [];
+                        %                             for o = 1:length(ons)
+                        %                                 for d = 1:dur(o);
+                        %                                     gd_ons{e} = [gd_ons{e}; ons(o) + (d - 1) * stimdur];
+                        %                                 end
+                        %                             end
+                        %                         end
                         
-                        gd_design{s} = gd_ons;
+                        gd_design{s} = {model{sess}.event.ons};
                     end
                     
                 case 'SPMdesign'
@@ -109,8 +108,8 @@ switch task
                     end
                     
                     % Get all the nuisance regressors...
-                    [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs] = ...
-                        aas_firstlevel_model_nuisance(aapSPM, subj, files);
+                    [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
+                        aas_firstlevel_model_nuisance(aapSPM, subjInd, files);
                     
                     %% Set up CORE model
                     
@@ -119,7 +118,7 @@ switch task
                     currcol=1;
                     sessnuminspm=0;
                     
-                    for sess = session_split{z}
+                    for sess = session_split{split}
                         sessnuminspm=sessnuminspm+1;
                         
                         % Settings
@@ -130,7 +129,7 @@ switch task
                         [SPM, cols_interest, cols_nuisance, currcol] = ...
                             aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
                             cols_interest, cols_nuisance, currcol, ...
-                            movementRegs, compartmentRegs, physiologicalRegs, spikeRegs);
+                            movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
                     end
                     
                     cd (anadir)
@@ -143,7 +142,7 @@ switch task
                     SPMdes = spm_fmri_spm_ui(SPM);
                     
                     % DIAGNOSTIC
-                    mriname = aas_prepare_diagnostic(aap, subj);
+                    mriname = aas_prepare_diagnostic(aap, subjInd);
                     try
                         saveas(1, fullfile(aap.acq_details.root, 'diagnostics', ...
                             [mfilename '__' mriname '.fig']));
@@ -175,37 +174,46 @@ switch task
             
             gd_dataORI = gd_data;
             
-            [gd_resultsALT, gd_dataALT] = ...
-                GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, optT, sprintf('figures%d_ALT', z));
+            if settings.generateALTresults
+                [gd_resultsALT, gd_dataALT] = ...
+                    GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, optT, sprintf('figures%d_ALT', split));
+            end
             
             % Try with denoising...
             [gd_results, gd_data] = ...
-                GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, opt, sprintf('figures%d', z));
+                GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, opt, sprintf('figures%d', split));
             
-            [h, figName] = GLMdenoise_diagnostics(gd_results, gd_data, gd_resultsALT, gd_dataORI);
-            for f = 1:length(h);
-                print(h(f), fullfile(anadir, sprintf('%s_%02d.eps', figName{f}, z)), '-depsc')
-                close(h(f))
-            end
+            gdFile = fullfile(aas_getsubjpath(aap, subjInd), 'gd_results.mat');
+            save(gdFile, 'gd_results');
+            aap = aas_desc_outputs(aap, subjInd, 'gd_results', gdFile);
+            
+            %             [h, figName] = GLMdenoise_diagnostics(gd_results, gd_data, gd_resultsALT, gd_dataORI);
+            %             for f = 1:length(h);
+            %                 print(h(f), fullfile(anadir, sprintf('%s_%02d.eps', figName{f}, z)), '-depsc')
+            %                 close(h(f))
+            %             end
             
             %% SAVE DENOISED gd_dataALT TO DISC
-            files_denoised = cell(size(files));
-            for s = 1:length(session_split{z});
-                sess = session_split{z}(s);
+            
+            if ismember({'epi'}, settings.outputstreams.stream)
                 
-                for f = 1:size(files{sess},1)
-                    V = spm_vol(files{sess}(f,:));
-                    Y(M) = gd_data{s}(:,f);
+                files_denoised = cell(size(files));
+                for s = 1:length(session_split{split});
+                    sess = session_split{split}(s);
                     
-                    % Write out denoised file to different filename!
-                    [pth, fn, ext] = fileparts(V.fname);
-                    V.fname = fullfile(pth, ['d', fn, ext]);
-                    spm_write_vol(V,Y);
+                    for f = 1:size(files{sess},1)
+                        V = spm_vol(files{sess}(f,:));
+
+                        % Write out denoised file to different filename!
+                        [pth, fn, ext] = fileparts(V.fname);
+                        V.fname = fullfile(pth, ['d', fn, ext]);
+                        spm_write_vol(V,gd_data{s}(:,:,:,f));
+                        
+                        files_denoised{sess} = strvcat(files_denoised{sess}, V.fname);
+                    end
                     
-                    files_denoised{sess} = strvcat(files_denoised{sess}, V.fname);
+                    aap=aas_desc_outputs(aap,subjInd,sess, 'epi', files_denoised{sess});
                 end
-                
-                aap=aas_desc_outputs(aap,subj,sess, 'epi', files_denoised{sess});
             end
         end
     case 'checkrequirements'

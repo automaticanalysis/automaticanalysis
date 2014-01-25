@@ -33,7 +33,7 @@
 
             <!-- units for design scans/secs -->
             <!-- This setting my be deprectaed in the future, as it is redundant to what is specified in xBF.UNITS -->
-            <UNITS>secs</UNITS>
+            <UNITS></UNITS>
 
             <!-- Setting for the basis functions -->
             <xBF>
@@ -46,6 +46,10 @@
                 <T0></T0> 
                 <bf></bf>
             </xBF>
+            
+            <!-- Can we build an SPM model without any condition regressors?  Usually we want to make sure the user has specified a model
+                 for each subject and session, but it's possible we don't have one - for example if we are just using SPM to filter data -->
+            <allowemptymodel>0</allowemptymodel>
             
             <!-- Describe model for design matrix
     You may do this in your own copy of this .xml file, or programmatically in your user script.
@@ -113,10 +117,10 @@
             </modelC>
             
             ﻿<inputstreams>
-                <stream>epi</stream>
                 <stream>epi_dicom_header</stream>
                 <stream>sliceorder</stream>
                 <stream>realignment_parameter</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>
