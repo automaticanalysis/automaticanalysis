@@ -6,15 +6,26 @@ switch task
     case 'report'
         
     case 'doit'
-
+        
         settings = aap.tasklist.currenttask.settings;
-
+        
+        epiFiles = aas_getfiles_bystream(aap, subjInd, 1, 'epi'); % get 1st session epis
+        
         % Get mask, if it's an input
         if ismember('epiBETmask', settings.inputstreams.stream)
-            Mimg = aas_getfiles_bystream(aap,subj, 'epiBETmask');
+            Mimg = aas_getfiles_bystream(aap,subjInd, 'epiBETmask');
             Mimg = Mimg(1,:); % Only first one
+            
+            % Check orientation of mask and epi the same
+            Vs1 = spm_vol(epiFiles(1,:));
+            Vm = spm_vol(Mimg(1,:));
+            
+            if ~spm_check_orientations([Vs1 Vm])
+                aas_log(aap,true,'Image orientation mismatch. You may need to reslice your meanepi before epi bet reslice - do you have aamod_norm_write_meanepi in your tasklist?');
+            end
+            
             M = ~logical(spm_read_vols(spm_vol(Mimg)));
-        else 
+        else
             M = 0;
         end
         
