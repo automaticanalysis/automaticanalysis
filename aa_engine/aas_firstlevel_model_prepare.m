@@ -25,6 +25,7 @@ end
 %%%%%%%%%%%%%%%%%%%
 %% Modeling      %%
 %%%%%%%%%%%%%%%%%%%
+
 for sess = aap.acq_details.selected_sessions
     %% Get model data from aap
     subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.model.subject});
@@ -80,7 +81,16 @@ for sess = aap.acq_details.selected_sessions
     if (length(modelnum)>1) || (length(modelCnum)>1)
         aas_log(aap,true,sprintf('Error while getting model details as more than one specification for subject %s session %s',subjname,aap.acq_details.sessions(sess).name));
     end
-    if (isempty(modelnum)) && (isempty(modelCnum))
+    
+    % Can we build an SPM model without any condition regressors?  Usually no,
+    % but yes if we are using SPM for filtering, etc.
+    if isfield(aap.tasklist.currenttask.settings, 'allowemptymodel') && aap.tasklist.currenttask.settings.allowemptymodel
+        allowEmptyModel = 1;
+    else
+        allowEmptyModel = 0;
+    end
+    
+    if ~allowEmptyModel && ( (isempty(modelnum)) && (isempty(modelCnum)) )
         aas_log(aap,true,'Cannot find model specification. Check either user script or aamod_firstlevel_model.xml');
     end
     
@@ -120,7 +130,7 @@ else
         if ~exist('TR','var') || isempty(TR)
             TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end
-
+        
         if (sess==aap.acq_details.selected_sessions(1))
             SPM.xY.RT = TR;
         else
@@ -215,3 +225,5 @@ anadir = fullfile(aas_getsubjpath(aap,subj), [aap.directory_conventions.stats_si
 if ~exist(anadir,'dir')
     mkdir(anadir);
 end
+
+SPM.swd = anadir;

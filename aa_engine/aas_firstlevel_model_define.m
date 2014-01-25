@@ -2,6 +2,7 @@ function [SPM, cols_interest, cols_nuisance, currcol] = aas_firstlevel_model_def
     cols_interest, cols_nuisance, currcol, ...
     movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
 
+
 %% Get Information about Basis functions 
 %  could have more than one column:
 %  e.g., time derivatives or a FLOBS-type basis set
@@ -20,6 +21,14 @@ end
 
 % How many regressors make up this BF?
 numBFregs = size(xBF.bf, 2);
+
+% Create empty session, in case we don't actually find a model or anything
+U = struct( 'ons', {},...
+            'dur', {},...
+            'name', {{}},...
+            'P', {} );
+        
+SPM.Sess(sessnuminspm).U = U;
 
 %% Define model{sess} events
 if ~isempty(model{sess})
@@ -41,6 +50,10 @@ if ~isempty(model{sess})
         currcol=currcol+(1+parLen)*numBFregs;
     end
 end 
+
+%% Nuisance and covariate regressors
+SPM.Sess(sessnuminspm).C.C = [];
+SPM.Sess(sessnuminspm).C.name = {};
 
 %% Define model covariates
 if ~isempty(modelC{sess})
@@ -75,10 +88,6 @@ if ~isempty(modelC{sess})
         currcol=currcol + 1;
     end
 end
-
-%% Nuisance regressors
-SPM.Sess(sessnuminspm).C.C = [];
-SPM.Sess(sessnuminspm).C.name = {};
 
 %% Movement regressors
 if ~isempty(movementRegs)
