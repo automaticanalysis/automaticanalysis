@@ -60,6 +60,7 @@ inSession = false;
 nSessions = numel(aap.acq_details.sessions);
 
 for k=1:numel(stages)
+    fprintf('Fetching report for %s...\n',stages{k});    
     % domain
     xml = xml_read([stages{k} '.xml']);
     mfile_alias = stages{k};
