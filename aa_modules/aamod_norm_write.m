@@ -108,7 +108,7 @@ function fsl_diag(aap,i,j) % [TA]
 
 % Obtain structural from aamod_norm_noss
 norm_dir = aas_getsubjpath(aap,i,cell_index({aap.tasklist.main.module.name},'aamod_norm_noss'));
-structdir=fullfile(norm_dir,aap.directory_conventions.structdirname);
+structdir=fullfile(norm_dir,'structural');
 sP = dir( fullfile(structdir,[aap.spm.defaults.normalise.write.prefix 's' aap.acq_details.subjects(i).structuralfn '*.nii']));
 sP = fullfile(structdir,sP(1).name);
 
