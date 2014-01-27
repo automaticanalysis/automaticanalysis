@@ -374,8 +374,8 @@ tP = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_2mm_brain.nii.gz');
 
 % Obtain normalized GM segmentation
 subj_dir=aas_getsubjpath(aap,subj);
-segdir=fullfile(subj_dir,'structural');
-sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(subj).structuralfn '*.nii']));
+segdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
+sP = dir( fullfile(segdir,'wc1m*.nii'));
 sP = fullfile(segdir,sP(1).name);
 
 % Create FSL-like overview
