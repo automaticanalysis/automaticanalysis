@@ -50,11 +50,16 @@ switch task
         for streamind=1:length(streams)
             imgs = [];
             % Image to reslice
-            if (exist('sess','var'))
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if exist('sess','var') && strcmp(streams{streamind},'epi')
                 P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
-            end            
+            end
+            
+            % exclude image already normalised
+            f = basename(P);
+            P = P(f(:,1) ~= 'w',:);
             
             imgs = strvcat(imgs, P);
             
@@ -62,7 +67,7 @@ switch task
             % save disc space when you reslice to a coarser voxel            
             for c=1:size(P,1)
                 [pth fle ext]=fileparts(P(c,:));
-                [s w] = aas_shell(['rm ' fullfile(pth,['w' fle ext])],true); % quietly
+                [s w] = aas_shell(['rm ' fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext])],true); % quietly
             end;
             
             
@@ -87,9 +92,9 @@ switch task
             % describe outputs
             for fileind=1:size(imgs,1)
                 [pth, nme, ext] = fileparts(imgs(fileind,:));
-                wimgs = strvcat(wimgs,fullfile(pth,['w' nme ext]));
+                wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
             end
-            if (exist('sess','var'))
+            if (exist('sess','var')) && strcmp(streams{streamind},'epi')
                 aap=aas_desc_outputs(aap,subj,sess,streams{streamind},wimgs);
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
@@ -106,19 +111,20 @@ end
 function fsl_diag(aap,i,j) % [TA]
 % Create FSL-like overview using T1 instead of the template
 
-% Obtain structural from aamod_norm_noss
-norm_dir = aas_getsubjpath(aap,i,cell_index({aap.tasklist.main.module.name},'aamod_norm_noss'));
-structdir=fullfile(norm_dir,'structural');
-sP = dir( fullfile(structdir,[aap.spm.defaults.normalise.write.prefix 's' aap.acq_details.subjects(i).structuralfn '*.nii']));
-sP = fullfile(structdir,sP(1).name);
+% Obtain the (first) structural
+sP = aas_getfiles_bystream(aap,i,'structural');
+f = basename(sP);
+sP = sP(f(:,1) ~= 'w',:);
+[pP, sP, eP] = fileparts(sP(1,:));
+sP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix sP eP]);
 
 % Obtain the first EPI
-sess_dir = aas_getsesspath(aap,i,j);
-fP = aas_getimages_bystream(aap,i,j,aap.tasklist.currenttask.inputstreams.stream{2});
-[pP fP eP] = fileparts(fP(1,:));
+fP = aas_getimages_bystream(aap,i,j,'epi');
+[pP, fP, eP] = fileparts(fP(1,:));
 fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
 
 % Overlays
+sess_dir = aas_getsesspath(aap,i,j);
 iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI']);
 aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
 [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
