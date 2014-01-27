@@ -211,17 +211,24 @@ switch task
         
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
-        % [AVG] It is probably best to save the 2ce bias-corrected image
+        % [AVG] It is probably best to save the 2nd bias-corrected image
         
         % [CW] But we don't have a bias corrected image if we didn't use
         % segmentation.
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
-                fullfile(Spth,['mm' Sfn Sext]), ...
-                fullfile(Spth,['w' Sfn Sext])));
+            bias_corected = fullfile(Spth,['mm' Sfn Sext]);
         else
-            aap=aas_desc_outputs(aap,subj,'structural', fullfile(Spth,['w' Sfn Sext]));
+            bias_corected = fullfile(Spth,['m' Sfn Sext]);
         end
+        % convert bias-corrected image into int16 (for FSL)
+        V = spm_vol(bias_corected); Y = spm_read_vols(V);
+        V.dt = [spm_type('int16') spm_platform('bigend')];
+        spm_write_vol(V,Y);
+        
+        aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
+            bias_corected, ...
+            fullfile(Spth,['w' Sfn Sext])));
+        
         %{
         % Now save graphical check
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
