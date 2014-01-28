@@ -82,6 +82,13 @@ switch task
         % Template
         tmpfile = aap.directory_conventions.T1template;
         if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+        % Structural
+        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % backward compatibility
+            tmpfile = aas_getfiles_bystream(aap, subj,'structural');
+        else
+            fprintf('Structural cannot be loaded! Template will be used...');
+        end
+        
         Vtemplate=spm_vol(tmpfile);
         [Ytemplate, tXYZ]=spm_read_vols(Vtemplate);
         tXYZ=[tXYZ;ones(1,size(tXYZ,2))];
