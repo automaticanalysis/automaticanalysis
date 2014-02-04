@@ -195,6 +195,10 @@ switch task
                 end
             end
             aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
+            
+            % [TA] replace the structural with the bias-corrected one
+            Simg = fullfile(Spth,['mm' Sfn Sext]);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix 'mm' Sfn Sext]);
         else
             % Make the default normalization parameters file name
             % Turn off template weighting
@@ -207,6 +211,7 @@ switch task
             % SPM2 normalization doesn't generate the inverse transformation
             %             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             % aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix Sfn Sext]);
         end
         
         spm_write_sn(Simg,SNmat,defs.write);
@@ -215,19 +220,13 @@ switch task
         
         % [CW] But we don't have a bias corrected image if we didn't use
         % segmentation.
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            bias_corected = fullfile(Spth,['mm' Sfn Sext]);
-        else
-            bias_corected = fullfile(Spth,['m' Sfn Sext]);
-        end
-        % convert bias-corrected image into int16 (for FSL)
-        V = spm_vol(bias_corected); Y = spm_read_vols(V);
+
+        % convert structural (bias-corrected) image into int16 (for FSL diag)
+        V = spm_vol(Sout); Y = spm_read_vols(V);
         V.dt = [spm_type('int16') spm_platform('bigend')];
         spm_write_vol(V,Y);
         
-        aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
-            bias_corected, ...
-            fullfile(Spth,['w' Sfn Sext])));
+        aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
         
         %{
         % Now save graphical check

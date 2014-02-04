@@ -14,13 +14,12 @@
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>                  
+                <stream>structural</stream> 
                 <stream ismodified='0'>epi</stream>
-                <stream>structural</stream>                                  
             </inputstreams>
             
             <outputstreams>
                 <stream>epi</stream>                
-                <stream>structural</stream>                                  
             </outputstreams>
             
         </currenttask>

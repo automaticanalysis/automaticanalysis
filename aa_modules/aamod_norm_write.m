@@ -10,48 +10,51 @@ function [aap,resp]=aamod_norm_write(aap,task,subj,sess)
 resp='';
 
 switch task
-	case 'report' % [TA]
+    case 'report' % [TA]
         if ~exist('sess','var'), sess = 1; end
-        fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI.jpg'];
-        if ~exist(fullfile(aas_getsesspath(aap,subj,sess),fn),'file')
-            fsl_diag(aap,subj,sess);
+        % find out what streams we should normalise
+		streams=aap.tasklist.currenttask.outputstreams.stream;
+        for streamind=1:length(streams)
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI.jpg'];
+            if ~exist(fullfile(aas_getsesspath(aap,subj,sess),fn),'file')
+                fsl_diag(aap,subj,sess);
+            end
+            % Single-subjetc
+            fdiag = dir(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_*.jpg'));
+            for d = 1:numel(fdiag)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                aap=aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),fdiag(d).name));
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+            end
+            % Study summary
+            aap = aas_report_add(aap,'reg',...
+                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' basename(aas_getsesspath(aap,subj,sess)) ]);
+            aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,subj,sess),fn));
         end
-        % Single-subjetc
-        fdiag = dir(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_*.jpg'));
-        for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,subj,'<table><tr><td>');
-            aap=aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),fdiag(d).name));
-            aap = aas_report_add(aap,subj,'</td></tr></table>');
-        end
-        % Study summary
-        aap = aas_report_add(aap,'reg',...
-            ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' basename(aas_getsesspath(aap,subj,sess)) ]);
-        aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,subj,sess),fn));
     case 'doit'
         
         voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
         
         % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,subj); 
+        subj_dir = aas_getsubjpath(aap,subj);
         
         % get sn mat file from normalisation
         matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
         
-        streams=aap.tasklist.currenttask.inputstreams;
-        
-        % find out what streams we should normalise
-        streams=streams.stream(~strcmp('normalisation_seg_sn',streams.stream));
+		% find out what streams we should normalise
+        streams=aap.tasklist.currenttask.outputstreams.stream;
         
         % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
-           sess = aap.tasklist.currenttask.settings.session; 
+            sess = aap.tasklist.currenttask.settings.session;
         end
         
         for streamind=1:length(streams)
             imgs = [];
             % Image to reslice
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            if exist('sess','var') && strcmp(streams{streamind},'epi')
+            if exist('sess','var')
                 P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
@@ -64,7 +67,7 @@ switch task
             imgs = strvcat(imgs, P);
             
             % delete previous because otherwise nifti write routine doesn't
-            % save disc space when you reslice to a coarser voxel            
+            % save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
                 [pth fle ext]=fileparts(P(c,:));
                 [s w] = aas_shell(['rm ' fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext])],true); % quietly
@@ -73,7 +76,7 @@ switch task
             
             % set defaults
             flags = aap.spm.defaults.normalise.write;
-            flags.vox = voxelSize; 
+            flags.vox = voxelSize;
             
             % now write normalised
             if ~isempty(imgs)
@@ -86,7 +89,7 @@ switch task
                 end
                 spm_write_sn(imgsGood,matname,aap.spm.defaults.normalise.write);
             end
-
+            
             wimgs=[];
             
             % describe outputs
@@ -94,7 +97,7 @@ switch task
                 [pth, nme, ext] = fileparts(imgs(fileind,:));
                 wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
             end
-            if (exist('sess','var')) && strcmp(streams{streamind},'epi')
+            if (exist('sess','var'))
                 aap=aas_desc_outputs(aap,subj,sess,streams{streamind},wimgs);
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
@@ -111,28 +114,32 @@ end
 function fsl_diag(aap,i,j) % [TA]
 % Create FSL-like overview using T1 instead of the template
 
-% Obtain the (first) structural
-sP = aas_getfiles_bystream(aap,i,'structural');
-f = basename(sP);
-sP = sP(f(:,1) ~= 'w',:);
-[pP, sP, eP] = fileparts(sP(1,:));
-sP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix sP eP]);
-
-% Obtain the first EPI
-fP = aas_getimages_bystream(aap,i,j,'epi');
-[pP, fP, eP] = fileparts(fP(1,:));
-fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
-
-% Overlays
-sess_dir = aas_getsesspath(aap,i,j);
-iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2epi']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+% find out what streams we should normalise
+streams=aap.tasklist.currenttask.outputstreams.stream;
+for streamind=1:length(streams)
+    if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+    % Obtain the structural
+	sP = aas_getfiles_bystream(aap,i,'structural');
+	sP = sP(2,:); % (first: native, second: nomralised)
+    if (strcmp(aap.tasklist.currenttask.domain,'session'))
+        % Obtain the first EPI
+        fP = aas_getimages_bystream(aap,i,j,streams{streamind});
+    else
+        fP = aas_getfiles_bystream(aap,i,streams{streamind});
+    end
+    [pP, fP, eP] = fileparts(fP(1,:));
+    fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
+    % Overlays
+    sess_dir = aas_getsesspath(aap,i,j);
+    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI']);
+    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
+    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
+    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
+    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2' streams{streamind}]);
+    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
+    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
+    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
+    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+end
 end
