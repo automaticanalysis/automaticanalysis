@@ -24,7 +24,7 @@ switch task
         setenv('FREESURFER_DIR', aap.directory_conventions.freesurferdir)
         
         %% initialise fileserver folder structure and nii and mgh files
-        aas_freesurfer_init(aap, subjpath, subjname, Simg, 1)
+        aas_freesurfer_init(aap, subjpath, subjname, Simg, 1);
         
         %% Try to delete old freesurfer running flags
         if exist(fullfile(subjpath, 'ANAT', subjname, 'scripts', 'IsRunning.lh+rh'), 'file')
