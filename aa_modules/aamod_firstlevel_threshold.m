@@ -79,14 +79,13 @@ switch task
         Outputs.sl = '';
         Outputs.Rend = '';
         
-        % Template
-        tmpfile = aap.directory_conventions.T1template;
-        if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
-        % Structural
-        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % backward compatibility
+        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
-        else
-            fprintf('Structural cannot be loaded! Template will be used...');
+            tmpfile = tmpfile(2,:); % (first: native, second: nomralised)
+        else  % Template
+            fprintf('Structural cannot be loaded! Template will be used...');           
+            tmpfile = aap.directory_conventions.T1template;
+            if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
         end
         
         Vtemplate=spm_vol(tmpfile);
