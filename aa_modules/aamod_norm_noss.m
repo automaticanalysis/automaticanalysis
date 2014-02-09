@@ -200,6 +200,10 @@ switch task
                 end
             end
             aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
+            
+            % [TA] replace the structural with the bias-corrected one
+            Simg = fullfile(Spth,['mm' Sfn Sext]);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix 'mm' Sfn Sext]);
         else
             % Make the default normalization parameters file name
             % Turn off template weighting
@@ -212,21 +216,23 @@ switch task
             % SPM2 normalization doesn't generate the inverse transformation
             %             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             % aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix Sfn Sext]);
         end
         
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
-        % [AVG] It is probably best to save the 2ce bias-corrected image
+        % [AVG] It is probably best to save the 2nd bias-corrected image
         
         % [CW] But we don't have a bias corrected image if we didn't use
         % segmentation.
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
-                fullfile(Spth,['mm' Sfn Sext]), ...
-                fullfile(Spth,['w' Sfn Sext])));
-        else
-            aap=aas_desc_outputs(aap,subj,'structural', fullfile(Spth,['w' Sfn Sext]));
-        end
+
+        % convert structural (bias-corrected) image into int16 (for FSL diag)
+        V = spm_vol(Sout); Y = spm_read_vols(V);
+        V.dt = [spm_type('int16') spm_platform('bigend')];
+        spm_write_vol(V,Y);
+        
+        aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
+        
         %{
         % Now save graphical check
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
@@ -352,6 +358,7 @@ if aap.tasklist.currenttask.settings.usesegmentnotnormalise
     
     print('-djpeg','-r75',...
 		fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
+    try close(2); catch; end
 end
 
 %% Diagnostic VIDEO
@@ -379,7 +386,7 @@ tP = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_2mm_brain.nii.gz');
 % Obtain normalized GM segmentation
 subj_dir=aas_getsubjpath(aap,subj);
 segdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
-sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(subj).structuralfn '*.nii']));
+sP = dir( fullfile(segdir,'wc1m*.nii'));
 sP = fullfile(segdir,sP(1).name);
 
 % Create FSL-like overview

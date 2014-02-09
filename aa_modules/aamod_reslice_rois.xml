@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' mfile_alias='aamod_reslice_rois' desc='SPM reslice' modality='MRI'>
+        <currenttask domain='subject' desc='SPM reslice' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -10,13 +10,13 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            ﻿<inputstreams>
-                <stream>meanepi</stream> 
-                <stream>rois</stream>                 
+            <inputstreams>
+                <stream>roi</stream>     
+                <stream ismodified='0'>meanepi</stream>                             
             </inputstreams>
             
             <outputstreams>
-                <stream>rois</stream>
+                <stream>roi</stream>
             </outputstreams>
             
         </currenttask>

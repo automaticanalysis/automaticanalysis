@@ -3,4 +3,8 @@
 
 function f = basename(path)
 
-[p f] = fileparts(path);
+f = [];
+for i = 1:size(path,1)
+    [p tmp] = fileparts(path(i,:));
+    f = strvcat(f,tmp);
+end

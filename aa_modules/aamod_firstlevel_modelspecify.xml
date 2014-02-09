@@ -10,18 +10,28 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             
+            <specialrequirements>
+                <imagesize>500000</imagesize>
+                <jobtype>fMRI</jobtype>
+            </specialrequirements>
                         
             <TR></TR><!-- if not specified, AA tries to get from DICOM images -->
 
-            <globalscaling>None</globalscaling> <!-- SPM.xGX.iGXcalc; 'None' or ... -->
-            <autocorrelation>AR(1)</autocorrelation> <!-- SPM.xVi.form; 'None' or 'AR(1)' -->
-            <highpassfilter>128</highpassfilter>
+             <numDummies>12</numDummies>                  <!-- Another place to discard dummies -->
             
             <includemovementpars>1</includemovementpars>
             <volterramovementpars>1</volterramovementpars>
-            <moveMat>[1 1 0; 1 1 0]</moveMat>            
-            <bandpass></bandpass><!-- Bandpass filter using DCT, e.g. for resting state - NB in seconds -->
+            <moveMat>[1 1 0; 1 1 0]</moveMat> 
+            
+            <includeWM>1</includeWM>
+            <includeCSF>1</includeCSF>
+            <includeSpikes>1</includeSpikes>
+            
+            <highpassfilter></highpassfilter>
+            <bandpass>0.01 0.1</bandpass><!-- Bandpass filter using DCT, e.g. for resting state - HP/LP in Hz -->
             <svdthresh>1</svdthresh><!-- if < 1, do dimensionality reduction on confounds (movement, any global signal, etc.) -->
+            <globalscaling>None</globalscaling> <!-- SPM.xGX.iGXcalc; 'None' or ... -->
+            <autocorrelation>AR(1)</autocorrelation> <!-- SPM.xVi.form; 'None' or 'AR(1)' -->
             
             <maskthreshold>0.8</maskthreshold><!-- SPM threshold for masking fMRI (default 0.8) (of global value)-->
             <explicitmask>0</explicitmask>
@@ -63,8 +73,9 @@
             
             <!-- streams -->
             <inputstreams>
-                <stream>epi</stream>                
-                <stream>realignment_parameter</stream>                
+                <stream>realignment_parameter</stream>
+                <stream>compSignal</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>

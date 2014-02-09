@@ -12,7 +12,7 @@ resp='';
 switch task
     case 'report' % [TA]
         if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
-            aas_fsl_coreg_diag(aap,subj);
+%             aas_fsl_coreg_diag(aap,subj);
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
@@ -130,7 +130,7 @@ switch task
             sTimg, ... % Get template T1
             deblank(Simg(aap.tasklist.currenttask.settings.structural,:)),... % Get structural
             mEPIimg, ... % Get mean EPI across sessions
-            EPIimg{sess}(1,:))) % Get first image of last session EPI
+            [EPIimg{sess}(1,:) ',1'])) % Get first image of last session EPI
         
         % Outline of structural!
         spm_ov_reorient('context_init', 2)

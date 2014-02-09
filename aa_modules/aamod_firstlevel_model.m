@@ -34,7 +34,7 @@ switch task
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
 
         % Get all the nuisance regressors...
-        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs] = ...
+        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
             aas_firstlevel_model_nuisance(aap, subj, files);
 
         %% Set up CORE model
@@ -55,7 +55,7 @@ switch task
             [SPM, cols_interest, cols_nuisance, currcol] = ...
                 aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
                                                              cols_interest, cols_nuisance, currcol, ...
-                                                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs);
+                                                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
         end
 
         cd (anadir)
@@ -66,6 +66,8 @@ switch task
         SPM.xY.P = allfiles;
         SPMdes = spm_fmri_spm_ui(SPM);
 
+        SPMdes.xX.X = double(SPMdes.xX.X);
+        
         % DIAGNOSTIC
         mriname = aas_prepare_diagnostic(aap, subj);
         try
@@ -115,12 +117,12 @@ switch task
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
 
         %% DIAGNOSTICS...
-        h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
-        saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
-        saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
-        
-        close(h.regs)
-        close(h.betas)
+%         h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
+%         saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
+%         saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
+%         
+%         close(h.regs)
+%         close(h.betas)
         
     case 'checkrequirements'
         

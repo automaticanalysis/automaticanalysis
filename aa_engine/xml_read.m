@@ -108,12 +108,18 @@ if (nargin>1)
 end
 
 %% read xml file using Matlab function
+parserFactory = javaMethod('newInstance',...
+    'javax.xml.parsers.DocumentBuilderFactory');
+javaMethod('setXIncludeAware',parserFactory,true);
+javaMethod('setNamespaceAware',parserFactory,true);
+p = javaMethod('newDocumentBuilder',parserFactory);
+
 if (ischar(xmlfile)) % if xmlfile is a string
   if (Debug)
-    DOMnode = xmlread(xmlfile);
+    DOMnode = xmlread(xmlfile,p);
   else
     try
-      DOMnode = xmlread(xmlfile);
+      DOMnode = xmlread(xmlfile,p);
     catch
       error('Failed to read XML file %s.',xmlfile);
     end
@@ -181,6 +187,8 @@ if (~isempty(GlobalTextNodes))
   RootName = GlobalTextNodes;
 end
 
+tree = expand_tree(tree);
+if isfield(tree,'ATTRIBUTE'), tree = rmfield(tree,'ATTRIBUTE'); end
 
 %% =======================================================================
 %  === DOMnode2struct Function ===========================================
@@ -424,4 +432,32 @@ switch (node.getNodeType)
     LeafNode = -1;
 end
 
+%% =======================================================================
+%  === expand_tree Function =================================================
+%  =======================================================================
+function otree = expand_tree(itree)
+if isfield(itree,'local') % locals used
+    otree = expand_tree(itree.aap);
+    otree = mergeStructs(otree,itree.local);
+else
+    otree = itree;
+end
 
+%% =======================================================================
+%  === mergeStructs Function =================================================
+%  =======================================================================
+function res = mergeStructs(x,y)
+% From: http://stackoverflow.com/a/6271161
+if isstruct(x) && isstruct(y)
+    res = x;
+    names = fieldnames(y);
+    for fnum = 1:numel(names)
+        if isfield(x,names{fnum})
+            res.(names{fnum}) = mergeStructs(x.(names{fnum}),y.(names{fnum}));
+        else
+            res.(names{fnum}) = y.(names{fnum});
+        end
+    end
+else
+    res = y;
+end

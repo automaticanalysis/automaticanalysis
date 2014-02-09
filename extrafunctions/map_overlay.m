@@ -5,7 +5,7 @@
 function [img0 cmap v] = map_overlay(bg,stat,trans)
 % Gray - Blue - Yellow-Red (Stronger change is darker)
 % cmap = vertcat(gray(128), create_grad([0 0 1],[1 1 1],64),...
-    % create_grad([1 1 1],[1 1 0],32),create_grad([1 1 0],[1 0 0],32));
+%     create_grad([1 1 1],[1 1 0],32),create_grad([1 1 0],[1 0 0],32));
 
 % Gray - Blue - Red-Yellow (Stronger change is brighter)
 cmap = vertcat(gray(128), create_grad([1 1 1],[0 0 1],64),...

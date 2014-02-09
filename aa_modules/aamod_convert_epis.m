@@ -444,10 +444,10 @@ switch task
         end
         
         % Now move dummy scans to dummy_scans directory
+        dummylist=[];
+        if aap.acq_details.numdummies
         dummypath=fullfile(sesspath,'dummy_scans');
         aap=aas_makedir(aap,dummypath);
-        
-        dummylist=[];
         for d=1:aap.acq_details.numdummies
             cmd=['mv ' finalepis{d} ' ' dummypath];
             [pth nme ext]=fileparts(finalepis{d});
@@ -457,11 +457,11 @@ switch task
                 aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
             end
         end
-        if isempty(dummylist)
-           d = 0; 
+        else
+            d = 0;
         end
-		finalepis = {finalepis{d+1:end}};
-		% 4D conversion [TA]
+	finalepis = {finalepis{d+1:end}};
+	% 4D conversion [TA]
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             finalepis = finalepis{1};
             ind = find(finalepis=='-');

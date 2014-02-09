@@ -2,7 +2,7 @@
 %
 % Alejandro Vicente-Grabovetsky Dec-2008
 
-function [aap,resp] = aamod_reslice_rois( aap, task, subj)
+function [aap,resp] = aamod_reslice_rois(aap, task, subj)
 
 resp='';
 
@@ -11,18 +11,13 @@ switch task
         
         % Get meanEPImage
         mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
-        if isempty(mEPIimg)
-            aas_log(aap, true, 'Problem finding mean functional image.');
-        elseif size(mEPIimg,1) > 1
+        if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
         end
         mEPIimg = deblank(mEPIimg(1,:));
         
         % Get roi image(s)
-        Rimg = aas_getfiles_bystream(aap,subj,'rois');
-        if isempty(Rimg)
-            aas_log(aap, true, 'Problem finding ROI image.');
-        end
+        Rimg = aas_getfiles_bystream(aap,subj,'roi');
         
         % Test format, ensure it is V.dt = [2 0];
         for c=1:size(Rimg,1)
@@ -47,18 +42,9 @@ switch task
         for r = 1:length(Rimg(:,1))
             Rcurr = deblank(Rimg(r,:));
             [Rpth, Rfn, Rext] = fileparts(Rcurr);
-            
-            if ~exist(Rcurr, 'file')
-                error(sprintf('The ROI %s file does not exist', ...
-                    Rcurr))
-            end
                                                  
             % Reslice to EPI...
-            spm_reslice({mEPIimg, Rcurr}, resFlags);
-            
-            % Delete ROI in MNI space...
-            unix(['rm -rf ' Rcurr]);
-            
+            spm_reslice({mEPIimg, Rcurr}, resFlags);            
             Rcurr = fullfile(Rpth, ['r' Rfn, Rext]);
             
             % Check the content of the resliced ROI!
@@ -71,7 +57,7 @@ switch task
             outstream = [outstream, Rcurr];
         end
         
-        aap=aas_desc_outputs(aap,subj,'rois',outstream);
+        aap=aas_desc_outputs(aap,subj,'roi',outstream);
         
         %% Save graphical output to common diagnostics directory
         mriname = aas_prepare_diagnostic(aap,subj);

@@ -19,11 +19,16 @@ SEARCHPATH = textscan(aap.directory_conventions.rawdatadir,'%s','delimiter', ':'
 SEARCHPATH = SEARCHPATH{1};
 
 % get subjname
-if isnumeric(subjpath)
-    subjpath = sprintf(aap.directory_conventions.subjectoutputformat,subjpath);
-elseif ischar(subjpath) % mriname
-    subjpath = [aas_mriname2subjname(subjpath) '*'];
+if ~isempty(regexp(aap.directory_conventions.subjectoutputformat,'%s', 'once')) % string input expected
+	if ~ischar(subjpath)
+		aas_log(aap,true,'Second input must be a string. Check aap.directory_conventions.subjectoutputformat');
+	end
+else  % numeric input expected
+	if ~isnumeric(subjpath)
+    	aas_log(aap,true,'Second input must be an integer. Check aap.directory_conventions.subjectoutputformat');
+	end
 end
+subjpath = sprintf(aap.directory_conventions.subjectoutputformat,subjpath);
 
 isFound = false;
 for i = 1:numel(SEARCHPATH)

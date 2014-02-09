@@ -7,7 +7,12 @@
 %
 %function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries)
 % name= subject filename (may include UNIX wildcards, e.g., CBU060500*/*)
-% seriesnumbers=series numbers of EPIs for this subject
+% seriesnumbers=
+%	DICOM source: series numbers of EPIs for this subject
+%	NIFTI source: cell array containing (one or more)
+%		- string: realtive path (from rawdatadir - only one is supported) to structural
+%		- string: realtive path (from rawdatadir - only one is supported) to 4D NIFTI of one fMRI session
+%		- cell array (nested): absolute path to 3D NIFTI files of one fMRI session
 % ignoreseries parameter=series numbers of any series to be ignored in the
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
@@ -34,7 +39,26 @@ catch
     aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
 end;
 try
-    thissubj.seriesnumbers=seriesnumbers;
+    if isnumeric(seriesnumbers) % DICOM series number
+        thissubj.seriesnumbers=seriesnumbers;
+    else
+        fMRI = {};
+        for s = 1:numel(seriesnumbers)
+            if iscell(seriesnumbers{s}) % multiple 3D files
+                fMRI{end+1} = seriesnumbers{s};
+            else % single NIFTI file
+                V = spm_vol(fullfile(aas_findvol(aap,''),seriesnumbers{s}));
+                if numel(V) > 1 % 4D --> fMRI
+                    fMRI{end+1} = seriesnumbers{s};
+                else % 3D --> structural
+                    thissubj.structural=seriesnumbers(s);
+                end
+            end
+        end
+        if ~isempty(fMRI)
+            thissubj.seriesnumbers=fMRI;
+        end
+    end
 catch
 end;
 

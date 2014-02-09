@@ -5,14 +5,20 @@
 
             <saveresids>1</saveresids> <!-- save all residual images -->
             
-            <inputstreams>
+            <inputstreams>             
                 <stream>firstlevel_spm</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
+            
+           <specialrequirements>
+                <imagesize>5000000</imagesize>
+                <jobtype>fMRI</jobtype>
+            </specialrequirements>
             
             <outputstreams>
                 <stream>epi</stream>
                 <stream>firstlevel_spm</stream>
-                <stream>firstlevel_brainmask</stream>                
+                <stream>firstlevel_brainmask</stream>      
             </outputstreams>
                           
         </currenttask>
