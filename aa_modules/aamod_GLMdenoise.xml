@@ -75,6 +75,7 @@
             
             <outputstreams>
                 <stream>epi</stream>
+                <stream>gd_results</stream>
             </outputstreams>
             
         </currenttask>

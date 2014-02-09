@@ -15,11 +15,19 @@ switch task
     case 'report'
         
     case 'doit'
-        memtic
+        epifn= aas_getfiles_bystream(aap,subj,1, 'epi');
         
         % Get mask
         Mimg = aas_getfiles_bystream(aap,subj, 'epiBETmask');
         Mimg = Mimg(1,:); % Only first one
+        
+        % Check orientation of mask and epi the same
+        V=spm_vol(char(epifn(1,:),Mimg(1,:)));
+        if ~spm_check_orientations(V)
+            aas_log(aap,true,'Image orientation mismatch. You may need to reslice your meanepi before epi bet reslice - do you have aamod_norm_write_meanepi in your tasklist?');
+        end;
+        
+        % Load mask
         M = logical(spm_read_vols(spm_vol(Mimg)));
         
         % Session Split
@@ -62,7 +70,7 @@ switch task
                 end
             end
             
-            memtoc
+%             memtoc
             
             switch aap.tasklist.currenttask.settings.GDmode
                 case ''
@@ -207,6 +215,14 @@ switch task
                 
                 aap=aas_desc_outputs(aap,subj,sess, 'epi', files_denoised{sess});
             end
+            
+            % And save gd_results
+%             gdfn=fullfile(anadir,'gd_results.mat');
+            gdfn=fullfile(aas_getsubjpath(aap, subj), 'gd_results.mat');
+            save(gdfn,'gd_results');
+%             aap=aas_desc_outputs(aap,subj,sess,'gd_results',gdfn);
+            aap=aas_desc_outputs(aap,subj,'gd_results',gdfn);
+            
         end
     case 'checkrequirements'
         

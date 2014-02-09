@@ -121,7 +121,9 @@ switch task
                     aas_log(aap,true,err);
                 end
                 % Put this in its place
-                StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
+                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
+                    StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
+                end;
             end
             
             %[AVG] Save original V.mat parameters
@@ -175,14 +177,17 @@ switch task
             aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
             
             % [AVG] this output is completely different from .xml
-            %{
+            % [RC] I like having separate streams, as it removes the need
+            % for later file filtering, which is package dependent
+            % So lets support both...
             tiss={'grey','white','csf'};
+            [mSpth mSnme mSext]=aas_fileparts(mSimg);
             for tissind=1:3
-                aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,mSimg)));
-                aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,mSimg)));
+                aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,[mSnme mSext])));
+                aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,[mSnme mSext])));
             end
-            %}
-            % [AVG] so instead, we group it all into segmentation stream
+            
+            % [AVG] also group it all into segmentation stream
             outSeg = '';
             d = 0;
             while ~isnan(d)

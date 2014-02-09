@@ -14,7 +14,7 @@ else
     studyroot=pwd;
 end;
 if ~exist('aap_parameters.mat','file')
-    error('aap structure not found');    
+    error('aap structure not found');
 else
     load('aap_parameters');
 end
@@ -66,50 +66,53 @@ for k=1:numel(stages)
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
     domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
     
-    % Set inSession flag
-    if strcmp(domain,'session') && ~inSession
-        inSession = true;
-    end
-    if ~strcmp(domain,'session') && inSession
-        inSession = false;
-    end
-    
-    % Switch for stage
-    all_stage = cell_index(stages, stages{k});
-    istage = cell_index({aap.tasklist.main.module.name}, stages{k});
-    istage = istage(all_stage==k);
-    aapreport = aap.report;
-    aap = aas_setcurrenttask(aap,istage);
-    aap.report = aapreport;    
-    
-    % build dependency
-    dep = aas_dependencytree_allfromtrunk(aap,domain);
-	
-	% run through 
-    for d = 1:numel(dep)
-        indices = dep{d}{2};
-        isdone = exist(aas_doneflag_getpath_bydomain(aap,domain,indices,k),'file');
-        try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
-        try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
+    % Skip stages of unknown domain - most like aamod_importfilesasstream
+    if ~strcmp(domain,'[unknown]')
         
-        if sess == 1, aap = aas_report_add(aap,subj,['<h2>Stage: ' stages{k} '</h2>']); end
-        
-		% evaluate with handling sessions
-        if inSession
-            if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
-            aap = aas_report_add(aap,subj,'<td>');
-            aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+        % Set inSession flag
+        if strcmp(domain,'session') && ~inSession
+            inSession = true;
         end
-        if ~isdone
-            aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
-        else
-            [aap,resp]=aa_feval_withindices(mfile_alias,aap,'report',indices);
+        if ~strcmp(domain,'session') && inSession
+            inSession = false;
+        end
+        
+        % Switch for stage
+        all_stage = cell_index(stages, stages{k});
+        istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+        istage = istage(all_stage==k);
+        aapreport = aap.report;
+        aap = aas_setcurrenttask(aap,istage);
+        aap.report = aapreport;
+        
+        % build dependency
+        dep = aas_dependencytree_allfromtrunk(aap,domain);
+        
+        % run through
+        for d = 1:numel(dep)
+            indices = dep{d}{2};
+            isdone = exist(aas_doneflag_getpath_bydomain(aap,domain,indices,k),'file');
+            try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
+            try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
+            
+            if sess == 1, aap = aas_report_add(aap,subj,['<h2>Stage: ' stages{k} '</h2>']); end
+            
+            % evaluate with handling sessions
+            if inSession
+                if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
+                aap = aas_report_add(aap,subj,'<td>');
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+            end
+            if ~isdone
+                aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
+            else
+                [aap,resp]=aa_feval_withindices(mfile_alias,aap,'report',indices);
+            end;
+            if inSession
+                aap = aas_report_add(aap,subj,'</td>');
+                if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+            end
         end;
-        if inSession
-            aap = aas_report_add(aap,subj,'</td>');
-            if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
-        end
-        
     end
 end
 

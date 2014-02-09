@@ -19,10 +19,14 @@
                 <stream>segmentation</stream>
                 <stream>normalisation_seg_sn</stream>
                 <stream>normalisation_seg_inv_sn</stream>
+                <stream>tissue_csf</stream>
+                <stream>tissue_grey</stream>
+                <stream>tissue_white</stream>
+
             </outputstreams>
             
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
-            <affinestartingestimate></affinestartingestimate>
+            <affinestartingestimate><x/><y/><z/><yaw/><roll/><pitch/></affinestartingestimate>
             
             <structural desc='Which structural do we use, if there is more than one?'
             >1</structural>

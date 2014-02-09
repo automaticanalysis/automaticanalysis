@@ -304,7 +304,7 @@ for depind=1:length(deps)
                             while ~feof(fid_out)
                                 file_o=fgetl(fid_out);
                                 file_i=fgetl(fid_inp);
-                                if ~strcmp(deblank(file_o),deblank(file_i))
+                                if ~strcmp(deblank(file_o),deblank(file_i)) || ~exist(fullfile(dest,deblank(file_i)),'file')
                                     filematch=false;
                                 end;
                             end;
