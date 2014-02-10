@@ -35,7 +35,14 @@ switch task
         streams=aap.tasklist.currenttask.outputstreams.stream;
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
+            if cell_index(aap.tasklist.currenttask.inputstreams.stream,streams{streamind})
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
+            else  % renamed stream
+                streamname = strrep(streams{streamind},'normalised_','');
+                ind = cell_index(aap.tasklist.currenttask.inputstreams.stream,streamname);
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
+                    aap.tasklist.currenttask.inputstreams.stream{ind}));
+            end
         end
         job.data.subj.images = cellstr(imgs);
 
