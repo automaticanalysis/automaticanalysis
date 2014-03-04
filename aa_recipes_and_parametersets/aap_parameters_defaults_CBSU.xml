@@ -10,7 +10,7 @@
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
             <rawdatadir desc='Subdirectories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
             <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
-            <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
+            <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>1</subject_directory_format>
             <subject_filenames_format desc='Format of filenames within session directory' ui='optionlist' options='manual|CBU060500|S01'>1</subject_filenames_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -23,6 +23,7 @@
             <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
+            <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
@@ -41,6 +42,7 @@
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
         </directory_conventions>
         <options>
+            <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>
 			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
         </options>

@@ -7,29 +7,27 @@ resp='';
 
 switch task
     case 'summary'
-        resp=[];
-        numresp=0;
+        respc={};
         if (aap.options.autoidentifyfieldmaps)
-            resp{1}='fieldmaps';
-            numresp=numresp+1;
+            respc{end+1}='fieldmaps';
         end
         if (aap.options.autoidentifystructural)
-            resp{numresp}='structural';
-            numresp=numresp+1;
+            respc{end+1}='structural';
+        end
+        if (aap.options.autoidentifyt2)
+            respc{end+1}='t2';
         end
         if (aap.options.autoidentifytmaps)
-            resp{numresp}='realtime t-maps';
-            numresp=numresp+1;
+            respc{end+1}='realtime t-maps';
         end
-        switch (numresp)
-            case 0
-                resp=['No automatic identification done.'];
-            case 1
-                resp=['Automatically identified ' resp{1} '\n'];
-            case 2
-                resp=['Automatically identified ' resp{1} ' and ' resp{2} '\n'];
-            case 3
-                resp=['Automatically identified ' resp{1} ', ' resp{2} ' and ' resp{3} '\n'];
+        if isempty(respc)
+            resp='No automatic identification done.';
+        else
+            resp='Automatically identified ';
+            for r = 1:numel(respc)
+                resp = [resp respc 'and '];
+            end
+            resp = [resp(end-4) '\n'];
         end
     case 'report'
         
@@ -91,6 +89,7 @@ switch task
         series_spgr=[];
         series_newfieldmap=[];
         series_tmaps=[];
+        series_t2=[];
         
         filenumber=0;
         
@@ -164,6 +163,13 @@ switch task
                         end
                     end
                     
+                    if (aap.options.autoidentifyt2)
+                        % Use directory name rather than protocol to
+                        % recognise t maps
+                        if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_t2))
+                            series_t2=[series_t2 seriesnum];
+                        end
+                    end
                     
                     if (aap.options.autoidentifytmaps)
                         % Use directory name rather than protocol to
@@ -182,9 +188,9 @@ switch task
         aas_makedir(aap,ais_p);
         aapoptions=aap.options;
         if (exist('alldicomfiles','var'))
-            save(aisfn,'series_newfieldmap','series_spgr','series_tmaps','aapoptions','alldicomfiles','rawdata_allseries');
+            save(aisfn,'series_newfieldmap','series_spgr','series_tmaps','series_t2','aapoptions','alldicomfiles','rawdata_allseries');
         else
-            save(aisfn,'series_newfieldmap','series_spgr','series_tmaps','aapoptions');
+            save(aisfn,'series_newfieldmap','series_spgr','series_tmaps','series_t2','aapoptions');
         end
         
         % Make comment
@@ -214,6 +220,11 @@ switch task
             end
             aap.acq_details.subjects(i).structural=series_spgr;
             comment=[comment sprintf(' Structural series %d ',series_spgr)];
+        end
+        
+        if (aap.options.autoidentifyt2)
+            aap.acq_details.subjects(i).t2=series_t2;
+            comment=[comment [' T2 series ' sprintf('%d\t',series_t2)]];
         end
         
         if (aap.options.autoidentifytmaps)
