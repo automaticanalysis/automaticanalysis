@@ -31,6 +31,19 @@
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
             
+            <!-- Setting for the basis functions -->
+            <xBF>
+                <T></T>              
+                <UNITS></UNITS>    
+                <Volterra></Volterra> 
+                <name></name>       
+                <length></length>    
+                <order></order>       
+                <T0></T0> 
+                <bf></bf>
+            </xBF>
+                  
+            <parallel desc='Parallelisation mode [serial/none, torque]'>serial</parallel>
             <!-- Describe model for design matrix
     You may do this in your own copy of this .xml file, or programmatically in your user script.
     Example if design same for every subject.
