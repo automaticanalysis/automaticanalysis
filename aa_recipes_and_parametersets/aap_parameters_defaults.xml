@@ -32,6 +32,7 @@
         <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
         <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
+        <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
 		<spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
@@ -102,6 +103,7 @@
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>0</N>
         </splitsession_cv>
+        <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>
     </options>
     
     <gui_controls>
