@@ -102,6 +102,7 @@ classdef aaq_matlab_pct<aaq
             
             while(labProbe)
                 [data source tag]=labReceive;
+                fprintf('Worker %d message %s which was %s\n',source,data{1},data{2});
                 switch(data{1})
                     case 'status'
                         obj.workerstatus{source}=data{2};
@@ -184,7 +185,7 @@ classdef aaq_matlab_pct<aaq
             while any(~strcmp('closed',obj.workerstatus))
                 workerwaiting=find(strcmp('waiting',obj.workerstatus));
                 for wwind=1:length(workerwaiting)
-                    fprinf('Sending close to %d\n',workerwaiting(wwind));
+                    fprintf('Sending close to %d\n',workerwaiting(wwind));
                     labSend({'close'},workerwaiting(wwind));
                 end;
                 obj.receiveWorkerMessages();
