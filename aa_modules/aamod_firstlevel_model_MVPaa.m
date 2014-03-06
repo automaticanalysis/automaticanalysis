@@ -97,7 +97,7 @@ switch task
         
         
         switch aap.tasklist.currenttask.settings.parallel
-            case 'torque'
+            case 'qsub'
                 for numReg = sessRegs
                     aapCell{numReg}                = aap;
                     anadirCell{numReg}             = anadir;
@@ -115,13 +115,14 @@ switch task
                     movementRegsCell{numReg}       = movementRegs;
                     compartmentRegsCell{numReg}    = compartmentRegs;
                     physiologicalRegsCell{numReg}  = physiologicalRegs;
-                    spikeRegsCell{numReg}     = spikeRegs;
+                    spikeRegsCell{numReg}          = spikeRegs;
+					GLMDNregsCell{numReg}		   = GLMDNregs;
                 end
                 
                 qsubcellfun(@aas_firstlevel_model_mumford, ...
                     aapCell, anadirCell, coreSPMCell, filesCell, allfilesCell, ...
                     modelCell, modelCCell, eventNumberCell, sessNumberCell, numRegCell, nDestCell, ...
-                    movementRegsCell, compartmentRegsCell, physiologicalRegsCell, spikeRegsCell, ...
+                    movementRegsCell, compartmentRegsCell, physiologicalRegsCell, spikeRegsCell, GLMDNregsCell, ...
                     'memreq', 3.7 * (1024^3), ... % NOT DYNAMIC YET!!!
                     'timreq', 1 * (3600), ...
                     'stack', 1 ...
@@ -131,7 +132,7 @@ switch task
                     nDest = SPMest.xX.iC(eventNumber==numReg);
                     aas_firstlevel_model_mumford(aap, anadir, coreSPM, files, allfiles, ...
                         model, modelC, eventNumber, sessNumber, numReg, nDest, ...
-                        movementRegs, compartmentRegs, physiologicalRegs, spikeRegs)
+                        movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
                 end
         end
         
