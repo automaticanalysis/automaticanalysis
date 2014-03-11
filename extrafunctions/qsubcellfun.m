@@ -18,17 +18,13 @@ isaa = isstruct(varargin{2}{1}) && isfield(varargin{2}{1},'options') && ...
 if isaa, aap = varargin{2}{1}; end
 
 %% Initialise engine
+nWorkers = 8;
 if isaa
-    global aaparallel;
-    nWorkers = aaparallel.numberofworkers;
-    global aaworker;
-    qsubpath = aaworker.parmpath;
+    qsubpath = fullfile(getenv('HOME'),'aaworker');
 else
-    nWorkers = 8;
-    qsubpath = [pwd '/junk'];
+    qsubpath = pwd;
 end
-ind = find(qsubpath=='/',1,'last');
-qsubpath = [qsubpath(1:ind) func2str(func) '_' datestr(now,30)];
+qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 
 try
     scheduler=cbu_scheduler('custom',{'compute',nWorkers,4,24*3600,qsubpath});
@@ -52,18 +48,18 @@ if isaa
     for ip = p_ind
         aapath{end+1} = p{ip};
     end
-    if isfield(obj.aap.directory_conventions,'spmtoolsdir') && ~isempty(obj.aap.directory_conventions.spmtoolsdir)
-        SPMTools = textscan(obj.aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
+    if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
+        SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
         SPMTools = SPMTools{1};
         for p = SPMTools'
             if exist(p{1},'dir'), aapath{end+1}=p{1};end
         end
     end
     % MNE
-    if isfield(obj.aap.directory_conventions,'mnedir') && ~isempty(obj.aap.directory_conventions.mnedir)
-        if exist(fullfile(obj.aap.directory_conventions.mnedir,'matlab'),'dir')
-            aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','toolbox');
-            aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','examples');
+    if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
+        if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
+            aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','toolbox');
+            aapath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','examples');
         end
     end
     aapath=aapath(strcmp('',aapath)==0);
@@ -73,10 +69,15 @@ end
 
 %% Submit
 for iJob = 1:numel(varargin{2})
+    
+    pause(5); % do not overload
+    
     J = createJob(scheduler);
     inparg = {};
+    nArg = 0;
     for iArg = ind_args
-        inparg = horzcat(inparg,varargin{iArg}{iJob});
+        nArg = nArg + 1;
+        inparg{nArg} = varargin{iArg}{iJob};
     end
     
     if isprop(J,'AdditionalPaths')
@@ -86,6 +87,8 @@ for iJob = 1:numel(varargin{2})
     end
     
     createTask(J,func,0,inparg);
+    fprintf('SUBMIT: %s\n',func2str(func));
+    
     J.submit;
 end
 
