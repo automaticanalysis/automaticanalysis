@@ -97,12 +97,12 @@ switch task
         % Get the options from the XML!
         jobs{1}.spatial{1}.realignunwarp.eoptions = ...
             aap.tasklist.currenttask.settings.eoptions;
-        jobs{1}.spatial{1}.realignunwarp.uweptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uweoptions = ...
             aap.tasklist.currenttask.settings.uweoptions;
-        jobs{1}.spatial{1}.realignunwarp.uwrptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uwroptions = ...
             aap.tasklist.currenttask.settings.uwroptions;
         
-        % Need to place this string inside a cell?
+        % Need to place this string inside a cell
         jobs{1}.spatial{1}.realignunwarp.eoptions.weight = ...
             {jobs{1}.spatial{1}.realignunwarp.eoptions.weight };
         
@@ -139,6 +139,7 @@ switch task
         
         %% Run the job!
         
+        spm_jobman('initcfg');
         spm_jobman('run',jobs);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
