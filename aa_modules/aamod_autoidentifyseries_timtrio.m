@@ -50,6 +50,7 @@ switch task
                     if (isempty(thispth)) 
                         break;
                     end
+                    fprintf('Examining folder %s\n',thispth);
                     fn=dir(fullfile(thispth,aap.directory_conventions.dicomfilter));
                     for fnind=1:length(fn)
                         if (~fn(fnind).isdir)
