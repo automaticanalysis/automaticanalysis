@@ -25,6 +25,7 @@
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_spmts</stream>
                 <stream>firstlevel_spmfs</stream>
+				<stream>structural</stream>
             </inputstreams>
             <outputstreams>
 			    <stream>firstlevel_thr</stream>

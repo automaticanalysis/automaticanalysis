@@ -16,15 +16,15 @@ switch task
             niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).structural{1});
         end
         V=spm_vol(niftifile);
-        sesspth=fullfile(aas_getsubjpath(aap,subj),'structural');
+        sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
         aas_makedir(aap,sesspth);
         [pth fle ext]=fileparts(aap.acq_details.subjects(subj).structural{1});
         Y=spm_read_vols(V(1));
         fn=fullfile(sesspth,[sprintf('%s_%04d',fle,1) '.nii']);
         V(1).fname=fn;
         V(1).n=[1 1];
-        spm_write_vol(V(1),Y);
         % Write out the files, now likely in 3d
+        spm_write_vol(V(1),Y);        
         aap=aas_desc_outputs(aap,subj,'structural',fn);
         
     case 'checkrequirements'

@@ -28,7 +28,7 @@ classdef aaq_condor<aaq
             [pth compdir ext]=fileparts(tempname);
             compdir=fullfile(obj.condorpath,compdir);
             mkdir(compdir);
-            [aap obj.compiledfile]=make_aws_compiled_tool(obj.aap,'/cn_developer/camneuro/release-beta-0.0/aws/devel/matlab/condor_process_jobq.m',compdir)
+            [aap obj.compiledfile]=make_aws_compiled_tool(obj.aap,which('condor_process_jobq'),compdir) 
             
 %            % Clearing all existing Condor jobs for this user
 %            aas_log(aap,false,'Clearing all existing Condor jobs for this user');
@@ -274,6 +274,8 @@ classdef aaq_condor<aaq
             condorjobpth=fullfile(obj.condorpath,'condorjob');
             obj.aap=aas_makedir(obj.aap,condorjobpth);
             
+            aas_log(obj.aap,false,sprintf('Submitting condor job %s',condorjobpth));
+            
             % Get root of job name with date time, attempt number and random id
             [pth nme ext]=fileparts(tempname);
             nme=sprintf('attempt%d_%s_%s',1+retrynum,datestr(now,30),nme);
@@ -287,6 +289,8 @@ classdef aaq_condor<aaq
             fid=fopen(subfn,'w');
             fprintf(fid,'executable=%s\n',obj.compiledfile);
             fprintf(fid,'universe=vanilla\n');
+            fprintf(fid,'environment="MCR_CACHE_ROOT=/tmp%s"\n',condorjobpth);
+            
             
             % Check on special requirements
             [stagepath stagename]=fileparts(obj.aap.tasklist.main.module(job.k).name);

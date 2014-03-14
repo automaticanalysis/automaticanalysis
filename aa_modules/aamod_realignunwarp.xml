@@ -39,7 +39,7 @@
                 <lambda>100000</lambda> <!-- regularisation factor: medium -->
                 <jm>0</jm> <!-- NO Jacobian deformations -->
                 <fot>[4 5]</fot> <!-- first order effects; [4 5] means model pitch and roll -->
-                <sot>[]</sot> <!-- NO second order effects -->
+                <sot></sot> <!-- NO second order effects -->
                 <uwfwhm>4</uwfwhm> <!-- FWHM of smoothing filter applied to images prior to estimation of deformation fields -->
                 <rem>1</rem> <!-- 1: movement parameters are re-estimated at each unwarping iteration -->
                 <noi>5</noi> <!-- maximum number of iterations -->

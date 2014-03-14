@@ -6,6 +6,7 @@ switch task
     case 'report'
         
     case 'doit'
+%        memtic
         
         settings = aap.tasklist.currenttask.settings;
         
@@ -68,6 +69,8 @@ switch task
                 Vs = spm_vol(files{sess});
                 gd_data{s} = single(spm_read_vols(Vs));
             end
+            
+%            memtoc
             
             switch aap.tasklist.currenttask.settings.GDmode
                 
@@ -225,6 +228,8 @@ switch task
                     
                     aap=aas_desc_outputs(aap,subjInd,sess, 'epi', files_denoised{sess});
                 end
+                
+                aap=aas_desc_outputs(aap,subj,sess, 'epi', files_denoised{sess});
             end
         end
     case 'checkrequirements'

@@ -84,21 +84,25 @@ switch task
             % Write out the files
 
             % Now move dummy scans to dummy_scans directory
-            dummypath=fullfile(sesspth,'dummy_scans');
-            aap=aas_makedir(aap,dummypath);
             dummylist=[];
-            for d=1:aap.acq_details.numdummies
-                cmd=['mv ' finalepis{d} ' ' dummypath];
-                [pth nme ext]=fileparts(finalepis{d});
-                dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
-                [s w]=aas_shell(cmd);
-                if (s)
-                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
+            if aap.acq_details.numdummies
+                dummypath=fullfile(sesspth,'dummy_scans');
+                aap=aas_makedir(aap,dummypath);
+                for d=1:aap.acq_details.numdummies
+                    cmd=['mv ' finalepis{d} ' ' dummypath];
+                    [pth nme ext]=fileparts(finalepis{d});
+                    dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
+                    [s w]=aas_shell(cmd);
+                    if (s)
+                        aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
+                    end
                 end
+            else
+                d = 0;
             end
             finalepis = {finalepis{d+1:end}};
             % 4D conversion [TA]
-            if aap.options.NIFTI4D
+            if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
                 finalepis = finalepis{1};
                 ind = find(finalepis=='-');
                 if isempty(ind), ind = find(finalepis=='.'); end; ind(2) = ind(end);

@@ -31,6 +31,18 @@
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
             
+            <!-- Setting for the basis functions -->
+            <xBF>
+                <T></T>              
+                <UNITS></UNITS>    
+                <Volterra></Volterra> 
+                <name></name>       
+                <length></length>    
+                <order></order>       
+                <T0></T0> 
+                <bf></bf>
+            </xBF>
+                        
             <parallel desc='Parallelisation mode [serial/none, torque]'
             >serial</parallel>
             

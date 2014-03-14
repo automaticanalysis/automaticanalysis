@@ -8,8 +8,12 @@ if (~exist('quiet','var'))
 end;
 
 [s,wshell]=system('echo $0');
+pos=find(wshell=='/');
+if ~isempty(pos)
+    wshell=wshell(pos(end)+1:end);
+end;
 wshell=deblank(wshell);
-if (~isempty(strfind(wshell,'bash')))
+if (strcmp(wshell,'bash') || strcmp(wshell,'sh'))
     prefix='export TERM=dumb;'; % stops colours
 else
     prefix='setenv TERM dumb;'; % stops colours
