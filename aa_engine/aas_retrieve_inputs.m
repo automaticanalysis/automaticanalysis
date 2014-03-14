@@ -40,7 +40,7 @@ for depind=1:length(deps)
         % First we need to get the previous aap file
         remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
         if (~doneremotefetch)
-            aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn);
+            aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache);
         else
             aas_log(aap,false,sprintf('Not repeating earlier fetch of remote data to %s',dest));
         end;
@@ -71,15 +71,27 @@ for depind=1:length(deps)
             aap_remote.directory_conventions.parallel_dependencies=aap.directory_conventions.parallel_dependencies;
             aas_log(aap,false,'Remote aap does not contain parallel_dependencies field - probably from older aa');
         end;
-        % Get remote directory
-        remoteindices=indices;
-        if length(indices)>2
-            findsession=find(strcmp(aap.acq_details.sessions(indices(2)).name,{aap_remote.acq_details.sessions.name}));
-            if isempty(findsession)
-                aas_log(aap,true,sprintf('Error loading remote file with stage tag %s as could not find session called %s',inputstream.sourcestagename,aap.acq_details.sessions(indices(2)).name));
-            end;
-            remoteindices(2)=findsession;
-        end;
+        
+        remoteindices = indices;
+        
+        % Get/Check/Fix Subject Index
+        subMatch = strcmp(aap.acq_details.subjects(indices(1)).mriname, {aap_remote.acq_details.subjects.mriname});
+        if ~any(subMatch)
+            aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have subject: %s', inputstream.sourcestagename, inputstream.host, remoteAAPfn, aap.acq_details.subjects(indices(1)).mriname));
+        else
+            remoteindices(1) = find(subMatch);
+        end
+        
+        % Get/Check/Fix Session Index
+        if length(indices) > 1 && ~isempty(aap.acq_details.sessions(indices(2)).name)
+            sessMatch = strcmp(aap.acq_details.sessions(indices(2)).name, {aap_remote.acq_details.sessions.name});
+            if ~any(sessMatch)
+                aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have session: %s', inputstream.sourcestagename, aap.acq_details.sessions(indices(2)).name));
+            else
+                remoteindices(2) = find(sessMatch);
+            end
+        end
+        
         src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
         
         remoteoutputstreamdesc=fullfile(src,sprintf('stream_%s_outputfrom_%s.txt',fromstreamname,inputstream.sourcestagename));
@@ -105,7 +117,7 @@ for depind=1:length(deps)
         outputstreamdesc=fullfile(dest,sprintf('stream_%s_remoteoutputfrom_%s_%s.txt',fromstreamname,inputstream.host,inputstream.sourcestagename));
         
         if ~doneremotefetch
-            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,true);
+            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache);
         end;
         
         if (exist(outputstreamdesc,'file'))
@@ -161,7 +173,7 @@ for depind=1:length(deps)
                     if (~strcmp(oldpth,newpth))
                         aas_makedir(aap,newpth);
                         if (numtotransfer>0)
-                            aas_copyfromremote(aap, inputstream.host, inps,oldpth);
+                            aas_copyfromremote(aap, inputstream.host, inps,oldpth,'verbose',0,'allowcache',inputstream.allowcache);
                         end;
                         inps=[fullfile(src,fns{ind}) ' '];
                         oldpth=newpth;
@@ -171,12 +183,12 @@ for depind=1:length(deps)
                         numtotransfer=numtotransfer+1;
                     end;
                     if (wasnamechange)
-                        aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind});
+                        aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind},'verbose',0,'allowcache',inputstream.allowcache);
                         numtotransfer=0;
                         inps='';
                     else
                         if (numtotransfer>0) && (ind==length(fns) || numtotransfer>chunksize)
-                            aas_copyfromremote(aap, inputstream.host, inps,oldpth);
+                            aas_copyfromremote(aap, inputstream.host, inps,oldpth,'verbose',0,'allowcache',inputstream.allowcache);
                             numtotransfer=0;
                             inps='';
                         end;
