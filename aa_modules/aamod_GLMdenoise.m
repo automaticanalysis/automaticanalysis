@@ -195,7 +195,7 @@ switch task
                 GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, opt, sprintf('figures%d', split));
             
             gdFile = fullfile(aas_getsubjpath(aap, subjInd), 'gd_results.mat');
-            save(gdFile, 'gd_results');
+            save(gdFile, 'gd_results', '-v7.3');
             aap = aas_desc_outputs(aap, subjInd, 'gd_results', gdFile);
             
             %             [h, figName] = GLMdenoise_diagnostics(gd_results, gd_data, gd_resultsALT, gd_dataORI);
