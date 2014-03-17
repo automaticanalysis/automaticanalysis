@@ -101,7 +101,8 @@ switch task
                 foundit=false;
                 for fileind=1:size(confiles{s},1);
                     [pth nme ext]=fileparts(confiles{s}(fileind,:));
-                    if strcmp(nme,sprintf('con_%04d',n))
+                    m = regexp(nme,sprintf('con_%04d',n));
+                    if m
                         foundit=true;
                         break;
                     end;
