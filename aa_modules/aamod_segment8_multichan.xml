@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='SPM8 segment8 (multichannel)' modality='MRI'>
+        
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <samp desc='Sampling distance (mm)'>1</samp>
+            <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank default to Seg/TPM.nii -->
+            <vox desc='Voxel size of segmented images'>1.5</vox>
+            <affreg desc='Initial affine registration'>mni</affreg>
+            <biasfwhm desc='FWHM of the bias field'>60</biasfwhm>
+            <biasreg desc='regularization for the bias field'>.001</biasreg>
+            <reg desc='regularization'>.001</reg>
+            <mrf desc='Markov Random Field argument'>1</mrf>
+			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
+			<writebiascorrected desc='write out bias field or corrected image?'>0 0</writebiascorrected>
+			<writedeffields desc='write out deformation fields?'>1 1</writedeffields>
+
+            <writenormimg desc='apply normalisation parameters to input image(s)?'>1</writenormimg>
+            <writenorm>
+                <method desc='normalisation method to apply - only for SPM12?' options='push|pull' ui='optionlist'>push</method>
+                <fwhm desc='FWHM to apply after normalisation? - only for SPM12'>0.5 0.5 0.5</fwhm>
+                <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated) - only for SPM12/push'>1</preserve>
+            </writenorm>
+            <affinestartingestimate desc='starting transform: closer approximate mni'>
+                <y>-30</y><z>17</z><pitch>0.2</pitch>
+            </affinestartingestimate>
+			
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>t2</stream> 
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>seg8</stream>
+
+                <stream>native_grey</stream>
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
+
+                <stream>dartelimported_grey</stream>
+                <stream>dartelimported_white</stream>
+                <stream>dartelimported_csf</stream>
+
+                <stream>normalised_density_grey</stream>
+                <stream>normalised_density_white</stream>
+                <stream>normalised_density_csf</stream>
+
+                <stream>normalised_volume_grey</stream>
+                <stream>normalised_volume_white</stream>
+                <stream>normalised_volume_csf</stream>                
+            </outputstreams>
+        </currenttask>
+    </tasklist> 
+</aap>
+
