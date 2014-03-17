@@ -120,7 +120,11 @@ if isfield(aap.tasklist.currenttask.settings,'TR') && ...
 else
     % Get TR from DICOM header checking they're the same for all sessions
     for sess=aap.acq_details.selected_sessions
-        DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
+        try
+            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
+        catch
+            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_header')); % For backwards compatibility
+        end
         try
             TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         catch
@@ -194,8 +198,9 @@ if (usesliceorder)
         end
     end
 end
-SPM.xGX.iGXcalc = 'None';
-SPM.xVi.form = 'AR(1)';
+
+SPM.xGX.iGXcalc = aap.tasklist.currenttask.settings.globalscaling;
+SPM.xVi.form = aap.tasklist.currenttask.settings.autocorrelation;
 
 %% Adjust time bin T0 according to reference slice & slice order
 %  implements email to CBU from Rik Henson 27/06/07
