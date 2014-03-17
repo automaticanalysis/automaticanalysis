@@ -43,7 +43,7 @@
                 <uwfwhm>4</uwfwhm> <!-- FWHM of smoothing filter applied to images prior to estimation of deformation fields -->
                 <rem>1</rem> <!-- 1: movement parameters are re-estimated at each unwarping iteration -->
                 <noi>5</noi> <!-- maximum number of iterations -->
-                <expround>'Average'</expround> <!-- point in position space to perform Taylor-expansion around -->
+                <expround>Average</expround> <!-- point in position space to perform Taylor-expansion around -->
             </uweoptions>
             
             <!--Reslicing parameters-->            
@@ -52,7 +52,7 @@
                 <rinterp>7</rinterp> <!-- interpolation method: DCCN: 4th degree B splines -->
                 <wrap>[0 1 0]</wrap> <!-- wrapping: DCCN is None -->
                 <mask>1</mask> <!-- masking -->
-                <prefix>'u'</prefix> <!-- prefix for images -->
+                <prefix>u</prefix> <!-- prefix for images -->
             </uwroptions>
             
         </currenttask>        
