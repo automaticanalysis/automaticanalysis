@@ -92,6 +92,11 @@ for depind=1:length(deps)
             end
         end
         
+        % IT's possible that AAPs from different versions of AA have
+        % different dependency lists... let's not error if that;s the case.
+        %  Instead, just don't bother searching for it.
+        if length(aas_dependencytree_finddomain(domain, aap_remote.directory_conventions.parallel_dependencies,{})) ~= 0
+        
         src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
         
         remoteoutputstreamdesc=fullfile(src,sprintf('stream_%s_outputfrom_%s.txt',fromstreamname,inputstream.sourcestagename));
@@ -215,6 +220,7 @@ for depind=1:length(deps)
             
             gotinputs=[gotinputs;fns_dest_full];
         end;
+        end
         
         %     if (~doneremotefetch)
         %         fid=fopen(remotefetchfn,'w');
