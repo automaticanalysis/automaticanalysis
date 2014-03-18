@@ -27,13 +27,13 @@ switch task
 
         %% 0) Check that the templates we need exist!
         % Get the T1 template
-        sTimg = fullfile(spm('dir'), 'templates', 'T1.nii');
+        sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
         if ~exist(sTimg, 'file')
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', Timg));
+            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
         end
         
         % Get the EPI template
-        eTimg = fullfile(spm('dir'), 'templates', 'EPI.nii');
+        eTimg = fullfile(spm('dir'), fullfile(fileparts(aap.directory_conventions.T1template),'EPI.nii'));
         if ~exist(eTimg, 'file')
             aas_log(aap, true, sprintf('Couldn''t find template EPI image %s.', eTimg));
         end
