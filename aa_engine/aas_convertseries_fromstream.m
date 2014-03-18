@@ -246,7 +246,7 @@ for subdirind=1:length(subdirs)
     end
 end
 
-if isempty(strfind(inputstream, 'dicom_structural'))
+if ~isempty(strfind(inputstream, 'dicom_structural')) || (numel(dicomheader) == 1)
     dicomheader=dicomheader{1};
 end;
 

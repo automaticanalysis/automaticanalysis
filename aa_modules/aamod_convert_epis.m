@@ -145,10 +145,7 @@ switch task
                 Ystd{echoind}(Ystd{echoind}==0) = NaN;
                 Ysnr{echoind}=Ymean{echoind}./Ystd{echoind};
                 
-                %                 dicomheaderfn=fullfile(sesspath,'dicom_headers.mat');
-                %                 save(dicomheaderfn,DICOMHEADERS);
-                %
-                TE{echoind}=DICOMHEADERS{echoind}.EchoTime;
+                TE{echoind}=DICOMHEADERS{echoind}{1}.EchoTime;
                 Ycnr{echoind}=Ysnr{echoind}*TE{echoind};  % Fixed by RC  7/2/2011
                 
                 
@@ -368,6 +365,7 @@ switch task
                 % Output combined file
                 [pth fle ext]=fileparts(fns{echoind}{fileind});
                 Vfirst.fname=fullfile(sesspath,[fle '_multiechocombo' ext]);
+                V0(fileind) = Vfirst;
                 finalepis{fileind}=Vfirst.fname;
                 spm_write_vol(Vfirst,Ytot);
                 
@@ -378,7 +376,7 @@ switch task
                     spm_write_vol(Vfirst,Ytot_nulled);
                 end
             end
-            
+            DICOMHEADERS = DICOMHEADERS{1}; % make it compatible with the single-echo
         else            
 
             %% Single echo code            
@@ -466,13 +464,14 @@ switch task
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             finalepis = [finalepis(1:ind(2)-1) '.nii'];
-            spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
+            spm_file_merge(char({V0(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
         end
         % And describe outputs
         aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
         dcmhdrfn = fullfile(sesspath,'dicom_headers.mat');
         save(dcmhdrfn,'DICOMHEADERS');
-
+        aap=aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
+        
         % [TA modification]
         %aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis(aap.acq_details.numdummies+1:end));
         aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
@@ -481,16 +480,7 @@ switch task
             aap=aas_desc_outputs(aap,subj,sess,'dummy_scans_nulled',finalepis_nulled(1:aap.acq_details.numdummies));
             aap=aas_desc_outputs(aap,subj,sess,'epi_nulled',finalepis_nulled(aap.acq_details.numdummies+1:end));
         end
-        
-        aap=aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
-        
-        
-        % And describe outputs
-        aap=aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn=fullfile(sesspath,'dicom_headers.mat');
-        save(dcmhdrfn,'DICOMHEADERS');
-        aap=aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
-        
+                
     case 'checkrequirements'
         
     otherwise
