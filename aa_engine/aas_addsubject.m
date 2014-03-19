@@ -39,7 +39,7 @@ catch
     aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
 end;
 try
-    if isnumeric(seriesnumbers) % DICOM series number
+    if isnumeric(seriesnumbers) || isnumeric(seriesnumbers{1}) % DICOM series number
         thissubj.seriesnumbers=seriesnumbers;
     else
         fMRI = {};
