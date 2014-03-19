@@ -1,5 +1,8 @@
 function aap = aas_connectAApipelines(aap, remoteAAlocations)
-% aas_connect_remoteAA(aap, remoteAAlocations)
+%
+% aas_connectAApipelines(aap, remoteAAlocations)
+%
+%
 % Connects streams from other (remote) AA pipelines to the local one.
 %
 % The "local" AA analysis is the one that is currently running (aap input)
@@ -12,6 +15,50 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 % Any modules of the local AA that have input streams that aren't outputs
 % of any previous modules in the local AA wil be connected up to the remote
 % AA.
+%
+% -------------------------------------------------------
+% Input parameters:
+%
+%   aap               : the AA structure
+%
+%   remoteAAlocations : a struct array with the following fields:
+%
+%     'host':        The IP address of the remote machine. Leave this as an
+%                    empty string '' if the remote location is on the local
+%                    machine.  SSH keys must be set up in advance to use
+%                    this feature (see the WIKI).
+%
+%     'directory':   The full path to remote the AA pipeline. In that
+%                    folder there should be file called aap_parameters.mat
+%                    that contains all the AA information about the remote
+%                    analysis.
+%
+%     'allowcache':  If set to 1, streams from the remote location will be
+%                    cached on the local machine (in ~/aaworker/). Useful
+%                    for preventing excessive network activity if you are
+%                    connecting to remote machines.  
+%                    If set to 0, disables caching. Should probably be set
+%                    to 0 if your remote AAPs live on the same local
+%                    machine.
+%                    If set to -1, will use caching behaviour determing by
+%                    aap.directory_conventions.allowremotecache.
+%
+%     'maxstagetag': By default, we take data streams from the remote AAP
+%                    from the *last* stage at which they are outputs.
+%                    However, if you want to take stream outputs from an
+%                    earlier stage, specify the full stage tag here.  Leave
+%                    as an empty string '' for default behaviour, or give a
+%                    string (e.g., 'aamod_realign_00001').
+%
+%     remoteAAlocations is struct array, because we can specify multiple
+%     remote locations.  Priority is given to earlier array elements, so if
+%     a data stream is found at multiple remote locations, we take that
+%     stream from the location that occurs first in the array.
+%
+% -------------------------------------------------------
+% created by:  cwild 2014-03-10
+% last update: cwild 2014-03-18
+%
 
 % Error checking:
 if isempty(aap.acq_details.subjects)
