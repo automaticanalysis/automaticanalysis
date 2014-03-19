@@ -23,7 +23,10 @@ switch (domain)
         
     case {'diffusion_session', 'diffusion_session_bedpostx'}
         N=length(aap.acq_details.diffusion_sessions);
-    
+        if isempty(aap.acq_details.diffusion_sessions(1).name)
+            N=N-1;
+        end
+        
     case 'diffusion_session_probtrackx'
         N=aap.options.probtrackx.nsplits;        
 end;    
