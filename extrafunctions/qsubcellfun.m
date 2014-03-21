@@ -70,7 +70,7 @@ end
 %% Submit
 for iJob = 1:numel(varargin{2})
     
-    pause(5); % do not overload
+    pause(0.5); % do not overload
     
     J = createJob(scheduler);
     inparg = {};
