@@ -11,7 +11,7 @@ global aaworker
 resp='';
 
 switch task
-    
+        
     case 'description'
         resp=sprintf('Getting T2 DICOM files');
         
@@ -33,19 +33,32 @@ switch task
         % Load up automatically scanned value, validate
         aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
         ais=load(aisfn);
+        
         if (length(ais.series_t2)>1)
-            aas_log(aap,true,sprintf('Was expecting only one T2, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2)));           
+           
+           if aap.options.autoidentifyt2_multiple, 
+            aas_log(aap,true,sprintf('Was expecting only one T2, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2))); 
+            structseries=ais.series_t2; 
+           elseif aap.options.autoidentifyt2_chooselast
+            aas_log(aap,false,sprintf('Was expecting only one T2, but autoidentify series found %d. Will proceed with last, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2)));
+            structseries=ais.series_t2(end);
+           elseif aap.options.autoidentifyt2_choosefirst
+            aas_log(aap,false,sprintf('Was expecting only one T2 but autoidentify series found %d. Will proceed with first, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2)));
+            structseries = ais.series_t2(1);
+           else
+            aas_log(aap,true,sprintf('Was expecting only one T2, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2)));
+           end
+           
         elseif (isempty(ais.series_t2))
            aas_log(aap,true,'No T2 found.');
         else
            structseries=ais.series_t2;
         end
-        
                
         % Make structural directory
         aas_makedir(aap,structpath);
             
-        % In case there is more than one T2, e.g. MP2RAGE [AVG]
+        % In case there is more than one T2
         out = [];
         for seriesind=1:length(structseries)
             [aap dicom_files_src]=aas_listdicomfiles(aap,i,structseries(seriesind));

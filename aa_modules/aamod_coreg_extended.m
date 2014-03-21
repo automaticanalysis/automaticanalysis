@@ -30,7 +30,7 @@ switch task
         % Get the template
         sTimg = fullfile(spm('dir'), 'templates', 'T1.nii');
         if ~exist(sTimg, 'file')
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', Timg));
+            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
         end
         
         % Get the template

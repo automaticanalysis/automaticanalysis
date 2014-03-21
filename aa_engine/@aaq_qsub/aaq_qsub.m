@@ -1,8 +1,8 @@
 classdef aaq_qsub<aaq
     properties
         scheduler = [];
-        filestomonitor=[];
         jobnotrun = [];
+        taskstomonitor = [];
     end
     methods
         function [obj]=aaq_qsub(aap)
@@ -62,62 +62,53 @@ classdef aaq_qsub<aaq
                     end
                 end
                 
-                for ftmind=1:numel(obj.filestomonitor)
+                taskreported = [];
+                
+                for ftmind=1:numel(obj.taskstomonitor)                    
+                    JobID = obj.taskstomonitor(ftmind);
+                    Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
+                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
+                    state = Task.State;
+                    if ~isempty(Task.Error), state = 'error'; end
                     
-                    % If output exists, check what it is...
-                    if ~obj.filestomonitor(ftmind).reported
-                        if exist(obj.filestomonitor(ftmind).name, 'file')
-                            pause(5); % give time to finish saving logs
-                            JobID = sscanf(basename(fileparts(obj.filestomonitor(ftmind).name)),'Job%d');
-                            JobLog = load(obj.filestomonitor(ftmind).name);
-                            thisJob = load(strrep(obj.filestomonitor(ftmind).name,'out.mat','in.mat'));
-                            moduleName = thisJob.argsin{1}.tasklist.main.module(thisJob.argsin{3}).name;
+                    switch state
+                        case 'finished'
+                            if isempty(Task.FinishTime), continue; end
+                            dtvs = dts2dtv(Task.CreateTime);
+                            dtvf = dts2dtv(Task.FinishTime);
+                            msg = sprintf('MODULE %s FINISHED: Job%d used %s.',...
+                                moduleName,JobID,sec2dts(etime(dtvf,dtvs)));
+                            aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
-                            obj.filestomonitor(ftmind).state = deblank(fileread(strrep(obj.filestomonitor(ftmind).name,'out.mat','state.mat')));
-                            if ~isempty(JobLog.errormessage)
-                                obj.filestomonitor(ftmind).state = 'error';
-                            end
+                            % Also save to file with module name attached!
+                            fid = fopen(fullfile(aaworker.parmpath,'qsub','time_estimates.txt'), 'a');
+                            fprintf(fid,'%s\n',msg);
+                            fclose(fid);
                             
-                            switch obj.filestomonitor(ftmind).state
-                                case 'finished'
-                                    if isempty(JobLog.finishtime), continue; end
-                                    dtvs = dts2dtv(thisJob.createtime);
-                                    dtvf = dts2dtv(JobLog.finishtime);
-                                    msg = sprintf('MODULE %s FINISHED: Job%d used %s.',...
-                                        moduleName,JobID,sec2dts(etime(dtvf,dtvs)));
-                                    aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
-                                    
-                                    % Also save to file with module name attached!
-                                    fid = fopen(fullfile(aaworker.parmpath,'qsub','time_estimates.txt'), 'a');
-                                    fprintf(fid,'%s\n',msg);
-                                    fclose(fid);
-                                    
-                                    obj.filestomonitor(ftmind).reported = true;
-                                case 'error';
-                                    msg = sprintf('Job%d had an error: %s\n',JobID,JobLog.errormessage);
-                                    for e = 1:numel(JobLog.errorstruct.stack)
-                                        % Stop tracking to internal
-                                        if strfind(JobLog.errorstruct.stack(e).file,'distcomp'), break, end
-                                        msg = [msg sprintf('in %s (line %d)\n', ...
-                                            JobLog.errorstruct.stack(e).file, JobLog.errorstruct.stack(e).line)];
-                                    end
-                                    % If there is an error, it is fatal...
-                                    aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
-
-                                    obj.filestomonitor(ftmind).reported = true;
+                            taskreported(end+1) = ftmind;
+                        case 'error';
+                            msg = sprintf('Job%d had an error: %s\n',JobID,Task.ErrorMessage);
+                            for e = 1:numel(Task.Error.stack)
+                                % Stop tracking to internal
+                                if strfind(Task.Error.stack(e).file,'distcomp'), break, end
+                                msg = [msg sprintf('in %s (line %d)\n', ...
+                                    Task.Error.stack(e).file, Task.Error.stack(e).line)];
                             end
-                        else
-                            warning('File %s does not exist!',obj.filestomonitor(ftmind).name);
-                        end
+                            % If there is an error, it is fatal...
+                            aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
+                            
+                            taskreported(end+1) = ftmind;
                     end
                 end
                 
+                obj.taskstomonitor(taskreported) = [];
+                
                 % Loop if we are still waiting for jobs to finish...
                 if waitforalljobs == 1;
-                    if isempty(obj.filestomonitor)
+                    if isempty(obj.taskstomonitor)
                         waitforalljobs = 0;
                     end
-                end
+                end                
             end
         end
         
@@ -204,14 +195,7 @@ classdef aaq_qsub<aaq
                 %                     job.stagename, timReq./(60*60), memReq./(1024^3))
                 
                 % And monitor for files with the job output
-                fles.name=fullfile(aaworker.parmpath,sprintf('Job%d',J.ID),'Task1.out.mat');
-                fles.state='queued';
-                fles.reported = false;
-                if (isempty(obj.filestomonitor))
-                    obj.filestomonitor=fles;
-                else
-                    obj.filestomonitor(end+1)=fles;
-                end
+                obj.taskstomonitor(end+1)=J.ID;
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
