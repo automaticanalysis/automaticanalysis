@@ -76,14 +76,15 @@ for k1=1:length(aap.tasklist.main.module)
                     stream=[];
                     stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
-                    stream.sourcestagename=sourcestagename;
+                    stream.sourcestagenaminputstreamnamee=sourcestagename;
                     stream.sourcedomain=[];
                     stream.depth=mindepth;
                     stream.host='';
                     stream.aapfilename='';
                     stream.ismodified=ismodified;
                     stream.allowcache=false;
-                    stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
+                    stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain; 
+                    
                     if (isempty(aap.internal.inputstreamsources{k1}.stream))
                         aap.internal.inputstreamsources{k1}.stream=stream;
                     else
@@ -102,7 +103,7 @@ for k1=1:length(aap.tasklist.main.module)
                         aap.internal.outputstreamdestinations{stagethatoutputs}.stream(end+1)=stream;
                     end;
                 end;
-            end;
+            end;         
         end;
     end;
 end;

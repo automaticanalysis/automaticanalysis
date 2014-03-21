@@ -45,11 +45,13 @@ else
     mfile_alias=stagename;
 end;
 
+taskSchema = aap.schema.tasksettings.(stagename)(index);
+
 % retrieve description from module
-description=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.desc;
+description=taskSchema.ATTRIBUTE.desc;
 
 % find out whether this module needs to be executed once per study, subject or session
-domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
+domain=taskSchema.ATTRIBUTE.domain;
 
 %  If multiple repetitions of a module, add 02,03 etc to end of doneflag
 doneflagname=aas_doneflag_getname(aap,modulenum);
@@ -98,9 +100,39 @@ else
                 
                 allinputs={};
                 for inpind=1:length(aap.internal.inputstreamsources{modulenum}.stream)
+                    
                     inp=aap.internal.inputstreamsources{modulenum}.stream(inpind);
                     
-                    deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,domain,indices);
+                    % There might be additional settings for this input 
+                    % Added by CW to allow domain override
+                    if iscell(taskSchema.inputstreams.stream)  && ~isstruct(taskSchema.inputstreams.stream{1})
+                        inputSchema = taskSchema.inputstreams.stream{inpind};
+                    else
+                        inputSchema = taskSchema.inputstreams.stream{1}(inpind);
+                    end
+
+                    % Let's add the ability to force the search domain to
+                    % change for a specific input (e.g., for x-val purposes)
+                    searchDomain = domain;      % Default to domain of this module
+                    searchIndices = indices;    % Default to domain indices
+                    if isstruct(inputSchema) && isfield(inputSchema.ATTRIBUTE,'forcedomain')
+                        searchDomain = inputSchema.ATTRIBUTE.forcedomain;
+                        
+                        % The current 'indices' specify the current module,
+                        % we have to update them to reflect the new
+                        % (forced) search domain.
+                        searchDomainTree = aas_dependencytree_finddomain(searchDomain,aap.directory_conventions.parallel_dependencies,{});
+                        moduleDomainTree = aas_dependencytree_finddomain(domain,aap.directory_conventions.parallel_dependencies,{});
+                        
+                        if length(searchDomainTree) < length(moduleDomainTree)
+                            searchIndices = searchIndices(1:length(searchDomainTree)-1);
+                        else
+                            aas_log(aap, 1, 'NYI: forcing domain to be more specific, we have to have a way to specify the new indices.');
+                        end
+   
+                    end
+                    
+                    deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
                     gotinputs=aas_retrieve_inputs(aap,inp,allinputs,deps);
                     if isempty(gotinputs)
                         aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
