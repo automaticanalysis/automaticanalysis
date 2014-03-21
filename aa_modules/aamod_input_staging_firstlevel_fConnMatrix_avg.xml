@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' mfile_alias='aamod_input_staging' desc='Ensure complete processing of 1st level connectivity maps' modality='MRI'>
+            
+            <inputstreams>
+                <stream>firstlevel_fConnMatrix_avg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_fConnMatrix_avg</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
