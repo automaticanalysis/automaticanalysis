@@ -1,4 +1,4 @@
-function qsubcellfun(varargin)
+function scheduler = qsubcellfun(varargin)
 %% Parse input
 func = varargin{1};
 varargin{1} = func2str(func);
