@@ -108,7 +108,6 @@
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>0</N>
         </splitsession_cv>
-        <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>
     </options>
     
     <gui_controls>

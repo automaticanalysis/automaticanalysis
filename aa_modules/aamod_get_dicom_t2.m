@@ -36,7 +36,7 @@ switch task
         
         if (length(ais.series_t2)>1)
            
-           if aap.options.autoidentify_multiple, 
+           if aap.options.autoidentifyt2_multiple, 
             aas_log(aap,true,sprintf('Was expecting only one T2, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_t2))); 
             structseries=ais.series_t2; 
            elseif aap.options.autoidentifyt2_chooselast
