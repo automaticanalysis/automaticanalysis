@@ -36,7 +36,7 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %     'allowcache':  If set to 1, streams from the remote location will be
 %                    cached on the local machine (in ~/aaworker/). Useful
 %                    for preventing excessive network activity if you are
-%                    connecting to remote machines.  
+%                    connecting to remote machines.
 %                    If set to 0, disables caching. Should probably be set
 %                    to 0 if your remote AAPs live on the same local
 %                    machine.
@@ -50,14 +50,19 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %                    as an empty string '' for default behaviour, or give a
 %                    string (e.g., 'aamod_realign_00001').
 %
-%     remoteAAlocations is struct array, because we can specify multiple
+%     remoteAAlocations is struct array, so we can specify multiple
 %     remote locations.  Priority is given to earlier array elements, so if
 %     a data stream is found at multiple remote locations, we take that
 %     stream from the location that occurs first in the array.
 %
 % -------------------------------------------------------
 % created by:  cwild 2014-03-10
-% last update: cwild 2014-03-18
+%
+% updates: 
+%
+% cwild 2014-04-02: Major update, added check for udpated data on the
+% remote
+% cwild 2014-03-18: misc cleaning
 %
 
 % Error checking:
@@ -69,8 +74,8 @@ if isempty(aap.acq_details.sessions)
     aas_log(aap, 1, 'aas_connectAApipelines() should be used after you have added sessions in your user script.');
 end
 
-if any(~isfield(remoteAAlocations, {'host', 'directory', 'allowcache', 'maxstagetag'}))
-    aas_log(aap, 1, 'remoteAAlocations (input to aas_connectAApipelines) should be a struct array with the following fields: ''host'', ''directory'', ''allowcache'', ''maxstagetag''');
+if any(~isfield(remoteAAlocations, {'host', 'directory', 'allowcache', 'maxstagetag', 'checkMD5'}))
+    aas_log(aap, 1, 'remoteAAlocations (input to aas_connectAApipelines) should be a struct array with the following fields: ''host'', ''directory'', ''allowcache'', ''maxstagetag'' ''checkMD5''');
 end
 
 global aaworker;
@@ -93,7 +98,7 @@ remoteAA = {};
 remoteOutputs = struct('name', {{}}, 'locI', {}, 'modI', {});
 
 % Collect output streams from the remote AA locations
-% Reverse order, because priority is given to earlier array elements in remoteAAlocations.
+% Reverse order, because priority is given to earlier array elements
 for locI = length(remoteAAlocations) : -1 : 1
     
     % There should be this file at the remote AA location
@@ -108,24 +113,27 @@ for locI = length(remoteAAlocations) : -1 : 1
     % Load it!
     if ~exist(destAAPfn, 'file'), aas_log(aap, 1, sprintf('Cannot find %s', remoteAAPfn)); end
     remoteAA{locI} = load(destAAPfn); remoteAA{locI} = remoteAA{locI}.aap;
-    
-    % Check that all subjects in the local AA are present in the remote AA
-    localSub = {aap.acq_details.subjects.mriname};
-    remoteSub = {remoteAA{locI}.acq_details.subjects.mriname};
-    subMatch = ismember(localSub, remoteSub);
-    if any(~subMatch)
-        aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have subjects: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSub(~subMatch))));
-    end
-    
-    % Check that all sessions in the local AA are present in the remote AA
-    if ~(length(aap.acq_details.sessions)==1 && isempty(aap.acq_details.sessions(1).name))
-    localSess = {aap.acq_details.sessions.name};
-    remoteSess = {remoteAA{locI}.acq_details.sessions.name};
-    sessMatch = ismember(localSess, remoteSess);
-    if any(~sessMatch)
-        aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have sessions: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSess(~sessMatch))));
-    end
-    end
+    %
+    %       % NOT BOTHERING TO CHECK SUBJECTS AND SESSIONS, BECAUSE WE
+    %       DON'T WANT TO FORCE ALL DOMAINS TO BE PRESENT IN ALL AAs
+    %
+    %     % Check that all subjects in the local AA are present in the remote AA
+    %     localSub = {aap.acq_details.subjects.mriname};
+    %     remoteSub = {remoteAA{locI}.acq_details.subjects.mriname};
+    %     subMatch = ismember(localSub, remoteSub);
+    %     if any(~subMatch)
+    %         aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have subjects: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSub(~subMatch))));
+    %     end
+    %
+    %     % Check that all sessions in the local AA are present in the remote AA
+    %     if ~(length(aap.acq_details.sessions)==1 && isempty(aap.acq_details.sessions(1).name))
+    %         localSess = {aap.acq_details.sessions.name};
+    %         remoteSess = {remoteAA{locI}.acq_details.sessions.name};
+    %         sessMatch = ismember(localSess, remoteSess);
+    %         if any(~sessMatch)
+    %             aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have sessions: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSess(~sessMatch))));
+    %         end
+    %     end
     
     maxModI = [];
     
@@ -168,6 +176,8 @@ end
 % don't bother trying to connect it from the remote AA.
 prevOutputs = {};
 
+aas_log(aap,0,'Checking status of remote streams...');
+
 for modI = 1 : length(aap.tasklist.main.module)
     mod = aap.tasklist.main.module(modI);
     
@@ -198,16 +208,126 @@ for modI = 1 : length(aap.tasklist.main.module)
                 
                 remoteOutput = remoteOutputs(rI);
                 remoteModule = remoteAA{remoteOutput.locI}.tasklist.main.module(remoteOutput.modI);
+                
+                trgDomain = aap.schema.tasksettings.(mod.name)(mod.index).ATTRIBUTE.domain;
+                srcDomain = remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.domain;
+                
                 remoteStreams(end+1) = struct('stream',       inputStreams{iI}, ...
                     'stagetag',     aas_getstagetag(remoteAA{remoteOutput.locI}, remoteOutput.modI), ...
-                    'sourcedomain', remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.domain, ...
+                    'sourcedomain', srcDomain, ...
                     'host',         remoteAAlocations(remoteOutput.locI).host, ...
                     'aapfilename',  fullfile(remoteAAlocations(remoteOutput.locI).directory, 'aap_parameters.mat'), ...
                     'allowcache',   remoteAAlocations(remoteOutput.locI).allowcache);
                 
-            end
+                % Now check if the remote data has changed...
+                
+                if remoteAAlocations(remoteOutput.locI).checkMD5
+                    
+                    % First we have to find all possible locations of the target streams
+                    trgDomainTree = aas_dependencytree_finddomain(srcDomain, aap.directory_conventions.parallel_dependencies, {});
+                    NPerDomain = [];
+                    for tdI = 1 : length(trgDomainTree)
+                        NPerDomain(tdI) = aas_getN_bydomain(aap, trgDomainTree{tdI}, []);
+                    end
+                    
+                    % Generate all possible indices for the target domain
+                    trgIndices = zeros(prod(NPerDomain), length(trgDomainTree));
+                    for tdI = 1: length(trgDomainTree)
+                        trgIndices(:,tdI) = repmat(kron([1:NPerDomain(tdI)]', ones(prod(NPerDomain(tdI+1:end)), 1)), prod(NPerDomain(1:tdI-1)), 1);
+                    end
+                    
+                    % Strip the 'study' indices
+                    trgIndices(:,1) = [];
+                    
+                    % Find correspondances between remote and local indices...
+                    srcDomainTree = aas_dependencytree_finddomain(srcDomain, remoteAA{locI}.directory_conventions.parallel_dependencies, {});
+                    
+                    if numel(srcDomainTree)~=numel(trgDomainTree) || any(~strcmp(srcDomainTree, trgDomainTree))
+                        aas_log(aap, 1, 'Domain Trees don''t match between remote and local AA. Can''t guarantee that we will find matching indices - so bailing!');
+                    end
+                    
+                    % Strip the 'study' domains
+                    srcDomainTree = srcDomainTree(2:end);
+                    trgDomainTree = trgDomainTree(2:end);
+                    
+                    localDomainNames = aas_getNames_bydomain(aap, trgDomainTree);
+                    remoteDomainNames = aas_getNames_bydomain(remoteAA{locI}, srcDomainTree);
+                    
+                    local2remoteMap = {};
+                    for dI = 1 : numel(localDomainNames)
+                        [presentInRemote local2remoteMap{dI}] = ismember(localDomainNames{dI}, remoteDomainNames{dI});
+                    end
+                    
+                    % Check doneflags / MD5s for each occurence of this stream.
+                    for tdI = 1 : size(trgIndices, 1)
+                        
+                        resetThisStage = false;
+                        
+                        % If this stage has completed, but target data has changed, let's force it to re-run
+                        trgDoneFlag = aas_doneflag_getpath_bydomain(aap, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))), modI);
+                        if (aas_doneflagexists(aap, trgDoneFlag))
+                            
+                            % Stream header file with MD5
+                            trgPath = aas_getpath_bydomain(aap, srcDomain, trgIndices(tdI,:), modI);
+                            trgStreamDesc = fullfile(trgPath, sprintf('stream_%s_inputto_%s.txt', inputStreams{iI}, sprintf('%s_%05d', mod.name, mod.index)));
+                            
+                            if ~exist(trgStreamDesc)
+                                resetThisStage = true;  % re-run if we can't find the local stream description
+                                aas_log(aap, 0, sprintf('%s %s input %s LOCAL status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                            else
+                                
+                                % Map the local indices to the remote AA
+                                remoteIndices = arrayfun(@(x,y) local2remoteMap{x}(y), [1:size(trgIndices,2)], trgIndices(tdI,:));
+                                
+                                % A remote index of 0 means that we can't
+                                % find that one, so it just might not be
+                                % present in the remote location.  That's
+                                % OK because maybe we're pulling it from
+                                % somewhere else....
+                                if ~any(remoteIndices==0)
+                                    
+                                    % Copy over the stream desc from the remote
+                                    remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, srcDomain, remoteIndices, remoteOutput.modI);
+                                    remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                    localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                    aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
+                                    
+                                    % If it didn't copy, then we should reset this stage
+                                    if ~exist(localSrcDesc)
+                                        resetThisStage = true;
+                                        aas_log(aap, 0, sprintf('%s %s input %s REMOTE status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                    else
+                                        
+                                        % Compare the MD5s
+                                        trgFileID = fopen(trgStreamDesc, 'r');
+                                        [aap, trgMD5] = aas_load_md5(aap, trgFileID, remoteOutput.name);
+                                        
+                                        srcFileID = fopen(localSrcDesc, 'r');
+                                        [aap, srcMD5] = aas_load_md5(aap, srcFileID, remoteOutput.name);
+                                        
+                                        fclose(trgFileID); fclose(srcFileID);
+                                        
+                                        if ~strcmp(trgMD5, srcMD5)
+                                            resetThisStage = true;
+                                            aas_log(aap, 0, sprintf('%s %s input %s REMOTE status CHANGED. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                        end
+                                    end
+                                end
+                            end
+                            
+                            if resetThisStage 
+                                aas_delete_doneflag_bypath(aap, trgDoneFlag);
+                            end
+                            
+                        end % End if done flag exists
+                        
+                    end % End check target destination indices
+                    
+                end % End if check MD5s
+                
+            end % End if input ~present in prev outputs
             
-        end
+        end % End loop over input straems
         
         aap.tasklist.main.module(modI).remotestream = remoteStreams;
         aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;

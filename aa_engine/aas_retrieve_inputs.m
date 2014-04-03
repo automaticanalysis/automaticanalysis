@@ -131,7 +131,7 @@ for depind=1:length(deps)
                 fid=fopen(outputstreamdesc,'r');
                 
                 % Load checksum with error checking
-                [aap md5]=loadmd5(aap,fid,streamname);
+                [aap md5]=aas_load_md5(aap,fid,streamname);
                 
                 % Get filenames
                 fns=textscan(fid,'%s');
@@ -203,7 +203,7 @@ for depind=1:length(deps)
                             aas_log(aap,false,'Previous copying of files did not complete, will recopy');
                         else
                             if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
-                                [aap md5_inp datecheck]=loadmd5(aap,md5_lne,streamname);
+                                [aap md5_inp datecheck]=aas_load_md5(aap,md5_lne,streamname);
                                 if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                     reloadfiles=false;
                                 end;
@@ -327,7 +327,7 @@ for depind=1:length(deps)
                     fid=fopen(outputstreamdesc,'r');
                     
                     % Load checksum with error checking
-                    [aap md5]=loadmd5(aap,fid,streamname);
+                    [aap md5]=aas_load_md5(aap,fid,streamname);
                     
                     % Get filenames
                     fns=textscan(fid,'%s');
@@ -393,7 +393,7 @@ for depind=1:length(deps)
                                 aas_log(aap,false,'Previous copying of files did not complete, will recopy');
                             else
                                 if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
-                                    [aap md5_inp datecheck]=loadmd5(aap,md5_lne,streamname);
+                                    [aap md5_inp datecheck]=aas_load_md5(aap,md5_lne,streamname);
                                     if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                         reloadfiles=false;
                                     end;
@@ -488,7 +488,7 @@ for depind=1:length(deps)
                     fid=fopen(streamdesc,'r');
                     
                     % Load md5 checksum from stream file with error checking
-                    [aap md5stored]=loadmd5(aap,fid,streamname);
+                    [aap md5stored]=aas_load_md5(aap,fid,streamname);
                     
                     % Get filelist from stream
                     fns=textscan(fid,'%s');
@@ -525,22 +525,3 @@ for depind=1:length(deps)
     end;
     
 end
-
-
-function [aap md5 datecheck]=loadmd5(aap,fid,streamname)
-if (ischar(fid))
-    lne=fid;
-else
-    lne=fgetl(fid);
-end;
-pos=find(lne==9);
-if (length(lne)<3 || ~strcmp(lne(1:3),'MD5') || isempty(pos))
-    aas_log(aap,true,sprintf('MD5 in file %s corrupted',streamname));
-end;
-if (length(pos)==1)
-    md5=deblank(lne(pos+1:end));
-    datecheck='';
-else
-    md5=deblank(lne(pos(1)+1:pos(2)-1));
-    datecheck=deblank(lne(pos(2)+1:end));
-end;

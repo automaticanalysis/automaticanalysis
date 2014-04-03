@@ -25,7 +25,11 @@ if (~isempty(v))
     k=v{end};
     
     % Get analysis id and analysis id suffix
-    analysisid=aap.internal.aap_initial.directory_conventions.analysisid;
+    if isfield(aap, 'internal')
+        analysisid=aap.internal.aap_initial.directory_conventions.analysisid;
+    else
+        analysisid=aap.directory_conventions.analysisid;
+    end
     try
         analysisid_suffix=aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix;
     catch
@@ -36,7 +40,11 @@ if (~isempty(v))
     switch (remotefilesystem)
         case 'none'
             try
-                root=aap.internal.aap_initial.acq_details.root;
+                if isfield(aap, 'internal')
+                    root=aap.internal.aap_initial.acq_details.root;
+                else
+                    root = aap.acq_details.root;
+                end
             catch
                 root=fullfile('/cn_data',aaworker.username,aap.acq_details.root);
             end;

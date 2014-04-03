@@ -19,7 +19,7 @@ switch (domain)
     case {'subject','hyperalignment_subject'}
         N=length(aap.acq_details.subjects);
     case 'study'
-        N=0;
+        N=1;
         
     case {'diffusion_session', 'diffusion_session_bedpostx'}
         N=length(aap.acq_details.diffusion_sessions);
