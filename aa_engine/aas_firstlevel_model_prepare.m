@@ -199,8 +199,12 @@ if (usesliceorder)
     end
 end
 
-SPM.xGX.iGXcalc = aap.tasklist.currenttask.settings.globalscaling;
-SPM.xVi.form = aap.tasklist.currenttask.settings.autocorrelation;
+try SPM.xGX.iGXcalc = aap.tasklist.currenttask.settings.globalscaling; catch
+    SPM.xGX.iGXcalc = 'None';
+end
+try SPM.xVi.form = aap.tasklist.currenttask.settings.autocorrelation; catch
+    SPM.xVi.form = 'AR(1)';
+end
 
 %% Adjust time bin T0 according to reference slice & slice order
 %  implements email to CBU from Rik Henson 27/06/07

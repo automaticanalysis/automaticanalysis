@@ -9,7 +9,8 @@ classdef aaq_qsub<aaq
             global aaworker;
             global aaparallel;
             try
-                obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,24*3600,aaworker.parmpath});
+                %obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,24*3600,aaworker.parmpath});
+                obj.scheduler=cbu_scheduler('custom',{'compute',1,4,24*3600,aaworker.parmpath});
             catch ME
                 warning('Cluster computing is not supported!\n');
                 warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
