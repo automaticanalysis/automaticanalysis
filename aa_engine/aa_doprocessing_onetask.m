@@ -105,7 +105,8 @@ else
                     
                     % There might be additional settings for this input 
                     % Added by CW to allow domain override
-                    if iscell(taskSchema.inputstreams.stream)  && ~isstruct(taskSchema.inputstreams.stream{1})
+                    if iscell(taskSchema.inputstreams.stream)  && ...
+                            ~(numel(taskSchema.inputstreams.stream) == 1 && isstruct(taskSchema.inputstreams.stream{1}))
                         inputSchema = taskSchema.inputstreams.stream{inpind};
                     else
                         inputSchema = taskSchema.inputstreams.stream{1}(inpind);

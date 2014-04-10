@@ -24,22 +24,16 @@ for k1=1:length(aap.tasklist.main.module)
     if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
         inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
         streamlist=inputstreams.stream;
-
-        % Random evil check?  Why is this here??
-%         if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE')
-%             streamlist=streamlist{1};
-%         end;
              
         for i=1:length(streamlist)
-            if iscell(inputstreams.stream)  && ~isstruct(inputstreams.stream{1})
-                inputstreamname=inputstreams.stream{i};
-            else
-                inputstreamname=inputstreams.stream{1}(i);
-            end;
-            ismodified=1;
+            inputstreamname=inputstreams.stream{i};
+            ismodified=1; isessential=1;
             if isstruct(inputstreamname)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')
                     ismodified=inputstreamname.ATTRIBUTE.ismodified;
+                end;
+                if isfield(inputstreamname.ATTRIBUTE,'isessential')
+                    isessential=inputstreamname.ATTRIBUTE.isessential;
                 end;
                 inputstreamname=inputstreamname.CONTENT;
             end;
@@ -57,6 +51,7 @@ for k1=1:length(aap.tasklist.main.module)
                 stream.host=remotestream(findremote).host;
                 stream.aapfilename=remotestream(findremote).aapfilename;
                 stream.ismodified=ismodified;
+                stream.isessential=isessential;
                 stream.allowcache=remotestream(findremote).allowcache;
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
@@ -68,7 +63,9 @@ for k1=1:length(aap.tasklist.main.module)
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 if isempty(stagethatoutputs)
-                    aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
+                    if isessential
+                        aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
+                    end
                 else
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
@@ -82,6 +79,7 @@ for k1=1:length(aap.tasklist.main.module)
                     stream.host='';
                     stream.aapfilename='';
                     stream.ismodified=ismodified;
+                    stream.isessential=isessential;
                     stream.allowcache=false;
                     stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain; 
                     
