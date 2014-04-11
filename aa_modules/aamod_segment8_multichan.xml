@@ -19,7 +19,7 @@
 
             <writenormimg desc='apply normalisation parameters to input image(s)?'>1</writenormimg>
             <writenorm>
-                <method desc='normalisation method to apply - only for SPM12?' options='push|pull' ui='optionlist'>push</method>
+                <method desc='normalisation method to apply - only for SPM12?' options='push|pull' ui='optionlist'>pull</method>
                 <fwhm desc='FWHM to apply after normalisation? - only for SPM12'>0.5 0.5 0.5</fwhm>
                 <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated) - only for SPM12/push'>1</preserve>
             </writenorm>
