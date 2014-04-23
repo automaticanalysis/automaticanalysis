@@ -7,7 +7,7 @@ streamIn = aap.tasklist.currenttask.inputstreams.stream;
 movementRegs = [];
 
 if isfield(aap.tasklist.currenttask.settings, 'includemovementpars') && ...
-        aap.tasklist.currenttask.settings.includemovementpars == 1
+        aap.tasklist.currenttask.settings.includemovementpars == 1 && aas_stream_has_contents(aap,'realignment_parameter')
     
     [moves, mnames] = aas_movPars(aap,subj, aap.tasklist.currenttask.settings.moveMat);
     

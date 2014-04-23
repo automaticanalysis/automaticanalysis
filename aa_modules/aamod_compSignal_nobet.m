@@ -146,7 +146,7 @@ switch task
         
         Rnames = {'GM', 'WM', 'CSF'};
         % Show an image of correlated timecourses...
-        corrTCs(compTC, Rnames);
+%         corrTCs(compTC, Rnames);
 
 %         %% DIAGNOSTIC IMAGE
 %         % Save graphical output to common diagnostics directory

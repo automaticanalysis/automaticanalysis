@@ -36,7 +36,13 @@ switch task
         % retrieve actual values
         try % tert (based on the first EPI) --> TODO: session-specific fieldmaps
             EPI_DICOMHEADERS=load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header'));
-            pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberofPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
+            if isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberOfPhaseEncodingSteps')
+                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberOfPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
+            elseif isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberofPhaseEncodingSteps')
+                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberofPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
+            else
+                error('ERROR:Field for number of phase encoding steps not found!\n');
+            end
         catch
             aas_log(aap,0,'Error during retrieving Total EPI Readout Time - Default is used!');
         end

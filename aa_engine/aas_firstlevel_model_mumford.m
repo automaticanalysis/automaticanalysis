@@ -1,6 +1,6 @@
 function aas_firstlevel_model_mumford(aap, anadir, coreSPM, files, allfiles, ...
     model, modelC, eventNumber, sessNumber, numReg, nDest, ...
-    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs)
+    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
 
 
 Tmodel = cell(size(model));
@@ -72,7 +72,7 @@ for sess = aap.acq_details.selected_sessions
     
     [rSPM, cols_interest, cols_nuisance, currcol] = aas_firstlevel_model_define(aap, sess, sessnuminspm, rSPM, Tmodel, modelC, ...
         cols_interest, cols_nuisance, currcol, ...
-        movementRegs, compartmentRegs, physiologicalRegs, spikeRegs);
+        movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
     
 end
 cd(Tanadir)
@@ -86,7 +86,7 @@ if numReg == 1
     subplot(3,1,3); plot([SPMdes.xX.X(1:100,1) sum(SPMdes.xX.X(1:100,2:sessRegs(end)),2)]); title('Old model, summed')
 end
 %}
-
+rSPM.swd = Tanadir;
 rSPM.xY.P = allfiles;
 rSPMdes = spm_fmri_spm_ui(rSPM);
 
@@ -122,6 +122,7 @@ for f = 1:length(nOrig)
         ' ' fullfile(anadir, sprintf('beta_%04d.hdr', nDest(f)))]);
 end
 
+cd(anadir);
 
 % Delete the Tanadir
 unix(['rm -rf ' Tanadir]);

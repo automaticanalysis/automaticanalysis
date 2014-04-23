@@ -306,7 +306,7 @@ switch task
             end
             if (exist('Yweight','var'))
                 for echoind=1:numechoes
-                    V.fname=fullfile(domainpath,subfolder{echoind},'echo_weight.nii');
+                    V.fname=fullfile(sesspath,subfolder{echoind},'echo_weight.nii');
                     spm_write_vol(V,Yweight{echoind});
                     if (echoweightsmoothing>0)
                         % smooth the weights
@@ -402,6 +402,8 @@ switch task
             
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
             
+            TE=DICOMHEADERS{1}.EchoTime;
+            Ycnr=Ysnr*TE;
             
             finalepis=fns;
             
@@ -476,6 +478,7 @@ switch task
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
                 end
             end
+        end
         else
             d = 0;
         end

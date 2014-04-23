@@ -56,15 +56,11 @@ for k1=1:length(aap.tasklist.main.module)
         
         % Now we have one stream per cell
         for i=1:length(streamlist)
-            inputstreamname=streamlist{i};          
-            ismodified=1;
-            realtime_dependent_on_first_scan=false;
+            inputstreamname=inputstreams.stream{i};
+            ismodified=1; isessential=1;
             if isstruct(inputstreamname)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')
                     ismodified=inputstreamname.ATTRIBUTE.ismodified;
-                end;
-                if isfield(inputstreamname.ATTRIBUTE,'realtime_dependent_on_first_scan')
-                    realtime_dependent_on_first_scan=inputstreamname.ATTRIBUTE.realtime_dependent_on_first_scan;
                 end;
                 inputstreamname=inputstreamname.CONTENT;
             end;
@@ -82,7 +78,6 @@ for k1=1:length(aap.tasklist.main.module)
                 stream.host=remotestream(findremote).host;
                 stream.aapfilename=remotestream(findremote).aapfilename;
                 stream.ismodified=ismodified;
-                stream.realtime_dependent_on_first_scan=realtime_dependent_on_first_scan;
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
@@ -90,16 +85,13 @@ for k1=1:length(aap.tasklist.main.module)
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
             else
-                % Not remote or realtime - regular stream!
-                [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 
+                [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 if isempty(stagethatoutputs)
                     aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
                 else
-                    
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
-                    
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     stream=[];
                     stream.name=inputstreamname;
@@ -110,7 +102,6 @@ for k1=1:length(aap.tasklist.main.module)
                     stream.host='';
                     stream.aapfilename='';
                     stream.ismodified=ismodified;
-                    stream.realtime_dependent_on_first_scan=realtime_dependent_on_first_scan;
                     stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
                     if (isempty(aap.internal.inputstreamsources{k1}.stream))
                         aap.internal.inputstreamsources{k1}.stream=stream;
@@ -130,7 +121,6 @@ for k1=1:length(aap.tasklist.main.module)
                         aap.internal.outputstreamdestinations{stagethatoutputs}.stream(end+1)=stream;
                     end;
                 end;
-                
             end;
         end;
     end;
