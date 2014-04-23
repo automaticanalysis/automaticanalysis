@@ -261,7 +261,7 @@ end
 setenv('FSLDIR',aap.directory_conventions.fsldir);
 setenv('FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype)
 
-% Add FSL to path
+%% Add FSL to path
 [s pth]=system('echo $PATH');
 if s
     pth=getenv('PATH');
@@ -269,10 +269,16 @@ else
     pth=deblank(pth);
 end;
 fslbin=fullfile(aap.directory_conventions.fsldir,'bin');
+% Take out any existing references to this path, adding colons to either
+% end to make searching easier
+pth=strrep([':' pth ':'],[':' fslbin ':'],':');
+% Get rid of colons added to either end
+pth=pth(2:end-1);
+% And put it on at the beginning, 
 combinedpath=[fslbin ':' pth ];
 setenv('PATH',combinedpath);
 
-
+%% Main task loop
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)
     for k=1:length(aap.tasklist.main.module)

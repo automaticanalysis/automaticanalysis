@@ -26,8 +26,11 @@ switch task
             
             % Change name to data.nii.gz for bedpost
             diffusion_pth{subjind}=fullfile(dsesspth{subjind}, ['data' fslext]);
-            movefile(aas_getfiles_bystream(aap,'diffusion_session',[subjind sessind],'diffusion_data'),diffusion_pth{subjind});
-            
+            try
+                movefile(aas_getfiles_bystream(aap,'diffusion_session',[subjind sessind],'diffusion_data'),diffusion_pth{subjind});
+            catch
+                aas_log(aap,false,sprintf('Couldn''t move, so assuming already moved.'));
+            end;
             % Remove bet_ from start of bet_nodif_brain_mask etc as bedpost
             % doesn't like this
             betfiles=aas_getfiles_bystream(aap,'diffusion_session',[subjind sessind],'BETmask');

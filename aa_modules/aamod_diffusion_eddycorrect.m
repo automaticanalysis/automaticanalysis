@@ -15,9 +15,10 @@ switch task
         % Apply eddy using the reference image (T2 image) which is typycally 0
         % (this is the volume with a b-value of 0)
         [pth nme ext]=aas_fileparts(diffinput);
+        
+        cmd=sprintf('cd %s; eddy_correct %s %s 0',pth, [nme ext],[nme '_eddy' ext]);
         eddyoutput=fullfile(pth,[nme '_eddy' ext]);
         
-        cmd=sprintf('eddy_correct %s %s 0',diffinput,eddyoutput);
         [s w]=aas_runfslcommand(aap,cmd);
         if s 
             aas_log(aap,true,sprintf('Error executing\n  %s\nof\n%s',cmd,w));
