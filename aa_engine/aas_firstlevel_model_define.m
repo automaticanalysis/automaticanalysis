@@ -1,6 +1,34 @@
 function [SPM, cols_interest, cols_nuisance, currcol] = aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
     cols_interest, cols_nuisance, currcol, ...
-    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs)
+    movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
+
+
+%% Get Information about Basis functions 
+%  could have more than one column:
+%  e.g., time derivatives or a FLOBS-type basis set
+
+xBF = SPM.xBF;
+
+% Use an SPM BF if one is isn't specified
+if ~isfield(xBF, 'bf') || isempty(xBF.bf)
+    xBF = [];
+    xBF.dt = SPM.xY.RT;
+    xBF.name = SPM.xBF.name;
+    xBF.length = SPM.xBF.length;
+    xBF.order = SPM.xBF.order;
+    xBF = spm_get_bf(xBF);
+end
+
+% How many regressors make up this BF?
+numBFregs = size(xBF.bf, 2);
+
+% Create empty session, in case we don't actually find a model or anything
+U = struct( 'ons', {},...
+            'dur', {},...
+            'name', {{}},...
+            'P', {} );
+        
+SPM.Sess(sessnuminspm).U = U;
 
 %% Define model{sess} events
 if ~isempty(model{sess})
@@ -12,15 +40,20 @@ if ~isempty(model{sess})
             parametric=model{sess}.event(c).parametric;
             parLen = length(parametric);
         end
+        
         SPM.Sess(sessnuminspm).U(c) = struct(...
             'ons', model{sess}.event(c).ons,...
             'dur', model{sess}.event(c).dur,...
             'name', {{model{sess}.event(c).name}},...
             'P',parametric);
-        cols_interest=[cols_interest currcol:(currcol+parLen)];
-                    currcol=currcol+1+parLen;
+        cols_interest=[cols_interest [1:(1+parLen)*numBFregs]+currcol-1];
+        currcol=currcol+(1+parLen)*numBFregs;
     end
 end 
+
+%% Nuisance and covariate regressors
+SPM.Sess(sessnuminspm).C.C = [];
+SPM.Sess(sessnuminspm).C.name = {};
 
 %% Define model covariates
 if ~isempty(modelC{sess})
@@ -29,14 +62,7 @@ if ~isempty(modelC{sess})
     % xBF.name    - description of basis functions specified
     % xBF.length  - window length (seconds)
     % xBF.order   - order
-    
-    xBF = [];
-    xBF.dt = SPM.xY.RT;
-    xBF.name = SPM.xBF.name;
-    xBF.length = SPM.xBF.length;
-    xBF.order = SPM.xBF.order;
-    xBF = spm_get_bf(xBF);
-    
+
     for c = 1:length(modelC{sess}.covariate);
         covVect = modelC{sess}.covariate(c).vector;
         
@@ -62,10 +88,6 @@ if ~isempty(modelC{sess})
         currcol=currcol + 1;
     end
 end
-
-%% Nuisance regressors
-SPM.Sess(sessnuminspm).C.C = [];
-SPM.Sess(sessnuminspm).C.name = {};
 
 %% Movement regressors
 if ~isempty(movementRegs)
@@ -113,4 +135,17 @@ if ~isempty(spikeRegs)
     
     cols_nuisance=[cols_nuisance currcol:(currcol+length(spikeRegs(sess).names) - 1)];
     currcol = currcol + length(spikeRegs(sess).names);
+end
+
+%% GLMdenoise regressors, if they exist... [CW]
+if ~isempty(GLMDNregs)
+    SPM.Sess(sessnuminspm).C.C = [SPM.Sess(sessnuminspm).C.C ...
+        GLMDNregs(sess).regs];
+    SPM.Sess(sessnuminspm).C.name = [SPM.Sess(sessnuminspm).C.name ...
+        GLMDNregs(sess).names];
+    
+    cols_nuisance=[cols_nuisance currcol:(currcol+length(GLMDNregs(sess).names) - 1)];
+    currcol = currcol + length(GLMDNregs(sess).names);
+end
+
 end

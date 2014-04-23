@@ -80,8 +80,7 @@ switch task
                 [aap waserror aap.acq_details.subjects(i).drupalnid]=drupal_checkexists(aap,'dataset',aap.acq_details.subjects(i).mriname,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 
         end;
-        
-        
+                
     case 'checkrequirements'
         
 end;

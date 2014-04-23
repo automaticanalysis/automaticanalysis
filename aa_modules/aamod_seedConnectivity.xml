@@ -10,30 +10,21 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            <!-- Can be a file, or a coordinate -->
-            <ROIdesc></ROIdesc>
+            <!-- Can be a file, or a coordinate, specified for individuals or all (*) subjects -->
+            <ROIdesc>
+                <subject></subject>
+                <roi></roi>
+            </ROIdesc>    
             
-            <!-- Inflate the ROI using a sphere of this radius -->
-            <radius>0</radius>
+            <radius>1</radius>
             
-            <!-- Correct seed time series for nuisance variables?  If yes, which contrast specificies the confounds? -->
-            <IC></IC>
+            <correctSeed>1</correctSeed>
             
-            <!-- How to summarize voxels in the ROI? Mean, median, eigen1 -->
             <summaryFun>mean</summaryFun>
             
-            <!-- Coordinates (or filename) to use a CSF regressor -->
-            <CSFSeed></CSFSeed>
-            
-            <!-- Coordinates (or filename) to use as a WM regressor -->
-            <WMSeed></WMSeed>
-                
-            <!-- Include a global regressor? -->
-            <globalRegress>1</globalRegress>
-            
             ﻿<inputstreams>
-                <stream>epi</stream>
                 <stream>firstlevel_spm</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>

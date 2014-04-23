@@ -4,12 +4,11 @@
         <initialisation>
             <module><name>aamod_checkparameters</name></module>
             <module><name>aamod_evaluatesubjectnames</name></module>
-            <module><name>aamod_make_subjects_short</name></module>
-            <module><name>aamod_autoidentifyseries_timtrio</name></module>
             <module><name>aamod_study_init</name></module>
             <module><name>aamod_newsubj_init</name></module>
         </initialisation>
         <main>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
             <module><name>aamod_converttmaps</name></module>
             <module><name>aamod_copystructural</name></module>
             <module><name>aamod_convert_epis</name></module>

@@ -23,18 +23,41 @@ for k1=1:length(aap.tasklist.main.module)
     
     if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
         inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
-        streamlist=inputstreams.stream;
-        if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE') 
-            streamlist=streamlist{1};
-        end;
-             
-        for i=1:length(streamlist)
-            if iscell(inputstreams.stream)  && ~isstruct(inputstreams.stream{1})
-                inputstreamname=inputstreams.stream{i};
+        
+        
+        % Random evil check?  Why is this here??
+%         if iscell(streamlist) && length(streamlist)>=1 && isstruct(streamlist{1}) && isfield(streamlist{1},'ATTRIBUTE')
+%             streamlist=streamlist{1};
+%         end;
+
+% RC 2014-04-11
+% Commenting out of the code above fixed one case but broke another
+% It is a nuisance, but the XML parser returns these stream elements of the
+% XML in different ways, depending on whether they have attributes or not.
+% [1] If they have no attributes, it returns a cell array of stream names (char)
+% [2] If the first has attributes, but the next doesn't, you get a cell array
+% containing a struct followed by a char
+% [3] If the first two have attributes, you get an cell array with one element,
+% which is a struct array. 
+% The "evil" lines above fixed [3] but created a problem with [2]
+
+        % Here's a refactored version of this code, which first unpacks
+        % those structs
+        streamlist={};
+        for ind=1:length(inputstreams.stream)
+            if isstruct(inputstreams.stream{ind}) && length(inputstreams.stream{ind})>1
+                for structind=1:length(inputstreams.stream{ind})
+                    streamlist{end+1}=inputstreams.stream{ind}(structind);
+                end;
             else
-                inputstreamname=inputstreams.stream{1}(i);
+                streamlist{end+1}=inputstreams.stream{ind};
             end;
-            ismodified=1;
+        end;
+        
+        % Now we have one stream per cell
+        for i=1:length(streamlist)
+            inputstreamname=inputstreams.stream{i};
+            ismodified=1; isessential=1;
             if isstruct(inputstreamname)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')
                     ismodified=inputstreamname.ATTRIBUTE.ismodified;

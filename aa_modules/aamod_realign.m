@@ -85,10 +85,15 @@ switch task
     case 'doit'
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
-        
-        
+             
         % Note starting directory so we can get back here in the end
         startingDir = pwd;
+        
+        clear imgs;
+        for sess = aap.acq_details.selected_sessions
+            % get files from stream
+            imgs(sess) = {aas_getimages_bystream(aap,subj,sess,'epi');};
+        end
         
         % Flags to pass to routine to calculate realignment parameters
         % (spm_realign)
@@ -110,17 +115,42 @@ switch task
             'which', aap.tasklist.currenttask.settings.reslicewhich,...     % what images to reslice
             'mean', aap.tasklist.currenttask.settings.writemean);           % write mean image
         
-        clear imgs;
-        for sess = aap.acq_details.selected_sessions %
-            % get files from stream
-            imgs(sess) = {aas_getimages_bystream(aap,subj,sess,'epi');};
-        end
+        % Check if we are using a weighting image
+        if any(strcmp(aap.tasklist.currenttask.inputstreams.stream, 'weightingImage'))
+            
+            wImgFile = aas_getfiles_bystream(aap,subj,'weightingImage');
+            wVol = spm_vol(wImgFile);
+
+            fprintf('Realignment is going to be weighted with: %s\n', wVol.fname);
+            
+            % Use the first EPI as a space reference 
+            rVol = spm_vol(imgs{1}(1,:));
+            
+            % Check if the dimensions and the orientation of the weighting
+            % image match that of the first EPI in the data set.  If not,
+            % we reslice the weighting image.
+            if ( any(any(~(wVol.mat == rVol.mat))) ||  any(~(wVol.dim == rVol.dim)) )
+                spm_reslice(strvcat(rVol.fname, wVol.fname), struct('which', 1, 'mean', 0, 'interp', 0, 'prefix', 'r'));
+                [rPath rFile rExt] = fileparts(rVol.fname);
+                [wPath wFile wExt] = fileparts(wImgFile);
+                wImgFile = fullfile(wPath,['r' wFile wExt]);
+                wVol = spm_vol(wImgFile);
+            end
+            
+            if aap.tasklist.currenttask.settings.invertWeightingImage
+                wY = spm_read_vols(wVol);
+                wY = ~wY; % assuming binary weighting for now.
+                spm_write_vol(wVol, wY);   
+            end
+
+            reaFlags.PW = wImgFile;     
+        end       
         
         % [AVG] This will ensure that any printing commands of SPM are done in the subject directory...
         cd(aas_getsubjpath(aap,subj))
         
         % Run the realignment
-        spm_realign(imgs);
+        spm_realign(imgs, reaFlags);
         
         if (~isdeployed)
             % Save graphical output

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="/imaging/local/software/AA/release-4.1/aa_recipes_and_parametersets/aap_parameters_defaults_CBSU.xml" parse="xml"/>
+    <local>
+		<acq_details>
+			<root desc="Root on local machine for processed data" ui="dir">/imaging/xy00/World_Universe_and_Everything</root>
+		</acq_details>
+		<directory_conventions>
+			<analysisid ui="dir_part">Nature_Paper</analysisid> 
+		</directory_conventions>
+		<options>
+			<email desc="Send an email when analysis is done or breaks?" ui="text">All.Knowing@mrc-cbu.cam.ac.uk</email>
+		</options>
+    </local>
+</aap>

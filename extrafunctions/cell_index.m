@@ -11,7 +11,8 @@ r = [];
 while true
     r(end+1) = i;
     if i == numel(varargin{1}), break, end
-    i = sub(varargin{:},i+1);    
+    varargin{3} = i + 1;
+    i = sub(varargin{:});    
     if ~i, break, end
 end
 end
@@ -35,7 +36,11 @@ for i = nl:numel(lines)
     if ~ischar(sample), sample = num2str(sample); end
 
     sample = strfind(sample,str);
-    if ~isempty(sample) && ((nargin < 4) || ((nargin > 3) && any(sample == varargin{4}))), break, end
+    if ~isempty(sample) && ((nargin < 4) || ((nargin > 3) && any(sample == varargin{4})))
+        break;
+    else
+        sample = [];
+    end
 end
 if isempty(sample)
     i = 0;

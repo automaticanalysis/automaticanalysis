@@ -34,6 +34,10 @@ if ~aap.directory_conventions.continueanalysis
     end
 end
 
+% get module name for first-level analysis
+modulenames = fieldnames(aap.tasksettings);
+firstlevel = modulenames{cell_index(modulenames,'firstlevel_model')};
+
 % Reads in header
 head = study_header(aap.acq_details.input.list);
 LIST = importdata(aap.acq_details.input.list);
@@ -56,7 +60,7 @@ for v = 2:size(LIST,1)
     if ~isfield(aap.acq_details.input, 'selected_sessions') || ~any(aap.acq_details.input.selected_sessions),...
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
-    aap=aas_addsubject(aap,strSubj,aSess(aap.acq_details.input.selected_sessions));
+    aap=aas_addsubject(aap,VOL,aSess(aap.acq_details.input.selected_sessions));
    
     % Obtain TR from the first session
     h = dicominfo(mri_finddcm(aap,VOL,aSess(1)));
@@ -69,7 +73,7 @@ for v = 2:size(LIST,1)
             load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
             for iEV = 1:numel(names)
                 % Event onsets has to be corrected accoring to the number of dummies
-                aap=aas_addevent(aap,'aamod_firstlevel_model',strSubj,session,names{iEV},onsets{iEV}-aap.acq_details.numdummies*TR,durations{iEV});
+                aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-aap.acq_details.numdummies*TR,durations{iEV});
             end
         end
     end

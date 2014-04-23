@@ -21,6 +21,8 @@ switch task
         
     [aap convertedfns dcmhdr]=aas_convertseries_fromstream(aap,subj,'dicom_fieldmap');
     
+    dcmhdr = dcmhdr{(numel(dcmhdr{2}) > numel(dcmhdr{1}))+1};
+    
     subjpath=aas_getsubjpath(aap,subj);
 
     outstream = {};

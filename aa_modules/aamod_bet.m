@@ -46,6 +46,8 @@ switch task
                     aap.tasklist.currenttask.settings.bet_f_parameter));
             end
             
+            fprintf('Bet output: %s\n',w);
+
             % This outputs last radius from recursive command...
             indxS = strfind(w, 'radius');
             indxS = indxS(end) + 7;

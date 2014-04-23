@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' inheritfrom='aamod_seedConnectivity' mfile_alias='aamod_seedConnectivity' desc='seed-based functional connectivity' modality='MRI' >
+            
+            
+            <!-- Given that input stream rois usually has more than one file, which one do we use as the seed? -->
+            <seedROIindex>1</seedROIindex>
+            
+            ﻿<inputstreams>
+                <stream>rois</stream>
+                <stream>firstlevel_spm</stream>
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+            
+
+        </currenttask>
+    </tasklist>
+</aap>

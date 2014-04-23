@@ -1,4 +1,4 @@
-function [aap, resp]=aamod_dartel_normmni(aap, task)
+function [aap, resp]=aamod_dartel_normmni(aap, task, subj)
 %AAMOD_DARTEL_NORMMNISEGMENTED_MODULATED Normalise grey/white segmentations using DARTEL.
 %
 % After DARTEL template has been created, write out normalized
@@ -21,28 +21,30 @@ resp='';
 
 % possible tasks 'doit','report','checkrequirements'
 switch task
-    case 'domain'
-        resp='subject';
     case 'report'
-        resp='Write smoothed normalised segmented images in MNI space for DARTEL.'
+        resp='Write smoothed normalised segmented images in MNI space for DARTEL.';
     case 'doit'
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
 
-        % initialize images
-        allimages = {};
-
-        for subjind = 1:length(aap.acq_details.subjects)
-
-            % flow fields..
-            job.data.subj(subjind).flowfield{1} = aas_getfiles_bystream(aap, subjind, 'dartel_flowfield');
-
-            % images
-            imgs1 = aas_getfiles_bystream(aap, subjind, 'dartelimported_grey');
-            imgs2 = aas_getfiles_bystream(aap, subjind, 'dartelimported_white');
-
-            job.data.subj(subjind).images = cellstr(strvcat(imgs1, imgs2));
-        end % going through subjects
+        % flow fields..
+        job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
+        
+        % images
+        imgs = '';
+        streams=aap.tasklist.currenttask.outputstreams.stream;
+        for streamind=1:length(streams)
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if cell_index(aap.tasklist.currenttask.inputstreams.stream,streams{streamind})
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
+            else  % renamed stream
+                streamname = strrep(streams{streamind},'normalised_','');
+                ind = cell_index(aap.tasklist.currenttask.inputstreams.stream,streamname);
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
+                    aap.tasklist.currenttask.inputstreams.stream{ind}));
+            end
+        end
+        job.data.subj.images = cellstr(imgs);
 
         % set up job, and run
         job.template{1} = template;
@@ -60,14 +62,10 @@ switch task
         else
             prefix = 'sw';
         end
-
-        for subjind = 1:length(aap.acq_details.subjects)
-            [pth, nm, ext] = fileparts(job.data.subj(subjind).images{1});
-            greyimg = fullfile(pth, [prefix nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'normalised_grey', greyimg);
-
-            [pth, nm, ext] = fileparts(job.data.subj(subjind).images{2});
-            whiteimg = fullfile(pth, [prefix nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'normalised_white', whiteimg);
+        
+        for ind=1:length(job.data.subj.images)
+            [pth, nm, ext] = fileparts(job.data.subj.images{ind});
+            img = fullfile(pth, [prefix nm ext]);
+            aap = aas_desc_outputs(aap, subj, streams{ind}, img);
         end
 end

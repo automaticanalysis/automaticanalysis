@@ -34,7 +34,7 @@ switch task
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
 
         % Get all the nuisance regressors...
-        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs] = ...
+        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
             aas_firstlevel_model_nuisance(aap, subj, files);
 
         %% Set up CORE model
@@ -55,7 +55,7 @@ switch task
             [SPM, cols_interest, cols_nuisance, currcol] = ...
                 aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
                                                              cols_interest, cols_nuisance, currcol, ...
-                                                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs);
+                                                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
         end
 
         cd (anadir)
@@ -66,6 +66,8 @@ switch task
         SPM.xY.P = allfiles;
         SPMdes = spm_fmri_spm_ui(SPM);
 
+        SPMdes.xX.X = double(SPMdes.xX.X);
+        
         % DIAGNOSTIC
         mriname = aas_prepare_diagnostic(aap, subj);
         try
@@ -100,27 +102,23 @@ switch task
 
         %  firstlevel_betas (includes related statistical files)
         allbetas=dir(fullfile(anadir,'beta_*'));
-        betafns=[];
-        for betaind=1:length(allbetas);
-            betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
+        allbetas=vertcat(allbetas,...
+            dir(fullfile(anadir,'ResMS.*')),...
+            dir(fullfile(anadir,'RPV.*')));
+        if aap.tasklist.currenttask.settings.firstlevelmasking
+            allbetas=vertcat(allbetas,...
+                dir(fullfile(anadir,'mask.*')));
         end
-        if ~aap.tasklist.currenttask.settings.firstlevelmasking
-            otherfiles={'ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-        else
-            otherfiles={'mask.hdr','mask.img','ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-        end
-        for otherind=1:length(otherfiles)
-            betafns=strvcat(betafns,fullfile(anadir,otherfiles{otherind}));
-        end
+        betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
 
         %% DIAGNOSTICS...
-        h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
-        saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
-        saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
-        
-        close(h.regs)
-        close(h.betas)
+%         h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
+%         saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
+%         saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
+%         
+%         close(h.regs)
+%         close(h.betas)
         
     case 'checkrequirements'
         

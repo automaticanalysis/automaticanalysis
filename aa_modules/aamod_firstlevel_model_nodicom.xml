@@ -18,8 +18,8 @@
             <moveMat>[1 0 0; 0 0 0]</moveMat>
             
             <!-- include Compartment Regressors derived from aamod_compSignal 
-            By default filled with [] [no compartment regressors] if you have run aamoc_compSignal-->
-            <compRegs>[]</compRegs>
+            By default filled with [2 3] [i.e. WM and CSF signals] if you have run aamoc_compSignal-->
+            <compRegs>[2 3]</compRegs>
             
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
@@ -30,6 +30,7 @@
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
+            
             
             <!-- Describe model for design matrix
     You may do this in your own copy of this .xml file, or programmatically in your user script.
@@ -59,6 +60,7 @@
     Example if design differs by subject and session
     Exactly specified subjects or sessions override wildcards
             -->
+            
             <!--
 <model>
         <subject>CBU110011</subject>
@@ -74,7 +76,8 @@
             <dur>0</dur>
         </event>
     </model>
--->   
+    -->   
+                        
             <model>
                 <subject></subject>
                 <session></session>
@@ -100,6 +103,7 @@
                 <stream>epi</stream>
                 <stream>sliceorder</stream>
                 <stream>realignment_parameter</stream>
+                <stream>compSignal</stream>
             </inputstreams>
             
             <outputstreams>

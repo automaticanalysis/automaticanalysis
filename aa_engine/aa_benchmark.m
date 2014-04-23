@@ -4,7 +4,13 @@
 % Rhodri Cusack MRC CBU Cambridge 2004
 
 function [time, flags] = aa_benchmark(studyroot)
- 
+
+% See if we've actually been given an aap, if so retrieve study root
+try
+    studyroot=fullfile(studyroot.acq_details.root,studyroot.directory_conventions.analysisid);
+catch
+end;
+
 if (~exist('studyroot','var'))
     studyroot=pwd;
 end;
@@ -27,6 +33,7 @@ aas_log(aap,0,['============================================================='])
 % Now run stage-by-stage tasks
 benchmark=[];
 benchmark.total=0;
+benchmark.max=0;
 benchmark.stagesnotdone=0;
 for k=1:length(aap.tasklist.main.module)
     aap=aas_setcurrenttask(aap,k);
@@ -39,7 +46,7 @@ for k=1:length(aap.tasklist.main.module)
     end;
 end;
 
-fprintf('STAGES NOT COMPLETED: %d  PROCESSING TIME SO FAR: %f\n',benchmark.stagesnotdone,benchmark.total);
+fprintf('STAGES NOT COMPLETED: %d  PROCESSING TIME: %f  MAX TIME: %f\n',benchmark.stagesnotdone,benchmark.total,benchmark.max);
 return;
 
 function [benchmark]=processflag(benchmark,aap, doneflag)
@@ -50,7 +57,16 @@ if (fid==-1)
 else
     ln=fgetl(fid);
     tme=str2num(ln);
+    try
+        ln=fgetl(fid);
+        ln=fgetl(fid);
+        tme2=str2double(ln);
+        tme2str=sprintf('%f',tme2);
+        benchmark.max=max(benchmark.max,tme2);
+    catch
+        tme2str='-';
+    end;
     benchmark.total=benchmark.total+tme;
-    fprintf('%f\ttaken to complete stage %s\n',tme,doneflag);
+    fprintf('%f\t%s\tfor stage %s\n',tme,tme2str,doneflag);
 end;
 return;

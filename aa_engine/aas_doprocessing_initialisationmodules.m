@@ -33,3 +33,4 @@ for k=1:length(aap.tasklist.initialisation.module)
             aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',domain,stagename));
     end;
 end;
+aap.directory_conventions.subjectoutputformat = '%s'; % evlauated subjectnames assumed

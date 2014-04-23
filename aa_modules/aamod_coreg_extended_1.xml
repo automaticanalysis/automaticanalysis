@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject'  desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>  
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>t1totemplate_xfm</stream>
+            </outputstreams>
+            
+            <structural>1</structural>
+            
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

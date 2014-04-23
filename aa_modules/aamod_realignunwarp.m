@@ -66,11 +66,11 @@ switch task
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
             for sess=1:nsess
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
-                figure; boxplot(mvmax,'label',meas);
+                f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
                 print('-djpeg','-r75',fn);
-                close(gcf);
+                close(f);
                 
                 aap = aas_report_add(aap,'moco','<td>');
                 aap = aas_report_add(aap,'moco',['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
@@ -97,12 +97,12 @@ switch task
         % Get the options from the XML!
         jobs{1}.spatial{1}.realignunwarp.eoptions = ...
             aap.tasklist.currenttask.settings.eoptions;
-        jobs{1}.spatial{1}.realignunwarp.uweptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uweoptions = ...
             aap.tasklist.currenttask.settings.uweoptions;
-        jobs{1}.spatial{1}.realignunwarp.uwrptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uwroptions = ...
             aap.tasklist.currenttask.settings.uwroptions;
         
-        % Need to place this string inside a cell?
+        % Need to place this string inside a cell
         jobs{1}.spatial{1}.realignunwarp.eoptions.weight = ...
             {jobs{1}.spatial{1}.realignunwarp.eoptions.weight };
         
@@ -139,6 +139,7 @@ switch task
         
         %% Run the job!
         
+        spm_jobman('initcfg');
         spm_jobman('run',jobs);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
@@ -239,5 +240,6 @@ if toDisp
     
     print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),...
         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']));
+	close(fg);
 end
 end

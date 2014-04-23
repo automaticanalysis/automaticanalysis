@@ -127,9 +127,16 @@ switch task
         fprintf('\nCereberoSpinal Fluid mask comprises %d (%d) voxels', sum(mCSF(:)>0), nC)
         fprintf('\nOut of Head mask comprises %d (%d) voxels', sum(mOOH(:)>0), nO)
         
-        compTC = zeros(size(EPIimg,1), 4);
-        for e = 1:size(EPIimg,1)
-            Y = spm_read_vols(spm_vol(EPIimg(e,:)));
+        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
+            V = spm_vol(EPIimg);
+        else
+            for e = 1:size(EPIimg,1)
+                V(e) = spm_vol(EPIimg(e,:));
+            end
+        end
+        compTC = zeros(numel(V), 3);
+        for e =  1:numel(V)
+            Y = spm_read_vols(V(e));
             % Now average the data from each compartment
             compTC(e,1) = mean(Y(mGM>0));
             compTC(e,2) = mean(Y(mWM>0));
