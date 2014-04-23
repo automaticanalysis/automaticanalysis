@@ -20,10 +20,10 @@ for depind=1:length(deps)
     else
         fromstreamname=streamname;
     end;
-    
+
     %% REMOTE STREAM - this is stored on another machine and retrieved with rsync+ssh
     % Is it a remote stream?
-    if (sourcestagenumber==-1)
+    if sourcestagenumber==-1
         % Input data are on a remote machine
         % Get the destination path
         dest=aas_getpath_bydomain(aap,deps{depind}{1},deps{depind}{2});
@@ -214,7 +214,7 @@ for depind=1:length(deps)
         % Not remote pull
         sourcestagetag=aas_getstagetag(aap,sourcestagenumber);
         switch(aap.directory_conventions.remotefilesystem)
-            case 'none'                
+            case 'none'
                 % Source and destination directories
                 src= aas_getpath_bydomain(aap,domain,indices,sourcestagenumber);
                 dest=aas_getpath_bydomain(aap,domain,indices);
@@ -239,26 +239,39 @@ for depind=1:length(deps)
                 %  Note the src corresponds to the outputstream of the previous
                 %  stage, and the dest corresponds to the inputstream of the
                 %  next stage. A touch confusing!
-                if exist(outputstreamdesc,'file')
-                    % Make sure output directory exists
-                    [s m mid]=mkdir(dest);
-                    
+                
+                % Check stream cache
+                streamcontents='';
+                if isfield(aap.internal,'streamcache') && isfield(aap.internal.streamcache,'filename')
+                    scind=find(strcmp(outputstreamdesc,{aap.internal.streamcache.filename}));
+                    if ~isempty(scind)
+                        streamcontents=aap.internal.streamcache(scind).content;
+                        aas_log(aap,false,sprintf(' stream contents cached %s',outputstreamdesc));
+                    end;
+                end;
+                
+                % Not in stream cache, check for file
+                if isempty(streamcontents) && exist(outputstreamdesc,'file')
+                    streamcontents=fileread(outputstreamdesc);
+                end;
+                
+                % Process this stream file
+                if ~isempty(streamcontents)
                     reloadfiles=true;
-                    fid=fopen(outputstreamdesc,'r');
                     
                     % Load checksum with error checking
-                    [aap md5]=loadmd5(aap,fid,streamname);
+                    [firstline streamcontents]=strtok(streamcontents,10);
+                    [aap md5]=loadmd5(aap,firstline,streamname);
                     
                     % Get filenames
-                    fns=textscan(fid,'%s');
+                    fns=textscan(streamcontents,'%s');
                     fns=fns{1};
-                    fns_dest=cell(length(fns),1);
-                    fns_dest_full=cell(length(fns),1);
+                    fns_dest=fns;
+                    fns_dest_full=cellfun(@(x){fullfile(dest,x)},fns_dest);
+
                     for ind=1:length(fns)
                         % Check to see whether a filename with this name has
                         % already been loaded. If so, add unique suffix
-                        fns_dest{ind}=fns{ind};
-                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                         suffix=1;
                         while (1)
                             pos=[strcmp(fns_dest_full{ind},gotinputs)];
@@ -326,7 +339,6 @@ for depind=1:length(deps)
                         
                     end;
                     
-                    fclose(fid);
                     
                     if (~reloadfiles)
                         aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
@@ -335,11 +347,14 @@ for depind=1:length(deps)
                         
                         oldpth='';
                         % Get read to write the stream file
+                        [pth nme ext]=fileparts(inputstreamdesc);
+                        aap=aas_makedir(aap,pth);
                         fid_inp=fopen(inputstreamdesc,'w');
-                        fprintf(fid,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
+                        fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
                         
                         
-                        
+                        chunksize=16;
+                        cmd='';
                         for ind=1:length(fns)
                             % Copy file
                             [pth nme ext]=fileparts(fns_dest_full{ind});
@@ -350,15 +365,21 @@ for depind=1:length(deps)
                                 oldpth=newpth;
                             end;
                             if (ismodified)
-                                cmd=['cd ' src '; rsync -t ' fns{ind} ' ' fns_dest_full{ind}];
+                                cmd=[cmd 'cd ' src '; rsync -t ' fns{ind} ' ' fns_dest_full{ind} ';'];
                             else
                                 % This is a hard link, not a symlink. This
                                 % takes the timestamp of the destination file,
                                 % and won't be deleted if the destination is
                                 % deleted. So, more like a copy...
-                                cmd=['ln -f ' fullfile(src,fns{ind}) ' ' fns_dest_full{ind}];
+                                cmd=[cmd 'ln -f ' fullfile(src,fns{ind}) ' ' fns_dest_full{ind} ';'];
                             end;
-                            aas_shell(cmd);
+                            
+                            % Run in chunks as shell calls have rather an
+                            % overhead in Matlab
+                            if mod(ind,chunksize)==0 || ind==length(fns)
+                                aas_shell(cmd);
+                                cmd='';
+                            end;
                             
                             % Write to stream file
                             fprintf(fid_inp,'%s\n',fns_dest{ind});

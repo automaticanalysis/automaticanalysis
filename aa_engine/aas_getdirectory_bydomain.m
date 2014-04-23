@@ -21,6 +21,9 @@ switch (domain)
     case 'session'
         directory=aap.acq_details.sessions(index).name;
         
+    case 'scan'
+        directory=sprintf('scan_%d',index);
+        
     case 'diffusion_session'
         directory=aap.acq_details.diffusion_sessions(index).name;
 
