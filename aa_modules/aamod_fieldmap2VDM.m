@@ -55,7 +55,9 @@ switch task
         catch
             aas_log(aap,0,'Error during retrieving Fieldmap Echo Times - Defaults are used!');
         end
-        
+        if ~all(pm_defs([1 2 4])) % retrieval error and no defaults specified
+            aas_log(aap,1,'Error during retrieving Timings and no Default Timings found!');
+        end
         
         % Fieldmap path
         FMdir = fullfile(aas_getsubjpath(aap, subj), aap.directory_conventions.fieldmapsdirname);
