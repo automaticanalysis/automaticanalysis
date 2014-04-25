@@ -86,6 +86,11 @@
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
         <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
         <autoidentifystructural_multiple desc='We require several structurals to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifystructural_multiple>
+        <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>		
+        <autoidentifyt2_chooselast desc='Automatically select last of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_chooselast>
+        <autoidentifyt2_choosefirst desc='Automatically select first of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_choosefirst>
+        <autoidentifyt2_average desc='Average across T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_average>
+        <autoidentifyt2_multiple desc='We require several T2 to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifyt2_multiple>
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>1</autoidentifyfieldmaps>
         <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='yesno'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
@@ -108,7 +113,6 @@
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>0</N>
         </splitsession_cv>
-        <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>
         <realtime desc='options for realtime' ui='custom'>
             <scanforincomingmeta desc='Scan incomingmeta directory for incoming data'>0</scanforincomingmeta>
             <nscans desc='Number of scans per realtime run'>0</nscans>
