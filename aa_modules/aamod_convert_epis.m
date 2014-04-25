@@ -402,9 +402,6 @@ switch task
             
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
             
-            TE=DICOMHEADERS{1}.EchoTime;
-            Ycnr=Ysnr*TE;
-            
             finalepis=fns;
             
             if aap.tasklist.currenttask.settings.outputstats || aap.options.NIFTI4D
@@ -478,7 +475,6 @@ switch task
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
                 end
             end
-        end
         else
             d = 0;
         end
