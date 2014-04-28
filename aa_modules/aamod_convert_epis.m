@@ -161,7 +161,7 @@ switch task
                 %                 dicomheaderfn=fullfile(sesspath,'dicom_headers.mat');
                 %                 save(dicomheaderfn,DICOMHEADERS);
                 %
-                TE{echoind}=DICOMHEADERS{echoind}.EchoTime;
+                TE{echoind}=DICOMHEADERS{echoind}{1}.EchoTime;
                 Ycnr{echoind}=Ysnr{echoind}*TE{echoind};  % Fixed by RC  7/2/2011
                 
                 
