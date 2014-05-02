@@ -161,7 +161,7 @@ switch task
                 %                 dicomheaderfn=fullfile(sesspath,'dicom_headers.mat');
                 %                 save(dicomheaderfn,DICOMHEADERS);
                 %
-                TE{echoind}=DICOMHEADERS{echoind}.EchoTime;
+                TE{echoind}=DICOMHEADERS{echoind}{1}.EchoTime;
                 Ycnr{echoind}=Ysnr{echoind}*TE{echoind};  % Fixed by RC  7/2/2011
                 
                 
@@ -306,7 +306,7 @@ switch task
             end
             if (exist('Yweight','var'))
                 for echoind=1:numechoes
-                    V.fname=fullfile(sesspath,subfolder{echoind},'echo_weight.nii');
+                    V.fname=fullfile(domainpath,subfolder{echoind},'echo_weight.nii');
                     spm_write_vol(V,Yweight{echoind});
                     if (echoweightsmoothing>0)
                         % smooth the weights
@@ -381,7 +381,8 @@ switch task
                 % Output combined file
                 [pth fle ext]=fileparts(fns{echoind}{fileind});
                 Vfirst.fname=fullfile(domainpath,[fle '_multiechocombo' ext]);
-                finalepis{fileind}=Vfirst.fname;
+                V0(fileind) = Vfirst;
+				finalepis{fileind}=Vfirst.fname;
                 spm_write_vol(Vfirst,Ytot);
                 
                 if (dumpnull)
@@ -391,7 +392,7 @@ switch task
                     spm_write_vol(Vfirst,Ytot_nulled);
                 end
             end
-            
+            DICOMHEADERS = DICOMHEADERS{1}; % make it compatible with single-echo
         else
             
             %% Single echo code
@@ -401,9 +402,6 @@ switch task
             aas_makedir(aap,aas_getpath_bydomain(aap,domain,indices));
             
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
-            
-            TE=DICOMHEADERS{1}.EchoTime;
-            Ycnr=Ysnr*TE;
             
             finalepis=fns;
             
@@ -478,7 +476,10 @@ switch task
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
                 end
             end
+<<<<<<< HEAD
  
+=======
+>>>>>>> 2c4a8cd3c98b3e156dcda277dbd7092b05146b79
         else
             d = 0;
         end
@@ -488,13 +489,14 @@ switch task
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             finalepis = [finalepis(1:ind(2)-1) '.nii'];
-            spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
+			spm_file_merge(char({V0(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
         end
         % And describe outputs
         aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         dcmhdrfn = fullfile(domainpath,'dicom_headers.mat');
         save(dcmhdrfn,'DICOMHEADERS');
-        
+        aap=aas_desc_outputs(aap,domain,indices,'epi_dicom_header',dcmhdrfn);
+		
         % [TA modification]
         %aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis(aap.acq_details.numdummies+1:end));
         aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis);
@@ -503,16 +505,7 @@ switch task
             aap=aas_desc_outputs(aap,domain,indices,'dummy_scans_nulled',finalepis_nulled(1:aap.acq_details.numdummies));
             aap=aas_desc_outputs(aap,domain,indices,'epi_nulled',finalepis_nulled(aap.acq_details.numdummies+1:end));
         end
-        
-        aap=aas_desc_outputs(aap,domain,indices,'epi_dicom_header',dcmhdrfn);
-        
-        
-        % And describe outputs
-        aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
-        dcmhdrfn=fullfile(domainpath,'dicom_headers.mat');
-        save(dcmhdrfn,'DICOMHEADERS');
-        aap=aas_desc_outputs(aap,domain,indices,'epi_dicom_header',dcmhdrfn);
-        
+      
     case 'checkrequirements'
         
     otherwise

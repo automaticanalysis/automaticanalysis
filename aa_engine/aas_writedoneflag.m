@@ -132,11 +132,9 @@ switch(aap.directory_conventions.remotefilesystem)
             [ipaddress junk]=strtok(w);
             fprintf(fid,'%s\n',ipaddress);
         end;
-        
-        try
+        if isfield(aap.internal,'benchmark')
             fprintf(fid,'%f\n',toc(aap.internal.benchmark.start_tic));
-        catch
-        end;
+        end
         fclose(fid);
         
 end;

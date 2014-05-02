@@ -62,6 +62,9 @@ for k1=1:length(aap.tasklist.main.module)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')
                     ismodified=inputstreamname.ATTRIBUTE.ismodified;
                 end;
+                if isfield(inputstreamname.ATTRIBUTE,'isessential')
+                    isessential=inputstreamname.ATTRIBUTE.isessential;
+                end;
                 inputstreamname=inputstreamname.CONTENT;
             end;
             findremote=[];
@@ -78,6 +81,7 @@ for k1=1:length(aap.tasklist.main.module)
                 stream.host=remotestream(findremote).host;
                 stream.aapfilename=remotestream(findremote).aapfilename;
                 stream.ismodified=ismodified;
+                stream.isessential=isessential;
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
@@ -88,7 +92,9 @@ for k1=1:length(aap.tasklist.main.module)
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 if isempty(stagethatoutputs)
-                    aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
+                    if isessential
+                        aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
+                    end
                 else
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
@@ -102,6 +108,7 @@ for k1=1:length(aap.tasklist.main.module)
                     stream.host='';
                     stream.aapfilename='';
                     stream.ismodified=ismodified;
+                    stream.isessential=isessential;
                     stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
                     if (isempty(aap.internal.inputstreamsources{k1}.stream))
                         aap.internal.inputstreamsources{k1}.stream=stream;
