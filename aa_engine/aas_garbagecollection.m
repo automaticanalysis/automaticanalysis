@@ -21,6 +21,13 @@ if ~exist('aap','var') || ~isstruct(aap)
         load('aap_parameters');
     end
 end
+
+% Reset paths to initial state, rather than those for a specific module
+if isfield(aap,'internal') && isfield(aap.internal,'aap_initial')
+    aap=aas_setcurrenttask(aap);
+end;
+
+% Get study path
 studypath = fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid);
 if ~exist(studypath,'dir')
     aas_log(aap,true,sprintf('Study %s not found',studypath));
