@@ -82,10 +82,18 @@ end;
 if ~isfield(tasksettings_schema.inputstreams,'stream')
     tasksettings_schema.inputstreams.stream={};
 end;
-
 % Turn single streams into cells
 if ~iscell(tasksettings_schema.inputstreams.stream)
     tasksettings_schema.inputstreams.stream={tasksettings_schema.inputstreams.stream};
+end;
+% Turn single cell of array of structs into cell of structs
+if length(tasksettings_schema.inputstreams.stream)==1 && ...
+        isstruct(tasksettings_schema.inputstreams.stream{1}) && ...
+        isfield(tasksettings_schema.inputstreams.stream{1},'ATTRIBUTE')
+    streams = tasksettings_schema.inputstreams.stream{1};
+    for i = 1:numel(streams)
+        tasksettings_schema.inputstreams.stream{i} = streams(i);
+    end
 end;
 
 % Allow for empty outputstreams
@@ -98,6 +106,15 @@ end;
 % Turn single streams into cells
 if ~iscell(tasksettings_schema.outputstreams.stream)
     tasksettings_schema.outputstreams.stream={tasksettings_schema.outputstreams.stream};
+end;
+% Turn single cell of array of structs into cell of structs
+if length(tasksettings_schema.outputstreams.stream)==1 && ...
+        isstruct(tasksettings_schema.outputstreams.stream{1}) && ...
+        isfield(tasksettings_schema.outputstreams.stream{1},'ATTRIBUTE')
+    streams = tasksettings_schema.outputstreams.stream{1};
+    for i = 1:numel(streams)
+        tasksettings_schema.outputstreams.stream{i} = streams(i);
+    end
 end;
 
 aap.schema.tasksettings.(taskname)(index)=tasksettings_schema;

@@ -32,6 +32,7 @@
         <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
         <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
+        <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
 		<spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
@@ -51,6 +52,8 @@
             <study desc='The whole study (root)' ui='custom'>
                 <subject desc='A subject' ui='custom'>
                     <session desc='A session' ui='custom'>
+                        <scan desc='A scan (currently just for realtime)' ui='custom'> 
+                        </scan>
                         <searchlight_package desc='A searchlight' ui='custom'/>
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
@@ -69,6 +72,9 @@
             </study>
                             
         </parallel_dependencies>
+        <realtime>
+            <path desc='Directory for realtime data' ui='dir'>/home/rcusack/realtime</path>
+        </realtime>
     </directory_conventions>
     <options>
 		<NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
@@ -80,6 +86,11 @@
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
         <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
         <autoidentifystructural_multiple desc='We require several structurals to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifystructural_multiple>
+        <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>		
+        <autoidentifyt2_chooselast desc='Automatically select last of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_chooselast>
+        <autoidentifyt2_choosefirst desc='Automatically select first of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_choosefirst>
+        <autoidentifyt2_average desc='Average across T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_average>
+        <autoidentifyt2_multiple desc='We require several T2 to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifyt2_multiple>
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>1</autoidentifyfieldmaps>
         <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='yesno'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
@@ -102,6 +113,10 @@
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>0</N>
         </splitsession_cv>
+        <realtime desc='options for realtime' ui='custom'>
+            <scanforincomingmeta desc='Scan incomingmeta directory for incoming data'>0</scanforincomingmeta>
+            <nscans desc='Number of scans per realtime run'>0</nscans>
+        </realtime>
     </options>
     
     <gui_controls>

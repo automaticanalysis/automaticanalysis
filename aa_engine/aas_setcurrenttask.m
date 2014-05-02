@@ -14,10 +14,12 @@
 
 function [aap]=aas_setcurrenttask(aap,k)
 
+
 % Start with the initial pure aap
+initinternal=aap.internal;
 initaap=aap.internal.aap_initial;
 aap=initaap;
-aap.internal.aap_initial=initaap;
+aap.internal=initinternal;
 
 if exist('k','var')
     stagename=aas_getstagetag(aap,k);

@@ -19,128 +19,130 @@ resp='';
 
 switch task
     case 'report'
-
+        
     case 'doit'
         % Get subject directory
         cwd=pwd;
-
+        
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
-
+        
         % Get all the nuisance regressors...
-        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs] = ...
+        [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
             aas_firstlevel_model_nuisance(aap, subj, files);
-
+        
         %% Set up CORE model
         coreSPM = SPM;
         cols_nuisance=[];
         cols_interest=[];
         currcol=1;
-
+        
         sessnuminspm=0;
-
+        
         for sess = aap.acq_details.selected_sessions
             sessnuminspm=sessnuminspm+1;
-
+            
             % Settings
             SPM.nscan(sessnuminspm) = size(files{sess},1);
             SPM.xX.K(sessnuminspm).HParam = aap.tasklist.currenttask.settings.highpassfilter;
-
+            
             % Set up model
             [SPM, cols_interest, cols_nuisance, currcol] = ...
                 aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
-                                                             cols_interest, cols_nuisance, currcol, ...
-                                                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs);
+                cols_interest, cols_nuisance, currcol, ...
+                movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
         end
-
+        
         cd (anadir)
-
+        
         SPM.xY.P = allfiles;
         SPMdes = spm_fmri_spm_ui(SPM);
-
+        
         %% DIAGNOSTIC
         mriname = aas_prepare_diagnostic(aap, subj);
         try
             saveas(1, fullfile(aap.acq_details.root, 'diagnostics', ...
-                                                [mfilename '__' mriname '.fig']));
+                [mfilename '__' mriname '.fig']));
         catch
         end
-
+        
         % now check real covariates and nuisance variables are
         % specified correctly
         SPMdes.xX.iG=cols_nuisance;
         SPMdes.xX.iC=cols_interest;
-
+        
         % Turn off masking if requested
         if ~aap.tasklist.currenttask.settings.firstlevelmasking
             SPMdes.xM.I=0;
             SPMdes.xM.TH=-inf(size(SPMdes.xM.TH));
         end
-
+        
         spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
+        set(0,'RecursionLimit',2000);
         SPMest = spm_spm(SPMdes);
-
+        
         %% REDO MODEL WITH Mumford/Poldrak method...
-
+        
         % Find out how large the model{sess} should be (per session)
         eventNumber = [];
         sessNumber = [];
-
+        
         for sess = aap.acq_details.selected_sessions
             eventNumber = [eventNumber 1:size(model{sess}.event,2)];
             sessNumber = [sessNumber sess*ones(1,size(model{sess}.event,2))];
         end
         sessRegs = 1:max(eventNumber);
-
+        
         % Loop over regressors and do Mumford/Poldrack modelling
-
-
+        
+        
         switch aap.tasklist.currenttask.settings.parallel
-            case {'none', 'serial'}
-                for numReg = sessRegs
-                    nDest = SPMest.xX.iC(eventNumber==numReg);
-                    aas_firstlevel_model_mumford(aap, anadir, coreSPM, files, allfiles, ...
-                                                                          model, modelC, eventNumber, sessNumber, numReg, nDest, ...
-                                                                          movementRegs, compartmentRegs, physiologicalRegs, spikeRegs)
-                end
-            case 'torque'
+            case 'qsub'
                 for numReg = sessRegs
                     aapCell{numReg}                = aap;
                     anadirCell{numReg}             = anadir;
                     coreSPMCell{numReg}            = coreSPM;
                     filesCell{numReg}              = files;
                     allfilesCell{numReg}           = allfiles;
-
+                    
                     modelCell{numReg}              = model;
                     modelCCell{numReg}             = modelC;
                     eventNumberCell{numReg}        = eventNumber;
                     sessNumberCell{numReg}         = sessNumber;
                     numRegCell{numReg}             = numReg;
                     nDestCell{numReg}              = SPMest.xX.iC(eventNumber==numReg);
-
+                    
                     movementRegsCell{numReg}       = movementRegs;
                     compartmentRegsCell{numReg}    = compartmentRegs;
                     physiologicalRegsCell{numReg}  = physiologicalRegs;
-                    spikeRegsCell{numReg}     = spikeRegs;
+                    spikeRegsCell{numReg}          = spikeRegs;
+					GLMDNregsCell{numReg}		   = GLMDNregs;
                 end
-
+                
                 qsubcellfun(@aas_firstlevel_model_mumford, ...
-                                                 aapCell, anadirCell, coreSPMCell, filesCell, allfilesCell, ...
-                                                     modelCell, modelCCell, eventNumberCell, sessNumberCell, numRegCell, nDestCell, ...
-                                                     movementRegsCell, compartmentRegsCell, physiologicalRegsCell, spikeRegsCell, ...
-                                                 'memreq', 3.7 * (1024^3), ... % NOT DYNAMIC YET!!!
-                                                 'timreq', 1 * (3600), ...
-                                                 'stack', 1 ...
-                                                 );
+                    aapCell, anadirCell, coreSPMCell, filesCell, allfilesCell, ...
+                    modelCell, modelCCell, eventNumberCell, sessNumberCell, numRegCell, nDestCell, ...
+                    movementRegsCell, compartmentRegsCell, physiologicalRegsCell, spikeRegsCell, GLMDNregsCell, ...
+                    'memreq', 3.7 * (1024^3), ... % NOT DYNAMIC YET!!!
+                    'timreq', 1 * (3600), ...
+                    'stack', 1 ...
+                    );
+            otherwise % serial/none
+                for numReg = sessRegs
+                    nDest = SPMest.xX.iC(eventNumber==numReg);
+                    aas_firstlevel_model_mumford(aap, anadir, coreSPM, files, allfiles, ...
+                        model, modelC, eventNumber, sessNumber, numReg, nDest, ...
+                        movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs)
+                end
         end
-
+        
         %% Describe outputs
         cd (cwd);
-
+        
         % Describe outputs
         %  firstlevel_spm
         aap=aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
-
+        
         %  firstlevel_betas (includes related statistical files)
         allbetas=dir(fullfile(anadir,'beta_*'));
         betafns=[];

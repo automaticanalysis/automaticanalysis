@@ -102,18 +102,14 @@ switch task
 
         %  firstlevel_betas (includes related statistical files)
         allbetas=dir(fullfile(anadir,'beta_*'));
-        betafns=[];
-        for betaind=1:length(allbetas);
-            betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
+        allbetas=vertcat(allbetas,...
+            dir(fullfile(anadir,'ResMS.*')),...
+            dir(fullfile(anadir,'RPV.*')));
+        if aap.tasklist.currenttask.settings.firstlevelmasking
+            allbetas=vertcat(allbetas,...
+                dir(fullfile(anadir,'mask.*')));
         end
-        if ~aap.tasklist.currenttask.settings.firstlevelmasking
-            otherfiles={'ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-        else
-            otherfiles={'mask.hdr','mask.img','ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-        end
-        for otherind=1:length(otherfiles)
-            betafns=strvcat(betafns,fullfile(anadir,otherfiles{otherind}));
-        end
+        betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
 
         %% DIAGNOSTICS...

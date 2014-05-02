@@ -6,7 +6,7 @@
 % Rhodri Cusack MRC CBU Cambridge Nov 2005
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_convert_epis(aap,task,subj,sess)
+function [aap,resp]=aamod_convert_epis(aap,task,subj,sess,varargin)
 
 resp='';
 
@@ -21,13 +21,22 @@ switch task
         
     case 'doit'
         
+        switch (length(varargin))
+            case 0
+                domain='session';
+                indices=[subj sess];
+            case 1
+                domain='scan';
+                indices=[subj sess varargin{1}];
+        end;
+        
         % If doesn't exist then make session directory, as this is used to store done_ flags as
         % this module is called once for each session
-        sesspath=aas_getsesspath(aap,subj,sess);
-        if (isempty(dir(sesspath)))
-            [s w]=aas_shell(['mkdir ' sesspath]);
+        domainpath=aas_getpath_bydomain(aap,domain,indices);
+        if (isempty(dir(domainpath)))
+            [s w]=aas_shell(['mkdir ' domainpath]);
             if (s)
-                aas_log(aap,1,sprintf('Problem creating directory for session\n%s',sesspath));
+                aas_log(aap,1,sprintf('Problem creating directory for session\n%s',domainpath));
             end
         end
         
@@ -44,7 +53,7 @@ switch task
             % Multi-echo
             aas_log(aap,false,sprintf('Session %d has multiple echoes',sess));
             echoweightsmoothing=0; % smoothing applied to weights, in mm - 0 to switch off
-          
+            
             % PREALLOCATE!
             subfolder=cell(numechoes,1);
             Ymean = cell(numechoes,1);
@@ -57,10 +66,14 @@ switch task
             TE = cell(numechoes,1);
             Ycnr = cell(numechoes,1);
             
-            [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,subj,sess,'dicom_epi');
-
+            if length(varargin)==0
+                [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,'session',[subj,sess],'dicom_epi');
+            else
+                [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,'scan',[subj,sess,varargin{1}],'dicom_epi');
+            end;
+            
             for echoind=1:numechoes
-                aap=aas_desc_outputs(aap,subj,sess,sprintf('epi_echo_%d',echoind),fns{echoind});
+                aap=aas_desc_outputs(aap,domain,indices,sprintf('epi_echo_%d',echoind),fns{echoind});
             end
             % Now realign first echo to estimate CNR
             allimgs=[];
@@ -131,9 +144,9 @@ switch task
             for e1=1:numechoes
                 for e2=e1:numechoes
                     V.dt(1)=spm_type('float32');
-                    V.fname=fullfile(sesspath,sprintf('cov_echo_%d_%d.nii',e1,e2));
+                    V.fname=fullfile(domainpath,sprintf('cov_echo_%d_%d.nii',e1,e2));
                     spm_write_vol(V,squeeze(CV(e1,e2,:,:,:)));
-                    aap=aas_desc_outputs(aap,subj,sess,sprintf('cov_echo_%d_%d',e1,e2),V.fname);
+                    aap=aas_desc_outputs(aap,domain,indices,sprintf('cov_echo_%d_%d',e1,e2),V.fname);
                     
                 end
             end
@@ -148,7 +161,7 @@ switch task
                 %                 dicomheaderfn=fullfile(sesspath,'dicom_headers.mat');
                 %                 save(dicomheaderfn,DICOMHEADERS);
                 %
-                TE{echoind}=DICOMHEADERS{echoind}.EchoTime;
+                TE{echoind}=DICOMHEADERS{echoind}{1}.EchoTime;
                 Ycnr{echoind}=Ysnr{echoind}*TE{echoind};  % Fixed by RC  7/2/2011
                 
                 
@@ -162,18 +175,18 @@ switch task
                 % Write out some files for the record
                 subfolder{echoind}=sprintf('echo%d',echoind);
                 V.dt(1)=spm_type('float32');
-                V.fname=fullfile(sesspath,subfolder{echoind},'echo_mean.nii');
+                V.fname=fullfile(domainpath,subfolder{echoind},'echo_mean.nii');
                 spm_write_vol(V,Ymean{echoind});
-                aap=aas_desc_outputs(aap,subj,sess,sprintf('epi_echo_%d_mean',echoind),V.fname);
-                V.fname=fullfile(sesspath,subfolder{echoind},'echo_std.nii');
+                aap=aas_desc_outputs(aap,domain,indices,sprintf('epi_echo_%d_mean',echoind),V.fname);
+                V.fname=fullfile(domainpath,subfolder{echoind},'echo_std.nii');
                 spm_write_vol(V,Ystd{echoind});
-                aap=aas_desc_outputs(aap,subj,sess,sprintf('epi_echo_%d_std',echoind),V.fname);
-                V.fname=fullfile(sesspath,subfolder{echoind},'echo_snr.nii');
+                aap=aas_desc_outputs(aap,domain,indices,sprintf('epi_echo_%d_std',echoind),V.fname);
+                V.fname=fullfile(domainpath,subfolder{echoind},'echo_snr.nii');
                 spm_write_vol(V,Ysnr{echoind});
-                aap=aas_desc_outputs(aap,subj,sess,sprintf('epi_echo_%d_snr',echoind),V.fname);
-                V.fname=fullfile(sesspath,subfolder{echoind},'echo_cnr.nii');
+                aap=aas_desc_outputs(aap,domain,indices,sprintf('epi_echo_%d_snr',echoind),V.fname);
+                V.fname=fullfile(domainpath,subfolder{echoind},'echo_cnr.nii');
                 spm_write_vol(V,Ycnr{echoind});
-                aap=aas_desc_outputs(aap,subj,sess,sprintf('epi_echo_%d_cnr',echoind),V.fname);
+                aap=aas_desc_outputs(aap,domain,indices,sprintf('epi_echo_%d_cnr',echoind),V.fname);
             end
             
             for echoind=1:numechoes
@@ -193,13 +206,13 @@ switch task
             
             % Write out maps of T2star and proton density
             V.dt(1)=spm_type('float32');
-            V.fname=fullfile(sesspath,'t2star.nii');
+            V.fname=fullfile(domainpath,'t2star.nii');
             spm_write_vol(V,T2star);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_t2star',V.fname);
+            aap=aas_desc_outputs(aap,domain,indices,'epi_t2star',V.fname);
             
-            V.fname=fullfile(sesspath,'protondensity.nii');
+            V.fname=fullfile(domainpath,'protondensity.nii');
             spm_write_vol(V,rho);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_protondensity',V.fname);
+            aap=aas_desc_outputs(aap,domain,indices,'epi_protondensity',V.fname);
             
             % Calculate sum for normalisation
             for echoind=1:numechoes
@@ -293,7 +306,7 @@ switch task
             end
             if (exist('Yweight','var'))
                 for echoind=1:numechoes
-                    V.fname=fullfile(sesspath,subfolder{echoind},'echo_weight.nii');
+                    V.fname=fullfile(domainpath,subfolder{echoind},'echo_weight.nii');
                     spm_write_vol(V,Yweight{echoind});
                     if (echoweightsmoothing>0)
                         % smooth the weights
@@ -311,14 +324,14 @@ switch task
             finalepis_nulled={};
             % Now combine the echoes
             te=[TE{:}]';
-            % Weighted least squares. Optimise for T2star of 
+            % Weighted least squares. Optimise for T2star of
             % 30ms (grey matter, 3T)
             boldmag=te.*exp(-te./30);
             W=diag(boldmag/sum(boldmag));
             % ridge regression parameter
             k=0.05;
             
-
+            
             % Now actually do the combination
             % Re-read the images so that we're not outputting the
             % resampled, relaigned ones
@@ -367,130 +380,128 @@ switch task
                 
                 % Output combined file
                 [pth fle ext]=fileparts(fns{echoind}{fileind});
-                Vfirst.fname=fullfile(sesspath,[fle '_multiechocombo' ext]);
-                finalepis{fileind}=Vfirst.fname;
+                Vfirst.fname=fullfile(domainpath,[fle '_multiechocombo' ext]);
+                V0(fileind) = Vfirst;
+				finalepis{fileind}=Vfirst.fname;
                 spm_write_vol(Vfirst,Ytot);
                 
                 if (dumpnull)
                     [pth fle ext]=fileparts(fns{echoind}{fileind});
-                    Vfirst.fname=fullfile(sesspath,[fle '_multiechocombo_nulled' ext]);
+                    Vfirst.fname=fullfile(domainpath,[fle '_multiechocombo_nulled' ext]);
                     finalepis_nulled{fileind}=Vfirst.fname;
                     spm_write_vol(Vfirst,Ytot_nulled);
                 end
             end
+            DICOMHEADERS = DICOMHEADERS{1}; % make it compatible with single-echo
+        else
             
-        else            
-
-            %% Single echo code            
+            %% Single echo code
             % No output stream, so won't save (it is saved below with dummy
             % separation)
             % Modified for 4D support [TA]
-            [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,subj,sess,'dicom_epi');
-
+            aas_makedir(aap,aas_getpath_bydomain(aap,domain,indices));
+            
+            [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
+            
             finalepis=fns;
-            % Find temporal SNR
-            for fileind=1:numel(fns)
-                V(fileind)=spm_vol(fns{fileind});
-            end
-            [Y XYZ]=spm_read_vols(V);
             
-            for ind=1:numel(V)
-                if (ind==1)                    
-                    Ytot=Y(:,:,:,1);
-                    Ytotsq=Ytot.*Ytot;
-                else
-                    XYZvox=V(ind).mat\[XYZ;ones(1,size(XYZ,2))];
-                    Y=spm_sample_vol(V(ind),XYZvox(1,:),XYZvox(2,:),XYZvox(3,:),1);
-                    Y=reshape(Y,size(Ytot));
-                    Ytot=Ytot+Y;
-                    Ytotsq=Ytotsq+Y.*Y;
+            if aap.tasklist.currenttask.settings.outputstats || aap.options.NIFTI4D
+                % Find temporal SNR
+                for fileind=1:numel(fns)
+                    V(fileind)=spm_vol(fns{fileind});
                 end
-            end
-            N=numel(V);
-            Ymean=Ytot./N;
-            Ystd=sqrt(N/(N-1)*(Ytotsq/N-Ymean.^2));
-            % Sometimes when the value is close to zero, we get slight
-            % negative values, which render some voxels "imaginary"
-            Ystd(imag(Ystd)~=0) = 0; % Remove these [AVG]
-            Ystd(Ystd==0)=NaN;
-            Ysnr=Ymean./Ystd;
-            
-            TE=DICOMHEADERS{1}.EchoTime;
-            Ycnr=Ysnr*TE;
-            
-            % Write out some files for the record
-            V0 = V; % save V for 4D conversion [TA]
-            V = V(1);
-            V.dt(1)=spm_type('float32');
-            V.fname=fullfile(sesspath,'echo_mean.nii');
-            spm_write_vol(V,Ymean);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_mean',V.fname);
-            V.fname=fullfile(sesspath,'echo_std.nii');
-            spm_write_vol(V,Ystd);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_std',V.fname);
-            V.fname=fullfile(sesspath,'echo_snr.nii');
-            spm_write_vol(V,Ysnr);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_snr',V.fname);
-            V.fname=fullfile(sesspath,'echo_cnr.nii');
-            spm_write_vol(V,Ycnr);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_cnr',V.fname);
-            
-            boldmap=TE*Ymean;
-            V.fname=fullfile(sesspath,'boldmap.nii');
-            spm_write_vol(V,boldmap);
-            aap=aas_desc_outputs(aap,subj,sess,'epi_boldmap',V.fname);
-            
+                V0 = V; % save V for 4D conversion [TA]
+            end;
+            if aap.tasklist.currenttask.settings.outputstats 
+                [Y XYZ]=spm_read_vols(V);
+               for ind=1:numel(V)
+                    if (ind==1)
+                        Ytot=Y(:,:,:,1);
+                        Ytotsq=Ytot.*Ytot;
+                    else
+                        XYZvox=V(ind).mat\[XYZ;ones(1,size(XYZ,2))];
+                        Y=spm_sample_vol(V(ind),XYZvox(1,:),XYZvox(2,:),XYZvox(3,:),1);
+                        Y=reshape(Y,size(Ytot));
+                        Ytot=Ytot+Y;
+                        Ytotsq=Ytotsq+Y.*Y;
+                    end
+                end
+                N=numel(V);
+                Ymean=Ytot./N;
+                Ystd=sqrt(N/(N-1)*(Ytotsq/N-Ymean.^2));
+                % Sometimes when the value is close to zero, we get slight
+                % negative values, which render some voxels "imaginary"
+                Ystd(imag(Ystd)~=0) = 0; % Remove these [AVG]
+                Ystd(Ystd==0)=NaN;
+                Ysnr=Ymean./Ystd;
+                
+                TE=DICOMHEADERS{1}.EchoTime;
+                Ycnr=Ysnr*TE;
+                
+                % Write out some files for the record
+                V = V(1);
+                V.dt(1)=spm_type('float32');
+                V.fname=fullfile(domainpath,'echo_mean.nii');
+                spm_write_vol(V,Ymean);
+                aap=aas_desc_outputs(aap,domain,indices,'epi_mean',V.fname);
+                V.fname=fullfile(domainpath,'echo_std.nii');
+                spm_write_vol(V,Ystd);
+                aap=aas_desc_outputs(aap,domain,indices,'epi_std',V.fname);
+                V.fname=fullfile(domainpath,'echo_snr.nii');
+                spm_write_vol(V,Ysnr);
+                aap=aas_desc_outputs(aap,domain,indices,'epi_snr',V.fname);
+                V.fname=fullfile(domainpath,'echo_cnr.nii');
+                spm_write_vol(V,Ycnr);
+                aap=aas_desc_outputs(aap,domain,indices,'epi_cnr',V.fname);
+                
+                boldmap=TE*Ymean;
+                V.fname=fullfile(domainpath,'boldmap.nii');
+                spm_write_vol(V,boldmap);
+                aap=aas_desc_outputs(aap,domain,indices,'epi_boldmap',V.fname);
+            end;
             dumpnull=false;
         end
         
         % Now move dummy scans to dummy_scans directory
         dummylist=[];
         if aap.acq_details.numdummies
-        dummypath=fullfile(sesspath,'dummy_scans');
-        aap=aas_makedir(aap,dummypath);
-        for d=1:aap.acq_details.numdummies
-            cmd=['mv ' finalepis{d} ' ' dummypath];
-            [pth nme ext]=fileparts(finalepis{d});
-            dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
-            [s w]=aas_shell(cmd);
-            if (s)
-                aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
+            dummypath=fullfile(domainpath,'dummy_scans');
+            aap=aas_makedir(aap,dummypath);
+            for d=1:aap.acq_details.numdummies
+                cmd=['mv ' finalepis{d} ' ' dummypath];
+                [pth nme ext]=fileparts(finalepis{d});
+                dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
+                [s w]=aas_shell(cmd);
+                if (s)
+                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
+                end
             end
-        end
         else
             d = 0;
         end
-	finalepis = {finalepis{d+1:end}};
-	% 4D conversion [TA]
+        finalepis = {finalepis{d+1:end}};
+        % 4D conversion [TA]
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             finalepis = [finalepis(1:ind(2)-1) '.nii'];
-            spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
+			spm_file_merge(char({V0(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
         end
         % And describe outputs
-        aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn = fullfile(sesspath,'dicom_headers.mat');
+        aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
+        dcmhdrfn = fullfile(domainpath,'dicom_headers.mat');
         save(dcmhdrfn,'DICOMHEADERS');
-
+        aap=aas_desc_outputs(aap,domain,indices,'epi_dicom_header',dcmhdrfn);
+		
         % [TA modification]
-        %aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis(aap.acq_details.numdummies+1:end));
-        aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
+        %aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis(aap.acq_details.numdummies+1:end));
+        aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis);
         
         if dumpnull
-            aap=aas_desc_outputs(aap,subj,sess,'dummy_scans_nulled',finalepis_nulled(1:aap.acq_details.numdummies));
-            aap=aas_desc_outputs(aap,subj,sess,'epi_nulled',finalepis_nulled(aap.acq_details.numdummies+1:end));
+            aap=aas_desc_outputs(aap,domain,indices,'dummy_scans_nulled',finalepis_nulled(1:aap.acq_details.numdummies));
+            aap=aas_desc_outputs(aap,domain,indices,'epi_nulled',finalepis_nulled(aap.acq_details.numdummies+1:end));
         end
-        
-        aap=aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
-        
-        
-        % And describe outputs
-        aap=aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn=fullfile(sesspath,'dicom_headers.mat');
-        save(dcmhdrfn,'DICOMHEADERS');
-        aap=aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
-        
+      
     case 'checkrequirements'
         
     otherwise
