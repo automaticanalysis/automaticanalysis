@@ -476,10 +476,6 @@ switch task
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
                 end
             end
-<<<<<<< HEAD
- 
-=======
->>>>>>> 2c4a8cd3c98b3e156dcda277dbd7092b05146b79
         else
             d = 0;
         end
