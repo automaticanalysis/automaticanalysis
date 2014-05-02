@@ -133,7 +133,10 @@ switch(aap.directory_conventions.remotefilesystem)
             fprintf(fid,'%s\n',ipaddress);
         end;
         
-        fprintf(fid,'%f\n',toc(aap.internal.benchmark.start_tic));
+        try
+            fprintf(fid,'%f\n',toc(aap.internal.benchmark.start_tic));
+        catch
+        end;
         fclose(fid);
         
 end;
