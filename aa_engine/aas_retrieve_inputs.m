@@ -292,25 +292,7 @@ for depind=1:length(deps)
                 
                 gotinputs=[gotinputs;fns_dest_full];
             end;
-            
-            % Get read to write the stream file
-            [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
-            if exist(inputstreamdesc,'file')
-                delete(inputstreamdesc);
-            end;
-            fid_inp=fopen(inputstreamdesc,'w');
-            fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
-            
-            for ind=1:length(fns)
-                % Write to stream file
-                fprintf(fid_inp,'%s\n',fns_dest{ind});
-            end;
-            if isempty(fns)
-                aas_log(aap,false,sprintf('No inputs in stream %s',streamname));
-            end;
-            fclose(fid_inp);
-            
-            gotinputs=[gotinputs;fns_dest_full];
+
         end;
         
         %     if (~doneremotefetch)
