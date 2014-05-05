@@ -233,29 +233,29 @@ switch task
         
         aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
         
-
-%         % Now save graphical check
-%         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-%         % added graphical check for when segment is used [djm 20/01/06]
-%         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-%             myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
-%                 Simg, ... % native T1
-%                 fullfile(Spth,strcat('w',Simg)), ... % normalised T1
-%                 fullfile(Spth,strcat('c1m',Simg)))); % native grey matter segmentation
-%             spm_check_registration(myvols)
-%             
-% %             ann1=annotation('textbox',[.05 .96 .9 .03],'HorizontalAlignment','center','Color','r','String',strcat('Subject:...',Simg,',  processed on:...',date));
-% %             ann2=annotation('textbox',[.1 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','T1 template');
-% %             ann3=annotation('textbox',[.6 .89T1file1 .3 .025],'HorizontalAlignment','center','Color','r','String','Native T1');
-% %             ann4=annotation('textbox',[.1 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Normalised T1');
-% %             ann5=annotation('textbox',[.6 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Native segmented grey matter');
-%             print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-%         end
-%         print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-%         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-%             delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
-%         end
-
+        %{
+        % Now save graphical check
+        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+        % added graphical check for when segment is used [djm 20/01/06]
+        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+            myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
+                Simg, ... % native T1
+                fullfile(Spth,strcat('w',Simg)), ... % normalised T1
+                fullfile(Spth,strcat('c1m',Simg)))); % native grey matter segmentation
+            spm_check_registration(myvols)
+            
+            ann1=annotation('textbox',[.05 .96 .9 .03],'HorizontalAlignment','center','Color','r','String',strcat('Subject:...',Simg,',  processed on:...',date));
+            ann2=annotation('textbox',[.1 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','T1 template');
+            ann3=annotation('textbox',[.6 .89T1file1 .3 .025],'HorizontalAlignment','center','Color','r','String','Native T1');
+            ann4=annotation('textbox',[.1 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Normalised T1');
+            ann5=annotation('textbox',[.6 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Native segmented grey matter');
+            print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
+        end
+        print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
+        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+            delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
+        end
+        %}
         
     case 'checkrequirements'
         % Template image; here template image not skull stripped
