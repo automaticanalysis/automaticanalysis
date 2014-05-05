@@ -52,8 +52,8 @@ for f = 1:length(fileName)
     set(ch, 'faceA', 0.3, 'edgeA', 0.2);
     
     % T-value of deviation from mean
-    [junk,p,ci, Tstats] = ttest(Y{f});
-    [p,junk,SRstats] = signrank(Y{f});
+    Tstats = testt(Y{f});
+    SRstats = wilcoxon(Y{f});
     
     % Get legend information
     tmpStr = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
@@ -70,8 +70,8 @@ eval(legStr);
 %% Difference between 2 distributions
 if length(fileName) == 2
     try
-        [nh, p, dev, Tstats] = ttest(Y{1},Y{2});
-        [p,junk,SRstats] = signrank(Y{1},Y{2});
+        Tstats = testt(Y{1},Y{2});
+        SRstats = wilcoxon(Y{1},Y{2});
         title(sprintf('%s: mean %0.2f, median %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
             [name{1} '-' name{2}], nanmean(Y{1}) - nanmean(Y{2}), nanmedian(Y{1}) - nanmedian(Y{2}), Tstats.tstat, SRstats.zval))
     catch

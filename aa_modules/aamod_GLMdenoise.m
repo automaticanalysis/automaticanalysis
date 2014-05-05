@@ -26,8 +26,11 @@ switch task
             end
             
             M = ~logical(spm_read_vols(spm_vol(Mimg)));
+            brainI = find(~M);
         else
             M = 0;
+            Vs1 = spm_vol(epiFiles(1,:));
+            brainI = 1:prod(Vs1.dim);
         end
         
         opt.brainexclude = M;
@@ -67,7 +70,12 @@ switch task
                 
                 % Get gd_data
                 Vs = spm_vol(files{sess});
-                gd_data{s} = single(spm_read_vols(Vs));
+                for v = 1 : length(Vs)
+                    
+                    Ys = single(spm_read_vols(Vs(v)));
+                
+                    gd_data{s}(:,v) = Ys(brainI);
+                end
             end
             
 %            memtoc
@@ -196,6 +204,8 @@ switch task
             % Try with denoising...
             [gd_results, gd_data] = ...
                 GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, opt, sprintf('figures%d', split));
+            
+            gd_results.models = [];
             
             gdFile = fullfile(aas_getsubjpath(aap, subjInd), 'gd_results.mat');
             save(gdFile, 'gd_results', '-v7.3');

@@ -53,9 +53,9 @@ switch task
         SPM=SPM.SPM;
         SPM.swd=anadir;
         
-        ts = aap.tasklist.currenttask.settings;
+        settings = aap.tasklist.currenttask.settings;
         
-        if ts.useaasessions
+        if settings.useaasessions
             sessnames = {aap.acq_details.sessions.name};
             selected_sessions = aap.acq_details.selected_sessions;
             nsess = length(selected_sessions);
@@ -70,18 +70,18 @@ switch task
         
         % Load up contrasts from task settings
         [fle, subjname, ext] = fileparts(subj_dir);
-        contrasts_set = find(strcmp({ts.contrasts.subject}, [subjname ext]));
+        contrasts_set = find(strcmp({settings.contrasts.subject}, [subjname ext]));
         if (isempty(contrasts_set))
             % Try for wildcard
-            contrasts_set=find(strcmp({ts.contrasts.subject},'*'));
+            contrasts_set=find(strcmp({settings.contrasts.subject},'*'));
             if (isempty(contrasts_set))
                 aas_log(aap,true,'Can''t find declaration of what contrasts to use  -  insert this in a local copy of aamod_firstlevel_contrasts.xml or put into user script');
             end
         end
         
-        contrasts=ts.contrasts(contrasts_set);
+        contrasts=settings.contrasts(contrasts_set);
         % add contrasts for each task regressor v baseline?
-        if ts.eachagainstbaseline
+        if settings.eachagainstbaseline
             basev = zeros(1,length(SPM.Sess(1).col));
             for conind = 1:length(basev)
                 newv = basev;
@@ -103,7 +103,7 @@ switch task
         noregr = zeros(1,nregr);
         
         % Do we also want run-specific contrasts?
-        if ts.oneconperrun && (nruns > 1)
+        if settings.oneconperrun && (nruns > 1)
             for r = 1:nruns
                 % All zeros
                 runI(r+1,:) = noregr;
@@ -177,7 +177,7 @@ switch task
                             aas_log(aap,true,sprintf('Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); disp(contrasts.con(conind).vector);
                         elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
                             convec = contrasts.con(conind).vector;
-                            if ts.automatic_movesandmeans
+                            if settings.automatic_movesandmeans
                                 % [AVG] *better* way of specifying the correct columns...
                                 convec_out = zeros(1,totnumcolsbarconstants);
                                 convec_out(SPM.xX.iC) = convec;
@@ -234,7 +234,9 @@ switch task
         SPM = spm_contrasts(SPM);
         
         % Efficiency based on Rik Henson's script [TA]
-        efficiency(aap, subj, SPM);
+        if settings.estimateefficiency
+            efficiency(aap, subj, SPM); 
+        end
         
         % Describe outputs
         %  updated spm
@@ -262,13 +264,13 @@ switch task
         cd (cwd);
         
         %% DIAGNOSTICS (check distribution of T-values in contrasts)
-        D = dir(fullfile(anadir, 'spmT_*.img'));
-        for d = 1:length(D)
-            h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
-            saveas(h, fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '_' contrasts.con(d).name '.fig']), 'fig');
-            try close(h); catch; end
-        end
+%         D = dir(fullfile(anadir, 'spmT_*.img'));
+%         for d = 1:length(D)
+%             h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
+%             saveas(h, fullfile(aap.acq_details.root, 'diagnostics', ...
+%                 [mfilename '__' mriname '_' contrasts.con(d).name '.fig']), 'fig');
+%             try close(h); catch; end
+%         end
         
     case 'checkrequirements'
         

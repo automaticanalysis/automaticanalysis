@@ -6,6 +6,7 @@
                                     
             ﻿<inputstreams>
                 <stream>epi_dicom_header</stream>
+                <stream>epiBETmask</stream>
                 <stream ismodified='0'>epi</stream>
             </inputstreams>
             

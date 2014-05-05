@@ -10,6 +10,7 @@ if size(path,1)>1
         [pth nme ext]=fileparts(path(fileind,:));
         f=char(f,nme);
     end;
+    f = f(2:end, :);
 else
     [p f] = fileparts(path);
 end;

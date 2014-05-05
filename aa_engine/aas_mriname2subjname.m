@@ -6,4 +6,4 @@ if ~isempty(numpos)
 else
     subjName = mriname;
 end
-subjName=strtok(subjName,' /\\_,.');
+% subjName=strtok(subjName,' /\\_,.');

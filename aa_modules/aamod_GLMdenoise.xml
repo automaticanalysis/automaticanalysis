@@ -9,7 +9,7 @@
             </qsub>
             
             <!-- Also run GLMdenoise with 0 PCA regressors? -->
-            <generateALTresults>1</generateALTresults>
+            <generateALTresults>0</generateALTresults>
             
             <!-- GLM denoise parameters -->
             <!---->
