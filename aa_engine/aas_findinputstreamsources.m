@@ -81,11 +81,16 @@ for k1=1:length(aap.tasklist.main.module)
                 stream.host=remotestream(findremote).host;
                 stream.aapfilename=remotestream(findremote).aapfilename;
                 stream.ismodified=ismodified;
+                stream.allowcache=remotestream(findremote).allowcache;
                 stream.isessential=isessential;
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
+                    try
                     aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
+                    catch
+                        disp('');
+                    end
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
             else
@@ -108,6 +113,7 @@ for k1=1:length(aap.tasklist.main.module)
                     stream.host='';
                     stream.aapfilename='';
                     stream.ismodified=ismodified;
+                    stream.allowcache=false;
                     stream.isessential=isessential;
                     stream.sourcedomain=aap.schema.tasksettings.(sourcestagename)(sourceindex).ATTRIBUTE.domain;
                     if (isempty(aap.internal.inputstreamsources{k1}.stream))
