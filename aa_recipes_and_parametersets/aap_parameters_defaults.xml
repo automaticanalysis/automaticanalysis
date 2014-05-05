@@ -52,6 +52,8 @@
             <study desc='The whole study (root)' ui='custom'>
                 <subject desc='A subject' ui='custom'>
                     <session desc='A session' ui='custom'>
+                        <scan desc='A scan (currently just for realtime)' ui='custom'> 
+                        </scan>
                         <searchlight_package desc='A searchlight' ui='custom'/>
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
@@ -70,6 +72,9 @@
             </study>
                             
         </parallel_dependencies>
+        <realtime>
+            <path desc='Directory for realtime data' ui='dir'>/home/rcusack/realtime</path>
+        </realtime>
     </directory_conventions>
     <options>
 		<NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
@@ -108,6 +113,10 @@
         <splitsession_cv>
             <N desc='Number of splits in session crossvalidation' ui='double'>0</N>
         </splitsession_cv>
+        <realtime desc='options for realtime' ui='custom'>
+            <scanforincomingmeta desc='Scan incomingmeta directory for incoming data'>0</scanforincomingmeta>
+            <nscans desc='Number of scans per realtime run'>0</nscans>
+        </realtime>
     </options>
     
     <gui_controls>

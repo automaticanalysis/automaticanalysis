@@ -71,6 +71,16 @@ for depind=1:length(deps)
             aap_remote.directory_conventions.parallel_dependencies=aap.directory_conventions.parallel_dependencies;
             aas_log(aap,false,'Remote aap does not contain parallel_dependencies field - probably from older aa');
         end;
+        % Get remote directory
+        remoteindices=indices;
+        if length(indices)>2
+            findsession=find(strcmp(aap.acq_details.sessions(indices(2)).name,{aap_remote.acq_details.sessions.name}));
+            if isempty(findsession)
+                aas_log(aap,true,sprintf('Error loading remote file with stage tag %s as could not find session called %s',inputstream.sourcestagename,aap.acq_details.sessions(indices(2)).name));
+            end;
+            remoteindices(2)=findsession;
+        end;
+        src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
         
         remoteindices = indices;
         
@@ -282,7 +292,26 @@ for depind=1:length(deps)
                 
                 gotinputs=[gotinputs;fns_dest_full];
             end;
-        end
+            
+            % Get read to write the stream file
+            [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
+            if exist(inputstreamdesc,'file')
+                delete(inputstreamdesc);
+            end;
+            fid_inp=fopen(inputstreamdesc,'w');
+            fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
+            
+            for ind=1:length(fns)
+                % Write to stream file
+                fprintf(fid_inp,'%s\n',fns_dest{ind});
+            end;
+            if isempty(fns)
+                aas_log(aap,false,sprintf('No inputs in stream %s',streamname));
+            end;
+            fclose(fid_inp);
+            
+            gotinputs=[gotinputs;fns_dest_full];
+        end;
         
         %     if (~doneremotefetch)
         %         fid=fopen(remotefetchfn,'w');
@@ -525,3 +554,22 @@ for depind=1:length(deps)
     end;
     
 end
+
+
+function [aap md5 datecheck]=loadmd5(aap,fid,streamname)
+if (ischar(fid))
+    lne=fid;
+else
+    lne=fgetl(fid);
+end;
+pos=find(lne==9);
+if (length(lne)<3 || ~strcmp(lne(1:3),'MD5') || isempty(pos))
+    aas_log(aap,true,sprintf('MD5 in file %s corrupted',streamname));
+end;
+if (length(pos)==1)
+    md5=deblank(lne(pos+1:end));
+    datecheck='';
+else
+    md5=deblank(lne(pos(1)+1:pos(2)-1));
+    datecheck=deblank(lne(pos(2)+1:end));
+end;

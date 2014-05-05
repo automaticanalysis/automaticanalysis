@@ -4,11 +4,11 @@
 % rc: 3 June 2012
 %  changed dependency calculation code to allow for other kinds of parallel
 
-function aa_doprocessing_onetask(aap,task,modulenum,indices)
+function aap=aa_doprocessing_onetask(aap,task,modulenum,indices)
 global aaworker
 
 aaworker.modulestarttime=now;
-
+    
 if aap.options.timelog
     tic
 end
@@ -70,7 +70,10 @@ aaworker.outputstreams=[];
 [doneflag doneflagpath stagetag]=aas_doneflag_getpath_bydomain(aap,domain,indices,modulenum);
 outputpath=aas_getpath_bydomain(aap,domain,indices);
 aas_makedir(aap,outputpath);
+aap_tmp=aap;
+aap.internal.streamcache=[];
 save(fullfile(outputpath,sprintf('aap_parameters_%s.mat',stagetag)),'aap');
+aap=aap_tmp;
 if (aas_doneflagexists(aap,doneflag))
     if (strcmp(task,'doit'))
         aas_log(aap,0,sprintf('- completed previously: %s for %s',description,doneflagpath),aap.gui_controls.colours.completedpreviously);
@@ -105,7 +108,8 @@ else
                     
                     % There might be additional settings for this input 
                     % Added by CW to allow domain override
-                    if iscell(taskSchema.inputstreams.stream)  && ~isstruct(taskSchema.inputstreams.stream{1})
+                    if iscell(taskSchema.inputstreams.stream)  && ...
+                            ~(numel(taskSchema.inputstreams.stream) == 1 && isstruct(taskSchema.inputstreams.stream{1}))
                         inputSchema = taskSchema.inputstreams.stream{inpind};
                     else
                         inputSchema = taskSchema.inputstreams.stream{1}(inpind);
@@ -165,4 +169,3 @@ if aap.options.timelog
     aas_time_elapsed
 end
 
-aas_log(aap,0,sprintf('*-*-'));

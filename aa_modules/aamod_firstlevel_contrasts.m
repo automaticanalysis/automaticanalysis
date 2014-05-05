@@ -244,8 +244,12 @@ switch task
         filters={'con','spmT','spmF'};
         
         for filterind=1:length(filters)
-            allbetas=dir(fullfile(anadir,[filters{filterind} '_*.img']));
+            allbetas=dir(fullfile(anadir,[filters{filterind} '_*.nii']));
             betafns=[];
+            for betaind=1:length(allbetas);
+                betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
+            end
+            allbetas=dir(fullfile(anadir,[filters{filterind} '_*.img']));
             for betaind=1:length(allbetas);
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end

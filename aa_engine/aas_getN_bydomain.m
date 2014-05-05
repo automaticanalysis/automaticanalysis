@@ -28,5 +28,8 @@ switch (domain)
         end
         
     case 'diffusion_session_probtrackx'
-        N=aap.options.probtrackx.nsplits;        
+        N=aap.options.probtrackx.nsplits;  
+        
+    case 'scan'
+        N=aap.options.realtime.nscans;
 end;    

@@ -14,6 +14,8 @@
                 t2star
             </echoweightmethod>
                 
+            <outputstats>1</outputstats>  <!-- output noise estimates and so on? -->
+            
             <inputstreams>
                 <stream ismodified='0'>dicom_epi</stream>  
             </inputstreams>

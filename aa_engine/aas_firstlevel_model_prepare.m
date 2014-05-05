@@ -130,7 +130,6 @@ else
         catch
         end
         % [AVG] This is for backwards compatibility!
-        % [TA] volumeTR might be valid but empty!
         if ~exist('TR','var') || isempty(TR)
             TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end
