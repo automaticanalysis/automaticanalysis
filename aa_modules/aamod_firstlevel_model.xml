@@ -14,6 +14,12 @@
             <!-- includemovementpars 0=none; 1=realignment parms -->
             <includemovementpars>1</includemovementpars>
             
+            <!-- if the stream 'listspikes' is present, should we include deltas for each spike? -->
+            <includespikes>0</includespikes>
+            
+            <!-- if the stream 'gd_results' is present, should we include the PCA noise regressors? -->
+            <includeGLMDNregs>1</includeGLMDNregs>
+            
             <!-- Movement matrix, deciding which derivatives/orders of the movement parameters are used! -->
             <moveMat>[1 0 0; 0 0 0]</moveMat>
             

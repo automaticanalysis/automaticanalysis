@@ -1,7 +1,14 @@
 function [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
     aas_firstlevel_model_nuisance(aap, subj, files)
 
+settings = aap.tasklist.currenttask.settings;
 streamIn = aap.tasklist.currenttask.inputstreams.stream;
+
+for s = 1 : length(streamIn)
+   if isstruct(streamIn{s})
+       streamIn{s} = streamIn{s}.CONTENT;
+   end
+end
 
 %% Movement regressors (extended!) [AVG]
 movementRegs = [];
@@ -23,7 +30,7 @@ CRnames = {'GM', 'WM', 'CSF', 'OOH'};
 compartmentRegs = [];
 
 CRstreams = streamIn(strcmp('compSignal', streamIn));
-if ~isempty(CRstreams)
+if ~isempty(CRstreams) && aas_stream_has_contents(aap, 'compSignal');
     for sess=aap.acq_details.selected_sessions
         % If we don't have compartment Signals, this should give up...
         compTC = [];
@@ -37,7 +44,7 @@ end
 physiologicalRegs = [];
 
 PRstreams = streamIn(strcmp('physreg', streamIn));
-if ~isempty(PRstreams)
+if ~isempty(PRstreams) && aas_stream_has_contents(aap, 'physreg')
     for sess=aap.acq_details.selected_sessions
         PRfn = aas_getimages_bystream(aap,subj,sess,PRstreams{:});
         
@@ -59,7 +66,7 @@ spikeRegs = [];
 
 SPstreams = streamIn(strcmp('listspikes', streamIn));
 
-if ~isempty(SPstreams)
+if ~isempty(SPstreams) && aas_stream_has_contents(aap, 'listspikes') && settings.includespikes
     for sess=aap.acq_details.selected_sessions
         SPfn = aas_getimages_bystream(aap,subj,sess,SPstreams{:});
         
@@ -83,7 +90,7 @@ end
 %% GLMdenoise regressors [CW]
 GLMDNregs = [];
 GLMDNstream = streamIn(strcmp('gd_results', streamIn));
-if ~isempty(GLMDNstream)
+if ~isempty(GLMDNstream) && aas_stream_has_contents(aap, 'gd_results') && settings.includeGLMDNregs
     GLMDNfile = aas_getfiles_bystream(aap, subj, GLMDNstream{:});
     load(GLMDNfile);
     for sess = aap.acq_details.selected_sessions
