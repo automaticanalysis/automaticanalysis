@@ -33,6 +33,9 @@
             <!-- First level model masking -->
             <firstlevelmasking>1</firstlevelmasking>
             
+            <!-- 'None' or 'AR(1)' -->
+            <autocorrelation>AR(1)</autocorrelation>
+            
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
