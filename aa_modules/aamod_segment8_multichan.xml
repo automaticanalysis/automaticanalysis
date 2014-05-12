@@ -29,7 +29,7 @@
 			
             <inputstreams>
                 <stream>structural</stream>
-                <stream>t2</stream> 
+                <stream isessential="0">t2</stream> 
             </inputstreams>
             
             <outputstreams>
