@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='SPM smooth' modality='MRI'>
+        <currenttask domain='study' desc='Tissue wavelets summarize' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -9,15 +9,12 @@
             </qsub>
             
             <permanenceofoutput>2</permanenceofoutput>
-            
-            <FWHM>10</FWHM>
-            
+                        
             <inputstreams>
-                <stream ismodified='0'>epi</stream>
+                <stream>tiss_wavelets</stream>     
             </inputstreams>
             
             <outputstreams>
-                <stream>epi</stream>
             </outputstreams>    
             
         </currenttask>

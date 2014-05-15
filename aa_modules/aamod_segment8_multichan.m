@@ -124,6 +124,13 @@ switch task
         if ~iscell(channels)
             channels={channels};
         end
+		% check for empty streams
+		ind = [];
+		for c=1:length(channels)
+			if aas_stream_has_contents(aap,channels{c}), ind = [ind c]; end
+		end
+		channels = channels(ind);
+		
         for c=1:length(channels)
             img{c} = aas_getfiles_bystream(aap, subjind, channels{c});
 
