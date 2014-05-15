@@ -86,11 +86,7 @@ for k1=1:length(aap.tasklist.main.module)
                 if (isempty(aap.internal.inputstreamsources{k1}.stream))
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
-                    try
                     aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
-                    catch
-                        disp('');
-                    end
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
             else
