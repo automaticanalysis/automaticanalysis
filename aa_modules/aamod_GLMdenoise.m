@@ -12,8 +12,13 @@ switch task
         
         epiFiles = aas_getfiles_bystream(aap, subjInd, 1, 'epi'); % get 1st session epis
         
+        % We can now have missing sessions per subject, so we're going to use only
+        % the sessions that are common to this subject and selected_sessions
+        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subjInd);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+        
         % Get mask, if it's an input
-        if ismember('epiBETmask', settings.inputstreams.stream)
+        if  aas_stream_has_contents(aap,'epiBETmask')
             Mimg = aas_getfiles_bystream(aap,subjInd, 'epiBETmask');
             Mimg = Mimg(1,:); % Only first one
             
@@ -26,8 +31,11 @@ switch task
             end
             
             M = ~logical(spm_read_vols(spm_vol(Mimg)));
+            brainI = find(~M);
         else
             M = 0;
+            Vs1 = spm_vol(epiFiles(1,:));
+            brainI = 1:prod(Vs1.dim);
         end
         
         opt.brainexclude = M;
@@ -35,7 +43,7 @@ switch task
         % Session Split
         session_split = aap.tasklist.currenttask.settings.session_split;
         if isempty(session_split)
-            session_split{1} = aap.acq_details.selected_sessions;
+            session_split{1} = subjSessionI;
         end
         
         % Stimulus Duration in seconds...
@@ -67,7 +75,12 @@ switch task
                 
                 % Get gd_data
                 Vs = spm_vol(files{sess});
-                gd_data{s} = single(spm_read_vols(Vs));
+                for v = 1 : length(Vs)
+                    
+                    Ys = single(spm_read_vols(Vs(v)));
+                
+                    gd_data{s}(:,v) = Ys(brainI);
+                end
             end
             
 %            memtoc
@@ -196,6 +209,8 @@ switch task
             % Try with denoising...
             [gd_results, gd_data] = ...
                 GLMdenoisedata(gd_design, gd_data, stimdur, TR, hrfmodel, hrfknobs, opt, sprintf('figures%d', split));
+            
+            gd_results.models = [];
             
             gdFile = fullfile(aas_getsubjpath(aap, subjInd), 'gd_results.mat');
             save(gdFile, 'gd_results', '-v7.3');

@@ -37,7 +37,6 @@ switch task
             end
         end
         
-
         
         % describe outputs
         aap = aas_desc_outputs(aap, subjInd, sessInd, 'epi', outFiles);

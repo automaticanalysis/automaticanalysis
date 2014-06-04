@@ -11,9 +11,15 @@ resp = '';
 switch task
     case 'doit'
                 
-        Simg = aas_getfiles_bystream(aap,subj,'structural');
-        SEGimg = aas_getfiles_bystream(aap,subj,'segmentation');
-        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
+        inStreams = aap.tasklist.currenttask.inputstreams;
+        
+        Simg = aas_getfiles_bystream(aap,subj,inStreams.stream{1});
+        SEGimg = aas_getfiles_bystream(aap,subj,inStreams.stream{2});
+        try
+            mEPIimg = aas_getfiles_bystream(aap,subj,1,inStreams.stream{3});
+        catch
+            mEPIimg = aas_getfiles_bystream(aap,subj,inStreams.stream{3});
+        end
         
         % Whether the images in SEGimg are native (1) or warped (0)
         NWlogical = zeros(size(SEGimg,1), 1);

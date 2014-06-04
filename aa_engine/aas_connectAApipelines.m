@@ -50,6 +50,15 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %                    as an empty string '' for default behaviour, or give a
 %                    string (e.g., 'aamod_realign_00001').
 %
+%     'checkMD5':    If set to 1, we will compare the status of all remote
+%                    streams to the local versions before running AA
+%                    pipeline. This way, we can detect if the remote data
+%                    has changed in any way and cause local stages
+%                    dependent on those data to reset. If set to 0, we
+%                    don't check the remote data - once local modules that
+%                    use those data are completed, they will never check
+%                    again.
+%
 %     remoteAAlocations is struct array, so we can specify multiple
 %     remote locations.  Priority is given to earlier array elements, so if
 %     a data stream is found at multiple remote locations, we take that
@@ -58,7 +67,7 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 % -------------------------------------------------------
 % created by:  cwild 2014-03-10
 %
-% updates: 
+% updates:
 %
 % cwild 2014-04-02: Major update, added check for udpated data on the
 % remote
@@ -97,6 +106,8 @@ remoteAA = {};
 % Names, modules, and location indices of remote outputstreams
 remoteOutputs = struct('name', {{}}, 'locI', {}, 'modI', {});
 
+local2remoteMaps = {};
+
 % Collect output streams from the remote AA locations
 % Reverse order, because priority is given to earlier array elements
 for locI = length(remoteAAlocations) : -1 : 1
@@ -134,6 +145,9 @@ for locI = length(remoteAAlocations) : -1 : 1
     %             aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have sessions: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSess(~sessMatch))));
     %         end
     %     end
+    
+    
+    local2remoteMaps{locI} = mapIndices('study', aap.directory_conventions.parallel_dependencies, aap, remoteAA{locI}, struct());
     
     maxModI = [];
     
@@ -198,133 +212,136 @@ for modI = 1 : length(aap.tasklist.main.module)
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
                 
-                if ~any(rI)
-                    aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
-                end
-                
                 if sum(rI) > 1
                     aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
                 end
                 
-                remoteOutput = remoteOutputs(rI);
-                remoteModule = remoteAA{remoteOutput.locI}.tasklist.main.module(remoteOutput.modI);
-                
-                trgDomain = aap.schema.tasksettings.(mod.name)(mod.index).ATTRIBUTE.domain;
-                srcDomain = remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.domain;
-                
-                remoteStreams(end+1) = struct('stream',       inputStreams{iI}, ...
-                    'stagetag',     aas_getstagetag(remoteAA{remoteOutput.locI}, remoteOutput.modI), ...
-                    'sourcedomain', srcDomain, ...
-                    'host',         remoteAAlocations(remoteOutput.locI).host, ...
-                    'aapfilename',  fullfile(remoteAAlocations(remoteOutput.locI).directory, 'aap_parameters.mat'), ...
-                    'allowcache',   remoteAAlocations(remoteOutput.locI).allowcache);
-                
-                % Now check if the remote data has changed...
-                
-                if remoteAAlocations(remoteOutput.locI).checkMD5
+                if any(rI)
                     
-                    % First we have to find all possible locations of the target streams
-                    trgDomainTree = aas_dependencytree_finddomain(srcDomain, aap.directory_conventions.parallel_dependencies, {});
-                    NPerDomain = [];
-                    for tdI = 1 : length(trgDomainTree)
-                        NPerDomain(tdI) = aas_getN_bydomain(aap, trgDomainTree{tdI}, []);
-                    end
+                    remoteOutput = remoteOutputs(rI);
+                    remoteModule = remoteAA{remoteOutput.locI}.tasklist.main.module(remoteOutput.modI);
                     
-                    % Generate all possible indices for the target domain
-                    trgIndices = zeros(prod(NPerDomain), length(trgDomainTree));
-                    for tdI = 1: length(trgDomainTree)
-                        trgIndices(:,tdI) = repmat(kron([1:NPerDomain(tdI)]', ones(prod(NPerDomain(tdI+1:end)), 1)), prod(NPerDomain(1:tdI-1)), 1);
-                    end
+                    trgDomain = aap.schema.tasksettings.(mod.name)(mod.index).ATTRIBUTE.domain;
+                    srcDomain = remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.domain;
                     
-                    % Strip the 'study' indices
-                    trgIndices(:,1) = [];
+                    remoteStreams(end+1) = struct('stream',       inputStreams{iI}, ...
+                        'stagetag',     aas_getstagetag(remoteAA{remoteOutput.locI}, remoteOutput.modI), ...
+                        'sourcedomain', srcDomain, ...
+                        'host',         remoteAAlocations(remoteOutput.locI).host, ...
+                        'aapfilename',  fullfile(remoteAAlocations(remoteOutput.locI).directory, 'aap_parameters.mat'), ...
+                        'allowcache',   remoteAAlocations(remoteOutput.locI).allowcache);
                     
-                    % Find correspondances between remote and local indices...
-                    srcDomainTree = aas_dependencytree_finddomain(srcDomain, remoteAA{locI}.directory_conventions.parallel_dependencies, {});
-                    
-                    if numel(srcDomainTree)~=numel(trgDomainTree) || any(~strcmp(srcDomainTree, trgDomainTree))
-                        aas_log(aap, 1, 'Domain Trees don''t match between remote and local AA. Can''t guarantee that we will find matching indices - so bailing!');
-                    end
-                    
-                    % Strip the 'study' domains
-                    srcDomainTree = srcDomainTree(2:end);
-                    trgDomainTree = trgDomainTree(2:end);
-                    
-                    localDomainNames = aas_getNames_bydomain(aap, trgDomainTree);
-                    remoteDomainNames = aas_getNames_bydomain(remoteAA{locI}, srcDomainTree);
-                    
-                    local2remoteMap = {};
-                    for dI = 1 : numel(localDomainNames)
-                        [presentInRemote local2remoteMap{dI}] = ismember(localDomainNames{dI}, remoteDomainNames{dI});
-                    end
-                    
-                    % Check doneflags / MD5s for each occurence of this stream.
-                    for tdI = 1 : size(trgIndices, 1)
+                    % Now check if the remote data has changed...
+                    if remoteAAlocations(remoteOutput.locI).checkMD5
                         
-                        resetThisStage = false;
+                        % First we have to find all possible locations of the target streams
+                        trgDomainTree = aas_dependencytree_finddomain(trgDomain, aap.directory_conventions.parallel_dependencies, {});
+                        NPerDomain = [];
+                        for tdI = 1 : length(trgDomainTree)
+                            NPerDomain(tdI) = aas_getN_bydomain(aap, trgDomainTree{tdI}, []);
+                        end
                         
-                        % If this stage has completed, but target data has changed, let's force it to re-run
-                        trgDoneFlag = aas_doneflag_getpath_bydomain(aap, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))), modI);
-                        if (aas_doneflagexists(aap, trgDoneFlag))
+                        % Generate all possible indices for the target domain
+                        trgIndices = zeros(prod(NPerDomain), length(trgDomainTree));
+                        for tdI = 1: length(trgDomainTree)
+                            trgIndices(:,tdI) = repmat(kron([1:NPerDomain(tdI)]', ones(prod(NPerDomain(tdI+1:end)), 1)), prod(NPerDomain(1:tdI-1)), 1);
+                        end
+                        
+                        trgDomainTree = trgDomainTree(2:end);
+                        trgIndices(:,1) = [];
+                        
+                        % Check doneflags / MD5s for each occurence of this stream.
+                        for tdI = 1 : size(trgIndices, 1)
                             
-                            % Stream header file with MD5
-                            trgPath = aas_getpath_bydomain(aap, srcDomain, trgIndices(tdI,:), modI);
-                            trgStreamDesc = fullfile(trgPath, sprintf('stream_%s_inputto_%s.txt', inputStreams{iI}, sprintf('%s_%05d', mod.name, mod.index)));
+                            resetThisStage = false;
                             
-                            if ~exist(trgStreamDesc)
-                                resetThisStage = true;  % re-run if we can't find the local stream description
-                                aas_log(aap, 0, sprintf('%s %s input %s LOCAL status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
-                            else
+                            % If this stage has completed, but target data has changed, let's force it to re-run
+                            trgDoneFlag = aas_doneflag_getpath_bydomain(aap, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))), modI);
+                            if (aas_doneflagexists(aap, trgDoneFlag))
                                 
-                                % Map the local indices to the remote AA
-                                remoteIndices = arrayfun(@(x,y) local2remoteMap{x}(y), [1:size(trgIndices,2)], trgIndices(tdI,:));
+                                % It's also possible for streams to be written
+                                % to any subdomain of the source domain so we
+                                % have to go hunt for all of those.  This makes
+                                % this complicated :(
+                                possibleLocs = aas_getdependencies_bydomain(aap, srcDomain, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))));
                                 
-                                % A remote index of 0 means that we can't
-                                % find that one, so it just might not be
-                                % present in the remote location.  That's
-                                % OK because maybe we're pulling it from
-                                % somewhere else....
-                                if ~any(remoteIndices==0)
+                                for lI = 1 : length(possibleLocs)
                                     
-                                    % Copy over the stream desc from the remote
-                                    remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, srcDomain, remoteIndices, remoteOutput.modI);
-                                    remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
-                                    localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
-                                    aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
+                                    % Stream header file with MD5
+                                    trgPath = aas_getpath_bydomain(aap, possibleLocs{lI}{1}, possibleLocs{lI}{2}, modI);
+                                    trgStreamDesc = fullfile(trgPath, sprintf('stream_%s_inputto_%s.txt', inputStreams{iI}, sprintf('%s_%05d', mod.name, mod.index)));
                                     
-                                    % If it didn't copy, then we should reset this stage
-                                    if ~exist(localSrcDesc)
-                                        resetThisStage = true;
-                                        aas_log(aap, 0, sprintf('%s %s input %s REMOTE status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
-                                    else
+                                    if exist(trgStreamDesc)
                                         
-                                        % Compare the MD5s
-                                        trgFileID = fopen(trgStreamDesc, 'r');
-                                        [aap, trgMD5] = aas_load_md5(aap, trgFileID, remoteOutput.name);
+                                        % Map the local indices to the remote AA
+                                        localIndices = possibleLocs{lI}{2};
+                                        remoteIndices = [];
+                                        srcDomainTree = aas_dependencytree_finddomain(possibleLocs{lI}{1}, remoteAA{locI}.directory_conventions.parallel_dependencies, {});
+                                        srcDomainTree = srcDomainTree(2:end);
+                                        for i = 1 : length(localIndices)
+                                            try remoteIndices(i) = local2remoteMaps{remoteOutput.locI}.(srcDomainTree{i})(localIndices(i));
+                                            catch
+                                                disp('');
+                                            end
+                                        end
                                         
-                                        srcFileID = fopen(localSrcDesc, 'r');
-                                        [aap, srcMD5] = aas_load_md5(aap, srcFileID, remoteOutput.name);
-                                        
-                                        fclose(trgFileID); fclose(srcFileID);
-                                        
-                                        if ~strcmp(trgMD5, srcMD5)
-                                            resetThisStage = true;
-                                            aas_log(aap, 0, sprintf('%s %s input %s REMOTE status CHANGED. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                        % A remote index of 0 means that we can't
+                                        % find that one, so it just might not be
+                                        % present in the remote location.  That's
+                                        % OK because maybe we're pulling it from
+                                        % somewhere else....
+                                        if ~any(remoteIndices==0)
+                                            
+                                            % Copy over the stream desc from the remote
+                                            remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
+                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                            aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
+                                            
+                                            % If it didn't copy, then we should reset this stage
+                                            if ~exist(localSrcDesc)
+                                                resetThisStage = true;
+                                                aas_log(aap, 0, sprintf('%s %s input %s REMOTE status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                            else
+                                                
+                                                % Compare the MD5s
+                                                trgFileID = fopen(trgStreamDesc, 'r');
+                                                [aap, trgMD5] = aas_load_md5(aap, trgFileID, remoteOutput.name);
+                                                
+                                                srcFileID = fopen(localSrcDesc, 'r');
+                                                [aap, srcMD5] = aas_load_md5(aap, srcFileID, remoteOutput.name);
+                                                
+                                                fclose(trgFileID); fclose(srcFileID);
+                                                
+                                                if ~strcmp(trgMD5, srcMD5)
+                                                    resetThisStage = true;
+                                                    aas_log(aap, 0, sprintf('%s %s input %s REMOTE status CHANGED. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                                end
+                                            end
                                         end
                                     end
-                                end
-                            end
+                                    
+                                    if resetThisStage
+                                        aas_delete_doneflag_bypath(aap, trgDoneFlag);
+                                    end
+                                    
+                                end % End if done flag exists
+                                
+                            end % End check target destination indices
                             
-                            if resetThisStage 
-                                aas_delete_doneflag_bypath(aap, trgDoneFlag);
-                            end
-                            
-                        end % End if done flag exists
+                        end % End for each possible stream location
                         
-                    end % End check target destination indices
+                    end % End if check MD5s
                     
-                end % End if check MD5s
-                
+                else
+
+                    if isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
+                            isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
+                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential
+                        aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
+                    end
+                    
+                end
             end % End if input ~present in prev outputs
             
         end % End loop over input straems
@@ -351,3 +368,22 @@ end
 
 end
 
+function map = mapIndices(curDomain, localTree, localAA, remoteAA, map)
+
+localDomainNames = aas_getNames_bydomain(localAA, curDomain);
+remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
+
+if ~strcmp(curDomain, 'study')
+    [~,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
+    
+else
+    map.(curDomain) = 1;
+end
+
+if isstruct(localTree.(curDomain))
+    subTrees = fieldnames(localTree.(curDomain));
+    for tI = 1 : numel(subTrees)
+        map = mapIndices(subTrees{tI}, localTree.(curDomain), localAA, remoteAA, map);
+    end
+end
+end

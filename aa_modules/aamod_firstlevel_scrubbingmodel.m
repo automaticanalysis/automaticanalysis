@@ -34,7 +34,6 @@ switch task
         highpassFilter = settings.highpassfilter;
         if isempty(highpassFilter), highpassFilter = Inf; end
         
-        TR = settings.TR;
         globalScaling = settings.globalscaling;
         autocorrelation = settings.autocorrelation;
         includeMovement = settings.includemovementpars;   % include movement parameters?
@@ -46,204 +45,35 @@ switch task
         
         subjName = aap.acq_details.subjects(subjInd).mriname;
         subjPath = aas_getsubjpath(aap, subjInd);
+         
+        % Prepare basic SPM model...
+        [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subjInd);
+        cd(SPM.swd);
         
-        % Deal with extraparameters. Not needed any more, as
-        % aap.directory_conventions.stats_singlesubj
-        % can have module specific value, but kept for backwards
-        % compatability
-        if (isfield(aap.tasklist.currenttask.extraparameters,'stats_suffix'))
-            stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
-        else
-            stats_suffix=[];
-        end
-        
-        analysisDir = fullfile(subjPath,[aap.directory_conventions.stats_singlesubj stats_suffix]);
-        if ~exist(analysisDir,'dir')
-            mkdir(analysisDir);
-        end
-        cd(analysisDir);
-        
-        SPM = [];
-        SPM.swd = analysisDir;
-        
-        global defaults
-        defaults.mask.thresh = maskThreshold;
-
-        % Get basis functions from task settings
-        SPM.xBF = settings.xBF;
-        
-        firstsess = aap.acq_details.selected_sessions(1);
-        
-        % if TR is manually specified, use that, otherwise try to get from DICOMs.
-        if isfield(settings,'TR') && ~isempty(TR)
-            SPM.xY.RT = TR;
-        else
-            try
-                
-                % Get TR from DICOM header checking they're the same for all sessions
-                
-                for sess = aap.acq_details.selected_sessions
-                    DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_dicom_header'));
-                    try
-                        TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
-                    catch
-                        % [AVG] This is for backwards compatibility!
-                        TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
-                    end
-                    if (sess==firstsess)
-                        SPM.xY.RT = TR;
-                    else
-                        if (SPM.xY.RT~=TR)
-                            aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
-                        end
-                    end
-                end
-            catch
-                aas_log(aap, true, 'No epi_dicom_header information available - please set TR yourself');
-            end
-        end
-        
-        
-        SPM.xGX.iGXcalc = globalScaling; % 'None';
-        SPM.xVi.form = autocorrelation; % 'AR(1)';    
+        TR = SPM.xY.RT;
         
         % Loop through sessions and specify model
         nuisanceCols = [];
         interestCols = [];
-        spmSession = 1; % which session in SPM
         currentCol = 1;
-        allFiles = [];
         
+        spmSession = 1;
+        
+        allFiles = [];
+ 
         for thisSess = aap.acq_details.selected_sessions       
             
-            % Any session-specific settings?
-            SPM.xX.K(spmSession).HParam = highpassFilter;
-            
-            % Get files (do this first as some other options need to know
-            % how many files)
-            thisSessFiles = aas_getfiles_bystream(aap, subjInd, thisSess, 'epi');
-            Vs = spm_vol(thisSessFiles);
-            nScans = numel(Vs);      
-            
-            % Get model data from aap
-            subjmatches=strcmp(subjName,{settings.model.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.model.session});
-            % If no exact spec found, try session wildcard, then subject
-            % wildcard, then wildcard for both
-            if (~any(sessmatches & subjmatches))
-                sesswild=strcmp('*',{settings.model.session});
-                if (any(sesswild & subjmatches))
-                    sessmatches=sesswild;
-                else
-                    subjwild=strcmp('*',{settings.model.subject});
-                    if (any(sessmatches & subjwild))
-                        subjmatches=subjwild;
-                    else
-                        subjmatches=subjwild;
-                        sessmatches=sesswild;
-                    end
-                end
-            end
-            
-            % Should now have just one model spec
-            modelnum=find(sessmatches & subjmatches);
-            
-            % Get modelC (covariate) data from aap
-            subjmatches=strcmp(subjName,{settings.modelC.subject});
-            sessmatches=strcmp(aap.acq_details.sessions(thisSess).name,{settings.modelC.session});
-            
-            % If no exact spec found, try session wildcard, then subject
-            % wildcard, then wildcard for both
-            if (~any(sessmatches & subjmatches))
-                sesswild=strcmp('*',{settings.modelC.session});
-                if (any(sesswild & subjmatches))
-                    sessmatches=sesswild;
-                else
-                    subjwild=strcmp('*',{settings.modelC.subject});
-                    if (any(sessmatches & subjwild))
-                        subjmatches=subjwild;
-                    else
-                        subjmatches=subjwild;
-                        sessmatches=sesswild;
-                    end
-                end
-            end
-            
-            % Should now have just one modelC spec
-            modelCnum=find(sessmatches & subjmatches);
-            
-            % Check that we have at least one model of interest (normal or covariate)
-            if (length(modelnum)>1) || (length(modelCnum)>1)
-                aas_log(aap,true,sprintf('Error while getting model details as more than one specification for subject %s session %s',subjName,aap.acq_details.sessions(sess).name));
-            end
-            
-            if ~isempty(modelnum)
-                model=settings.model(modelnum);
-                for c = 1:length(model.event);
-                    if (isempty(model.event(c).parametric))
-                        parametric=struct('name','none');
-                    else
-                        parametric=model.event(c).parametric;
-                    end
-                    SPM.Sess(spmSession).U(c) = struct(...
-                        'ons',model.event(c).ons,...
-                        'dur',model.event(c).dur,...
-                        'name',{{model.event(c).name}},...
-                        'P',parametric);
-                    cols_interest=[cols_interest currcol];
-                    currcol=currcol+1;
-                end
-            else
-                SPM.Sess(spmSession).U = [];
-                SPM.Sess(spmSession).row = [];
-            end
-            
-            % Covariates
-            SPM.Sess(spmSession).C.C = [];
-            SPM.Sess(spmSession).C.name = {};
-            
-            if ~isempty(modelCnum)
-                
-                modelC = settings.modelC(modelCnum);
-                
-                % Set up the convolution vector...
-                % xBF.dt      - time bin length {seconds}
-                % xBF.name    - description of basis functions specified
-                % xBF.length  - window length (seconds)
-                % xBF.order   - order
-                
-                xBF = [];
-                xBF.dt = SPM.xY.RT;
-                xBF.name = SPM.xBF.name;
-                xBF.length = SPM.xBF.length;
-                xBF.order = SPM.xBF.order;
-                xBF = spm_get_bf(xBF);
-                
-                for c = 1:length(modelC.covariate);
-                    covVect = modelC.covariate(c).vector;
-                    
-                    % Do we convolve with HRF?
-                    if modelC.covariate(c).HRF > 0
-                        U =[];
-                        U.u = covVect(:);
-                        U.name = {modelC.covariate(c).name};
-                        covVect = spm_Volterra(U, xBF.bf);
-                    end
-                    
-                    SPM.Sess(spmSession).C.C    = [SPM.Sess(spmSession).C.C ...
-                        covVect];     % covariate
-                    SPM.Sess(spmSession).C.name = [SPM.Sess(spmSession).C.name ...
-                        modelC.covariate(c).name];
-                    
-                    % Is the covariate of interest or nuisance
-                    if modelC.covariate(c).interest > 0
-                        cols_interest=[cols_interest currcol];
-                    else
-                        cols_nuisance=[cols_nuisance currcol];
-                    end
-                    currcol=currcol + 1;
-                end
-            end
+            % Set up model, primarily for experimental effects. We are
+            % going to add the nuisance columns on our own...
+            [SPM, interestCols, nuisanceCols, currentCol] = ...
+                aas_firstlevel_model_define(aap, thisSess, spmSession, SPM, model, modelC, ...
+                                                             interestCols, nuisanceCols, currentCol, ...
+                                                             [], [], [], [], []);
+
+            nScans = size(files{thisSess},1);
+   
+            % Set HP filter, if there is one
+            SPM.xX.K(spmSession).HParam = highpassFilter; 
 
             % Confounds/covariates of no interest/whatever you want to call
             % them. These are collected together in case one wants to do
@@ -251,8 +81,7 @@ switch task
             
             C = []; % confounds
             Cnames = []; % names
-          
-            
+
             % Only get compFiles if requested (allows more flexibility in
             % XML files)
             
@@ -323,8 +152,8 @@ switch task
                 aas_log(aap, false, sprintf('%d temporal filtering regressors added for this session.', size(K,2)));
             end
             
-            settings.includeSpikes=0; % hack because includeSpikes was a cell?!? -JP
-            if settings.includeSpikes
+%             settings.includeSpikes=0; % hack because includeSpikes was a cell?!? -JP
+            if settings.includeSpikes && any(strcmp('listspikes', aap.tasklist.currenttask.inputstreams.stream))
                 
                 % Get the spikes and moves
                 load(aas_getfiles_bystream(aap, subjInd, spmSession, 'listspikes'));
@@ -351,12 +180,10 @@ switch task
             if ~isempty(settings.numDummies) && settings.numDummies > 0
                 fprintf('Removing 1st %d scans.\n', settings.numDummies);
                 C = C(settings.numDummies+1:end, :);
-                thisSessFiles = thisSessFiles(settings.numDummies+1:end, :);
-                nScans = size(thisSessFiles, 1);
+                files{thisSess} = files{thisSess}(settings.numDummies+1:end, :);
+                nScans = size(files{thisSess}, 1); 
             end
-            
-            SPM.nscan(spmSession) = nScans;
-            allFiles = strvcat(allFiles, thisSessFiles);
+            SPM.nscan(thisSess) = nScans;
             
             % Scale confoundes using spm_en?
             C = spm_en(C, 0); % scale confounds by sum of squares
@@ -389,16 +216,27 @@ switch task
                 end
                 aas_log(aap, false, msg);
             end
-
+            
+            nuisanceCols = [nuisanceCols [1:size(C,2)]+(currentCol-1)];
+            currentCol = currentCol + size(C, 2);
+            
             SPM.Sess(spmSession).C.C = [SPM.Sess(spmSession).C.C C];
             SPM.Sess(spmSession).C.name = Cnames;
 
-            spmSession = spmSession + 1; % incremenet for next time
+            spmSession = spmSession + 1;
         end % looping through sessions
         
-        SPM.xY.P = allFiles;
+        % Add the images
+        SPM.xY.P = char(files{:});
+        
+        if settings.nuisanceconditions
+            nuisanceCols = [nuisanceCols interestCols];
+            interestCols = [];
+        end
+        
         SPM.xX.iG = nuisanceCols;
         SPM.xX.iC = interestCols;
+        
         SPM = spm_fmri_spm_ui(SPM);
         
         % Explicit masking, if requested
@@ -408,17 +246,14 @@ switch task
             SPM.xM.VM = spm_vol(maskImg);
         end % dealing with explicit mask
 
-        
-        SPMpath = fullfile(analysisDir, 'SPM.mat');
+        SPMpath = fullfile(anadir, 'SPM.mat');
         save(SPMpath, 'SPM');
         
         % describe outputs
         aap = aas_desc_outputs(aap, subjInd, 'firstlevel_spm', SPMpath);
         
         cd(startingDir); % go back where we started
-        
-        % (estimate with aamod_firstlevel_modelestimate)
-        
+
     case 'checkrequirements'
         
     otherwise

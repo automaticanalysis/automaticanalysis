@@ -21,9 +21,9 @@ switch task
         % In cases where the input stream isn't a subject domain (e.g.,
         % meanEPI), try looking in the first session. hacky!
         try
-            gmImg = aas_getimages_bystream(aap, subjInd, inStream);
+            gmImg = aas_getfiles_bystream(aap, subjInd, inStream);
         catch
-            gmImg = aas_getimages_bystream(aap, subjInd, 1, inStream);
+            gmImg = aas_getfiles_bystream(aap, subjInd, 1, inStream);
         end
         
         % Get path for structural image, and make path for thresholded

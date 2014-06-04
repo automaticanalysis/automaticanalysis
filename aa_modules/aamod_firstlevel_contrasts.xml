@@ -21,6 +21,7 @@
             <!-- run-specific contrasts -->
             <oneconperrun>0</oneconperrun>
 
+            <estimateefficiency>0</estimateefficiency>
             
             <!--
 You must specify one or more contrasts here using one of the following formats

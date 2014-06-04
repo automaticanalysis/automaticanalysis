@@ -1,7 +1,7 @@
 % AA module - Converts special series to NIFTI format
 % Rhodri Cusack MRC CBU Cambridge Nov 2005
 
-function [aap,resp]=aamod_convertspecialseries(aap,task,i)
+function [aap,resp]=aamod_convertspecialseries(aap,task,subjI)
 
 resp='';
 
@@ -15,29 +15,24 @@ switch task
     case 'summary'
         somethingtoconvert=false;
         if (length(aap.acq_details.specialseries)~=0)
-            if (length(aap.acq_details.specialseries{i})==0)
+            if (length(aap.acq_details.specialseries{subjI})==0)
                 somethingtoconvert=true;
             end;
         end;
         if (somethingtoconvert)
-            resp=sprintf('No special series for subject %s\n',aap.acq_details.subjects(i).mriname);
+            resp=sprintf('No special series for subject %s\n',aap.acq_details.subjects(subjI).mriname);
         else
-            resp=sprintf('Converted special series for subject %s to %s\n', aap.acq_details.subjects(i).mriname,aap.directory_conventions.centralstore_structurals);
+            resp=sprintf('Converted special series for subject %s to %s\n', aap.acq_details.subjects(subjI).mriname,aap.directory_conventions.centralstore_structurals);
         end;
 
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,i);
-        specialseriesdir=fullfile(subjpath,aap.directory_conventions.specialseriesdirname);
-        aas_makedir(aap,specialseriesdir);
-
-        for k=1:length(aap.acq_details.specialseries{i})
-            dicomdirsearchpath=fullfile(aas_findvol(aap,subj),sprintf(aap.directory_conventions.seriesoutputformat,aap.acq_details.specialseries{i}(k)));
-            [aap dicomdatadir]=aas_findfiles(aap,dicomdirsearchpath,1,1);
-            specialseriesdir_sub=fullfile(specialseriesdir,sprintf('series_%d',aap.acq_details.specialseries{i}(k)));
-            aas_makedir(aap,specialseriesdir_sub);
-            [aap]=aas_convertseries(aap,i,aap.acq_details.specialseries{i}(k),specialseriesdir_sub);
-        end;
+        
+        [aap convertedfns dcmhdr] = aas_convertseries_fromstream(aap, subjI, 'dicom_specialseries'); 
+        
+        
+        aap = aas_desc_outputs(aap, subjI, 'specialseries', convertedfns);
+        
     case 'checkrequirements'
 
     otherwise

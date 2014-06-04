@@ -12,7 +12,7 @@ resp='';
 
 switch task
     case 'report'
-
+        
     case 'doit'
         
         settings = aap.tasklist.currenttask.settings;
@@ -21,11 +21,13 @@ switch task
         
         % Get options
         highpassFilter = settings.highpassfilter;
-        TR = settings.TR; 
+        if isempty(highpassFilter), highpassFilter = Inf; end
+        
+        TR = settings.TR;
         globalScaling = settings.globalscaling;
-        autocorrelation = settings.autocorrelation;     
-        includeMovement = settings.includemovementpars;   % include movement parameters?     
-        volterraMovement = settings.volterramovementpars; % include Volterra expansion of movement parameters? (passed to aas_movPars)        
+        autocorrelation = settings.autocorrelation;
+        includeMovement = settings.includemovementpars;   % include movement parameters?
+        volterraMovement = settings.volterramovementpars; % include Volterra expansion of movement parameters? (passed to aas_movPars)
         moveMat = settings.moveMat;                       % what sort of movement we want based on aas_movPars
         bandPass = settings.bandpass;                     % for resting state functional connectivity
         svdThresh = settings.svdthresh;                   % if < 1, do dimension reduction on confounds
@@ -54,62 +56,59 @@ switch task
         
         SPM = [];
         SPM.swd = analysisDir;
-                
+        
         global defaults
-        defaults.mask.thresh = maskThreshold;        
-                        
-        % Movement regressors (including volterraExpansion, if requested)
-        if includeMovement
-            [moves, mnames] = aas_movPars(aap, subjInd, moveMat, volterraMovement);
-        end
-
-        % Other covariates ("compartment" regressors, globals, etc.)
-        % [coming eventually]
+        defaults.mask.thresh = maskThreshold;
+        
+        %         % Movement regressors (including volterraExpansion, if requested)
+        %         if includeMovement
+        %             [moves, mnames] = aas_movPars(aap, subjInd, moveMat, volterraMovement);
+        %         end
+        %
 
         
         % Get basis functions from task settings
         SPM.xBF = settings.xBF;
-
+        
         firstsess = aap.acq_details.selected_sessions(1);
-
+        
         % if TR is manually specified, use that, otherwise try to get from DICOMs.
         if isfield(settings,'TR') && ~isempty(TR)
             SPM.xY.RT = TR;
-        else            
+        else
             try
-            
-            % Get TR from DICOM header checking they're the same for all sessions
-            
-            for sess = aap.acq_details.selected_sessions
-                DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_dicom_header'));
-                try
-                    TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
-                catch
-                    % [AVG] This is for backwards compatibility!
-                    TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
-                end
-                if (sess==firstsess)
-                    SPM.xY.RT = TR;
-                else
-                    if (SPM.xY.RT~=TR)
-                        aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
+                
+                % Get TR from DICOM header checking they're the same for all sessions
+                
+                for sess = aap.acq_details.selected_sessions
+                    DICOMHEADERS=load(aas_getfiles_bystream(aap, subjInd, sess, 'epi_dicom_header'));
+                    try
+                        TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+                    catch
+                        % [AVG] This is for backwards compatibility!
+                        TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+                    end
+                    if (sess==firstsess)
+                        SPM.xY.RT = TR;
+                    else
+                        if (SPM.xY.RT~=TR)
+                            aas_log(aap, true, sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.', sess));
+                        end
                     end
                 end
-            end
             catch
                 aas_log(aap, true, 'No epi_dicom_header information available - please set TR yourself');
             end
         end
-
+        
         % NB Previous versions tried to set T0 using sliceorder; I've left this out
         % assuming that users should either use the SPM defaults (which are in the XML
         % file) or set this manually.
-
-
+        
+        
         SPM.xGX.iGXcalc = globalScaling; % 'None';
         SPM.xVi.form = autocorrelation; % 'AR(1)';
-
-
+        
         
         %% Loop through sessions and specify model
         nuisanceCols = [];
@@ -117,7 +116,7 @@ switch task
         spmSession = 1; % which session in SPM
         currentCol = 1;
         allFiles = [];
-                
+        
         for thisSess = aap.acq_details.selected_sessions
             
             
@@ -127,9 +126,8 @@ switch task
             % Get files (do this first as some other options need to know
             % how many files)
             thisSessFiles = aas_getfiles_bystream(aap, subjInd, thisSess, 'epi');
-            allFiles = strvcat(allFiles, thisSessFiles);
             nScans = size(thisSessFiles, 1);
-            SPM.nscan(spmSession) = nScans;
+            
             
             % Get model data from aap
             subjmatches=strcmp(subjname,{settings.model.subject});
@@ -252,22 +250,47 @@ switch task
             end
             
             
-      
+            
             % Confounds/covariates of no interest/whatever you want to call
             % them. These are collected together in case one wants to do
             % dimensionality reduction.
             
             C = []; % confounds
             Cnames = []; % names
+          
+            % Compartment signals (GM, WM, CSF)
+            compFiles = aas_getfiles_bystream(aap, subjInd, spmSession, 'compSignal');
+            compSignals = load(compFiles);
             
-            % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping through sessions)            
-            if includeMovement                
-                C = [C moves{thisSess}];
-                Cnames = [Cnames mnames];                                                      
-                aas_log(aap, false, sprintf('%d movement regressors added for this session.', size(moves{thisSess},2)));
+            if size(compSignals.compTC, 1) ~= nScans, aas_log(aap, 'compSig is wrong length!', 1); end
+            
+            % Include a CSF signal?
+            if settings.includeCSF
+                fprintf('Adding CSF signal as covariate.\n');
+                C = [C compSignals.compTC(:,3)];
+                Cnames = [Cnames 'CSF'];
             end
             
-            % Bandpass filtering (using DCT)            
+            % Include a WM signal?
+            if settings.includeCSF
+                fprintf('Adding WM signal as covariate.\n');
+                C = [C compSignals.compTC(:,2)];
+                Cnames = [Cnames 'WM'];
+            end
+            
+            % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping through sessions)
+            if includeMovement
+                
+                M = spm_load(aas_getfiles_bystream(aap, subjInd, spmSession, 'realignment_parameter'));
+                
+                U=[]; for c=1:6; U(c).u = M(:,c); U(c).name{1}='c'; end; aM = spm_Volterra(U,[1 0 0; 1 -1 0; 0 1 -1]',2);
+                
+                C = [C aM];
+                Cnames = [Cnames arrayfun(@(x) sprintf('Mov%d', x), [1:size(aM, 2)], 'UniformOutput', false)];
+                aas_log(aap, false, sprintf('%d movement regressors added for this session.', size(aM,2)));
+            end
+            
+            % Bandpass filtering (using DCT)
             if isempty(bandPass)
                 numColK = 0;
             else
@@ -276,28 +299,62 @@ switch task
                     bandPass = str2num(bandPass); % in case specified as a string
                 end
                 
-                lowPassCut = bandPass(1); % NB in seconds
-                highPassCut = bandPass(2);
+                highPassCut = 1/bandPass(1);
+                lowPassCut = 1/bandPass(2); % They were specified in Hz!
+   
                 K = spm_dctmtx(nScans, nScans);
                 nHP = fix(2*(nScans*TR)/highPassCut + 1);
                 nLP = fix(2*(nScans*TR)/lowPassCut + 1);
-                K   = K(:,[1:nHP nLP:nScans]); % includes constant
+                
+                K = K(:, [1:nHP nLP:nScans]); % includes constant
                 numColK  = size(K,2);
                 
                 C = [C K];
                 
-                for thisK=1:numColK
-                    Cnames{end+1} = sprintf('bandpass col %d', thisK);
-                end
+                Cnames = [Cnames arrayfun(@(x) sprintf('BP%d', x), [1:size(K, 2)], 'UniformOutput', false)];
                 
                 aas_log(aap, false, sprintf('%d temporal filtering regressors added for this session.', size(K,2)));
-            end             
+            end
+            
+            if settings.includeSpikes
+                
+                % Get the spikes and moves
+                load(aas_getfiles_bystream(aap, subjInd, spmSession, 'listspikes'));
+                
+                % Scans with large movement and image intensity fluctuations
+                regrScans = union(TSspikes(:,1), Mspikes(:,1));
+                
+                % Create a delta for each of these scans
+                spikes = zeros(nScans, length(regrScans));
+                spikeNames = {};
+                for s=1:length(regrScans),
+                    spikes(regrScans(s), s) = 1;
+                    spikeNames{s} = sprintf('SpikeMov%d', s);
+                end;
+                
+                aas_log(aap, false, sprintf('%d spike regressors added for this session.', size(spikes, 2)));
+                
+                C = [C spikes];
+                Cnames = [Cnames spikeNames];
+                
+            end
+            
+            % Remove scans if needed
+            if ~isempty(settings.numDummies) && settings.numDummies > 0
+                fprintf('Removing 1st %d scans.\n', settings.numDummies);
+                C = C(settings.numDummies+1:end, :);
+                thisSessFiles = thisSessFiles(settings.numDummies+1:end, :);
+                nScans = size(thisSessFiles, 1);
+            end
+            
+            SPM.nscan(spmSession) = nScans;
+            allFiles = strvcat(allFiles, thisSessFiles);
             
             % Scale confoundes using spm_en?
             C = spm_en(C, 0); % scale confounds by sum of squares
-                        
+            
             % Dimension reduction on confounds
-            if svdThresh < 1                
+            if svdThresh < 1
                 [U,S] = spm_svd(C,0);
                 if issparse(S)
                     S = full(S);
@@ -323,9 +380,9 @@ switch task
                 if svdThresh==1
                     msg = [msg ' Try SVD reduction (in xml file, set svdthresh to .99 instead of 1)?'];
                 end
-                aas_log(aap, false, msg);                
+                aas_log(aap, false, msg);
             end
-                       
+            
             
             
             SPM.Sess(spmSession).C.C = [SPM.Sess(spmSession).C.C C];
@@ -333,11 +390,11 @@ switch task
             
             % Ignore any scans? (i.e. bad scans due to tsdiffana, DVARS, etc.?)
             % TODO
-                        
-        
+            
+            
             spmSession = spmSession + 1; % incremenet for next time
-        end % looping through sessions 
-               
+        end % looping through sessions
+        
         SPM.xY.P = allFiles;
         SPM.xX.iG = nuisanceCols;
         SPM.xX.iC = interestCols;
@@ -361,9 +418,9 @@ switch task
         cd(startingDir); % go back where we started
         
         % (estimate with aamod_firstlevel_modelestimate)
-
+        
     case 'checkrequirements'
-
+        
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end

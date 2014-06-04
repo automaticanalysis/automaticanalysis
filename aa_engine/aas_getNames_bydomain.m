@@ -27,10 +27,35 @@ for d = 1 : length(domains)
         case {'diffusion_session', 'diffusion_session_bedpostx'}
             names{d} = {aap.acq_details.diffusion_sessions.name};
             
+        case 'scan'
+            names{d} = {};
+            
+        case 'searchlight_package'
+            names{d} = {};
+            
+        case 'splitsession_cv_fold'
+            names{d} = {};
+            
+        case 'diffusion_session_probtrackx'
+            names{d} = {};      
+
+        case 'hyperalignment_searchlight_package'
+            names{d} = {};
+            
+        case 'hyperalignment_subject'
+            names{d} = {};
+            
+        case 'splitsession_cv_fold_hyper'
+            names{d} = {};
+            
         otherwise
-            aas_log(aap, 1, sprintf('Invalid domain %s, perhaps NYI in this function', domain));
+            aas_log(aap, 1, sprintf('Invalid domain ''%s'', perhaps NYI in this function', domains{d}));
+    end
+    
+    if all(cellfun(@(x) isempty(x), names{d})),
+        names{d} = {};
     end
     
 end
 
-if length(names) == 1, names = names{1}; end
+% if length(names) == 1, names = names{1}; end

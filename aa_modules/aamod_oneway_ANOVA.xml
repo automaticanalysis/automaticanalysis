@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='One-way repeated measures ANOVA' modality='MRI'>
+            
+            <!-- Name for this ANOVA? -->
+            <name>Effect of Interest</name>
+            
+            <!-- Contrast indices that will be put into cells -->
+            <cells></cells>
+ 
+            <!-- indicate whether variances are equal (0) or unequal (1) between levels -->
+            <variance>0</variance>
+            
+            <!-- indicate whether variances are independent (0) or dependent (1) between levels -->
+            <dependent>0</dependent>
+
+            <inputstreams>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_cons</stream>
+            </inputstreams>
+
+        </currenttask>
+    </tasklist>        
+</aap>

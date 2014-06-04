@@ -205,6 +205,8 @@ switch task
         fcSPM.xM.VM = spm_vol(maskV.fname);
         fcSPM.xM.xs.Masking = 'analysis threshold+explicit mask';
         
+        fcSPM.xX.X = double(fcSPM.xX.X);
+        
         % Estimate parameters
         spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
         fcSPM = spm_spm(fcSPM);

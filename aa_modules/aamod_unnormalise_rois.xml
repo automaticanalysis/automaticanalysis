@@ -19,7 +19,7 @@
             </outputstreams>
             <diagnostic>1</diagnostic>
             <maskNum>1</maskNum>
-            <ROIlist>Thresholded/Hippocampus_EC__P4.nii,Thresholded/Hippocampus_CA__P4.nii,Thresholded/Hippocampus_SUB__P4.nii</ROIlist>
+            <ROIlist></ROIlist>
         </currenttask>
     </tasklist>
 </aap>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Firstlevel model for cleaning/ and filtering timeseries' modality='MRI'>
+        <currenttask domain='subject' inheritfrom='aamod_firstlevel_model' desc='Firstlevel model for cleaning/ and filtering timeseries' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -14,8 +14,6 @@
                 <imagesize>500000</imagesize>
                 <jobtype>fMRI</jobtype>
             </specialrequirements>
-                        
-            <TR></TR>                                   <!-- if not specified, AA tries to get from DICOM images -->
 
             <numDummies>0</numDummies>                  <!-- Another place to discard dummies -->
             
@@ -26,52 +24,19 @@
             <includeCSF>1</includeCSF>
             <includeSpikes>1</includeSpikes>
             
-            <highpassfilter></highpassfilter>
+            <highpassfilter>Inf</highpassfilter>
             <bandpass>0.01 0.1</bandpass>               <!-- Bandpass filter using DCT, e.g. for resting state - HP/LP in Hz -->
             <svdthresh>1</svdthresh>                    <!-- if < 1, do dimensionality reduction on confounds (movement, any global signal, etc.) -->
-            <globalscaling>None</globalscaling>         <!-- SPM.xGX.iGXcalc; 'None' or ... -->
-            <autocorrelation>AR(1)</autocorrelation>    <!-- SPM.xVi.form; 'None' or 'AR(1)' -->
             
             <maskthreshold>0.8</maskthreshold>          <!-- SPM threshold for masking fMRI (default 0.8) (of global value)-->
-            <explicitmask>0</explicitmask>
+            <explicitmask>0</explicitmask>              
             
-            <xBF>
-                <T>16</T>              <!-- how many time bins used for making the model -->
-                <T0>1</T0>             <!-- which time bin to choose (may want middle) -->
-                <UNITS>scans</UNITS>   <!-- 'scans' | 'secs' -->
-                <Volterra>1</Volterra> <!-- 1|1 = order of convolution -->
-                <name>hrf</name>       <!-- basis function -->
-                <length>32</length>
-                <order>1</order>
-            </xBF>
-              
-            
-            <!-- statistical model - adjust for each person -->
-            <model>
-                <subject></subject>
-                <session></session>
-                <event>
-                    <name></name>
-                    <ons></ons>
-                    <dur></dur>
-                </event>
-            </model>
-            
-            <modelC>
-                <subject></subject>
-                <session></session>
-                <covariate>
-                    <name></name>
-                    <vector></vector>
-                    <HRF></HRF>
-                    <interest></interest>
-                </covariate>
-            </modelC>
-            
+            <allowemptymodel>1</allowemptymodel>
+            <nuisanceconditions>1</nuisanceconditions>  <!-- Are conditions labelled as nusiance? -->
             
             <!-- streams -->
             <inputstreams>
-                <stream>segment</stream>
+                <stream>epi_dicom_header</stream>
                 <stream>listspikes</stream>
                 <stream>realignment_parameter</stream>
                 <stream>compSignal</stream>
