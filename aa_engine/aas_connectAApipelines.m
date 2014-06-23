@@ -204,13 +204,27 @@ for modI = 1 : length(aap.tasklist.main.module)
         remoteStreams = struct('stream', {}, 'stagetag', {}, 'sourcedomain', {}, 'host', {}, 'aapfilename', {}, 'allowcache', {});
         
         for iI = 1 : length(inputStreams)
-            
             % If the input doesn't come from a previous module, let's add it to
             % the list of remote streams for this module.
             if ~ismember(inputStreams{iI}, prevOutputs)
                 
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
+                % Check for module-specific stream
+                if ~any(rI) && strfind(inputStreams{iI},'.')
+                    tmpinputModule = inputStreams{iI}(1:strfind(inputStreams{iI},'.')-1);
+                    tmpinputStream = inputStreams{iI}(strfind(inputStreams{iI},'.')+1:end);
+                    rI = strcmp(tmpinputStream, {remoteOutputs.name});
+                    if sum(rI) > 1
+                        aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
+                    end
+                    if any(rI)
+                        tmpremoteModule = remoteAA{remoteOutputs(rI).locI}.tasklist.main.module(remoteOutputs(rI).modI).name;
+                        if isempty(strfind(tmpinputModule,tmpremoteModule)) % revoke if not match
+                            rI(rI) = false;
+                        end
+                    end
+                end
                 
                 if sum(rI) > 1
                     aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
