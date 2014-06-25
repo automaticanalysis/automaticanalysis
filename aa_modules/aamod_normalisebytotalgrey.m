@@ -2,7 +2,7 @@ function [aap,resp]=aamod_normalisebytotalgrey(aap, task, subjind)
 %AAMOD_NORMALISEBYTOTALGREY Divide voxelwise GM by TGM as proportional scaling for VBM.
 %
 % Divide structural images by total gray matter volume as a form of
-% proportinal scaling. Output images have a 'g' prepended (for global scaling).
+% proportional scaling. Output images have a 'g' prepended (for global scaling).
 %
 % Requires aamod_structuralstats to be run first to get total gray
 % matter.
