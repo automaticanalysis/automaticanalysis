@@ -104,11 +104,21 @@ switch task
             V.fname = fullfile(pth, ['bet_' nme '_brain_mask' ext]);
             spm_write_vol(V,mY);
             
-            %% DIAGNOSTIC IMAGE
-            % Save graphical output to common diagnostics directory
-            if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
-                mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
+            % Get the mask images
+            D = dir(fullfile(pth, 'bet*mask*'));
+            outMask = '';
+            for d = 1:length(D)
+                outMask = strvcat(outMask, fullfile(pth, D(d).name));
             end
+            
+            % Get also the meshes
+            D = dir(fullfile(pth, 'bet*mesh*'));
+            outMesh = '';
+            for d = 1:length(D)
+                outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
+            end
+
+            %% DIAGNOSTIC IMAGE
             mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
             try
                 %% Draw structural image...
@@ -138,26 +148,12 @@ switch task
                 
                 try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 set(gcf,'PaperPositionMode','auto')
-                print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '.jpeg']));
+                print('-djpeg','-r75',fullfile(aas_getsesspath(aap,varargin{:}), ...
+                    ['diagnostics_' mfilename '_' mriname '.jpg']));
             catch
             end
             
             %% DESCRIBE OUTPUTS!
-            
-            % Get the mask images
-            D = dir(fullfile(pth, 'bet*mask*'));
-            outMask = '';
-            for d = 1:length(D)
-                outMask = strvcat(outMask, fullfile(pth, D(d).name));
-            end
-            
-            % Get also the meshes
-            D = dir(fullfile(pth, 'bet*mesh*'));
-            outMesh = '';
-            for d = 1:length(D)
-                outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
-            end
             
             % Structural image after BETting
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],streamname,outStruct);
