@@ -6,16 +6,16 @@ fslsetup=deblank(aap.directory_conventions.fslsetup);
 if not(isempty(fslsetup)) && not(fslsetup(end)==';')
     fslsetup=[fslsetup ';'];
 end;
-    
+
 switch (aap.directory_conventions.fslshell)
     case 'none'
         cmd=[fslsetup fslcmd];
         [s w]=aas_shell(cmd);
     case 'csh'
-        cmd=['csh -c "' fslsetup  fslcmd '"'];
+        cmd=['csh -c "' fslsetup 'setenv FSLOUTPUTTYPE ' aap.directory_conventions.fsloutputtype ';' fslcmd '"'];
         [s w]=aas_shell(cmd);
     case 'bash'
-        cmd=['bash -c "' fslsetup  fslcmd '"'];
+        cmd=['bash -c "' fslsetup 'export FSLOUTPUTTYPE=' aap.directory_conventions.fsloutputtype ';' fslcmd '"'];
         [s w]=aas_shell(cmd);
 end;
 
