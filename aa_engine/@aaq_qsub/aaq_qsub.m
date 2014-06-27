@@ -34,7 +34,7 @@ classdef aaq_qsub<aaq
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
             
-            while any(obj.jobnotrun) && ~waitforalljobs
+            while any(obj.jobnotrun) || waitforalljobs
                 
                 % Lets not overload the filesystem
                 pause(1);
