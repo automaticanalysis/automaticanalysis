@@ -3,6 +3,8 @@
 % The particular form of the subject directories is controlled by
 % aap.directory_conventions.subject_directory_format
 %
+% NOTE: fMRI sessions have priority over diffusion session
+%
 % examples:
 %  pth=aas_getsesspath(aap,1,2);  % subject 1, session 2
 %  pth=aas_getstudypath(aap,1,2,'s3');   % path on s3 
@@ -10,4 +12,6 @@
 
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
-sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
+sessname = aap.acq_details.sessions(j).name;
+if isempty(sessname), sessname = aap.acq_details.diffusion_sessions(j).name; end
+sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),sessname);
