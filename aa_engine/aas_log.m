@@ -54,7 +54,7 @@ if (iserr)
         cd(aap.internal.pwd)
     catch
     end;
-    disp('for help, see the <a href="http://www.cambridgeneuroimaging.com/aawiki">aa wiki</a>')
+    disp('for help, see the <a href="https://github.com/rhodricusack/automaticanalysis/wiki">aa wiki</a>')
     error('aa error');
     
 end
