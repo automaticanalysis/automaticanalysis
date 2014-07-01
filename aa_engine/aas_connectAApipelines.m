@@ -211,7 +211,7 @@ for modI = 1 : length(aap.tasklist.main.module)
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
                 % Check for module-specific stream
-                if ~any(rI) && strfind(inputStreams{iI},'.')
+                if ~any(rI) && ~isempty(strfind(inputStreams{iI},'.'))
                     tmpinputModule = inputStreams{iI}(1:strfind(inputStreams{iI},'.')-1);
                     tmpinputStream = inputStreams{iI}(strfind(inputStreams{iI},'.')+1:end);
                     rI = strcmp(tmpinputStream, {remoteOutputs.name});
