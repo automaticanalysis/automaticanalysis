@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias='aamod_smooth' domain='session' desc='SPM smooth' modality='MRI'>
+        <currenttask mfile_alias='aamod_smooth' domain='diffusion_session' desc='SPM smooth' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
