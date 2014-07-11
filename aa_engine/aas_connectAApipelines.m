@@ -1,4 +1,4 @@
-function aap = aas_connectAApipelines(aap, remoteAAlocations, check)
+function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %
 % aas_connectAApipelines(aap, remoteAAlocations)
 %
@@ -118,7 +118,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     % This is where we will put it
     destAAPfn = fullfile(studyPath, sprintf('aap_parameters_%05d.mat', locI));
     
-    % Copy the remote AAP file, could error here if the file can't be found remotely
+    % Copy the remote AAP file, could error here if the file can''t be found remotely
     aap = aas_copyfromremote(aap, remoteAAlocations(locI).host, remoteAAPfn, destAAPfn, 'allowcache', remoteAAlocations(locI).allowcache);
     
     % Load it!
@@ -195,8 +195,7 @@ aas_log(aap,0,'Checking status of remote streams...');
 for modI = 1 : length(aap.tasklist.main.module)
     mod = aap.tasklist.main.module(modI);
     
-    if isfield(aap.tasksettings.(mod.name)(mod.index), 'inputstreams') &&...
-            isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
+    if isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
         
         % Names of input and output streams for this module
         inputStreams = aap.tasksettings.(mod.name)(mod.index).inputstreams.stream;
@@ -208,9 +207,6 @@ for modI = 1 : length(aap.tasklist.main.module)
             % If the input doesn't come from a previous module, let's add it to
             % the list of remote streams for this module.
             if ~ismember(inputStreams{iI}, prevOutputs)
-                
-                % Check previously added remotestreams
-                if ~isempty(mod.remotestream) && ismember(inputStreams{iI}, {mod.remotestream.stream}), continue; end
                 
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
@@ -353,11 +349,9 @@ for modI = 1 : length(aap.tasklist.main.module)
                     
                 else
 
-                    if check && ...
-                            (~isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) ||...
-                        (isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
+                    if isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
                             isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
-                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential))
+                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential
                         aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
                     end
                     
@@ -365,13 +359,9 @@ for modI = 1 : length(aap.tasklist.main.module)
             end % End if input ~present in prev outputs
             
         end % End loop over input straems
-        if isempty(aap.tasklist.main.module(modI).remotestream)
-            aap.tasklist.main.module(modI).remotestream = remoteStreams;
-            aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;
-        else
-            aap.tasklist.main.module(modI).remotestream = horzcat(aap.tasklist.main.module(modI).remotestream,remoteStreams);
-            aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = horzcat(aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream,remoteStreams);
-        end
+        
+        aap.tasklist.main.module(modI).remotestream = remoteStreams;
+        aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;
     end
     
     if isfield(aap.tasksettings.(mod.name)(mod.index), 'outputstreams')
