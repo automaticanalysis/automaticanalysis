@@ -1,9 +1,9 @@
-% AA module - write normalised EPIs useing DARTEL
+% AA module - write normalised input useing DARTEL
 % [aap,resp]=aamod_norm_write_dartel(aap,task,subj,sess)
 % Rhodri Cusack MRC CBU Cambridge Jan 2006-Aug 2007
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write_dartel(aap,task,subj,sess)
+function [aap,resp]=aamod_norm_write_dartel_diffusion(aap,task,subj,sess)
 
 resp='';
 
@@ -15,20 +15,20 @@ switch task
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI.jpg'];
-            if ~exist(fullfile(aas_getsesspath(aap,subj,sess),fn),'file')
+            if ~exist(fullfile(aas_getpath_bydomain(aap,aap.aap.tasklist.currenttask.domain,[subj,sess]),fn),'file')
                 fsl_diag(aap,subj,sess);
             end
             % Single-subjetc
-            fdiag = dir(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_*.jpg'));
+            fdiag = dir(fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),'diagnostic_*.jpg'));
             for d = 1:numel(fdiag)
                 aap = aas_report_add(aap,subj,'<table><tr><td>');
-                aap=aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),fdiag(d).name));
+                aap=aas_report_addimage(aap,subj,fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),fdiag(d).name));
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
             % Study summary
             aap = aas_report_add(aap,'reg',...
-                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' basename(aas_getsesspath(aap,subj,sess)) ]);
-            aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,subj,sess),fn));
+                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,sess) ]);
+            aap=aas_report_addimage(aap,'reg',fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),fn));
         end
     case 'doit'
         % Is session specified in task header?
@@ -50,11 +50,12 @@ switch task
 		% find out what streams we should normalise
         streams=aap.tasklist.currenttask.outputstreams.stream;        
         for streamind=1:length(streams)
+            if ~aas_stream_has_contents(aap,streams{streamind}), continue; end
             imgs = [];
             % Image to reslice
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             if exist('sess','var')
-                P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
+                P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end
@@ -87,7 +88,7 @@ switch task
                 wimgs = strvcat(wimgs,fullfile(pth,[prefix nme ext]));
             end
             if (exist('sess','var'))
-                aap=aas_desc_outputs(aap,subj,sess,streams{streamind},wimgs);
+                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
             end

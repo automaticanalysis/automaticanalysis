@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_coreg_extended_2" domain='diffusion_session' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream>t1totemplate_xfm</stream>
+                <stream>nodif</stream>   
+                <stream>dki_FA</stream> 
+                <stream>dki_MD</stream> 
+                <stream>dki_L1</stream> 
+                <stream>dki_L2</stream> 
+                <stream>dki_L3</stream> 
+                <stream>dki_V1</stream> 
+                <stream>dki_V2</stream> 
+                <stream>dki_V3</stream> 
+                <stream>dki_S0</stream>
+                <stream>dki_MK</stream> 
+                <stream>dki_RK</stream> 
+                <stream>dki_AK</stream>
+                <stream>dki_dMK</stream> 
+                <stream>dki_dMD</stream> 
+                <stream>dki_dS0</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>nodif</stream>
+                <stream>dki_FA</stream> 
+                <stream>dki_MD</stream> 
+                <stream>dki_L1</stream> 
+                <stream>dki_L2</stream> 
+                <stream>dki_L3</stream> 
+                <stream>dki_V1</stream> 
+                <stream>dki_V2</stream> 
+                <stream>dki_V3</stream> 
+                <stream>dki_S0</stream>
+                <stream>dki_MK</stream> 
+                <stream>dki_RK</stream> 
+                <stream>dki_AK</stream>
+                <stream>dki_dMK</stream> 
+                <stream>dki_dMD</stream> 
+                <stream>dki_dS0</stream>                
+            </outputstreams>
+            
+            <structural>1</structural> <!-- which structural to use in case of multiple instances --> 
+            
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

@@ -10,7 +10,7 @@
             <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>0</preserve> 
             
 			<inputstreams>
-				<stream>dartel_template</stream>
+				<stream>aamod_dartel_createtemplate_00001.dartel_template</stream>
 				<stream>dartel_flowfield</stream>
 				<stream>structural</stream>
                 <stream ismodified='0'>epi</stream>
