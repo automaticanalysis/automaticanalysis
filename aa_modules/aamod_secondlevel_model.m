@@ -163,15 +163,12 @@ switch task
                 aap=aas_desc_outputs(aap,'secondlevel_spm',fullfile(rfxdir,'SPM.mat'));
                 
                 %  secondlevel_betas (includes related statistical files)
-                allbetas=dir(fullfile(rfxdir,'beta_*'));
-                betafns=[];
-                for betaind=1:length(allbetas);
-                    betafns=strvcat(betafns,fullfile(rfxdir,allbetas(betaind).name));
-                end;
-                otherfiles={'mask.hdr','mask.img','ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-                for otherind=1:length(otherfiles)
-                    betafns=strvcat(betafns,fullfile(rfxdir,otherfiles{otherind}));
-                end;
+                allbetas=vertcat(...
+                    dir(fullfile(rfxdir,'beta_*')),...
+                    dir(fullfile(rfxdir,'ResMS.*')),...
+                    dir(fullfile(rfxdir,'RPV.*')),...
+                    dir(fullfile(rfxdir,'mask.*')));
+                betafns=strcat(repmat([rfxdir filesep],[numel(allbetas) 1]),char({allbetas.name}));
                 aap=aas_desc_outputs(aap,'secondlevel_betas',betafns);
             end
         end;
