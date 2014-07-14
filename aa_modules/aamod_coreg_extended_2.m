@@ -5,7 +5,7 @@
 % 't1totemplate_xfm from aamod_coreg_extended_1)
 % 3) Apply all (1 and 2) to inputs.
 
-function [aap,resp]=aamod_coreg_extended_2diffusion(aap,task,subj,sess)
+function [aap,resp]=aamod_coreg_extended_2(aap,task,subj,sess)
 
 resp='';
 
