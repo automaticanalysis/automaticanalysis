@@ -112,6 +112,7 @@ end
 global defaults;
 global aaparallel;
 global aaworker;
+global taskqueue;
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -409,7 +410,7 @@ if ~isempty(aap.options.email)
 end
 
 % cleanup 
-clear global defaults aaparallel aaworker;
+clear global defaults aaparallel aaworker taskqueue;
 
 end
 
