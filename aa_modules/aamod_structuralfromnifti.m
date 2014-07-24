@@ -10,10 +10,12 @@ switch task
         if ~iscell(aap.acq_details.subjects(subj).structural)
             aas_log(aap,true,'Was exepcting list of filenames in cell array');
         end;
-        niftifile = '';
-        niftisearchpth=aas_findvol(aap,'');
-        if ~isempty(niftisearchpth)
-            niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).structural{1});
+        niftifile = aap.acq_details.subjects(subj).structural{1};
+        if ~exist(niftifile,'file')
+            niftisearchpth=aas_findvol(aap,'');
+            if ~isempty(niftisearchpth)
+                niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).structural{1});
+            end
         end
         V=spm_vol(niftifile);
         sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
