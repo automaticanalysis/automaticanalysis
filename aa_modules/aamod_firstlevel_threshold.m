@@ -70,6 +70,7 @@ switch task
         cd(anadir);
         
         % Init
+        try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
         corr = aap.tasklist.currenttask.settings.threshold.correction;  % correction
         u0   = aap.tasklist.currenttask.settings.threshold.p;            % height threshold
         k   = aap.tasklist.currenttask.settings.threshold.extent;       % extent threshold {voxels}
@@ -102,7 +103,9 @@ switch task
         Ytemplate=Ytemplate.*(Ytemplate>thresh);
         
         % Now get contrasts...
-        SPM=[]; load(aas_getfiles_bystream(aap, subj,'firstlevel_spm'));
+        SPM=[]; 
+        fSPM = aas_getfiles_bystream(aap, subj,'firstlevel_spm');
+        load(fSPM);
         
         for c = 1:numel(SPM.xCon)
             STAT = SPM.xCon(c).STAT;
@@ -115,43 +118,71 @@ switch task
             dim = SPM.xCon(c).Vspm.dim;
             VspmSv   = cat(1,SPM.xCon(c).Vspm);
             n = 1; % No conjunction
-            
-            % Height threshold filtering
-            switch corr
-                case 'iTT'
-                    % TODO
-                    [Z, XYZ, th] = spm_uc_iTT(Z,XYZ,u0,1);
-                case 'FWE'
-                    u = spm_uc(u0,df,STAT,R,n,S);
-                case 'FDR'
-                    u = spm_uc_FDR(u0,df,STAT,n,VspmSv,0);
-                case 'none'
-                    u = spm_u(u0^(1/n),df,STAT);
-            end
-            Q      = find(Z > u);
-            Z      = Z(:,Q);
-            XYZ    = XYZ(:,Q);
-            if isempty(Q)
-                fprintf('\n');
-                warning('No voxels survive height threshold u=%0.2g',u);
-                continue;
-            end
-            
-            % Extent threshold filtering
-            A     = spm_clusters(XYZ);
-            Q     = [];
-            for i = 1:max(A)
-                j = find(A == i);
-                if length(j) >= k;
-                    Q = [Q j];
+
+            if doTFCE
+                job.spmmat = {fSPM};
+                job.mask = {fullfile(fileparts(fSPM),'mask.nii,1')};
+                job.conspec = struct( ...
+                    'titlestr','', ...
+                    'contrasts',c, ...
+                    'n_perm',5000, ...
+                    'vFWHM',0 ...
+                    );
+                job.openmp = 1;
+                cg_tfce_estimate(job);
+                iSPM = SPM;
+                iSPM.title = '';
+                iSPM.Ic = c;
+                iSPM.stattype = 'TFCE';
+                iSPM.thresDesc = corr;
+                iSPM.u = u0;
+                iSPM.k = k;
+                [SPM, xSPM] = cg_get_tfce_results(iSPM);
+                Z = xSPM.Z;
+                XYZ = xSPM.XYZ;
+                if isempty(Z)
+                    fprintf('\n');
+                    warning('No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k);
+                    continue;
                 end
-            end
-            Z     = Z(:,Q);
-            XYZ   = XYZ(:,Q);
-            if isempty(Q)
-                fprintf('\n');
-                warning('No voxels survive extent threshold k=%0.2g',k);
-                continue;
+            else                
+                % Height threshold filtering
+                switch corr
+                    case 'iTT'
+                        % TODO
+                        [Z, XYZ, th] = spm_uc_iTT(Z,XYZ,u0,1);
+                    case 'FWE'
+                        u = spm_uc(u0,df,STAT,R,n,S);
+                    case 'FDR'
+                        u = spm_uc_FDR(u0,df,STAT,n,VspmSv,0);
+                    case 'none'
+                        u = spm_u(u0^(1/n),df,STAT);
+                end
+                Q      = find(Z > u);
+                Z      = Z(:,Q);
+                XYZ    = XYZ(:,Q);
+                if isempty(Q)
+                    fprintf('\n');
+                    warning('No voxels survive height threshold u=%0.2g',u);
+                    continue;
+                end
+                
+                % Extent threshold filtering
+                A     = spm_clusters(XYZ);
+                Q     = [];
+                for i = 1:max(A)
+                    j = find(A == i);
+                    if length(j) >= k;
+                        Q = [Q j];
+                    end
+                end
+                Z     = Z(:,Q);
+                XYZ   = XYZ(:,Q);
+                if isempty(Q)
+                    fprintf('\n');
+                    warning('No voxels survive extent threshold k=%0.2g',k);
+                    continue;
+                end
             end
             
             % Reconstruct

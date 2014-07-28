@@ -1,0 +1,18 @@
+% __________________________________________________________________________
+% TFCE Toolbox for SPM5/SPM8/SPM12
+% Version  67  (TFCE)  2014-04-15
+%  http://dbm.neuro.uni-jena.de/tfce/
+% __________________________________________________________________________
+% Copyright (C) 2013 Christian Gaser christian.gaser@uni-jena.de
+% 
+% ==========================================================================
+% Description
+% ==========================================================================
+% This toolbox is a an extensions to SPM (Wellcome Department of Cognitive 
+% Neurology) to provide non-parametric statistics based on threshold-free
+% cluster enhancement (TFCE). It is developed by Christian Gaser (University of 
+% Jena, Department of Psychiatry) and is available to the scientific 
+% community under the terms of the GNU General Public License.
+% 
+% __________________________________________________________________________
+%                                                Christian Gaser 2013/10/05
