@@ -1,11 +1,11 @@
 % AA module - extended coregistration 
 % Coregistration of structural to T1 template
-% 1) Reorient MeanEPI to structural(output 'structural' from aamod_coreg_extended_1)
-% 2) Coregister MeanEPI to structural (using xfm mat called
+% 1) Reorient base to structural(output 'structural' from aamod_coreg_extended_1)
+% 2) Coregister base to structural (using xfm mat called
 % 't1totemplate_xfm from aamod_coreg_extended_1)
-% 3) Apply all (1 and 2) to epi.
+% 3) Apply all (1 and 2) to inputs.
 
-function [aap,resp]=aamod_coreg_extended_2(aap,task,subj)
+function [aap,resp]=aamod_coreg_extended_2(aap,task,subj,sess)
 
 resp='';
 
@@ -24,7 +24,22 @@ switch task
 
         global defaults
         flags = defaults.coreg;
-
+        
+        %% Parse inputstreams
+        inputs = aap.tasklist.currenttask.inputstreams.stream;
+        iEmpty = [];
+        for i = 1:numel(inputs)
+            if isstruct(inputs{i}), inputs{i} = inputs{i}.CONTENT; end
+            if ~aas_stream_has_contents(aap,inputs{i}), iEmpty(end+1) = i; end
+        end
+        inputs(iEmpty) = [];
+        ibase = cell_index(inputs,'nodif');
+        basearg = {aap.tasklist.currenttask.domain,[subj,sess],inputs{ibase}};
+       
+        inputs(ibase) = [];
+        inputs(cell_index(inputs,'structural')) = [];
+        inputs(cell_index(inputs,'t1totemplate_xfm')) = [];
+        
         %% 0) Check that the templates we need exist!
         % Get the T1 template
         sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
@@ -46,40 +61,40 @@ switch task
                 aap.tasklist.currenttask.settings.structural));
         end
 
-        %% 1) Mean Functional to T1 template (reorient)
-%         
-%         % Look for mean functional
+        %% 1) Base to T1 template (reorient)
+         
+          % Look for base
         
-          mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
-                
-            if size(mEPIimg,1) > 1
-                aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
-                mEPIimg = deblank(mEPIimg(1,:));
-            end
+          mEPIimg = aas_getfiles_bystream(aap,basearg{:});
+          
+          if size(mEPIimg,1) > 1
+              aas_log(aap, false, 'Found more than 1 base images, using first.');
+              mEPIimg = deblank(mEPIimg(1,:));
+          end
          
           % Look for xfm t1totemplate
         
           load(aas_getfiles_bystream(aap,subj,'t1totemplate_xfm'));
   
-        % Set the new space for the mean functional
+        % Set the new space for the base
         
            Me = inv(spm_matrix(xfm));
         
            spm_get_space(mEPIimg, Me*spm_get_space(mEPIimg));
           
-            fprintf(['\tmean EPI to template realignment parameters:\n' ...
+            fprintf(['\tBase to template realignment parameters:\n' ...
             '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
             xfm(1), xfm(2), xfm(3), xfm(4), xfm(5), xfm(6))
         
-        %% 2) Mean Functional to Structural (coregister)
+        %% 2) Base to Structural (coregister)
             
-        % Coregister mean EPI to structural
+        % Coregister base to structural
         x = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
             spm_vol(mEPIimg(1,:)), ...
             flags.estimate);
         Mf = inv(spm_matrix(x));
         
-        % Set the new space for the mean EPI
+        % Set the new space for the base
         MM = spm_get_space(mEPIimg);
         spm_get_space(mEPIimg, Mf*MM);
         
@@ -87,24 +102,23 @@ switch task
             '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
             x(1), x(2), x(3), x(4), x(5), x(6))
             
-          %% 3) Now apply this transformation to all the EPI images
-        % The mean EPI will already be in the space required for the
-        % individual EPIs. Hence, we can...
+        %% 3) Now apply this transformation to all the input images
+        % The base will already be in the space required for the
+        % individual inputs. Hence, we can...
         
         % Again, get space of mean functional
         MM = spm_get_space(mEPIimg(1,:));
         
-        EPIimg = cell(size(aap.acq_details.sessions));
-        % Locate all the EPIs we want to coregister
-        for sess = aap.acq_details.selected_sessions
-            EPIimg{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
-            
-            % For each image, apply the space of the mean EPI image
-            fprintf('\nCoregistering images for session: %s\n', aas_getsessname(aap,subj,sess))
-            for e = 1:size(EPIimg{sess},1)
-                % Apply the space of the coregistered mean EPI to the
-                % remaining EPIs (safest solution!)
-                spm_get_space(deblank(EPIimg{sess}(e,:)), MM);
+        EPIimg = cell(size(inputs));
+        % Locate all the inputs we want to coregister
+        for i = 1:numel(inputs)
+            EPIimg{i} = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],inputs{i});
+            fprintf('\nCoregistering %s image(s) for session: %s\n', inputs{i}, aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,sess))
+            % For each image, apply the space of the base image
+            for e = 1:size(EPIimg{i},1)
+                % Apply the space of the coregistered base to the
+                % remaining iunputs (safest solution!)
+                spm_get_space(deblank(EPIimg{i}(e,:)), MM);
             end
         end
 %%  Some Diagnostic Images
@@ -155,12 +169,11 @@ switch task
          
         %% Describe the outputs
         
-        aap = aas_desc_outputs(aap,subj,'meanepi',mEPIimg);
+        aap = aas_desc_outputs(aap,basearg{:},mEPIimg);
         
-        for sess = aap.acq_details.selected_sessions
-            aap = aas_desc_outputs(aap,subj,sess,'epi',EPIimg{sess});
+        for i = 1:numel(inputs)
+             aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],inputs{i},EPIimg{i});
         end
-        
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );
 end
