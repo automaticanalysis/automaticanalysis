@@ -1,8 +1,9 @@
 % Automatic Analysis function to retrieve image lists
-% function [imagefns]=aas_getfiles_bystream(aap,[i,[j,]]streamname[,inputmodulenumber])
+% function [imagefns]=aas_getfiles_bystream(aap,[i,[j,]]streamname[,inputmodulenumber][,priority])
 %  stream may be at study, subject or session level depending on number of
 %  parameters
 %  streamname is name of stream
+%  priority is either input or output
 %
 % See also aas_getfiles_bystream, which is intended for EPI images. 
 %
@@ -11,11 +12,19 @@
 
 function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
 
-[inpstreamdesc localroot]=aas_getinputstreamfilename(aap,varargin{:});
-
-if (~exist(inpstreamdesc,'file')) % Try output [TA]
-    [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin{:});
+order = {'input' 'output'};
+if strcmp(varargin{end},'input') || strcmp(varargin{end},'output')
+    if strcmp(varargin{end},'output')
+        order = {'output' 'input'};
+    end
+    varargin(end) = []; 
 end
+
+for e = 1:numel(order)
+    eval(sprintf('[inpstreamdesc localroot]=aas_get%sstreamfilename(aap,varargin{:});',order{e}));
+    if exist(inpstreamdesc,'file'), break; end
+end
+
 if (~exist(inpstreamdesc,'file'))
     aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
 end;
