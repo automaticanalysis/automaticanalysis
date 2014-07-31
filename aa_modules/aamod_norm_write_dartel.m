@@ -3,7 +3,7 @@
 % Rhodri Cusack MRC CBU Cambridge Jan 2006-Aug 2007
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write_dartel_diffusion(aap,task,subj,sess)
+function [aap,resp]=aamod_norm_write_dartel(aap,task,subj,sess)
 
 resp='';
 
@@ -14,9 +14,9 @@ switch task
 		streams=aap.tasklist.currenttask.outputstreams.stream;
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI.jpg'];
+            fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2structural.jpg'];
             if ~exist(fullfile(aas_getpath_bydomain(aap,aap.aap.tasklist.currenttask.domain,[subj,sess]),fn),'file')
-                fsl_diag(aap,subj,sess);
+                aas_fsl_overlay(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
             end
             % Single-subjetc
             fdiag = dir(fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),'diagnostic_*.jpg'));
@@ -81,16 +81,29 @@ switch task
                 prefix = 'sw';
             end
 
-            % describe outputs
             wimgs=[];
             for ind=1:length(job.data.subj.images)
                 [pth, nme, ext] = fileparts(job.data.subj.images{ind});
                 wimgs = strvcat(wimgs,fullfile(pth,[prefix nme ext]));
             end
+            
+            % binarise if specified
+            if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
+                for e = 1:size(wimgs,1)
+                    inf = spm_vol(deblank(wimgs(e,:)));
+                    Y = spm_read_vols(inf);
+                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
+                    nifti_write(deblank(wimgs(e,:)),Y,'Binarized',inf)
+                end
+            end
+            
+            % describe outputs with diagnostoc
             if (exist('sess','var'))
                 aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
+                aas_fsl_overlay(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
+                aas_fsl_overlay(aap,subj,streams{streamind},'structural');
             end
         end
         
@@ -99,36 +112,4 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
-end
-
-function fsl_diag(aap,i,j) % [TA]
-% Create FSL-like overview using T1 instead of the template
-
-% find out what streams we should normalise
-streams=aap.tasklist.currenttask.outputstreams.stream;
-for streamind=1:length(streams)
-    if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-    % Obtain the structural
-	sP = aas_getfiles_bystream(aap,i,'structural');
-    if (strcmp(aap.tasklist.currenttask.domain,'session'))
-        % Obtain the first EPI
-        fP = aas_getimages_bystream(aap,i,j,streams{streamind});
-    else
-        fP = aas_getfiles_bystream(aap,i,streams{streamind});
-    end
-    [pP, fP, eP] = fileparts(fP(1,:));
-    fP = fullfile(pP,['sw' fP eP]);
-    % Overlays
-    sess_dir = aas_getsesspath(aap,i,j);
-    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI']);
-    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
-    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2' streams{streamind}]);
-    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
-    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-end
 end
