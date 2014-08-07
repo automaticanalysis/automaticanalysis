@@ -14,7 +14,7 @@ switch task
         resp='study';   % this module needs to be run once per study
         
     case 'description'
-        resp='SPM5 second level (RFX) model';
+        resp='SPM second level (RFX) model';
         
     case 'summary'
         subjpath=aas_getsubjpath(i);
@@ -99,6 +99,7 @@ switch task
                 %=======================================================================
                 
                 SPM.nscan = nsub;
+                SPM.swd = rfxdir;
                 
                 for s=1:nsub
                     foundit=false;
@@ -153,7 +154,12 @@ switch task
                 
                 % Estimate parameters
                 %===========================================================================
-                spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
+                % avoid overwrite dialog
+                prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+                if ~isempty(prevmask)
+                    spm_unlink(fullfile(SPM.swd, prevmask));
+                end
+                
                 SPM = spm_spm(SPM);
                 
                 

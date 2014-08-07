@@ -80,7 +80,7 @@ if ~isempty(modelC{sess})
             modelC{sess}.covariate(c).name];
         
         % Is the covariate of interest or nuisance
-        if modelC.covariate(c).interest > 0
+        if modelC{sess}.covariate(c).interest > 0
             cols_interest=[cols_interest currcol];
         else
             cols_nuisance=[cols_nuisance currcol];

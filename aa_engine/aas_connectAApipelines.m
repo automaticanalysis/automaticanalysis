@@ -311,9 +311,10 @@ for modI = 1 : length(aap.tasklist.main.module)
                                         if ~any(remoteIndices==0)
                                             
                                             % Copy over the stream desc from the remote
+                                            remoteStage = aas_getstagetag(remoteAA{locI},remoteOutput.modI);
                                             remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
-                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
-                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', strrep(inputStreams{iI},[remoteStage '.'],''), remoteStage));
+                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, remoteStage));
                                             aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
                                             
                                             % If it didn't copy, then we should reset this stage
