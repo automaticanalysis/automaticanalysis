@@ -32,7 +32,8 @@ switch task
         
         % Add PPI if exist
         modname = aap.tasklist.currenttask.name;
-        modindex = str2num(modname(regexp(modname, '_\d{5,5}$')+1:end));
+        modnameind = regexp(modname, '_\d{5,5}$');
+        modindex = str2num(modname(modnameind+1:end));
         for sess = aap.acq_details.selected_sessions
             if aas_stream_has_contents(aap,subj,sess,'ppi')
                 load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
@@ -49,7 +50,7 @@ switch task
             end
         end
         % update current sesstings
-        aap.tasklist.currenttask.settings.modelC = aap.tasksettings.aamod_firstlevel_model(modindex).modelC;
+        aap.tasklist.currenttask.settings.modelC = aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC;
         
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
