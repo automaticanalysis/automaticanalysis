@@ -42,7 +42,7 @@
             
             <structural>1</structural> <!-- which structural to use in case of multiple instances --> 
             
-            <diagnostic>0</diagnostic>
+            <diagnostic>1</diagnostic>
             
         </currenttask>
     </tasklist>

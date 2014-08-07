@@ -3,31 +3,52 @@
 % Now it uses aas_report_add to support multi-level reporting
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function aap=aas_report_addimage(varargin)
+function aap=aas_report_addimage(aap,varargin)
 
-aap = varargin{1};
-for iargin = 1:nargin
-    if ischar(varargin{iargin}) && ~isempty(findstr(varargin{iargin},'jpg')), break; end
+defWIDTH=800;
+
+for iargin = 1:nargin-1
+    if ischar(varargin{iargin}) && ~isempty(strfind(varargin{iargin},'jpg')), break; end
 end
 imgpath = varargin{iargin};
 
-if nargin > iargin
-    scaling=varargin{nargin};
+if (nargin-1) > iargin
+    scaling=varargin{nargin-1};
 else
-    scaling=1;    
+    scaling=0;    
 end;
 
 if (~strcmp(imgpath(1:length(aap.acq_details.root)),aap.acq_details.root))
-    aas_log(aap,1,sprintf('Cannot relate file %s to directory root %s\n'));
+    aas_log(aap,1,sprintf('Cannot relate file %s to directory root %s\n'),imgpath,aap.acq_details.root);
 end;
 
-if (scaling==1)
-    varargin{iargin} = ['<img src="' imgpath '">'];    
-else
-    tmp=imread(imgpath);
-    varargin{iargin} = ['<img src="' imgpath '" ' sprintf('width=%d height=%d',round(size(tmp,2)*scaling),round(size(tmp,1)*scaling)) '>'];
-end;
-aap = aas_report_add(varargin{1:iargin});
+[p n e] = fileparts(imgpath);
+switch e
+    case {'.jpg', '.jpeg'}
+        varargin{iargin} = sprintf('<br><cite>%s</cite><br>',basename(imgpath));
+        aap = aas_report_add(aap,varargin{1:iargin});
+        pfx = '<img src';
+        sfx = '><br>';
+        tmp=imread(imgpath);
+        if ~scaling && (size(tmp,2) <= defWIDTH), scaling = 1; end
+    case '.avi'
+        pfx = '<a href';
+        sfx = sprintf('>Play video: %s</a><br>',n);
+        scaling = 1;
+    otherwise
+        aas_log(aap,1,sprintf('Unknown format: %s\n',e));
+end
+
+switch scaling
+    case 0
+        str = [pfx '="' imgpath '" ' sprintf('width=%d height=%d',defWIDTH,round(defWIDTH/size(tmp,2)*size(tmp,1))) sfx];
+    case 1
+        str = [pfx '="' imgpath '"' sfx];    
+    otherwise
+        str = [pfx '="' imgpath '" ' sprintf('width=%d height=%d',round(size(tmp,2)*scaling),round(size(tmp,1)*scaling)) sfx];
+end
+varargin{iargin} = str;
+aap = aas_report_add(aap,varargin{1:iargin});
 aap.report.numdependencies=aap.report.numdependencies+1;
 aap.report.dependency{aap.report.numdependencies}=imgpath;
 

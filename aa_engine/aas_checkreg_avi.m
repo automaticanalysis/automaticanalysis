@@ -2,9 +2,25 @@
 
 function aas_checkreg_avi(aap, p, axisDim, suffix, slicesD)
 
+global st
+for v = 1:numel(st.vols)
+    if isempty(st.vols{v}), break; end
+    bb(:,:,v) = spm_get_bbox(st.vols{v});
+end;
+nVols = v-1;
 
-% Check if we need to make a movie...
-if aap.tasklist.currenttask.settings.diagnostic
+% slicesDx{1} = -85:1:85; % sagittal
+% slicesDx{2} = -120:1:90; % coronal
+% slicesDx{3} = -70:1:90; % axial
+slicesDx{1} = max(bb(1,1,:)):1:min(bb(2,1,:)); % sagittal
+slicesDx{2} = max(bb(1,2,:)):1:min(bb(2,2,:)); % coronal
+slicesDx{3} = max(bb(1,3,:)):1:min(bb(2,3,:)); % axial
+slicesInd = [];
+
+% Check if we need to make a movie (default - yes)...
+if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+        isstruct(aap.tasklist.currenttask.settings.diagnostic) ||...
+        aap.tasklist.currenttask.settings.diagnostic
      warning('OFF', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
     
     if nargin < 3
@@ -14,26 +30,36 @@ if aap.tasklist.currenttask.settings.diagnostic
         suffix = '';
     end
     if nargin < 5
-        if axisDim == 1
-            slicesD = -85:1:85;
-        elseif axisDim == 2
-            slicesD = -120:1:90;
-        elseif axisDim == 3
-            slicesD = -70:1:90;
-        end
-        
+        if axisDim == 0 % all
+            nMin = min([numel(slicesDx{1}) numel(slicesDx{2}) numel(slicesDx{3})]);
+            for a = 1:3
+                step = numel(slicesDx{a})/nMin;
+                slicesD(a,:) = round(slicesDx{a}(1):step:slicesDx{a}(end));
+            end
+            slicesInd = [round(size(slicesD,2)/4) round(size(slicesD,2)/2) round(3*size(slicesD,2)/4)];
+            for v = 1:nVols
+                slicesImg{v} = cell(1,3); 
+            end;
+        else slicesD = slicesDx{axisDim}; 
+        end        
     end
     
     if isempty(p)
         path = aas_getstudypath(aap);
     else
-        path = aas_getsubjpath(aap,p);
+        if isnumeric(p)
+            path = aas_getsubjpath(aap,p);
+        else % cell
+            path = aas_getpath_bydomain(aap,p{1},p{2});
+        end
     end
     
     
     % Make a movie from whichever image is on SPM figure 1
     movieFilename = fullfile(path, ...
-        ['diagnostic_' strrep(mfilename,'_avi','') suffix '.avi']);
+        ['diagnostic_' mfilename suffix '.avi']);
+    slicesFilename0 = fullfile(path, ...
+        ['diagnostic_' strrep(mfilename,'_avi','_slices') suffix]);
     
     % Create movie file by defining aviObject
     if exist(movieFilename,'file')
@@ -50,29 +76,43 @@ if aap.tasklist.currenttask.settings.diagnostic
         fJframe = get(1, 'JavaFrame');
         fJframe.fFigureClient.getWindow.setAlwaysOnTop(true)
     catch
+        figure(1);        
     end
-    %windowSize = get(1,'Position');
-    % It does not work if it's larger than the window, conservative...
-    windowSize = [1 1 400 600]; %windowSize(3) windowSize(4)];
+    windowSize = get(0,'ScreenSize');
+    H = windowSize(4) - windowSize(2) - 100; % -100 for system menu and statusbar
+    H = H - mod(H,3);
+    windowSize = [1 100 H/3*2 H]; %windowSize(3) windowSize(4)];
     set(1,'Position', windowSize)
     
-    for d = slicesD
-        if axisDim == 1
-            spm_orthviews('reposition', [d 0 0])
-        elseif axisDim == 2
-            spm_orthviews('reposition', [0 d 0])
-        elseif axisDim == 3
-            spm_orthviews('reposition', [0 0 d])
+    for d = 1:size(slicesD,2)
+        pos = [0 0 0];
+        if axisDim == 0
+            for a = 1:3
+                pos(a) = slicesD(a,d);
+            end
+        else pos(axisDim) = slicesD(1,d); 
         end
+        spm_orthviews('reposition', pos);
         
         % Capture frame and store in aviObject
         F = getframe(1,windowSize);
-        %         figure(5); imagesc(F.cdata) % DEBUG CODE TO SEE IMAGE...
         if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
             writeVideo(aviObject,F);
         else
             aviObject = addframe(aviObject,F);
-        end
+        end        
+        
+        % ~FSL
+        if ~isempty(find(d==slicesInd, 1))            
+            spm_orthviews('context_menu','Xhair');
+            for v = 1:nVols
+                for a = 1:3
+                    fr = getframe(st.vols{v}.ax{a}.ax);
+                    slicesImg{v}{a} = horzcat(slicesImg{v}{a}, fr.cdata);
+                end
+            end
+            spm_orthviews('context_menu','Xhair');
+        end        
     end
     
     try
@@ -81,6 +121,21 @@ if aap.tasklist.currenttask.settings.diagnostic
     catch
     end
     close(aviObject);
-     warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
+    warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
+    
+    % ~FSL
+    if exist('slicesImg','var')
+        for v = 1:numel(slicesImg)
+            slicesFilename = sprintf('%s_%d.jpg',slicesFilename0,v);
+            img = slicesImg{v}{3};
+            img(1:size(slicesImg{v}{2},1),end+1:end+size(slicesImg{v}{2},2),:) = slicesImg{v}{2};
+            img(1:size(slicesImg{v}{1},1),end+1:end+size(slicesImg{v}{1},2),:) = slicesImg{v}{1};
+            f = figure; 
+            set(f,'Position',[1 1 size(img,2) size(img,1)],'PaperPositionMode','auto','InvertHardCopy','off');
+            imshow(img,'Border','tight');
+            print(f,'-djpeg','-r150',slicesFilename);
+            close(f);
+        end
+    end
 end
 end

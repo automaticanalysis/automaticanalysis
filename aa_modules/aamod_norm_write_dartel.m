@@ -3,34 +3,54 @@
 % Rhodri Cusack MRC CBU Cambridge Jan 2006-Aug 2007
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write_dartel(aap,task,subj,sess)
+function [aap,resp]=aamod_norm_write_dartel(aap,task,varargin)
 
 resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist('sess','var'), sess = 1; end
+        subj = varargin{1};
+        if nargin == 4
+            sess = varargin{2};
+            localpath = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]);
+        else % subject
+            localpath = aas_getpath_bydomain(aap,'subject',subj);
+        end
+        
         % find out what streams we should normalise
-		streams=aap.tasklist.currenttask.outputstreams.stream;
-        for streamind=1:length(streams)
-            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2structural.jpg'];
-            if ~exist(fullfile(aas_getpath_bydomain(aap,aap.aap.tasklist.currenttask.domain,[subj,sess]),fn),'file')
-                aas_fsl_overlay(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
+		streams=aas_getstreams(aap,'out');
+        if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
+            inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
+        else
+            inds = 1:length(streams);
+        end
+        for streamind = inds
+            streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
+            streamfn = streamfn(1,:);
+            streamfn = strtok_ptrn(basename(streamfn),'-0');
+            fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
+            if ~exist(fullfile(localpath,fn),'file')
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'structural');
             end
             % Single-subjetc
-            fdiag = dir(fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),'diagnostic_*.jpg'));
+            fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
             for d = 1:numel(fdiag)
                 aap = aas_report_add(aap,subj,'<table><tr><td>');
-                aap=aas_report_addimage(aap,subj,fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),fdiag(d).name));
+                imgpath = fullfile(localpath,fdiag(d).name);
+                aap=aas_report_addimage(aap,subj,imgpath);
+                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
             % Study summary
             aap = aas_report_add(aap,'reg',...
-                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,sess) ]);
-            aap=aas_report_addimage(aap,'reg',fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]),fn));
+                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
+            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
         end
     case 'doit'
+        subj = varargin{1};
+        if nargin == 4, sess = varargin{2}; end
+        
         % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
             sess = aap.tasklist.currenttask.settings.session;
@@ -100,10 +120,14 @@ switch task
             % describe outputs with diagnostoc
             if (exist('sess','var'))
                 aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
-                aas_fsl_overlay(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
+                end
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
-                aas_fsl_overlay(aap,subj,streams{streamind},'structural');
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    aas_checkreg(aap,subj,streams{streamind},'structural');
+                end
             end
         end
         
