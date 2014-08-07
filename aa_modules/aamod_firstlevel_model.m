@@ -29,7 +29,28 @@ switch task
     case 'doit'
         % Get subject directory
         cwd=pwd;
-
+        
+        % Add PPI if exist
+        modname = aap.tasklist.currenttask.name;
+        modindex = str2num(modname(regexp(modname, '_\d{5,5}$')+1:end));
+        for sess = aap.acq_details.selected_sessions
+            if aas_stream_has_contents(aap,subj,sess,'ppi')
+                load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
+                [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    'PPI',PPI.ppi,0,1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    ['Psych_' psych],PPI.P,0,1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    ['Phys_' phys],PPI.Y,0,1);
+            end
+        end
+        % update current sesstings
+        aap.tasklist.currenttask.settings.modelC = aap.tasksettings.aamod_firstlevel_model(modindex).modelC;
+        
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
 
@@ -90,7 +111,12 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
-        spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
+        % avoid overwrite dialog
+        prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+        if ~isempty(prevmask)
+            spm_unlink(fullfile(SPM.swd, prevmask)); 
+        end
+                
         SPMest = spm_spm(SPMdes);
 
         %% Describe outputs
