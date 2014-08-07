@@ -67,7 +67,10 @@ end;
     % Set SPM defaults appropriately
     global defaults
     defaults=aap.spm.defaults;
-    
+    if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
+        defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
+        if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
+    end
 end
 
 

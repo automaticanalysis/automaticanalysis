@@ -3,6 +3,11 @@
     <tasklist>
         <currenttask domain='session' desc='SPM DARTEL normalisation write (stream EPI)' modality='MRI'>
             
+            <qsub>
+                <timeBase>0.75</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <fwhm desc='FWHM (in mm) for smoothing DARTEL-normalized images'>1</fwhm>

@@ -1,5 +1,5 @@
-function aap=aas_checkspmrunning(aap)
-if strcmp(aap.options.wheretoprocess,'localsingle')
+function aas_checkspmrunning(aap,force)
+if strcmp(aap.options.wheretoprocess,'localsingle') || ((nargin > 1) && force)
     try
         if (isempty(spm_figure('FindWin')))
             spm('fmri');
