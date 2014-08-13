@@ -1,48 +1,148 @@
-% AA module - Coregister and reslice images (general)
-% i=subject num
-% jt (03/July/2012) based loosely on Rhodri's aamod_coreg_noss
-% 
-
-function [aap,resp]=aamod_coreg_general(aap,task,i)
+function [aap,resp]=aamod_coreg_general(aap,task,varargin)
 
 resp='';
 
 switch task
+    case 'report'
+        domain = aap.tasklist.currenttask.domain;
+        localpath = aas_getpath_bydomain(aap,domain,varargin{:});
+        
+        % Process streams
+        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
+        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
+        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
+        tInd = 1;
+        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,varargin{:},inpstream{tInd})
+            tInd = tInd + 1;
+        end
+        targetimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
+        
+        d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_*']));
+        if isempty(d)
+            aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},targetimfn);
+            if numel(inpstream) > (tInd+1)
+                for s = 1:numel(inpstream)-(tInd+1)
+                    aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1+s},targetimfn);
+                end
+            end
+        end
+        if strcmp(domain,'subject')
+            subj = varargin{1};
+            fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
+            for d = 1:numel(fdiag)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                aap=aas_report_addimage(aap,subj,fullfile(localpath,fdiag(d).name));
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+            end
+        end
     case 'doit'
+        
+        %% Init
+        global defaults
+        flags = defaults.coreg;
+        % update flags
+        flags.write.which = [1 0]; % do not (re)write target and mean
+        if isfield(aap.tasklist.currenttask.settings,'eoptions')
+            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            for f = 1:numel(fields)
+                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
+                    flags.estimate.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                end
+            end
+        end
+        if isfield(aap.tasklist.currenttask.settings,'roptions')
+            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            for f = 1:numel(fields)
+                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
+                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                end
+            end
+        end
 
-        % Load default coregistration parameters:
-        flags = aap.spm.defaults.coreg;
-        flags.write.which = [1 0];    % don't reslice first image or mean
-        flags.write.mean = false;     % don't compute/write mean
-        % Experimental 
-        %  + smaller separation iteration; - tolerances, + interpolation:
-        flags.estimate.sep = [4 2 1];
-        flags.estimate.tol = .10*flags.estimate.tol;
-        flags.write.interp = 7;
-            
-        % Get target image:
-        targetimfn = aas_getimages_bystream(aap,i,[],aap.tasklist.currenttask.settings.inputstreams.stream{1});
-        Vtarget = spm_vol(targetimfn);
+        subj = varargin{1};
+        domain = aap.tasklist.currenttask.domain;
+        
+        %% Data
+        % Process streams
+        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
+        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
+        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
+        
+        % Get target image:        
+        tInd = 1;
+        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,varargin{:},inpstream{tInd})
+            tInd = tInd + 1;
+        end
+        fprintf('\nTarget stream: %s\n',inpstream{tInd});
+        targetimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd});
         
         % Get image to coregister ('source'):
-        sourceimfn = aas_getimages_bystream(aap,i,[],aap.tasklist.currenttask.settings.inputstreams.stream{2});
-        Vsource = spm_vol(sourceimfn);
+        sourceimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd+1});
         
-        % Estimate coregistration parameters:
-        x = spm_coreg(Vsource,Vtarget,flags.estimate);
+        % Other?
+        otherimfn = '';
+        if numel(inpstream) > (tInd+1)
+            for s = 1:numel(inpstream)-(tInd+1)
+                otherimfn = strvcat(otherimfn, aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd+1+s}));
+            end
+        end
         
-        % Apply coregistration parameters to source file:
-        spm_get_space(sourceimfn,spm_matrix(x)*Vsource.mat);
-                        
-        % Reslice:
-        spm_reslice(char({targetimfn;sourceimfn}),flags.write);
+        %% Coregister
+        % Coregister source to target
+        x = spm_coreg(spm_vol(deblank(targetimfn)), spm_vol(sourceimfn), flags.estimate);
+        % Set the new space for the mean EPI
+        spm_get_space(sourceimfn, spm_matrix(x)\spm_get_space(sourceimfn));
+                
+        fprintf(['\t%s to %s realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
+            inpstream{2}, inpstream{1}, ...
+            x(1), x(2), x(3), x(4), x(5), x(6))
+
+        %% Other
+        if numel(inpstream) > (tInd+1)
+            % Again, get space of source
+            MM = spm_get_space(sourceimfn);
+            
+            for e = 1:size(otherimfn,1)
+                % Apply the space of the coregistered source to the
+                % remaining others (safest solution!)
+                spm_get_space(deblank(otherimfn(e,:)), MM);
+            end
+        end
         
-        % Describe outputs:
-        [pth fstem fext] = fileparts(sourceimfn);
-        reslicedimfn = fullfile(pth,['r' fstem fext]);
-        aas_desc_outputs(aap,i,sprintf('%s',aap.tasklist.currenttask.settings.outputstreams.stream),reslicedimfn);
+        %% Reslice:
+        spm_reslice(strvcat(targetimfn,sourceimfn,otherimfn),flags.write);
         
-        % (Graphical output should be saved by report task)
+        %% Describe the outputs and Diagnostics 
+        % For source diag only
+        if strcmp(aap.options.wheretoprocess,'localsingle')
+           aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},inpstream{1});
+        end
+        
+        % For outputs
+        for s = 1:numel(outpstream)
+            otherimfn = aas_getfiles_bystream(aap,domain,varargin{:},outpstream{s});
+            otherimfn2 = '';
+            for e = 1:size(otherimfn,1)
+                [pth, fname, ext] = fileparts(deblank(otherimfn(e,:)));
+                fpath = fullfile(pth, [flags.write.prefix fname ext]);
+
+                % binarise if specified
+                if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
+                    ninf = spm_vol(fpath);
+                    Y = spm_read_vols(ninf);
+                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
+                    nifti_write(fpath,Y,'Binarized',ninf)
+                end
+                
+                otherimfn2 = strvcat(otherimfn2, fpath);
+            end
+            
+            aap = aas_desc_outputs(aap,domain,varargin{:},outpstream{s},otherimfn2);
+            if strcmp(aap.options.wheretoprocess,'localsingle')
+                aas_checkreg(aap,domain,varargin{:},outpstream{s},inpstream{1});
+            end
+        end
         
     case 'checkrequirements'
 
