@@ -5,6 +5,10 @@
 
 function aas_log(aap,iserr,msg,style)
 
+% figure out whether the caller is an engine (aaq_*)
+ST = dbstack;
+isEngine = ~isempty(strfind(ST(2).name,'aaq'));
+
 try
     % don't attempt html tags if running outside of Matlab desktop
     if (~exist('style','var') || ~aap.gui_controls.usecolouroutput)
@@ -18,7 +22,8 @@ if (iserr)
     try
         logitem(aap,'\n\n**** automatic analysis failed - see reason and line numbers below\n','red');
         
-        if ~isempty(aap.options.email)
+        % suppress e-mail from low level functions in case of cluster computing
+        if ~isempty(aap.options.email) && (strcmp(aap.options.wheretoprocess,'localsingle') || isEngine)
             % In case the server is broken...
             try
                 aas_finishedMail(aap.options.email, aap.acq_details.root, msg)
