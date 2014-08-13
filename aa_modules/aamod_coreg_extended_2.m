@@ -15,10 +15,11 @@ switch task
         localpath = aas_getpath_bydomain(aap,domain,varargin{:});
         
         % Process streams
-        diagstream = process_streams(aap);
+        [diagstream, mainstream] = process_streams(aap);
         d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2*']));
         if isempty(d)
             aas_checkreg(aap,domain,varargin{:},diagstream,'structural');
+            aas_checkreg(aap,domain,varargin{:},mainstream,'structural');
         end
         if strcmp(domain,'subject')
             subj = varargin{1};
@@ -47,7 +48,7 @@ switch task
         
         % Process streams
         domain = aap.tasklist.currenttask.domain;
-        [diagstream, mainstream] = process_streams(aap);
+        [diagstream, mainstream, wbstream] = process_streams(aap);
         
         % Get the T1 template
         sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
@@ -69,9 +70,18 @@ switch task
             mEPIimg = deblank(mEPIimg(1,:));
         end
         
+        % Check local wholebrain EPI
+        WBimg = '';
+        if ~isempty(wbstream) && aas_stream_has_contents(aap,domain,varargin{:},wbstream)
+            WBimg = aas_getfiles_bystream(aap,domain,varargin{:},wbstream);
+            if size(WBimg,1) > 1
+                aas_log(aap, false, sprintf('Found more than 1 wholebrain images, using %s %d', wbstream,...
+                    aap.tasklist.currenttask.settings.structural));
+            end
+        end
+        
         % Look for xfm t1totemplate
         load(aas_getfiles_bystream(aap,subj,'t1totemplate_xfm'));
-        Me = inv(spm_matrix(xfm));
         
         fprintf(['\tto template realignment parameters:\n' ...
             '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
@@ -79,16 +89,35 @@ switch task
         
         %% 1) Mean Functional to T1 template (reorient)
         % Set the new space for the mean functional
-        spm_get_space(mEPIimg, Me*spm_get_space(mEPIimg));
+        for img = {mEPIimg WBimg}
+            if isempty(img{1}), continue; end
+            spm_get_space(img{1}, spm_matrix(xfm)\spm_get_space(img{1}));
+        end
 
         %% 2) Mean Functional to Structural (coregister)
-        
-        % Coregister mean EPI to structural
-        x = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
-            spm_vol(mEPIimg), ...
-            flags.estimate);
-        % Set the new space for the mean EPI
-        spm_get_space(mEPIimg, spm_matrix(x)\spm_get_space(mEPIimg));
+
+        if ~isempty(WBimg) % two-step coreg
+            % Coregister wholebrain EPI to structural
+            x1 = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
+                spm_vol(WBimg), ...
+                flags.estimate);
+            % Set the new space for the wholebrain EPI
+            spm_get_space(WBimg, spm_matrix(x1)\spm_get_space(WBimg));
+            
+            % Coregister mean EPI to wholebrain EPI
+            flags.estimate.cost_fun = 'ncc'; % whithin-modality
+            x2 = spm_coreg(spm_vol(deblank(WBimg)),spm_vol(WBimg),flags.estimate);
+            % Set the new space for the mean EPI
+            spm_get_space(WBimg, spm_matrix(x2)\spm_get_space(WBimg));
+            x = x1 + x2;
+        else
+            % Coregister mean EPI to structural
+            x = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
+                spm_vol(mEPIimg), ...
+                flags.estimate);
+            % Set the new space for the mean EPI
+            spm_get_space(mEPIimg, spm_matrix(x)\spm_get_space(mEPIimg));
+        end
                 
         fprintf(['\tmean EPI to structural realignment parameters:\n' ...
             '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
@@ -114,6 +143,7 @@ switch task
         aap = aas_desc_outputs(aap,domain,varargin{:},diagstream,mEPIimg);
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,varargin{:},diagstream,'structural');
+            aas_checkreg(aap,domain,varargin{:},mainstream,'structural');
         end
         
         aap = aas_desc_outputs(aap,domain,varargin{:},mainstream,EPIimg);
@@ -123,10 +153,16 @@ switch task
 end
 end
 
-function [diagstream, mainstream] = process_streams(aap)
+function [diagstream, mainstream, wbstream] = process_streams(aap)
+inpstreams = aas_getstreams(aap,'in');
 outpstreams = aas_getstreams(aap,'out');
-if cell_index(outpstreams,'rois') % fMRI
+if cell_index(inpstreams,'meanepi') % fMRI
     diagstream = 'meanepi';
-    mainstream = 'rois';
 end
+if cell_index(inpstreams,'wholebrain') % partial volume acquisition
+    wbstream = inpstreams{cell_index(inpstreams,'wholebrain')};
+else
+    wbstream = '';
+end
+mainstream = outpstreams{1};
 end
