@@ -52,9 +52,7 @@ switch task
         % do coregistration
         x  = spm_coreg(VG, VF,flags.estimate);
         
-        M  = inv(spm_matrix(x));
-          
-        spm_get_space(structImg, M*spm_get_space(structImg));
+        spm_get_space(structImg, spm_matrix(x)\spm_get_space(structImg));
        
         aap = aas_desc_outputs(aap, subjInd, outStream, structImg);
 

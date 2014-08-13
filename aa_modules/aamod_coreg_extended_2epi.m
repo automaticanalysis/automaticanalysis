@@ -67,7 +67,6 @@ switch task
         
         % Look for xfm t1totemplate
         load(aas_getfiles_bystream(aap,subj,'t1totemplate_xfm'));
-        Me = inv(spm_matrix(xfm));
         
         fprintf(['\tto template realignment parameters:\n' ...
             '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
@@ -77,7 +76,7 @@ switch task
         % Set the new space for the mean functional
         for img = {mEPIimg WBimg}
             if isempty(img{1}), continue; end
-            spm_get_space(img{1}, Me*spm_get_space(img{1}));
+            spm_get_space(img{1}, spm_matrix(xfm)\spm_get_space(img{1}));
         end
         %% 2) Mean Functional to Structural (coregister)
         
