@@ -22,6 +22,7 @@
             </inputstreams>
             
             <outputstreams>
+                <stream>meanepi</stream>
                 <stream>firstlevel_cons</stream>
             </outputstreams>
             

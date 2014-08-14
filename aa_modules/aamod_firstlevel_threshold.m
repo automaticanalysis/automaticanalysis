@@ -82,8 +82,8 @@ switch task
         
         if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
-            if size(tmpfile,1) > 1
-                tmpfile = tmpfile(2,:); % (first: native, second: normalised)
+            if size(tmpfile,1) > 1 % in case of norm_write (first: native, second: normalised)
+                tmpfile = tmpfile(2,:); 
             end
         else  % Template
             fprintf('Structural cannot be loaded! Template will be used...');

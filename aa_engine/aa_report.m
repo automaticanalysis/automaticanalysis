@@ -62,7 +62,7 @@ nSessions = numel(aap.acq_details.sessions);
 for k=1:numel(stages)
     fprintf('Fetching report for %s...\n',stages{k});    
     % domain
-    if isfield(aap.tasklist.main.module(k),'aliasfor')
+    if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
         xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
     else
         xml = xml_read([stages{k} '.xml']);

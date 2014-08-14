@@ -105,8 +105,8 @@ switch task
             for ind=1:length(job.data.subj.images)
                 [pth, nme, ext] = fileparts(job.data.subj.images{ind});
                 % overwrite input with output if specified (e.g. for contrasts)
-                if isfield(aap.tasksettings.(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name)(aap.tasklist.currenttask.index).outputstreams,'preservefilename') && ...
-                        aap.tasksettings.(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name)(aap.tasklist.currenttask.index).outputstreams.preservefilename
+                if isfield(aap.tasklist.currenttask.settings.outputstreams,'preservefilename') && ...
+                        aap.tasklist.currenttask.settings.outputstreams.preservefilename
                     movefile(fullfile(pth,[prefix nme ext]),job.data.subj.images{ind});
                     wimgs = strvcat(wimgs,job.data.subj.images{ind});
                 else
