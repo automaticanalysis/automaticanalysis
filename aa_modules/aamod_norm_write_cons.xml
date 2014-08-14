@@ -16,6 +16,7 @@
             </inputstreams>
             
             <outputstreams>
+                <preservefilename>1</preservefilename>
                 <stream>firstlevel_cons</stream>
             </outputstreams>
             
