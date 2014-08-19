@@ -66,15 +66,16 @@ for v = 2:size(LIST,1)
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
     aap=aas_addsubject(aap,VOL,aSess(aap.acq_details.input.selected_sessions));
-   
-    % Obtain TR from the first session
-    h = dicominfo(mri_finddcm(aap,VOL,find(aSess,1,'first')));
-    TR = h.RepetitionTime/1000; % in seconds
     
     for i = aap.acq_details.input.selected_sessions
 		if ~aSess(i), continue; end
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);
+
+        % Obtain TR
+        h = dicominfo(mri_finddcm(aap,VOL,aSess(i)));
+        TR = h.RepetitionTime/1000; % in seconds
+
         if exist('refDir','var')
             load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
             for iEV = 1:numel(names)
