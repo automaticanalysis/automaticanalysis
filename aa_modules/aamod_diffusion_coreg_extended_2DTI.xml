@@ -15,6 +15,8 @@
                 <stream>t1totemplate_xfm</stream>
                 <stream>nodif</stream>   
                 <stream>dti_FA</stream> 
+                <stream>dti_AD</stream>
+                <stream>dti_RD</stream>
                 <stream>dti_MD</stream> 
                 <stream>dti_L1</stream> 
                 <stream>dti_L2</stream> 
@@ -23,12 +25,13 @@
                 <stream>dti_V2</stream> 
                 <stream>dti_V3</stream> 
                 <stream>dti_S0</stream> 
-                <stream>dti_M0</stream> 
             </inputstreams>
             
             <outputstreams>
                 <stream>nodif</stream>
                 <stream>dti_FA</stream> 
+                <stream>dti_AD</stream>
+                <stream>dti_RD</stream>
                 <stream>dti_MD</stream> 
                 <stream>dti_L1</stream> 
                 <stream>dti_L2</stream> 
@@ -37,7 +40,6 @@
                 <stream>dti_V2</stream> 
                 <stream>dti_V3</stream> 
                 <stream>dti_S0</stream> 
-                <stream>dti_M0</stream>   
             </outputstreams>
             
             <structural>1</structural> <!-- which structural to use in case of multiple instances --> 
