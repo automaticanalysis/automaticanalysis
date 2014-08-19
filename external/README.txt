@@ -14,3 +14,6 @@ ANTS							8 May 2012				http://picsl.upenn.edu/ANTS/															Alejandro Vi
 PEwarp							8 May 2012																										Alejandro Vicente Grabovetsky
 vbm8			r435			4 April 2013			http://dbm.neuro.uni-jena.de/vbm8/														Jonathan Peelle
 TFCE			r67 (mod)		28 July 2014			http://dbm.neuro.uni-jena.de/tfce/														Tibor Auer
+DKI_Toolbox						1 July 2014																										Tibor Auer
+DTInl							19 August 2014																									Tibor Auer
+Templates/freesurfer_daface*	15 August 2014			https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface									Tibor Auer
