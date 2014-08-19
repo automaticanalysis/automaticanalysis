@@ -2,8 +2,9 @@ function Mk=GMeanKurt(DMAT,WMAT,b,g,Md,mode)
 % caluclate mean kurtosis given the Difusion and Kurtosis tensor
 % g is the gradient direction and Md the mean difusion
 
-%mode 2 if is given the values of W*Md*Md in WMAT matrix instead of W only,
-%useful to avoid divisions from zero
+% mode 2 if is given the values of W*Md*Md in WMAT matrix instead of W only,
+% useful to avoid divisions from zero
+% Rafael Henriques
 
 
 ind=(b~=0);
