@@ -45,6 +45,10 @@
                 <stream>dti_S0</stream> 
             </outputstreams>
             
+            <diagnostic>
+                <streamind>1</streamind>
+            </diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>

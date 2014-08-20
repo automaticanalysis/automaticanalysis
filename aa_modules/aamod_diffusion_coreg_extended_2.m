@@ -24,6 +24,14 @@ switch task
 
         global defaults
         flags = defaults.coreg;
+        if isfield(aap.tasklist.currenttask.settings,'eoptions')
+            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            for f = 1:numel(fields)
+                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
+                    flags.estimate.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                end
+            end
+        end
         
         %% Parse inputstreams
         inputs = aap.tasklist.currenttask.inputstreams.stream;
