@@ -120,6 +120,12 @@ classdef aaq_qsub<aaq
             end
         end
         
+        function [obj]=killall(obj)
+            for j = 1:numel(obj.scheduler.Jobs)
+                obj.scheduler.Jobs(1).delete;
+            end
+        end
+        
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             
