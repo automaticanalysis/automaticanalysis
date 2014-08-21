@@ -1,3 +1,8 @@
+% General coregistration
+% Target: first (existing) inputstream
+% Source: second
+% Other (optional): third, etc.
+
 function [aap,resp]=aamod_coreg_general(aap,task,varargin)
 
 resp='';
