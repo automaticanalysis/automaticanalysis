@@ -24,7 +24,7 @@ end;
 
 [p n e] = fileparts(imgpath);
 switch e
-    case {'.jpg', '.jpeg'}
+    case {'.png', '.jpg', '.jpeg'}
         varargin{iargin} = sprintf('<br><cite>%s</cite><br>',basename(imgpath));
         aap = aas_report_add(aap,varargin{1:iargin});
         pfx = '<img src';
