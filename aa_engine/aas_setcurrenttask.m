@@ -23,7 +23,7 @@ aap.internal=initinternal;
 
 if exist('k','var')
     stagename=aas_getstagetag(aap,k);
-
+    
     % Stuff the task likes to know
     aap.tasklist.currenttask.epiprefix=aap.tasklist.main.module(k).epiprefix;
     aap.tasklist.currenttask.extraparameters=aap.tasklist.main.module(k).extraparameters;
@@ -34,14 +34,14 @@ if exist('k','var')
     aap.tasklist.currenttask.index=aap.tasklist.main.module(k).index;
     aap.tasklist.currenttask.modulenumber=k;
     aap.tasklist.currenttask.domain=aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.domain;
-
+    
     % Recursively copy and parameters in extraparameters.aap for this task on
     % top of aap if provided
     if (isfield(aap.tasklist.main.module(k).extraparameters,'aap'))
         aap=aas_copyparameters(aap.tasklist.main.module(k).extraparameters.aap,aap,'aap');
     end;
-
-
+    
+    
     % Check the apparent study root is set appropriately
     aap.acq_details.root=aas_getstudypath(aap,k);
     % ..and for remote filesystem if we're using one
@@ -51,7 +51,7 @@ if exist('k','var')
     else
         aap.acq_details.root=aas_getstudypath(aap,k);
     end;
-
+    
     % Check subselected sessions
     selected_sessions=aap.acq_details.selected_sessions;
     if (ischar(selected_sessions))
@@ -69,21 +69,22 @@ if exist('k','var')
                     aas_log(aap,true,sprintf('Unknown session %s specified in selected_sessions field of a branch in the tasklist, sessions were %s',sessionnme,sprintf('%s ',aap.acq_details.sessions.name)));
                 end;
                 selected_sessions=[selected_sessions sessionind];
-            end;
-            selected_sessions=[selected_sessions sessionind];
+            end;            
         end;
-        aap.acq_details.selected_sessions=selected_sessions;
+        
     end;
     aap.acq_details.selected_sessions=selected_sessions;
+    
+    % Set SPM defaults appropriately
+    global defaults
+    defaults=aap.spm.defaults;
+    if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
+        defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
+        if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
+    end
+    
 end;
 
-% Set SPM defaults appropriately
-global defaults
-defaults=aap.spm.defaults;
-if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
-    defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
-    if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
-end
 end
 
 
