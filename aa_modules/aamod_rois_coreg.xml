@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_coreg_general' desc='SPM coregistration (stream rois)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <eoptions>
+                <cost_fun>ecc</cost_fun>
+            </eoptions>
+            
+            <PVE>0.5</PVE> <!-- binarize controling Partial Volume Effect -->
+            
+            <inputstreams>
+                <stream isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
+				<stream isessential="0">aamod_realign_00001.meanepi</stream>  
+                <stream>rois_refvol</stream>
+                <stream>rois</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>rois</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

@@ -16,14 +16,18 @@ resp='';
 
 switch task
 	case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,subjInd),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi.jpg']),'file')
-            fsl_diag(aap,subjInd);
+        d = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_aas_checkreg_*'));
+        if isempty(d)
+            aas_checkreg(aap,subjInd,aap.tasklist.currenttask.inputstreams.stream{2},aap.tasklist.currenttask.inputstreams.stream{1});
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,subjInd,'<table><tr><td>');
-            aap=aas_report_addimage(aap,subjInd,fullfile(aas_getsubjpath(aap,subjInd),fdiag(d).name));
-            aap = aas_report_add(aap,subjInd,'</td></tr></table>');
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
+            aap=aas_report_addimage(aap,subj,imgpath);
+            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
         end
     case 'doit'
         global defaults;
@@ -52,9 +56,7 @@ switch task
         % do coregistration
         x  = spm_coreg(VG, VF,flags.estimate);
         
-        M  = inv(spm_matrix(x));
-          
-        spm_get_space(structImg, M*spm_get_space(structImg));
+        spm_get_space(structImg, spm_matrix(x)\spm_get_space(structImg));
        
         aap = aas_desc_outputs(aap, subjInd, outStream, structImg);
 
@@ -70,7 +72,7 @@ switch task
 
         % Reslice images
         try
-            fsl_diag(aap,subjInd);
+            aas_checkreg(aap,subjInd,aap.tasklist.currenttask.inputstreams.stream{2},aap.tasklist.currenttask.inputstreams.stream{1});
         catch
             aas_log(aap, 0, 'Error running diagnostics for aamod_coreg_noss, but coregistration completed ok.');
         end
@@ -79,30 +81,3 @@ switch task
         
 end
 end
-
-function fsl_diag(aap,i)
-fP = aas_getfiles_bystream(aap,i,'meanepi');
-subj_dir=aas_getsubjpath(aap,i);
-
-inStream = aap.tasklist.currenttask.inputstreams.stream{1};
-
-sP = aas_getfiles_bystream(aap,i,inStream);
-spm_reslice({fP,sP},aap.spm.defaults.coreg.write)
-delete(fullfile(fileparts(fP),['mean' basename(fP) '.nii']));
-% Create FSL-like overview
-rfP = fullfile(fileparts(fP),[aap.spm.defaults.coreg.write.prefix basename(fP) '.nii']);
-rsP = fullfile(fileparts(sP),[aap.spm.defaults.coreg.write.prefix basename(sP) '.nii']);
-iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2meanepi']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 3 -o %s.gif',rfP,rsP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_meanepi2structural']);
-aas_runfslcommand(aap,sprintf('slices %s %s -s 3 -o %s.gif',rsP,rfP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-% Clean
-delete(rsP); delete(rfP);
-end
-

@@ -24,7 +24,7 @@ switch task
             
             % Images to smooth
             if (exist('sess','var'))
-                P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
+                P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj sess],streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end
@@ -50,7 +50,7 @@ switch task
             
             % Describe outputs
             if (exist('sess','var'))
-                aap=aas_desc_outputs(aap,subj,sess,streams{streamind},outputfns);
+                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],streams{streamind},outputfns);
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},outputfns);
             end

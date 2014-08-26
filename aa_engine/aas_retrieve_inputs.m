@@ -84,22 +84,26 @@ for depind=1:length(deps)
         
         remoteindices = indices;
         
-        % Get/Check/Fix Subject Index
-        subMatch = strcmp(aap.acq_details.subjects(indices(1)).mriname, {aap_remote.acq_details.subjects.mriname});
-        if ~any(subMatch)
-            aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have subject: %s', inputstream.sourcestagename, inputstream.host, remoteAAPfn, aap.acq_details.subjects(indices(1)).mriname));
-        else
-            remoteindices(1) = find(subMatch);
-        end
-        
-        % Get/Check/Fix Session Index
-        if length(indices) > 1 && ~isempty(aap.acq_details.sessions(indices(2)).name)
-            sessMatch = strcmp(aap.acq_details.sessions(indices(2)).name, {aap_remote.acq_details.sessions.name});
-            if ~any(sessMatch)
-                aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have session: %s', inputstream.sourcestagename, aap.acq_details.sessions(indices(2)).name));
-            else
-                remoteindices(2) = find(sessMatch);
-            end
+        % Get/Check/Fix Index
+        switch numel(indices)
+            case 0 % Study
+                
+            case 1 % Subject
+                subMatch = strcmp(aap.acq_details.subjects(indices(1)).mriname, {aap_remote.acq_details.subjects.mriname});
+                if ~any(subMatch)
+                    aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have subject: %s', inputstream.sourcestagename, inputstream.host, remoteAAPfn, aap.acq_details.subjects(indices(1)).mriname));
+                else
+                    remoteindices(1) = find(subMatch);
+                end
+            otherwise % > 1: Session
+                if ~isempty(aap.acq_details.sessions(indices(2)).name)
+                    sessMatch = strcmp(aap.acq_details.sessions(indices(2)).name, {aap_remote.acq_details.sessions.name});
+                    if ~any(sessMatch)
+                        aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have session: %s', inputstream.sourcestagename, aap.acq_details.sessions(indices(2)).name));
+                    else
+                        remoteindices(2) = find(sessMatch);
+                    end
+                end
         end
         
         % IT's possible that AAPs from different versions of AA have

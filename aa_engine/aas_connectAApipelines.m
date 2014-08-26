@@ -1,4 +1,4 @@
-function aap = aas_connectAApipelines(aap, remoteAAlocations)
+function aap = aas_connectAApipelines(aap, remoteAAlocations, check)
 %
 % aas_connectAApipelines(aap, remoteAAlocations)
 %
@@ -118,7 +118,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     % This is where we will put it
     destAAPfn = fullfile(studyPath, sprintf('aap_parameters_%05d.mat', locI));
     
-    % Copy the remote AAP file, could error here if the file can''t be found remotely
+    % Copy the remote AAP file, could error here if the file can't be found remotely
     aap = aas_copyfromremote(aap, remoteAAlocations(locI).host, remoteAAPfn, destAAPfn, 'allowcache', remoteAAlocations(locI).allowcache);
     
     % Load it!
@@ -195,7 +195,8 @@ aas_log(aap,0,'Checking status of remote streams...');
 for modI = 1 : length(aap.tasklist.main.module)
     mod = aap.tasklist.main.module(modI);
     
-    if isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
+    if isfield(aap.tasksettings.(mod.name)(mod.index), 'inputstreams') &&...
+            isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
         
         % Names of input and output streams for this module
         inputStreams = aap.tasksettings.(mod.name)(mod.index).inputstreams.stream;
@@ -204,13 +205,30 @@ for modI = 1 : length(aap.tasklist.main.module)
         remoteStreams = struct('stream', {}, 'stagetag', {}, 'sourcedomain', {}, 'host', {}, 'aapfilename', {}, 'allowcache', {});
         
         for iI = 1 : length(inputStreams)
-            
             % If the input doesn't come from a previous module, let's add it to
             % the list of remote streams for this module.
             if ~ismember(inputStreams{iI}, prevOutputs)
                 
+                % Check previously added remotestreams
+                if ~isempty(mod.remotestream) && ismember(inputStreams{iI}, {mod.remotestream.stream}), continue; end
+                
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
+                % Check for module-specific stream
+                if ~any(rI) && ~isempty(strfind(inputStreams{iI},'.'))
+                    tmpinputModule = inputStreams{iI}(1:strfind(inputStreams{iI},'.')-1);
+                    tmpinputStream = inputStreams{iI}(strfind(inputStreams{iI},'.')+1:end);
+                    rI = strcmp(tmpinputStream, {remoteOutputs.name});
+                    if sum(rI) > 1
+                        aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
+                    end
+                    if any(rI)
+                        tmpremoteModule = remoteAA{remoteOutputs(rI).locI}.tasklist.main.module(remoteOutputs(rI).modI).name;
+                        if isempty(strfind(tmpinputModule,tmpremoteModule)) % revoke if not match
+                            rI(rI) = false;
+                        end
+                    end
+                end
                 
                 if sum(rI) > 1
                     aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
@@ -293,9 +311,13 @@ for modI = 1 : length(aap.tasklist.main.module)
                                         if ~any(remoteIndices==0)
                                             
                                             % Copy over the stream desc from the remote
-                                            remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
-                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
-                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                            remoteStage = aas_getstagetag(remoteAA{locI},remoteOutput.modI);
+                                            try remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
+                                            catch
+                                                disp('');
+                                            end
+                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', strrep(inputStreams{iI},[remoteStage '.'],''), remoteStage));
+                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, remoteStage));
                                             aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
                                             
                                             % If it didn't copy, then we should reset this stage
@@ -335,9 +357,11 @@ for modI = 1 : length(aap.tasklist.main.module)
                     
                 else
 
-                    if isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
+                    if check && ...
+                            (~isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) ||...
+                        (isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
                             isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
-                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential
+                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential))
                         aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
                     end
                     
@@ -345,9 +369,13 @@ for modI = 1 : length(aap.tasklist.main.module)
             end % End if input ~present in prev outputs
             
         end % End loop over input straems
-        
-        aap.tasklist.main.module(modI).remotestream = remoteStreams;
-        aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;
+        if isempty(aap.tasklist.main.module(modI).remotestream)
+            aap.tasklist.main.module(modI).remotestream = remoteStreams;
+            aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;
+        else
+            aap.tasklist.main.module(modI).remotestream = horzcat(aap.tasklist.main.module(modI).remotestream,remoteStreams);
+            aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = horzcat(aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream,remoteStreams);
+        end
     end
     
     if isfield(aap.tasksettings.(mod.name)(mod.index), 'outputstreams')

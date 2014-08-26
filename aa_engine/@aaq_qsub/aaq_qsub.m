@@ -34,7 +34,7 @@ classdef aaq_qsub<aaq
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
             
-            while any(obj.jobnotrun) && ~waitforalljobs
+            while any(obj.jobnotrun) || waitforalljobs
                 
                 % Lets not overload the filesystem
                 pause(1);
@@ -73,7 +73,14 @@ classdef aaq_qsub<aaq
                     if ~isempty(Task.Error), state = 'error'; end
                     
                     switch state
-                        case 'finished'
+                        case 'failed' % failed to launch
+                            msg = sprintf('Job%d had failed to launch (Licence?)!\n Check logfile: %s\n',JobID,...
+                                fullfile(obj.scheduler.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
+                            % If there is an error, it is fatal...
+                            aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
+                            
+                            taskreported(end+1) = ftmind;
+                        case 'finished' % without error
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
                             dtvf = dts2dtv(Task.FinishTime);
@@ -87,7 +94,7 @@ classdef aaq_qsub<aaq
                             fclose(fid);
                             
                             taskreported(end+1) = ftmind;
-                        case 'error';
+                        case 'error' % running error
                             msg = sprintf('Job%d had an error: %s\n',JobID,Task.ErrorMessage);
                             for e = 1:numel(Task.Error.stack)
                                 % Stop tracking to internal
@@ -110,6 +117,12 @@ classdef aaq_qsub<aaq
                         waitforalljobs = 0;
                     end
                 end                
+            end
+        end
+        
+        function [obj]=killall(obj)
+            for j = 1:numel(obj.scheduler.Jobs)
+                obj.scheduler.Jobs(1).delete;
             end
         end
         

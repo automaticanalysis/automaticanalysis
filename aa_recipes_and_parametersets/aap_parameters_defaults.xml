@@ -19,6 +19,7 @@
         <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
 		<reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
 		<stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
+        <stats_ppi desc='Directory for single subject PPI statistics' ui='dir'>PPI</stats_ppi>
 		<rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
         <dartelsubjdirname desc='Name of DARTEL subject directory' ui='dir'>dartel</dartelsubjdirname>
         <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
@@ -150,6 +151,7 @@
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <structural desc='Structural session number in raw data' ui='int'/>
+            <wholebrain_epi desc='Wholebrain EPI session number in raw data (for partial volume fMRI)' ui='int'/>
             <tmaps desc='Real time t maps session number in raw data' ui='int'/>
             <specialseries desc='special series session number in raw data' ui='int'/>
             <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
@@ -167,6 +169,9 @@
             <name desc='Diffusion session name' ui='dir_part'/>
         </diffusion_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
+        <special_sessions desc='Special sessions' ui='intarray'>
+            <name desc='Special session name (used to determine stream name and folder name)' ui='dir_part'/>
+        </special_sessions>        
     </acq_details>
     
     <timeouts>

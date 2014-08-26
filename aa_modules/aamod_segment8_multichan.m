@@ -37,7 +37,21 @@ switch task
     case 'domain'
         resp='subject';
     case 'description'
-        resp='SPM8 segment8 for structural images.'
+        resp='SPM8 segment8 for structural images.';
+    case 'report'
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subjind),'diagnostic_*.jpg'));
+        if isempty(fdiag)
+            diag(aap,subjind);
+            fdiag = dir(fullfile(aas_getsubjpath(aap,subjind),'diagnostic_*.jpg'));
+        end
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subjind,'<table><tr><td>');
+            imgpath = fullfile(aas_getsubjpath(aap,subjind),fdiag(d).name);
+            aap=aas_report_addimage(aap,subjind,imgpath);
+            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subjind,avipath); end
+            aap = aas_report_add(aap,subjind,'</td></tr></table>');
+        end
     case 'doit'
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -227,7 +241,6 @@ switch task
         end
         
         % Apply deformation field to native structural? (jt 05/Jul/2012):
-        
         if aap.tasklist.currenttask.settings.writenormimg
             opts = aap.tasklist.currenttask.settings.writenorm;
             for c=1:length(channels)
@@ -257,8 +270,6 @@ switch task
                 end
                 dout = spm_func_def(djob);
                 fprintf(1,' Done.\n');
-                % is this ok/necessary?:
-                %aap.tasklist.currenttask.settings.outputstreams{end+1}=sprintf('normalised_%s', channels{c});
             end
         end
 
@@ -293,6 +304,75 @@ switch task
         if aap.tasklist.currenttask.settings.writedeffields(2)
             aap = aas_desc_outputs(aap, subjind, 'inverse_deformation_field', invparamfn);
         end
-            
-            
+        
+        %% Diagnostics
+        if strcmp(aap.options.wheretoprocess,'localsingle')
+            diag(aap,subjind);
+        end
+end
+end
+
+function diag(aap,subj) % [TA]
+% SPM, AA
+Simg = aas_getfiles_bystream(aap,subj,'structural');
+localpath = aas_getsubjpath(aap,subj);
+outSeg = char(...
+    aas_getfiles_bystream(aap,subj,'native_grey'),...
+    aas_getfiles_bystream(aap,subj,'native_white'),...
+    aas_getfiles_bystream(aap,subj,'native_csf'));
+outNSeg = char(...
+    aas_getfiles_bystream(aap,subj,'normalised_density_grey'),...
+    aas_getfiles_bystream(aap,subj,'normalised_density_white'),...
+    aas_getfiles_bystream(aap,subj,'normalised_density_csf'));
+
+OVERcolours = {[1 0 0], [0 1 0], [0 0 1]};
+
+%% Draw native template
+spm_check_registration(Simg)
+% Add normalised segmentations...
+for r = 1:size(outSeg,1)
+    spm_orthviews('addcolouredimage',1,deblank(outSeg(r,:)), OVERcolours{r});
+end
+
+spm_orthviews('reposition', [0 0 0])
+
+try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
+
+%% Draw warped template
+tmpfile = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
+gunzip(tmpfile,localpath); tmpfile = fullfile(localpath,'MNI152_T1_1mm.nii');
+
+spm_check_registration(tmpfile)
+% Add normalised segmentations...
+for r = 1:size(outNSeg,1)
+    spm_orthviews('addcolouredimage',1,outNSeg(r,:), OVERcolours{r})
+end
+spm_orthviews('reposition', [0 0 0])
+
+try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W_blob.jpg']));
+
+close(1); clear global st;
+
+%% Another diagnostic image, looking at how well the segmentation worked...
+Pthresh = 0.95;
+
+ROIdata = roi2hist(Simg, outSeg, Pthresh);
+
+[h, pv, ci, stats] = ttest2(ROIdata{2}, ROIdata{1});
+
+title(sprintf('GM vs WM... T(%d) = %0.2f, p = %1.4f', stats.df, stats.tstat, pv))
+
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
+try close(2); catch; end
+
+%% Contours VIDEO of segmentations
+aas_checkreg(aap,subj,outSeg(1,:),Simg)
+aas_checkreg(aap,subj,outNSeg(1,:),tmpfile)
+
+delete(tmpfile);
 end

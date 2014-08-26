@@ -16,7 +16,7 @@ switch task
         % Get the T1 template
         sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
         if ~exist(sTimg,'file'),
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', Timg));
+            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
         end  
                
         %% 1) Structural to T1 template

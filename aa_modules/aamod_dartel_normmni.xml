@@ -10,9 +10,9 @@
             <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>1</preserve>
             
             <inputstreams>
-                <stream>dartelimported_grey</stream>                
-                <stream>dartelimported_white</stream>
-                <stream>dartelimported_csf</stream>
+                <stream>native_grey</stream>                
+                <stream>native_white</stream>
+                <stream>native_csf</stream>
                 <stream>dartel_flowfield</stream>
                 <stream>dartel_template</stream>
             </inputstreams>

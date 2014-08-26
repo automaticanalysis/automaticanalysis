@@ -86,7 +86,7 @@ end
 aap=aas_validatepaths(aap);
 
 % launch SPM if not already running
-aap=aas_checkspmrunning(aap);
+aas_checkspmrunning(aap);
 
 % Check this is compiled
 try
@@ -112,6 +112,8 @@ end
 global defaults;
 global aaparallel;
 global aaworker;
+global taskqueue;
+global localtaskqueue;
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -239,6 +241,12 @@ try
   eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
 catch
   aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
+end
+% Create a local taskqueue for localonly modules
+try
+  localtaskqueue=aaq_localsingle(aap);
+catch
+  aas_log(aap,true,'Failed to initiate local queue!\n');
 end
 
 % Check registered with django
@@ -370,7 +378,13 @@ for l=1:length(mytasks)
                         taskmask.indices=indices;
                         taskmask.doneflag=doneflag;
                         taskmask.description=sprintf('%s for %s',description,doneflag);
-                        taskqueue.addtask(taskmask);
+                        if isfield(aap.tasklist.currenttask.settings,'qsub') && ...
+							isfield(aap.tasklist.currenttask.settings.qsub,'localonly') && aap.tasklist.currenttask.settings.qsub.localonly && ...
+                                ~strcmp(aap.options.wheretoprocess,'localsingle')
+                            localtaskqueue.addtask(taskmask);
+                        else
+                            taskqueue.addtask(taskmask);
+                        end
                 end
             end;
         end
@@ -388,6 +402,11 @@ for l=1:length(mytasks)
         % Get jobs started as quickly as possible - important on AWS as it
         % can take a while to scan all of the done flags
         taskqueue.runall(dontcloseexistingworkers, false);
+        if ~isempty(localtaskqueue.jobqueue), 
+            % launch SPM if not already running
+            aas_checkspmrunning(aap,1);
+            localtaskqueue.runall(dontcloseexistingworkers, false); 
+        end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
@@ -409,7 +428,7 @@ if ~isempty(aap.options.email)
 end
 
 % cleanup 
-clear global defaults aaparallel aaworker;
+clear global defaults aaparallel aaworker taskqueue localtaskqueue;
 
 end
 

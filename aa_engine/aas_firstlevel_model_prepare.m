@@ -77,7 +77,8 @@ for sess = aap.acq_details.selected_sessions
         modelCnum = [];
     end
     
-    %% Check that we have at least one model of interest (normal or covariate)
+    
+    %% Check that we have at least one model of interest (normal, covariate)
     if (length(modelnum)>1) || (length(modelCnum)>1)
         aas_log(aap,true,sprintf('Error while getting model details as more than one specification for subject %s session %s',subjname,aap.acq_details.sessions(sess).name));
     end
@@ -100,7 +101,7 @@ for sess = aap.acq_details.selected_sessions
         model{sess} = [];
     end
     if ~isempty(modelCnum)
-        modelC{sess} = aap.tasklist.currenttask.settings.modelC(modelnum);
+        modelC{sess} = aap.tasklist.currenttask.settings.modelC(modelCnum);
     else
         modelC{sess} = [];
     end

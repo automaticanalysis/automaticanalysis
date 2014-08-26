@@ -16,6 +16,7 @@
             
             <outputstreams>
                 <stream>diffusion_data</stream>
+                <stream>dummyscans</stream>
                 <stream>bvals</stream>
                 <stream>bvecs</stream>
             </outputstreams>
