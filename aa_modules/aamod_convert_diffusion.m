@@ -2,6 +2,8 @@
 % Converting Data to Analyze format and extracting the Gradient Directions
 % extract the gradient direction and b-values as a text file
 
+% v2: RC 2014-08-29 - changed bvals/bvecs to correct frame of reference
+
 function [aap resp]=aamod_convert_diffusion(aap,task,subjind,diffsessind)
 global aaworker
 resp='';
@@ -48,13 +50,9 @@ switch task
 			spm_file_merge(char({V.fname}),niifiles,0);
         end
         
-        bvecs=zeros(length(dicomheader),3);
-        for headerind=1:length(dicomheader)
-                bvals(headerind)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'B_value');
-                if bvals(headerind)~=0
-                    bvecs(headerind,:)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'DiffusionGradientDirection');
-                end;
-        end;
+        % Use conversion by Guy Williams which corrects frame of reference
+        % of diffusion gradients
+        [bvals, bvecs] = cbu_dti_params(aas_getfiles_bystream(aap,'diffusion_session',[subjind,diffsessind],'dicom_diffusion'));  
         
         % Output final data
         sesspth=aas_getpath_bydomain(aap,domain,indices);
@@ -73,7 +71,7 @@ switch task
             fprintf(fid,'%.14f ',bvecs(ndummies+1:end,ln));
             fprintf(fid,'\n');
         end;
-        fclose(fid);
+        fclose(fid); 
         
         % Describe outputs
         aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);

@@ -1,9 +1,5 @@
 % Automatic analysis user script
 
-addpath('/system/cn_developer/camneuro/release-beta-0.0/automaticanalysis/aa_engine')
-addpath('/imaging/rhodri/hAAckathon/dti_scripts');
-addpath('/imaging/leire/DTI_CamCan/Scripts');
-
 % Does two iterations, as at present, bedpostx won't run when launched from
 % within a condor module
 
