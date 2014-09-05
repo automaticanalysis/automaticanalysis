@@ -18,7 +18,27 @@ switch task
         % header
         [aap niifiles dicomheader subdirs]=aas_convertseries_fromstream(aap,domain,indices,'dicom_diffusion');
         
+        % Now move dummy scans to dummy_scans directory
         
+        % From header of this module
+        ndummies=aap.tasklist.currenttask.settings.numdummies;
+        
+        dummylist=[];
+        if ndummies
+            dummypath=fullfile(domainpath,'dummy_scans');
+            aap=aas_makedir(aap,dummypath);
+            for dummyind=1:ndummies
+                cmd=['mv ' niifiles{dummyind} ' ' dummypath];
+                [pth nme ext]=fileparts(niifiles{dummyind});
+                dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
+                [s w]=aas_shell(cmd);
+                if (s)
+                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',niifiles{dummyind},dummypath));
+                end
+            end
+        end
+        niifiles = {niifiles{ndummies+1:end}};
+        dicomheader = {dicomheader{ndummies+1:end}};
         % 4D conversion [TA]
         for fileind=1:numel(niifiles)
             V(fileind)=spm_vol(niifiles{fileind});
@@ -65,7 +85,14 @@ switch task
             bvecs(h,:) = [vox_to_dicom\dbvec]';
         end
         
-
+%         bvecs=zeros(length(dicomheader),3);
+%         for headerind=1:length(dicomheader)
+%                 bvals(headerind)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'B_value');
+%                 if bvals(headerind)~=0
+%                     bvecs(headerind,:)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'DiffusionGradientDirection');
+%                 end;
+%         end;
+        
         % Output final data
         sesspth=aas_getpath_bydomain(aap,domain,indices);
         
@@ -86,6 +113,7 @@ switch task
         fclose(fid);
         
         % Describe outputs
+        aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         aap=aas_desc_outputs(aap,domain,indices,'diffusion_data',niifiles);
         aap=aas_desc_outputs(aap,domain,indices,'bvals',bvals_fn);
         aap=aas_desc_outputs(aap,domain,indices,'bvecs',bvecs_fn);    
