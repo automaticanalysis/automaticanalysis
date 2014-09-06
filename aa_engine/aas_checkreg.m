@@ -74,11 +74,14 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         % switch on Contours
         global st;
         for v = 1:2
-            [h f] = get_contextmenu_cb(st.vols{v}.ax{1}.ax,'Contour|Display|all but');
-            f(h,[]);
-            hM = get_contextmenu_cb(st.vols{v}.ax{1}.ax,'Contour');
-            UDc = get(hM,'UserData'); UDc.nblines = 1; set(hM,'UserData',UDc); % narrow
-            spm_ov_contour('redraw',v,{});
+            try
+                [h f] = get_contextmenu_cb(st.vols{v}.ax{1}.ax,'Contour|Display|all but');
+                f(h,[]);
+                hM = get_contextmenu_cb(st.vols{v}.ax{1}.ax,'Contour');
+                UDc = get(hM,'UserData'); UDc.nblines = 1; set(hM,'UserData',UDc); % narrow
+                spm_ov_contour('redraw',v,{});
+            catch
+            end;
         end
         aas_checkreg_avi(aap, index, 0, ['_' strtok_ptrn(basename(image{1}(i,:)),'-0')]);
         close(1); clear global st;

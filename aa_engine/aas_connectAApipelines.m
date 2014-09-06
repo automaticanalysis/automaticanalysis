@@ -188,12 +188,13 @@ end
 % Track the names of output streams from modules in the local analysis.  If
 % a stream is an output from a previous stage in the local AA, then we
 % don't bother trying to connect it from the remote AA.
-prevOutputs = {};
+prevOutputs =struct('streamname',{},'stagetag',{});
 
 aas_log(aap,0,'Checking status of remote streams...');
 
 for modI = 1 : length(aap.tasklist.main.module)
     mod = aap.tasklist.main.module(modI);
+    stagetag=aas_getstagetag(aap,modI);
     
     if isfield(aap.tasksettings.(mod.name)(mod.index), 'inputstreams') &&...
             isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
@@ -207,8 +208,22 @@ for modI = 1 : length(aap.tasklist.main.module)
         for iI = 1 : length(inputStreams)
             % If the input doesn't come from a previous module, let's add it to
             % the list of remote streams for this module.
-            if ~ismember(inputStreams{iI}, prevOutputs)
-                
+            
+            % Is it fully qualified, with source module stage tag as well (e.g.,
+            %   <stream>aamod_coreg_extended_1_00001.structural</stream>  
+            if isempty(prevOutputs)
+                foundPrevious=false;
+            else
+                if any(inputStreams{iI}=='.')
+                    [inputStageTag rem]=strtok(inputStreams{iI},'.');
+                    inputStreamName=strtok(rem,'.');
+                    foundPrevious=any([strcmp(inputStreamName,{prevOutputs.streamname})] & [strcmp(inputStageTag,{prevOutputs.stagetag})]);
+                else
+                    % not fully qualified
+                    foundPrevious=ismember(inputStreams{iI}, {prevOutputs.streamname});
+                end;
+            end;
+            if ~foundPrevious                
                 % Check previously added remotestreams
                 if ~isempty(mod.remotestream) && ismember(inputStreams{iI}, {mod.remotestream.stream}), continue; end
                 
@@ -385,9 +400,8 @@ for modI = 1 : length(aap.tasklist.main.module)
             
             % Update outputs present in the local AA
             for oI = 1 : length(outputStreams)
-                if ~ismember(outputStreams{oI}, prevOutputs)
-                    prevOutputs{end+1} = outputStreams{oI};
-                end
+                % Record the output module's stage tag
+                prevOutputs(end+1)=struct('streamname',outputStreams{oI},'stagetag',stagetag);
             end
         end
     end

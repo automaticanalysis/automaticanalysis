@@ -104,14 +104,14 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         
         % ~FSL
         if ~isempty(find(d==slicesInd, 1))            
-            spm_orthviews('context_menu','Xhair');
+            spm_orthviews('context_menu','Xhairs','off');
             for v = 1:nVols
                 for a = 1:3
                     fr = getframe(st.vols{v}.ax{a}.ax);
                     slicesImg{v}{a} = horzcat(slicesImg{v}{a}, fr.cdata);
                 end
             end
-            spm_orthviews('context_menu','Xhair');
+            spm_orthviews('context_menu','Xhairs','on');
         end        
     end
     
@@ -132,8 +132,11 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
             img(1:size(slicesImg{v}{1},1),end+1:end+size(slicesImg{v}{1},2),:) = slicesImg{v}{1};
             f = figure; 
             set(f,'Position',[1 1 size(img,2) size(img,1)],'PaperPositionMode','auto','InvertHardCopy','off');
-            imshow(img,'Border','tight');
-            print(f,'-djpeg','-r150',slicesFilename);
+            try
+                imshow(img,'Border','tight');
+                print(f,'-djpeg','-r150',slicesFilename);
+            catch
+            end;
             close(f);
         end
     end
