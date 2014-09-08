@@ -3,14 +3,19 @@ function [SPM, anadir, files, allfiles, model, modelC] = ...
 
 subjname = aap.acq_details.subjects(subj).mriname;
 
-%% Get data (EPI) files, and the models...
-files = cell(size(aap.acq_details.sessions));
-allfiles='';
-model = cell(size(aap.acq_details.sessions));
-modelC = cell(size(aap.acq_details.sessions));
+% We can now have missing sessions per subject, so we're going to use only
+% the sessions that are common to this subject and selected_sessions
+[numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
 
-for sess = aap.acq_details.selected_sessions
-    files{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
+%% Get data (EPI) files, and the models...
+files = cell(numSess,1);
+allfiles='';
+model = cell(numSess,1);
+modelC = cell(numSess,1);
+
+for sess = 1:numSess
+    files{sess} = aas_getfiles_bystream(aap,subj,subjSessionI(sess),'epi');
     if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D
         V = spm_vol(files{sess});
         f0 = files{sess};
@@ -26,10 +31,10 @@ end
 %% Modeling      %%
 %%%%%%%%%%%%%%%%%%%
 
-for sess = aap.acq_details.selected_sessions
+for sess = 1:numSess
     %% Get model data from aap
     subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.model.subject});
-    sessmatches=strcmp(aap.acq_details.sessions(sess).name,{aap.tasklist.currenttask.settings.model.session});
+    sessmatches=strcmp(aap.acq_details.sessions(subjSessionI(sess)).name,{aap.tasklist.currenttask.settings.model.session});
     % If no exact spec found, try session wildcard, then subject
     % wildcard, then wildcard for both
     if (~any(sessmatches & subjmatches))
@@ -53,7 +58,7 @@ for sess = aap.acq_details.selected_sessions
     %% Get modelC (covariate) data from aap
     if isfield(aap.tasklist.currenttask.settings, 'modelC')
         subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.modelC.subject});
-        sessmatches=strcmp(aap.acq_details.sessions(sess).name,{aap.tasklist.currenttask.settings.modelC.session});
+        sessmatches=strcmp(aap.acq_details.sessions(subjSessionI(sess)).name,{aap.tasklist.currenttask.settings.modelC.session});
         % If no exact spec found, try session wildcard, then subject
         % wildcard, then wildcard for both
         if (~any(sessmatches & subjmatches))
@@ -119,7 +124,7 @@ if isfield(aap.tasklist.currenttask.settings,'TR') && ...
     SPM.xY.RT =aap.tasklist.currenttask.settings.TR;
 else
     % Get TR from DICOM header checking they're the same for all sessions
-    for sess=aap.acq_details.selected_sessions
+    for sess=subjSessionI
         try
             DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
         catch
@@ -134,7 +139,7 @@ else
             TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end
         
-        if (sess==aap.acq_details.selected_sessions(1))
+        if (sess==subjSessionI(1))
             SPM.xY.RT = TR;
         else
             if (SPM.xY.RT~=TR)
@@ -170,6 +175,20 @@ end
 
 SPM.xBF.dt = SPM.xY.RT / SPM.xBF.T; % Time bin length in secs
 
+% Possible SPM basis functions
+SPM_BFs = {'hrf', ...
+    'hrf (with time derivative)', ...
+    'hrf (with time and dispersion derivatives)', ...
+    'Fourier set', ...
+    'Fourier set (Hanning)', ...
+    'Gamma functions', ...
+    'Finite Impulse Response'};
+
+% If a non-SPM BF name is used, let's try loading from the custom BFs
+if ~any(strcmp(SPM.xBF.name, SPM_BFs)) && isempty(SPM.xBF.bf)
+    SPM.xBF = aas_get_custom_BF(aap, SPM.xBF, SPM.xY.RT);
+end
+
 % If no custom bf is specified, remove this field so SPM uses default behaviour
 if isempty(SPM.xBF.bf), SPM.xBF = rmfield(SPM.xBF, 'bf'); end
 
@@ -185,9 +204,9 @@ end
 % for all sessions
 usesliceorder = aas_stream_has_contents(aap,'sliceorder');
 if (usesliceorder)
-    for sess=aap.acq_details.selected_sessions
+    for sess=subjSessionI
         sliceorderstruct=load(aas_getfiles_bystream(aap,subj,sess,'sliceorder'));
-        if (sess==aap.acq_details.selected_sessions(1))
+        if (sess==subjSessionI(1))
             sliceorder=sliceorderstruct.sliceorder;
             refslice=sliceorderstruct.refslice;
         else

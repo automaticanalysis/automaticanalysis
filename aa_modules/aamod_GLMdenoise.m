@@ -12,6 +12,10 @@ switch task
         
         epiFiles = aas_getfiles_bystream(aap, subjInd, 1, 'epi'); % get 1st session epis
         
+        if isempty(epiFiles)
+            epiFiles = aas_getfiles_bystream(aap, subjInd, 2, 'epi');
+        end
+        
         % We can now have missing sessions per subject, so we're going to use only
         % the sessions that are common to this subject and selected_sessions
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subjInd);
@@ -74,7 +78,7 @@ switch task
                 aas_log(aap, 0,  sprintf('Loading gd_data and model of sess %d', sess));
                 
                 % Get gd_data
-                Vs = spm_vol(files{sess});
+                Vs = spm_vol(files{s});
                 for v = 1 : length(Vs)
                     
                     Ys = single(spm_read_vols(Vs(v)));
@@ -149,12 +153,12 @@ switch task
                         sessnuminspm=sessnuminspm+1;
                         
                         % Settings
-                        SPM.nscan(sessnuminspm) = size(files{sess},1);
+                        SPM.nscan(sessnuminspm) = size(files{sessnuminspm},1);
                         SPM.xX.K(sessnuminspm).HParam = aap.tasklist.currenttask.settings.highpassfilter;
                         
                         % Set up model
                         [SPM, cols_interest, cols_nuisance, currcol] = ...
-                            aas_firstlevel_model_define(aap, sess, sessnuminspm, SPM, model, modelC, ...
+                            aas_firstlevel_model_define(aap, sessnuminspm, sessnuminspm, SPM, model, modelC, ...
                             cols_interest, cols_nuisance, currcol, ...
                             movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
                     end

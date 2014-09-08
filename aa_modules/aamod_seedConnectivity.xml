@@ -16,7 +16,7 @@
                 <roi></roi>
             </ROIdesc>    
             
-            <radius>1</radius>
+            <radius>2</radius>
             
             <correctSeed>1</correctSeed>
             

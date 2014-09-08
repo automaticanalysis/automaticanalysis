@@ -5,6 +5,16 @@
 
             <saveresids>0</saveresids> <!-- by default SPM deletes residual images -->
             
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
             <inputstreams>    
                 <stream>firstlevel_spm</stream>
                 <stream ismodified='0'>epi</stream>

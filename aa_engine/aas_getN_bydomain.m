@@ -1,35 +1,62 @@
 % Automatic analysis - this file determines the number of parts to a given
 % domain - e.g., the number of subjects at the 'subject' level, or the
-% number of N-fold validations for cross-validation. 
-%   domain='subject','session' etc
-%   index= number of item
+% number of N-fold validations for cross-validation.
+%
+% Updated to allow different N, depending on the indices that are passed
+% in. Useful for cases where N is variable; e.g., if a subject is missing a
+% session.
+%
+% Now we also return the indices of those parts. For example, if there are
+% three sessions per subject (N=3, I=[1 2 3]), but one subject is missing
+% the middle session (N=2, for that subject), then the session indices for
+% that subject should be [1 3]
+%
+%   domain = 'subject','session' etc
+%   index = number of item
+% -----------------------------------------------------------------------
+% Updated by cwild 2014-05-12 to allow variable N for sessions. 
 
-function [N]=aas_getN_bydomain(aap,domain,indices)
+function [N, I]=aas_getN_bydomain(aap,domain,indices)
 
 switch (domain)
     case {'searchlight_package','hyperalignment_searchlight_package'}
         N=aap.options.searchlight.Npackage;
+        I=1:N;
        
     case 'session'
-        N=length(aap.acq_details.sessions);
-
+        if iscell(aap.acq_details.subjects(indices(1)).seriesnumbers)
+            N = cellfun(@(x) ~isempty(x), aap.acq_details.subjects(indices(1)).seriesnumbers);
+            I = find(N);
+            N = sum(N);
+        else
+            N=sum(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+            I=find(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+        end
+        
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
         N=aap.options.splitsession_cv.N;
+        I=1:N;
                
     case {'subject','hyperalignment_subject'}
         N=length(aap.acq_details.subjects);
+        I=1:N;
+        
     case 'study'
         N=1;
+        I=1:N;
         
     case {'diffusion_session', 'diffusion_session_bedpostx'}
         N=length(aap.acq_details.diffusion_sessions);
         if isempty(aap.acq_details.diffusion_sessions(1).name)
             N=N-1;
         end
+        I=1:N;
         
     case 'diffusion_session_probtrackx'
         N=aap.options.probtrackx.nsplits;  
+        I=1:N;
         
     case 'scan'
         N=aap.options.realtime.nscans;
+        I=1:N;
 end;    

@@ -30,9 +30,14 @@ switch task
         % Get subject directory
         cwd=pwd;
 
+        % We can now have missing sessions per subject, so we're going to use only
+        % the sessions that are common to this subject and selected_sessions
+        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+        
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
-
+        
         % Get all the nuisance regressors...
         [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
             aas_firstlevel_model_nuisance(aap, subj, files);
@@ -44,7 +49,7 @@ switch task
 
         sessnuminspm=0;
 
-        for sess = aap.acq_details.selected_sessions
+        for sess = 1:numSess
             sessnuminspm=sessnuminspm+1;
 
             % Settings

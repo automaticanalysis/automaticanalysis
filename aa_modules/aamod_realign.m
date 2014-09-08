@@ -92,7 +92,10 @@ switch task
         clear imgs;
         for sess = aap.acq_details.selected_sessions
             % get files from stream
-            imgs(sess) = {aas_getimages_bystream(aap,subj,sess,'epi');};
+            epiFiles = aas_getfiles_bystream(aap, subj, sess, 'epi');
+%             if ~isempty(epiFiles)
+                imgs(sess) = {epiFiles};
+%             end
         end
         
         % Flags to pass to routine to calculate realignment parameters
@@ -160,45 +163,50 @@ switch task
         
         % Sessionwise custom plot [TA]
         for sess = aap.acq_details.selected_sessions
-            aas_plot_realignPars(aap,subj,sess,true);
+            if ~isempty(imgs{sess})
+                aas_plot_realignPars(aap,subj,sess,true);
+            end
         end
         
-        % Run the reslicing
-        spm_reslice(imgs, resFlags);
+        % Run the reslicing, pop empty slices so spm_reslice doesn't crash.
+        imgs_ = imgs; imgs_(cellfun(@(x) isempty(x), imgs_)) = [];
+        spm_reslice(imgs_, resFlags);
         
         %% Describe outputs
         movPars = {};
         for sess = aap.acq_details.selected_sessions
-            aas_log(aap,0,sprintf('Working with session %d', sess))
-            
-            rimgs=[];
-            for k=1:size(imgs{sess},1);
-                [pth nme ext]=fileparts(imgs{sess}(k,:));
+            if ~isempty(imgs{sess})
+                aas_log(aap,0,sprintf('Working with session %d', sess))
                 
-                % If we don't reslice the images after realignment, don't
-                % change the prefix of the images in our output stream
-                %   - cwild 03/06/12
-                if aap.tasklist.currenttask.settings.reslicewhich == 0
-                    rimgs=strvcat(rimgs,fullfile(pth,[nme ext]));
-                else
-                    rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
+                rimgs=[];
+                for k=1:size(imgs{sess},1);
+                    [pth nme ext]=fileparts(imgs{sess}(k,:));
+                    
+                    % If we don't reslice the images after realignment, don't
+                    % change the prefix of the images in our output stream
+                    %   - cwild 03/06/12
+                    if aap.tasklist.currenttask.settings.reslicewhich == 0
+                        rimgs=strvcat(rimgs,fullfile(pth,[nme ext]));
+                    else
+                        rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
+                    end
                 end
-            end
-            sessdir = aas_getsesspath(aap,subj,sess);
-            aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
-            
-            % Get the realignment parameters...
-            fn=dir(fullfile(pth,'rp_*.txt'));
-            outpars = fullfile(pth,fn(1).name);
-            % Add it to the movement pars...
-            movPars = [movPars outpars];
-            
-            aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter', outpars);
-            
-            if find(sess==aap.acq_details.selected_sessions) == 1 % [AVG!]
-                % mean only for first session
-                fn=dir(fullfile(pth,'mean*.nii'));
-                aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
+                sessdir = aas_getsesspath(aap,subj,sess);
+                aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
+                
+                % Get the realignment parameters...
+                fn=dir(fullfile(pth,'rp_*.txt'));
+                outpars = fullfile(pth,fn(1).name);
+                % Add it to the movement pars...
+                movPars = [movPars outpars];
+                
+                aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter', outpars);
+                
+                if find(sess==aap.acq_details.selected_sessions) == 1 % [AVG!]
+                    % mean only for first session
+                    fn=dir(fullfile(pth,'mean*.nii'));
+                    aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
+                end
             end
         end
         
