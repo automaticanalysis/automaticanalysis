@@ -26,7 +26,7 @@ end
 % Movements
 movePars=movePars-repmat(movePars(1,:),[size(movePars,1) 1]);
 
-movePars(:,4:6)=movePars(:,4:6)*180/pi; % convert to degrees!
+movePars(:,4:6)=movePars(:,4:6)*pi/180; % convert to degrees!
 
 mvmean=mean(movePars);
 mvmax=max(movePars);
@@ -54,7 +54,7 @@ ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
 
 % rotation over time series
 ax=axes('Position',[0.1 0.35 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-plot(RmovePars*180/pi,'Parent',ax); hold on;
+plot(RmovePars,'Parent',ax); hold on;
 plot(1:size(RmovePars,1),-QA_ROT*ones(1,size(RmovePars,1)),'k','Parent',ax)
 plot(1:size(RmovePars,1),QA_ROT*ones(1,size(RmovePars,1)),'k','Parent',ax)
 set(get(ax,'Title'),'String','Rotation (deg) [r: blue; p: green; j:red]','FontSize',16,'FontWeight','Bold');
