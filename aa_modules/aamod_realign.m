@@ -26,8 +26,10 @@ switch task
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
             
-            mv = load(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'));
-            
+            par = cellstr(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'));
+            parind = cell_index(par,'.txt');
+            mv = load(par{parind});
+
             aap.report.mvmax(subj,sess,:)=max(mv);
             % mvmean(sess,:)=mean(mv);
             % mvstd(sess,:)=std(mv);
