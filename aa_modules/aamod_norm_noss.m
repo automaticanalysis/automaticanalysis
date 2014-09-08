@@ -27,9 +27,12 @@ switch task
         end
     case 'doit'
         
+        
+        settings = aap.tasklist.currenttask.settings;
+        
         defs =aap.spm.defaults.normalise;
         defs.estimate.weight = '';
-        
+       
         % Template image; here template image not skull stripped
         % [AVG] Changed to allow specification of any T1 template, does not
         % need to be in the SPM folder any more...
@@ -66,6 +69,18 @@ switch task
         % Set the mask for subject to empty by default
         objMask = ''; % object mask
         
+        % Check if there is an affine starting estimate for this subject
+        allSubj = strcmp({settings.subject(:).name}, '*');
+        thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).mriname);
+        
+        if any(allSubj)
+            subjectOptions = settings.subject(allSubj);
+        elseif any(thisSubj)
+            subjectOptions = settings.subject(thisSubj);
+        else
+            subjectOptions = settings.subject(1);
+        end   
+        
         % Because we are going reslice later (with undistort_reslice)
         % We don't reslice anything except the image to be normalized
         
@@ -97,48 +112,64 @@ switch task
                 aas_log(aap,0,sprintf('Found more than one attenuated structural so using first:\n%s',Simg));
             end
             
-            estopts.regtype='mni';    % turn on affine again
+%             estopts.regtype='mni';    % turn on affine again
             
+            estopts = aap.spm.defaults.preproc;
+
             % Load header of image to be normalized
             V=spm_vol(mSimg);
             
             % Now adjust parameters according to starting offset parameters
             % as requested in task settings
-            StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
-            ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
-            if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
-                fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+            if ~isempty(subjectOptions.affineStartingEstimate)
+                startingParameters = subjectOptions.affineStartingEstimate;
+                
             else
-                fnames = [];
-            end
-            for fieldind=1:length(fnames)
-                % Which element in StartingParameters does this refer to?
-                whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
-                % Generate a helpful error if it isn't recognised
-                if (isempty(whichitem))
-                    err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
-                    err=[err sprintf('%s\t',ParameterFields)];
-                    aas_log(aap,true,err);
+                
+                startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
+                ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
+                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
+                    fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+                else
+                    fnames = [];
                 end
-                % Put this in its place
-                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
-                    StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
-                end;
+                
+                if ~isempty(fnames)
+                    aas_log(aap, 0, 'Warning: the option <affinestartinestimate> will soon be removed aamod_norm_noss. Please use the <subject> option to apply affine starting estimates');
+                end
+                
+                for fieldind=1:length(fnames)
+                    % Which element in StartingParameters does this refer to?
+                    whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
+                    % Generate a helpful error if it isn't recognised
+                    if (isempty(whichitem))
+                        err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
+                        err=[err sprintf('%s\t',ParameterFields)];
+                        aas_log(aap,true,err);
+                    end
+                    % Put this in its place
+                    if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
+                        startingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
+                    end;
+                end
+        
+ 
+                startingParameters = [0 0 0   0 0 0   1 1 1   0 0 0];
             end
-            
+
             %[AVG] Save original V.mat parameters
             oldMAT = V.mat;
             
             % Adjust starting orientation of object image as requested
-            StartingAffine=spm_matrix(StartingParameters);
-            V.mat=StartingAffine*V.mat;
+            startingAffine=spm_matrix(startingParameters);
+            V.mat=startingAffine*V.mat;
             
             % Run normalization
             out = spm_preproc(V,estopts);
             
             % Adjust output Affine to reflect fiddling of starting
             % orientation of object image
-            out.Affine=out.Affine*StartingAffine;
+            out.Affine=out.Affine*startingAffine;
             
             % [AVG] Instead we set the out.image parameters to our original
             % structural image!
@@ -233,29 +264,30 @@ switch task
         
         aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
         
-        %{
-        % Now save graphical check
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        % added graphical check for when segment is used [djm 20/01/06]
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
-                Simg, ... % native T1
-                fullfile(Spth,strcat('w',Simg)), ... % normalised T1
-                fullfile(Spth,strcat('c1m',Simg)))); % native grey matter segmentation
-            spm_check_registration(myvols)
-            
-            ann1=annotation('textbox',[.05 .96 .9 .03],'HorizontalAlignment','center','Color','r','String',strcat('Subject:...',Simg,',  processed on:...',date));
-            ann2=annotation('textbox',[.1 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','T1 template');
-            ann3=annotation('textbox',[.6 .89T1file1 .3 .025],'HorizontalAlignment','center','Color','r','String','Native T1');
-            ann4=annotation('textbox',[.1 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Normalised T1');
-            ann5=annotation('textbox',[.6 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Native segmented grey matter');
-            print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-        end
-        print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
-        end
-        %}
+%         [Spth img ext] = fileparts(Simg);
+%         
+%         % Now save graphical check
+%         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+%         % added graphical check for when segment is used [djm 20/01/06]
+%         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+%             myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
+%                 Simg, ... % native T1
+%                 fullfile(Spth,['w' img ext]), ... % normalised T1
+%                 fullfile(Spth,['c1' img(2:end) ext]))); % native grey matter segmentation
+%             spm_check_registration(myvols)
+%             
+%             ann1=annotation('textbox',[.05 .96 .9 .03],'HorizontalAlignment','center','Color','r','String',strcat('Subject:...',Simg,',  processed on:...',date));
+%             ann2=annotation('textbox',[.1 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','T1 template');
+%             ann3=annotation('textbox',[.6 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','Native T1');
+%             ann4=annotation('textbox',[.1 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Normalised T1');
+%             ann5=annotation('textbox',[.6 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Native segmented grey matter');
+% %             print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
+%         end
+%         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', [mfilename '_' aap.acq_details.subjects(subj).mriname '.jpeg']));
+%         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
+%             delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
+%         end
+        
         
     case 'checkrequirements'
         % Template image; here template image not skull stripped
