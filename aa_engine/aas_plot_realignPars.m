@@ -5,7 +5,7 @@ function RealPar = aas_plot_realignPars(aap,subj,sess,toDisp)
 QA_TRANSL = 2;
 QA_ROT = 8;
 
-EPIs = aas_getimages_bystream(aap,subj,sess,'epi');
+EPIs = aas_getfiles_bystream(aap,subj,sess,'epi');
 
 [pth, nme, ext] = fileparts(EPIs(1,:));
 Params = load(fullfile(pth, ['rp_' nme '.txt']));
