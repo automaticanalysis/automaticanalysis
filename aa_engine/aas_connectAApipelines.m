@@ -8,7 +8,7 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 % The "local" AA analysis is the one that is currently running (aap input)
 %
 % The "remote" AA analysis lives somewhere else (the remoteAAPfn input).
-% If this is a cell array of diretories (i.e., multiple AA locations), then
+% If this is a cell array of locations (i.e., multiple AA locations), then
 % priority is given to AA locations earlier in the list.  If a stream isn't
 % found in an earlier location, then it drops down to the next location.
 %
@@ -40,7 +40,7 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %                    If set to 0, disables caching. Should probably be set
 %                    to 0 if your remote AAPs live on the same local
 %                    machine.
-%                    If set to -1, will use caching behaviour determing by
+%                    If set to -1, will use caching behaviour indicated by
 %                    aap.directory_conventions.allowremotecache.
 %
 %     'maxstagetag': By default, we take data streams from the remote AAP
@@ -69,6 +69,8 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %
 % updates:
 %
+% cwild 2014-06-07: Major bug fix - wasn't properly searching parallel
+% branches for 
 % cwild 2014-04-02: Major update, added check for udpated data on the
 % remote
 % cwild 2014-03-18: misc cleaning
@@ -146,6 +148,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     %         end
     %     end
     
+    fprintf('Remote AAP %02d has %d modules in tasklist.main\n', locI, length(remoteAA{locI}.tasklist.main.module));
     
     local2remoteMaps{locI} = mapIndices('study', aap.directory_conventions.parallel_dependencies, aap, remoteAA{locI}, struct());
     
@@ -163,7 +166,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     for modI = 1 : maxModI
         mod = remoteAA{locI}.tasklist.main.module(modI);
         
-        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams')
+        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams') && isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams, 'stream')
             outputStreams = remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams.stream;
             if ~iscell(outputStreams), outputStreams = {outputStreams}; end
             
@@ -207,7 +210,7 @@ for modI = 1 : length(aap.tasklist.main.module)
             
             % If the input doesn't come from a previous module, let's add it to
             % the list of remote streams for this module.
-            if ~ismember(inputStreams{iI}, prevOutputs)
+            if ~ismember(inputStreams{iI}, prevOutputs) || isempty(aap.tasklist.main.module(modI).tobecompletedfirst)
                 
                 % Is the input stream present in the list of remote streams?
                 rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
@@ -234,36 +237,38 @@ for modI = 1 : length(aap.tasklist.main.module)
                     % Now check if the remote data has changed...
                     if remoteAAlocations(remoteOutput.locI).checkMD5
                         
-                        % First we have to find all possible locations of the target streams
-                        trgDomainTree = aas_dependencytree_finddomain(trgDomain, aap.directory_conventions.parallel_dependencies, {});
-                        NPerDomain = [];
-                        for tdI = 1 : length(trgDomainTree)
-                            NPerDomain(tdI) = aas_getN_bydomain(aap, trgDomainTree{tdI}, []);
-                        end
+%                         % First we have to find all possible locations of the target streams
+%                         trgDomainTree = aas_dependencytree_finddomain(trgDomain, aap.directory_conventions.parallel_dependencies, {});
+%                         NPerDomain = [];
+%                         for tdI = 1 : length(trgDomainTree)
+%                             NPerDomain(tdI) = aas_getN_bydomain(aap, trgDomainTree{tdI}, []);
+%                         end
+%                         
+%                         % Generate all possible indices for the target domain
+%                         trgIndices = zeros(prod(NPerDomain), length(trgDomainTree));
+%                         for tdI = 1: length(trgDomainTree)
+%                             trgIndices(:,tdI) = repmat(kron([1:NPerDomain(tdI)]', ones(prod(NPerDomain(tdI+1:end)), 1)), prod(NPerDomain(1:tdI-1)), 1);
+%                         end
+%                         
+%                         trgDomainTree = trgDomainTree(2:end);
+%                         trgIndices(:,1) = [];aas_dependencytree_allfromtrunk
                         
-                        % Generate all possible indices for the target domain
-                        trgIndices = zeros(prod(NPerDomain), length(trgDomainTree));
-                        for tdI = 1: length(trgDomainTree)
-                            trgIndices(:,tdI) = repmat(kron([1:NPerDomain(tdI)]', ones(prod(NPerDomain(tdI+1:end)), 1)), prod(NPerDomain(1:tdI-1)), 1);
-                        end
-                        
-                        trgDomainTree = trgDomainTree(2:end);
-                        trgIndices(:,1) = [];
-                        
+                        trgDeps = aas_dependencytree_allfromtrunk(aap, trgDomain);
+
                         % Check doneflags / MD5s for each occurence of this stream.
-                        for tdI = 1 : size(trgIndices, 1)
+                        for tdI = 1 : numel(trgDeps)
                             
                             resetThisStage = false;
                             
                             % If this stage has completed, but target data has changed, let's force it to re-run
-                            trgDoneFlag = aas_doneflag_getpath_bydomain(aap, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))), modI);
+                            trgDoneFlag = aas_doneflag_getpath_bydomain(aap, trgDeps{tdI}{1}, trgDeps{tdI}{2}, modI);
                             if (aas_doneflagexists(aap, trgDoneFlag))
                                 
                                 % It's also possible for streams to be written
                                 % to any subdomain of the source domain so we
                                 % have to go hunt for all of those.  This makes
                                 % this complicated :(
-                                possibleLocs = aas_getdependencies_bydomain(aap, srcDomain, trgDomain, trgIndices(tdI,1:find(strcmp(trgDomain, trgDomainTree))));
+                                possibleLocs = aas_getdependencies_bydomain(aap, srcDomain, trgDeps{tdI}{1}, trgDeps{tdI}{2});
                                 
                                 for lI = 1 : length(possibleLocs)
                                     
@@ -294,14 +299,14 @@ for modI = 1 : length(aap.tasklist.main.module)
                                             
                                             % Copy over the stream desc from the remote
                                             remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
-                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
-                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{locI},remoteOutput.modI)));
+                                            remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', inputStreams{iI}, aas_getstagetag(remoteAA{remoteOutput.locI}, remoteOutput.modI)));
+                                            localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, aas_getstagetag(remoteAA{remoteOutput.locI},remoteOutput.modI)));
                                             aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
                                             
                                             % If it didn't copy, then we should reset this stage
                                             if ~exist(localSrcDesc)
                                                 resetThisStage = true;
-                                                aas_log(aap, 0, sprintf('%s %s input %s REMOTE status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                                aas_log(aap, 0, sprintf('%s %s input %s REMOTE status UNKNOWN. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x),localIndices, 'UniformOutput', false)), remoteOutput.name), 'red');
                                             else
                                                 
                                                 % Compare the MD5s
@@ -315,7 +320,7 @@ for modI = 1 : length(aap.tasklist.main.module)
                                                 
                                                 if ~strcmp(trgMD5, srcMD5)
                                                     resetThisStage = true;
-                                                    aas_log(aap, 0, sprintf('%s %s input %s REMOTE status CHANGED. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), trgIndices(tdI,:), 'UniformOutput', false)), remoteOutput.name), 'red');
+                                                    aas_log(aap, 0, sprintf('%s %s input %s REMOTE status CHANGED. Forcing this stage to re-run.', mod.name, strjoin(arrayfun(@(x) sprintf('[%d]',x), localIndices, 'UniformOutput', false)), remoteOutput.name), 'red');
                                                 end
                                             end
                                         end
@@ -339,6 +344,8 @@ for modI = 1 : length(aap.tasklist.main.module)
                             isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
                             aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential
                         aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
+                    elseif ~isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) % Assume that if there is no schema for these streams that they are required!
+                        aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
                     end
                     
                 end
@@ -350,7 +357,7 @@ for modI = 1 : length(aap.tasklist.main.module)
         aap.aap_beforeuserchanges.tasklist.main.module(modI).remotestream = remoteStreams;
     end
     
-    if isfield(aap.tasksettings.(mod.name)(mod.index), 'outputstreams')
+    if isfield(aap.tasksettings.(mod.name)(mod.index), 'outputstreams') 
         if isfield(aap.tasksettings.(mod.name)(mod.index).outputstreams, 'stream')
             outputStreams = aap.tasksettings.(mod.name)(mod.index).outputstreams.stream;
             if ~iscell(outputStreams), outputStreams = {outputStreams}; end
