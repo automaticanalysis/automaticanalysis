@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_LouvainCluster' inheritfrom='aamod_groupLouvainCluster' desc='cluster voxels by connectivity fingerprints' modality='MRI'>
+
+            <inputstreams>
+                <stream>firstlevel_fConnMatrix_avg</stream>
+            </inputstreams>
+
+            <outputstreams>
+                
+                <!-- these streams are generated from each individual -->
+                <stream>subject_louvain_results</stream>
+                <stream>subject_module_info</stream>  
+                <stream>subject_individual_module_maps</stream>
+                <stream>subject_labelled_module_map</stream>
+       
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

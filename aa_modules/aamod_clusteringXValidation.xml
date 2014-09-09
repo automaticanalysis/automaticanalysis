@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Across subject validation of clustering created by leave-one-out subject Louvain Clustering' modality='MRI'>
+
+            <!-- Threshold for the number of voxels in a module -->
+            <minVoxPerMod>60</minVoxPerMod>
+            
+            <inputstreams>
+                <stream>group_module_info</stream>
+                <stream>N-1_module_info</stream> 
+                <stream>group_louvain_results</stream>
+                <stream>N-1_louvain_results</stream>
+                <stream ismodified='0'>firstlevel_fConnMatrix_avg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
