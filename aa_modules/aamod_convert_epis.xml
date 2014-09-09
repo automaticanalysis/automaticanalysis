@@ -16,6 +16,8 @@
                 
             <outputstats>1</outputstats>  <!-- output noise estimates and so on? -->
             
+            <numdummies></numdummies>
+
             <inputstreams>
                 <stream ismodified='0'>dicom_epi</stream>  
             </inputstreams>

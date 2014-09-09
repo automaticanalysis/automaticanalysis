@@ -462,12 +462,20 @@ switch task
             dumpnull=false;
         end
         
+        % From header of this module
+        if isfield(aap.tasklist.currenttask.settings,'numdummies') &&...
+                ~isempty(aap.tasklist.currenttask.settings.numdummies)
+            ndummies=aap.tasklist.currenttask.settings.numdummies;
+        else % backward compatibility
+            ndummies = aap.acq_details.numdummies;
+        end
+        
         % Now move dummy scans to dummy_scans directory
         dummylist=[];
-        if aap.acq_details.numdummies
+        if ndummies
             dummypath=fullfile(domainpath,'dummy_scans');
             aap=aas_makedir(aap,dummypath);
-            for d=1:aap.acq_details.numdummies
+            for d=1:ndummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
                 [pth nme ext]=fileparts(finalepis{d});
                 dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
@@ -485,7 +493,7 @@ switch task
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             finalepis = [finalepis(1:ind(2)-1) '.nii'];
-			spm_file_merge(char({V0(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
+			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0);
         end
         % And describe outputs
         aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
@@ -494,12 +502,12 @@ switch task
         aap=aas_desc_outputs(aap,domain,indices,'epi_dicom_header',dcmhdrfn);
 		
         % [TA modification]
-        %aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis(aap.acq_details.numdummies+1:end));
+        %aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis(ndummies+1:end));
         aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis);
         
         if dumpnull
-            aap=aas_desc_outputs(aap,domain,indices,'dummy_scans_nulled',finalepis_nulled(1:aap.acq_details.numdummies));
-            aap=aas_desc_outputs(aap,domain,indices,'epi_nulled',finalepis_nulled(aap.acq_details.numdummies+1:end));
+            aap=aas_desc_outputs(aap,domain,indices,'dummy_scans_nulled',finalepis_nulled(1:ndummies));
+            aap=aas_desc_outputs(aap,domain,indices,'epi_nulled',finalepis_nulled(ndummies+1:end));
         end
       
     case 'checkrequirements'

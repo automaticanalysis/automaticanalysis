@@ -21,7 +21,12 @@ switch task
         % Now move dummy scans to dummy_scans directory
         
         % From header of this module
-        ndummies=aap.tasklist.currenttask.settings.numdummies;
+        if isfield(aap.tasklist.currenttask.settings,'numdummies') &&...
+                ~isempty(aap.tasklist.currenttask.settings.numdummies)
+            ndummies=aap.tasklist.currenttask.settings.numdummies;
+        else % backward compatibility
+            ndummies = aap.acq_details.numdummies;
+        end
         
         dummylist=[];
         if ndummies
