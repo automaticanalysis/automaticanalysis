@@ -147,7 +147,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     %     end
     
     
-    local2remoteMaps{locI} = mapIndices('study', aap.directory_conventions.parallel_dependencies, aap, remoteAA{locI}, struct());
+    local2remoteMaps{locI} = aas_mapindices_betweenAAPs(aap, remoteAA{locI});
     
     maxModI = [];
     
@@ -178,6 +178,7 @@ for locI = length(remoteAAlocations) : -1 : 1
                 else
                     remoteOutputs(streamI).modI = modI;
                     remoteOutputs(streamI).locI = locI;
+%                     remoteOutputs(streamI).depI = aas_getmoduleindexfromtag(remoteAA{locI}, mod.tobecompletedfirst); % We can follow the dependency pointers to follow specific branches.
                 end
                 
             end
@@ -188,7 +189,7 @@ end
 % Track the names of output streams from modules in the local analysis.  If
 % a stream is an output from a previous stage in the local AA, then we
 % don't bother trying to connect it from the remote AA.
-prevOutputs = struct('streamname', {}, 'stagetag', {});
+allPrevOutputs = struct('streamname', {}, 'stagetag', {}, 'moduleInd', {}, 'dependentOn', {});
 
 aas_log(aap,0,'Checking status of remote streams...');
 
@@ -212,16 +213,27 @@ for modI = 1 : length(aap.tasklist.main.module)
             
             % Is it fully qualified, with source module stage tag as well (e.g.,
             %   <stream>aamod_coreg_extended_1_00001.structural</stream>  
-            if isempty(prevOutputs)
+            if isempty(allPrevOutputs)
                 foundPrevious=false;
             else
                 if any(inputStreams{iI}=='.')
                     [inputStageTag rem]=strtok(inputStreams{iI},'.');
                     inputStreamName=strtok(rem,'.');
-                    foundPrevious=any([strcmp(inputStreamName,{prevOutputs.streamname})] & [strcmp(inputStageTag,{prevOutputs.stagetag})]);
+                    foundPrevious=any([strcmp(inputStreamName,{allPrevOutputs.streamname})] & [strcmp(inputStageTag,{allPrevOutputs.stagetag})]);
                 else
-                    % not fully qualified
-                    foundPrevious=ismember(inputStreams{iI}, {prevOutputs.streamname});
+                    % not fully qualified, follow the curent branch back
+                    % up to the top looking for the stream
+                    foundPrevious = false;
+                    prevModI = -1;
+                    if ~isempty(mod.tobecompletedfirst)
+                        prevModI = aas_getmoduleindexfromtag(aap, mod.tobecompletedfirst{1});
+                    end
+                    while ~foundPrevious && prevModI > 0
+                        prevModOutputsI = [allPrevOutputs.moduleInd] == prevModI; % outputs of the module that comes before this one in this branch
+                        prevModOutputs = allPrevOutputs(prevModOutputsI);
+                        foundPrevious = ismember(inputStreams{iI}, {prevModOutputs.streamname});
+                        prevModI = prevModOutputs(1).dependentOn;
+                    end
                 end
             end
             
@@ -381,7 +393,10 @@ for modI = 1 : length(aap.tasklist.main.module)
             
             % Update outputs present in the local AA
             for oI = 1 : length(outputStreams) 
-                prevOutputs(end+1) = struct('streamname', outputStreams{oI}, 'stagetag', stagetag);
+                allPrevOutputs(end+1) = struct('streamname', outputStreams{oI}, 'stagetag', stagetag, 'moduleInd', modI, 'dependentOn', -1);
+                if ~isempty(mod.tobecompletedfirst)
+                    allPrevOutputs(end).dependentOn = aas_getmoduleindexfromtag(aap, mod.tobecompletedfirst{1});
+                end
             end
         end
     end
@@ -390,22 +405,4 @@ end
 
 end
 
-function map = mapIndices(curDomain, localTree, localAA, remoteAA, map)
 
-localDomainNames = aas_getNames_bydomain(localAA, curDomain);
-remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
-
-if ~strcmp(curDomain, 'study')
-    [~,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
-    
-else
-    map.(curDomain) = 1;
-end
-
-if isstruct(localTree.(curDomain))
-    subTrees = fieldnames(localTree.(curDomain));
-    for tI = 1 : numel(subTrees)
-        map = mapIndices(subTrees{tI}, localTree.(curDomain), localAA, remoteAA, map);
-    end
-end
-end

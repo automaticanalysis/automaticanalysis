@@ -69,42 +69,21 @@ for depind=1:length(deps)
         % version on the remote machine
         if ~isfield(aap_remote.directory_conventions,'parallel_dependencies')
             aap_remote.directory_conventions.parallel_dependencies=aap.directory_conventions.parallel_dependencies;
-            aas_log(aap,false,'Remote aap does not contain parallel_dependencies field - probably from older aa');
+            aas_log(aap,false,'Warning: Remote aap does not contain parallel_dependencies field - probably from older aa');
         end;
-        % Get remote directory
-        remoteindices=indices;
-        if length(indices)>2
-            findsession=find(strcmp(aap.acq_details.sessions(indices(2)).name,{aap_remote.acq_details.sessions.name}));
-            if isempty(findsession)
-                aas_log(aap,true,sprintf('Error loading remote file with stage tag %s as could not find session called %s',inputstream.sourcestagename,aap.acq_details.sessions(indices(2)).name));
-            end;
-            remoteindices(2)=findsession;
-        end;
-        src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
+
+        % Map the local indices to remote indices
+        indexMap = aas_mapindices_betweenAAPs(aap, aap_remote);
+        localTree = aas_dependencytree_finddomain(domain, aap.directory_conventions.parallel_dependencies, {});
+        remoteindices = arrayfun(@(x,y) indexMap.(x{1})(y), localTree, [1 indices]);
+        remoteindices(1) = []; % pop the study index, we never seem to use that.
         
-        remoteindices = indices;
-        
-        % Get/Check/Fix Index
-        switch numel(indices)
-            case 0 % Study
-                
-            case 1 % Subject
-                subMatch = strcmp(aap.acq_details.subjects(indices(1)).mriname, {aap_remote.acq_details.subjects.mriname});
-                if ~any(subMatch)
-                    aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have subject: %s', inputstream.sourcestagename, inputstream.host, remoteAAPfn, aap.acq_details.subjects(indices(1)).mriname));
-                else
-                    remoteindices(1) = find(subMatch);
-                end
-            otherwise % > 1: Session
-                if ~isempty(aap.acq_details.sessions(indices(2)).name)
-                    sessMatch = strcmp(aap.acq_details.sessions(indices(2)).name, {aap_remote.acq_details.sessions.name});
-                    if ~any(sessMatch)
-                        aas_log(aap, 1, sprintf('Remote AAP (%s) doesn''t have session: %s', inputstream.sourcestagename, aap.acq_details.sessions(indices(2)).name));
-                    else
-                        remoteindices(2) = find(sessMatch);
-                    end
-                end
+        if any(remoteindices == 0)
+            badIndex = find(remoteindices==0,1,'first');
+            domainItems = aas_getNames_bydomain(aap, domain);
+            aas_log(aap, 1, sprintf('Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
         end
+        
         
         % IT's possible that AAPs from different versions of AA have
         % different dependency lists... let's not error if that;s the case.

@@ -3,7 +3,6 @@
 % the domain is 'session' we return the session names. As you add new
 % domains, add the appropriate thing here.
 %   domain='subject','session' etc
-%   index= number of item
 %
 % Added by CW: 2014-04-02
 %
