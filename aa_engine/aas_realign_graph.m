@@ -26,7 +26,7 @@ end
 % Movements
 movePars=movePars-repmat(movePars(1,:),[size(movePars,1) 1]);
 
-movePars(:,4:6)=movePars(:,4:6)*pi/180; % convert to degrees!
+movePars(:,4:6)=movePars(:,4:6)/pi*180; % convert to degrees!
 
 mvmean=mean(movePars);
 mvmax=max(movePars);
