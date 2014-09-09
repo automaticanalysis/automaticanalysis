@@ -56,8 +56,10 @@ switch task
         settings = aap.tasklist.currenttask.settings;
         
         if settings.useaasessions
-            sessnames = {aap.acq_details.sessions.name};
-            selected_sessions = aap.acq_details.selected_sessions;
+            [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+            subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+            sessnames = {aap.acq_details.sessions(subjSessionI).name};
+            selected_sessions = subjSessionI;
             nsess = length(selected_sessions);
             nsess_all = length(sessnames);
         else
@@ -169,6 +171,12 @@ switch task
                             end
                             sessnuminspm=sessnuminspm+1;
                         end
+                        
+                        % If subjects have different # of sessions, then
+                        % they will be weighted differently in 2nd level
+                        % model. So, normalize the contrast by the number
+                        % of sesisons that contribute to it [CW]
+                        convec = convec ./ nnz(sessforcon); 
                         
                     case 'uniquebysession'
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
