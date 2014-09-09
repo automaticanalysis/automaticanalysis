@@ -29,15 +29,37 @@ switch task
     case 'doit'
         % Get subject directory
         cwd=pwd;
-
-        % We can now have missing sessions per subject, so we're going to use only
+        
+ 		% We can now have missing sessions per subject, so we're going to use only
         % the sessions that are common to this subject and selected_sessions
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+
+        % Add PPI if exist
+        modname = aap.tasklist.currenttask.name;
+        modnameind = regexp(modname, '_\d{5,5}$');
+        modindex = str2num(modname(modnameind+1:end));
+        for sess = subjSessionI
+            if aas_stream_has_contents(aap,subj,sess,'ppi')
+                load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
+                [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    'PPI',PPI.ppi,0,1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    ['Psych_' psych],PPI.P,0,1);
+                aap = aas_addcovariate(aap,modname,...
+                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                    ['Phys_' phys],PPI.Y,0,1);
+            end
+        end
+        % update current sesstings
+        aap.tasklist.currenttask.settings.modelC = aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC;
         
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subj);
-        
+
         % Get all the nuisance regressors...
         [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs] = ...
             aas_firstlevel_model_nuisance(aap, subj, files);
@@ -95,7 +117,12 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
-        spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
+        % avoid overwrite dialog
+        prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+        if ~isempty(prevmask)
+            spm_unlink(fullfile(SPM.swd, prevmask)); 
+        end
+                
         SPMest = spm_spm(SPMdes);
 
         %% Describe outputs

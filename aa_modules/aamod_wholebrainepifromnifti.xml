@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_structuralfromnifti' desc='Find wholebrain EPI input files from nifti' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <rejectimages></rejectimages>
+            
+            <inputstreams>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>wholebrain_epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

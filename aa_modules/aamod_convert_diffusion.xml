@@ -10,6 +10,8 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <numdummies>0</numdummies>
+            
             <inputstreams>
                 <stream>dicom_diffusion</stream>
             </inputstreams>

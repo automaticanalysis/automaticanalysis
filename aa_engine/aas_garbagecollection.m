@@ -21,6 +21,13 @@ if ~exist('aap','var') || ~isstruct(aap)
         load('aap_parameters');
     end
 end
+
+% Reset paths to initial state, rather than those for a specific module
+if isfield(aap,'internal') && isfield(aap.internal,'aap_initial')
+    aap=aas_setcurrenttask(aap);
+end;
+
+% Get study path
 studypath = fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid);
 if ~exist(studypath,'dir')
     aas_log(aap,true,sprintf('Study %s not found',studypath));
@@ -76,15 +83,19 @@ for modind=modulestoscan
     fprintf('\nWorking on task %s\n', aap.tasklist.currenttask.name)
     
     for streamname=aap.tasklist.currenttask.inputstreams.stream
-        try
-        streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1},aap.tasklist.currenttask.name);
-        catch
-            disp('asdf');
+        if ~isstruct(streamname{1})
+            streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1},aap.tasklist.currenttask.name);
+        else
+            streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1}.CONTENT,aap.tasklist.currenttask.name);
         end
         inps=[inps findstreamfiles(aap,streamfn)];
     end
     for streamname=aap.tasklist.currenttask.outputstreams.stream
-        streamfn=sprintf('stream_%s_outputfrom_%s.txt',streamname{1},aap.tasklist.currenttask.name);
+        if ~isstruct(streamname{1})
+            streamfn=sprintf('stream_%s_outputfrom_%s.txt',streamname{1},aap.tasklist.currenttask.name);
+        else
+            streamfn=sprintf('stream_%s_outputfrom_%s.txt',streamname{1}.CONTENT,aap.tasklist.currenttask.name);
+        end        
         outs=[outs findstreamfiles(aap,streamfn)];
     end
     
@@ -185,6 +196,7 @@ for subjind=1:length(aap.acq_details.subjects)
         pthstocheck=[pthstocheck aas_getsesspath(aap,subjind,sessind)];
     end
 end
+pthstocheck = unique(pthstocheck); % remove duplicates (e.g. structural "session")
 % Check to see which of these exist
 streampths={};
 for pthind=1:length(pthstocheck)

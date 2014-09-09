@@ -22,15 +22,21 @@ switch (domain)
     case {'searchlight_package','hyperalignment_searchlight_package'}
         N=aap.options.searchlight.Npackage;
         I=1:N;
-       
+        
     case 'session'
-        if iscell(aap.acq_details.subjects(indices(1)).seriesnumbers)
-            N = cellfun(@(x) ~isempty(x), aap.acq_details.subjects(indices(1)).seriesnumbers);
-            I = find(N);
-            N = sum(N);
+        
+        if isempty(indices)
+            N = length(aap.acq_details.sessions);
+            I = 1 : N;
         else
-            N=sum(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
-            I=find(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+            if iscell(aap.acq_details.subjects(indices(1)).seriesnumbers)
+                N = cellfun(@(x) ~isempty(x), aap.acq_details.subjects(indices(1)).seriesnumbers);
+                I = find(N);
+                N = sum(N);
+            else
+                N=sum(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+                I=find(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+            end
         end
         
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}

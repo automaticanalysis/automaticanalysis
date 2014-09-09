@@ -14,7 +14,7 @@ switch task
         resp='study';   % this module needs to be run once per study
         
     case 'description'
-        resp='SPM5 second level (RFX) model';
+        resp='SPM second level (RFX) model';
         
     case 'summary'
         subjpath=aas_getsubjpath(i);
@@ -99,6 +99,7 @@ switch task
                 %=======================================================================
                 
                 SPM.nscan = nsub;
+                SPM.swd = rfxdir;
                 
                 for s=1:nsub
                     foundit=false;
@@ -153,7 +154,12 @@ switch task
                 
                 % Estimate parameters
                 %===========================================================================
-                spm_unlink(fullfile('.', 'mask.img')); % avoid overwrite dialog
+                % avoid overwrite dialog
+                prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+                if ~isempty(prevmask)
+                    spm_unlink(fullfile(SPM.swd, prevmask));
+                end
+                
                 SPM = spm_spm(SPM);
                 
                 
@@ -163,15 +169,12 @@ switch task
                 aap=aas_desc_outputs(aap,'secondlevel_spm',fullfile(rfxdir,'SPM.mat'));
                 
                 %  secondlevel_betas (includes related statistical files)
-                allbetas=dir(fullfile(rfxdir,'beta_*'));
-                betafns=[];
-                for betaind=1:length(allbetas);
-                    betafns=strvcat(betafns,fullfile(rfxdir,allbetas(betaind).name));
-                end;
-                otherfiles={'mask.hdr','mask.img','ResMS.hdr','ResMS.img','RPV.hdr','RPV.img'};
-                for otherind=1:length(otherfiles)
-                    betafns=strvcat(betafns,fullfile(rfxdir,otherfiles{otherind}));
-                end;
+                allbetas=vertcat(...
+                    dir(fullfile(rfxdir,'beta_*')),...
+                    dir(fullfile(rfxdir,'ResMS.*')),...
+                    dir(fullfile(rfxdir,'RPV.*')),...
+                    dir(fullfile(rfxdir,'mask.*')));
+                betafns=strcat(repmat([rfxdir filesep],[numel(allbetas) 1]),char({allbetas.name}));
                 aap=aas_desc_outputs(aap,'secondlevel_betas',betafns);
             end
         end;

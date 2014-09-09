@@ -5,39 +5,59 @@
 % Changed domain to once per session for improved performance when parallel
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write(aap,task,subj,sess)
+function [aap,resp]=aamod_norm_write(aap,task,varargin)
 
 resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist('sess','var'), sess = 1; end
+        subj = varargin{1};
+        if nargin == 4
+            sess = varargin{2};
+            localpath = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]);
+        else % subject
+            localpath = aas_getpath_bydomain(aap,'subject',subj);
+        end
+        
         % find out what streams we should normalise
-		streams=aap.tasklist.currenttask.outputstreams.stream;
-        for streamind=1:length(streams)
-            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI.jpg'];
-            if ~exist(fullfile(aas_getsesspath(aap,subj,sess),fn),'file')
-                fsl_diag(aap,subj,sess);
+		streams=aas_getstreams(aap,'out');
+        if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
+            inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
+        else
+            inds = 1:length(streams);
+        end
+        for streamind = inds
+            streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
+            streamfn = streamfn(1,:);
+            streamfn = strtok_ptrn(basename(streamfn),'-0');
+            fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
+            if ~exist(fullfile(localpath,fn),'file')
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'structural');
             end
             % Single-subjetc
-            fdiag = dir(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_*.jpg'));
+            fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
             for d = 1:numel(fdiag)
                 aap = aas_report_add(aap,subj,'<table><tr><td>');
-                aap=aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),fdiag(d).name));
+                imgpath = fullfile(localpath,fdiag(d).name);
+                aap=aas_report_addimage(aap,subj,imgpath);
+                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
             % Study summary
             aap = aas_report_add(aap,'reg',...
-                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' basename(aas_getsesspath(aap,subj,sess)) ]);
-            aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,subj,sess),fn));
+                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
+            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
         end
     case 'doit'
+        subj = varargin{1};
+        if nargin == 4, sess = varargin{2}; end
         
+        % Is session specified in task header?
+        if (isfield(aap.tasklist.currenttask.settings,'session'))
+            sess = aap.tasklist.currenttask.settings.session;
+        end        
         voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
-        
-        % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,subj);
         
         % get sn mat file from normalisation
         matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
@@ -45,24 +65,19 @@ switch task
 		% find out what streams we should normalise
         streams=aap.tasklist.currenttask.outputstreams.stream;
         
-        % Is session specified in task header?
-        if (isfield(aap.tasklist.currenttask.settings,'session'))
-            sess = aap.tasklist.currenttask.settings.session;
-        end
-        
         for streamind=1:length(streams)
             imgs = [];
             % Image to reslice
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             if exist('sess','var')
-                P = aas_getfiles_bystream(aap,subj,sess,streams{streamind});
+                P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind});
             else
                 P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end
             
             % exclude image already normalised
             f = basename(P);
-            P = P(f(:,1) ~= 'w',:);
+            P = P(f(:,1) ~= aap.spm.defaults.normalise.write.prefix,:);
             
             imgs = strvcat(imgs, P);
             
@@ -95,12 +110,37 @@ switch task
             % describe outputs
             for fileind=1:size(imgs,1)
                 [pth, nme, ext] = fileparts(imgs(fileind,:));
-                wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
+                % overwrite input with output if specified (e.g. for contrasts)
+                if isfield(aap.tasklist.currenttask.settings.outputstreams,'preservefilename') && ...
+                        aap.tasklist.currenttask.settings.outputstreams.preservefilename
+                    movefile(fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]),imgs(fileind,:));
+                    wimgs = strvcat(wimgs,imgs(fileind,:));
+                else
+                    wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
+                end
             end
+            
+            % binarise if specified
+            if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
+                for e = 1:size(wimgs,1)
+                    inf = spm_vol(deblank(wimgs(e,:)));
+                    Y = spm_read_vols(inf);
+                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
+                    nifti_write(deblank(wimgs(e,:)),Y,'Binarized',inf)
+                end
+            end 
+            
+            % describe outputs with diagnostoc
             if (exist('sess','var'))
-                aap=aas_desc_outputs(aap,subj,sess,streams{streamind},wimgs);
+                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
+                end
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    aas_checkreg(aap,subj,streams{streamind},'structural');
+                end
             end
         end
         
@@ -109,37 +149,4 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
-end
-
-function fsl_diag(aap,i,j) % [TA]
-% Create FSL-like overview using T1 instead of the template
-
-% find out what streams we should normalise
-streams=aap.tasklist.currenttask.outputstreams.stream;
-for streamind=1:length(streams)
-    if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-    % Obtain the structural
-	sP = aas_getfiles_bystream(aap,i,'structural');
-	sP = sP(2,:); % (first: native, second: nomralised)
-    if (strcmp(aap.tasklist.currenttask.domain,'session'))
-        % Obtain the first EPI
-        fP = aas_getimages_bystream(aap,i,j,streams{streamind});
-    else
-        fP = aas_getfiles_bystream(aap,i,streams{streamind});
-    end
-    [pP, fP, eP] = fileparts(fP(1,:));
-    fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
-    % Overlays
-    sess_dir = aas_getsesspath(aap,i,j);
-    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' streams{streamind} '2MNI']);
-    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
-    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-    iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2' streams{streamind}]);
-    aas_runfslcommand(aap,sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
-    [img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-    img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-    imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-end
 end

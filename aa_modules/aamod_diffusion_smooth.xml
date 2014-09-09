@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_smooth' domain='diffusion_session' desc='SPM smooth' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <FWHM>2.5</FWHM>
+            
+            <inputstreams>
+                <stream ismodified='0'>diffusion_data</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>diffusion_data</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

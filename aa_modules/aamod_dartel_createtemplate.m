@@ -74,7 +74,10 @@ switch task
             for t = 1:6
                settings.param(t).template = {template(t,:)};
             end
-            spm_dartel_warp(struct('images', {imgNoTemplate}, 'settings', settings));
+            out = spm_dartel_warp(struct('images', {imgNoTemplate}, 'settings', settings));
+            for f = 1:numel(out.files)
+                movefile(out.files{f},strrep(out.files{f},'.nii','_Template.nii'),'f');
+            end
         end
 
         % describe outputs

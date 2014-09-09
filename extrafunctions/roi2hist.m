@@ -53,7 +53,7 @@ end
 colorsB = aas_colours;
 
 % We need to make a string for eval, that will print the legend...
-legStr = 'legend(';
+legStr = 'h = legend(';
 for r = 1:length(ROIimg)
     legStr = [legStr ...
         'sprintf(''%s; mn=%.2f; SD=%.2f; med=%.0f; (%.0fv) %s'', ' ...
@@ -104,3 +104,4 @@ ylabel('Proportion of voxels')
 set(gca,'XTick', 0:ceil(maxI./20):maxI)
 
 eval(legStr);
+set(h,'interpreter','none');

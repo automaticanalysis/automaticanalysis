@@ -11,6 +11,7 @@ switch task
         
         Stats = []; meanSimil = [];% Statistic structure that we load for each participant
         for p = 1:length(aap.acq_details.subjects)
+                        
             load(aas_getfiles_bystream(aap,p,'MVPaa'));
             
             if p == 1

@@ -7,6 +7,10 @@ function [aap]=aa_report(studyroot,stages)
 
 fprintf('Fetching report started...\n');
 
+if isstruct(studyroot)
+    studyroot=fullfile(aas_getstudypath(studyroot),studyroot.directory_conventions.analysisid);
+end;
+
 % First, load AAP structure
 if exist('studyroot','var')
     cd(studyroot);
@@ -62,8 +66,13 @@ nSessions = numel(aap.acq_details.sessions);
 for k=1:numel(stages)
     fprintf('Fetching report for %s...\n',stages{k});    
     % domain
-    xml = xml_read([stages{k} '.xml']);
+    if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
+        xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
+    else
+        xml = xml_read([stages{k} '.xml']);
+    end
     mfile_alias = stages{k};
+    if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
     domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
     

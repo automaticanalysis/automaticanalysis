@@ -12,7 +12,11 @@ switch task
         settings = aap.tasklist.currenttask.settings;
         UFp = 0.001;
         
-                % New option to allow suffix to output file in extraparameters
+        if ischar(settings.cells)
+            settings.cells = eval(settings.cells);
+        end
+        
+        % New option to allow suffix to output file in extraparameters
         if (isfield(aap.tasklist.currenttask.extraparameters,'stats_suffix'))
             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
         else
@@ -42,6 +46,8 @@ switch task
             conFiles{subI} = aas_getfiles_bystream(aap, subI, 'firstlevel_cons');
             
         end
+        
+
         
         allCellImgs = [];
         colNames = {};

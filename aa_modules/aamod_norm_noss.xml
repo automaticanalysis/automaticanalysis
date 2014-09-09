@@ -54,7 +54,7 @@
             <bias1stpass desc='1st pass with bias correction, to improve robustness'
             >1</bias1stpass>
             
-            <diagnostic>0</diagnostic>
+            <diagnostic>1</diagnostic>
         
             </currenttask>
     </tasklist>

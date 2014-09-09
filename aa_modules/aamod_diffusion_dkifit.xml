@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='Run DKI fit (by Rafael Henriques)'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+                        
+            <inputstreams>
+                <stream>bvals</stream>
+                <stream>bvecs</stream>
+                <stream>diffusion_data</stream>
+                <stream>BETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dki_FA</stream>
+                <stream>dki_MD</stream>
+                <stream>dki_L1</stream>
+                <stream>dki_L2</stream>
+                <stream>dki_L3</stream>
+                <stream>dki_V1</stream>
+                <stream>dki_V2</stream>
+                <stream>dki_V3</stream>
+                <stream>dki_MK</stream>
+                <stream>dki_RK</stream>
+                <stream>dki_AK</stream>
+                <stream>dki_S0</stream>
+                <stream>dki_dMK</stream>
+                <stream>dki_dMD</stream>
+                <stream>dki_dS0</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
