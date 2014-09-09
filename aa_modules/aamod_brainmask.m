@@ -35,7 +35,11 @@ switch task
         [Y, XYZ] = spm_read_vols(V);
         
         % Binarize based on threshold and rename
-        Y = Y > thresh;
+        if ~isempty(thresh)
+            Y = Y > thresh;
+        else
+            Y = Y > mean(Y(:));
+        end
         V.fname = threshFilename;
         V.descrip = sprintf('%s thresholded at %g by aamod_brainmask', gmImg, thresh);
         
