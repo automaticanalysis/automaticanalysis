@@ -466,7 +466,11 @@ global tmpldir;
 		  V.dt = [16 0];
 		  V.descrip = ['Max total displacement (mm at scan #' num2str(maxp) '); data from ' p];
 		  spm_write_vol(V,store_td(:,:,:,maxp));
-		  spm_check_registration(char(V.fname));
+          try
+            spm_check_registration(char(V.fname));
+          catch
+              disp('   ... desktop is not available...');
+          end
 
 
 		% save results (only in debug mode)
