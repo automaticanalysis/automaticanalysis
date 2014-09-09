@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask  mfile_alias='aamod_brainmask' domain='subject' desc='Create thresholded mask from mean EPI' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>meanepi</stream>
+            </inputstreams>
+            
+            <outputstreams>               
+                <stream>epiBETmask</stream>
+            </outputstreams>
+            
+            <thresh>0.99</thresh>
+            <reslice></reslice>
+            <fwhm></fwhm>
+     
+        </currenttask>
+    </tasklist>
+</aap>
