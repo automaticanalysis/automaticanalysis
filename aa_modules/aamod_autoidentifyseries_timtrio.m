@@ -79,7 +79,8 @@ switch task
                 rawdata_allseries=unique(serieslist)
                 
                 for j=1:length(rawdata_allseries);
-                    aas_log(aap,false,sprintf('Series %d with %d dicom files',rawdata_allseries(j),length(alldicomfiles{rawdata_allseries(j)}))); 
+                     hdr=spm_dicom_headers(alldicomfiles{rawdata_allseries(j)}{1});
+                    aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries(j), hdr{1}.ProtocolName, length(alldicomfiles{rawdata_allseries(j)}))); 
                 end
             case 's3'
                 % Use delimiter to get series names as CommonPrefixes
