@@ -47,9 +47,18 @@ switch task
             dataEigen{sessInd} = zeros(nTime, nVoi);
             
             for voiInd = 1:nVoi
-                dataMean{sessInd}(:,voiInd) = vois(voiInd).data.mean;
-                dataEigen{sessInd}(:,voiInd) = vois(voiInd).data.firsteigenvalue;                
-            end                        
+                if ~isfield(vois(voiInd).data, 'mean')
+                    dataMean{sessInd}(:,voiInd) = nan(nTime, 1);
+                else
+                    dataMean{sessInd}(:,voiInd) = vois(voiInd).data.mean;
+                end
+                
+                if ~isfield(vois(voiInd).data, 'firsteigenvalue')
+                    dataEigen{sessInd}(:,voiInd) = nan(nTime, 1);
+                else
+                    dataEigen{sessInd}(:,voiInd) = vois(voiInd).data.firsteigenvalue;
+                end
+            end
         end
         
         
@@ -61,8 +70,10 @@ switch task
             [rMean, pMean] = corr(vertcat(dataMean{:}), 'type', settings.correlationtype);
             [rEigen, pEigen] = corr(vertcat(dataEigen{:}), 'type', settings.correlationtype);
         else
-           aas_log(aap, true, 'Not concatenating is not implemented for now, sorry'); 
-            
+           for sessInd = 1:nSessions
+              [rMean(:,:,sessInd) pMean(:,:,sessInd)] =  corr(dataMean{sessInd}, 'type', settings.correlationtype);
+              [rEigen(:,:,sessInd) pEigen(:,:,sessInd)] =  corr(dataEigen{sessInd}, 'type', settings.correlationtype);
+           end
         end                        
         
         % output
