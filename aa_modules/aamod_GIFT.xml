@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Prepare Group ICA analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <parameterFile>GIFT_FastICA_Defaults.mat</parameterFile>
+
+            <numICs>40</numICs>
+            
+            <!-- Time series preprocessing:
+                'remove mean per timepoint'
+                'variance normalization'
+            -->
+            <preproc>remove mean per timepoint</preproc>
+            <PCA1>30</PCA1>
+            <PCA2>30</PCA2>
+            
+            <inputstreams>
+                <stream>firstlevel_brainmask</stream>    
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>gift</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
