@@ -231,8 +231,13 @@ for modI = 1 : length(aap.tasklist.main.module)
                     while ~foundPrevious && prevModI > 0
                         prevModOutputsI = [allPrevOutputs.moduleInd] == prevModI; % outputs of the module that comes before this one in this branch
                         prevModOutputs = allPrevOutputs(prevModOutputsI);
-                        foundPrevious = ismember(inputStreams{iI}, {prevModOutputs.streamname});
-                        prevModI = prevModOutputs(1).dependentOn;
+                        
+                        if isempty(prevModOutputs)
+                            prevModI = aas_getmoduleindexfromtag(aap, aap.tasklist.main.module(prevModI).tobecompletedfirst{1});
+                        else
+                            foundPrevious = ismember(inputStreams{iI}, {prevModOutputs.streamname});
+                            prevModI = prevModOutputs(1).dependentOn;
+                        end
                     end
                 end
             end
