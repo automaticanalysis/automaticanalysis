@@ -69,6 +69,12 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %
 % updates:
 %
+% rhodri & cwild 2014-09-*: Update to allow fully qualified stream names in
+% local and remote analyses. E.g., using aamod_realign_00001.epi to fetch
+% the epi stream from the realign stage of a remote analysis, instead of
+% the last occurence of epi.
+% cwild 2014-09-09: output/input stream searching respects branches in the
+% local and remote analyses.
 % cwild 2014-04-02: Major update, added check for udpated data on the
 % remote
 % cwild 2014-03-18: misc cleaning
@@ -163,8 +169,11 @@ for locI = length(remoteAAlocations) : -1 : 1
     for modI = 1 : maxModI
         mod = remoteAA{locI}.tasklist.main.module(modI);
         
-        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams')
+        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams') && ...
+                isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams, 'stream')
+            
             outputStreams = remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams.stream;
+
             if ~iscell(outputStreams), outputStreams = {outputStreams}; end
             
             % add all outputs to the end of the list
