@@ -133,12 +133,12 @@ switch task
             % describe outputs with diagnostoc
             if (exist('sess','var'))
                 aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle')
+                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
                     aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
                 end
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle')
+                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
                     aas_checkreg(aap,subj,streams{streamind},'structural');
                 end
             end
