@@ -9,6 +9,8 @@
             <!-- Contrast indices that will be put into cells -->
             <cells></cells>
  
+            <subjectfactor>1</subjectfactor>
+            
             <!-- indicate whether variances are equal (0) or unequal (1) between levels -->
             <variance>0</variance>
             
