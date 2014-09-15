@@ -145,6 +145,7 @@
 			<list desc='List of subjects and sessions' ui='dir'></list>
 			<selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
 			<referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+			<correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
 		</input>
 	  
         <subjects>
