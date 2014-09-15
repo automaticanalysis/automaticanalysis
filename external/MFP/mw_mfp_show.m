@@ -14,7 +14,7 @@ pres = 150;
 
 % get handle & average voxel size
 fn=dir(fullfile(p,'mw_motmask.*'));
-V = spm_vol(fn(1).name);
+V = spm_vol(fullfile(p,fn(1).name));
 vs = (abs(V.mat(1,1))+abs(V.mat(2,2))+abs(V.mat(3,3))) / 3;
 
 % create graphics
@@ -193,8 +193,9 @@ end;
 title('... and X & Y.');
 
 % print
-motname = [p filesep 'mw_motion.png'];
+motname = [p filesep 'mw_motion.jpg'];
 osu = get(gcf1,'Units'); opu = get(gcf1,'PaperUnits'); opp = get(gcf1,'PaperPosition');
 set(gcf1,'Units','pixels'); scrpos = get(gcf1,'Position'); newpos = scrpos/100;
 set(gcf1,'PaperUnits','inches','PaperPosition',newpos);
 print(gcf1, '-djpeg', '-noui', ['-r' num2str(pres)], motname);
+close(gcf1);
