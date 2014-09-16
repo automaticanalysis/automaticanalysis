@@ -204,6 +204,17 @@ aap=aas_doprocessing_initialisationmodules(aap);
 
 aap=aas_builddependencymap(aap);
 
+% Create folder (required by aas_findinputstreamsources to save provenance)
+if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
+    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
+    if (isempty(dir(aapsavepth)))
+        [s w]=aas_shell(['mkdir ' aapsavepth]);
+        if (s)
+            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
+        end
+    end
+end
+
 % Use input and output stream information in XML header to find
 % out what data comes from where and goes where
 aap=aas_findinputstreamsources(aap);
@@ -224,14 +235,7 @@ if (GBFree<10)
 end;
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
-    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
     aapsavefn=fullfile(aapsavepth,'aap_parameters');
-    if (isempty(dir(aapsavepth)))
-        [s w]=aas_shell(['mkdir ' aapsavepth]);
-        if (s)
-            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
-        end
-    end
     aap.internal.aapversion=which('aa_doprocessing');
     save(aapsavefn,'aap');
 end

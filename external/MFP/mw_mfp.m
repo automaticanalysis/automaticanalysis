@@ -59,7 +59,7 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 % close the figure, which may be useful when scripting larger collections.
 %
 % fout: name of additional output file or folder. If specified (full path),
-% a graphics summary will additionally be saved there. A 'mw_motion.png'
+% a graphics summary will additionally be saved there. A 'mw_motion.jpg'
 % in the same directory as the realignment parameters will always be saved.
 %
 % The workspace output is two nsess x 1 cells, containing vectors of total
@@ -890,10 +890,10 @@ global tmpldir;
 	  end;
 
 
-	% save (potentially updated) graphic into a png-file? Keep formatting as on screen
+	% save (potentially updated) graphic into a jpg-file? Keep formatting as on screen
 	  if do_td == 1
 
-		  motname = [p filesep 'mw_motion.png'];
+		  motname = [p filesep 'mw_motion.jpg'];
 		  osu = get(gcf1,'Units'); opu = get(gcf1,'PaperUnits'); opp = get(gcf1,'PaperPosition');
 		  set(gcf1,'Units','pixels'); scrpos = get(gcf1,'Position'); newpos = scrpos/100;
 		  set(gcf1,'PaperUnits','inches','PaperPosition',newpos);
@@ -921,10 +921,10 @@ global tmpldir;
 				% decide depending on number of output files
 				  if ~isempty(foutnm) && size(rps,1) == 1
 
-					  motname = [foutp filesep foutnm '.png'];
+					  motname = [foutp filesep foutnm '.jpg'];
 				  else
 
-					  motname = [foutp filesep 'mw_motion_sess_' sprintf('%03.0f', i) '.png'];
+					  motname = [foutp filesep 'mw_motion_sess_' sprintf('%03.0f', i) '.jpg'];
 				  end;
 				  FNote = [' Results from ' p];
 				  axes('Position',[0.01,0.01,0.1,0.1],'Visible','off','Tag','SPMprintFootnote')
