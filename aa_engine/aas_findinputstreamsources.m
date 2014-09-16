@@ -4,8 +4,10 @@
 function [aap]=aas_findinputstreamsources(aap)
 
 % save provenance
-provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap.trp');
-fid = fopen(provfn,'w');
+provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.trp');
+pfid = fopen(provfn,'w');
+cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
+cfid = fopen(cmapfn,'w');
 
 % Make empty cell structures for input and output streams
 aap.internal.inputstreamsources=cell(length(aap.tasklist.main.module),1);
@@ -94,7 +96,8 @@ for k1=1:length(aap.tasklist.main.module)
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
                 % write provenance
-                fprintf(fid,'<%s> <%s> <%s> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
+                fprintf(pfid,'<%s> <%s> <%s> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
+				fprintf(cfid,'%s\t%s\t%s\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
             else
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
@@ -107,7 +110,8 @@ for k1=1:length(aap.tasklist.main.module)
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     % write provenance
-                    fprintf(fid,'<%s> <%s> <%s> .\n',sourcestagename,inputstreamname,stagename);
+                    fprintf(pfid,'<%s> <%s> <%s> .\n',sourcestagename,inputstreamname,stagename);
+					fprintf(cfid,'%s\t%s\t%s\n',sourcestagename,inputstreamname,stagename);
                     stream=[];
                     stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
@@ -142,9 +146,10 @@ for k1=1:length(aap.tasklist.main.module)
         end;
     end;
 end;
-fclose(fid);
+fclose(pfid);
 % create provenance map
 unix(sprintf('rapper -o dot -i ntriples %s | dot -Tpng -o %s',provfn,strrep(provfn,'trp','png')));
+fclose(cfid);
 
 % RECURSIVELY SEARCH DEPENDENCIES
 %  to see which will have outputted each
