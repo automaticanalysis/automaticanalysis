@@ -3,6 +3,10 @@
 %   Works back through dependencies to determine where inputs come from
 function [aap]=aas_findinputstreamsources(aap)
 
+% save provenance
+provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap.trp');
+fid = fopen(provfn,'w');
+
 % Make empty cell structures for input and output streams
 aap.internal.inputstreamsources=cell(length(aap.tasklist.main.module),1);
 aap.internal.outputstreamdestinations=cell(length(aap.tasklist.main.module),1);
@@ -89,6 +93,8 @@ for k1=1:length(aap.tasklist.main.module)
                     aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
+                % write provenance
+                fprintf(fid,'<%s> <%s> <%s> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
             else
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
@@ -100,6 +106,8 @@ for k1=1:length(aap.tasklist.main.module)
                     [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
+                    % write provenance
+                    fprintf(fid,'<%s> <%s> <%s> .\n',sourcestagename,inputstreamname,stagename);
                     stream=[];
                     stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
@@ -134,7 +142,9 @@ for k1=1:length(aap.tasklist.main.module)
         end;
     end;
 end;
-
+fclose(fid);
+% create provenance map
+unix(sprintf('rapper -o dot -i ntriples %s | dot -Tpng -o %s',provfn,strrep(provfn,'trp','png')));
 
 % RECURSIVELY SEARCH DEPENDENCIES
 %  to see which will have outputted each
