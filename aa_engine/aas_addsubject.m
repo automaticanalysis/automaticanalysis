@@ -43,7 +43,7 @@ try
     if isnumeric(seriesnumbers) || isnumeric(seriesnumbers{1}) % DICOM series number
         thissubj.seriesnumbers=seriesnumbers;
     else
-        fMRI = {};
+        fMRI = {}; MEG = {};
         fMRIdim = [];
         for s = 1:numel(seriesnumbers)
             if iscell(seriesnumbers{s}) % multiple 3D files
@@ -51,7 +51,14 @@ try
             elseif ischar(seriesnumbers{s}) % single NIFTI file
                 if exist(seriesnumbers{s},'file') % full path
                     V = spm_vol(seriesnumbers{s});
-                else % try to find in rawdatadir
+                else
+                    if ~isempty(thissubj.megname) % try meg
+                        if exist(fullfile(meg_findvol(aap,thissubj.megname,1),seriesnumbers{s}),'file')
+                            MEG{end+1} = seriesnumbers{s};
+                            continue;
+                        end
+                    end
+                    % try to find in rawdatadir
                     V = spm_vol(fullfile(aas_findvol(aap,''),seriesnumbers{s}));
                 end
                 if numel(V) > 1 % 4D --> fMRI
@@ -70,6 +77,9 @@ try
         end
         if ~isempty(fMRI)
             thissubj.seriesnumbers=fMRI;
+        end
+        if ~isempty(MEG)
+            thissubj.megseriesnumbers=MEG;
         end
     end
 catch

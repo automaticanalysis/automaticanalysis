@@ -10,4 +10,15 @@
 
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
-sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
+global defaults
+if ~isstruct(defaults) || ~isfield(defaults,'modality')
+    aas_log(aap,0,'WARNING:defaults.modality is not set; FMRI is assumed');
+    defaults.modality = 'FMRI'; % default modality
+end
+
+switch defaults.modality
+    case 'FMRI'
+        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
+    case 'EEG'
+        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.meg_sessions(j).name);
+end

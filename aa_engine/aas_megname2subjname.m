@@ -1,11 +1,11 @@
-function subjName = aas_mriname2subjname(name)
+function subjName = aas_megname2subjname(name)
 
 subjName = '';
 
-numpos=strfind(name,'CBU');
+numpos=strfind(name,'meg');
 if ~isempty(numpos)
     subjName =name(numpos(1):length(name));
-    subjName=strtok(subjName,' /\\_,.');
+    subjName=strtok(subjName,'/');
 end
 
 if isempty(subjName)

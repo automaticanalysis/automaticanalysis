@@ -23,19 +23,28 @@ switch (domain)
         N=aap.options.searchlight.Npackage;
         I=1:N;
         
-    case 'session'
+    case {'session','meg_session'}
         
+        switch domain
+            case 'session'
+                sessions = aap.acq_details.sessions;
+                seriesnumbers = aap.acq_details.subjects(indices(1)).seriesnumbers;
+            case 'meg_session'
+                sessions = aap.acq_details.meg_sessions;
+                seriesnumbers = aap.acq_details.subjects(indices(1)).megseriesnumbers;
+        end
+                
         if isempty(indices)
-            N = length(aap.acq_details.sessions);
+            N = length(sessions);
             I = 1 : N;
         else
-            if iscell(aap.acq_details.subjects(indices(1)).seriesnumbers)
-                N = cellfun(@(x) ~isempty(x), aap.acq_details.subjects(indices(1)).seriesnumbers);
+            if iscell(seriesnumbers)
+                N = cellfun(@(x) ~isempty(x), seriesnumbers);
                 I = find(N);
                 N = sum(N);
             else
-                N=sum(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
-                I=find(aap.acq_details.subjects(indices(1)).seriesnumbers > 0);
+                N=sum(seriesnumbers > 0);
+                I=find(seriesnumbers > 0);
             end
         end
         

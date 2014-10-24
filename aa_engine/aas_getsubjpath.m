@@ -25,7 +25,7 @@ root=aas_getstudypath(aap,varargin{:});
 switch (aap.directory_conventions.subject_directory_format)
     case 1
         if (isfield(aap.acq_details.subjects(i),'megname') && ~isempty(aap.acq_details.subjects(i).megname))
-            tmp=aap.acq_details.subjects(i).megname;
+            tmp=aas_megname2subjname(aap.acq_details.subjects(i).megname);
         else
             tmp = aas_mriname2subjname(aap.acq_details.subjects(i).mriname);
         end

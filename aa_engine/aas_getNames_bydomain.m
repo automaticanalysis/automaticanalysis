@@ -23,6 +23,9 @@ for d = 1 : length(domains)
         case 'study'
             names{d} = {aap.directory_conventions.analysisid};
             
+        case 'meg_session'
+            names{d} = {aap.acq_details.meg_sessions.name};
+            
         case {'diffusion_session', 'diffusion_session_bedpostx'}
             names{d} = {aap.acq_details.diffusion_sessions.name};
             
