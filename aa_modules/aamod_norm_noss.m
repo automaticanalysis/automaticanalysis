@@ -119,7 +119,8 @@ switch task
             
 %             estopts.regtype='mni';    % turn on affine again
             
-            estopts = aap.spm.defaults.preproc;
+            % [TA] SPM12 compatibility
+            try estopts = aap.spm.defaults.preproc; catch, estopts = aap.spm.defaults.old.preproc; end
             if iscell(estopts.tpm)
                 estopts.tpm = char(estopts.tpm);
             end

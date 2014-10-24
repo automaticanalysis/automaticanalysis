@@ -128,7 +128,7 @@ global tmpldir;
       case 'SPM8'
           tmpldir.tpm = fullfile(spm('Dir'),'tpm');
           tmpldir.mni = fullfile(spm('Dir'),'templates');
-      case 'SPM12b'
+      case {'SPM12b' 'SPM12'}
           tmpldir.tpm = fullfile(spm('Dir'),'toolbox','OldSeg');
           tmpldir.mni = fullfile(spm('Dir'),'toolbox','OldNorm');
       otherwise

@@ -74,7 +74,7 @@ switch task
             case 'SPM8'
                 cfg.warpreg = 4;
                 cfg.bb = {NaN(2,3)};                
-            case 'SPM12b'
+            case {'SPM12b' 'SPM12'}
                 cfg.warpreg = [0 1e-3 0.5 0.05 0.2];
                 cfg.bb = NaN(2,3);
         end
@@ -106,14 +106,14 @@ switch task
                         addpath(fullfile(spm('dir'),'toolbox','Seg'))
                     catch
                     end
-                case 'SPM12b'
+                case {'SPM12b' 'SPM12'}
                     try
                         % try adding a likely location
                         addpath(fullfile(spm('dir')));
                     catch
                     end                    
                 otherwise
-                    aas_log(aap, 1, sprintf('%s requires SPM8 or SPM12b.', mfilename));
+                    aas_log(aap, 1, sprintf('%s requires SPM8 or later.', mfilename));
             end
         end
         
@@ -255,7 +255,7 @@ switch task
                         spm_func_def = @spm_def;
                         djob = ojob;
                         djob.comp{1}.def{1} = normparamfn;
-                    case 'SPM12b'
+                    case {'SPM12b' 'SPM12'}
                         spm_func_def = @spm_deformations;
                         ojob.mask = 0;
                         ojob.fwhm = opts.fwhm;                        
@@ -266,7 +266,7 @@ switch task
                         djob.out{2}.(opts.method).fov.bbvox.vox = cfg.vox;
                         djob.out{2}.(opts.method).preserve = opts.preserve;
                     otherwise
-                        aas_log(aap, 1, sprintf('%s requires SPM8 or SPM12b.', mfilename));
+                        aas_log(aap, 1, sprintf('%s requires SPM8 or later.', mfilename));
                 end
                 dout = spm_func_def(djob);
                 fprintf(1,' Done.\n');

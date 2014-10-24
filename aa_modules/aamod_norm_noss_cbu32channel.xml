@@ -24,6 +24,11 @@
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
             <affinestartingestimate><y>-30</y><z>17</z><pitch>0.2</pitch></affinestartingestimate>
 
+            <subject>
+                <name></name>
+                <affineStartingEstimate></affineStartingEstimate>
+            </subject>
+            
             <structural desc='Which structural do we use, if there is more than one?'
             >1</structural>
             
