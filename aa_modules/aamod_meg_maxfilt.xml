@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meg_session' desc='Use MAXFILT' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <autobad>
+                <interval>900</interval>
+                <badlimit>7</badlimit>
+            </autobad>
+            
+            <sss>
+                <run>1</run>
+                <window>10</window>
+                <corr>0.980</corr>
+            </sss>
+            
+            <hpi>
+                <step>10</step>
+                <subt>amp</subt>
+            </hpi>
+            
+            <transform>1</transform>
+                        
+            <inputstreams>
+                <stream>meg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg</stream>                
+                <stream>norm_meg</stream>
+                <stream>meg_head</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
