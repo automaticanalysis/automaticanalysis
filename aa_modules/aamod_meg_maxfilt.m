@@ -6,21 +6,23 @@ switch task
     case 'report'
         
     case 'doit'
+        %% Initialise
         sessdir = aas_getsesspath(aap,subj,sess);
         infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');        
         outfname = fullfile(sessdir,['mf2pt2_' basename(infname) '.fif']); % specifying output filestem
         delete(fullfile(sessdir,'*mf2pt2_*'));
         [pth, fstem, ext] = fileparts(outfname);
         
+        %% Sphere fit
         addpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
         spherefit = meg_fit_sphere_rik(aap,infname,outfname);
         rmpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
 
-        % Initialise
+        %% Maxfilt
         orgcmd = '';
         hpicmd = '';
         stcmd  = '';
-        trcmd_def = '';
+        trcmd_par = '';
         
         % Origin and frame
         orgcmd = sprintf(' -frame head -origin %g %g %g',spherefit(1),spherefit(2),spherefit(3)');
@@ -59,7 +61,7 @@ switch task
             mfcall ' -f ' infname ' -o ' outfname,...
             ['	 -ctc ' fullfile(aap.directory_conventions.neuromagdir,'databases','ctc','ct_sparse.fif')] ' ',...
             ['	 -cal ' fullfile(aap.directory_conventions.neuromagdir,'databases','sss','sss_cal.dat')] ' ',...
-            skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_def ' -v | tee ' logfname
+            skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -v | tee ' logfname
             ];
         disp(mfcmd_rest);
 
@@ -71,10 +73,17 @@ switch task
             disp(maxres);
         end
         
-        %% 2. Trans default (so that origin not same as SSS expansion origin above)
-        if aap.tasklist.currenttask.settings.transform
-            trcmd_def = sprintf(' -trans default -origin %g %g %g -frame head ',spherefit(1),spherefit(2)-13,spherefit(3)+6);
-            outpfx    = 'transdef_';
+        %% Trans (so that origin not same as SSS expansion origin above)
+        if ~isempty(aap.tasklist.currenttask.settings.transform)
+            if aap.tasklist.currenttask.settings.transform % session number
+                ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
+                    'meg_session',[subj,aap.tasklist.currenttask.settings.transform],'meg');
+                outpfx    = ['trans' aap.acq_details.meg_sessions(aap.tasklist.currenttask.settings.transform),name '_'];
+            else % 0
+                ref_str = 'default' ;
+                outpfx    = 'transdef_';
+            end
+            trcmd_par = sprintf(' -trans %s -origin %g %g %g -frame head ',ref_str,spherefit(1),spherefit(2)-13,spherefit(3)+6);
             infname   = outfname;
             outtrfname  = fullfile(sessdir,sprintf('%s%s.fif',outpfx,fstem));
             logtrfname  = fullfile(sessdir,sprintf('%s%s.log',outpfx,fstem));
@@ -82,7 +91,7 @@ switch task
             % Assembling MF command
             mfcmd_rest=[
                 mfcall ' -f ' infname ' -o ' outtrfname,...
-                trcmd_def ' -force -v | tee ' logtrfname
+                trcmd_par ' -force -v | tee ' logtrfname
                 ];
             disp(mfcmd_rest);
 

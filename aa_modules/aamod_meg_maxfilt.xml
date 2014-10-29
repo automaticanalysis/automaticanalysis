@@ -24,7 +24,8 @@
                 <subt>amp</subt>
             </hpi>
             
-            <transform>1</transform>
+            <transform>0</transform>
+            <!-- empty: no transform; 0: default; 1-: session number to take as reference -->
                         
             <inputstreams>
                 <stream>meg</stream>
