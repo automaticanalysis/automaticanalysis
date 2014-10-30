@@ -29,6 +29,11 @@
                 <affineStartingEstimate></affineStartingEstimate>
             </subject>
             
+            <estopts>
+                <samp></samp>
+                <regtype></regtype>
+            </estopts>                
+            
             <structural desc='Which structural do we use, if there is more than one?'
             >1</structural>
             

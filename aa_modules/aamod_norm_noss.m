@@ -125,6 +125,15 @@ switch task
                 estopts.tpm = char(estopts.tpm);
             end
             
+            if isfield(aap.tasklist.currenttask.settings,'estopts')
+                fields = fieldnames(aap.tasklist.currenttask.settings.estopts);
+                for f = 1:numel(fields)
+                    if ~isempty(aap.tasklist.currenttask.settings.estopts.(fields{f}))
+                        estopts.(fields{f}) = aap.tasklist.currenttask.settings.estopts.(fields{f});
+                    end
+                end
+            end
+            
             % Load header of image to be normalized
             V=spm_vol(mSimg);
             
