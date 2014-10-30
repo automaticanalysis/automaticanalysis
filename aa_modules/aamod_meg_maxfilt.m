@@ -78,7 +78,7 @@ switch task
             if aap.tasklist.currenttask.settings.transform % session number
                 ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
                     'meg_session',[subj,aap.tasklist.currenttask.settings.transform],'meg');
-                outpfx    = ['trans' aap.acq_details.meg_sessions(aap.tasklist.currenttask.settings.transform),name '_'];
+                outpfx    = ['trans' aap.acq_details.meg_sessions(aap.tasklist.currenttask.settings.transform).name '_'];
             else % 0
                 ref_str = 'default' ;
                 outpfx    = 'transdef_';
