@@ -24,7 +24,7 @@
                 <subt>amp</subt>
             </hpi>
             
-            <transform>0</transform>
+            <transform>1 0</transform>
             <!-- empty: no transform; 0: default; 1-: session number to take as reference -->
                         
             <inputstreams>
@@ -33,7 +33,7 @@
             
             <outputstreams>
                 <stream>meg</stream>                
-                <stream>norm_meg</stream>
+                <stream>trans_meg</stream>
                 <stream>meg_head</stream>
             </outputstreams>
             

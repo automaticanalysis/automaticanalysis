@@ -75,32 +75,49 @@ switch task
         
         %% Trans (so that origin not same as SSS expansion origin above)
         if ~isempty(aap.tasklist.currenttask.settings.transform)
-            if aap.tasklist.currenttask.settings.transform % session number
-                ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
-                    'meg_session',[subj,aap.tasklist.currenttask.settings.transform],'meg');
-                outpfx    = ['trans' aap.acq_details.meg_sessions(aap.tasklist.currenttask.settings.transform).name '_'];
-            else % 0
-                ref_str = 'default' ;
-                outpfx    = 'transdef_';
-            end
-            trcmd_par = sprintf(' -trans %s -origin %g %g %g -frame head ',ref_str,spherefit(1),spherefit(2)-13,spherefit(3)+6);
-            infname   = outfname;
-            outtrfname  = fullfile(sessdir,sprintf('%s%s.fif',outpfx,fstem));
-            logtrfname  = fullfile(sessdir,sprintf('%s%s.log',outpfx,fstem));
-
-            % Assembling MF command
-            mfcmd_rest=[
-                mfcall ' -f ' infname ' -o ' outtrfname,...
-                trcmd_par ' -force -v | tee ' logtrfname
-                ];
-            disp(mfcmd_rest);
-
-            % Executing MF
-            [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
-            if status ~= 0
-                aas_log(aap,1,'Trans MaxFilter failed!')
-            else
-                disp(maxres);
+            outtrfname   = outfname;
+            outtrpfx = '';
+            for t = 1:numel(aap.tasklist.currenttask.settings.transform)
+                if iscell(aap.tasklist.currenttask.settings.transform)
+                    trans = aap.tasklist.currenttask.settings.transform{t};
+                else
+                    trans = aap.tasklist.currenttask.settings.transform(t);
+                end
+                if ischar(trans) % fif file
+                    ref_str = trans; 
+                    outtrpfx    = ['trans' basename(trans) '_' outtrpfx];
+                elseif isnumeric(trans)
+                    if trans % session number
+                        if trans == sess, continue; end % do not trans to itself
+                        ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
+                            'meg_session',[subj,trans],'meg');
+                        outtrpfx    = ['trans' aap.acq_details.meg_sessions(trans).name '_' outtrpfx];
+                    else % 0
+                        ref_str = 'default';
+                        outtrpfx    = ['transdef_'  outtrpfx];
+                    end
+                else
+                    aas_log(aap,1,'Trans reference: Unrecognised option!');
+                end
+                trcmd_par = sprintf(' -trans %s -origin %g %g %g -frame head ',ref_str,spherefit(1),spherefit(2)-13,spherefit(3)+6);
+                intrfname   = outtrfname;
+                outtrfname  = fullfile(sessdir,sprintf('%s%s.fif',outtrpfx,fstem));
+                logtrfname  = fullfile(sessdir,sprintf('%s%s.log',outtrpfx,fstem));
+                
+                % Assembling MF command
+                mfcmd_rest=[
+                    mfcall ' -f ' intrfname ' -o ' outtrfname,...
+                    trcmd_par ' -force -v | tee ' logtrfname
+                    ];
+                disp(mfcmd_rest);
+                
+                % Executing MF
+                [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
+                if status ~= 0
+                    aas_log(aap,1,'Trans MaxFilter failed!')
+                else
+                    disp(maxres);
+                end
             end
         end
         
@@ -109,7 +126,7 @@ switch task
             char(fullfile(sessdir,[fstem '_headpoints.txt']),...
             fullfile(sessdir,[fstem '_headposition.pos'])));        
         aap=aas_desc_outputs(aap,subj,sess,'meg',outfname);        
-        if aap.tasklist.currenttask.settings.transform
-            aap=aas_desc_outputs(aap,subj,sess,'norm_meg',outtrfname);
+        if ~isempty(aap.tasklist.currenttask.settings.transform)
+            aap=aas_desc_outputs(aap,subj,sess,'trans_meg',outtrfname);
         end
 end
