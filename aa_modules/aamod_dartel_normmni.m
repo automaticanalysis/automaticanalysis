@@ -57,11 +57,9 @@ switch task
         spm_dartel_norm_fun(job);
 
         % describe outputs (differ depending on modulation)
-        if job.preserve==1
-            prefix = 'smw';
-        else
-            prefix = 'sw';
-        end
+        prefix = 'w';
+        if aap.tasklist.currenttask.settings.preserve, prefix = ['m' prefix]; end
+        if aap.tasklist.currenttask.settings.fwhm, prefix = ['s' prefix]; end
         
         for ind=1:length(job.data.subj.images)
             [pth, nm, ext] = fileparts(job.data.subj.images{ind});
