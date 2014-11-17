@@ -24,9 +24,10 @@ sphtxtfname = fullfile(pth,[fstem '_sphere_fit.txt']);
 if exist(sphtxtfname,'file')~=2
     cmd_fit = [fullfile(aap.directory_conventions.neuromagdir,'bin','util','fit_sphere_to_points') ' ' hptxtfname];
     [status, spherefit] = unix(cmd_fit);
+    spherefit=strtrim(regexprep(spherefit,'([a-zA-Z:'',\n])',''));
     if status ~= 0 || length(spherefit)<1
         error('Spherefit failed!')
-    end
+    end    
     spherefit = sscanf(spherefit,'%f')*1000;
     save(sphtxtfname,'-ASCII','spherefit');
 else
