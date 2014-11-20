@@ -65,6 +65,9 @@ switch task
         % The folder fieldmaps must exist...
         if ~exist(FMdir, 'dir')
             mkdir(FMdir)
+        else
+            % remove previous vdms
+            delete(fullfile(FMdir, 'vdm*.nii'));
         end
         
         FMfn = aas_getfiles_bystream(aap,subj,'fieldmap');

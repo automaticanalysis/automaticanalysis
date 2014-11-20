@@ -1,6 +1,6 @@
 % FSL-like overlay + SPM orthview video (wiht structural) for registration diagnostics
 % aas_checkreg(aap,subj[,sess],'input'[,'input'],reslice)
-% index must be lower steamlevel
+% index must be lower streamlevel
 % input can be:
 %   - stream
 %   - path to image
@@ -34,26 +34,12 @@ end
 for iarg = iarg0:nargin
     if ~ischar(varargin{iarg-1}), break; end
     image{iarg-iarg0+1} = varargin{iarg-1};
-    if ~isempty(strfind(image{iarg-iarg0+1},'.')) % path to image
+    if ~isempty(strfind(image{iarg-iarg0+1},'.nii')) % path to image
         imagename{iarg-iarg0+1} = strtok_ptrn(basename(image{iarg-iarg0+1}),'-0');
     else % stream
         imagename{iarg-iarg0+1} = image{iarg-iarg0+1};
-        img = '';
-        email0 = aap.options.email; aap.options.email = ''; % silence;
-        try img = aas_getfiles_bystream(aap,index{:},image{iarg-iarg0+1},'output'); catch, end
-        if isempty(img)
-            try img = aas_getfiles_bystream(aap,'subject',index{2}(1),image{iarg-iarg0+1},'output'); catch, end
-        end
-        if isempty(img)
-            try img = aas_getfiles_bystream(aap,'study',[],image{iarg-iarg0+1},'output'); catch, end
-        end
-        aap.options.email = email0;
-        if ~isempty(img)
-            image{iarg-iarg0+1} = img;
-            aas_log(aap,0,'Ignore previous error message(s)!');
-        else
-            aas_log(aap,1,sprintf('stream %s not found',imagename{iarg-iarg0+1}));
-        end
+        img = aas_getfiles_bystream_multilevel(aap,index{:},image{iarg-iarg0+1},'output');
+        if ~isempty(img), image{iarg-iarg0+1} = img; end
     end
     image{iarg-iarg0+1} = strcat(image{iarg-iarg0+1},repmat(',1',[size(image{iarg-iarg0+1},1) 1])); % ensure single volume
 end
@@ -93,6 +79,7 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
             spm_orthviews('addcolouredimage',1,image{1}(i,:), OVERcolours{i})
         end
         aas_checkreg_avi(aap, index, 0,'_summary');
+        close(1);
     end
 end
 
