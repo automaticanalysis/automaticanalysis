@@ -18,6 +18,7 @@
 			
 			<outputstreams>
                 <stream>meanepi</stream>
+                <stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             
         </currenttask>

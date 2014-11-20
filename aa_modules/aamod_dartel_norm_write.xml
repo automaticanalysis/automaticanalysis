@@ -17,6 +17,7 @@
 			
 			<outputstreams>
 				<stream>structural</stream>
+                <stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             
         </currenttask>

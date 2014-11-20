@@ -26,6 +26,11 @@ switch task
     case 'doit'
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
+        [pth,nam,ext] = fileparts(template);
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),[nam ext]),'file')
+            copyfile(template,fullfile(aas_getsubjpath(aap,subj),[nam ext]));
+        end
+        template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
 
         % flow fields..
         job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
@@ -40,6 +45,7 @@ switch task
             else  % renamed stream
                 streamname = strrep(streams{streamind},'normalised_','');
                 ind = cell_index(aap.tasklist.currenttask.inputstreams.stream,streamname);
+                if ~ind, continue; end % for dartel_templatetomni_xfm
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
                     aap.tasklist.currenttask.inputstreams.stream{ind}));
             end
@@ -66,4 +72,11 @@ switch task
             img = fullfile(pth, [prefix nm ext]);
             aap = aas_desc_outputs(aap, subj, streams{ind}, img);
         end
+        MMt = spm_get_space(template);
+        MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
+        MMm = MMm.mni.affine;
+        xfm = MMm/MMt;
+        save(fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm'),'xfm')
+        aap = aas_desc_outputs(aap, subj, 'dartel_templatetomni_xfm',...
+            fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm.mat'));
 end

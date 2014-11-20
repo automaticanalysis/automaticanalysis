@@ -59,6 +59,12 @@ switch task
         % set up job
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
+         [pth,nam,ext] = fileparts(template);
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),[nam ext]),'file')
+            copyfile(template,fullfile(aas_getsubjpath(aap,subj),[nam ext]));
+        end
+        template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
+        
         % flow fields..
         job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
         job.template{1} = template;
@@ -95,12 +101,10 @@ switch task
             spm_dartel_norm_fun(job);
             
             % describe outputs (differ depending on modulation)
-            if job.preserve==1
-                prefix = 'smw';
-            else
-                prefix = 'sw';
-            end
-
+            prefix = 'w';
+            if aap.tasklist.currenttask.settings.preserve, prefix = ['m' prefix]; end
+            if aap.tasklist.currenttask.settings.fwhm, prefix = ['s' prefix]; end
+        
             wimgs=[];
             for ind=1:length(job.data.subj.images)
                 [pth, nme, ext] = fileparts(job.data.subj.images{ind});
@@ -136,7 +140,13 @@ switch task
                     aas_checkreg(aap,subj,streams{streamind},'structural');
                 end
             end
-        end
+            MMt = spm_get_space(template);
+            MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
+            MMm = MMm.mni.affine;
+            xfm = MMm/MMt;
+            save(fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm'),'xfm')
+            aap = aas_desc_outputs(aap, subj, 'dartel_templatetomni_xfm',...
+                fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm.mat'));        end
         
     case 'checkrequirements'
         

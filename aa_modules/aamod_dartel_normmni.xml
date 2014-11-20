@@ -20,7 +20,8 @@
             <outputstreams>
                 <stream>normalised_grey</stream>
                 <stream>normalised_white</stream>        
-                <stream>normalised_csf</stream>        
+                <stream>normalised_csf</stream>  
+                <stream>dartel_templatetomni_xfm</stream>  
             </outputstreams>            
         </currenttask>
     </tasklist>
