@@ -31,7 +31,19 @@ switch task
             copyfile(template,fullfile(aas_getsubjpath(aap,subj),[nam ext]));
         end
         template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
-
+ 
+        % affine xfm
+        streams=aas_getstreams(aap,'in');
+        xfmi = cell_index(streams,'dartel_templatetomni_xfm');
+        if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
+            xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
+            MMt = spm_get_space(template);
+            mni.code = 'MNI152';
+            mni.affine = xfm*MMt;
+            [pth,nam,ext] = fileparts(template);
+            save(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']),'mni');            
+        end
+        
         % flow fields..
         job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
         
@@ -40,6 +52,7 @@ switch task
         streams=aap.tasklist.currenttask.outputstreams.stream;
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip
             if cell_index(aap.tasklist.currenttask.inputstreams.stream,streams{streamind})
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
             else  % renamed stream
@@ -72,10 +85,12 @@ switch task
             img = fullfile(pth, [prefix nm ext]);
             aap = aas_desc_outputs(aap, subj, streams{ind}, img);
         end
-        MMt = spm_get_space(template);
-        MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
-        MMm = MMm.mni.affine;
-        xfm = MMm/MMt;
+        if ~exist('xfm','var')
+            MMt = spm_get_space(template);
+            MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
+            MMm = MMm.mni.affine;
+            xfm = MMm/MMt;
+        end
         save(fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm'),'xfm')
         aap = aas_desc_outputs(aap, subj, 'dartel_templatetomni_xfm',...
             fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm.mat'));

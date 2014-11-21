@@ -48,22 +48,42 @@ switch task
             aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
         end
     case 'doit'
+        index{1} = aap.tasklist.currenttask.domain;
         subj = varargin{1};
-        if nargin == 4, sess = varargin{2}; end
+        index{2}(1) = subj;
+        if nargin == 4
+            sess = varargin{2}; 
+            index{2}(2) = sess;
+        end
         
         % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
             sess = aap.tasklist.currenttask.settings.session;
+            index{2}(2) = sess;
         end
+        
+        localpath = aas_getpath_bydomain(aap,index{:});
         
         % set up job
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
          [pth,nam,ext] = fileparts(template);
-        if ~exist(fullfile(aas_getsubjpath(aap,subj),[nam ext]),'file')
-            copyfile(template,fullfile(aas_getsubjpath(aap,subj),[nam ext]));
+        if ~exist(fullfile(localpath,[nam ext]),'file')
+            copyfile(template,fullfile(localpath,[nam ext]));
         end
-        template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
+        template = fullfile(localpath,[nam ext]);
+        
+        % affine xfm
+        streams=aas_getstreams(aap,'in');
+        xfmi = cell_index(streams,'dartel_templatetomni_xfm');
+        if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
+            xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
+            MMt = spm_get_space(template);
+            mni.code = 'MNI152';
+            mni.affine = xfm*MMt;
+            [pth,nam,ext] = fileparts(template);
+            save(fullfile(localpath,[nam '_2mni.mat']),'mni');            
+        end
         
         % flow fields..
         job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
@@ -77,9 +97,10 @@ switch task
         streams=aap.tasklist.currenttask.outputstreams.stream;        
         for streamind=1:length(streams)
             if ~aas_stream_has_contents(aap,streams{streamind}), continue; end
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip            
             imgs = [];
             % Image to reslice
-            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             if exist('sess','var')
                 P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind});
             else
@@ -129,24 +150,20 @@ switch task
             end
             
             % describe outputs with diagnostoc
-            if (exist('sess','var'))
-                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle')
-                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
-                end
-            else
-                aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle')
-                    aas_checkreg(aap,subj,streams{streamind},'structural');
-                end
+            aap=aas_desc_outputs(aap,index{:},streams{streamind},wimgs);
+            if strcmp(aap.options.wheretoprocess,'localsingle')
+                aas_checkreg(aap,index{:},streams{streamind},'structural');
             end
-            MMt = spm_get_space(template);
-            MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
-            MMm = MMm.mni.affine;
-            xfm = MMm/MMt;
-            save(fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm'),'xfm')
-            aap = aas_desc_outputs(aap, subj, 'dartel_templatetomni_xfm',...
-                fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm.mat'));        end
+            if ~exist('xfm','var')
+                MMt = spm_get_space(template);
+                MMm = load(fullfile(localpath,[nam '_2mni.mat']));
+                MMm = MMm.mni.affine;
+                xfm = MMm/MMt;
+            end
+            save(fullfile(localpath,'dartel_templatetomni_xfm'),'xfm')
+            aap = aas_desc_outputs(aap, index{:}, 'dartel_templatetomni_xfm',...
+                fullfile(localpath,'dartel_templatetomni_xfm.mat'));
+        end
         
     case 'checkrequirements'
         
