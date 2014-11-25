@@ -39,8 +39,8 @@ aap = aas_addsession(aap,'Loc');
 
 % Add model
 % Obtain TR from the first session
-h = dicominfo(mri_finddcm(aap, 90973,7));
-TR = h.RepetitionTime/1000; % in seconds
+h = spm_dicom_headers(mri_finddcm(aap, 90973,7));
+TR = h{1}.RepetitionTime/1000; % in seconds
 
 aap = aas_addevent(aap,'aamod_firstlevel_model',mri_findvol(aap,90973),'*',...
     'REST',...                                                                                  % name

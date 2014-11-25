@@ -69,8 +69,8 @@ for v = 2:size(LIST,1)
 		if ~aSess(i), continue; end
         
         % Obtain TR
-        h = dicominfo(mri_finddcm(aap,VOL,aSess(i)));
-        TR = h.RepetitionTime/1000; % in seconds
+        h = spm_dicom_headers(mri_finddcm(aap,VOL,aSess(i)));
+        TR = h{1}.RepetitionTime/1000; % in seconds
         
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);
