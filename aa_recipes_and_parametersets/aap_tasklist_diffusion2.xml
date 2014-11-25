@@ -1,0 +1,31 @@
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_get_dicom_diffusion</name></module>
+            <module><name>aamod_convert_diffusion</name></module>
+            <module><name>aamod_diffusion_extractnodif</name></module>
+            <module><name>aamod_diffusion_bet</name></module>
+            <module>                    
+                <branch>
+                    <analysisid_suffix>_DKI</analysisid_suffix>
+                    <module><name>aamod_diffusion_smooth</name></module>
+                    <module><name>aamod_diffusion_dkifit</name></module>
+                    <module><name>aamod_diffusion_coreg_extended_2DKI</name></module>
+                    <module><name>aamod_diffusion_norm_write_dartel_DKI</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_DTI</analysisid_suffix>
+                    <module><name>aamod_diffusion_dtinlfit</name></module>
+                    <module><name>aamod_diffusion_coreg_extended_2DTI</name></module>
+                    <module><name>aamod_diffusion_norm_write_dartel_DTI</name></module>
+                </branch>                
+            </module> 
+        </main>
+    </tasklist>
+</aap>
