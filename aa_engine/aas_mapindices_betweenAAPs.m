@@ -65,6 +65,10 @@ end
 end
 
 function map = recursiveMap(curDomain, localTree, localAA, remoteAA, map)
+
+remoteDep = aas_dependencytree_finddomain(curDomain, remoteAA.directory_conventions.parallel_dependencies, {});
+if isempty(remoteDep), return; end
+
 localDomainNames = aas_getNames_bydomain(localAA, curDomain);
 remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
 
