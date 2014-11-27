@@ -425,4 +425,22 @@ end
 
 end
 
+function map = mapIndices(curDomain, localTree, localAA, remoteAA, map)
 
+localDomainNames = aas_getNames_bydomain(localAA, curDomain);
+remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
+
+if ~strcmp(curDomain, 'study')
+    [~,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
+    
+else
+    map.(curDomain) = 1;
+end
+
+if isstruct(localTree.(curDomain))
+    subTrees = fieldnames(localTree.(curDomain));
+    for tI = 1 : numel(subTrees)
+        map = mapIndices(subTrees{tI}, localTree.(curDomain), localAA, remoteAA, map);
+    end
+end
+end
