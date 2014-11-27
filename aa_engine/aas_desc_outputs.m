@@ -2,9 +2,9 @@
 % Preferred new syntax:
 %  function [aap]=aas_desc_outputs(aap,domain,indices,streamname,outputs)
 %  e.g., 
-%   aas_desc_outputs(aap,'subject',{1},'epi',fns)
-%   aas_desc_outputs(aap,'session',{1,1},'epi',fns)
-%   aas_desc_outputs(aap,'searchlight',{4,2,77},'epi',fns)
+%   aas_desc_outputs(aap,'subject',[1],'epi',fns)
+%   aas_desc_outputs(aap,'session',[1,1],'epi',fns)
+%   aas_desc_outputs(aap,'searchlight',[4,2,77],'epi',fns)
 %     [subject 4, session 2, searchligh 77]
 %
 % Old syntax (still alllowed): 

@@ -104,7 +104,7 @@ if ~exist(studyPath), aas_makedir(aap, studyPath); end
 remoteAA = {};
 
 % Names, modules, and location indices of remote outputstreams
-remoteOutputs = struct('name', {{}}, 'locI', {}, 'modI', {});
+remoteOutputs = struct('name', {{}}, 'locI', {}, 'modI', {}, 'stagetag', {});
 
 local2remoteMaps = {};
 
@@ -162,24 +162,17 @@ for locI = length(remoteAAlocations) : -1 : 1
     % Find the last instance of all remote output streams
     for modI = 1 : maxModI
         mod = remoteAA{locI}.tasklist.main.module(modI);
+        modStageTag=aas_getstagetag(remoteAA{locI},modI);
         
-        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams')
+        if isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index), 'outputstreams') && isfield(remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams,'stream')
             outputStreams = remoteAA{locI}.tasksettings.(mod.name)(mod.index).outputstreams.stream;
             if ~iscell(outputStreams), outputStreams = {outputStreams}; end
             
             for oI = 1 : length(outputStreams)
-                streamI = strcmp(outputStreams{oI}, {remoteOutputs.name});
-                
-                % If this output hasn't appeared yet, add it to the list
-                if ~any(streamI)
-                    remoteOutputs(end+1) = struct('name', outputStreams{oI}, 'locI', locI, 'modI', modI);
-                    
-                    % Otherwise, update the module and location indices
-                else
-                    remoteOutputs(streamI).modI = modI;
-                    remoteOutputs(streamI).locI = locI;
-                end
-                
+                % Changes here - record all outputs, not just last
+                % one, as may need them if fully qualified streams
+                % specified
+                remoteOutputs(end+1) = struct('name', outputStreams{oI}, 'locI', locI, 'modI', modI,'stagetag',modStageTag);
             end
         end
     end
@@ -210,40 +203,43 @@ for modI = 1 : length(aap.tasklist.main.module)
             % the list of remote streams for this module.
             
             % Is it fully qualified, with source module stage tag as well (e.g.,
-            %   <stream>aamod_coreg_extended_1_00001.structural</stream>  
+            %   <stream>aamod_coreg_extended_1_00001.structural</stream>
+            if any(inputStreams{iI}=='.')
+                [inputStreamStageTag rem]=strtok(inputStreams{iI},'.');
+                inputStreamName=strtok(rem,'.');
+            else
+                inputStreamName=inputStreams{iI};
+                inputStreamStageTag=[];
+            end;
+            
+            % Check for this as output of local streams
             if isempty(prevOutputs)
                 foundPrevious=false;
             else
-                if any(inputStreams{iI}=='.')
-                    [inputStageTag rem]=strtok(inputStreams{iI},'.');
-                    inputStreamName=strtok(rem,'.');
-                    foundPrevious=any([strcmp(inputStreamName,{prevOutputs.streamname})] & [strcmp(inputStageTag,{prevOutputs.stagetag})]);
-                else
-                    % not fully qualified
+                if isempty(inputStreamStageTag)
                     foundPrevious=ismember(inputStreams{iI}, {prevOutputs.streamname});
+                else
+                    foundPrevious=any([strcmp(inputStreamName,{prevOutputs.streamname})] & [strcmp(inputStreamStageTag,{prevOutputs.stagetag})]);
                 end;
             end;
-            if ~foundPrevious                
+            if ~foundPrevious
                 % Check previously added remotestreams
                 if ~isempty(mod.remotestream) && ismember(inputStreams{iI}, {mod.remotestream.stream}), continue; end
                 
                 % Is the input stream present in the list of remote streams?
-                rI = strcmp(inputStreams{iI}, {remoteOutputs.name});
-                % Check for module-specific stream
-                if ~any(rI) && ~isempty(strfind(inputStreams{iI},'.'))
-                    tmpinputModule = inputStreams{iI}(1:strfind(inputStreams{iI},'.')-1);
-                    tmpinputStream = inputStreams{iI}(strfind(inputStreams{iI},'.')+1:end);
-                    rI = strcmp(tmpinputStream, {remoteOutputs.name});
-                    if sum(rI) > 1
-                        aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
-                    end
-                    if any(rI)
-                        tmpremoteModule = remoteAA{remoteOutputs(rI).locI}.tasklist.main.module(remoteOutputs(rI).modI).name;
-                        if isempty(strfind(tmpinputModule,tmpremoteModule)) % revoke if not match
-                            rI(rI) = false;
-                        end
-                    end
-                end
+                if isempty(inputStreamStageTag)
+                    % Not fully qualified - just pick last example of this
+                    % stream
+                    rI = strcmp(inputStreamName, {remoteOutputs.name});
+                    if any(rI) 
+                        rIf = find(rI,1,'last'); % Pick last one
+                        rI=[1:length(rI)]==rIf; 
+                    end;
+                else
+                    % Fully qualified name
+                    rI = strcmp(inputStreamName, {remoteOutputs.name}) & strcmp(inputStreamStageTag, {remoteOutputs.stagetag});
+                end;
+
                 
                 if sum(rI) > 1
                     aas_log(aap, 1, sprintf('%s is present at more than one remote location? Not sure how this happened', inputStreams{iI}));
@@ -371,10 +367,10 @@ for modI = 1 : length(aap.tasklist.main.module)
                     end % End if check MD5s
                     
                 else
-
+                    
                     if check && ...
                             (~isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) ||...
-                        (isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
+                            (isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
                             isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
                             aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential))
                         aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
