@@ -1,6 +1,6 @@
 function ESP = dcm_echospacing(dcm)
 if ischar(dcm)
-    h = dicominfo(dcm);
+    h = spm_dicom_headers(dcm); h = h{1};
 else
     h = dcm;
 end

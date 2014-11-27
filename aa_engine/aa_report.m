@@ -7,12 +7,11 @@ function [aap]=aa_report(studyroot,stages)
 
 fprintf('Fetching report started...\n');
 
-if isstruct(studyroot)
-    studyroot=fullfile(aas_getstudypath(studyroot),studyroot.directory_conventions.analysisid);
-end;
-
 % First, load AAP structure
 if exist('studyroot','var')
+    if isstruct(studyroot)
+        studyroot=fullfile(aas_getstudypath(studyroot),studyroot.directory_conventions.analysisid);
+    end;
     cd(studyroot);
 else
     studyroot=pwd;

@@ -4,6 +4,11 @@ function [movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs
 settings = aap.tasklist.currenttask.settings;
 streamIn = aap.tasklist.currenttask.inputstreams.stream;
 
+% We can now have missing sessions per subject, so we're going to use only
+% the sessions that are common to this subject and selected_sessions
+[numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+
 for s = 1 : length(streamIn)
    if isstruct(streamIn{s})
        streamIn{s} = streamIn{s}.CONTENT;
@@ -18,7 +23,7 @@ if isfield(aap.tasklist.currenttask.settings, 'includemovementpars') && ...
     
     [moves, mnames] = aas_movPars(aap,subj, aap.tasklist.currenttask.settings.moveMat);
     
-    for sess = aap.acq_details.selected_sessions
+    for sess = 1:numSess
         movementRegs(sess).names = mnames;
         movementRegs(sess).regs = moves{sess};
     end
@@ -31,10 +36,10 @@ compartmentRegs = [];
 
 CRstreams = streamIn(strcmp('compSignal', streamIn));
 if ~isempty(CRstreams) && aas_stream_has_contents(aap, 'compSignal');
-    for sess=aap.acq_details.selected_sessions
+    for sess=1:numSess
         % If we don't have compartment Signals, this should give up...
         compTC = [];
-        load(aas_getfiles_bystream(aap,subj,sess,CRstreams{:}));
+        load(aas_getfiles_bystream(aap,subj,subjSessionI(sess),CRstreams{:}));
         compartmentRegs(sess).names = CRnames(aap.tasklist.currenttask.settings.compRegs);
         compartmentRegs(sess).regs = compTC(:,aap.tasklist.currenttask.settings.compRegs);
     end
@@ -45,8 +50,8 @@ physiologicalRegs = [];
 
 PRstreams = streamIn(strcmp('physreg', streamIn));
 if ~isempty(PRstreams) && aas_stream_has_contents(aap, 'physreg')
-    for sess=aap.acq_details.selected_sessions
-        PRfn = aas_getimages_bystream(aap,subj,sess,PRstreams{:});
+    for sess=1:numSess
+        PRfn = aas_getimages_bystream(aap,subj,subjSessionI(sess),PRstreams{:});
         
         % Contains physiological regressors
         R = []; names = [];
@@ -56,7 +61,7 @@ if ~isempty(PRstreams) && aas_stream_has_contents(aap, 'physreg')
         physiologicalRegs(sess).regs = R;
         
         if isempty(R)
-            aas_log(aap,false, sprintf('Could not find Physiological Regressors for session %d\n', sess))
+            aas_log(aap,false, sprintf('Could not find Physiological Regressors for session %d\n', subjSessionI(sess)))
         end
     end
 end
@@ -67,8 +72,8 @@ spikeRegs = [];
 SPstreams = streamIn(strcmp('listspikes', streamIn));
 
 if ~isempty(SPstreams) && aas_stream_has_contents(aap, 'listspikes') && settings.includespikes
-    for sess=aap.acq_details.selected_sessions
-        SPfn = aas_getimages_bystream(aap,subj,sess,SPstreams{:});
+    for sess=1:numSess
+        SPfn = aas_getimages_bystream(aap,subj,subjSessionI(sess),SPstreams{:});
         
         % Contains spike scan numbers
         TSspikes = []; Mspikes = [];
@@ -93,7 +98,7 @@ GLMDNstream = streamIn(strcmp('gd_results', streamIn));
 if ~isempty(GLMDNstream) && aas_stream_has_contents(aap, 'gd_results') && settings.includeGLMDNregs
     GLMDNfile = aas_getfiles_bystream(aap, subj, GLMDNstream{:});
     load(GLMDNfile);
-    for sess = aap.acq_details.selected_sessions
+    for sess = 1:numSess
         GLMDNregs(sess).names = arrayfun(@(x) sprintf('GLMDN_%02d', x), [1:gd_results.pcnum], 'UniformOutput', false);
         GLMDNregs(sess).regs = gd_results.pcregressors{sess}(:, 1:gd_results.pcnum);
     end

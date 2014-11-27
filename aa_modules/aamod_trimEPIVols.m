@@ -24,7 +24,7 @@ switch task
                 if strcmp(trimSettings(d).subject, '*');
                     subjI = subj;
                 else
-                    subjI = find(strcmp({aap.acq_details.subjects}, trimSettings(d).subject));
+                    subjI = find(strcmp(trimSettings(d).subject,{aap.acq_details.subjects.mriname}));
                 end
             else
                 subjI = trimSettings(d).subject;

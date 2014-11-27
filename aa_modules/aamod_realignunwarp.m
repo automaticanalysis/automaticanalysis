@@ -33,7 +33,23 @@ switch task
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
             
-            mv = load(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'));
+            par = cellstr(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'));
+            parind = cell_index(par,'.txt');
+            mv = load(par{parind});
+            
+            if ~exist(fn,'file')
+                if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
+                    mw_mfp_show(aas_getsesspath(aap,subj,sess));
+                    movefile(...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
+                else
+                    aas_realign_graph(par{parind});
+                    print('-djpeg','-r150','-noui',...
+                        fullfile(aas_getsubjpath(aap,subj),...
+                        ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
+                        );
+                end
+            end
             
             aap.report.mvmax(subj,sess,:)=max(mv);
             %             mvmean(sess,:)=mean(mv);
@@ -165,13 +181,15 @@ switch task
             % MFP
             if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
                 mw_mfp(outpars);
-                fn=dir(fullfile(pth,'mw_mpf_*.txt'));
+                fn=dir(fullfile(pth,'mw_mfp_*.txt'));
                 outpars = fullfile(pth,fn(1).name);
-                movefile(...
-                    fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),...
-                    fullfile(aas_getsubjpath(aap,subj),...
-                    ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
-                    );
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    movefile(...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),...
+                        fullfile(aas_getsubjpath(aap,subj),...
+                        ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
+                        );
+                end
             else
                 aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...

@@ -15,7 +15,6 @@
         <matrixfarmlink desc='0 = use cp, 1 = use ln -s'>1</matrixfarmlink>
         
         <inputstreams>                                                
-            <stream>firstlevel_spm</stream>
             <stream ismodified='0'>voi</stream>            
         </inputstreams>
         

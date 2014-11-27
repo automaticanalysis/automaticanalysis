@@ -12,7 +12,11 @@ switch task
         settings = aap.tasklist.currenttask.settings;
         UFp = 0.001;
         
-                % New option to allow suffix to output file in extraparameters
+        if ischar(settings.cells)
+            settings.cells = eval(settings.cells);
+        end
+        
+        % New option to allow suffix to output file in extraparameters
         if (isfield(aap.tasklist.currenttask.extraparameters,'stats_suffix'))
             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
         else
@@ -43,6 +47,8 @@ switch task
             
         end
         
+
+        
         allCellImgs = [];
         colNames = {};
         for conI = settings.cells
@@ -53,14 +59,17 @@ switch task
             if length(conNames) > 1
                 aas_log(aap, 1, sprintf('Contrast names are inconsistent across subjects! con_%05d returns: ''%s''', conI, strjoin(conNames, ', ')));
             end
-            
             colNames = [colNames conNames];
             
-            cellFiles = cellfun(@(x) x(conI,:), conFiles, 'UniformOutput', 0);
-            cellFiles = char(cellFiles{:});
-            
-            allCellImgs = char(allCellImgs, cellFiles);
-            
+            for sub = 1 : nsub
+                origConFileName = SPM(sub).SPM.xCon(conI).Vcon.fname;
+                matchingFile = regexp(cellstr(conFiles{sub}), origConFileName);
+                matchingFile = ~cellfun(@(x) isempty(x), matchingFile);
+                if ~any(matchingFile), error('Can''t find matching contrast file... more info added here eventuall'); end
+                if sum(matchingFile)>1, error('More than one matching contrast image for this subject'); end
+                allCellImgs = char(allCellImgs, conFiles{sub}(matchingFile,:));
+            end
+
         end
         
         % Pop the 1st empty name.
@@ -97,16 +106,21 @@ switch task
         % affect the sphericity correction
         % and this is probably wrong for between subjects ANOVA
         
-        X = [X kron(ones(ncol,1),eye(nsub))];
+        if settings.subjectfactor
+            X = [X kron(ones(ncol,1),eye(nsub))];
+            subjFactor = kron(ones(ncol,1),(1:nsub)');
+        else
+            subjFactor = ones(nscan,1);
+        end
         
         SPM.factor.variance = settings.variance;
-        
         SPM.factor.dept = settings.dependent;
         
         % The factor strucure Indices, for calculating non-sphericities
         factor1Index = kron([1:ncon]', ones(nsub,1));
         factor2Index = ones(nscan, 1);
-        Ind = [ones(nscan, 1) factor1Index factor2Index kron(ones(ncol,1),(1:nsub)') ones(nscan,1)];
+        
+        Ind = [ones(nscan, 1) factor1Index factor2Index  subjFactor ones(nscan,1)];
         
         SPM.xX = struct(...
             'X',X,...
@@ -171,11 +185,19 @@ switch task
         % Calculate the main effect contrast
         Ccon = ones(ncon,1)
         Dcon = orth(diff(eye(size(Ccon,1)))')';
-        c = [Dcon zeros(size(Dcon,1), nsub)];
+        if settings.subjectfactor
+            c = [Dcon zeros(size(Dcon,1), nsub)];
+        else
+            c = Dcon;
+        end
         SPM.xCon = spm_FcUtil('Set', settings.name, 'F', 'c', c', SPM.xX.xKXs); 
         
         % Then compute the contrast to give average condition betas
-        c = [eye(ncon) zeros(ncon,nsub)];
+        if settings.subjectfactor
+            c = [eye(ncon) zeros(ncon,nsub)];
+        else
+            c = eye(ncon);
+        end
         SPM.xCon(end+1) = spm_FcUtil('Set', 'Coondition Betas', 'F', 'c', c', SPM.xX.xKXs);   
         
         spm_contrasts(SPM);

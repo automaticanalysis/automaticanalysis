@@ -8,9 +8,9 @@ switch task
         
     case 'doit'
         
-        if ~(marsbar('is_started'))
-            marsbar on;
-        end
+%         if ~(marsbar('is_started'))
+%             marsbar on;
+%         end
 
         settings = aap.tasklist.currenttask.settings;
         
@@ -109,6 +109,12 @@ switch task
         
         % Correct seed time series for confounds (entire design matrix)? NOT YET TESTED
         if aap.tasklist.currenttask.settings.correctSeed
+%                         Better way to get residuals, but model migh tnot
+%                         be estimated yet...
+%             KWY = spm_filter(SPM.xX.K, SPM.xX.W*Y); % Whiten and filter the data...
+%             Y = spm_sp('r', SPM.xX.xKXs, KWY);      % Calculate residuals...
+%             clear KWY; % save memory
+            
             X = spm_sp('Set', SPM.xX.X);
             y = spm_sp('res', X, y);
         end
@@ -166,7 +172,7 @@ switch task
             % Indices of scans in this session
             vI = nScans(sess)+1 : nScans(sess+1);
             
-            % Add in the seed time series and the global
+            % Add in the seed time series
             fcSPM.Sess(sess).C.C = [Y(vI) SPM.Sess(sess).C.C];
             fcSPM.Sess(sess).C.name = ['seed' SPM.Sess(sess).C.name];
             

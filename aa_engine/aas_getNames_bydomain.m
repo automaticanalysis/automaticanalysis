@@ -3,7 +3,6 @@
 % the domain is 'session' we return the session names. As you add new
 % domains, add the appropriate thing here.
 %   domain='subject','session' etc
-%   index= number of item
 %
 % Added by CW: 2014-04-02
 %
@@ -23,6 +22,9 @@ for d = 1 : length(domains)
             
         case 'study'
             names{d} = {aap.directory_conventions.analysisid};
+            
+        case 'meg_session'
+            names{d} = {aap.acq_details.meg_sessions.name};
             
         case {'diffusion_session', 'diffusion_session_bedpostx'}
             names{d} = {aap.acq_details.diffusion_sessions.name};

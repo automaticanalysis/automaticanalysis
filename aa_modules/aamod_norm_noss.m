@@ -21,6 +21,7 @@ switch task
             diag(aap,subj);
             fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         end
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
             aap = aas_report_add(aap,subj,'<table><tr><td>');
             imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
@@ -31,9 +32,12 @@ switch task
         end
     case 'doit'
         
+        
+        settings = aap.tasklist.currenttask.settings;
+        
         defs =aap.spm.defaults.normalise;
         defs.estimate.weight = '';
-        
+       
         % Template image; here template image not skull stripped
         % [AVG] Changed to allow specification of any T1 template, does not
         % need to be in the SPM folder any more...
@@ -70,6 +74,18 @@ switch task
         % Set the mask for subject to empty by default
         objMask = ''; % object mask
         
+        % Check if there is an affine starting estimate for this subject
+        allSubj = strcmp({settings.subject(:).name}, '*');
+        thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).mriname);
+        
+        if any(allSubj)
+            subjectOptions = settings.subject(allSubj);
+        elseif any(thisSubj)
+            subjectOptions = settings.subject(thisSubj);
+        else
+            subjectOptions = settings.subject(1);
+        end   
+        
         % Because we are going reslice later (with undistort_reslice)
         % We don't reslice anything except the image to be normalized
         
@@ -101,48 +117,76 @@ switch task
                 aas_log(aap,0,sprintf('Found more than one attenuated structural so using first:\n%s',Simg));
             end
             
-            estopts.regtype='mni';    % turn on affine again
+%             estopts.regtype='mni';    % turn on affine again
+            
+            % [TA] SPM12 compatibility
+            try estopts = aap.spm.defaults.preproc; catch, estopts = aap.spm.defaults.old.preproc; end
+            if iscell(estopts.tpm)
+                estopts.tpm = char(estopts.tpm);
+            end
+            
+            if isfield(aap.tasklist.currenttask.settings,'estopts')
+                fields = fieldnames(aap.tasklist.currenttask.settings.estopts);
+                for f = 1:numel(fields)
+                    if ~isempty(aap.tasklist.currenttask.settings.estopts.(fields{f}))
+                        estopts.(fields{f}) = aap.tasklist.currenttask.settings.estopts.(fields{f});
+                    end
+                end
+            end
             
             % Load header of image to be normalized
             V=spm_vol(mSimg);
             
             % Now adjust parameters according to starting offset parameters
             % as requested in task settings
-            StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
-            ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
-            if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
-                fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+            if ~isempty(subjectOptions.affineStartingEstimate)
+                startingParameters = subjectOptions.affineStartingEstimate;
+                
             else
-                fnames = [];
-            end
-            for fieldind=1:length(fnames)
-                % Which element in StartingParameters does this refer to?
-                whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
-                % Generate a helpful error if it isn't recognised
-                if (isempty(whichitem))
-                    err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
-                    err=[err sprintf('%s\t',ParameterFields)];
-                    aas_log(aap,true,err);
+                
+                startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
+                ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
+                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
+                    fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
+                else
+                    fnames = [];
                 end
-                % Put this in its place
-                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
-                    StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
-                end;
+                          
+                for fieldind=1:length(fnames)
+                    % Which element in StartingParameters does this refer to?
+                    whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
+                    % Generate a helpful error if it isn't recognised
+                    if (isempty(whichitem))
+                        err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
+                        err=[err sprintf('%s\t',ParameterFields)];
+                        aas_log(aap,true,err);
+                    end
+                    % Put this in its place
+                    if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
+                        startingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
+                        if ~isempty(fnames)
+                            aas_log(aap, 0, 'Warning: the option <affinestartinestimate> will soon be removed from aamod_norm_noss. Please use the <subject> option to apply affine starting estimates');
+                        end
+                    end;
+                end
+                
+                
+                startingParameters = [0 0 0   0 0 0   1 1 1   0 0 0];
             end
-            
+
             %[AVG] Save original V.mat parameters
             oldMAT = V.mat;
             
             % Adjust starting orientation of object image as requested
-            StartingAffine=spm_matrix(StartingParameters);
-            V.mat=StartingAffine*V.mat;
+            startingAffine=spm_matrix(startingParameters);
+            V.mat=startingAffine*V.mat;
             
             % Run normalization
             out = spm_preproc(V,estopts);
             
             % Adjust output Affine to reflect fiddling of starting
             % orientation of object image
-            out.Affine=out.Affine*StartingAffine;
+            out.Affine=out.Affine*startingAffine;
             
             % [AVG] Instead we set the out.image parameters to our original
             % structural image!
@@ -237,7 +281,7 @@ switch task
         
         aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
 
-        if strcmp(aap.options.wheretoprocess,'localsingle')
+        if settings.diagnostic && strcmp(aap.options.wheretoprocess,'localsingle')
             diag(aap,subj);
         end
         

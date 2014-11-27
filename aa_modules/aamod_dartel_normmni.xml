@@ -15,12 +15,14 @@
                 <stream>native_csf</stream>
                 <stream>dartel_flowfield</stream>
                 <stream>dartel_template</stream>
+                <stream isessential="0">dartel_templatetomni_xfm</stream>  
             </inputstreams>
             
             <outputstreams>
                 <stream>normalised_grey</stream>
                 <stream>normalised_white</stream>        
-                <stream>normalised_csf</stream>        
+                <stream>normalised_csf</stream>  
+                <stream>dartel_templatetomni_xfm</stream>  
             </outputstreams>            
         </currenttask>
     </tasklist>

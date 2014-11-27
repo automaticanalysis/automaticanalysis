@@ -1,0 +1,14 @@
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module> 
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_meg_get_fif</name></module>
+            <module><name>aamod_meg_maxfilt</name></module>
+        </main>
+    </tasklist>
+</aap>

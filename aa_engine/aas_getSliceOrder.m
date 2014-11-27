@@ -8,6 +8,7 @@ elseif nargin<3
     error('We need a dicom header, as we don''t know the slice ordering')
 end
 
+
 if ~isfield(dicomHdr, 'sliceorder')
     str =  dicomHdr.Private_0029_1020;
     xstr = char(str');
@@ -25,6 +26,7 @@ if ~isfield(dicomHdr, 'sliceorder')
             sliceorder = 'Order undetermined';
     end
     dicomHdr.sliceorder = sliceorder;
+
 end
 
 switch(dicomHdr.sliceorder)
@@ -41,12 +43,18 @@ switch(dicomHdr.sliceorder)
         end
         warning('CAREFUL! Ensure your interleaved order is correct!')
     otherwise
-        error('BAD ORDER! Check your slice order, and/or set it manually!')
+        
+        if isfield(dicomHdr, 'Private_0019_1029')
+            [~, aap.tasklist.currenttask.settings.sliceorder] = sort(dicomHdr.Private_0019_1029);
+            dicomHdr.sliceorder = 'custom (determined from field Private_0019_1029)';
+        else
+            error('BAD ORDER! Check your slice order, and/or set it manually!');
+        end
 end
 
-fprintf('\n Your sequence has %d slices in %s order', V.dim(3), dicomHdr.sliceorder);
+fprintf('\n Your sequence has %d slices in %s order\n', V.dim(3), dicomHdr.sliceorder);
 
-if isempty(aap.tasklist.currenttask.settings.slicetime)
+if isfield(aap.tasklist.currenttask.settings, 'slicetime') && isempty(aap.tasklist.currenttask.settings.slicetime)
     if ~isfield(aap.tasklist.currenttask.settings, 'TRs') || ...
             isempty(aap.tasklist.currenttask.settings.TRs)
         % NOTE, this will not work for a 3D sequence

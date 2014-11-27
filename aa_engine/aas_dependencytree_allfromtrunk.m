@@ -10,18 +10,22 @@ end;
 end
 
 function [deps]=allfromtrunk(aap,domaintree,indices,deps)
-N=aas_getN_bydomain(aap,domaintree{1},indices);
+[N, I] = aas_getN_bydomain(aap,domaintree{1},indices);
 if ~isnan(N)
     if length(domaintree)>1
-        for Nind=1:N
+        for Nind=I
                 deps=allfromtrunk(aap,domaintree(2:end),[indices Nind],deps);
         end;
     else
         newdeps=cell(N,1);
         for Nind=1:N
-            newdeps{Nind}={domaintree{1} [indices Nind]};
+            newdeps{Nind}={domaintree{1} [indices I(Nind)]};
         end;
+        try
         deps=[deps;newdeps];
+        catch
+            disp('asdf');
+        end
     end;
 end;
 end

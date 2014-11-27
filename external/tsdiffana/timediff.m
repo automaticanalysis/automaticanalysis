@@ -105,7 +105,7 @@ fn = Vi.fname;
 [p f e] = fileparts(fn);
 Vo.fname = fullfile(p, [prefix f e]);
 switch spm('ver')
-    case 'SPM12b'
+    case {'SPM12b' 'SPM12'}
         Vo.dt = [datatype 0];
         Vo = spm_create_vol(Vo);
     case {'SPM5','SPM8', 'SPM8b'}

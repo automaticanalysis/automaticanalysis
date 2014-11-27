@@ -13,10 +13,12 @@
 				<stream>structural</stream>
 				<stream>dartel_template</stream>
 				<stream>dartel_flowfield</stream>
+                <stream isessential="0">dartel_templatetomni_xfm</stream>                  
 			</inputstreams>
 			
 			<outputstreams>
 				<stream>structural</stream>
+                <stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             
         </currenttask>

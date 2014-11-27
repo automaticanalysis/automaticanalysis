@@ -39,9 +39,7 @@ modulenames = fieldnames(aap.tasksettings);
 firstlevel = modulenames{cell_index(modulenames,'firstlevel_model')};
 
 % Correct EV onstets for number of dummies?
-numdummies = ~isfield(aap.acq_details.input,'correctEVfordummies') || ...
-        aap.acq_details.input.correctEVfordummies;
-numdummies = numdummies*aap.acq_details.numdummies; 
+numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies; 
 
 % Reads in header
 head = study_header(aap.acq_details.input.list);
@@ -71,12 +69,13 @@ for v = 2:size(LIST,1)
 		if ~aSess(i), continue; end
         
         % Obtain TR
-        h = dicominfo(mri_finddcm(aap,VOL,aSess(i)));
-        TR = h.RepetitionTime/1000; % in seconds
+        h = spm_dicom_headers(mri_finddcm(aap,VOL,aSess(i)));
+        TR = h{1}.RepetitionTime/1000; % in seconds
         
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);
         if exist('refDir','var')
+			clear names durations onsets tmod pmod;
             load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
             % [MDV] initialise pmod and tmod if they don't exist
             if ~exist('pmod','var'), pmod(1:numel(names)) = struct('name',[],'param',[],'poly',[]);end

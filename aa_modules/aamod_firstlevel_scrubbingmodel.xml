@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' inheritfrom='aamod_firstlevel_model' desc='Firstlevel model for cleaning/ and filtering timeseries' modality='MRI'>
+        <currenttask domain='subject' inheritfrom='aamod_firstlevel_model' desc='Firstlevel model for cleaning and filtering timeseries' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -10,37 +10,44 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             
-            <specialrequirements>
+        <!--    <specialrequirements>
                 <imagesize>500000</imagesize>
                 <jobtype>fMRI</jobtype>
-            </specialrequirements>
+            </specialrequirements> -->
 
             <numDummies>0</numDummies>                  <!-- Another place to discard dummies -->
+            
+            <globalscaling>None</globalscaling>
             
             <includemovementpars>1</includemovementpars>
             <volterramovementpars>1</volterramovementpars>
             
             <includeWM>1</includeWM>
             <includeCSF>1</includeCSF>
-            <includeSpikes>1</includeSpikes>
+            <includeglobal>1</includeglobal>
+            <includespikes>1</includespikes>
+            <includeGLMDNregs>0</includeGLMDNregs>
             
             <highpassfilter>Inf</highpassfilter>
             <bandpass>0.01 0.1</bandpass>               <!-- Bandpass filter using DCT, e.g. for resting state - HP/LP in Hz -->
             <svdthresh>1</svdthresh>                    <!-- if < 1, do dimensionality reduction on confounds (movement, any global signal, etc.) -->
             
             <maskthreshold>0.8</maskthreshold>          <!-- SPM threshold for masking fMRI (default 0.8) (of global value)-->
-            <explicitmask>0</explicitmask>              
+            <explicitmask>0</explicitmask>              <!-- Use epiBETmask -->
             
             <allowemptymodel>1</allowemptymodel>
             <nuisanceconditions>1</nuisanceconditions>  <!-- Are conditions labelled as nusiance? -->
             
             <!-- streams -->
             <inputstreams>
-                <stream>epi_dicom_header</stream>
-                <stream>listspikes</stream>
-                <stream>realignment_parameter</stream>
-                <stream>compSignal</stream>
                 <stream ismodified='0'>epi</stream>
+                <stream isessential='0'>epiBETmask</stream>
+				<stream isessential='0'>listspikes</stream>
+                <stream isessential='0'>epi_dicom_header</stream>
+                <stream isessential='0'>sliceorder</stream>
+                <stream isessential='0'>realignment_parameter</stream>                
+				<stream isessential='0'>compSignal</stream>
+				<stream isessential='0'>gd_results</stream>
             </inputstreams>
             
             <outputstreams>

@@ -30,11 +30,16 @@ switch task
         % Get subject directory
         cwd=pwd;
         
+ 		% We can now have missing sessions per subject, so we're going to use only
+        % the sessions that are common to this subject and selected_sessions
+        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+
         % Add PPI if exist
         modname = aap.tasklist.currenttask.name;
         modnameind = regexp(modname, '_\d{5,5}$');
         modindex = str2num(modname(modnameind+1:end));
-        for sess = aap.acq_details.selected_sessions
+        for sess = subjSessionI
             if aas_stream_has_contents(aap,subj,sess,'ppi')
                 load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
                 [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
@@ -66,7 +71,7 @@ switch task
 
         sessnuminspm=0;
 
-        for sess = aap.acq_details.selected_sessions
+        for sess = 1:numSess
             sessnuminspm=sessnuminspm+1;
 
             % Settings

@@ -45,7 +45,7 @@ switch task
             case 'SPM8'
                 cfg.warpreg = 4;
                 cfg.bb = {NaN(2,3)};
-            case 'SPM12b'
+            case {'SPM12b' 'SPM12'}
                 cfg.warpreg = [0 1e-3 0.5 0.05 0.2];
                 cfg.bb = NaN(2,3);
         end        

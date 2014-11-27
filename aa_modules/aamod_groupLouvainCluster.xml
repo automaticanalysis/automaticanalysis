@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' mfile_alias='aamod_LouvainCluster' desc='cluster voxels by connectivity fingerprints' modality='MRI'>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+
+            <toolsdir>/imaging/conor/software/dist/</toolsdir>
+            
+            <!-- The firstlevel_fConnMatrix_avg can have multiple
+                 seeds, so which one do we want to run with?  This can be
+                 an index (a number), or a seed name -->
+            <whichROI>1</whichROI>
+            
+            <numiterations>100</numiterations>
+
+            <!-- Threshold for the number of voxels in a module -->
+            <minVoxPerMod>10</minVoxPerMod>
+            
+            <!-- Generate a video of the parcellation? -->
+            <diagnostic>0</diagnostic>
+            
+            <inputstreams>
+                <stream ismodified='0'>firstlevel_fConnMatrix_avg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>group_louvain_results</stream>
+                <stream>group_module_info</stream>  
+                <stream>group_individual_module_maps</stream>
+                <stream>group_labelled_module_map</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

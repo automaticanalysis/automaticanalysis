@@ -25,8 +25,9 @@ Vc.fname = fullfile(pth, [prefix nme ext]);
 try
 Yc = double(and((Y1>thresh(1)),(Y2>thresh(2))));
 
+spm_write_vol(Vc, Yc);
 if sum(Yc(:)>0) > 0
-    spm_write_vol(Vc, Yc);
+    disp('');
 else
     fprintf('\nFailed not make conjunction: no overlap')
 end

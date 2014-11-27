@@ -11,13 +11,15 @@
             
 			<inputstreams>
 				<stream>aamod_dartel_createtemplate_00001.dartel_template</stream>
+                <stream isessential="0">aamod_dartel_norm_write_00001.dartel_templatetomni_xfm</stream>                  
 				<stream>dartel_flowfield</stream>
-				<stream>structural</stream>
+				<stream>aamod_dartel_norm_write_00001.structural</stream>
                 <stream>meanepi</stream>
 			</inputstreams>
 			
 			<outputstreams>
                 <stream>meanepi</stream>
+                <stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             
         </currenttask>

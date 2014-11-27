@@ -1,4 +1,4 @@
-function [moveRegs Rnames] = aas_movPars(aap, p, moveMat, volterraMovement)
+function [moveRegs Rnames] = aas_movPars(aap, subjI, moveMat, volterraMovement)
 % Select what type of movement parameters to use, and create them!
 %
 % [moveRegs, Rnames] = aas_movPars(aap, p, moveMat, volterraMovement)
@@ -32,14 +32,18 @@ maxO = size(moveMat, 1) - 1; % Maximal order you want
 maxD = size(moveMat,2) - 2; % Maximal derivative you want
 %NOTE: last derivative [maxD+2] will be the spin history...
 
+% We can now have missing sessions per subject, so we're going to use only
+% the sessions that are common to this subject and selected_sessions
+[numSess, sessInds] = aas_getN_bydomain(aap, 'session', subjI);
+subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
 
 % Get the movement parameters for each session separately...
-moveRegs = cell(size(aap.acq_details.sessions));
+moveRegs = cell(numSess,1);
 
-for s = aap.acq_details.selected_sessions
+for s = 1:numSess
         
     % Linear movement parameters text file...
-    Mfn = aas_getfiles_bystream(aap, p, s, 'realignment_parameter');
+    Mfn = aas_getfiles_bystream(aap, subjI, subjSessionI(s), 'realignment_parameter');
     for f = 1:size(Mfn,1)
         fn = deblank(Mfn(f,:));
         if strcmp(fn(end-2:end), 'txt')

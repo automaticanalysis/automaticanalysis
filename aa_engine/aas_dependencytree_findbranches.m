@@ -74,8 +74,8 @@ if isstruct(tree)
             filter_indices=filter_indices(2:end);
         else
             % otherwise, provide every branch
-            N=aas_getN_bydomain(aap,fn{fnind},indices);
-            range=1:N;
+            [N, range]=aas_getN_bydomain(aap,fn{fnind},indices);
+%             range=1:N;
         end;
         for branchind=range
             traverse=true;

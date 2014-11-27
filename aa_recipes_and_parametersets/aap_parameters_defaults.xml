@@ -35,7 +35,8 @@
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
-		<spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
+		<megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
+        <spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
         <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
@@ -44,6 +45,7 @@
 		<freesurfershell desc='Shell used to run FreeSurfer' ui='text'>csh</freesurfershell>
 		<freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
 		<freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
+		<neuromagdir desc='Path to Neuromag' ui='dir'>/imaging/local/software/neuromag</neuromagdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
@@ -58,6 +60,7 @@
                         <searchlight_package desc='A searchlight' ui='custom'/>
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
+                    <meg_session desc='MEG acquisition' ui='custom'></meg_session>                        
                     <diffusion_session desc='Diffusion acquisition' ui='custom'></diffusion_session>                        
                     <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
                             <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
@@ -145,6 +148,7 @@
 			<list desc='List of subjects and sessions' ui='dir'></list>
 			<selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
 			<referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+			<correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
 		</input>
 	  
         <subjects>
@@ -160,6 +164,7 @@
             <structuralfn ui='dir_part'/>
             <siemensfieldmap ui='intarray'/>
             <seriesnumbers desc='Session numbers for EPI' ui='intarray' />
+            <megseriesnumbers desc='Session numbers for MEG' ui='intarray' />           
             <diffusion_seriesnumbers desc='Session numbers for diffusion data' ui='intarray' />
         </subjects>
         <sessions desc='Functional sessions' ui='intarray'>
@@ -168,6 +173,9 @@
         <diffusion_sessions desc='Diffusion sessions' ui='intarray'>
             <name desc='Diffusion session name' ui='dir_part'/>
         </diffusion_sessions>
+        <meg_sessions desc='MEG sessions' ui='intarray'>
+            <name desc='MEG session name' ui='dir_part'/>
+        </meg_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
         <special_sessions desc='Special sessions' ui='intarray'>
             <name desc='Special session name (used to determine stream name and folder name)' ui='dir_part'/>

@@ -27,7 +27,6 @@ switch task
     case 'doit'
         
         settings = aap.tasklist.currenttask.settings;
-        
         startingDir = pwd();
         
         % Get options
@@ -46,6 +45,9 @@ switch task
         subjName = aap.acq_details.subjects(subjInd).mriname;
         subjPath = aas_getsubjpath(aap, subjInd);
          
+        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subjInd);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+           
         % Prepare basic SPM model...
         [SPM, anadir, files, allfiles, model, modelC] = aas_firstlevel_model_prepare(aap, subjInd);
         cd(SPM.swd);
@@ -56,12 +58,12 @@ switch task
         nuisanceCols = [];
         interestCols = [];
         currentCol = 1;
-        
         spmSession = 1;
-        
         allFiles = [];
- 
-        for thisSess = aap.acq_details.selected_sessions       
+
+        for thisSess = 1:numSess     
+            
+            aas_log(aap, 0, sprintf('\nSession %d:', thisSess));
             
             % Set up model, primarily for experimental effects. We are
             % going to add the nuisance columns on our own...
@@ -82,35 +84,54 @@ switch task
             C = []; % confounds
             Cnames = []; % names
 
-            % Only get compFiles if requested (allows more flexibility in
-            % XML files)
-            
-            if settings.includeCSF || settings.includeWM
+            % Global, CSF or WM signals from aamod_compSig?
+            if (settings.includeCSF || settings.includeWM || settings.includeglobal) && aas_stream_has_contents(aap, 'compSignal')
+                
                 % Compartment signals (GM, WM, CSF)
-                compFiles = aas_getfiles_bystream(aap, subjInd, spmSession, 'compSignal');
+                compFiles = aas_getfiles_bystream(aap, subjInd, subjSessionI(thisSess), 'compSignal');
                 compSignals = load(compFiles);
                 
                 if size(compSignals.compTC, 1) ~= nScans, aas_log(aap, 'compSig is wrong length!', 1); end
                 
                 % Include a CSF signal?
                 if settings.includeCSF
-                    fprintf('Adding CSF signal as covariate.\n');
+                    fprintf('Adding CSF signal from CompSig as covariate.\n');
                     C = [C compSignals.compTC(:,3)];
                     Cnames = [Cnames 'CSF'];
                 end
                 
                 % Include a WM signal?
                 if settings.includeWM
-                    fprintf('Adding WM signal as covariate.\n');
+                    fprintf('Adding WM signal from CompSig as covariate.\n');
                     C = [C compSignals.compTC(:,2)];
                     Cnames = [Cnames 'WM'];
                 end
+                
+                % Include a Global signal?
+                if settings.includeGlobal
+                    fprintf('Adding Global signal from CompSig as covariate.\n');
+                    C = [C compSignals.compTC(:,1)];
+                    Cnames = [Cnames 'Global'];
+                end
+                
+            elseif settings.includeglobal && ~aas_stream_has_contents(aap, 'compSignal')
+                
+                fprintf('Adding Global signal as covariate.\n');
+                
+                G = [];
+                for f = 1 : size(files{thisSess}, 1)
+                    G(f) = spm_global(spm_vol(files{thisSess}(f,:)));
+                end
+                
+                C = [C G'];
+                Cnames = [Cnames 'Global'];
+                
             end
             
-            % Add movement parameters? (this includes Volterra expansion, if requested - all gotten before looping through sessions)
-            if includeMovement
+            % Add movement parameters? (this includes Volterra expansion, if requested -
+            if includeMovement && aas_stream_has_contents(aap, 'realignment_parameter')
                 
-                M = spm_load(aas_getfiles_bystream(aap, subjInd, spmSession, 'realignment_parameter'));
+                M = spm_load(aas_getfiles_bystream(aap, subjInd, subjSessionI(thisSess), 'realignment_parameter'));
                 
                 if volterraMovement
                     U=[];
@@ -151,31 +172,7 @@ switch task
                 
                 aas_log(aap, false, sprintf('%d temporal filtering regressors added for this session.', size(K,2)));
             end
-            
-%             settings.includeSpikes=0; % hack because includeSpikes was a cell?!? -JP
-            if settings.includeSpikes && any(strcmp('listspikes', aap.tasklist.currenttask.inputstreams.stream))
-                
-                % Get the spikes and moves
-                load(aas_getfiles_bystream(aap, subjInd, spmSession, 'listspikes'));
-                
-                % Scans with large movement and image intensity fluctuations
-                regrScans = union(TSspikes(:,1), Mspikes(:,1));
-                
-                % Create a delta for each of these scans
-                spikes = zeros(nScans, length(regrScans));
-                spikeNames = {};
-                for s=1:length(regrScans),
-                    spikes(regrScans(s), s) = 1;
-                    spikeNames{s} = sprintf('SpikeMov%d', s);
-                end;
-                
-                aas_log(aap, false, sprintf('%d spike regressors added for this session.', size(spikes, 2)));
-                
-                C = [C spikes];
-                Cnames = [Cnames spikeNames];
-                
-            end
-            
+
             % Remove scans if needed
             if ~isempty(settings.numDummies) && settings.numDummies > 0
                 fprintf('Removing 1st %d scans.\n', settings.numDummies);
@@ -196,7 +193,7 @@ switch task
                 end
                 S = diag(S).^2; S = cumsum(S)/sum(S);
                 Np = find(S > svdThresh); Np = Np(1);
-                aas_log(aap, 0, sprintf('%d modes from %d confounds (%.2f percent variance of correlation explained)\n', Np, size(C,2), 100*S(Np)))
+                aas_log(aap, 0, sprintf('%d modes from %d confounds (%.2f percent variance of correlation explained)', Np, size(C,2), 100*S(Np)))
                 X0 = full(U(:,1:Np));
                 Nc = Np;
                 
@@ -207,7 +204,31 @@ switch task
                     Cnames{end+1} = sprintf('confound SVD %d', svdReg);
                 end
             end
-     
+            
+            % Spikes shouldn't be included in the SVD
+            if settings.includespikes && aas_stream_has_contents(aap, 'listspikes') 
+                
+                % Get the spikes and moves
+                load(aas_getfiles_bystream(aap, subjInd, subjSessionI(thisSess), 'listspikes'));
+                
+                % Scans with large movement and image intensity fluctuations
+                regrScans = union(TSspikes(:,1), Mspikes(:,1));
+                
+                % Create a delta for each of these scans
+                spikes = zeros(nScans, length(regrScans));
+                spikeNames = {};
+                for s=1:length(regrScans),
+                    spikes(regrScans(s), s) = 1;
+                    spikeNames{s} = sprintf('SpikeMov%d', s);
+                end;
+                
+                aas_log(aap, false, sprintf('%d spike regressors added for this session.', size(spikes, 2)));
+                
+                C = [C spikes];
+                Cnames = [Cnames spikeNames];
+                
+            end
+            
             % Check that we don't have more covariates than scans!
             if size(C,2) > SPM.nscan(spmSession)
                 msg = sprintf('WARNING: More covariates (%d) than scans (%d)!', size(C,2), SPM.nscan(spmSession));
@@ -241,8 +262,8 @@ switch task
         
         % Explicit masking, if requested
         % (NB spm_fmri_spm_ui seems to reset xM.VM, so adding it here.)
-        if explicitMask
-            maskImg = aas_getfiles_bystream(aap, subjInd, 'native_brainmask')
+        if explicitMask && aas_stream_has_contents(aap, 'epiBETmask')
+            maskImg = aas_getfiles_bystream(aap, subjInd, 'epiBETmask')
             SPM.xM.VM = spm_vol(maskImg);
         end % dealing with explicit mask
 

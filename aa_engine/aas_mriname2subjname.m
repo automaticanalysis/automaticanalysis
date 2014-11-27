@@ -1,9 +1,13 @@
-function subjName = aas_mriname2subjname(mriname)
+function subjName = aas_mriname2subjname(name)
 
-numpos=strfind(mriname,'CBU');
+subjName = '';
+
+numpos=strfind(name,'CBU');
 if ~isempty(numpos)
-    subjName=mriname(numpos(1):length(mriname));
-	subjName=strtok(subjName,' /\\_,.');
-else
-    subjName = mriname;
+    subjName =name(numpos(1):length(name));
+    subjName=strtok(subjName,' /\\_,.');
+end
+
+if isempty(subjName)
+    subjName = name;
 end

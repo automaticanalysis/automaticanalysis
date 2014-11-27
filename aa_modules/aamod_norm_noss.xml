@@ -22,7 +22,31 @@
             </outputstreams>
             
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
+            
+            <!-- this option will be removed soon - please use the <subject> option below to apply affine starting estimates. Hint: you can use '*' as a subject name -->
             <affinestartingestimate><y></y><z></z><pitch></pitch></affinestartingestimate>
+            
+            <!-- Allows manual adjustment of orientation before coregistrations is run, for specified subjects -->
+            <!-- affinstartingestimate is a vector with at most 12 elements:
+                      P(1)  - x translation
+                      P(2)  - y translation
+                      P(3)  - z translation
+                      P(4)  - x rotation about - {pitch} (radians)
+                      P(5)  - y rotation about - {roll}  (radians)
+                      P(6)  - z rotation about - {yaw}   (radians)
+                      P(7)  - x scaling
+                      P(8)  - y scaling
+                      P(9)  - z scaling
+                      P(10) - x affine
+                      P(11) - y affine
+                      P(12) - z affine
+                      
+                      defaults to [0 0 0  0 0 0  1 1 1  0 0 0]
+            -->
+            <subject>
+                <name></name>
+                <affineStartingEstimate></affineStartingEstimate>
+            </subject>
             
             <structural desc='Which structural do we use, if there is more than one?'
             >1</structural>

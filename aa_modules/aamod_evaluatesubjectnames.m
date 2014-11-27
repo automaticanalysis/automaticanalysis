@@ -9,33 +9,55 @@ resp='';
 
 switch task
     case 'doit'
-        issubj=0;
+        issubj=false;
+        isMRI = false; isMEG = false;
         if (length(aap.acq_details.subjects)>=i)
             if (~isempty(aap.acq_details.subjects(i).mriname))
-                issubj=1;
+                issubj = true;
+                isMRI = true;
             end;
             if (strcmp(aap.acq_details.subjects(i).mriname,'missing'))
                 aas_log(aap,0,sprintf('MRI from subject number %d is missing, hope you are doing MEG',i));
-                return;
+                issubj = false;
+                isMRI = false;
             end;
+            if (~isempty(aap.acq_details.subjects(i).megname))
+                issubj = true;
+                isMEG = true;
+            end
         end;
         if (~issubj)
             aas_log(aap,1,sprintf('No subject name was specified for subject %d\n',i));
         end;
         switch (aap.directory_conventions.remotefilesystem)
             case 'none'
-                s = mri_findvol(aap,aap.acq_details.subjects(i).mriname);
-                if isempty(s)
-                    if isempty(aap.acq_details.subjects(i).megname)
-                        aas_log(aap,0,sprintf('Problem finding subject %d raw data directory %s\n',i,aap.acq_details.subjects(i).mriname));
+                if isMRI
+                    s = mri_findvol(aap,aap.acq_details.subjects(i).mriname);
+                    if isempty(s)
+                        if isempty(aap.acq_details.subjects(i).megname)
+                            aas_log(aap,0,sprintf('Problem finding subject %d raw data directory %s\n',i,aap.acq_details.subjects(i).mriname));
+                        else
+                            fprintf(' - Warning: Failed to find MRI for subject %d: %s\n',i,aap.acq_details.subjects(i).megname);
+                            aap.acq_details.subjects(i).mriname='missing';
+                        end
                     else
-                        fprintf(' - Warning: Failed to find MRI for subject %d: %s\n',i,aap.acq_details.subjects(i).megname);
-                        aap.acq_details.subjects(i).mriname='missing';
-                    end
-                else
-                    aap.acq_details.subjects(i).mriname=s;
-                end;
-            case 's3' % [TA] needs changing for enable multiple rawdatadir 
+                        aap.acq_details.subjects(i).mriname=s;
+                    end;
+                end
+                if isMEG
+                    s = meg_findvol(aap,aap.acq_details.subjects(i).megname);
+                    if isempty(s)
+                        if isempty(aap.acq_details.subjects(i).megname)
+                            aas_log(aap,0,sprintf('Problem finding subject %d raw data directory %s\n',i,aap.acq_details.subjects(i).mriname));
+                        else
+                            fprintf(' - Warning: Failed to find MEG for subject %d: %s\n',i,aap.acq_details.subjects(i).megname);
+                            aap.acq_details.subjects(i).megname='missing';
+                        end
+                    else
+                        aap.acq_details.subjects(i).megname=s;
+                    end;
+                end
+            case 's3' % [TA] needs changing for enable multiple rawdatadir
                 global aaworker
                 % Separately match subject and visit parts
                 mriname=aap.acq_details.subjects(i).mriname;

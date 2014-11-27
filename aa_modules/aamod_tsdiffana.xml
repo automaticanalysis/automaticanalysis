@@ -10,7 +10,7 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
-                <stream>epi</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             <outputstreams>
                 <stream>tsdiffana</stream>
