@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Convert subject special series'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>dicom_specialseries</stream>
+            </inputstreams>
+            
+             <outputstreams>
+                <stream>specialseries</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+
