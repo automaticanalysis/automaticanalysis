@@ -167,7 +167,7 @@ else
                         extrastages_added.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', 0), extrastages_added.module(noDependI));
                         
                         % Update the branchIDs in the current branch to account for the number in the previous branch number of branches in the previous branch
-                        numPrevBranches = length(unique([extrastages.module.branchID], 'legacy'));
+                        numPrevBranches = length(aa_unique([extrastages.module.branchID]));
                         extrastages_added.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID + numPrevBranches), extrastages_added.module);
                         
                         extrastages.module=[extrastages.module extrastages_added.module];
@@ -190,12 +190,12 @@ else
             
             % Get a list of all the branch IDs that exist in the output
             oBranchIDs = [outstages.module.branchID];
-            [oLabels oIndex] = unique(oBranchIDs, 'legacy');
+            [oLabels oIndex] = aa_unique(oBranchIDs);
             numOutBranches = length(oLabels);
             
             % Get a list of all the branch IDs that exist in the new stuff
             nBranchIDs = [extrastages.module.branchID];
-            [nLabels nIndex] = unique(nBranchIDs, 'legacy');
+            [nLabels nIndex] = aa_unique(nBranchIDs);
             numNewBranches = length(nLabels);
             
             % Number of stages in the new stuff
@@ -293,6 +293,16 @@ for stagenum=1:length(outstages.module)
             outstages.module(stagenum).(reqflds{reqfldsind})=[];
         end;
     end;
+end
+
+end
+
+function [label index] = aa_unique(vals)
+
+try
+    [label index] = unique(vals, 'legacy');
+catch
+    [label index] = unique(vals);
 end
 
 end
