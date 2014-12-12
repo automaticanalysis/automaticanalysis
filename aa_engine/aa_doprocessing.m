@@ -74,8 +74,7 @@
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
 
-global aacache
-clear global aacache;
+aa_init(aap);
 
 if (exist('bucket','var'))
     % Get username
@@ -268,28 +267,6 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end
 
-
-% Set FSL environment variable
-setenv('FSLDIR',aap.directory_conventions.fsldir);
-setenv('FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype)
-
-%% Add FSL to path
-[s pth]=system('echo $PATH');
-if s
-    pth=getenv('PATH');
-else
-    pth=deblank(pth);
-end;
-fslbin=fullfile(aap.directory_conventions.fsldir,'bin');
-% Take out any existing references to this path, adding colons to either
-% end to make searching easier
-pth=strrep([':' pth ':'],[':' fslbin ':'],':');
-% Get rid of colons added to either end
-pth=pth(2:end-1);
-% And put it on at the beginning, 
-combinedpath=[fslbin ':' pth ];
-setenv('PATH',combinedpath);
-
 %% Main task loop
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)
@@ -431,8 +408,7 @@ if ~isempty(aap.options.email)
     end
 end
 
-% cleanup 
-clear global defaults aaparallel aaworker taskqueue localtaskqueue;
+aa_close;
 
 end
 

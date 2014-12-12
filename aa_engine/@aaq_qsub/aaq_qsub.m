@@ -4,6 +4,9 @@ classdef aaq_qsub<aaq
         jobnotrun = [];
         taskstomonitor = [];
     end
+    properties (Hidden)
+        SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+    end
     methods
         function [obj]=aaq_qsub(aap)
             global aaworker;
@@ -11,8 +14,9 @@ classdef aaq_qsub<aaq
             try
                 %obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,24*3600,aaworker.parmpath});
                 obj.scheduler=cbu_scheduler('custom',{'compute',1,4,24*3600,aaworker.parmpath});
+                obj.SubmitArguments0 = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
+                obj.scheduler.SubmitArguments = obj.SubmitArguments0;
                 % ensure MAXFILTER license
-                obj.scheduler.SubmitArguments=strcat(obj.scheduler.SubmitArguments,' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"');
             catch ME
                 warning('Cluster computing is not supported!\n');
                 warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
@@ -163,44 +167,21 @@ classdef aaq_qsub<aaq
             % Submit job
             if ~isempty(obj.scheduler)
                 J = createJob(obj.scheduler);
+%                 obj.scheduler.SubmitArguments = strcat(obj.SubmitArguments0,...
+%                     sprintf(' -N Mod%02d_',job.k),...
+%                     sprintf('%03d',job.indices));
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
                 
-                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14] Make workers self-sufficient by passing
+                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
-                % AA
-                mfp=textscan(mfilename('fullpath'),'%s','delimiter',filesep); mfp = mfp{1};
-                mfpi=find(strcmp('aa_engine',mfp));
-                aapath=textscan(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); aapath = aapath{1};
-                % SPM
-                aapath{end+1}=fileparts(which('spm')); % SPM dir
-                p = textscan(path,'%s','delimiter',':'); p = p{1};
-                p_ind = cell_index(p,aapath{end}); % SPM-related dir
-                for ip = p_ind
-                    aapath{end+1} = p{ip};
-                end
-                if isfield(obj.aap.directory_conventions,'spmtoolsdir') && ~isempty(obj.aap.directory_conventions.spmtoolsdir)
-                    SPMTools = textscan(obj.aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
-                    SPMTools = SPMTools{1};
-                    for p = SPMTools'
-                        if exist(p{1},'dir'), aapath{end+1}=p{1};end        
-                    end
-                end   
-                % MNE
-                if isfield(obj.aap.directory_conventions,'mnedir') && ~isempty(obj.aap.directory_conventions.mnedir)
-                    if exist(fullfile(obj.aap.directory_conventions.mnedir,'matlab'),'dir')
-                        aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','toolbox');
-                        aapath{end+1}=fullfile(obj.aap.directory_conventions.mnedir,'matlab','examples');
-                    end
-                end 
-                aapath=aapath(strcmp('',aapath)==0);
-                
+                global aacache;
                 if isprop(J,'AdditionalPaths')
-                    J.AdditionalPaths = aapath;
+                    J.AdditionalPaths = aacache.reqpath;
                 elseif isprop(J,'PathDependencies')
-                    J.PathDependencies = aapath;
+                    J.PathDependencies = aacache.reqpath;
                 end
                 
                 createTask(J,cj,nrtn,inparg);

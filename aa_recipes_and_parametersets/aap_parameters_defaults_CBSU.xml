@@ -26,6 +26,7 @@
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
+            <spmdir desc="Path(s) to SPM" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
@@ -35,11 +36,11 @@
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh</freesurferenvironment>
-			<mnedir desc='Path to MNE' ui='dir'>/imaging/local/linux/mne_2.6.0/mne</mnedir>
+            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
-            <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'>/cn_apps/fieldtrip</fieldtripdir>
+            <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
         </directory_conventions>
         <options>
