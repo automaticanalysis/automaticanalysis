@@ -26,6 +26,11 @@ aap.directory_conventions.analysisid = ana_subdir;
 % Directory for raw data:
 aap.directory_conventions.rawdatadir = rawmri_dir;
 
+% Add extra files
+% channels to read: MEG+3EEG+EOG+ECG+ST1101 (excludes MISC for subjects with no eye-tracking) INPUTSTREAM channellabels
+aap= aas_addinitialstream(aap,'channellabels',{'/imaging/rh01/VectorView_MAG_GRD_EOG_ECG_STI101.mat'});
+aap= aas_addinitialstream(aap,'topography',{'/imaging/rh01/Methods/MEGArtifactTemplateTopographies.mat'});
+
 % Add subject (full):
 aap = aas_add_meg_session(aap,'rest');
 aap = aas_add_meg_session(aap,'task');
