@@ -26,13 +26,17 @@ switch task
         else
             inds = 1:length(streams);
         end
+        % determine normalised struct
+        struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+        sname = basename(struct);
+        struct = struct((sname(:,1)=='w'),:);
         for streamind = inds
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
             streamfn = streamfn(1,:);
             streamfn = strtok_ptrn(basename(streamfn),'-0');
             fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
             if ~exist(fullfile(localpath,fn),'file')
-                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'structural');
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
             end
             % Single-subjetc
             fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
@@ -130,16 +134,20 @@ switch task
                 end
             end 
             
-            % describe outputs with diagnostoc
+            % describe outputs with diagnostic
+            % determine normalised struct
+            struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+            sname = basename(struct);
+            struct = struct((sname(:,1)=='w'),:);
             if (exist('sess','var'))
                 aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
                 if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
-                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},'structural');
+                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},struct);
                 end
             else
                 aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
                 if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
-                    aas_checkreg(aap,subj,streams{streamind},'structural');
+                    aas_checkreg(aap,subj,streams{streamind},struct);
                 end
             end
         end

@@ -22,12 +22,12 @@ switch task
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,subj,'<table><tr><td>');
-            imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
-            aap=aas_report_addimage(aap,subj,imgpath);
+            aap = aas_report_add(aap,subjInd,'<table><tr><td>');
+            imgpath = fullfile(aas_getsubjpath(aap,subjInd),fdiag(d).name);
+            aap=aas_report_addimage(aap,subjInd,imgpath);
             [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
-            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
-            aap = aas_report_add(aap,subj,'</td></tr></table>');
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subjInd,avipath); end
+            aap = aas_report_add(aap,subjInd,'</td></tr></table>');
         end
     case 'doit'
         global defaults;
