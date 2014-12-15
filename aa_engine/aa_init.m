@@ -85,6 +85,7 @@ end
 
 % clean
 reqpath=reqpath(strcmp('',reqpath)==0);
-reqpath(cell_index(reqpath,'.git')) = [];
+exc = cell_index(reqpath,'.git');
+if exc, reqpath(exc) = []; end
 
 aacache.reqpath = reqpath;

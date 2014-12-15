@@ -104,14 +104,14 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         
         % ~FSL
         if ~isempty(find(d==slicesInd, 1))            
-            spm_orthviews('context_menu','Xhairs','off');
+            spm_orthviews('Xhairs','off');
             for v = 1:nVols
                 for a = 1:3
                     fr = getframe(st.vols{v}.ax{a}.ax);
                     slicesImg{v}{a} = horzcat(slicesImg{v}{a}, fr.cdata);
                 end
             end
-            spm_orthviews('context_menu','Xhairs','on');
+            spm_orthviews('Xhairs','on');
         end        
     end
     
