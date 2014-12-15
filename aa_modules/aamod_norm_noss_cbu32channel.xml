@@ -22,13 +22,22 @@
             </outputstreams>
             
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
-            <affinestartingestimate><y>-30</y><z>17</z><pitch>0.2</pitch></affinestartingestimate>
-
+            
             <subject>
-                <name></name>
-                <affineStartingEstimate></affineStartingEstimate>
+                <name>*</name>
+                <affineStartingEstimate>
+                    <y>-30</y>
+                    <z>17</z>
+                    <pitch>0.2</pitch>
+                </affineStartingEstimate>
             </subject>
             
+            <affinestartingestimate>
+                <y>-30</y>
+                <z>17</z>
+                <pitch>0.2</pitch>
+            </affinestartingestimate>
+
             <estopts>
                 <samp></samp>
                 <regtype></regtype>
