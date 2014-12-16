@@ -5,9 +5,21 @@ function [aap]=aa_init(aap)
 global aacache
 aacache.bcp_path = path;
 
+% Get root aa directory
+mfp=fileparts(fileparts(which('aa_doprocessing')));
+
 %% Set Paths
 % Path for SPM
+if isempty(aap.directory_conventions.spmdir)
+    if isempty(which('spm'))
+        aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set aap.directory_conventions.spmdir');
+    else
+        aap.directory_conventions.spmdir=spm('Dir');
+    end;
+end;
+
 addpath(aap.directory_conventions.spmdir);
+    
 spm_jobman('initcfg');
 
 % Path for SPM MEG/EEG
@@ -29,29 +41,34 @@ addpath(...
     fullfile(spm('Dir'),'toolbox', 'Neural_Models'),...
     fullfile(spm('Dir'),'toolbox', 'MEEGtools'));
 
-% Path for EEGLAB
-addpath(...
-    fullfile(aap.directory_conventions.eeglabdir,'functions'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'adminfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'sigprocfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'guifunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'studyfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'popfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'statistics'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'timefreqfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'miscfunc'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'resources'),...
-    fullfile(aap.directory_conventions.eeglabdir,'functions', 'javachatfunc')...
-    );
+% Path for EEGLAB, if specified
+if ~isempty(aap.directory_conventions.eeglabdir)
+    addpath(...
+        fullfile(aap.directory_conventions.eeglabdir,'functions'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'adminfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'sigprocfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'guifunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'studyfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'popfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'statistics'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'timefreqfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'miscfunc'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'resources'),...
+        fullfile(aap.directory_conventions.eeglabdir,'functions', 'javachatfunc')...
+        );
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('eeglab'))
+       aas_log(aap,false,sprintf('EEG lab not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.eeglabdir'));
+    end;
+end;
 
 % Path to spm modifications to the top
-addpath(fullfile(fileparts(fileparts(mfilename('fullpath'))),'extrafunctions','spm_mods'),'-begin');
+addpath(fullfile(mfp,'extrafunctions','spm_mods'),'-begin');
 
 %% Build required path list for cluster submission
 % aa
-mfp=textscan(mfilename('fullpath'),'%s','delimiter',filesep); mfp = mfp{1};
-mfpi=find(strcmp('aa_engine',mfp));
-reqpath=textscan(genpath([filesep fullfile(mfp{1:mfpi-1})]),'%s','delimiter',':'); reqpath = reqpath{1};
+reqpath=textscan(genpath(mfp),'%s','delimiter',':'); reqpath = reqpath{1};
 
 p = textscan(path,'%s','delimiter',':'); p = p{1};
 
@@ -78,10 +95,12 @@ if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_convent
 end
 
 % EEGLAB
-p_ind = cell_index(p,aap.directory_conventions.eeglabdir);
-for ip = p_ind
-    reqpath{end+1} = p{ip};
-end
+if ~isempty(aap.directory_conventions.eeglabdir)
+    p_ind = cell_index(p,aap.directory_conventions.eeglabdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end;
 
 % clean
 reqpath=reqpath(strcmp('',reqpath)==0);
