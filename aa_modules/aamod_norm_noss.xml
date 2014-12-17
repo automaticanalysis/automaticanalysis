@@ -19,6 +19,8 @@
                 <stream>segmentation</stream>
                 <stream>normalisation_seg_sn</stream>
                 <stream>normalisation_seg_inv_sn</stream>
+                <stream>unmod_tissue_grey</stream>
+                <stream>tissue_grey</stream>
             </outputstreams>
             
             <usesegmentnotnormalise>1</usesegmentnotnormalise>
@@ -48,11 +50,9 @@
                 <affineStartingEstimate></affineStartingEstimate>
             </subject>
             
-            <structural desc='Which structural do we use, if there is more than one?'
-            >1</structural>
+            <structural desc='Which structural do we use, if there is more than one?'>1</structural>
             
-            <bias1stpass desc='1st pass with bias correction, to improve robustness'
-            >1</bias1stpass>
+            <bias1stpass desc='1st pass with bias correction, to improve robustness'>1</bias1stpass>
             
             <diagnostic>1</diagnostic>
         

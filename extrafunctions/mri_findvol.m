@@ -11,7 +11,7 @@ if nargin < 3, fp = false; end
 
 %% Changed to comma separated list format [RC]
 if isstruct(aap.directory_conventions.rawdatadir)
-    aas_log(aap,true,'Structure formate for rawdatadir no longer supported - use comma separated list');
+    aas_log(aap,true,'Structure format for rawdatadir no longer supported - use comma separated list');
 end;
 
 % Parse comma separated list
