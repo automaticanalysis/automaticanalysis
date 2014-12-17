@@ -28,12 +28,12 @@ switch (domain)
         switch domain
             case 'session'
                 sessions = aap.acq_details.sessions;
-                seriesnumbers = aap.acq_details.subjects(indices(1)).seriesnumbers;
+                if ~isempty(indices), seriesnumbers = aap.acq_details.subjects(indices(1)).seriesnumbers; end
             case 'meg_session'
                 sessions = aap.acq_details.meg_sessions;
-                seriesnumbers = aap.acq_details.subjects(indices(1)).megseriesnumbers;
+                if ~isempty(indices), seriesnumbers = aap.acq_details.subjects(indices(1)).megseriesnumbers; end
         end
-                
+        
         if isempty(indices)
             N = length(sessions);
             I = 1 : N;
