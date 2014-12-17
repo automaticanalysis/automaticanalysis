@@ -345,7 +345,7 @@ for modI = 1 : length(aap.tasklist.main.module)
                                         if ~any(remoteIndices==0)
                                             
                                             % Copy over the stream desc from the remote
-                                            remoteStage = aas_getstagetag(remoteAA{locI},remoteOutput.modI);
+                                            remoteStage = aas_getstagetag(remoteAA{remoteOutput.locI},remoteOutput.modI);
                                             try remoteSrcPath = aas_getpath_bydomain(remoteAA{remoteOutput.locI}, possibleLocs{lI}{1}, remoteIndices, remoteOutput.modI);
                                             catch
                                                 disp('');

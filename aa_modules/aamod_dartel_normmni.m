@@ -53,11 +53,11 @@ switch task
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip
-            if cell_index(aap.tasklist.currenttask.inputstreams.stream,streams{streamind})
+            if cell_index(aas_getstreams(aap,'in'),streams{streamind})
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
             else  % renamed stream
                 streamname = strrep(streams{streamind},'normalised_','');
-                ind = cell_index(aap.tasklist.currenttask.inputstreams.stream,streamname);
+                ind = cell_index(aas_getstreams(aap,'in'),streamname);
                 if ~ind, continue; end % for dartel_templatetomni_xfm
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
                     aap.tasklist.currenttask.inputstreams.stream{ind}));

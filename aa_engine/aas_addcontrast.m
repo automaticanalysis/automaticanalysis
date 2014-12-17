@@ -80,6 +80,8 @@ else
     session=[];
 end;
 
+subject = aas_mriname2subjname(subject);
+
 % find model that corresponds and add contrast to this if it exists
 for m = 1 : length(moduleindex)
     

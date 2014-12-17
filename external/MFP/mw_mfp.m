@@ -1,4 +1,4 @@
-function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, cleanup, fout)
+function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, cleanup, fout);
 %
 % [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, cleanup, fout);
 %
@@ -6,13 +6,13 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 % fMRI timeseries. There are several input options (short version):
 %
 %	rps       - realignment parameters or directory or empty (will prompt)
-%	do_td     - calculate total displacement: 0 or 1 (default)
+%	do_td     - calculate total displacement: 0 or 1 (default) or -1
 %	do_mm     - calculate motion mask: 0 or 1 (default)
 %	do_mfp    - calculate motion fingerprint: 0 or 1 (default)
 %	keep      - keep n timecourses of the mfp: 1-9, default: 3
 %	shifted   - include shifted timecourses in mfp: 0 or 1 (default)
 %	squared   - include squared timecourses in mfp: 0 (default) or 1
-%	cleanup   - delete temporary files: 0 or 1 (default); 2 also closes graphics
+%	cleanup   - delete temporary files: 0 or 1 (default); 2 also hides graphics
 %	fout      - name of additional outfile: empty or additional directory
 %
 % Long version:
@@ -22,10 +22,12 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 % will prompt for it.
 %
 % do_td: combines translations and rotations into one comprehensive 
-% indicator of total displacement, given for each subject's 
-% individual average cortical distance d_avg. This is shown as
-% a figure and saved in each session's directory. Defaults to 1,
-% but can be set to 0. 
+% indicator of total displacement, using an indicator of average
+% cortical distance (davg). This is shown as a figure and saved
+% in each session's directory. Defaults to 1, but can be set to 0.
+% NB: In contrast to earlier versions, a standard (fixed) davg as set
+% in the options will be used by default; for using the individually-
+% determined value (legacy behavior :) set do_td to -1;
 %
 % do_mm: generate a motion mask, illustrating the maximal amount
 % of total displacement each voxel experienced as a function of
@@ -35,9 +37,9 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 %
 % do_mfp: a motion fingerprint which is meant to reflect the 
 % signal changes occurring in the brain as a function of 
-% motion in this individual subject. This generates a sub-
-% folder and saves the results in a text file ('mw_mfp.txt')
-% in each session's directory. Defaults to 1, but can be set to 0.
+% motion in this individual subject. This generates a temporary sub-
+% folder and saves the results in a text file in each session's
+% directory (see below). Defaults to 1, but can be set to 0.
 %
 % keep: include how many mfp timecourses in resulting txt-file?
 % While 9 mfp's will always be determined, not necessarily all
@@ -56,25 +58,28 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 % cleanup: this indicates whether you want to remove the 
 % subdirectory created when generating a motion fingerprint.
 % Defaults to 1 but can be set to 0. Setting it to 2 will also 
-% close the figure, which may be useful when scripting larger collections.
+% hide the figure and suppress command line output (silent mode),
+% which may be useful when scripting larger collections.
 %
 % fout: name of additional output file or folder. If specified (full path),
-% a graphics summary will additionally be saved there. A 'mw_motion.jpg'
+% a graphics summary will additionally be saved there. A 'mw_motion.png'
 % in the same directory as the realignment parameters will always be saved.
 %
 % The workspace output is two nsess x 1 cells, containing vectors of total
 % displacement (td) and scan-to-scan total displacement (sts), which
 % can be used to assess motion, for example doing something like
 % for i=1:size(td,1), figure; plot(td{i,1}); hold on; bar(sts{i,1}); end;
-% If do_td is set to 0, this will return 'ND' in both cells. Note that 
-% results will always be saved in a mw_motion.mat file in the same
-% directory as the realignment parameters (can be assessed using mw_anamot.m).
+% If do_td is set to 0, this will return 'ND' in both cells. Further, the 
+% full name of the mfp output file (if generated) will be returned (else this
+% variable will be empty). Note that all results will always be saved in a
+% mw_motion.mat file in the same directory as the realignment parameters
+% (which can independently be assessed using mw_anamot.m).
 %
-% For inclusion in statistical models, the motion fingerprint
+% For straightforward inclusion in statistical models, the motion fingerprint
 % (if generated) is stored in a mw_mfp_kX_shY_sqZ.txt file, with
 % X denoting the number of kept timecourses, Y denoting wether shifted
-% versions were included, and Z denoing whether squared versions were
-% included. Defaults (3,1,0) can be changed by passing inputs, see above. 
+% versions were included, and Z denoting whether squared versions were
+% included. Defaults (3,1,0) can be changed by passing inputs, see above.
 %
 % In usual mode, only the most pertinent results are saved as variables
 % in a mw_motion.mat file; in debug mode, all (!) results are saved; 
@@ -88,6 +93,15 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 % 
 % available at http://dx.doi.org/10.1016/j.neuroimage.2011.10.043
 %
+% as well as
+%
+%   Wilke M: Isolated assessment of translation or rotation
+%   severely underestimates the effects of subject motion
+%   in fMRI data;
+%   PLoS ONE 2014, 9: e106498
+% 
+% freely available at http://www.dx.doi.org/10.1371/journal.pone.0106498
+%
 % It requires the following functions to run properly:
 %
 %   mw_brainmask (included, mainly courtesy of John Ashburner)
@@ -95,65 +109,80 @@ function [td, sts] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, squared, c
 %   subdir (included, courtesy of the Mathworks File Exchange)
 %   
 % The following functions are "nice-to-have" but alternatives
-% are built-in:
+% are built in:
 %
 %   expfit (from Matlab's statistics toolbox) 
 %
-% Idea and implementation by Marko Wilke, see file for version information.
+% Idea and implementation by Marko Wilke, see the accompanying history
+% file for version information.
 %
-% This software comes with absolutely *no* guarantees whatsoever,
-% explicit or implied or otherwise, so use it at your own risk!
+% This program is free software: you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by the
+% Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
 %
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+% for more details. You should have received a copy of the GNU General
+% Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+%
+
 
 % ==========================================================================================================
 %                                          Preludes: settings, inputs, etc.
 % ==========================================================================================================
 
 
-% Version history
-% 1.0    first stable version to create motion fingerprint
-% 1.1    included motion mask as an option
-% 1.2    added fancy graphics and additional outfile option
-% 1.3.   prettified and optimized code, first release version
-% 1.3.1  modified to process multivolume 4D nifti files (thanks to Richard Bethlehem for pointing this out)
-% 1.3.2  added sanity check and fix for volumes with few slices
-% 1.3.3  added debug mode (saving time and disk space :)
-% 1.3.4  added fix for EPIs with a limited field of view, messing up mask creation
-% 1.3.5  added option to print multiple fout-files
-% 1.3.6  added runthrough option to ignore errors during mask creation
-global tmpldir;
+% File version: 1.5.1, 2014-11-13
 
-% get, check version
-  switch spm('ver')
-      case 'SPM8'
-          tmpldir.tpm = fullfile(spm('Dir'),'tpm');
-          tmpldir.mni = fullfile(spm('Dir'),'templates');
-      case {'SPM12b' 'SPM12'}
-          tmpldir.tpm = fullfile(spm('Dir'),'toolbox','OldSeg');
-          tmpldir.mni = fullfile(spm('Dir'),'toolbox','OldNorm');
-      otherwise
-          fprintf(['  spm12 or later required for this script - aborting...'  '\n']);
-          clear global tmpldir;
-          return;
+
+% get, check spm version
+  ver = spm('ver');
+  if str2double(ver(regexp(ver,'[0-9]'))) < 8
+
+	fprintf(['  This does not seem to be spm in a version >= 8, as required for this script - aborting...'  '\n']);
+	return;
+
   end;
 
 
-% get a nice and clean environment
-  clc
-  fg = spm_figure('Findwin','Graphics');
-  fi = spm_figure('Findwin','Interactive');
-  spm_figure('Clear',fg);
-  spm_figure('Clear',fi);
-  disp('=== Welcome to mw_mfp ===');
-  disp(' ');
+% settings
+  r = 10;                 % diameter (in voxels) of region of interest
+  davg_s = 65;            % standard (fixed) value for davg (in mm), may be overruled by do_mfp (see above)
+  myhold = [7 7 7 0 0 0]; % set interpolation
+  perc = 25;              % if expfit is not found, use perc % of input voxels
+  do_fancy = 1;           % show additional fancy plots of motion trajectory :)
+  mysteps = 40;           % use how many colors in the colormap
+  multivol = 0;           % will usually work with 3D images
+  debug_mode = 0;         % will usually not need to save every single bit of generated data
+  runthrough = 1;         % this makes mw_mfp report, but not fail, on errors during mask creation
+  showmask = 1;           % do or do not show result of mask creation
+  pres = 300;             % resolution of graphical output
+  mydir = 'mfp';          % name of mfp-subdirectory
+  vs_def = 3;             % default voxel size to assume if data is not found
+  mfpfile = [];           % initialize file output name
+
+
+% further settings
+  warning off MATLAB:MKDIR:DirectoryExists
+  oris_id = char('RPI', 'RPS', 'RAS', 'LAS', 'LPS', 'LAI', 'RAI', 'LPI', 'CTR');         % note that this refers to voxel space
+  steps = [-1 -1 -1; -1 -1 1; -1 1 1; 1 1 1; 1 -1 1; 1 1 -1; -1 1 -1; 1 -1 -1; 0 0 0];   % note that these may be adapted (see below)
+
+
+% options for spm functions
+  opts_reslice = struct('mask',0,'which',2,'mean',1,'interp',7);
 
 
 % check inputs
   if nargin == 0
 
+
 	rps = spm_select([1 Inf],'any','Select realignment parameter file(s)',[],pwd,'^rp.*txt$');
+	if isempty(rps),  return;  end;
 
   elseif isdir(rps)
+
 
 	% if a directory was given, search all subdirectories; watch out for trailing filesep
 	  if rps(1,end) == filesep,  rps = rps(1,1:end-1);  end;
@@ -162,10 +191,12 @@ global tmpldir;
 
 		% inform user
 		  disp(['... sorry, no realignment parameters were found in  ' rps ', please check manually...']);
+		  return;
 	  else
 
 		  rps = char(myparams(:).name);
 	  end;
+
   end;
   if nargin < 2 || isempty(do_td),    do_td = 1;   end;
   if nargin < 3 || isempty(do_mm),    do_mm = 1;   end;
@@ -177,25 +208,33 @@ global tmpldir;
   if nargin < 9,                      fout = [];   end;
 
 
-% settings
-  spm('defaults','fmri'); % just to be sure
-  pres = 150;             % resolution of graphical output
-  mydir = 'mfp';          % name of mfp-subdirectory
-  r = 10;                 % diameter (in voxels) of region of interest
-  myhold = [7 7 7 0 0 0]; % set interpolation
-  perc = 25;              % if expfit is not found, use perc % of input voxels
-  do_fancy = 1;           % show additional fancy plots of motion trajectory :)
-  mysteps = 40;           % use how many colors in the colormap
-  multivol = 0;           % will usually work with 3D images
-  debug_mode = 0;         % will usually not need to save every single bit of generated data
-  runthrough = 1;         % this makes mw_mfp report, but not abort, on errors during mask creation
-  warning off MATLAB:MKDIR:DirectoryExists
-  oris_id = char('RPI', 'RPS', 'RAS', 'LAS', 'LPS', 'LAI', 'RAI', 'LPI', 'CTR');         % note that this refers to voxel space
-  steps = [-1 -1 -1; -1 -1 1; -1 1 1; 1 1 1; 1 -1 1; 1 1 -1; -1 1 -1; 1 -1 -1; 0 0 0];   % note that these may be adapted (see below)
+% use standard (default) or individual davg (legacy behavior, only upon request)?
+  davg_i = 0;
+  if do_td < 0,  do_td = 1;  davg_i = 1;  end;
 
 
-% options for spm functions
-  opts_reslice = struct('mask',0,'which',2,'mean',1,'interp',7);
+% get a nice and clean environment (or not?
+  if cleanup ~= 2
+
+	  clc
+	  silent = 0;
+	  fg = spm_figure('Findwin','Graphics');
+	  fi = spm_figure('Findwin','Interactive');
+	  spm_figure('Clear',fg);
+	  spm_figure('Clear',fi);
+	  disp(['=== Welcome to ' mfilename ' ===']);
+	  disp(' ');
+
+  else
+
+	  silent = 1;
+
+  end;
+
+
+% ==========================================================================================================
+%                                     Get going: loop over input data
+% ==========================================================================================================
 
 
 % storage
@@ -203,69 +242,140 @@ global tmpldir;
   sts_a = cell(size(rps,1),1);
 
 
-% ==========================================================================================================
-%                                     Get going: loop over input data
-% ==========================================================================================================
   tic;
   for i = 1:size(rps,1)
 
 
 	% inform user
-	  disp(['... processing session ' num2str(i) ' of ' num2str(size(rps,1)) ', please wait...']);
+	  if silent == 0,  disp(['... processing session ' num2str(i) ' of ' num2str(size(rps,1)) ', please wait...']);  end;
 
 
 	% get, load current parameters; consider special case of assessing pwd
-	  [p, nm] = spm_fileparts(rps(i,:));
+	  [p, nm, ~, ~] = spm_fileparts(rps(i,:));
 	  if isempty(p),  p = pwd;  end;
 	  pr = load(deblank(rps(i,:)));
 
 
-	% check if we have a mask, else, create one
-	  mask = spm_select('List', p, ['^' nm(4:end) '.(img|nii)']);
-	  [~, ~, e, ~] = spm_fileparts(mask);
-	  if isempty(mask)
+	% check if we have a mask, else, create one if necessary
+	  if  do_td ~= 0  && (do_mm == 1 || do_mfp == 1  || davg_i == 1)
 
-		np = strrep(p, filesep, '/');
-		error(['No matching image found for ' nm e ' in ' np ', aborting!']);
 
-	  elseif exist([p filesep nm(4:end) '_mask' e],'file')
+		  mask = spm_select('List', p, ['^' nm(4:end) '.(img|nii)']);
+		  [~, ~, e, ~] = spm_fileparts(mask);
+		  if isempty(mask)
 
-		mask = [p filesep nm(4:end) '_mask' e];
+			np = strrep(p, filesep, '/');
+			error(['No matching image found for ' nm e ' in ' np ', aborting!']);
 
-	  else
-		try
-			mask = mw_brainmask([p filesep mask]);
+		  elseif ~isempty(spm_select('List', p, ['^' nm(4:end) '_mask.(img|nii)']))
 
-        catch
+			mask = [p filesep spm_select('List', p, ['^' nm(4:end) '_mask.(img|nii)'])];
+
+		  else
 			try
 
-				% catch 1: try dirty fix for int16-images with a lot of background
-                disp('    Correct int16-images with a lot of background');
-				  V = spm_vol([p filesep mask]);  if size(V,1) > 1,  V = V(1);  end;
-				  spm_smooth(V,[p filesep nm(4:end) '_mask' e],[0 0 0],2);
-				  mask = mw_brainmask([p filesep nm(4:end) '_mask' e],1,1);
-            catch
-				% catch 2: obviously that didn't work either: my give up :(
+				mask = mw_brainmask([p filesep mask]);
+
+			catch
+				try
+
+					% catch 1: try dirty fix for int16-images with a lot of background
+					  V = spm_vol([p filesep mask]);  if size(V,1) > 1,  V = V(1);  end;
+					  spm_smooth(V,[p filesep nm(4:end) '_mask' e],[0 0 0],2);
+					  mask = mw_brainmask([p filesep nm(4:end) '_mask' e],1,1);
+
+				catch
+
+					try
+
+						% catch 2: try desparate but simple approach of largest-cluster-with-above-average-intensity...
+						  V = spm_vol([p filesep mask]);
+						  vol = mean(spm_read_vols(V),4);
+						  vol = vol > mean(vol(:));
+						  [clus_vol,num] = spm_bwlabel(double(vol),18);
+						  cs = 0;
+						  targ = 0;
+						  for k = 1:num
+
+							cs_temp = sum(sum(sum(clus_vol == k)));
+							if cs_temp > cs,  cs = cs_temp; targ = k; end;
+
+						  end;
+						  vol = vol .* (clus_vol == targ);
+						  V = V(1);
+						  [p, nm, e, ~] = spm_fileparts(V.fname);
+						  V.fname = [p filesep nm '_mask' e];
+						  V.pinfo = [1 0]';
+						  V.dt = [spm_type('uint8') spm_platform('bigend')];
+						  spm_write_vol(V, double(vol));
+						  disp('   ... using backup strategy to create brain mask, please check results manually...');
+						  mask = V.fname;
+						  showmask = 1;
+
+					catch
+
+						% obviously that didn't work either: my give up :(
+						  np = strrep(p, filesep, '/');
+						  if runthrough == 1
+
+
+							  disp('    An error occurred when creating the brainmask');
+							  disp(['    with file ' num2str(i) '/' num2str(size(rps,1)) ' from ' np ', bailing out...']);
+							  return;
+
+						  else
+
+							  error(['An error occurred when creating the brainmask from ' np ', aborting!']);
+						  end;
+					end;
+				end;
+			end;
+		  end;
+
+
+		% get handle & average voxel size
+		  try
+
+			V = spm_vol(mask);
+		  catch
+
+			try
+
+				% very weirdly, this sometimes fails...
+				  V = spm_vol([p filesep mask]);
+
+			catch
 				  np = strrep(p, filesep, '/');
 				  if runthrough == 1
 
 
 					  disp('    An error occurred when creating the brainmask');
-					  disp(['    with file ' num2str(i) '/' num2str(size(rps,1)) ' from ' np ', continuing...']);
-
+					  disp(['    with file ' num2str(i) '/' num2str(size(rps,1)) ' from ' np ', bailing out...']);
+					  return;
 				  else
 
 					  error(['An error occurred when creating the brainmask from ' np ', aborting!']);
-
 				  end;
-			end;
-		end;
+			  end;
+		  end;
+		  vs = mean(sqrt(sum(V.mat(1:3,1:3).^2)));
+
+
+		% potentially show results
+		  if showmask == 1  && cleanup ~= 2
+
+			showme = char([mask ',1'], [p filesep spm_select('List', [p], ['^' nm(4:end) '.(img|nii)']) ',1']);
+			evalc('spm_check_registration(showme);');
+
+		  end;
+
+	  else
+
+		% looks like we shall only look at TD at standard cortical distance
+		  vs = vs_def;
+		  mask = [];
+
 	  end;
-
-
-	% get handle & average voxel size
-	  V = spm_vol(mask);
-	  vs = (abs(V.mat(1,1))+abs(V.mat(2,2))+abs(V.mat(3,3))) / 3;
 
 
 	% ==========================================================================================================
@@ -274,19 +384,37 @@ global tmpldir;
 	  if do_td == 1
 
 
-		% inform user
-		  disp('   ... assessing total displacement at d_avg, please wait...');
+		% get individual davg (always)
+		  if ~isempty(mask)
+
+			  evalc('surf = spm_surf(mask,2)');
+			  surf = surf.surffile{1,1};
+			  FV = gifti(surf);
+			  center = (FV.vertices(FV.faces(:,:),:));
+			  center = reshape(center, [size(FV.faces,1) 3 3]);
+			  center = squeeze(mean(center,2));
+			  ori_dist = sqrt(sum((center.*-1).^2,2))';
+			  davg = mean(ori_dist);
+			  davg_ind = davg;
+
+		  else
+
+			  davg_ind = NaN;
+
+		  end;
 
 
-		% get davg
-		  evalc('surf = spm_surf(mask,2)');
-		  surf = surf.surffile{1,1};
-		  FV = gifti(surf);
-		  center = (FV.vertices(FV.faces(:,:),:));
-		  center = reshape(center, [size(FV.faces,1) 3 3]);
-		  center = squeeze(mean(center,2));
-		  ori_dist = sqrt(sum((center.*-1).^2,2))';
-		  davg = mean(ori_dist);
+		% use individual davg (not always)?
+		  if davg_i == 0
+
+			  davg = davg_s;
+			  if silent == 0,  disp(['   ... assessing total displacement at d_avg (using standard value of ' sprintf('%02.1f', davg) ' mm), please wait...']);  end;
+
+		  else
+
+			  if silent == 0,  disp(['   ... assessing total displacement at d_avg (using individual value of ' sprintf('%02.1f', davg) ' mm), please wait...']);  end;
+
+		  end;
 
 
 		% total displacement at davg
@@ -314,12 +442,26 @@ global tmpldir;
 		% create graphics
 		  gcf1 = figure;
 		  set(0,'Units','pixels');
+		  if cleanup == 2,  set(gcf1, 'Visible', 'off');  end;
 		  scnsize = get(0,'ScreenSize');
-		  if do_mfp == 0,   nrows = 3;  else  nrows = 4;  end;
+		  if do_mfp == 0,   nrows = 3;  else,  nrows = 4;  end;
 		  if do_fancy == 1, nrows = nrows + 1;             end;
-		  pos1 = [round(scnsize(3)/40), round(scnsize(4)/40), round(scnsize(3)/10*6), round(scnsize(4)*nrows/5.75)];
+
+
+		% try to steal position from spm graphics window, move to left
+		  try
+
+			  pos1 = get(spm_figure('Findwin','Graphics'), 'Position');
+			  pos1(1) = pos1(1)/10;
+
+		  catch
+
+			% fallback position...
+			  pos1 = [round(scnsize(3)/40), round(scnsize(4)/40), round(scnsize(3)/10*6), round(scnsize(4)*nrows/5.75)];
+
+		  end;
 		  set(gcf1, 'Position', pos1, 'Color', 'w', 'Renderer', 'zbuffer');
-		  set(gcf1, 'Name', ['Motion parameters from ' p], 'Visible', 'on');
+		  set(gcf1, 'Name', ['Motion parameters from ' p]);
 
 
 		% optimize scaling
@@ -338,7 +480,7 @@ global tmpldir;
 		  title('Realignment parameters: shifts [top, in mm] and rotations [middle, in dg]');
 
 
-		% ... and rotations
+		% ... and rotations...
 		  subplot(nrows,3,[4 5 6],'replace');
 		  plot(pr(:,4:6)*180/pi);
 		  grid on;
@@ -347,15 +489,26 @@ global tmpldir;
 		  title(['(data from ' p ')'], 'interpreter', 'none');
 
 
-		% ... and now, total replacement at d_avg: total & scan-to-scan
+		% ... and now, total displacement at d_avg: total & scan-to-scan
 		  sp3 = subplot(nrows,3,[7 8 9],'replace');
 		  plot(td);
 		  hold on;
 		  bar(sts);
 		  grid on;
 		  xlim([0 size(pr,1)]);
-		  ylim(scaleme);
-		  title(['Total displacement: overall (line) and scan-to-scan (bars) at d_a_v_g (here: ' sprintf('%02.1f', davg) ' mm)']);
+		  ylim([0 max(scaleme)]);
+
+
+		% use title to remind user of choice
+		  if davg == davg_s
+
+			  title(['Total (line) and scan-to-scan (bars) displacement at d_a_v_g (standard: ' sprintf('%02.1f', davg) ' mm)']);
+
+		  else
+
+			  title(['Total (line) and scan-to-scan (bars) displacement at d_a_v_g (individual: ' sprintf('%02.1f', davg) ' mm)']);
+
+		  end;
 
 
 		% use the old rule of thumb to show "one voxel size"
@@ -369,20 +522,22 @@ global tmpldir;
 
 
 		% annotate
-		  xm = find(mot == max(mot(:)));
-		  xd = find(deg == max(deg(:)));
+		  [xm,~] = find(mot == max(mot(:)));
+		  [xd,~] = find(deg == max(deg(:)));
 		  [~, xt] = find(td == max(td(:)));
 		  [~, xs] = find(sts == max(sts(:)));
 		  axes('Position',[0.005,0.005,0.1,0.1],'Visible','off');
-		  text(1,0.1,['MaxVal@scan: T:' sprintf('%01.1f', max(mot(:))) ' mm @ scan ' num2str(xm) '; R: ' sprintf('%01.1f', max(deg(:))) ' ï¿½ @ scan ' num2str(xd) '; TD: '  sprintf('%01.1f', max(td(:))) ' mm @ scan ' num2str(xt) '; STS: '  sprintf('%01.1f', max(sts(:))) ' mm @ scan ' num2str(xs) '.'],'FontSize',8,'interpreter','none');
+		  text(1,0.1,['MaxVal@scan: T:' sprintf('%01.1f', max(mot(:))) ' mm @ scan ' num2str(xm(1)) '; R: ' sprintf('%01.1f', max(deg(:))) ' ° @ scan ' num2str(xd(1)) '; TD: '  sprintf('%01.1f', max(td(:))) ' mm @ scan ' num2str(xt) '; STS: '  sprintf('%01.1f', max(sts(:))) ' mm @ scan ' num2str(xs) '.'],'FontSize',8,'interpreter','none');
 
 
 		% save (always, irrespective of debug_mode)
 		% - td contains total displacement at davg
 		% - sts contains scan-to-scan-displacement at davg
 		% - pr contains the underlying motion parameters
-		% - davg is the individual, average cortical distance
-		  save([p filesep 'mw_motion.mat'], 'td', 'sts', 'pr', 'davg');
+		% - davg is the average cortical distance used in calculations (standard or indivdual)
+		% - davg_ind is the individual average cortical distance (used or not)
+		% - davg_i indicates whether davg_ind was actually used (1) or not (0)
+		  save([p filesep 'mw_motion.mat'], 'td', 'sts', 'pr', 'davg', 'davg_ind', 'davg_i');
 
 
 		% store
@@ -404,7 +559,7 @@ global tmpldir;
 
 
 		% inform user
-		  disp('   ... generating motion mask, please wait...');
+		  if silent == 0,  disp('   ... generating motion mask, please wait...');  end;
 
 
 		% load mask
@@ -466,11 +621,7 @@ global tmpldir;
 		  V.dt = [16 0];
 		  V.descrip = ['Max total displacement (mm at scan #' num2str(maxp) '); data from ' p];
 		  spm_write_vol(V,store_td(:,:,:,maxp));
-          try
-            spm_check_registration(char(V.fname));
-          catch
-              disp('   ... desktop is not available...');
-          end
+		  if showmask == 0 && cleanup ~= 2,  spm_check_registration(str2mat(V.fname));  end;
 
 
 		% save results (only in debug mode)
@@ -493,7 +644,7 @@ global tmpldir;
 
 
 		% inform user
-		  disp('   ... generating motion fingerprint, please wait...');
+		  if silent == 0,  disp('   ... generating motion fingerprint, please wait...');  end;
 
 
 		% load mask
@@ -503,11 +654,13 @@ global tmpldir;
 
 		% sanity check and backup strategy for very "asymmetrical" datasets (i.e., few slices)
 		% as progressing equally towards center (below) does not work in these cases
-		  if min(dims_m) / max(dims_m) < 0.5
+		  if min(dims_m) / max(dims_m) < 0.6  % changed from 0.5
 
 
 			% modify steps
-			  modi = (dims_m == max(dims_m)) + 1;
+			  % modi = (dims_m == max(dims_m)) + 1;
+			  modi = (dims_m == max(dims_m)) .* floor(max(dims_m)/min(dims_m));
+			  modi(modi == 0) = 1;
 			  steps = steps .* repmat(modi,[size(steps,1) 1]);
 			  disp(['   ... found few slices (' num2str(min(dims_m)) ') with much higher in-plane resolution (' num2str(max(dims_m)) '), adapting steps...']);
 		  end;
@@ -516,7 +669,7 @@ global tmpldir;
 		% prepare storage, folder, files
 		  mfps = zeros(size(steps,1),size(pr,1));
 		  img = [p filesep spm_select('List', p, ['^' nm(4:end) '.(img|nii)'])];
-		  [~, ~, e] = spm_fileparts(img);
+		  [~, ~, e, ~] = spm_fileparts(img);
 		  try
 
 			mkdir([p filesep mydir]);
@@ -553,7 +706,7 @@ global tmpldir;
 
 
 		% ok, now estimate and potentially save motion*B0 interactions (this part created with generous help from Chloe Hutton!)
-		  ds = spm_uw_estimate(imgs);
+		  evalc('ds = spm_uw_estimate(imgs);');
 		  fg = spm_figure('Findwin','Graphics');
 		  spm_figure('Clear',fg);
 
@@ -599,15 +752,17 @@ global tmpldir;
 			  PO = V;
 			  PO.fname   = [p filesep mydir filesep 'image_' sprintf('%03.0f', ii) '.img'];
 			  temp = pr(ii,:);
-			  PO.mat = spm_matrix(temp)\M;
+			  MM = inv(spm_matrix(temp));
+			  PO.mat = MM*M;
 			  spm_write_vol(PO,ivol);
 			  imgs = char(imgs, [p filesep mydir filesep 'image_' sprintf('%03.0f', ii) '.img']);
+
 		  end;
                   imgs(1,:) = [];
 
 
 		% reslice, read in synthetic timeseries
-		  spm_reslice(imgs,opts_reslice);
+		  evalc('spm_reslice(imgs,opts_reslice);');
 		  rimgs = spm_select('List', [p filesep mydir], '^r.*\.img$');
 		  cd([p filesep mydir]);
 		  vols = spm_read_vols(spm_vol(rimgs));
@@ -633,17 +788,28 @@ global tmpldir;
 
 			% get initial origin, move in until we encounter brain, store away
 			  coord = oris(ii,:);
-			  while round(m(coord(1),coord(2),coord(3))) == 0
+			  try
 
-				coord = coord - steps(ii,:);
+				  while round(m(coord(1),coord(2),coord(3))) == 0
+
+					coord = coord - steps(ii,:);
+
+				  end;
+				  myoris(ii,:) = coord;
+
+			  catch
+
+				error('   Sory, an error occurred in mw_mfp while trying to determine the ROIs; this is usually caused by very asymmetrical or corrupt data; please check your images!');
 
 			  end;
-			  myoris(ii,:) = coord;
+
+
+			% sanity check: avoid out-of-volume ROI
+			  myoris(myoris <= floor(r/2)) = floor(r/2)+1;
 
 
 			% get variance of timecourses from this ROI
-			  targ = var(vols,[],4);
-			  targ = targ(coord(1)-floor(r/2):coord(1)+ceil(r/2), coord(2)-floor(r/2):coord(2)+ceil(r/2), coord(3)-floor(r/2):coord(3)+ceil(r/2),:);
+			  targ = var(vols(coord(1)-floor(r/2):coord(1)+ceil(r/2), coord(2)-floor(r/2):coord(2)+ceil(r/2), coord(3)-floor(r/2):coord(3)+ceil(r/2),:),[],4);
 			  targ(targ==0) = [];
 			  targ = reshape(targ,1,[]);
 
@@ -652,7 +818,7 @@ global tmpldir;
 			  try
 
 				% cleaner solution (but: requires statistics toolbox)...
-				  muhat = expfit(sort(targ));
+				  [muhat, ~] = expfit(sort(targ));
 
 			  catch
 
@@ -666,7 +832,7 @@ global tmpldir;
 
 			% now get respective timecourses
 			  targ = vols .* repmat(var(vols,[],4) > muhat, [1 1 1 size(vols,4)]);
-			  coord = targ(coord(1)-floor(r/2):coord(1)+ceil(r/2), coord(2)-floor(r/2):coord(2)+ceil(r/2), coord(3)-floor(r/2):coord(3)+ceil(r/2),:);
+                          coord = targ(coord(1)-floor(r/2):coord(1)+ceil(r/2), coord(2)-floor(r/2):coord(2)+ceil(r/2), coord(3)-floor(r/2):coord(3)+ceil(r/2),:);
 			  coord = reshape(coord,[size(coord,1)*size(coord,2)*size(coord,3) size(coord,4)]);
 
 
@@ -716,6 +882,11 @@ global tmpldir;
 		  curr_tc = mfps(inds,:);
 
 
+		% get origins of kept timecourses
+		  temp = oris_id(inds,:);
+		  show = temp(1,:); for j = 2:size(temp,1), show = [show '/' temp(j,:)]; end
+
+
 		% potentially "Volterra-expand" (as per options set above)
 		  if shifted == 1
 
@@ -732,7 +903,23 @@ global tmpldir;
 
 		% save resulting (chosen) mfp's into a text file, readily usable for later inclusion on the 1st level
 		  curr_tc = curr_tc';
-		  save([p filesep 'mw_mfp_k' num2str(keep) '_sh' num2str(shifted) '_sq' num2str(squared) '.txt'], 'curr_tc', '-ascii', '-double');
+		  temp = [p filesep 'mw_mfp_k' num2str(keep) '_sh' num2str(shifted) '_sq' num2str(squared) '.txt'];
+		  save(temp, 'curr_tc', '-ascii', '-double');
+
+
+		% update output file name?
+		  if isempty(mfpfile)
+
+
+			% first/only session
+			  mfpfile = temp;
+
+		  else
+
+			% not first or only session...
+			  mfpfile = char(mfpfile, temp);
+
+		  end;
 
 
 		% update plot?
@@ -747,10 +934,8 @@ global tmpldir;
 			  grid on;
 			  xlim([0 size(pr,1)]);
 			  ylim([floor(min(curr_tc(:))) ceil(max(curr_tc(:)))]);
-			  if shifted == 0, withshift  = 'no';  else  withshift  = 'incl.';  end;
-			  if squared == 0, withsquare = 'no';  else  withsquare = 'incl.';  end;
-			  temp = oris_id(inds,:);
-			  show = temp(1,:); for j = 2:size(temp,1), show = [show '/' temp(j,:)]; end
+			  if shifted == 0, withshift  = 'no';  else,  withshift  = 'incl.';  end;
+			  if squared == 0, withsquare = 'no';  else,  withsquare = 'incl.';  end;
 			  title(['Motion fingerprint (from ' show '), ' withshift ' shifted, ' withsquare ' squared versions']);
 
 		  end;
@@ -787,7 +972,7 @@ global tmpldir;
 
 
 	% add fancy plot?
-	  if do_fancy == 1 && exist('davg','var')
+	  if do_fancy == 1 && exist('davg') == 1
 
 
 		% ... seems like we have a go...
@@ -802,7 +987,7 @@ global tmpldir;
 			temp(ii,3) = pr(ii,3) + (pr(ii,6) .* davg);
 		  end;
 		  maxd = max(abs(temp(:)));
-		  if maxd < vs,  mybound = vs;  else mybound = ceil(maxd);  end;
+		  if maxd < vs,  mybound = vs;  else,  mybound = ceil(maxd);  end;
 
 
 		% generate colormap, remove blue values (lower 50%)
@@ -890,14 +1075,14 @@ global tmpldir;
 	  end;
 
 
-	% save (potentially updated) graphic into a jpg-file? Keep formatting as on screen
+	% save (potentially updated) graphic into a png-file? Keep formatting as on screen
 	  if do_td == 1
 
-		  motname = [p filesep 'mw_motion.jpg'];
+		  motname = [p filesep 'mw_motion.png'];
 		  osu = get(gcf1,'Units'); opu = get(gcf1,'PaperUnits'); opp = get(gcf1,'PaperPosition');
 		  set(gcf1,'Units','pixels'); scrpos = get(gcf1,'Position'); newpos = scrpos/100;
 		  set(gcf1,'PaperUnits','inches','PaperPosition',newpos);
-		  print(gcf1, '-djpeg', '-noui', ['-r' num2str(pres)], motname);
+		  print(gcf1, '-dpng', '-noui', ['-r' num2str(pres)], motname);
 
 
 		% save somewhere else, too?
@@ -914,27 +1099,27 @@ global tmpldir;
 					  foutnm = [];
 				  else
 
-					  [foutp, foutnm] = spm_fileparts(fout);
+					  [foutp, foutnm, ~, ~] = spm_fileparts(fout);
 				  end;
 
 
 				% decide depending on number of output files
 				  if ~isempty(foutnm) && size(rps,1) == 1
 
-					  motname = [foutp filesep foutnm '.jpg'];
+					  motname = [foutp filesep foutnm '.png'];
 				  else
 
-					  motname = [foutp filesep 'mw_motion_sess_' sprintf('%03.0f', i) '.jpg'];
+					  motname = [foutp filesep 'mw_motion_sess_' sprintf('%03.0f', i) '.png'];
 				  end;
 				  FNote = [' Results from ' p];
 				  axes('Position',[0.01,0.01,0.1,0.1],'Visible','off','Tag','SPMprintFootnote')
 				  text(0,0,FNote,'FontSize',8,'Interpreter','none','Rotation',90);
-				  print(gcf1, '-djpeg', '-noui', ['-r' num2str(pres)], motname);
+				  print(gcf1, '-dpng', '-noui', ['-r' num2str(pres)], motname);
 
 			  catch
 
 				  np = strrep(fout, filesep, '/');
-				  disp(['   ... saving to additional outfile (in ' np ') failed, continuing...!']);
+				  if silent == 0,  disp(['   ... saving to additional outfile (in ' np ') failed, continuing...!']);  end;
 			  end;
 		  end;
 		  set(gcf1,'Units',osu,'PaperUnits',opu,'PaperPosition',opp);
@@ -950,21 +1135,26 @@ global tmpldir;
 
 % time to say goodbye
   tt = toc;
-  disp(' ');
-  disp(['... thanks for using this script; this run took ' sprintf('%0.2f', tt/60) ' minutes.']); 
-  disp(['   ... results from this run, analyzing ' num2str(size(rps,1)) ' session(s), were stored in ']);
-  for i = 1:size(rps,1)
-	  p = spm_fileparts(rps(i,:));
-	  if isempty(p),  p = pwd;  end;
-	  disp(['   ... ' p ' for session ' num2str(i) ';']);
-  end;
-  if ~isempty(fout) && size(rps,1) == 1
+  if silent == 0
 
-	disp(['   ... as well as in the additional outfile (' fout ');']);
+	  disp(' ');
+	  disp(['   ... results from this run, analyzing ' num2str(size(rps,1)) ' session(s), were stored in ']);
+	  for i = 1:size(rps,1)
+
+		  [p, ~, ~, ~] = spm_fileparts(rps(i,:));
+		  if isempty(p),  p = pwd;  end;
+		  disp(['   ... ' p ' for session ' num2str(i) ';']);
+	  end;
+	  if ~isempty(fout) && size(rps,1) == 1
+
+		disp(['   ... as well as in the additional outfile (' fout ');']);
+	  end;
+	  disp(['... thanks for using this script; this run took ' sprintf('%0.2f', tt/60) ' minutes.']); 
+	  disp(' ');
+	  disp('=== Thank you and have a nice day :) ===');
+	  disp(' ');
+
   end;
-  disp(' ');
-  disp('=== Thank you and have a nice day :) ===');
-  disp(' ');
 
 
 % when all is said and done, rename output
@@ -981,7 +1171,7 @@ global tmpldir;
 %                                          Embedded functions: #1, mw_brainmask
 % ==========================================================================================================
 
-function [mname, sname] = mw_brainmask(VF,mode,overwrite)
+function [mname, sname] = mw_brainmask(VF,mode,overwrite);
 % Segment an MR image into Gray, White & CSF.
 %
 % Old spm function, based on John Ashburner's spm_segment.m 3756 2010-03-05 18:43:37,
@@ -989,12 +1179,12 @@ function [mname, sname] = mw_brainmask(VF,mode,overwrite)
 % mainly from native-space EPI-images. Inspired by the fieldmap which uses a similar approach.
 %
 % Adaptations by Marko Wilke, use at your own risk!
-global tmpldir;
+
 % set defaults
   flags.estimate.priors = char(...
-        fullfile(tmpldir.tpm,'grey.nii'),...
-        fullfile(tmpldir.tpm,'white.nii'),...
-        fullfile(tmpldir.tpm,'csf.nii'));
+        fullfile(spm('Dir'),'apriori','grey.nii'),...
+        fullfile(spm('Dir'),'apriori','white.nii'),...
+        fullfile(spm('Dir'),'apriori','csf.nii'));
   flags.estimate.reg    = 0.01;
   flags.estimate.cutoff = 30;
   flags.estimate.samp   = 3;
@@ -1008,15 +1198,39 @@ global tmpldir;
   flags.graphics        = 0;
 
 
+% double check
+  try
+
+	junk = spm_vol(flags.estimate.priors(1,:));
+
+  catch
+
+	  flags.estimate.priors = char(...
+	        fullfile(spm('Dir'),'toolbox','OldSeg','grey.nii'),...
+	        fullfile(spm('Dir'),'toolbox','OldSeg','white.nii'),...
+	        fullfile(spm('Dir'),'toolbox','OldSeg','csf.nii'));
+
+	% be safe
+	  try
+
+		junk = spm_vol(flags.estimate.priors(1,:));
+
+	  catch
+
+		error(' Required OldSeg priors were not found for mw_brainmask in mw_mfp!');
+	  end;
+  end;
+
+
 % process inputs
-  if nargin == 0, VF = spm_select(Inf,'image','Select image(s) to create brainmask from',[],pwd,'.*');  end;
+  if nargin == 0, VF = spm_select([Inf],'image',['Select image(s) to create brainmask from'],[],pwd,'.*');  end;
   if ischar(VF), VF= spm_vol(VF); if size(VF,1) > 1, VF = VF(1); end; end;
   if nargin < 2, mode = 1;       end;
   if nargin < 3, overwrite = 0;  end;
 
 
 % inform user (all displays disabled below)?
-  [mypath, myname, myext] = spm_fileparts(VF.fname);
+  [mypath, myname, myext, v] = spm_fileparts(VF.fname);
   % disp(['  ... generating brainmask, please wait...']);
 
 
@@ -1073,7 +1287,7 @@ end
 
 % generate brainmask
   V = VO(4);
-  if overwrite == 0,  V.fname = [mypath filesep myname '_mask' myext];  else  V.fname = [mypath filesep myname myext];  end;
+  if overwrite == 0,  V.fname = [mypath filesep myname '_mask' myext];  else,  V.fname = [mypath filesep myname myext];  end;
   V.descrip = 'Brain mask, generated using old segment';
   %  dat = double((g + w + c) > 0.5);
   dat = uint8(b > (max(b(:))/10));
@@ -1086,7 +1300,7 @@ end
 
 
 % generate surface?
-  if mode == 2,  spm_surf(V.fname, 2);  [mypath, myname] = spm_fileparts(V.fname);  sname = [mypath filesep myname '.surf.gii'];  end;
+  if mode == 2,  spm_surf(V.fname, 2);  [mypath, myname, j, j] = spm_fileparts(V.fname);  sname = [mypath filesep myname '.surf.gii'];  end;
 
 
 % generate other classes?
@@ -1125,8 +1339,8 @@ return;
 %=======================================================================
 
 %=======================================================================
-function M = get_affine_mapping(VF)
-global tmpldir;
+function M = get_affine_mapping(VF);
+
 % generate affine matrix
   aff_flags_1    = struct('WG',[],'WF',[],'sep',4,'regtype','MNI');
   aff_flags_2    = struct('WG',[],'WF',[],'sep',2,'regtype','MNI');
@@ -1134,14 +1348,30 @@ global tmpldir;
 % set template; assume T1 if large (yes, I know this is dirty)
   if any(VF.dim) > 128
 
-	temp     = fullfile(tmpldir.mni,'T1.nii');
+	temp     = fullfile(spm('Dir'),'templates','T1.nii');
+
+	try
+
+		spm_vol(temp);
+	catch
+
+		temp     = fullfile(spm('Dir'),'toolbox','OldNorm', 'T1.nii');
+	end;
   else
 
-	temp     = fullfile(tmpldir.mni,'EPI.nii');
+	temp     = fullfile(spm('Dir'),'templates','EPI.nii');
+	try
+
+		spm_vol(temp);
+	catch
+
+		temp     = fullfile(spm('Dir'),'toolbox','OldNorm', 'EPI.nii');
+	end;
+
   end;
 
   [Affine, scal] = spm_affreg(spm_vol(temp), VF, aff_flags_1, eye(4));
-  [Affine] = spm_affreg(spm_vol(temp), VF, aff_flags_2, Affine, scal);
+  [Affine, scal] = spm_affreg(spm_vol(temp), VF, aff_flags_2, Affine, scal);
 
 % replace
   M = Affine;
@@ -1557,7 +1787,7 @@ end;
           targ = zeros(size(temp2));
           for i = 1:num
                   if store(i) < fillin
-                          targ(temp2 == store(i)) = 255;
+                          targ(find(temp2 == store(i))) = 255;
                   end;
           end;
   end;
@@ -1574,7 +1804,7 @@ return;
 % ==========================================================================================================
 %                                          Embedded functions: #2, findn
 % ==========================================================================================================
-function ind=findn(arr)
+function ind=findn(arr);
 
 %FINDN   Find indices of nonzero elements.
 %   I = FINDN(X) returns the indices of the vector X that are
@@ -1689,8 +1919,8 @@ function varargout = subdir(varargin)
 % Get folder and filter
 %---------------------------
 
-narginchk(0,1);
-nargoutchk(0,1);
+error(nargchk(0,1,nargin));
+error(nargoutchk(0,1,nargout));
 
 if nargin == 0
     folder = pwd;
@@ -1715,7 +1945,7 @@ end
 %---------------------------
 
 pathstr = genpath(folder);
-seplocs = strfind(pathstr, pathsep);
+seplocs = findstr(pathstr, pathsep);
 loc1 = [1 seplocs(1:end-1)+1];
 loc2 = seplocs(1:end)-1;
 pathfolders = arrayfun(@(a,b) pathstr(a:b), loc1, loc2, 'UniformOutput', false);

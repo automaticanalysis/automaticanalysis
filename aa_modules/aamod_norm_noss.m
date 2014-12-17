@@ -139,19 +139,20 @@ switch task
             
             % Now adjust parameters according to starting offset parameters
             % as requested in task settings
+            startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
+            ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
+
             if ~isempty(subjectOptions.affineStartingEstimate)
-                startingParameters = subjectOptions.affineStartingEstimate;
-                
+                aSE = subjectOptions.affineStartingEstimate;
+            elseif ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
+                aSE = aap.tasklist.currenttask.settings.affinestartingestimate;
+                aas_log(aap, 0, 'Warning: the option <affinestartinestimate> will soon be removed from aamod_norm_noss. Please use the <subject> option to apply affine starting estimates');
             else
-                
-                startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
-                ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
-                if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
-                    fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
-                else
-                    fnames = [];
-                end
-                          
+                aSE = [];
+            end
+            
+            if isstruct(aSE)
+                fnames = fieldnames(aSE);
                 for fieldind=1:length(fnames)
                     % Which element in StartingParameters does this refer to?
                     whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
@@ -162,16 +163,10 @@ switch task
                         aas_log(aap,true,err);
                     end
                     % Put this in its place
-                    if ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind}))
-                        startingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
-                        if ~isempty(fnames)
-                            aas_log(aap, 0, 'Warning: the option <affinestartinestimate> will soon be removed from aamod_norm_noss. Please use the <subject> option to apply affine starting estimates');
-                        end
-                    end;
+                    startingParameters(whichitem)=aSE.(fnames{fieldind});
                 end
-                
-                
-                startingParameters = [0 0 0   0 0 0   1 1 1   0 0 0];
+            else
+               startingParameters = aSE; 
             end
 
             %[AVG] Save original V.mat parameters
@@ -336,7 +331,7 @@ print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
 
 %% Draw warped template
-tmpfile = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
+tmpfile = fullfile(aap.directory_conventions.fsldir,'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
 gunzip(tmpfile,localpath); tmpfile = fullfile(localpath,'MNI152_T1_1mm.nii');
 
 spm_check_registration(tmpfile)

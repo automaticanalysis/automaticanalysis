@@ -1,4 +1,4 @@
-function mw_anamot
+function mw_anamot(mydata, silent);
 %
 % Little companion script that reads out result files from
 % mw_mfp (so run this first) and summarizes motion in the form of
@@ -6,9 +6,11 @@ function mw_anamot
 %
 % To run, type 'mw_anamot' in the matlab window and select
 % the directory that contains the mw_motion.mat files.
+% Alternatively, pass a directory name and the optional "silent"
+% parameter to suppress screen output.
 %
-% If you specify a top-level directory, all sub-directories
-% will be searched and analyzed; results are written to a 
+% If you specify a directory, all sub-directories will be searched
+% for mw_mfp result files and analyzed; results are written to a 
 % mw_anamot_results.txt file in this directory (so make sure
 % you have write permissions). Additionally, a short summary
 % for each session is printed on the screen.
@@ -21,16 +23,32 @@ function mw_anamot
 % 
 % available at http://dx.doi.org/10.1016/j.neuroimage.2011.10.043
 %
+% as well as
+%
+%   Wilke M: Isolated assessment of translation or rotation
+%   severely underestimates the effects of subject motion
+%   in fMRI data;
+%   PLoS ONE 2014, 9: e106498
+% 
+% freely available at http://www.dx.doi.org/10.1371/journal.pone.0106498
+%
 % It requires the following functions to run properly:
 %
 %   subdir (included, courtesy of the Mathworks File Exchange)
 %   
 % Idea and implementation by Marko Wilke, see file for version information.
 %
-% This software comes with absolutely *no* guarantees whatsoever,
-% explicit or implied or otherwise, so use it at your own risk!
+% This program is free software: you can redistribute it and/or modify it
+% under the terms of the GNU General Public License as published by the
+% Free Software Foundation, either version 3 of the License, or
+% (at your option) any later version.
 %
-% V1: version at first inclusion in the mw_mfp-package
+% This program is distributed in the hope that it will be useful, but
+% WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+% or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+% for more details. You should have received a copy of the GNU General
+% Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
+%
 
 
 % ==========================================================================================================
@@ -38,23 +56,36 @@ function mw_anamot
 % ==========================================================================================================
 
 
+% File version: 1.3, 2014-11-13
+
+
 % get an nice working environment
-  clc;
   ori = pwd;
 
 
-% search where?
-  mydata = spm_select(1,'dir','Please select data directory to search',[],pwd);
+% process inputs
+  if nargin == 0
+
+	mydata = spm_select(1,'dir','Please select data directory to search',[],pwd);
+  end;
+  if nargin < 2 || isempty(silent),    silent = 0;   end;
+
+
+% say hello
+  if silent == 0,  clc;  disp(['... Welcome to ' mfilename]);  end;
+
+
+% search this folder/file location
+  if ~isdir(mydata),  [mydata, ~,~,~] = spm_fileparts(mydata);  if isempty(mydata),  mydata = pwd;  end;  end;
   cd(mydata);
-
-
-% search this folder
   myparams = subdir(['mw_motion.mat']);
   if ~isempty(myparams)
 
-	  disp(['... found ' num2str(size(myparams,1)) ' sessions, please wait...']);
+	  if silent == 0,  disp(['... found ' num2str(size(myparams,1)) ' sessions, please wait...']);  end;
   else
-	  error(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);
+	  if silent == 0,  error(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);
+	  else,            disp(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);  return;
+	  end;
   end;
 
 
@@ -66,8 +97,20 @@ function mw_anamot
 
 % take a note
   outfile = [mydata filesep 'mw_anamot_results.txt'];
-  fid = fopen(outfile,'At+');
-  fprintf(fid, ['Source path' '\t' ['TD:#>' num2str(thrs(1,1)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,2)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,3)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,4)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,5)) 'mm'] '\t'  ['STS:#>' num2str(thrs_s(1,1)) 'mm'] '\t'   ['STS:#>' num2str(thrs_s(1,2)) 'mm'] '\t'   ['STS:#>' num2str(thrs_s(1,3)) 'mm'] '\t'   ['STS:#>' num2str(thrs_s(1,4)) 'mm'] '\t'   ['STS:#>' num2str(thrs_s(1,5)) 'mm'] '\n']);
+  if exist(outfile) ~= 2
+
+	% create new file
+	  if silent == 0,  disp(['... generating new mw_anamot results file, please wait...']);  end;
+	  fid = fopen(outfile,'At+');
+	  fprintf(fid, ['Source path' '\t' 'TD: mean' '\t' 'TD: STD' '\t' 'TD: median' '\t' 'TD: min' '\t' 'TD: max' '\t' ['TD:#>' num2str(thrs(1,1)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,2)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,3)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,4)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,5)) 'mm'] '\t' 'STS: mean' '\t' 'STS: STD' '\t' 'STS: median' '\t' 'STS: min' '\t' 'STS: max' '\t' ['STS:#>' num2str(thrs_s(1,1)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,2)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,3)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,4)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,5)) 'mm'] '\t' 'Mean Voxel size [mm]' '\n']);
+
+  else
+
+	% if file exists already, no need to include headers again
+	  if silent == 0,  disp(['... adding to existing  mw_anamot results file, please wait...']);  end;
+	  fid = fopen(outfile,'At+');
+
+  end;
 
 
 % ==========================================================================================================
@@ -90,11 +133,12 @@ function mw_anamot
 		  currp = spm_select('list', p, 'rp_.*.txt');
 		  currp = spm_select('List', p, ['^' currp(4:end-4) '.(img|nii)']);
 		  V = spm_vol([p filesep currp]);
-		  vs = (abs(V.mat(1,1))+abs(V.mat(2,2))+abs(V.mat(3,3))) / 3;
+		  vs = sqrt(sum(V.mat(1:3,1:3).^2));
+		  vs = [sprintf('%0.1f', vs(1)) ' * ' sprintf('%0.1f', vs(2)) ' * ' sprintf('%0.1f', vs(3))];
 
 	  catch,
 
-		  vs = dvs;
+		  vs = 'N/A';
 
 	  end;
 
@@ -105,31 +149,46 @@ function mw_anamot
 
 
 	% simplified output to screen
-	  if max(td) > vs
+	  if silent == 0
 
-		disp(['   ... session ' num2str(i) ' from ' p ': npoints > vs = ' num2str(sum(td>vs)) ', max: ' num2str(max(td)) ]);
+		  disp(['   ... session ' num2str(i) ' from ' p ' (with a voxel size of ' vs ' mm):']);
 
-	  elseif max(td) < vs
+		  if ~isnan(td)
 
-		disp(['   ... session ' num2str(i) ' from ' p ': no points exceed voxel size!']);
+			disp(['       ... total displacement mean = ' sprintf('%0.2f', mean(td)) ' [' sprintf('%0.2f', std(td)) '], median = ' sprintf('%0.2f', median(td)) ' [' sprintf('%0.2f', min(td)) '-' sprintf('%0.2f', max(td)) ']']);
 
-	  elseif isnan(td)
+		  else 
 
-		disp(['   ... session ' num2str(i) ' from ' p ': data not available!']);
+			disp(['       ... total displacement data not available!']);
+
+		  end;
+		  if ~isnan(sts)
+
+			disp(['       ... scan-to-scan displacement mean = ' sprintf('%0.2f', mean(sts)) ' [' sprintf('%0.2f', std(sts)) '], median = ' sprintf('%0.2f', median(sts)) ' [' sprintf('%0.2f', min(sts)) '-' sprintf('%0.2f', max(sts)) ']']);
+
+		  else 
+
+			disp(['       ... scan-to-scan displacement data not available!']);
+
+		  end;
 
 	  end;
 
 
 	% more comprehensive output to file
 	  p = strrep(p,'\','/');
-	  fprintf(fid, [p '\t' num2str(sum(td>thrs(1,1))) '\t' num2str(sum(td>thrs(1,2))) '\t' num2str(sum(td>thrs(1,3))) '\t' num2str(sum(td>thrs(1,4))) '\t' num2str(sum(td>thrs(1,5))) '\t'  num2str(sum(sts>thrs_s(1,1))) '\t'   num2str(sum(sts>thrs_s(1,2))) '\t' num2str(sum(sts>thrs_s(1,3))) '\t' num2str(sum(sts>thrs_s(1,4))) '\t' num2str(sum(sts>thrs_s(1,5))) '\n']);
+	  fprintf(fid, [p '\t' sprintf('%0.2f', mean(td)) '\t' sprintf('%0.2f', std(td)) '\t' sprintf('%0.2f', median(td)) '\t' sprintf('%0.2f', min(td)) '\t' sprintf('%0.2f', max(td)) '\t' num2str(sum(td>thrs(1,1))) '\t' num2str(sum(td>thrs(1,2))) '\t' num2str(sum(td>thrs(1,3))) '\t' num2str(sum(td>thrs(1,4))) '\t' num2str(sum(td>thrs(1,5))) '\t' sprintf('%0.2f', mean(sts)) '\t' sprintf('%0.2f', std(sts)) '\t' sprintf('%0.2f', median(sts)) '\t' sprintf('%0.2f', min(sts)) '\t' sprintf('%0.2f', max(sts)) '\t'  num2str(sum(sts>thrs_s(1,1))) '\t'   num2str(sum(sts>thrs_s(1,2))) '\t' num2str(sum(sts>thrs_s(1,3))) '\t' num2str(sum(sts>thrs_s(1,4))) '\t' num2str(sum(sts>thrs_s(1,5)))  '\t'  vs '\n']);
 
   end;
 
 
 % housekeeping
-  disp(['... done with analyzing ' num2str(size(myparams,1)) ' sessions;']);
-  disp(['... results were stored in ' mydata]);
+  if silent == 0
+
+	  disp(['... done with analyzing ' num2str(size(myparams,1)) ' sessions;']);
+	  disp(['... results were stored in ' mydata]);
+
+  end;
 
 
 % close output file, get back
@@ -143,7 +202,7 @@ function mw_anamot
 % ==========================================================================================================
 
 function varargout = subdir(varargin)
-%SUBDIR Performs a recursive file search
+% SUBDIR Performs a recursive file search
 %
 % subdir
 % subdir(name)

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Get DICOM files for special series'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>autoidentifyseries</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dicom_specialseries</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
