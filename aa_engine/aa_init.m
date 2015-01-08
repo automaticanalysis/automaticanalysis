@@ -22,6 +22,22 @@ addpath(aap.directory_conventions.spmdir);
     
 spm_jobman('initcfg');
 
+if ~isfield(aap,'spm') || ~isfield(aap.spm,'defaults')
+    try
+        aap.spm.defaults=spm_get_defaults;
+    catch
+        global defaults
+        if (~isstruct(defaults))
+            aas_log(aap,true,'Global SPM defaults has not been found;');
+        else
+            aap.spm.defaults=defaults;
+        end;
+    end;
+    
+    % Make copy of aap
+    aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
+end
+
 % Path for SPM MEG/EEG
 addpath(fullfile(spm('Dir'),'external','fieldtrip'));
 clear ft_defaults
