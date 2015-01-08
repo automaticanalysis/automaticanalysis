@@ -46,6 +46,7 @@
         <options>
 			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
+			<diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
         </options>
     </local>
 </aap>
