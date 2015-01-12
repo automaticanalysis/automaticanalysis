@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_realign' domain='subject' desc='SPM motion correction' modality='MRI' >
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>-1</permanenceofoutput>
+            
+            <writemean>1</writemean>
+            <reslicewhich>2</reslicewhich>
+            
+            <!-- Should we invert the weighting image? Useful if using an ROI or a mask as the weighting image. -->
+            <invertWeightingImage>1</invertWeightingImage>
+
+            <specialrequirements>
+                <jobtype>fMRI</jobtype>
+            </specialrequirements>
+            
+            ﻿<inputstreams>
+                <stream>epi</stream>
+                <stream>weightingImage</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>realignment_parameter</stream>
+                <stream>meanepi</stream>
+                <stream>epi</stream>
+            </outputstreams>
+                
+        </currenttask>
+    </tasklist>
+</aap>

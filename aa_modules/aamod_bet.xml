@@ -8,7 +8,7 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
             
-            <permanenceofoutput>1</permanenceofoutput>
+            <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>
                 <stream>structural</stream>
@@ -22,15 +22,23 @@
             
             <!-- BET F parameter - from 0 to 1 (least to most agressive skull stripping -->
             <bet_f_parameter>0.5</bet_f_parameter>
-            <!-- Robust bet (recursive BET)? 0 = no, 1 = yes -->
+            <!-- Robust bet (recursive BET)? 0 - NO; 1 - YES  -->
             <robust>1</robust>
-            <!-- Do we want to output the masks from BET? -->
+            <!-- Do we want to output the masks & meshes from BET? 0 - NO; 1 - YES 
+            This might slightly increase the accuracy of BET -->
             <masks>1</masks>
-            <!-- This specifies which structural we want to use, typically the first, but can be changed -->
+            
+            <!-- Voxel kernel by which we smooth (essentially dilate) the BET mask [useful if BET eats into brain matter]? -->
+            <smooth>0</smooth>
+            <!-- Do we apply the brain masking on the structural...? 0 - NO; 1 - YES -->
+            <maskBrain>1</maskBrain>
+            
+            <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed 
+            Can add multiple, but then only first one will be used for BETting, but operation will be applied on both -->
             <structural>1</structural>
             
             <!-- Diagnostic videos? -->
-            <diagnostic>1</diagnostic>
+            <diagnostic>0</diagnostic>
             
         </currenttask>
     </tasklist>

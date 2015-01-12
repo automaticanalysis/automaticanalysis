@@ -14,7 +14,8 @@
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>                  
-                <stream>epi</stream>
+                <stream>structural</stream> 
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>

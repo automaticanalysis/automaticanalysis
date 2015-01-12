@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='VOI extraction' modality='MRI' >
+            
+            <qsub>
+                <localonly>1</localonly>
+                <timeBase></timeBase>
+                <memoryBase></memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <VOI>
+                <name></name>
+                <Ic>-1</Ic> <!-- removing variance that can be predicted by the null space of the F contrast specified
+                (-1: generate an F-contrast testing for all effects of interest) -->
+                <lmax>1</lmax> <!-- number of contrast (lmax) -->
+                <def>sphere</def> <!-- sphere box mask -->
+                <xyz></xyz>
+                <spec>0</spec>
+            </VOI>
+            
+            ﻿<inputstreams>
+                <stream>firstlevel_spm</stream> 
+                <stream>firstlevel_betas</stream> 
+                <stream>firstlevel_spmts</stream> 
+                <stream>firstlevel_spmfs</stream>
+                <stream isessential='0'>rois</stream>  
+            </inputstreams>
+
+            <outputstreams>
+                <stream>vois</stream> 
+            </outputstreams>
+                
+        </currenttask>
+    </tasklist>
+</aap>

@@ -9,11 +9,14 @@
 %   'doneflaglocations' - only specifications of modules that might produce
 %   an output
 %
+% If 'desc' output, it is filled with a text description of the
+% dependencies. This is useful for debugging
+%
 %  Examples:
 %   pth=aas_getdependencies_bydomain(aap,'study','session',{1,2});  % source stage was at study domain, target stage is at session domain
 %
-%
-function [deps commonind]=aas_getdependencies_bydomain(aap, sourcedomain, targetdomain, indices, whattoreturn, modulenum)
+
+function [deps commonind desc]=aas_getdependencies_bydomain(aap, sourcedomain, targetdomain, indices, whattoreturn, modulenum)
 
 if ~exist('modulenum','var')
     modulenum=[];
@@ -31,7 +34,7 @@ if (~hit)
     % common point of the source & target trees can affect the response
     %
     % So, find that common point and then retry the cache
-
+    
     targetdomaintree=aas_dependencytree_finddomain(targetdomain,aap.directory_conventions.parallel_dependencies,{});
     sourcedomaintree=aas_dependencytree_finddomain(sourcedomain,aap.directory_conventions.parallel_dependencies,{});
     % Find the point where the source and target branches converge
@@ -43,8 +46,10 @@ if (~hit)
         end;
     end;
     
+    
+    
     if (commonind<length(targetdomaintree))
-        cacheindices=indices(1:(commonind-1));
+        cacheindices=indices(1:(commonind)); % CW hacky fix - indices(1:(commonind-1));
         [hit resp]=aas_cache_get(aap,mfilename,sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
     else
         cacheindices=indices;
@@ -63,56 +68,76 @@ else
     
     switch(whattoreturn)
         case 'possiblestreamlocations'
-            % First, lets go up the tree as far as the source domain
-            deps={};
-            for targetind=length(targetdomaintree):-1:commonind
-                deps{end+1}={targetdomaintree{targetind}, indices(1:(targetind-1))};
-            end;
-            
-            % And down the tree, sucking everything along the way
-            tree=aap.directory_conventions.parallel_dependencies;
-            for targetind=1:commonind
-                tree=tree.(sourcedomaintree{targetind});
-            end;
-            
-            deps=[deps aas_dependencytree_findbranches(aap,{tree,targetdomaintree(2:end),indices(commonind:end)},indices(1:(commonind-1)))];
-        case 'doneflaglocations_thatexist'
-            % Is the common point in the source & target trees the one we're
-            % looking for?
-            if strcmp(sourcedomain,sourcedomaintree{commonind})
-                deps={{sourcedomain indices(1:(commonind-1))}};
-            else
-                % No, so lets go down the tree and look for it, providing every
-                % possible sub index combination
-                tree=aap.directory_conventions.parallel_dependencies;
-                for targetind=1:commonind
-                    tree=tree.(sourcedomaintree{targetind});
-                end;
-                deps=[aas_dependencytree_findbranches(aap,tree,indices(1:(commonind-1)),sourcedomain,modulenum)];
-            end;
+            module=[];
+            hasancestory=true;
+            onlyreportdomain=[];
         case 'doneflaglocations'
-            
-            % Is the common point in the source & target trees the one we're
-            % looking for?
-            if strcmp(sourcedomain,sourcedomaintree{commonind})
-                deps={{sourcedomain indices(1:(commonind-1))}};
-            else
-                % No, so lets go down the tree and look for it, providing every
-                % possible sub index combination
-                tree=aap.directory_conventions.parallel_dependencies;
-                for targetind=1:commonind
-                    tree=tree.(sourcedomaintree{targetind});
-                end;
-                deps=[ aas_dependencytree_findbranches(aap,tree,indices(1:(commonind-1)),sourcedomain)];
-            end;
+            module=[];
+            hasancestory=false;
+            onlyreportdomain=sourcedomain;
+        case 'doneflaglocations_thatexist'
+            module=modulenum;
+            hasancestory=false;
+            onlyreportdomain=sourcedomain;
         otherwise
             aas_log(aap,true,sprintf('Unknown dependency calculation requested of %s',whattoreturn));
+    end;
+    
+    deps={};
+    tree=aap.directory_conventions.parallel_dependencies;
+    targetInd = length(targetdomaintree);
+    % CASE 1: same branch, source module higher up
+    if commonind==length(sourcedomaintree)
+        
+        if strcmp(whattoreturn,'possiblestreamlocations')
+            % Bit from source to one above target
+            for nodeind=commonind:targetInd
+                deps{end+1}={targetdomaintree{nodeind},indices(1:nodeind-1)};
+            end;
+            
+            % If we're looking for all possible stream locations, need to go
+            % down the trees
+            % Target and everything below
+            for nodeind=1:targetInd
+                tree=tree.(targetdomaintree{nodeind});
+            end;
+            deps=[deps aas_dependencytree_findbranches(aap,{tree,targetdomaintree,indices},indices,onlyreportdomain,module,{},sourcedomain,hasancestory)];
+        else
+            deps{end+1}={sourcedomain,indices(1:length(sourcedomaintree)-1)};
+        end;
+        % CASE 2: same branch, target module higher up
+    elseif commonind==length(targetdomaintree)
+        % Source and everything below
+        for nodeind=1:targetInd
+            tree=tree.(sourcedomaintree{nodeind});
+        end;
+        deps=[aas_dependencytree_findbranches(aap,{tree,targetdomaintree,indices},indices,onlyreportdomain,module,{},sourcedomain,hasancestory)];
+        % CASE 3: different branches
+    else
+        % All items below common index
+        % Source and everything below
+        tree=aap.directory_conventions.parallel_dependencies;
+        for nodeind=1:commonind
+            tree=tree.(sourcedomaintree{nodeind});
+        end;
+        % Only pick items on or below sourcedomain
+        hasancestory=false;
+        deps=[aas_dependencytree_findbranches(aap,{tree,sourcedomaintree(1:commonind-1),indices(1:commonind-1)},indices(1:commonind-1),onlyreportdomain,module,{},sourcedomain,hasancestory)];
     end;
     
     aas_cache_put(aap,mfilename,{deps commonind},sourcedomain,targetdomain,indices,whattoreturn,modulenum);
     % also store in the cache indexed by the truncated portion
     aas_cache_put(aap,mfilename,{deps commonind},sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
     
+end;
+
+%% And report
+if nargout==3
+    desc='';
+    for depind=1:length(deps)
+        desc=[desc deps{depind}{1} '[ ' sprintf('%d ',deps{depind}{2}) '] '];
+    end;
+end;
 end
 
 

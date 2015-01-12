@@ -15,7 +15,7 @@
 %  outputpath=place to write NIFTI
 % Rhodri Cusack MRC CBU, Cambridge 2005
 %
-function [aap out_allechoes dicomheader subdirs]=aas_convertseries_fromstream(aap,varargin)
+function [aap out_allechoes dicomheader subdirs dicomdata]=aas_convertseries_fromstream(aap,varargin)
 v=varargin;
 % if (length(v)>3 && ischar(v{end-2}))
 %     outputpathsuffix=v{end};
@@ -72,6 +72,7 @@ end
 
 out_allechoes=[];
 for subdirind=1:length(subdirs)
+    dicomheader{subdirind}=[];
     out=[];
     outputpath_withsuffix=fullfile(subdirs{subdirind}); %,outputpathsuffix
     aap=aas_makedir(aap,outputpath_withsuffix);
@@ -80,7 +81,11 @@ for subdirind=1:length(subdirs)
     % Limit number of volumes read in at a time
     chunksize_volumes=16;
     k=1;
-     
+    
+    % This array is used to collect sliceing timing info so we can
+    % reconstruct the slice order
+    sliceInfo = zeros(0, 3);
+    
     while (k<=size(dicomdata_subdir,1))
         %    fprintf('***New chunk\n');
         oldAcquisitionNumber=-1;
@@ -90,38 +95,78 @@ for subdirind=1:length(subdirs)
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
             
-            try
-                % [AVG] Let us use get the TR and save it to the DICOMHEADERS
-                if k == 1
-                    infoD = dicominfo(deblank(dicomdata_subdir(k,:)));
+            % [AVG] Let us use get the TR and save it to the DICOMHEADERS
+            if k == 1
+                
+                % [CW] dicominfo() comes from image processing toolbox,
+                % so let's try to make due without it.  Also seems
+                % inefficient to re-read dicominfo if we just did it.
+                infoD = tmp{1}; % dicominfo(deblank(dicomdata_subdir(k,:)));
+                
+                TR = [];
+                sliceorder = '';
+                
+                % Private field containing info about TR and slices
+                fi = 'Private_0029_1020';
+                if isfield(infoD, fi)
+                    str =  infoD.(fi);
+                    xstr = char(str');
                     
-                    if strcmp(infoD.MRAcquisitionType, '3D')
-                        % In 3D sequence we can find a Private field
-                        % Works for Siemens scanners (not tested elsewhere)
-                        fi = 'Private_0029_1020';
-                        % let's make sure this solution has a chance of
-                        % working
-                        assert(isfield(infoD,fi),...
-                            '3D sequence but TR cannot be recovered');
-                        str =  infoD.(fi);
-                        xstr = char(str');
-                        n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
-                        if isempty(n)
-                            error('Could not find TR in the DICOM header!')
-                        end
+                    % Try to extract TR from this private field
+                    n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
+                    if ~isempty(n)
                         [junk, r] = strtok(xstr(n:n+100), '=');
                         TR = str2double(strtok(strtok(r, '=')));
-                    else
-                        % If 2D sequence...
-                        TR = infoD.RepetitionTime;
+                        gotTR = true;
                     end
-                    fprintf('Sequence has a TR of %.1f ms\n', TR);
+                    
+                    % Try to extract slice order
+                    n = findstr(xstr, 'sSliceArray.ucMode');
+                    if ~isempty(n)
+                        [t, r] = strtok(xstr(n:n+100), '=');
+                        ucmode = strtok(strtok(r, '='));
+                        switch(ucmode)
+                            case '0x1'
+                                sliceorder = 'Ascending';
+                            case '0x2'
+                                sliceorder = 'Descending';
+                            case '0x4'
+                                sliceorder = 'Interleaved';
+                            otherwise
+                                sliceorder = 'Order undetermined';
+                        end
+                    end
+                    
                 end
                 
-                % [AVG] Add the TR to the DICOMHEADERS explicitly before
-                % saving (and in seconds!)
-                tmp{1}.volumeTR = TR/1000;
-            catch
+                % if we didn't find that private field, use the
+                % ReptitionTime field.
+                if isempty(TR) && isfield(infoD, 'RepetitionTime')
+                    TR = infoD.RepetitionTime;
+                    fprintf('Sequence has a TR of %.1f ms\n', TR);
+                else
+                    fprintf('TR not found!\n');
+                end
+                
+                % Try to get sliceorder from other fields...
+                collectSOinfo = false;
+                if isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}))
+                    collectSOinfo = true;
+                end
+                
+            end
+            
+            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before
+            % saving (and in seconds!)
+            if exist('TR','var'), tmp{1}.volumeTR = TR/1000; end
+            if exist('sliceorder','var'), tmp{1}.sliceorder = sliceorder; end
+            
+            % Collecting timing and slice location info so we can
+            % reconstruct the slice order.  TemporalPositionIdentifier is
+            % basically the volume number, InstanceNumber is the temporal
+            % position in that acqusition, and SliceLocation is spatial
+            if collectSOinfo
+                sliceInfo(end+1, :) = [tmp{1}.TemporalPositionIdentifier tmp{1}.InstanceNumber tmp{1}.SliceLocation];
             end
             
             DICOMHEADERS=[DICOMHEADERS tmp];
@@ -138,6 +183,29 @@ for subdirind=1:length(subdirs)
             k=k+1;
         end
         
+        if collectSOinfo
+            sliceInfo(sliceInfo(:,1)~=1, :) = [];       % Trim volumes that aren't the 1st one
+            sliceInfo = sortrows(sliceInfo, [1 3 2]);   % Sort by spatial location (inferior->posterior)
+            
+            numSlices = size(sliceInfo, 1);
+            
+            if sum(sliceInfo(:,2) == [1:numSlices]') == numSlices
+                sliceorder = 'Ascending';
+            elseif sum(sliceInfo(:,2) == [numSlices:-1:1]') == numSlices
+                sliceorder = 'Descending';
+            elseif	mod(numSlices, 2) && (sum(sliceInfo(:,2) == [1:2:numSlices 2:2:numSlices]') == numSlices)
+                sliceorder = 'Interleaved';
+            elseif mod(numSlices, 2) && (sum(sliceInfo(:,2) == [2:2:numSlices 1:2:numSlices]') == numSlices)
+                sliceorder = 'Interleaved';
+            else
+                sliceorder = 'Unknown';
+            end
+            
+            fprintf('I have determined that your sliceorder is %s\n', sliceorder);
+            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', 'Ascending')}, DICOMHEADERS); % Update the DICOMHEADERS
+        end
+        
+        
         if (~exist('echonumbers','var'))
             DICOMHEADERS_selected=DICOMHEADERS;
         else
@@ -148,11 +216,20 @@ for subdirind=1:length(subdirs)
                 end
             end
         end
-        conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+        % [AVG] to cope with modern cutting edge scanners, and other probs
+        % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
+        if isfield(aap.options, 'customDCMconvert') && ~isempty(aap.options.customDCMconvert)
+            aas_log(aap, false, sprintf('Using alternate %s script...', aap.options.customDCMconvert))
+            eval(sprintf('conv=%s(DICOMHEADERS_selected,''all'',''flat'',''nii'')', aap.options.customDCMconvert));
+        else
+            conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+        end
         out=[out(:);conv.files(:)];
+        
+        dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
     out_allechoes{subdirind}=unique(out);
-    if strfind(inputstream, 'dicom_structural')
+    if ~isempty(strfind(inputstream, 'dicom_structural'))
         % [AVG] This is to cope with a number of strucutral images, so we
         % may have the DICOM header of each of them...
         SeriesDescription = '';
@@ -165,10 +242,13 @@ for subdirind=1:length(subdirs)
             end
         end
         dicomheader={DICOMHEADERS{DCMnumbers}};
-    else
-        dicomheader{subdirind}=DICOMHEADERS{1};
+        
     end
 end
+
+if ~isempty(strfind(inputstream, 'dicom_structural')) || (numel(dicomheader) == 1)
+    dicomheader=dicomheader{1};
+end;
 
 % Single echo, no echo dimension to cell array
 if (length(out_allechoes)==1)

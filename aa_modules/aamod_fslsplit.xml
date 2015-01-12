@@ -8,7 +8,7 @@
             <fsloutputtype>NIFTI</fsloutputtype>
             
             <inputstreams>
-                <stream>epi</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>

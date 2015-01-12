@@ -3,7 +3,29 @@
     <tasklist>
         <currenttask domain='session' desc='listspikes' modality='MRI'>
             
-            <!-- INPUTS / OUTPUTS? -->
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.1</memoryBase>
+             </qsub> 
+             
+             <permanenceofoutput>3</permanenceofoutput>
+             
+             <inputstreams>
+                  <stream>realignment_parameter</stream>
+                  <stream>tsdiffana</stream>
+             </inputstreams>
+             
+             <outputstreams>
+                 <stream>listspikes</stream>
+             </outputstreams> 
+                 
+             <tmlimit desc='Threshold (in arbitrary units) from baseline after which we count points as spikes'>5</tmlimit>
+             <tmmode desc='Units in which the tmlimit is in [absolute, std, rstd]'>rstd</tmmode>
+             <tmbaseline desc='Baseline for the mean variance between volumes [zero, mean, median, smooth]'>mean</tmbaseline>
+             
+             <xyzlimit desc='Threshold in mm of movement'>0.5</xyzlimit>
+             <rotlimit_degrees desc='Threshold in degrees of movement'>0.3</rotlimit_degrees>
+             
             
         </currenttask>
     </tasklist>

@@ -14,7 +14,7 @@ end;
 clear aap
 
 % First work on default parameters
-if (~length(which(defaultparameters)))
+if ~exist(defaultparameters,'file')
     fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
 end;
 
@@ -24,8 +24,8 @@ aap.schema=xml_read(defaultparameters);
 
 
 % And now load up task list
-if (exist('tasklistxml','var'))
-    if (~length(which(tasklistxml)))
+if exist('tasklistxml','var')
+    if ~exist(tasklistxml,'file')
         aas_log(aap,true,sprintf('Cannot find file %s as specified in call to aarecipe',tasklistxml));
     end;
     Pref.ReadAttr=1;
@@ -52,6 +52,7 @@ if (exist('tasklistxml','var'))
     
     aap.tasklist.main.module = pruneEmptyBranches(aap.tasklist.main.module);
     
+    % These fields were only used for creating the branching structures
     aap.tasklist.main.module = rmfield(aap.tasklist.main.module, {'branchID', 'ignorebranches'});
     
     % Calculate task parameters and indices for modules
@@ -81,13 +82,12 @@ if (exist('tasklistxml','var'))
 end;
 
 % And copy in SPM defaults
-global defaults
 try
     aap.spm.defaults=spm_get_defaults;
 catch
-    
+    global defaults    
     if (~isstruct(defaults))
-        aas_log(aap,true,'You must launch SPM before running aa- try typing spm fmri;');
+        aas_log(aap,false,'SPM defaults has not been found global defaults will be used;');
     else
         aap.spm.defaults=defaults;
     end;
@@ -166,7 +166,7 @@ else
                         extrastages_added.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', 0), extrastages_added.module(noDependI));
                         
                         % Update the branchIDs in the current branch to account for the number in the previous branch number of branches in the previous branch
-                        numPrevBranches = length(unique([extrastages.module.branchID], 'legacy'));
+                        numPrevBranches = length(aa_unique([extrastages.module.branchID]));
                         extrastages_added.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID + numPrevBranches), extrastages_added.module);
                         
                         extrastages.module=[extrastages.module extrastages_added.module];
@@ -189,12 +189,12 @@ else
             
             % Get a list of all the branch IDs that exist in the output
             oBranchIDs = [outstages.module.branchID];
-            [oLabels oIndex] = unique(oBranchIDs, 'legacy');
+            [oLabels oIndex] = aa_unique(oBranchIDs);
             numOutBranches = length(oLabels);
             
             % Get a list of all the branch IDs that exist in the new stuff
             nBranchIDs = [extrastages.module.branchID];
-            [nLabels nIndex] = unique(nBranchIDs, 'legacy');
+            [nLabels nIndex] = aa_unique(nBranchIDs);
             numNewBranches = length(nLabels);
             
             % Number of stages in the new stuff
@@ -292,6 +292,16 @@ for stagenum=1:length(outstages.module)
             outstages.module(stagenum).(reqflds{reqfldsind})=[];
         end;
     end;
+end
+
+end
+
+function [label index] = aa_unique(vals)
+
+try
+    [label index] = unique(vals, 'legacy');
+catch
+    [label index] = unique(vals);
 end
 
 end

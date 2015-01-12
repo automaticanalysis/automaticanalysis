@@ -80,6 +80,8 @@ else
     session=[];
 end;
 
+subject = aas_mriname2subjname(subject);
+
 % find model that corresponds and add contrast to this if it exists
 for m = 1 : length(moduleindex)
     
@@ -87,9 +89,8 @@ for m = 1 : length(moduleindex)
     
     whichcontrast=[strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subject)];
     if (~any(whichcontrast))
-        emptycon=[];
+        emptycon=aap.tasksettings.(modulename)(mInd).contrasts(1); % The first one is usually empty, makes for a good template in case the structure changes
         emptycon.subject=subject;
-        emptycon.automatic_movesandmeans=automatic_movesandmeans;
         emptycon.con.format=format;
         emptycon.con.vector=vector;
         emptycon.con.session=session;

@@ -33,11 +33,13 @@ switch task
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
                 sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',C,CON(C).name));
             if exist(f{1},'file')
+                tstat = dlmread(strrep(f{1},'_overlay.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,CON(C).name));
                 
                 % Add images to Single subject report
                 aap = aas_report_add(aap,subj,'<table><tr>');
+                aap = aas_report_add(aap,subj,sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap,subj,'<td>');
                     aap=aas_report_addimage(aap,subj,f{i});
@@ -47,6 +49,7 @@ switch task
                 
                 % Add images to Study summary
                 aap = aas_report_add(aap,sprintf('C%02d',C),'<table><tr>');
+                aap = aas_report_add(aap,sprintf('C%02d',C),sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap,sprintf('C%02d',C),'<td>');
                     aap=aas_report_addimage(aap,sprintf('C%02d',C),f{i});
@@ -67,6 +70,7 @@ switch task
         cd(anadir);
         
         % Init
+        try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
         corr = aap.tasklist.currenttask.settings.threshold.correction;  % correction
         u0   = aap.tasklist.currenttask.settings.threshold.p;            % height threshold
         k   = aap.tasklist.currenttask.settings.threshold.extent;       % extent threshold {voxels}
@@ -76,11 +80,19 @@ switch task
         Outputs.sl = '';
         Outputs.Rend = '';
         
-        % Template
-        tmpfile = aap.directory_conventions.T1template;
-        if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
+            tmpfile = aas_getfiles_bystream(aap, subj,'structural');
+            if size(tmpfile,1) > 1 % in case of norm_write (first: native, second: normalised)
+                tmpfile = tmpfile(2,:); 
+            end
+        else  % Template
+            fprintf('Structural cannot be loaded! Template will be used...');
+            tmpfile = aap.directory_conventions.T1template;
+            if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+        end
+                
         Vtemplate=spm_vol(tmpfile);
-        [Ytemplate tXYZ]=spm_read_vols(Vtemplate);
+        [Ytemplate, tXYZ]=spm_read_vols(Vtemplate);
         tXYZ=[tXYZ;ones(1,size(tXYZ,2))];
         % work out threshold for template
         threshprop=0.10;
@@ -90,64 +102,87 @@ switch task
         thresh=bright3*(1-threshprop)+bright97*threshprop;
         Ytemplate=Ytemplate.*(Ytemplate>thresh);
         
-        % Collect first-level spms
-        cType = {aap.tasksettings.aamod_firstlevel_contrasts.contrasts(2).con.type};
-        con_dir = aas_getsubjpath(aap,subj,cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_contrast'));
-        con_dir=fullfile(con_dir,aap.directory_conventions.stats_singlesubj);
-        if cell_index(cType,'T')
-            copyfile(fullfile(con_dir,'spmT*'),anadir);
-        end
-        if cell_index(cType,'F')
-            copyfile(fullfile(con_dir,'spmF*'),anadir);
-        end
-        
         % Now get contrasts...
-        SPM=load(aas_getfiles_bystream(aap,subj,'firstlevel_spm')); SPM = SPM.SPM;
+        SPM=[]; 
+        fSPM = aas_getfiles_bystream(aap, subj,'firstlevel_spm');
+        load(fSPM);
+        
         for c = 1:numel(SPM.xCon)
             STAT = SPM.xCon(c).STAT;
             df = [SPM.xCon(c).eidf SPM.xX.erdf];
             XYZ  = SPM.xVol.XYZ;
             S    = SPM.xVol.S;   % Voxel
             R    = SPM.xVol.R;   % RESEL
-            V = spm_vol(SPM.xCon(c).Vspm.fname);
+            V = spm_vol(fullfile(anadir, SPM.xCon(c).Vspm.fname));
             Z = spm_get_data(SPM.xCon(c).Vspm,XYZ);
             dim = SPM.xCon(c).Vspm.dim;
             VspmSv   = cat(1,SPM.xCon(c).Vspm);
             n = 1; % No conjunction
-            
-            % Height threshold filtering
-            switch corr
-                case 'iTT'
-                    % TODO
-                case 'FWE'
-                    u = spm_uc(u0,df,STAT,R,n,S);
-                case 'FDR'
-                    u = spm_uc_FDR(u0,df,STAT,n,VspmSv,0);
-                case 'none'
-                    u = spm_u(u0^(1/n),df,STAT);
-            end
-            Q      = find(Z > u);
-            Z      = Z(:,Q);
-            XYZ    = XYZ(:,Q);
-            if isempty(Q)
-                fprintf('\n');
-                warning('No voxels survive height threshold u=%0.2g',u);
-                continue;
-            end
-            
-            % Extent threshold filtering
-            A     = spm_clusters(XYZ);
-            Q     = [];
-            for i = 1:max(A)
-                j = find(A == i);
-                if length(j) >= k; Q = [Q j]; end
-            end
-            Z     = Z(:,Q);
-            XYZ   = XYZ(:,Q);
-            if isempty(Q)
-                fprintf('\n');
-                warning('No voxels survive extent threshold k=%0.2g',k);
-                continue;
+
+            if doTFCE
+                job.spmmat = {fSPM};
+                job.mask = {fullfile(fileparts(fSPM),'mask.nii,1')};
+                job.conspec = struct( ...
+                    'titlestr','', ...
+                    'contrasts',c, ...
+                    'n_perm',5000, ...
+                    'vFWHM',0 ...
+                    );
+                job.openmp = 1;
+                cg_tfce_estimate(job);
+                iSPM = SPM;
+                iSPM.title = '';
+                iSPM.Ic = c;
+                iSPM.stattype = 'TFCE';
+                iSPM.thresDesc = corr;
+                iSPM.u = u0;
+                iSPM.k = k;
+                [SPM, xSPM] = cg_get_tfce_results(iSPM);
+                Z = xSPM.Z;
+                XYZ = xSPM.XYZ;
+                if isempty(Z)
+                    fprintf('\n');
+                    warning('No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k);
+                    continue;
+                end
+            else                
+                % Height threshold filtering
+                switch corr
+                    case 'iTT'
+                        % TODO
+                        [Z, XYZ, th] = spm_uc_iTT(Z,XYZ,u0,1);
+                    case 'FWE'
+                        u = spm_uc(u0,df,STAT,R,n,S);
+                    case 'FDR'
+                        u = spm_uc_FDR(u0,df,STAT,n,VspmSv,0);
+                    case 'none'
+                        u = spm_u(u0^(1/n),df,STAT);
+                end
+                Q      = find(Z > u);
+                Z      = Z(:,Q);
+                XYZ    = XYZ(:,Q);
+                if isempty(Q)
+                    fprintf('\n');
+                    warning('No voxels survive height threshold u=%0.2g',u);
+                    continue;
+                end
+                
+                % Extent threshold filtering
+                A     = spm_clusters(XYZ);
+                Q     = [];
+                for i = 1:max(A)
+                    j = find(A == i);
+                    if length(j) >= k;
+                        Q = [Q j];
+                    end
+                end
+                Z     = Z(:,Q);
+                XYZ   = XYZ(:,Q);
+                if isempty(Q)
+                    fprintf('\n');
+                    warning('No voxels survive extent threshold k=%0.2g',k);
+                    continue;
+                end
             end
             
             % Reconstruct
@@ -155,7 +190,7 @@ switch task
             indx = sub2ind(dim,XYZ(1,:)',XYZ(2,:)',XYZ(3,:)');
             Yepi(indx) = Z;
             V.fname = strrep(V.fname,'spm','thr');
-            V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(findstr(V.descrip,'}')+1:end));
+            V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
             spm_write_vol(V,Yepi);
             
             % Resize
@@ -170,18 +205,13 @@ switch task
             end
             iYepi = img_rot90(iYepi);
             iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
-            [img cm v] = map_overlay(iYtemplate,iYepi,1-tra);
-            mon = tr_RGBtoMontage(img);
-            f = figure;
-            montage(mon);
-            colormap(cm);
-            cb = colorbar;
-            yT = [walley(v) find(v<0, 1, 'last' ) find(v>0, 1 ) peak(v)];
-            set(cb,'YTick',yT,'YTickLabel',v(yT));
+            [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);
+            mon = tr_3Dto2D(img(:,:,:,1));
+            mon(:,:,2) = tr_3Dto2D(img(:,:,:,2));
+            mon(:,:,3) = tr_3Dto2D(img(:,:,:,3));
             fnsl = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',c,SPM.xCon(c).name));
-            print(f,'-djpeg','-r150',fnsl);
-            
-            close(f);
+            imwrite(mon,fnsl);
+            dlmwrite(strrep(fnsl,'_overlay.jpg','.txt'),[min(v(v~=0)), max(v)]);
             
             % Render
             if numel(Z)  < 2 % Render fails with only one active voxel
@@ -194,15 +224,18 @@ switch task
             dat.dim = dim;
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-            spm_render(dat,0.5,rendfile);
             fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
-            saveas(spm_figure('GetWin','Graphics'),fn3d);
-            img = imread(fn3d); img = img(size(img,1)/2:end,:,:); imwrite(img,fn3d);
+            img = spm_render_aa(dat,0.5,rendfile);
+            mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
+            mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
+            mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
+            mon = imresize(mon(1:size(mon,2)*2/3,:,:),0.5);
+            imwrite(mon,fn3d);
             
             % Outputs
-            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr,fullfile(anadir,V.fname)); end
-            if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl,fnsl); end
-            if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend,fn3d); end
+            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr, fullfile(anadir,V.fname)); end
+            if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
+            if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             
         end
         cd (cwd);

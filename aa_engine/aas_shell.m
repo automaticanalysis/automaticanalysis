@@ -7,13 +7,24 @@ if (~exist('quiet','var'))
     quiet=false;
 end;
 
-[s,wshell]=system('echo $0');
-wshell=deblank(wshell);
-if (~isempty(strfind(wshell,'bash')))
-    prefix='export TERM=dumb;'; % stops colours
-else
-    prefix='setenv TERM dumb;'; % stops colours
+% Cache this as it is remarkably slow
+[hit prefix]=aas_cache_get([],'shellprefix');
+if ~hit
+    [s,wshell]=system('echo $0');
+    pos=find(wshell=='/');
+    if ~isempty(pos)
+        wshell=wshell(pos(end)+1:end);
+    end;
+    wshell=strtrim(wshell);
+    if (strcmp(wshell,'bash') || strcmp(wshell,'sh'))
+        prefix='export TERM=dumb;'; % stops colours
+    else
+        prefix='setenv TERM dumb;'; % stops colours
+    end;
+    aas_cache_put([],'shellprefix',prefix);
 end;
+
+
 
 [s,w]=system([prefix cmd]);
 if (~quiet)
@@ -25,7 +36,7 @@ end;
 if (s && ~quiet)
     [s,wenv]=system('/usr/bin/env');
     aap=[];
-    aas_log(aap,false,sprintf('***LINUX ERROR FROM SHELL "%s"\n%s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',wshell,w,[prefix cmd],wenv));
+    aas_log(aap,false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',w,[prefix cmd],wenv));
 end;
 % strip off tcsh: errors at start (see http://www.mathworks.com/support/solutions/data/1-18DNL.html?solution=1-18DNL)
 [l r]=strtok(w,10);

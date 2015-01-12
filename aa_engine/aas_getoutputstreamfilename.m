@@ -4,6 +4,7 @@
 function [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin)
 
 streamname=varargin{end};
+if isstruct(streamname), streamname = streamname.CONTENT; end
 
 streamname=aas_remapstreamname(aap,streamname,true);
 

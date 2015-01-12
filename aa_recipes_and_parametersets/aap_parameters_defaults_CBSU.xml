@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="aap_parameters_defaults.xml" parse="xml"/>
+    <local>
+        <directory_conventions>
+            <fieldmapsdirname desc='Subdirectory in subject dir for fieldmaps' ui='dir'>fieldmaps</fieldmapsdirname>
+            <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
+            <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
+            <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
+            <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
+            <rawdatadir desc='Subdirectories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
+            <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu:/megdata/camcan/camcan/</rawmegdatadir>
+            <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
+            <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>1</subject_directory_format>
+            <subject_filenames_format desc='Format of filenames within session directory' ui='optionlist' options='manual|CBU060500|S01'>1</subject_filenames_format>
+            <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
+            <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
+            <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
+            <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
+            <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
+            <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>CBU%06d*</subjectoutputformat>
+            <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
+            <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
+            <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
+            <protocol_structural ui='text'>MPRAGE</protocol_structural>
+            <protocol_t2 ui='text'>t2_spc</protocol_t2>
+            <dicomfilter ui='text'>*.dcm</dicomfilter>
+            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
+            <spmdir desc="Path(s) to SPM" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
+			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
+            <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
+            <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
+            <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/latest/x86_64/</freesurferdir>        
+            <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
+            <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh</freesurferenvironment>
+            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
+            <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
+            <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
+            <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
+            <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
+            <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
+        </directory_conventions>
+        <options>
+			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
+            <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
+			<diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
+        </options>
+    </local>
+</aap>

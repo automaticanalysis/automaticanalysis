@@ -1,4 +1,4 @@
-function [aap, resp]=aamod_dartel_normmni(aap, task)
+function [aap, resp]=aamod_dartel_normmni(aap, task, subj)
 %AAMOD_DARTEL_NORMMNISEGMENTED_MODULATED Normalise grey/white segmentations using DARTEL.
 %
 % After DARTEL template has been created, write out normalized
@@ -21,28 +21,49 @@ resp='';
 
 % possible tasks 'doit','report','checkrequirements'
 switch task
-    case 'domain'
-        resp='subject';
     case 'report'
-        resp='Write smoothed normalised segmented images in MNI space for DARTEL.'
+        resp='Write smoothed normalised segmented images in MNI space for DARTEL.';
     case 'doit'
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
-
-        % initialize images
-        allimages = {};
-
-        for subjind = 1:length(aap.acq_details.subjects)
-
-            % flow fields..
-            job.data.subj(subjind).flowfield{1} = aas_getfiles_bystream(aap, subjind, 'dartel_flowfield');
-
-            % images
-            imgs1 = aas_getfiles_bystream(aap, subjind, 'dartelimported_grey');
-            imgs2 = aas_getfiles_bystream(aap, subjind, 'dartelimported_white');
-
-            job.data.subj(subjind).images = cellstr(strvcat(imgs1, imgs2));
-        end % going through subjects
+        [pth,nam,ext] = fileparts(template);
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),[nam ext]),'file')
+            copyfile(template,fullfile(aas_getsubjpath(aap,subj),[nam ext]));
+        end
+        template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
+ 
+        % affine xfm
+        streams=aas_getstreams(aap,'in');
+        xfmi = cell_index(streams,'dartel_templatetomni_xfm');
+        if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
+            xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
+            MMt = spm_get_space(template);
+            mni.code = 'MNI152';
+            mni.affine = xfm*MMt;
+            [pth,nam,ext] = fileparts(template);
+            save(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']),'mni');            
+        end
+        
+        % flow fields..
+        job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
+        
+        % images
+        imgs = '';
+        streams=aap.tasklist.currenttask.outputstreams.stream;
+        for streamind=1:length(streams)
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip
+            if cell_index(aas_getstreams(aap,'in'),streams{streamind})
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
+            else  % renamed stream
+                streamname = strrep(streams{streamind},'normalised_','');
+                ind = cell_index(aas_getstreams(aap,'in'),streamname);
+                if ~ind, continue; end % for dartel_templatetomni_xfm
+                imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
+                    aap.tasklist.currenttask.inputstreams.stream{ind}));
+            end
+        end
+        job.data.subj.images = cellstr(imgs);
 
         % set up job, and run
         job.template{1} = template;
@@ -55,19 +76,22 @@ switch task
         spm_dartel_norm_fun(job);
 
         % describe outputs (differ depending on modulation)
-        if job.preserve==1
-            prefix = 'smw';
-        else
-            prefix = 'sw';
+        prefix = 'w';
+        if aap.tasklist.currenttask.settings.preserve, prefix = ['m' prefix]; end
+        if aap.tasklist.currenttask.settings.fwhm, prefix = ['s' prefix]; end
+        
+        for ind=1:length(job.data.subj.images)
+            [pth, nm, ext] = fileparts(job.data.subj.images{ind});
+            img = fullfile(pth, [prefix nm ext]);
+            aap = aas_desc_outputs(aap, subj, streams{ind}, img);
         end
-
-        for subjind = 1:length(aap.acq_details.subjects)
-            [pth, nm, ext] = fileparts(job.data.subj(subjind).images{1});
-            greyimg = fullfile(pth, [prefix nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'normalised_grey', greyimg);
-
-            [pth, nm, ext] = fileparts(job.data.subj(subjind).images{2});
-            whiteimg = fullfile(pth, [prefix nm ext]);
-            aap = aas_desc_outputs(aap, subjind, 'normalised_white', whiteimg);
+        if ~exist('xfm','var')
+            MMt = spm_get_space(template);
+            MMm = load(fullfile(aas_getsubjpath(aap,subj),[nam '_2mni.mat']));
+            MMm = MMm.mni.affine;
+            xfm = MMm/MMt;
         end
+        save(fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm'),'xfm')
+        aap = aas_desc_outputs(aap, subj, 'dartel_templatetomni_xfm',...
+            fullfile(aas_getsubjpath(aap,subj),'dartel_templatetomni_xfm.mat'));
 end

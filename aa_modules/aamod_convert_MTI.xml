@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_convert_specialseries' desc='Converting MTI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>dicom_MTI</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>MTI</stream>
+                <stream>MTI_dicom_header</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

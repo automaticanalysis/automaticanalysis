@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_dartel_normmni" domain='subject' desc='SPM dartel write normalised structural to MNI space' modality='MRI'>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <fwhm desc='FWHM for smoothing DARTEL-normalized images'>0.5</fwhm>
+            <vox desc='Voxel size for normalized images'>2</vox>
+			<preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>0</preserve> 
+            
+			<inputstreams>
+				<stream>structural</stream>
+				<stream>dartel_template</stream>
+				<stream>dartel_flowfield</stream>
+                <stream isessential="0">dartel_templatetomni_xfm</stream>                  
+			</inputstreams>
+			
+			<outputstreams>
+				<stream>structural</stream>
+                <stream>dartel_templatetomni_xfm</stream>  
+			</outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

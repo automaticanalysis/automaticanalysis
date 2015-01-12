@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='Coregister structural image to FA space' modality='MRI'>      
+                        
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>dti_FA</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>diagnostic_aamod_coreg_structural2fa</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+   

@@ -28,7 +28,7 @@ switch task
             K.RT =aap.tasklist.currenttask.settings.TR;
         else
             % Get TR from DICOM header
-            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_header'));
+            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
             K.RT = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         end
         

@@ -16,20 +16,28 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '.jpg']),'file')
-            fsl_diag(aap,subj);
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+        if isempty(fdiag)
+            diag(aap,subj);
+            fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
             aap = aas_report_add(aap,subj,'<table><tr><td>');
-            aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
+            imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
+            aap=aas_report_addimage(aap,subj,imgpath);
+            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
             aap = aas_report_add(aap,subj,'</td></tr></table>');
-        end       
+        end
     case 'doit'
-
+        
+        
+        settings = aap.tasklist.currenttask.settings;
+        
         defs =aap.spm.defaults.normalise;
         defs.estimate.weight = '';
-        
+       
         % Template image; here template image not skull stripped
         % [AVG] Changed to allow specification of any T1 template, does not
         % need to be in the SPM folder any more...
@@ -45,7 +53,14 @@ switch task
         
         %% Get structural
         % [AVG] Modified the way we get the structural, to be more aa4-like
-        Simg = aas_getfiles_bystream(aap,subj,'structural');
+        inStream = aap.tasklist.currenttask.inputstreams(1).stream{1};
+
+        try 
+            Simg = aas_getfiles_bystream(aap,subj,inStream);
+        catch
+            Simg = aas_getfiles_bystream(aap,subj,1,inStream);
+        end
+        
         % Cheap and cheerful way of ensuring only one file is considered!
         if size(Simg,1) > 1
             Simg = deblank(Simg(1,:));
@@ -58,6 +73,18 @@ switch task
         
         % Set the mask for subject to empty by default
         objMask = ''; % object mask
+        
+        % Check if there is an affine starting estimate for this subject
+        allSubj = strcmp({settings.subject(:).name}, '*');
+        thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).mriname);
+        
+        if any(allSubj)
+            subjectOptions = settings.subject(allSubj);
+        elseif any(thisSubj)
+            subjectOptions = settings.subject(thisSubj);
+        else
+            subjectOptions = settings.subject(1);
+        end   
         
         % Because we are going reslice later (with undistort_reslice)
         % We don't reslice anything except the image to be normalized
@@ -90,42 +117,71 @@ switch task
                 aas_log(aap,0,sprintf('Found more than one attenuated structural so using first:\n%s',Simg));
             end
             
-            estopts.regtype='mni';    % turn on affine again
+%             estopts.regtype='mni';    % turn on affine again
+            
+            % [TA] SPM12 compatibility
+            try estopts = aap.spm.defaults.preproc; catch, estopts = aap.spm.defaults.old.preproc; end
+            if iscell(estopts.tpm)
+                estopts.tpm = char(estopts.tpm);
+            end
+            
+            if isfield(aap.tasklist.currenttask.settings,'estopts')
+                fields = fieldnames(aap.tasklist.currenttask.settings.estopts);
+                for f = 1:numel(fields)
+                    if ~isempty(aap.tasklist.currenttask.settings.estopts.(fields{f}))
+                        estopts.(fields{f}) = aap.tasklist.currenttask.settings.estopts.(fields{f});
+                    end
+                end
+            end
             
             % Load header of image to be normalized
             V=spm_vol(mSimg);
             
             % Now adjust parameters according to starting offset parameters
             % as requested in task settings
-            StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
+            startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
             ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
-            fnames=fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate);
-            for fieldind=1:length(fnames)
-                % Which element in StartingParameters does this refer to?
-                whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
-                % Generate a helpful error if it isn't recognised
-                if (isempty(whichitem))
-                    err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
-                    err=[err sprintf('%s\t',ParameterFields)];
-                    aas_log(aap,true,err);
-                end
-                % Put this in its place
-                StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
+
+            if ~isempty(subjectOptions.affineStartingEstimate)
+                aSE = subjectOptions.affineStartingEstimate;
+            elseif ~isempty(aap.tasklist.currenttask.settings.affinestartingestimate)
+                aSE = aap.tasklist.currenttask.settings.affinestartingestimate;
+                aas_log(aap, 0, 'Warning: the option <affinestartinestimate> will soon be removed from aamod_norm_noss. Please use the <subject> option to apply affine starting estimates');
+            else
+                aSE = [];
             end
             
+            if isstruct(aSE)
+                fnames = fieldnames(aSE);
+                for fieldind=1:length(fnames)
+                    % Which element in StartingParameters does this refer to?
+                    whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
+                    % Generate a helpful error if it isn't recognised
+                    if (isempty(whichitem))
+                        err=sprintf('Unexpected field %s in header file aamod_norm_noss.xml - expected one of ',fnames{fieldind});
+                        err=[err sprintf('%s\t',ParameterFields)];
+                        aas_log(aap,true,err);
+                    end
+                    % Put this in its place
+                    startingParameters(whichitem)=aSE.(fnames{fieldind});
+                end
+            else
+               startingParameters = aSE; 
+            end
+
             %[AVG] Save original V.mat parameters
             oldMAT = V.mat;
             
             % Adjust starting orientation of object image as requested
-            StartingAffine=spm_matrix(StartingParameters);
-            V.mat=StartingAffine*V.mat;
+            startingAffine=spm_matrix(startingParameters);
+            V.mat=startingAffine*V.mat;
             
             % Run normalization
             out = spm_preproc(V,estopts);
             
             % Adjust output Affine to reflect fiddling of starting
             % orientation of object image
-            out.Affine=out.Affine*StartingAffine;
+            out.Affine=out.Affine*startingAffine;
             
             % [AVG] Instead we set the out.image parameters to our original
             % structural image!
@@ -164,14 +220,17 @@ switch task
             aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
             
             % [AVG] this output is completely different from .xml
-            %{
+            % [RC] I like having separate streams, as it removes the need
+            % for later file filtering, which is package dependent
+            % So lets support both...
             tiss={'grey','white','csf'};
+            [mSpth mSnme mSext]=aas_fileparts(mSimg);
             for tissind=1:3
-                aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,mSimg)));
-                aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,mSimg)));
+                aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,[mSnme mSext])));
+                aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,[mSnme mSext])));
             end
-            %}
-            % [AVG] so instead, we group it all into segmentation stream
+            
+            % [AVG] also group it all into segmentation stream
             outSeg = '';
             d = 0;
             while ~isnan(d)
@@ -184,6 +243,10 @@ switch task
                 end
             end
             aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
+            
+            % [TA] replace the structural with the bias-corrected one
+            Simg = fullfile(Spth,['mm' Sfn Sext]);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix 'mm' Sfn Sext]);
         else
             % Make the default normalization parameters file name
             % Turn off template weighting
@@ -196,97 +259,25 @@ switch task
             % SPM2 normalization doesn't generate the inverse transformation
             %             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             % aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
+            Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix Sfn Sext]);
         end
         
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
-        % [AVG] It is probably best to save the 2ce bias-corrected image
+        % [AVG] It is probably best to save the 2nd bias-corrected image
         
         % [CW] But we don't have a bias corrected image if we didn't use
         % segmentation.
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            aap=aas_desc_outputs(aap,subj,'structural', strvcat( ...
-                fullfile(Spth,['mm' Sfn Sext]), ...
-                fullfile(Spth,['w' Sfn Sext])));
-        else
-            aap=aas_desc_outputs(aap,subj,'structural', fullfile(Spth,['w' Sfn Sext]));
-        end
-        %{
-        % Now save graphical check
-        try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        % added graphical check for when segment is used [djm 20/01/06]
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            myvols=spm_vol(char(aap.directory_conventions.T1template, ... % template T1
-                Simg, ... % native T1
-                fullfile(Spth,strcat('w',Simg)), ... % normalised T1
-                fullfile(Spth,strcat('c1m',Simg)))); % native grey matter segmentation
-            spm_check_registration(myvols)
-            
-            ann1=annotation('textbox',[.05 .96 .9 .03],'HorizontalAlignment','center','Color','r','String',strcat('Subject:...',Simg,',  processed on:...',date));
-            ann2=annotation('textbox',[.1 .891 .3 .025],'HorizontalAlignment','center','Color','r','String','T1 template');
-            ann3=annotation('textbox',[.6 .89T1file1 .3 .025],'HorizontalAlignment','center','Color','r','String','Native T1');
-            ann4=annotation('textbox',[.1 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Normalised T1');
-            ann5=annotation('textbox',[.6 .413 .3 .025],'HorizontalAlignment','center','Color','r','String','Native segmented grey matter');
-            print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-        end
-        print('-djpeg',fullfile(subj_dir,'diagnostic_aamod_norm_noss'));
-        if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
-            delete(ann1); delete(ann2); delete(ann3);delete(ann4);delete(ann5);
-        end
-        %}
+
+        % convert structural (bias-corrected) image into int16 (for FSL diag)
+        V = spm_vol(Sout); Y = spm_read_vols(V);
+        V.dt = [spm_type('int16') spm_platform('bigend')];
+        spm_write_vol(V,Y);
         
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-         try
-            % This will only work for 1-7 segmentations
-            OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
-                [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
-            
-            %% Draw native template
-            spm_check_registration(fullfile(Spth,['mm' Sfn Sext]))
-            % Add normalised segmentations...
-            for r = 1:(size(outSeg,1)/2)
-                spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('c%d%s',r, ['m' Sfn Sext])), OVERcolours{r})
-            end
-            %% Diagnostic VIDEO of segmentations
-            aas_checkreg_avi(aap, subj, 2)
-            
-            spm_orthviews('reposition', [0 0 0])
-            
-			try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            print('-djpeg','-r75',...
-                fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
-            
-            %% Draw warped template
-            spm_check_registration(aap.directory_conventions.T1template)
-            % Add normalised segmentations...
-            for r = 1:(size(outSeg,1)/2)
-                spm_orthviews('addcolouredimage',1,fullfile(Spth,sprintf('wc%d%s',r,['m' Sfn Sext])), OVERcolours{r})
-            end
-            spm_orthviews('reposition', [0 0 0])
-            
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            print('-djpeg','-r75',...
-                fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
-        catch
-            fprintf('\n\tFailed display diagnostic image - Displaying template & segmentation 1');
-            try
-                %% Draw native template
-                spm_check_registration(char({fullfile(Spth,sprintf('c1%s',['m' Sfn Sext])); fullfile(Spth,['mm' Sfn Sext])}))
-                
-                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-                print('-djpeg','-r75',...
-                    fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N.jpg']));
-                
-                %% Draw warped template
-                spm_check_registration(char({fullfile(Spth,sprintf('wc1%s',['m' Sfn Sext])); aap.directory_conventions.T1template}))
-                
-                try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-                set(gcf,'PaperPositionMode','auto')
-                print('-djpeg','-r75',...
-                    fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W.jpg']));
-            catch
-                fprintf('\n\tFailed display backup diagnostic image!');
-            end
+        aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
+
+        if settings.diagnostic && strcmp(aap.options.wheretoprocess,'localsingle')
+            diag(aap,subj);
         end
         
     case 'checkrequirements'
@@ -315,20 +306,63 @@ else
 end
 end
 %------------------------------------------------------------------------
-function fsl_diag(aap,i) % [TA]
-% Obtain FSL T1 template
-tP = fullfile(getenv('FSLDIR'),'data','standard','MNI152_T1_2mm_brain.nii.gz');
+function diag(aap,subj) % [TA]
+% SPM, AA
+Simg = aas_getfiles_bystream(aap,subj,'structural','output'); Simg = Simg(1,:);
+localpath = aas_getsubjpath(aap,subj);
+outSegAll = aas_getfiles_bystream(aap,subj,'segmentation','output');
 
-% Obtain normalized GM segmentation
-subj_dir=aas_getsubjpath(aap,i);
-segdir=fullfile(subj_dir,aap.directory_conventions.structdirname);
-sP = dir( fullfile(segdir,['wc1' aap.acq_details.subjects(i).structuralfn '*.nii']));
-sP = fullfile(segdir,sP(1).name);
+outSeg = outSegAll([1 3 5],:);
+outNSeg = outSegAll([2 4 6],:);
 
-% Create FSL-like overview
-iP = fullfile(subj_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name]);
-system(sprintf('slices %s %s -s 2 -o %s.gif',tP,sP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
+OVERcolours = {[1 0 0], [0 1 0], [0 0 1]};
+
+%% Draw native template
+spm_check_registration(Simg)
+% Add normalised segmentations...
+for r = 1:size(outSeg,1)
+    spm_orthviews('addcolouredimage',1,deblank(outSeg(r,:)), OVERcolours{r});
+end
+
+spm_orthviews('reposition', [0 0 0])
+
+try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
+
+%% Draw warped template
+tmpfile = fullfile(aap.directory_conventions.fsldir,'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
+gunzip(tmpfile,localpath); tmpfile = fullfile(localpath,'MNI152_T1_1mm.nii');
+
+spm_check_registration(tmpfile)
+% Add normalised segmentations...
+for r = 1:size(outNSeg,1)
+    spm_orthviews('addcolouredimage',1,outNSeg(r,:), OVERcolours{r})
+end
+spm_orthviews('reposition', [0 0 0])
+
+try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W_blob.jpg']));
+
+close(1); clear global st;
+
+%% Another diagnostic image, looking at how well the segmentation worked...
+Pthresh = 0.95;
+
+ROIdata = roi2hist(Simg, outSeg, Pthresh);
+
+[h, pv, ci, stats] = ttest2(ROIdata{2}, ROIdata{1});
+
+title(sprintf('GM vs WM... T(%d) = %0.2f, p = %1.4f', stats.df, stats.tstat, pv))
+
+print('-djpeg','-r150',...
+    fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
+try close(2); catch; end
+
+%% Contours VIDEO of segmentations
+aas_checkreg(aap,subj,outSeg(1,:),Simg)
+aas_checkreg(aap,subj,outNSeg(1,:),tmpfile)
+
+delete(tmpfile);
 end

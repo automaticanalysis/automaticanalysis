@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use LoAd to segment the brain' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>BETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+                <stream>segmentation</stream>
+                <stream>BETmask</stream>
+            </outputstreams>
+            
+            <diagnostic>0</diagnostic>
+            
+            <structural desc='Which structural do we use, if there is more than one?'
+            >1</structural>
+            
+            <brainMask desc='Do we make a brain mask?'
+            >0</brainMask>
+            
+            </currenttask>
+    </tasklist>
+</aap>

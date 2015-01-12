@@ -1,11 +1,15 @@
-function [nme]=aas_getsubjname(aap,i)
+function nme=aas_getsubjname(aap,i)
 
 nme='';
-if (length(aap.acq_details.subjects(i).megname)>0)
+if ~isempty(aap.acq_details.subjects(i).megname)
     nme=[nme 'MEG:' aap.acq_details.subjects(i).megname ' '];
 end;
-if (length(aap.acq_details.subjects(i).mriname)>0)
-    nme=[nme 'MRI:' aap.acq_details.subjects(i).mriname];
+if ~isempty(aap.acq_details.subjects(i).mriname)
+    if isnumeric(aap.acq_details.subjects(i).mriname)
+        nme=[nme 'MRI:' num2str(aap.acq_details.subjects(i).mriname)];    
+    else
+        nme=[nme 'MRI:' aap.acq_details.subjects(i).mriname];
+    end
 end;
 if isempty(nme)
     nme='(unknown)';

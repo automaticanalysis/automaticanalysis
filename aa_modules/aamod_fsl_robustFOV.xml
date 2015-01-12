@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use the FSL robustFOV tool' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed 
+            Can add multiple, but then only first one will be used for BETting, but operation will be applied on both -->
+            <structural>1</structural>
+            
+            <FOVsize desc='Size in millimeters from base to top of brain (larger to remove less)'
+            >150</FOVsize>
+            
+            <!-- Diagnostic videos? -->
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

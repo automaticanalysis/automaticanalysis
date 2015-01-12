@@ -33,13 +33,28 @@ switch task
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
             
-			% Custom plotting [TA]
-			mv = plot_parameters(aap,subj,sess,~exist(fn,'file'));
-
-            aap.report.mvmax(subj,sess,:)=max(mv);           
-%             mvmean(sess,:)=mean(mv);            
-%             mvstd(sess,:)=std(mv);
-%             mvall=[mvall;mv];            
+            par = cellstr(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'));
+            parind = cell_index(par,'.txt');
+            mv = load(par{parind});
+            
+            if ~exist(fn,'file')
+                if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
+                    mw_mfp_show(aas_getsesspath(aap,subj,sess));
+                    movefile(...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
+                else
+                    aas_realign_graph(par{parind});
+                    print('-djpeg','-r150','-noui',...
+                        fullfile(aas_getsubjpath(aap,subj),...
+                        ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
+                        );
+                end
+            end
+            
+            aap.report.mvmax(subj,sess,:)=max(mv);
+            %             mvmean(sess,:)=mean(mv);
+            %             mvstd(sess,:)=std(mv);
+            %             mvall=[mvall;mv];
             aap=aas_report_addimage(aap,subj,fn);
             
             aap = aas_report_add(aap,subj,'<h4>Movement maximums</h4>');
@@ -59,18 +74,21 @@ switch task
         aap = aas_report_add(aap,subj,sprintf('<td>%8.3f</td>',varcomp));
         aap = aas_report_add(aap,subj,'</tr></table>');
         
-        aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-    
+        if exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'),'file')
+            aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
+        end
+        
         % Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
             for sess=1:nsess
-                mvmax = squeeze(aap.report.mvmax(:,sess,:));
-                boxplot(mvmax,'label',meas);
-                boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
-                print('-djpeg','-r75',fn);
-                close(gcf);
+
+                mvmax = squeeze(aap.report.mvmax(:,sess,:));
+                f = figure; boxplot(mvmax,'label',meas);
+                boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
+                print('-djpeg','-r150',fn);
+                close(f);
                 
                 aap = aas_report_add(aap,'moco','<td>');
                 aap = aas_report_add(aap,'moco',['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
@@ -79,7 +97,7 @@ switch task
                 for ibp = 1:numel(meas)
                     bp = boxValPlot(ibp,:);
                     subjs = ' None';
-                    if bp.numFiniteHiOutliers                        
+                    if bp.numFiniteHiOutliers
                         subjs = [' ' num2str(sort(cell2mat(bp.outlierrows)'))];
                     end
                     aap = aas_report_add(aap,'moco',sprintf('<h4>Outlier(s) in %s:%s</h4>',meas{ibp},subjs));
@@ -97,12 +115,12 @@ switch task
         % Get the options from the XML!
         jobs{1}.spatial{1}.realignunwarp.eoptions = ...
             aap.tasklist.currenttask.settings.eoptions;
-        jobs{1}.spatial{1}.realignunwarp.uweptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uweoptions = ...
             aap.tasklist.currenttask.settings.uweoptions;
-        jobs{1}.spatial{1}.realignunwarp.uwrptions = ...
+        jobs{1}.spatial{1}.realignunwarp.uwroptions = ...
             aap.tasklist.currenttask.settings.uwroptions;
         
-        % Need to place this string inside a cell?
+        % Need to place this string inside a cell
         jobs{1}.spatial{1}.realignunwarp.eoptions.weight = ...
             {jobs{1}.spatial{1}.realignunwarp.eoptions.weight };
         
@@ -139,12 +157,12 @@ switch task
         
         %% Run the job!
         
+        spm_jobman('initcfg');
         spm_jobman('run',jobs);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-        for sess = aap.acq_details.selected_sessions
-            plot_parameters(aap,subj,sess,true);
+        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
+            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
         end
         
         %% Describe outputs
@@ -159,6 +177,27 @@ switch task
             % Get the realignment parameters...
             fn=dir(fullfile(pth,'rp_*.txt'));
             outpars = fullfile(pth,fn(1).name);
+            
+            % MFP
+            if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
+                mw_mfp(outpars);
+                fn=dir(fullfile(pth,'mw_mfp_*.txt'));
+                outpars = fullfile(pth,fn(1).name);
+                if strcmp(aap.options.wheretoprocess,'localsingle')
+                    movefile(...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),...
+                        fullfile(aas_getsubjpath(aap,subj),...
+                        ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
+                        );
+                end
+            else
+                aas_realign_graph(outpars);
+                print('-djpeg','-r150','-noui',...
+                    fullfile(aas_getsubjpath(aap,subj),...
+                    ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
+                    );
+            end
+            
             fn=dir(fullfile(pth,'*uw.mat'));
             outpars = strvcat(outpars, fullfile(pth,fn(1).name));
             aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter',outpars);
@@ -166,7 +205,7 @@ switch task
             if sess==1
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
-                aap = aas_desc_outputs(aap,subj,1,'meanepi',fullfile(pth,fn(1).name));
+                aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
             end
         end
         
@@ -174,73 +213,5 @@ switch task
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end
-end
-
-function RealPar = plot_parameters(aap,subj,sess,toDisp) % [TA]
-% Based on SPM Realign
-
-% Threshold for excessive movement
-QA_TRANSL = 2;
-QA_ROT = 8;
-
-P = spm_vol(aas_getimages_bystream(aap,subj,sess,'epi'));
-if length(P)<2, return; end;
-Params = zeros(numel(P),12);
-for i=1:numel(P),
-    Params(i,:) = spm_imatrix(P(i).mat/P(1).mat);
-end
-RealPar = horzcat(Params(:,1:3),Params(:,4:6)*180/pi);
-if toDisp
-    if (isempty(spm_figure('FindWin')))
-        spm('fmri');
-    end;
-    fg=spm_figure('FindWin','Graphics');
-    if ~isempty(fg)
-        % display results
-        %-------------------------------------------------------------------
-        spm_figure('Clear','Graphics');
-        
-		% translation over time series
-        ax=axes('Position',[0.1 0.65 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-        plot(Params(:,1:3),'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax) 
-        plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax) 
-        s = ['x translation';'y translation';'z translation'];
-        legend(ax, s, 0, 'Location','NorthWest')
-        set(get(ax,'Title'),'String','translation','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','mm');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
-        
-		% rotation over time series
-        ax=axes('Position',[0.1 0.35 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-        plot(Params(:,4:6)*180/pi,'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_ROT*ones(1,size(Params,1)),'k','Parent',ax) 
-        plot(1:size(Params,1),QA_ROT*ones(1,size(Params,1)),'k','Parent',ax) 
-        s = ['pitch';'roll ';'yaw  '];
-        legend(ax, s, 0, 'Location','NorthWest')
-        set(get(ax,'Title'),'String','rotation','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','degrees');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_ROT+0.5),YL(1)) max((QA_ROT+0.5),YL(2))]);
-
-        % scan-to-scan displacement over time series
-        ax=axes('Position',[0.1 0.05 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');
-		% scale rotation to translation based on the ratio of thresholds (see above)
-        plot(diff(sum(abs(horzcat(RealPar(:,1:3),RealPar(:,4:6)/(QA_ROT/QA_TRANSL))),2)),'Parent',ax); hold on;
-        plot(1:size(Params,1),-QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
-        plot(1:size(Params,1),QA_TRANSL*ones(1,size(Params,1)),'k','Parent',ax)
-        set(get(ax,'Title'),'String','Scan-to-scan displacement','FontSize',16,'FontWeight','Bold');
-        set(get(ax,'Xlabel'),'String','image');
-        set(get(ax,'Ylabel'),'String','a.u. (mm + scaled degrees)');
-        YL = get(ax,'YLim');
-        ylim([min(-(QA_TRANSL+0.5),YL(1)) max((QA_TRANSL+0.5),YL(2))]);
-        
-        print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),...
-            ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']));
-    end
 end
 end

@@ -13,8 +13,6 @@ for depind=1:length(deps)
     sourcestagenumber=inputstream.sourcenumber;
     ismodified=inputstream.ismodified;
     
-%     fprintf('%s %s %s\n', streamname, sourcestagenumber, ismodified);
-    
     % Only take part of stream after last period
     pos=find(streamname=='.');
     if (~isempty(pos))
@@ -42,7 +40,7 @@ for depind=1:length(deps)
         % First we need to get the previous aap file
         remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
         if (~doneremotefetch)
-            aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn);
+            aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache,'verbose', 0);
         else
             aas_log(aap,false,sprintf('Not repeating earlier fetch of remote data to %s',dest));
         end;
@@ -71,137 +69,213 @@ for depind=1:length(deps)
         % version on the remote machine
         if ~isfield(aap_remote.directory_conventions,'parallel_dependencies')
             aap_remote.directory_conventions.parallel_dependencies=aap.directory_conventions.parallel_dependencies;
-            aas_log(aap,false,'Remote aap does not contain parallel_dependencies field - probably from older aa');
+            aas_log(aap,false,'Warning: Remote aap does not contain parallel_dependencies field - probably from older aa');
         end;
-        % Get remote directory
-        remoteindices=indices;
-        if length(indices)>2
-            findsession=find(strcmp(aap.acq_details.sessions(indices(2)).name,{aap_remote.acq_details.sessions.name}));
-            if isempty(findsession)
-                aas_log(aap,true,sprintf('Error loading remote file with stage tag %s as could not find session called %s',inputstream.sourcestagename,aap.acq_details.sessions(indices(2)).name));
+
+        % Map the local indices to remote indices
+        indexMap = aas_mapindices_betweenAAPs(aap, aap_remote);
+        localTree = aas_dependencytree_finddomain(domain, aap.directory_conventions.parallel_dependencies, {});
+        remoteindices = arrayfun(@(x,y) indexMap.(x{1})(y), localTree, [1 indices]);
+        remoteindices(1) = []; % pop the study index, we never seem to use that.
+        
+        if any(remoteindices == 0)
+            badIndex = find(remoteindices==0,1,'first');
+            domainItems = aas_getNames_bydomain(aap, domain);
+            aas_log(aap, 1, sprintf('Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
+        end
+        
+        
+        % IT's possible that AAPs from different versions of AA have
+        % different dependency lists... let's not error if that;s the case.
+        %  Instead, just don't bother searching for it.
+        if length(aas_dependencytree_finddomain(domain, aap_remote.directory_conventions.parallel_dependencies,{})) ~= 0
+            
+            src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
+            
+            remoteoutputstreamdesc=fullfile(src,sprintf('stream_%s_outputfrom_%s.txt',fromstreamname,inputstream.sourcestagename));
+            
+            % This is written by this routine - the input to the stage we're
+            % working on
+            
+            % Delete non-qualified stream name, if this exists, as this will
+            % override a qualified filename, which is dangerous
+%             non_qualified_fn=fullfile(dest,sprintf('stream_%s_inputto_%s.txt',fromstreamname,aap.tasklist.currenttask.name));
+%             if (exist(non_qualified_fn,'file'))
+%                 delete(non_qualified_fn);
+%             end;
+            
+            % Now produce either qualified or non-qualified (depending on
+            % streamname)
+            inputstreamdesc=fullfile(dest,sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
+            
+            % Copy from one drive to another on local filesystem
+            %  Note the src corresponds to the outputstream of the previous
+            %  stage, and the dest corresponds to the inputstream of the
+            %  next stage. A touch confusing!
+            outputstreamdesc=fullfile(dest,sprintf('stream_%s_remoteoutputfrom_%s_%s.txt',fromstreamname,inputstream.host,inputstream.sourcestagename));
+            
+            if ~doneremotefetch
+                aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache, 'verbose', 1);
             end;
-            remoteindices(2)=findsession;
-        end;
-        src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
-        
-        remoteoutputstreamdesc=fullfile(src,sprintf('stream_%s_outputfrom_%s.txt',fromstreamname,inputstream.sourcestagename));
-        
-        % This is written by this routine - the input to the stage we're
-        % working on
-        
-        % Delete non-qualified stream name, if this exists, as this will
-        % override a qualified filename, which is dangerous
-        non_qualified_fn=fullfile(dest,sprintf('stream_%s_inputto_%s.txt',fromstreamname,aap.tasklist.currenttask.name));
-        if (exist(non_qualified_fn,'file'))
-            delete(non_qualified_fn);
-        end;
-        
-        % Now produce either qualified or non-qualified (depending on
-        % streamname)
-        inputstreamdesc=fullfile(dest,sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
-        
-        % Copy from one drive to another on local filesystem
-        %  Note the src corresponds to the outputstream of the previous
-        %  stage, and the dest corresponds to the inputstream of the
-        %  next stage. A touch confusing!
-        outputstreamdesc=fullfile(dest,sprintf('stream_%s_remoteoutputfrom_%s_%s.txt',fromstreamname,inputstream.host,inputstream.sourcestagename));
-        
-        if ~doneremotefetch
-            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,true);
-        end;
-        
-        if (exist(outputstreamdesc,'file'))
             
-            reloadfiles=true;
-            fid=fopen(outputstreamdesc,'r');
-            
-            % Load checksum with error checking
-            [aap md5]=loadmd5(aap,fid,streamname);
-            
-            % Get filenames
-            fns=textscan(fid,'%s');
-            fns=fns{1};
-            fns_dest=cell(length(fns),1);
-            fns_dest_full=cell(length(fns),1);
-            wasnamechange=false;
-            for ind=1:length(fns)
-                % Check to see whether a filename with this name has
-                % already been loaded. If so, add unique suffix
-                fns_dest{ind}=fns{ind};
-                suffix=1;
-                while (1)
-                    pos=[strcmp(fns_dest{ind},gotinputs)];
-                    if (~any(pos))
-                        break;
+            if (exist(outputstreamdesc,'file'))
+                
+                reloadfiles=true;
+                fid=fopen(outputstreamdesc,'r');
+                
+                % Load checksum with error checking
+                [aap md5]=aas_load_md5(aap,fid,streamname);
+                
+                % Get filenames
+                fns=textscan(fid,'%s');
+                fns=fns{1};
+                fns_dest=cell(length(fns),1);
+                fns_dest_full=cell(length(fns),1);
+                wasnamechange=false;
+                for ind=1:length(fns)
+                    % Check to see whether a filename with this name has
+                    % already been loaded. If so, add unique suffix
+                    fns_dest{ind}=fns{ind};
+                    fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
+                    suffix=1;
+                    while (1)
+                        pos=[strcmp(fns_dest_full{ind},gotinputs)];
+                        if (~any(pos))
+                            break;
+                        end;
+                        wasnamechange=true;
+                        [pth nme ext]=fileparts(fns{ind});
+                        fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
+                        suffix=suffix+1;
+                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                     end;
-                    wasnamechange=true;
-                    [pth nme ext]=fileparts(fns{ind});
-                    fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
-                    suffix=suffix+1;
+                    
+                    % Create full path
+                    fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                 end;
                 
-                % Create full path
-                fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
-            end;
-            
-            aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamname,inputstream.host,src,dest),aap.gui_controls.colours.inputstreams);
-            
-            oldpth='';
-            
-            if (~doneremotefetch)
-                % rsync in chunks. It will then compress.
-                chunksize=64;
-                transfernow=false;
-                numtotransfer=0;
-                inps='';
-                for ind=1:length(fns)
-                    % Copy file
-                    [pth nme ext]=fileparts(fns_dest_full{ind});
-                    newpth=pth;
-                    if (~strcmp(oldpth,newpth))
-                        aas_makedir(aap,newpth);
-                        if (numtotransfer>0)
-                            aas_copyfromremote(aap, inputstream.host, inps,oldpth);
-                        end;
-                        inps=[fullfile(src,fns{ind}) ' '];
-                        oldpth=newpth;
-                        numtotransfer=1;
+                
+                % Also check last modified dates and file size
+                [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
+                % Check to see if there is already a stream file with the
+                % appropriate name in the destination, which has a matching
+                % MD5. If so, there won't be any need to copy
+                
+                if exist(inputstreamdesc,'file')
+                    % Check MD5s are the same across new and previous
+                    % input stream file
+                    fid_out=fopen(outputstreamdesc,'r');
+                    md5_lne_out=fgetl(fid_out);
+                    fid_inp=fopen(inputstreamdesc,'r');
+                    md5_lne=fgetl(fid_inp);
+                    
+                    % Check that checksums in the two files are the same
+                    [junk rem]=strtok(md5_lne_out);
+                    md5_o=strtok(rem);
+                    [junk rem]=strtok(md5_lne);
+                    md5_i=strtok(rem);
+                    
+                    
+                    if ~strcmp(md5_o,md5_i)
+                        aas_log(aap,false,sprintf('MD5 lines of stream files do not match, will recopy.'));
                     else
-                        inps=[inps fullfile(src,fns{ind}) ' '];
-                        numtotransfer=numtotransfer+1;
+                        
+                        % Check same number of lines in input and
+                        % output files, in case copying failed half way
+                        % through
+                        filematch=true;
+                        while ~feof(fid_out)
+                            file_o=fgetl(fid_out);
+                            file_i=fgetl(fid_inp);
+                            if ~strcmp(deblank(file_o),deblank(file_i)) || ~exist(fullfile(dest,deblank(file_i)),'file')
+                                filematch=false;
+                            end;
+                        end;
+                        
+                        if ~filematch
+                            aas_log(aap,false,'Previous copying of files did not complete, will recopy');
+                        else
+                            if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
+                                [aap md5_inp datecheck]=aas_load_md5(aap,md5_lne,streamname);
+                                if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
+                                    reloadfiles=false;
+                                end;
+                                %                    fprintf('Loaded datecheck was %s and calc %s\n',datecheck,datecheck_md5_recalc);
+                            end;
+                        end;
                     end;
-                    if (wasnamechange)
-                        aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind});
+                    fclose(fid_inp);
+                    fclose(fid_out);
+                    
+                end;
+                
+                fclose(fid);
+                
+                if ~reloadfiles
+                    aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
+                else
+                    
+                    aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamname,inputstream.host,src,dest),aap.gui_controls.colours.inputstreams);
+                    
+                    oldpth='';
+                    
+                    if (~doneremotefetch)
+                        % rsync in chunks. It will then compress.
+                        chunksize=64;
+                        transfernow=false;
                         numtotransfer=0;
                         inps='';
-                    else
-                        if (numtotransfer>0) && (ind==length(fns) || numtotransfer>chunksize)
-                            aas_copyfromremote(aap, inputstream.host, inps,oldpth);
-                            numtotransfer=0;
-                            inps='';
+                        for ind=1:length(fns)
+                            % Copy file
+                            [pth nme ext]=fileparts(fns_dest_full{ind});
+                            newpth=pth;
+                            if (~strcmp(oldpth,newpth))
+                                aas_makedir(aap,newpth);
+                                if (numtotransfer>0)
+                                    aas_copyfromremote(aap, inputstream.host, inps,oldpth,'verbose',0,'allowcache',inputstream.allowcache);
+                                end;
+                                inps=[fullfile(src,fns{ind}) ' '];
+                                oldpth=newpth;
+                                numtotransfer=1;
+                            else
+                                inps=[inps fullfile(src,fns{ind}) ' '];
+                                numtotransfer=numtotransfer+1;
+                            end;
+                            if (wasnamechange)
+                                aas_copyfromremote(aap, inputstream.host, fullfile(src,fns{ind}),fns_dest_full{ind},'verbose',0,'allowcache',inputstream.allowcache);
+                                numtotransfer=0;
+                                inps='';
+                            else
+                                if (numtotransfer>0) && (ind==length(fns) || numtotransfer>chunksize)
+                                    aas_copyfromremote(aap, inputstream.host, inps,oldpth,'verbose',0,'allowcache',inputstream.allowcache);
+                                    numtotransfer=0;
+                                    inps='';
+                                end;
+                            end;
                         end;
                     end;
-                end;
+                    
+                    % Get read to write the stream file
+                    [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
+                    if exist(inputstreamdesc,'file')
+                        delete(inputstreamdesc);
+                    end;
+                    fid_inp=fopen(inputstreamdesc,'w');
+                    fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
+                    
+                    for ind=1:length(fns)
+                        % Write to stream file
+                        fprintf(fid_inp,'%s\n',fns_dest{ind});
+                    end;
+                    if isempty(fns)
+                        aas_log(aap,false,sprintf('No inputs in stream %s',streamname));
+                    end;
+                    fclose(fid_inp);
+                end
+                
+                gotinputs=[gotinputs;fns_dest_full];
             end;
-            
-            % Get read to write the stream file
-            [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
-            if exist(inputstreamdesc,'file')
-                delete(inputstreamdesc);
-            end;
-            fid_inp=fopen(inputstreamdesc,'w');
-            fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);
-            
-            for ind=1:length(fns)
-                % Write to stream file
-                fprintf(fid_inp,'%s\n',fns_dest{ind});
-            end;
-            if isempty(fns)
-                aas_log(aap,false,sprintf('No inputs in stream %s',streamname));
-            end;
-            fclose(fid_inp);
-            
-            gotinputs=[gotinputs;fns];
+
         end;
         
         %     if (~doneremotefetch)
@@ -214,7 +288,7 @@ for depind=1:length(deps)
         % Not remote pull
         sourcestagetag=aas_getstagetag(aap,sourcestagenumber);
         switch(aap.directory_conventions.remotefilesystem)
-            case 'none'                
+            case 'none'
                 % Source and destination directories
                 src= aas_getpath_bydomain(aap,domain,indices,sourcestagenumber);
                 dest=aas_getpath_bydomain(aap,domain,indices);
@@ -247,7 +321,7 @@ for depind=1:length(deps)
                     fid=fopen(outputstreamdesc,'r');
                     
                     % Load checksum with error checking
-                    [aap md5]=loadmd5(aap,fid,streamname);
+                    [aap md5]=aas_load_md5(aap,fid,streamname);
                     
                     % Get filenames
                     fns=textscan(fid,'%s');
@@ -258,22 +332,18 @@ for depind=1:length(deps)
                         % Check to see whether a filename with this name has
                         % already been loaded. If so, add unique suffix
                         fns_dest{ind}=fns{ind};
-%                         [TA]: Suffixing causes errors when the module
-%                         tries to load the files with the original
-%                         (non-suffixed) names.
+                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                         suffix=1;
                         while (1)
-                            pos=[strcmp(fns_dest{ind},gotinputs)];
+                            pos=[strcmp(fns_dest_full{ind},gotinputs)];
                             if (~any(pos))
                                 break;
                             end;
                             [pth nme ext]=fileparts(fns{ind});
                             fns_dest{ind}=fullfile(pth,[sprintf('%s-%d',nme,suffix) ext]);
                             suffix=suffix+1;
+                            fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                         end;
-                        
-                        % Create full path
-                        fns_dest_full{ind}=fullfile(dest,fns_dest{ind});
                     end;
                     
                     % Also check last modified dates and file size
@@ -308,7 +378,7 @@ for depind=1:length(deps)
                             while ~feof(fid_out)
                                 file_o=fgetl(fid_out);
                                 file_i=fgetl(fid_inp);
-                                if ~strcmp(deblank(file_o),deblank(file_i))
+                                if ~strcmp(deblank(file_o),deblank(file_i)) || ~exist(fullfile(dest,deblank(file_i)),'file')
                                     filematch=false;
                                 end;
                             end;
@@ -317,7 +387,7 @@ for depind=1:length(deps)
                                 aas_log(aap,false,'Previous copying of files did not complete, will recopy');
                             else
                                 if (length(md5_lne)>3 && (strcmp(md5_lne(1:3),'MD5')))
-                                    [aap md5_inp datecheck]=loadmd5(aap,md5_lne,streamname);
+                                    [aap md5_inp datecheck]=aas_load_md5(aap,md5_lne,streamname);
                                     if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                         reloadfiles=false;
                                     end;
@@ -372,7 +442,7 @@ for depind=1:length(deps)
                         end;
                         fclose(fid_inp);
                     end;
-                    gotinputs=[gotinputs;fns];
+                    gotinputs=[gotinputs;fns_dest_full];
                 end;
                 
                 
@@ -412,7 +482,7 @@ for depind=1:length(deps)
                     fid=fopen(streamdesc,'r');
                     
                     % Load md5 checksum from stream file with error checking
-                    [aap md5stored]=loadmd5(aap,fid,streamname);
+                    [aap md5stored]=aas_load_md5(aap,fid,streamname);
                     
                     % Get filelist from stream
                     fns=textscan(fid,'%s');

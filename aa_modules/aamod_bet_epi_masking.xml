@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Use BET mask on EPIs...' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>epiBETmask</stream>
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

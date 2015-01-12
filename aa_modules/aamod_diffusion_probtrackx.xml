@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session_probtrackx' desc='Run probtrackx2'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+             
+             <specialrequirements>
+              <imagesize>7000000</imagesize>
+            </specialrequirements>
+              
+            <!-- the following is a total across all of the splits -->
+            <totalstreamlines>5000</totalstreamlines>
+                
+            <inputstreams>
+                <stream ismodified="0">tractography_seeds</stream>
+                
+                <stream ismodified="0">tractography_targets</stream>
+                
+                <stream ismodified="0">diffusion_data</stream>
+                
+                <stream ismodified="0">dti_FA</stream>
+                <stream ismodified="0">BETmask</stream>
+
+                <stream ismodified="0">dyads1</stream>
+                <stream ismodified="0">dyads1_dispersion</stream>
+                <stream ismodified="0">dyads2_dispersion</stream>
+                <stream ismodified="0">dyads2</stream>
+                <stream ismodified="0">dyads2_thr0.05</stream>
+                <stream ismodified="0">mean_dsamples</stream>
+                <stream ismodified="0">mean_d_stdsamples</stream>
+                <stream ismodified="0">mean_f1samples</stream>
+                <stream ismodified="0">mean_f2samples</stream>
+                <stream ismodified="0">mean_fsamples</stream>
+                <stream ismodified="0">mean_ph1samples</stream>
+                <stream ismodified="0">mean_ph2samples</stream>
+                <stream ismodified="0">merged_ph2samples</stream>
+                <stream ismodified="0">merged_th1samples</stream>
+                <stream ismodified="0">mean_S0samples</stream>
+                <stream ismodified="0">merged_th2samples</stream>
+                <stream ismodified="0">mean_th1samples</stream>
+                <stream ismodified="0">mean_th2samples</stream>
+                <stream ismodified="0">merged_f1samples</stream>
+                <stream ismodified="0">merged_f2samples</stream>
+                <stream ismodified="0">merged_ph1samples</stream>
+                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>seeds_to_diffusion_space</stream>
+                <stream>fdt_matrix2</stream>
+                <stream>fdt_paths</stream>
+                <stream>probtrackx_log</stream>
+                <stream>waytotal</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

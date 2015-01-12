@@ -5,14 +5,22 @@
 
 function [aap]=aa_report(studyroot,stages)
 
+fprintf('Fetching report started...\n');
+
+% First, load AAP structure
 if exist('studyroot','var')
+    if isstruct(studyroot)
+        studyroot=fullfile(aas_getstudypath(studyroot),studyroot.directory_conventions.analysisid);
+    end;
     cd(studyroot);
 else
     studyroot=pwd;
 end;
-
-% First, load AAP structure
-load('aap_parameters');
+if ~exist('aap_parameters.mat','file')
+    error('aap structure not found');
+else
+    load('aap_parameters');
+end
 
 if ~exist('stages','var')
     stages={aap.tasklist.main.module.name};
@@ -39,7 +47,8 @@ aap.report.html_reg.fname = strrep(aap.report.html_main.fname,'.htm','_reg.htm')
 aap.report.html_C00.fname = strrep(aap.report.html_main.fname,'.htm','_scon.htm');
 aap.report.condir = fullfile(fileparts(aap.report.html_main.fname),'report_scon');
 
-aap = aas_report_add(aap,'HEAD=AA Report');
+% Initialize HTMLs
+aap = aas_report_add(aap,[],'HEAD=AA Report');
 aap = aas_report_add(aap,0,'HEAD=Subjects');
 if ~exist(aap.report.subdir,'dir'), mkdir(aap.report.subdir); end
 aap = aas_report_add(aap,'moco','HEAD=Motion corection summary');
@@ -48,89 +57,80 @@ aap = aas_report_add(aap,'C00','HEAD=First level contrasts');
 if ~exist(aap.report.condir,'dir'), mkdir(aap.report.condir); end
 
 aap.report.fbase = basename(aap.report.html_main.fname);
-for i=1:numel(aap.acq_details.subjects)
-    fprintf('Reporting subject: %s\n',basename(aas_getsubjpath(aap,i)));
-    aap.report.(sprintf('html_S%02d',i)).fname = fullfile(aap.report.subdir,[aap.report.fbase sprintf('_S%02d.htm',i)]);
-    aap = aas_report_add(aap,0,...
-        sprintf('<a href="%s" target=_top>%s</a><br>',...
-        aap.report.(sprintf('html_S%02d',i)).fname,...
-        ['Subject: ' basename(aas_getsubjpath(aap,i))]));
-    
-    % Single-subject reports
-    aap = aas_report_add(aap,i,['HEAD=Subject: ' basename(aas_getsubjpath(aap,i))]);
-    for k=1:numel(stages)
-        
-        % find out whether this module needs to be executed once per study, subject or session
+
+% Handle session
+inSession = false;
+nSessions = numel(aap.acq_details.sessions);
+
+for k=1:numel(stages)
+    fprintf('Fetching report for %s...\n',stages{k});    
+    % domain
+    if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
+        xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
+    else
         xml = xml_read([stages{k} '.xml']);
-        mfile = stages{k};
-        if ~exist(mfile,'file'), mfile = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
-        domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
-        istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+    end
+    mfile_alias = stages{k};
+    if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
+    if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
+    domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
+    
+    % Skip stages of unknown domain - most like aamod_importfilesasstream
+    if ~strcmp(domain,'[unknown]')
         
-        switch (domain)
-            case 'study'
-                if ~stage_study_done
-                    aap = aas_report_add(aap,['<h2>Stage: ' stages{k} '</h2>']);
-                    doneflag=fullfile(aas_getstudypath(aap,k),['done_' aas_getstagetag(aap,k)]);
-                    if ~exist(doneflag,'file')
-                        aap = aas_report_add(aap,i,'<h3>Not finished yet!</h3>');
-                    else
-%                         curr_aap = load(fullfile(fileparts(aas_getsubjpath(aap,i,k)),['aap_parameters_' aas_getstagetag(aap,k) '.mat'])); curr_aap = curr_aap.aap;
-                        aapreport = aap.report;
-                        aap = aas_setcurrenttask(aap,istage);
-                        aap.report = aapreport;
-                        aap = feval(mfile,aap,'report');
-                    end;
-                    stage_study_done = true;
-                end
-            case 'subject'
-                aap = aas_report_add(aap,i,['<h2>Stage: ' stages{k} '</h2>']);                
-                doneflag=fullfile(aas_getsubjpath(aap,i,k),['done_' aas_getstagetag(aap,k)]);
-                if ~exist(doneflag,'file')
-                    aap = aas_report_add(aap,i,['<h3>Not finished yet!</h3>']);
-                else
-%                     curr_aap = load(fullfile(aas_getsubjpath(aap,i,k),['aap_parameters_' aas_getstagetag(aap,k) '.mat'])); curr_aap = curr_aap.aap;
-%                     curr_aap.acq_details.subjects = aap.acq_details.subjects;
-                    aapreport = aap.report;
-                    aap = aas_setcurrenttask(aap,istage);
-                    aap.report = aapreport;
-                    aap = feval(mfile,aap,'report',i);
-                end;
-            case 'session'
-                aap = aas_report_add(aap,i,['<h2>Stage: ' stages{k} '</h2>']);                                
-                aap = aas_report_add(aap,i,'<table><tr>');
-                for j=1:numel(aap.acq_details.sessions)
-                    aap = aas_report_add(aap,i,'<td>');
-                    aap = aas_report_add(aap,i,['<h3>Session: ' aap.acq_details.sessions(j).name '</h3>']);
-                    doneflag=fullfile(aas_getsesspath(aap,i,j,k),['done_' aas_getstagetag(aap,k)]);
-                    if ~exist(doneflag,'file')
-                        aap = aas_report_add(aap,i,['<h3>Not finished yet!</h3>']);
-                    else
-%                         curr_aap = load(fullfile(aas_getsesspath(aap,i,j,k),['aap_parameters_' aas_getstagetag(aap,k) '.mat'])); curr_aap = curr_aap.aap;
-%                         curr_aap.acq_details.subjects = aap.acq_details.subjects;                        
-                        aapreport = aap.report;
-                        aap = aas_setcurrenttask(aap,istage);
-                        aap.report = aapreport;
-                        aap = feval(mfile,aap,'report',i,j);
-                    end;
-                    aap = aas_report_add(aap,i,'</td>');
-                end;
-                aap = aas_report_add(aap,i,'</tr></table>');
-                
-            case '[unknown]'
-                aas_log(aap,0,'Domain unknown');                
-            otherwise
-                aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',aap.tasklist.domain{k},stages{k}));
+        % Set inSession flag
+        if strcmp(domain,'session') && ~inSession
+            inSession = true;
+        end
+        if ~strcmp(domain,'session') && inSession
+            inSession = false;
+        end
+        
+        % Switch for stage
+        all_stage = cell_index(stages, stages{k});
+        istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+        istage = istage(all_stage==k);
+        aapreport = aap.report;
+        aap = aas_setcurrenttask(aap,istage);
+        aap.report = aapreport;
+        
+        % build dependency
+        dep = aas_dependencytree_allfromtrunk(aap,domain);
+        
+        % run through
+        for d = 1:numel(dep)
+            indices = dep{d}{2};
+            isdone = exist(aas_doneflag_getpath_bydomain(aap,domain,indices,k),'file');
+            try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
+            try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
+            
+            if sess == 1, aap = aas_report_add(aap,subj,['<h2>Stage: ' stages{k} '</h2>']); end
+            
+            % evaluate with handling sessions
+            if inSession
+                if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
+                aap = aas_report_add(aap,subj,'<td>');
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+            end
+            if ~isdone
+                aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
+            else
+                [aap,resp]=aa_feval_withindices(mfile_alias,aap,'report',indices);
+            end;
+            if inSession
+                aap = aas_report_add(aap,subj,'</td>');
+                if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+            end
         end;
-    end;
-    aap = aas_report_add(aap,i,'EOF');
-end;
+    end
+end
 
-aap = aas_report_add(aap,'EOF');
-
+% Close files
+aap = aas_report_add(aap,[],'EOF');
 aap = aas_report_add(aap,0,'EOF');
-
 fclose all;
+
+% Show report
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
 save('aap_parameters_reported.mat', 'aap');

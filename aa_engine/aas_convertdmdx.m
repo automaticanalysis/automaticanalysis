@@ -18,15 +18,17 @@ if (length(zildatadir)==0)
 end;
 
 %% START HERE! %%
-
-dicomsearchpth=fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects{i},dicomdatadir.name,'*.dcm');
-dicomdata=dir(dicomsearchpth);
+dicomdata = [];
+dicomsearchpth = aas_findvol(aap,fullfile(aap.acq_details.subjects{i},dicomdatadir.name));
+if ~isempty(dicomsearchpth)
+	dicomdata = dir(fullfile(dicomsearchpth,'*.dcm'));
+end
 if (length(dicomdata)==0)
     aas_log(aap,1,sprintf('Did not find any dicom data (*.dcm) in %s',dicomsearchpth));
 end;
 
 for k=1:length(dicomdata)
-    DICOMFN=strvcat(DICOMFN,fullfile(aap.directory_conventions.rawdatadir,aap.acq_details.subjects{i},dicomdatadir.name,dicomdata(k).name));
+    DICOMFN=strvcat(DICOMFN,fullfile(dicomsearchpth,dicomdata(k).name));
 end;
 DICOMHEADERS=spm_dicom_headers(DICOMFN);
 

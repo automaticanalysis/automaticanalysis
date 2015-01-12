@@ -29,7 +29,7 @@ switch task
         % @@@ FIGURE OUT WAY OF MAKING THIS WORK WITH DEFAULT BET FUNCTIONS?
 
         % Look for mean functional
-        mEPIimg = aas_getimages_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getimages_bystream(aap,subj,'meanepi');
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
         elseif size(mEPIimg,1) > 1

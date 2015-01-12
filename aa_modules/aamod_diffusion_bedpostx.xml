@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Run bedpostX'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+                        
+            <inputstreams>
+                <stream ismodified="0">bvals</stream>
+                <stream ismodified="0">bvecs</stream>
+                <stream ismodified="0">diffusion_data</stream>
+                <stream ismodified="0">BETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dyads1</stream>
+                <stream>dyads1_dispersion</stream>
+                <stream>dyads2_dispersion</stream>
+                <stream>dyads2</stream>
+                <stream>dyads2_thr0.05</stream>
+                <stream>mean_dsamples</stream>
+                <stream>mean_d_stdsamples</stream>
+                <stream>mean_f1samples</stream>
+                <stream>mean_f2samples</stream>
+                <stream>mean_fsamples</stream>
+                <stream>mean_ph1samples</stream>
+                <stream>mean_ph2samples</stream>
+                <stream>merged_ph2samples</stream>
+                <stream>merged_th1samples</stream>
+                <stream>mean_S0samples</stream>
+                <stream>merged_th2samples</stream>
+                <stream>mean_th1samples</stream>
+                <stream>mean_th2samples</stream>
+                <stream>merged_f1samples</stream>
+                <stream>merged_f2samples</stream>
+                <stream>merged_ph1samples</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

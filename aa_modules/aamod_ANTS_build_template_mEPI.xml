@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' mfile_alias='aamod_ANTS_build_template_mEPI' desc='ANTS template from structurals' modality='MRI'>
+            
+            <qsub>
+                <timeBase>40</timeBase>
+                <memoryBase>12</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>meanepi</stream>  
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>ANTStemplate</stream>
+            </outputstreams>
+            
+            <structural>1</structural>
+            <!-- Extra options to include (e.g. parallelisation) -->
+            <extraoptions>-c 2 -j 4 -r 1</extraoptions>
+            
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

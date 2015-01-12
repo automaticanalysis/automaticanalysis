@@ -20,15 +20,30 @@ switch task
     case 'doit'
         % report which version of spm_dartel_template we are using
         aas_log(aap, false, sprintf('Using %s.\n', which('spm_dartel_template')));
-
-        % number of tissue classes included
-        numtissues = 2;
-
-        for subjind = 1:length(aap.acq_details.subjects)
-            img{1}{subjind} = aas_getfiles_bystream(aap, subjind, 'dartelimported_grey');
-            img{2}{subjind} = aas_getfiles_bystream(aap, subjind, 'dartelimported_white');
+        
+        % retrieve external template (if any)
+        template = '';
+        if aas_stream_has_contents(aap,'dartel_template')
+            aas_log(aap, false, sprintf('External template specified.\n'));            
+            template = aas_getfiles_bystream(aap, 'dartel_template');
+            aap.tasklist.currenttask.settings.exclude = 1:numel(aap.acq_details.subjects);
         end
-
+        
+        img{1} = {}; img{2} = {};
+        imgTemplate{1} = {}; imgTemplate{2} = {};
+        imgNoTemplate{1} = {}; imgNoTemplate{2} = {};
+        for subjind = 1:numel(aap.acq_details.subjects)
+            img{1}{end+1} = aas_getfiles_bystream(aap, subjind, 'dartelimported_grey');
+            img{2}{end+1} = aas_getfiles_bystream(aap, subjind, 'dartelimported_white');
+            if isfield(aap.tasklist.currenttask.settings,'exclude') && ...
+                    ~isempty(find(aap.tasklist.currenttask.settings.exclude==subjind, 1))
+                imgNoTemplate{1}{end+1} = img{1}{end};
+                imgNoTemplate{2}{end+1} = img{2}{end};
+            else           
+                imgTemplate{1}{end+1} = img{1}{end};
+                imgTemplate{2}{end+1} = img{2}{end};
+            end
+        end
 
         % Set up job
         % below based on tbx_cfg_dartel 16 May 2012 r4667
@@ -43,22 +58,34 @@ switch task
                           'param', param,...
                           'optim', struct('lmreg', 0.01, 'cyc', 3, 'its', 3));
 
-        % create the job
-        job = struct('images', {img}, 'settings', settings);
+        % create template
+        if ~isempty(imgTemplate{1})
+            spm_dartel_template(struct('images', {imgTemplate}, 'settings', settings));
 
-        % run the script
-        spm_dartel_template(job);
+            % (template in first subject)
+            for t = 1:6
+               template(t,:) = spm_select('fplist', fileparts(imgTemplate{1}{1}), sprintf('Template_%d',t));
+            end
+        end
+        
+        % warp excluded subjects
+        if ~isempty(imgNoTemplate{1})
+            settings = rmfield(settings,'template');
+            for t = 1:6
+               settings.param(t).template = {template(t,:)};
+            end
+            out = spm_dartel_warp(struct('images', {imgNoTemplate}, 'settings', settings));
+            for f = 1:numel(out.files)
+                movefile(out.files{f},strrep(out.files{f},'.nii','_Template.nii'),'f');
+            end
+        end
 
         % describe outputs
-
-        % (template in first subject)
-        [pth, nm] = fileparts(img{1}{1});
-        templateimg = spm_select('fplist', pth, 'Template_6');
-        aap = aas_desc_outputs(aap, 'dartel_template', templateimg);
+        aap = aas_desc_outputs(aap, 'dartel_template', template(6,:));
 
         % flow fields
         for subjind = 1:length(aap.acq_details.subjects)
-            [pth, nm] = fileparts(img{1}{subjind});
+            pth = fileparts(img{1}{subjind});
             flowimg = spm_select('fplist', pth, '^u_');
             aap = aas_desc_outputs(aap, subjind, 'dartel_flowfield', flowimg);
         end

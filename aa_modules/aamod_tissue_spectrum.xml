@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Tissue spectrum' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+                       
+            <TR></TR> <!-- if empty and not set in user script, then looks for epi_dicom_headers -->
+                       
+            <tissuelist>
+                <tissue>grey</tissue>
+                <tissue>white</tissue>
+                <tissue>csf</tissue>
+            </tissuelist>
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>tissue_csf</stream>
+                <stream>tissue_grey</stream>
+                <stream>tissue_white</stream>
+                <stream>epi_header</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>tiss_timecourse</stream>
+                <stream>tiss_powerspect</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

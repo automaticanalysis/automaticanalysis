@@ -1,49 +1,35 @@
-function aap = aas_getSliceOrder(aap, p, s, V)
+function aap = aas_getSliceOrder(aap,V, dicomHdr)
 
 if nargin<1
     error('We need an aap structure')
 elseif nargin<2
-    error('We need a participant number')
-elseif nargin<3
-    error('We need a session number')
-elseif nargin<4
     error('We need a sample volume, as we don''t know the slice number')
+elseif nargin<3
+    error('We need a dicom header, as we don''t know the slice ordering')
 end
 
 
-dicomPath = (fullfile(aap.directory_conventions.rawdatadir, ...
-    aap.acq_details.subjects(p).mriname));
+if ~isfield(dicomHdr, 'sliceorder')
+    str =  dicomHdr.Private_0029_1020;
+    xstr = char(str');
+    n = findstr(xstr, 'sSliceArray.ucMode');
+    [t, r] = strtok(xstr(n:n+100), '=');
+    ucmode = strtok(strtok(r, '='));
+    switch(ucmode)
+        case '0x1'
+            sliceorder = 'Ascending';
+        case '0x2'
+            sliceorder = 'Descending';
+        case '0x4'
+            sliceorder = 'Interleaved';
+        otherwise
+            sliceorder = 'Order undetermined';
+    end
+    dicomHdr.sliceorder = sliceorder;
 
-dicomFold = dir(dicomPath);
-
-try
-    dicomFold = dicomFold(aap.acq_details.subjects(p).seriesnumbers(s) + 2).name;
-catch % For multi-echo sequences
-    dicomFold = dicomFold(aap.acq_details.subjects(p).seriesnumbers{s}(1) + 2).name;
 end
 
-dicomDir = dir(fullfile(dicomPath, dicomFold));
-
-dicomName = fullfile(dicomPath, dicomFold, dicomDir(3).name);
-
-infoD = dicominfo(dicomName);
-str = infoD.Private_0029_1020;
-xstr = char(str');
-n = findstr(xstr, 'sSliceArray.ucMode');
-[t, r] = strtok(xstr(n:n+100), '=');
-ucmode = strtok(strtok(r, '='));
-switch(ucmode)
-    case '0x1'
-        sliceorder = 'Ascending';
-    case '0x2'
-        sliceorder = 'Descending';
-    case '0x4'
-        sliceorder = 'Interleaved';
-    otherwise
-        sliceorder = 'Order undetermined';
-end
-
-switch(sliceorder)
+switch(dicomHdr.sliceorder)
     case 'Ascending'
         [aap.tasklist.currenttask.settings.sliceorder] = 1:1:V.dim(3);
     case 'Descending'
@@ -57,19 +43,24 @@ switch(sliceorder)
         end
         warning('CAREFUL! Ensure your interleaved order is correct!')
     otherwise
-        error('BAD ORDER! Check your slice order, and/or set it manually!')
+        
+        if isfield(dicomHdr, 'Private_0019_1029')
+            [~, aap.tasklist.currenttask.settings.sliceorder] = sort(dicomHdr.Private_0019_1029);
+            dicomHdr.sliceorder = 'custom (determined from field Private_0019_1029)';
+        else
+            error('BAD ORDER! Check your slice order, and/or set it manually!');
+        end
 end
 
-fprintf('\n Your sequence has %d slices in %s order', V.dim(3), sliceorder);
+fprintf('\n Your sequence has %d slices in %s order\n', V.dim(3), dicomHdr.sliceorder);
 
-if isempty(aap.tasklist.currenttask.settings.slicetime)
+if isfield(aap.tasklist.currenttask.settings, 'slicetime') && isempty(aap.tasklist.currenttask.settings.slicetime)
     if ~isfield(aap.tasklist.currenttask.settings, 'TRs') || ...
             isempty(aap.tasklist.currenttask.settings.TRs)
         % NOTE, this will not work for a 3D sequence
         % Reason 1) A 3D sequence does not have slice order
         % Reason 2) The RepetitionTime is not actually the Volume TR
-        aap.tasklist.currenttask.settings.TRs = infoD.RepetitionTime;
+        aap.tasklist.currenttask.settings.TRs = dicomHdr.RepetitionTime;
     end
     aap.tasklist.currenttask.settings.slicetime=aap.tasklist.currenttask.settings.TRs/V.dim(3);
 end
-

@@ -1,13 +1,14 @@
 % Convert the whole report between linux and windows (MRC-CBSU!)
+% function aas_report_convert(studyroot,l2w)
+% l2w: Linux2Win
+%     - true: Linux to Win - default
+%     - false: Win to Linux
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function aas_report_convert(studyroot,l2w)
-% l2w: Linux2Win
-%     - true: Linux to Win - defualt
-%     - false: Win to Linux
 
 patt = {'/imaging',... % Linux path
-    '/////cbsu/data/imaging'... % Win path
+    'file:////cbsu/data/imaging'... % Win path
     }; 
 
 try, cd(studyroot); catch; end
@@ -17,7 +18,7 @@ p1 = patt{(~l2w)+1};
 p2 = patt{l2w+1};
 
 % First, load AAP structure
-load('aap_parameters');
+load('aap_parameters_reported');
 
 fields = fieldnames(aap.report);
 for f = 1:numel(fields)

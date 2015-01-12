@@ -8,7 +8,14 @@ resp='';
 
 switch task
     case 'checkrequirements'
-        ROIlist=getROIlist(aap);
+        ROIstr = aap.tasklist.currenttask.settings.ROIlist;
+                ROIlist = {};
+        while ~isempty(ROIstr)
+            [tmp, ROIstr] = strtok(ROIstr,',');
+            ROIlist = [ROIlist fullfile(...
+                aap.directory_conventions.ROIdir, tmp)];
+        end
+        
         for r = 1:length(ROIlist)
             if ~exist(ROIlist{r}, 'file')
                 error(sprintf('The ROI %s file does not exist', ...
@@ -52,7 +59,7 @@ switch task
             end
         end
         
-        mEPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        mEPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         if isempty(mEPIimg)
             aas_log(aap, true, 'Problem finding mean functional image.');
         elseif size(mEPIimg,1) > 1
@@ -85,7 +92,7 @@ switch task
         
         % Get the ROIs from .xml
         ROIstr = aap.tasklist.currenttask.settings.ROIlist;
-        ROIlist = {};
+                ROIlist = {};
         while ~isempty(ROIstr)
             [tmp, ROIstr] = strtok(ROIstr,',');
             ROIlist = [ROIlist fullfile(...
@@ -121,7 +128,7 @@ switch task
             
             if ~isempty(SEGimg)
                 % Now mask our ROIs by segmented mask (t for trimmed)
-                conjMask(roi_fn, Mimg, [0 0.01], 't');
+                conjMask(roi_fn, Mimg, [0.01 0.01], 't');
                 unix(['rm -rf ' roi_fn]);
                 roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', ['trw' fn, ext]);
             end
@@ -154,7 +161,7 @@ switch task
                 spm_orthviews('addcolouredimage',1,outstream(r,:), OVERcolours{r})
             end
             %% Diagnostic VIDEO of segmentations
-            aas_checkreg_avi(aap, subj, 2)
+%             aas_checkreg_avi(aap, subj, 2)
             
             spm_orthviews('reposition', [0 0 0])
             

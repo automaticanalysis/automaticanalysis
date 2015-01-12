@@ -2,9 +2,10 @@
 %  Uses aap.directory_conventions.parallel_dependencies tree structure
 %
 % examples:
-%  pth=aas_getpath_bydomain(aap,'session',{1,2});  % subject 1, session 2
-%  pth=aas_getpath_bydomain(aap,'searchlight',{1,2,3},'s3');   % path of searchlight on s3
-%  pth=aas_getpath_bydomain(aap,'session',{1,2},'s3',4);   % path on s3 for module 4
+%  pth=aas_getpath_bydomain(aap,'session',[1,2]);  % subject 1, session 2
+%  pth=aas_getpath_bydomain(aap,'session',[1,2],4);  % subject 1, session 2 for module 4
+%  pth=aas_getpath_bydomain(aap,'searchlight',[1,2,3],'s3');   % path of searchlight on s3
+%  pth=aas_getpath_bydomain(aap,'session',[1,2],'s3',4);   % path on s3 for module 4
 
 function [pth]=aas_getpath_bydomain(aap,domain,indices,varargin)
 

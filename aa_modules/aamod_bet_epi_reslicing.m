@@ -18,7 +18,7 @@ switch task
         warning off
         
         % RESLICE THE MASKS & MESHES
-        EPIimg = aas_getfiles_bystream(aap,subj,1,'meanepi');
+        EPIimg = aas_getfiles_bystream(aap,subj,'meanepi');
         
         % With the mean EPI, we just use the first one (there really should be only one)
         if size(EPIimg,1) > 1

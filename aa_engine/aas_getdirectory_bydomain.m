@@ -14,20 +14,32 @@ switch (domain)
         
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
         directory=sprintf('splitsession_cv_fold_%d',index);
-        
+
+    case 'diffusion_session_probtrackx'
+        directory=sprintf('probtrackx_%d',index);
+
     case 'session'
         directory=aap.acq_details.sessions(index).name;
         
+    case 'scan'
+        directory=sprintf('scan_%d',index);
+    
+    case 'meg_session'
+        directory=aap.acq_details.meg_sessions(index).name;
+        
+    case 'diffusion_session'
+        directory=aap.acq_details.diffusion_sessions(index).name;
+
+    case 'diffusion_session_bedpostx'
+        directory=[aap.acq_details.diffusion_sessions(index).name '.bedpostX'];
         
     case {'subject','hyperalignment_subject'}
         switch (aap.directory_conventions.subject_directory_format)
             case 1
                 if (isfield(aap.acq_details.subjects(index),'megname') && ~isempty(aap.acq_details.subjects(index).megname))
-                    tmp=aap.acq_details.subjects(index).megname;
+                    tmp=aas_megname2subjname(aap.acq_details.subjects(index).megname);
                 else
-                    numpos=findstr('CBU',aap.acq_details.subjects(index).mriname);
-                    tmp=aap.acq_details.subjects(index).mriname(numpos(1):length(aap.acq_details.subjects(index).mriname));
-                    tmp=strtok(tmp,' /\\_,.');
+                    tmp = aas_mriname2subjname(aap.acq_details.subjects(index).mriname);
                 end
                 directory= tmp;
             case 2

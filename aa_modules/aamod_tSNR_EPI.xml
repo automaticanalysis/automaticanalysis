@@ -13,7 +13,7 @@
             <inputstreams>
                 <stream>rois</stream>
                 <stream>epi</stream>
-                <stream>epi_header</stream>
+                <stream>epi_dicom_header</stream>
             </inputstreams>
             
             <outputstreams>

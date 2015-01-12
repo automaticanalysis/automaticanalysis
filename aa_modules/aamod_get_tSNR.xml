@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='calculate tSNR for each session' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <mask_threshold>2000</mask_threshold>
+            
+            <inputstreams>
+                <stream>epi</stream>
+                <stream>epi_dicom_header</stream>
+            </inputstreams>
+            <outputstreams>
+                <!--<stream>tSNR</stream>-->
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>

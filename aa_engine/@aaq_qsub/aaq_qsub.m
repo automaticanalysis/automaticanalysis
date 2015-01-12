@@ -1,17 +1,25 @@
 classdef aaq_qsub<aaq
     properties
         scheduler = [];
-        filestomonitor=[];
         jobnotrun = [];
+        taskstomonitor = [];
+    end
+    properties (Hidden)
+        SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
     end
     methods
         function [obj]=aaq_qsub(aap)
             global aaworker;
             global aaparallel;
             try
-                obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,aaworker.parmpath});
-            catch err
-                warning('Cluster computing is not supported!\n%s',err.message);
+                %obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,24*3600,aaworker.parmpath});
+                obj.scheduler=cbu_scheduler('custom',{'compute',1,4,24*3600,aaworker.parmpath});
+                obj.SubmitArguments0 = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
+                obj.scheduler.SubmitArguments = obj.SubmitArguments0;
+                % ensure MAXFILTER license
+            catch ME
+                warning('Cluster computing is not supported!\n');
+                warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
                 obj.scheduler=[];
             end
             obj.aap=aap;
@@ -32,10 +40,10 @@ classdef aaq_qsub<aaq
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
             
-            while any(obj.jobnotrun) && ~waitforalljobs
+            while any(obj.jobnotrun) || waitforalljobs
                 
                 % Lets not overload the filesystem
-                pause(10);
+                pause(1);
                 
                 for i=1:njobs
                     if (obj.jobnotrun(i))
@@ -61,74 +69,67 @@ classdef aaq_qsub<aaq
                     end
                 end
                 
-                % Don't monitor by default
-                donemonitoring=true;
+                taskreported = [];
                 
-                % Monitor all of the output files
-                donemonitoring=false(size(obj.filestomonitor));
-                
-                for ftmind=1:length(obj.filestomonitor)
+                for ftmind=1:numel(obj.taskstomonitor)                    
+                    JobID = obj.taskstomonitor(ftmind);
+                    Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
+                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
+                    state = Task.State;
+                    if ~isempty(Task.Error), state = 'error'; end
                     
-                    % If output exists, check what it is...
-                    if exist(obj.filestomonitor(ftmind).name, 'file')
-                        JobLog = load(obj.filestomonitor(ftmind).name);
-                        
-                        % If we don't have any errors...
-                        if ~strcmp(JobLog.optout{3}, 'lasterr')
-                            % Check the appropriate columns and print what
-                            % happened to the job...
+                    switch state
+                        case 'failed' % failed to launch
+                            msg = sprintf('Job%d had failed to launch (Licence?)!\n Check logfile: %s\n',JobID,...
+                                fullfile(obj.scheduler.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
+                            % If there is an error, it is fatal...
+                            aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             
-                            moduleName = strtok(JobLog.optout{10}, ':');
-                            moduleName = moduleName(strfind(moduleName,'aamod_'):(end-8));
+                            taskreported(end+1) = ftmind;
+                        case 'finished' % without error
+                            if isempty(Task.FinishTime), continue; end
+                            dtvs = dts2dtv(Task.CreateTime);
+                            dtvf = dts2dtv(Task.FinishTime);
+                            msg = sprintf('MODULE %s FINISHED: Job%d used %s.',...
+                                moduleName,JobID,sec2dts(etime(dtvf,dtvs)));
+                            aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
-                            aas_log(obj.aap,false,...
-                                sprintf('Job %s: %s finished', ...
-                                obj.filestomonitor(ftmind).name(1:end-11), moduleName), ...
-                                obj.aap.gui_controls.colours.running)
+                            % Also save to file with module name attached!
+                            fid = fopen(fullfile(aaworker.parmpath,'qsub','time_estimates.txt'), 'a');
+                            fprintf(fid,'%s\n',msg);
+                            fclose(fid);
                             
-                            aas_log(obj.aap,false,...
-                                sprintf('Job used %0.4f hours. and %0.9f GB', ...
-                                JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3)), ...
-                                obj.aap.gui_controls.colours.running)
-                            
-                            if obj.aap.options.qsub.verbose
-                                aas_log(obj.aap,false,...
-                                    sprintf('%s', ...
-                                    JobLog.optout{10}))
+                            taskreported(end+1) = ftmind;
+                        case 'error' % running error
+                            msg = sprintf('Job%d had an error: %s\n',JobID,Task.ErrorMessage);
+                            for e = 1:numel(Task.Error.stack)
+                                % Stop tracking to internal
+                                if strfind(Task.Error.stack(e).file,'distcomp'), break, end
+                                msg = [msg sprintf('in %s (line %d)\n', ...
+                                    Task.Error.stack(e).file, Task.Error.stack(e).line)];
                             end
+                            % If there is an error, it is fatal...
+                            aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             
-                            % Also save to file with module name attached!                            
-                            fid = fopen(fullfile(aaworker.parmpath,'qsub', 'time_estimates.txt'), 'a');
-                            fprintf(fid,'%s\n',moduleName);
-                            fprintf(fid,'Job used %0.4f hours. and %0.9f GB\n', ...
-                                JobLog.optout{2}./(60*60), JobLog.optout{4}./(1024^3));
-                            
-                            % Job finished, so no need to monitor
-                            donemonitoring(ftmind)=true;
-                        else
-                            % If a job had an error, it is usually fatal...
-                            for e = 1:(length(JobLog.optout{4}.stack)-2)
-                                cprintf('r', 'Line %d of %s\n', ...
-                                    JobLog.optout{4}.stack(e).line, JobLog.optout{4}.stack(e).file )
-                            end                       
-                            aas_log(obj.aap,true,...
-                                sprintf('Job had an error:\n%s\n', ...
-                                JobLog.optout{4}.message), ...
-                                obj.aap.gui_controls.colours.running)
-                        end
+                            taskreported(end+1) = ftmind;
                     end
                 end
                 
-                % Clear out files we've finished monitoring
-                obj.filestomonitor(donemonitoring)=[];
+                obj.taskstomonitor(taskreported) = [];
                 
                 % Loop if we are still waiting for jobs to finish...
                 if waitforalljobs == 1;
-                    if isempty(obj.filestomonitor)
+                    if isempty(obj.taskstomonitor)
                         waitforalljobs = 0;
                     end
-                end
-            end            
+                end                
+            end
+        end
+        
+        function [obj]=killall(obj)
+            for j = 1:numel(obj.scheduler.Jobs)
+                obj.scheduler.Jobs(1).delete;
+            end
         end
         
         function [obj]=qsub_q_job(obj,job)
@@ -141,53 +142,85 @@ classdef aaq_qsub<aaq
             end
             cd(qsubpath);
             
-            % Submit the job using qsubfeval            
-            % Check how much memory and time we should assign to the job
-            try
-                memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
-                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3); % GB
-                timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
-                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60; % Hours
-            catch
-                aas_log(obj.aap,false,...
-                    sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
-                    [1 0 0])
-                memReq = ... % No module specific multiplier
-                    obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-                    (1024^3); % GB
-                timReq = ... % No module specific multiplier
-                    obj.aap.options.qsub.timeMult * ... % study specific multiplier
-                    60*60; % Hours
-            end
+            % Submit the job using qsubfeval
+            %             % Check how much memory and time we should assign to the job
+            % Not in use [TA]
+            %             try
+            %                 memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
+            %                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+            %                     (1024^3); % GB
+            %                 timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
+            %                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
+            %                     60*60; % Hours
+            %             catch
+            %                 aas_log(obj.aap,false,...
+            %                     sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
+            %                     [1 0 0])
+            %                 memReq = ... % No module specific multiplier
+            %                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
+            %                     (1024^3); % GB
+            %                 timReq = ... % No module specific multiplier
+            %                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
+            %                     60*60; % Hours
+            %             end
             
             % Submit job
             if ~isempty(obj.scheduler)
-                warning off
                 J = createJob(obj.scheduler);
+%                 obj.scheduler.SubmitArguments = strcat(obj.SubmitArguments0,...
+%                     sprintf(' -N Mod%02d_',job.k),...
+%                     sprintf('%03d',job.indices));
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
+                
+                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
+                % them the aa paths. Users don't need to remember to update
+                % their own default paths (e.g. for a new aa version)
+                global aacache;
+                if isprop(J,'AdditionalPaths')
+                    J.AdditionalPaths = aacache.reqpath;
+                elseif isprop(J,'PathDependencies')
+                    J.PathDependencies = aacache.reqpath;
+                end
+                
                 createTask(J,cj,nrtn,inparg);
                 J.submit;
-                warning on
-                % State what the assigned number of hours and GB is...
-                fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                    job.stagename, timReq./(60*60), memReq./(1024^3))
+                %                 % State what the assigned number of hours and GB is...
+                % Not in use [TA]
+                %                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+                %                     job.stagename, timReq./(60*60), memReq./(1024^3))
                 
                 % And monitor for files with the job output
-                fles.name=sprintf('%04d_output.mat',J.ID);
-                fles.state='queued';
-                if (isempty(obj.filestomonitor))
-                    obj.filestomonitor=fles;
-                else
-                    obj.filestomonitor(end+1)=fles;
-                end
+                obj.taskstomonitor(end+1)=J.ID;
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
         end
-        
     end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function dtv = dts2dtv(dts)
+s = textscan(dts,'%s'); s = s{1}; s(5) = [];
+s = strcat(s,{' ',' ',' ',' ',' '}'); s = [s{:}]; s = s(1:end-1);
+dtformat = 'ddd mmm dd HH:MM:SS yyyy';
+dtv = datevec(s,dtformat);
+end
+
+function dts = sec2dts(dt)
+dt_str = {'s','m','h'};
+dt_div = [60 60 24]; 
+
+dts = '';
+for i = 1:numel(dt_str)
+    dts = [' ' num2str(mod(dt,dt_div(i))) dt_str{i} dts]; dt = floor(dt/dt_div(i));
+    if ~dt, break, end
+end
+if dt
+    dts = [num2str(dt) 'd' dts]; 
+else
+    dts = dts(2:end);
+end
 end

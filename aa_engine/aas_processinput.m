@@ -34,23 +34,27 @@ if ~aap.directory_conventions.continueanalysis
     end
 end
 
+% get module name for first-level analysis
+modulenames = fieldnames(aap.tasksettings);
+firstlevel = modulenames{cell_index(modulenames,'firstlevel_model')};
+
+% Correct EV onstets for number of dummies?
+numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies; 
+
 % Reads in header
 head = study_header(aap.acq_details.input.list);
 LIST = importdata(aap.acq_details.input.list);
 for v = 2:size(LIST,1)
     ID = str2double(list_index(LIST{v},head.ID));
-    VOL = list_index(LIST{v},head.FMRI1);
+    VOL = str2double(list_index(LIST{v},head.FMRI1));
     nSess = 2; aSess = [];
     while ~isempty(list_index(LIST{1},head.FMRI1,nSess))
         aSess = horzcat(aSess,str2double(list_index(LIST{v},head.FMRI1,nSess)));
         nSess = nSess + 1;
     end
     nSess = nSess - 2;
-    strSubj = mri_findvol(str2double(VOL));
-    
-    % Obtain TR from the first session
-    h = dicominfo(mri_finddcm(str2double(VOL),aSess(1)));
-    TR = h.RepetitionTime/1000; % in seconds
+       
+    strSubj = mri_findvol(aap,VOL);
     
     % One or more sessions
     if isfield(aap.acq_details.input, 'referencedirectory_tmpl')
@@ -59,15 +63,44 @@ for v = 2:size(LIST,1)
     if ~isfield(aap.acq_details.input, 'selected_sessions') || ~any(aap.acq_details.input.selected_sessions),...
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
-    aap=aas_addsubject(aap,strSubj,aSess(aap.acq_details.input.selected_sessions));
+    aap=aas_addsubject(aap,VOL,aSess(aap.acq_details.input.selected_sessions));
+    
     for i = aap.acq_details.input.selected_sessions
+		if ~aSess(i), continue; end
+        
+        % Obtain TR
+        h = spm_dicom_headers(mri_finddcm(aap,VOL,aSess(i)));
+        TR = h{1}.RepetitionTime/1000; % in seconds
+        
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);
         if exist('refDir','var')
+			clear names durations onsets tmod pmod;
             load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
+            % [MDV] initialise pmod and tmod if they don't exist
+            if ~exist('pmod','var'), pmod(1:numel(names)) = struct('name',[],'param',[],'poly',[]);end
+            if ~exist('tmod','var'), tmod = cell(1,numel(names)); end
             for iEV = 1:numel(names)
-                % Event onsets has to be corrected accoring to the number of dummies
-                aap=aas_addevent(aap,'aamod_firstlevel_model',strSubj,session,names{iEV},onsets{iEV}-aap.acq_details.numdummies*TR,durations{iEV});
+                % Event onsets has to be corrected according to the number of dummies
+                % [MDV] format parametric from pmod and tmod if they are there
+                if ~isempty(tmod{iEV}), % put any tmod in pmod
+                    pmod(iEV).name = [{'time'} pmod(iEV).name];
+                    pmod(iEV).param = [{onsets{iEV}-numdummies*TR} pmod(iEV).param];
+                    pmod(iEV).poly = [tmod(iEV) pmod(iEV).poly];
+                end
+                l = numel(pmod(iEV).name);
+                if l > 0,
+                    clear parametric
+                    parametric(1:l) = struct('name',[],'P',[],'h',[]);
+                    for n = 1:l,
+                        parametric(n).name = pmod(iEV).name{n};
+                        parametric(n).P = pmod(iEV).param{n}';
+                        parametric(n).h = pmod(iEV).poly{n};
+                    end
+                    aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV},parametric);
+                else
+                    aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV});
+                end
             end
         end
     end

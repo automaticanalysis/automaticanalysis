@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='SPM compartment signal' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>  
+                <stream>segmasksStrict</stream>
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>compSignal</stream>
+            </outputstreams>
+            
+            <W2Gdist>1</W2Gdist>
+            <C2Gdist>1</C2Gdist>
+            <C2Sdist>3</C2Sdist>
+            <maskOrder>GM,WM,CSF</maskOrder>
+            
+            <diagnostic>1</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

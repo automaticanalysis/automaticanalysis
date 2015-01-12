@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Tissue wavelets summarize' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+                        
+            <inputstreams>
+                <stream>tiss_wavelets</stream>     
+            </inputstreams>
+            
+            <outputstreams>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

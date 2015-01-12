@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+	<tasklist>
+		<currenttask mfile_alias='aamod_biascorrect_segment8' domain='subject' desc='Bias correct a structural image using SPM8 segmentation routine'>
+
+            <permanenceofoutput>2</permanenceofoutput>
+            
+	        <samp desc='Sampling distance (mm)'>3</samp>
+            <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank defaults to Seg/TPM.nii -->
+            <vox desc='Voxel size of segmented images'>1.5</vox>
+            <affreg desc='Initial affine registration'>mni</affreg>
+        	<biasfwhm desc='FWHM of the bias field'>60</biasfwhm>
+            <biasreg desc='regularization for the bias field'>.001</biasreg>
+			<reg desc='regularization'>.001</reg>
+			<mrf desc='Markov Random Field argument'>0</mrf>
+			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
+			
+            <!-- NB. The order of the streams is important;
+            the aa module assumes one input stream which is the
+            image to segment. -->
+            
+			<inputstreams>
+				<stream>t1</stream>
+			</inputstreams>
+			
+			<outputstreams>
+				<stream>t1</stream>
+				<stream>seg8</stream>
+			</outputstreams>
+	
+		</currenttask>
+	</tasklist>
+</aap>

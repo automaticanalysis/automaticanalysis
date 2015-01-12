@@ -1,127 +1,160 @@
 % AA module - write normalised EPIs
-% [aap,resp]=aamod_norm_write(aap,task,i,j)
+% [aap,resp]=aamod_norm_write(aap,task,subj,sess)
 % Rhodri Cusack MRC CBU Cambridge Jan 2006-Aug 2007
 % Resamples EPIs using *_seg_sn.mat file [if present] or *_sn.mat file
 % Changed domain to once per session for improved performance when parallel
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_norm_write(aap,task,i,j)
+function [aap,resp]=aamod_norm_write(aap,task,varargin)
 
 resp='';
 
 switch task
-	case 'report' % [TA]
-        if ~exist('j','var'), j = 1; end
-        fn = ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI.jpg'];
-        if ~exist(fullfile(aas_getsesspath(aap,i,j),fn),'file')
-            fsl_diag(aap,i,j);
+    case 'report' % [TA]
+        subj = varargin{1};
+        if nargin == 4
+            sess = varargin{2};
+            localpath = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]);
+        else % subject
+            localpath = aas_getpath_bydomain(aap,'subject',subj);
         end
-        % Single-subjetc
-        fdiag = dir(fullfile(aas_getsesspath(aap,i,j),'diagnostic_*.jpg'));
-        for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,i,'<table><tr><td>');
-            aap=aas_report_addimage(aap,i,fullfile(aas_getsesspath(aap,i,j),fdiag(d).name));
-            aap = aas_report_add(aap,i,'</td></tr></table>');
-        end
-        % Study summary
-        aap = aas_report_add(aap,'reg',...
-            ['Subject: ' basename(aas_getsubjpath(aap,i)) '; Session: ' basename(aas_getsesspath(aap,i,j)) ]);
-        aap=aas_report_addimage(aap,'reg',fullfile(aas_getsesspath(aap,i,j),fn));
-    case 'doit'
-        
-        voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
-        
-        % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,i); 
-        
-        % get sn mat file from normalisation
-        subj.matname = aas_getfiles_bystream(aap,i,'normalisation_seg_sn');
-        
-        streams=aap.tasklist.currenttask.inputstreams;
         
         % find out what streams we should normalise
-        streams=streams.stream(~[strcmp('normalisation_seg_sn',streams.stream)]);
+		streams=aas_getstreams(aap,'out');
+        if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
+            inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
+        else
+            inds = 1:length(streams);
+        end
+        % determine normalised struct
+        struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+        sname = basename(struct);
+        struct = struct((sname(:,1)=='w'),:);
+        for streamind = inds
+            streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
+            streamfn = streamfn(1,:);
+            streamfn = strtok_ptrn(basename(streamfn),'-0');
+            fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
+            if ~exist(fullfile(localpath,fn),'file')
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
+            end
+            % Single-subjetc
+            fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
+            for d = 1:numel(fdiag)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                imgpath = fullfile(localpath,fdiag(d).name);
+                aap=aas_report_addimage(aap,subj,imgpath);
+                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+            end
+            % Study summary
+            aap = aas_report_add(aap,'reg',...
+                ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
+            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
+        end
+    case 'doit'
+        subj = varargin{1};
+        if nargin == 4, sess = varargin{2}; end
         
-        % Is session specified in task header (used for meanepi, which only
-        % occurs in session 1
+        % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
-            j=aap.tasklist.currenttask.settings.session;
-        end;
+            sess = aap.tasklist.currenttask.settings.session;
+        end        
+        voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
+        
+        % get sn mat file from normalisation
+        matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
+        
+		% find out what streams we should normalise
+        streams=aap.tasklist.currenttask.outputstreams.stream;
         
         for streamind=1:length(streams)
-            subj.imgs = [];
-                        
+            imgs = [];
             % Image to reslice
-            if (exist('j','var'))
-                P = aas_getfiles_bystream(aap,i,j,streams{streamind});
+            if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if exist('sess','var')
+                P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind});
             else
-                P = aas_getfiles_bystream(aap,i,streams{streamind});
+                P = aas_getfiles_bystream(aap,subj,streams{streamind});
             end
             
+            % exclude image already normalised
+            f = basename(P);
+            P = P(f(:,1) ~= aap.spm.defaults.normalise.write.prefix,:);
             
-            subj.imgs = strvcat(subj.imgs, P);
+            imgs = strvcat(imgs, P);
+            
             % delete previous because otherwise nifti write routine doesn't
             % save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
                 [pth fle ext]=fileparts(P(c,:));
-                [s w]=aas_shell(['rm ' fullfile(pth,['w' fle ext])],true); % quietly
+                [s w] = aas_shell(['rm ' fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext])],true); % quietly
             end;
             
             
             % set defaults
             flags = aap.spm.defaults.normalise.write;
-            flags.vox = voxelSize; 
+            flags.vox = voxelSize;
             
             % now write normalised
-            if (length(subj.imgs)>0)
-                spm_write_sn(subj.imgs,subj.matname, flags);
-            end;
+            if ~isempty(imgs)
+                % Ignore .hdr files from this list...
+                imgsGood = imgs;
+                for n = size(imgsGood,1):-1:1
+                    if ~isempty(strfind(imgsGood(n,:), '.hdr'))
+                        imgsGood(n,:) = [];
+                    end
+                end
+                spm_write_sn(imgsGood,matname,aap.spm.defaults.normalise.write);
+            end
+            
             wimgs=[];
             
             % describe outputs
-            for fileind=1:size(subj.imgs,1)
-                [pth nme ext]=fileparts(subj.imgs(fileind,:));
-                wimgs=strvcat(wimgs,fullfile(pth,['w' nme ext]));
-            end;
-            if (exist('j','var'))
-                aap=aas_desc_outputs(aap,i,j,streams{streamind},wimgs);
+            for fileind=1:size(imgs,1)
+                [pth, nme, ext] = fileparts(imgs(fileind,:));
+                % overwrite input with output if specified (e.g. for contrasts)
+                if isfield(aap.tasklist.currenttask.settings.outputstreams,'preservefilename') && ...
+                        aap.tasklist.currenttask.settings.outputstreams.preservefilename
+                    movefile(fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]),imgs(fileind,:));
+                    wimgs = strvcat(wimgs,imgs(fileind,:));
+                else
+                    wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
+                end
+            end
+            
+            % binarise if specified
+            if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
+                for e = 1:size(wimgs,1)
+                    inf = spm_vol(deblank(wimgs(e,:)));
+                    Y = spm_read_vols(inf);
+                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
+                    nifti_write(deblank(wimgs(e,:)),Y,'Binarized',inf)
+                end
+            end 
+            
+            % describe outputs with diagnostic
+            % determine normalised struct
+            struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+            sname = basename(struct);
+            struct = struct((sname(:,1)=='w'),:);
+            if (exist('sess','var'))
+                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
+                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
+                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},struct);
+                end
             else
-                aap=aas_desc_outputs(aap,i,streams{streamind},wimgs);
-            end;
-        end;
-        
+                aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
+                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
+                    aas_checkreg(aap,subj,streams{streamind},struct);
+                end
+            end
+        end
         
     case 'checkrequirements'
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
-end
-
-function fsl_diag(aap,i,j) % [TA]
-% Create FSL-like overview using T1 instead of the template
-
-% Obtain structural from aamod_norm_noss
-norm_dir = aas_getsubjpath(aap,i,cell_index({aap.tasklist.main.module.name},'aamod_norm_noss'));
-structdir=fullfile(norm_dir,aap.directory_conventions.structdirname);
-sP = dir( fullfile(structdir,[aap.spm.defaults.normalise.write.prefix 's' aap.acq_details.subjects(i).structuralfn '*.nii']));
-sP = fullfile(structdir,sP(1).name);
-
-% Obtain the first EPI
-sess_dir = aas_getsesspath(aap,i,j);
-fP = aas_getimages_bystream(aap,i,j,aap.tasklist.currenttask.inputstreams.stream{2});
-[pP fP eP] = fileparts(fP(1,:));
-fP = fullfile(pP,[aap.spm.defaults.normalise.write.prefix fP eP]);
-
-% Overlays
-iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_epi2MNI']);
-system(sprintf('slices %s %s -s 2 -o %s.gif',sP,fP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
-iP = fullfile(sess_dir,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_MNI2epi']);
-system(sprintf('slices %s %s -s 2 -o %s.gif',fP,sP,iP));
-[img,map] = imread([iP '.gif']); s3 = size(img,1)/3;
-img = horzcat(img(1:s3,:,:),img(s3+1:2*s3,:,:),img(s3*2+1:end,:,:));
-imwrite(img,map,[iP '.jpg']); delete([iP '.gif']);
 end

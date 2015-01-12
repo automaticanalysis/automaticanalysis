@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use the FSL segmentation tool (FAST)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.3</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>segmentation</stream>
+            </outputstreams>
+            
+            <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed -->
+            <structural>1</structural>
+            
+            <!-- Options? -->
+            <options>--channels=1 --type=1 --class=3 -B</options>
+            
+            <!-- Diagnostic videos? -->
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,6 +1,4 @@
-%aamod_unzipstream for taking a zipped (*.gz) file as an initial input to
-%AA and turning it into a stream.
-%
+% Turns a list of images into a 4d volume
 function [aap, resp] = aamod_fslmerge(aap, task, subjInd, sessInd)
 
 resp='';
@@ -17,7 +15,7 @@ switch task
         % put files in a horizontal string to pass to fslmerge
         horizInFiles = [];
         for fileInd = 1:size(epiFiles,1)
-            horizInFiles = [horizInFiles strtok(epiFiles(fileInd,:))];
+            horizInFiles = [horizInFiles strtok(epiFiles(fileInd,:)) ' '];
         end
         
         [pth, nm, ext] = fileparts(strtok(epiFiles(1,:)));

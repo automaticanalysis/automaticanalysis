@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='ANTS template from structurals' modality='MRI'>
+            
+            <qsub>
+                <timeBase>40</timeBase>
+                <memoryBase>12</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>segmentation</stream> 
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>ANTStemplate</stream>
+            </outputstreams>
+            
+            <structural_images>1</structural_images>
+            <segmentation_images>1</segmentation_images>
+            
+            <!-- Extra options to include (e.g. parallelisation + rigid registration) -->
+            <extraoptions>-c 2 -j 4 -r 1 -s MI -t GR -g 1</extraoptions>
+            
+            <diagnostic>0</diagnostic>
+            
+        </currenttask>
+    </tasklist>
+</aap>

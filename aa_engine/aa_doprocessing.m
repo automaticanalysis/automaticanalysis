@@ -66,14 +66,15 @@
 %   get subdirectory name for a single example specified by index of this
 %   domain (e.g., 'movie' for session 1)
 %
+% 2013-10-29: Set paths to FSL in here, not each time aas_runfslcommand is
+% called [RC]
 
 
 
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
 
-global aacache
-clear global aacache;
+aa_init(aap);
 
 if (exist('bucket','var'))
     % Get username
@@ -84,7 +85,7 @@ end
 aap=aas_validatepaths(aap);
 
 % launch SPM if not already running
-aap=aas_checkspmrunning(aap);
+aas_checkspmrunning(aap);
 
 % Check this is compiled
 try
@@ -108,8 +109,10 @@ if (exist('analysisid','var'))
 end
 
 global defaults;
-global aaparallel
-global aaworker
+global aaparallel;
+global aaworker;
+global taskqueue;
+global localtaskqueue;
 
 if (exist('username','var'))
     aaworker.username=username;
@@ -200,6 +203,17 @@ aap=aas_doprocessing_initialisationmodules(aap);
 
 aap=aas_builddependencymap(aap);
 
+% Create folder (required by aas_findinputstreamsources to save provenance)
+if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
+    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
+    if (isempty(dir(aapsavepth)))
+        [s w]=aas_shell(['mkdir ' aapsavepth]);
+        if (s)
+            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
+        end
+    end
+end
+
 % Use input and output stream information in XML header to find
 % out what data comes from where and goes where
 aap=aas_findinputstreamsources(aap);
@@ -220,14 +234,7 @@ if (GBFree<10)
 end;
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
-    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
     aapsavefn=fullfile(aapsavepth,'aap_parameters');
-    if (isempty(dir(aapsavepth)))
-        [s w]=aas_shell(['mkdir ' aapsavepth]);
-        if (s)
-            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
-        end
-    end
     aap.internal.aapversion=which('aa_doprocessing');
     save(aapsavefn,'aap');
 end
@@ -237,6 +244,12 @@ try
   eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
 catch
   aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
+end
+% Create a local taskqueue for localonly modules
+try
+  localtaskqueue=aaq_localsingle(aap);
+catch
+  aas_log(aap,true,'Failed to initiate local queue!\n');
 end
 
 % Check registered with django
@@ -254,6 +267,7 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     %     [aap waserror aap.directory_conventions.analysisid_drupalnid]=drupal_checkexists(aap,'job',aap.directory_conventions.analysisid,attr,aaworker.bucket_drupalnid,aaworker.bucket);
 end
 
+%% Main task loop
 mytasks={'checkrequirements','doit'}; %
 for l=1:length(mytasks)
     for k=1:length(aap.tasklist.main.module)
@@ -297,6 +311,9 @@ for l=1:length(mytasks)
         
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
+        
+        % I don't think this supports "selectedsessions" branches but it should do
+        % - RC 2013-09-19
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
@@ -342,7 +359,13 @@ for l=1:length(mytasks)
                         taskmask.indices=indices;
                         taskmask.doneflag=doneflag;
                         taskmask.description=sprintf('%s for %s',description,doneflag);
-                        taskqueue.addtask(taskmask);
+                        if isfield(aap.tasklist.currenttask.settings,'qsub') && ...
+							isfield(aap.tasklist.currenttask.settings.qsub,'localonly') && aap.tasklist.currenttask.settings.qsub.localonly && ...
+                                ~strcmp(aap.options.wheretoprocess,'localsingle')
+                            localtaskqueue.addtask(taskmask);
+                        else
+                            taskqueue.addtask(taskmask);
+                        end
                 end
             end;
         end
@@ -360,6 +383,11 @@ for l=1:length(mytasks)
         % Get jobs started as quickly as possible - important on AWS as it
         % can take a while to scan all of the done flags
         taskqueue.runall(dontcloseexistingworkers, false);
+        if ~isempty(localtaskqueue.jobqueue), 
+            % launch SPM if not already running
+            aas_checkspmrunning(aap,1);
+            localtaskqueue.runall(dontcloseexistingworkers, false); 
+        end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
@@ -380,7 +408,9 @@ if ~isempty(aap.options.email)
     end
 end
 
-return;
+aa_close;
+
+end
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
@@ -392,3 +422,4 @@ else
     prev_mfile_alias=prev_stagename;
 end
 [aap,loopvar]=aa_feval(prev_mfile_alias,aap,'getparallelparts');
+end

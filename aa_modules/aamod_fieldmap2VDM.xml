@@ -12,17 +12,20 @@
             
             <inputstreams>
                 <stream>epi</stream>
+				<stream>epi_dicom_header</stream>
                 <stream>fieldmap</stream>
+				<stream>fieldmap_dicom_header</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>fieldmap</stream>
             </outputstreams>
             
-            <te1>10.0</te1>
-            <te2>12.46</te2>
+            <!-- set default to 0 if you want to avoid using false values in case of error during retrieving them from the DICOM header-->
+            <te1>0</te1>
+            <te2>0</te2>
             <epifm>0</epifm>
-            <tert>23.76</tert>
+            <tert>0</tert>
             <kdir>-1</kdir>
             <mask>1</mask>
             <match>1</match>

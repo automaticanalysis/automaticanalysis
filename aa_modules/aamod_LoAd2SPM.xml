@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Use LoAd to segment the brain' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>structural</stream>
+                <stream>segmentation</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>segmentation</stream>
+            </outputstreams>
+            
+            <!-- Which segmentations we include in GM mask; use [2 4] if we want DeepGM -->
+            <includeGM>[2]</includeGM>
+            <!-- Which segmentations we include in WM mask -->
+            <includeWM>[1]</includeWM>
+            <!-- Which segmentations we include in CSF mask -->
+            <includeCSF>[3 5]</includeCSF>
+            
+            <diagnostic>0</diagnostic>
+        
+            </currenttask>
+    </tasklist>
+</aap>

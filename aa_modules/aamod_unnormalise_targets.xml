@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' mfile_alias='aamod_unnormalise_rois2' desc='Unnormalise target ROIs for tractography'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <roi_path></roi_path>
+            
+            <rois>
+                <roi>
+                    <filename></filename>
+                     <low></low>
+                    <high></high>
+                </roi>
+            </rois>   
+             <!-- for example
+             <roi>
+                <filename>mytarget_%d.nii</filename>
+                <low>1</low>
+                <high>120</high>
+            </roi>
+           -->
+            
+            <inputstreams>
+                <stream>dti_FA</stream>
+                <stream>normalisation_seg_inv_sn</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>tractography_targets</stream>
+                <stream>tractography_targets_mni</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

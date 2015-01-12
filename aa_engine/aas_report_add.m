@@ -9,12 +9,21 @@ if ~isfield(aap,'report')
     return
 end
 
-str = varargin{nargin};
-if nargin == 2
+str = varargin{3};
+if isempty(varargin{2})
     ptr = 'html_main';
 else
-    if isnumeric(varargin{2})
+    if isnumeric(varargin{2}) % Subject
         ptr = sprintf('html_S%02d',varargin{2});
+        if ~isfield(aap.report,ptr)
+            i = varargin{2};
+            aap.report.(sprintf('html_S%02d',i)).fname = fullfile(aap.report.subdir,[aap.report.fbase sprintf('_S%02d.htm',i)]);
+            aap = aas_report_add(aap,0,...
+                sprintf('<a href="%s" target=_top>%s</a><br>',...
+                aap.report.(sprintf('html_S%02d',i)).fname,...
+                ['Subject: ' basename(aas_getsubjpath(aap,i))]));
+            aap = aas_report_add(aap,i,['HEAD=Subject: ' basename(aas_getsubjpath(aap,i))]);            
+        end
     else
         ptr = sprintf('html_%s',varargin{2});
     end

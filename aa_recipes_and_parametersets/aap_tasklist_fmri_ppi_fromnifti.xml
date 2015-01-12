@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>            
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        
+        <main>
+            <!-- Structural -->
+            <module><name>aamod_structuralfromnifti</name></module>
+            <module><name>aamod_coreg_extended_1</name></module>
+            <module><name>aamod_biascorrect_structural</name></module>
+            <module><name>aamod_segment8_multichan</name></module>
+            <module><name>aamod_dartel_createtemplate</name></module>
+            
+            <!-- Functional -->
+            <module><name>aamod_epifromnifti</name></module>
+            <module><name>aamod_wholebrainepifromnifti</name></module>
+            <module><name>aamod_tsdiffana</name></module>			
+            <module><name>aamod_realign</name></module>
+            <module><name>aamod_slicetiming</name></module>
+            <module><name>aamod_smooth</name></module>
+            <module><name>aamod_tsdiffana</name></module>
+            
+            <!-- Modelling -->
+            <module><name>aamod_firstlevel_model</name></module>
+            <module><name>aamod_firstlevel_contrasts</name></module>
+            <module><name>aamod_firstlevel_threshold</name></module>	
+            <module><name>aamod_coreg_extended_2_cons</name></module>
+            <module><name>aamod_norm_write_cons_dartel</name></module>
+            <module><name>aamod_secondlevel_model</name></module>
+
+            <!-- ROIs -->
+            <module><name>aamod_rois_coreg</name></module> <!-- initialstream rois_refvol needed-->
+
+            <!-- PPI -->
+            <module><name>aamod_vois_extract</name></module>
+            <module>
+                <branch>
+                    <analysisid_suffix>_mc_l</analysisid_suffix>
+                    <module><name>aamod_ppi_prepare</name>
+                        <extraparameters>
+                            <aap><tasklist><currenttask><settings>
+                                            <voi>1</voi>
+                            </settings></currenttask></tasklist></aap>
+                        </extraparameters>    
+                    </module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_mc_r</analysisid_suffix>
+                    <module><name>aamod_ppi_prepare</name>
+                        <extraparameters>
+                            <aap><tasklist><currenttask><settings>
+                                            <voi>2</voi>
+                            </settings></currenttask></tasklist></aap>
+                        </extraparameters>    
+                    </module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_sma_l</analysisid_suffix>
+                    <module><name>aamod_ppi_prepare</name>
+                        <extraparameters>
+                            <aap><tasklist><currenttask><settings>
+                                            <voi>3</voi>
+                            </settings></currenttask></tasklist></aap>
+                        </extraparameters>    
+                    </module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_sma_r</analysisid_suffix>
+                    <module><name>aamod_ppi_prepare</name>
+                        <extraparameters>
+                            <aap><tasklist><currenttask><settings>
+                                            <voi>4</voi>
+                            </settings></currenttask></tasklist></aap>
+                        </extraparameters>    
+                    </module>
+                </branch>
+            </module>
+            <module><name>aamod_firstlevel_model</name></module>
+            <module><name>aamod_firstlevel_contrasts</name></module>
+            <module><name>aamod_firstlevel_threshold</name></module>	
+            <module><name>aamod_coreg_extended_2_cons</name></module>
+            <module><name>aamod_norm_write_cons_dartel</name></module>
+            <module><name>aamod_secondlevel_model</name></module>
+        </main>
+    </tasklist>
+</aap>
