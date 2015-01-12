@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Perform ROI analysis using MarsBaR' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <!-- Summary function: 'mean', 'median', or 'eigen1' -->
+            <summaryfn>mean</summaryfn>
+            
+            <!-- How are ROIs defined in the image volumes? 
+                    'label' - volume can contain multiple ROIs, where voxels in each ROI have a unique label.
+                    'cluster' - volume can contain multiple ROIs, but each ROI is a unique cluster
+                    
+                 Note that you should poay attention to what MarsBaR does to your ROIs! If have only one ROI 
+                 in each volume, it is probably best to binarize it! Othewise, MarsBaR may split it into as
+                 many ROIs as there are unique voxel values.
+            -->
+            <roidef>label</roidef>
+            
+            <!-- If enabled, binarizeROIs will binarize each ROI image (volume) before MarsBaR converts 
+                 them to it's ROI format. This is useful, for example, if your ROI images contain a single
+                 ROI, but many unique values. -->
+            <binarizeROIs>0</binarizeROIs>
+            
+            <inputstreams>
+                <stream ismodified='0'>epi</stream>
+                <stream ismodified='0'>firstlevel_spm</stream>
+                <stream ismodified='0' isessential='0'>firstlevel_betas</stream>
+                <stream ismodified='0' isessential='0'>firstlevel_cons</stream>
+                <stream>rois</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>marsbar_stats</stream>
+                <stream>marsbar_rois</stream>
+            </outputstreams>
+        </currenttask>
+    </tasklist>
+</aap>
