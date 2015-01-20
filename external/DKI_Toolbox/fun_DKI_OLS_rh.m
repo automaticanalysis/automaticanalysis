@@ -1,6 +1,9 @@
 function [MK, FA, MD,  l1, l2, l3,v1,v2,v3, Ka, Kr, S0]=fun_DKI_OLS_rh(data_in,data_mask,bval,bvec)
 
 %% ULLS DKI
+%
+% Neto Henriques R, Correia MM, CamCAN (2012), ‘Towards optimization of diffusion kurtosis imaging to study brain changes with age’, 29th annual meeting of the European Society for Magnetic Resonance in Medicine and Biology, Lisbon, Portugal.
+%
 % Implemented by Rafael Henriques
 % november 2011, MRC-CBU
 %%
