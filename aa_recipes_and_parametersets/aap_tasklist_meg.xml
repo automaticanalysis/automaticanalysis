@@ -10,7 +10,7 @@
             <module><name>aamod_meg_get_fif</name></module>
             <module><name>aamod_meg_maxfilt</name></module>
             <module><name>aamod_meg_convert</name></module>
-            <module><name>aamod_meg_denoise_ICA</name></module>
+            <module><name>aamod_meg_denoise_ICA_1</name></module>
         </main>
     </tasklist>
 </aap>

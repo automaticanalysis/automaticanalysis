@@ -1,4 +1,4 @@
-function [aap, resp] = aamod_meg_denoise_ICA(aap,task,subj,sess)
+function [aap, resp] = aamod_meg_denoise_ICA_1(aap,task,subj,sess)
 
 resp='';
 
