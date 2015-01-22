@@ -162,6 +162,9 @@ outpstreams = aas_getstreams(aap,'out');
 if cell_index(inpstreams,'meanepi') % fMRI
     diagstream = 'meanepi';
 end
+if cell_index(inpstreams,'MTI') % MTI
+    diagstream = 'MTI';
+end
 if cell_index(inpstreams,'wholebrain') % partial volume acquisition
     wbstream = inpstreams{cell_index(inpstreams,'wholebrain')};
 else
