@@ -60,7 +60,6 @@ aap.report.fbase = basename(aap.report.html_main.fname);
 
 % Handle session
 inSession = false;
-nSessions = numel(aap.acq_details.sessions);
 
 for k=1:numel(stages)
     fprintf('Fetching report for %s...\n',stages{k});    
@@ -79,10 +78,10 @@ for k=1:numel(stages)
     if ~strcmp(domain,'[unknown]')
         
         % Set inSession flag
-        if strcmp(domain,'session') && ~inSession
+        if ~isempty(strfind(domain,'session')) && ~inSession
             inSession = true;
         end
-        if ~strcmp(domain,'session') && inSession
+        if isempty(strfind(domain,'session')) && inSession
             inSession = false;
         end
         
@@ -110,7 +109,7 @@ for k=1:numel(stages)
             if inSession
                 if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td>');
-                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
             end
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
@@ -119,7 +118,7 @@ for k=1:numel(stages)
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if sess == numel(aap.acq_details.([domain 's'])), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end;
     end
