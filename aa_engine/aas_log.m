@@ -7,7 +7,7 @@ function aas_log(aap,iserr,msg,style)
 
 % figure out whether the caller is an engine (aaq_*)
 ST = dbstack;
-isEngine = ~isempty(strfind(ST(2).name,'aaq'));
+isEngine = numel(ST) > 1 && ~isempty(strfind(ST(2).name,'aaq'));
 
 try
     % don't attempt html tags if running outside of Matlab desktop

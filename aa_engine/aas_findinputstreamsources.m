@@ -174,7 +174,14 @@ if (~notthislevelplease)
     if (isfield(aap.schema.tasksettings.(stagename)(index),'outputstreams'))
         outputstreams=aap.schema.tasksettings.(stagename)(index).outputstreams;
         for i=1:length(outputstreams.stream)
-            if (strcmp(outputtype,outputstreams.stream{i}) || strcmp(outputtype,[stagetag '.' outputstreams.stream{i}]))
+            % get simple streamname
+            streamsimple = '';
+            dot_ind = find(outputstreams.stream{i}=='.', 1, 'last');
+            if ~isempty(dot_ind), streamsimple = outputstreams.stream{i}(dot_ind+1:end); end
+            
+            if (strcmp(outputtype,outputstreams.stream{i}) || ...
+                    strcmp(outputtype,[stagetag '.' outputstreams.stream{i}]) || ...
+                    strcmp(outputtype,streamsimple))
                 stagethatoutputs=currentstage;
                 mindepth=depth;
             end;

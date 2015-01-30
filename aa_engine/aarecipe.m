@@ -82,13 +82,12 @@ if exist('tasklistxml','var')
 end;
 
 % And copy in SPM defaults
-global defaults
 try
     aap.spm.defaults=spm_get_defaults;
 catch
-    
+    global defaults    
     if (~isstruct(defaults))
-        aas_log(aap,true,'You must launch SPM before running aa- try typing spm fmri;');
+        aas_log(aap,false,'SPM defaults has not been found global defaults will be used;');
     else
         aap.spm.defaults=defaults;
     end;

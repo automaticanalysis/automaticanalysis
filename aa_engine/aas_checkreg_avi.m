@@ -2,7 +2,7 @@
 
 function aas_checkreg_avi(aap, p, axisDim, suffix, slicesD)
 
-if ~aap.options.diagnostic_videos
+if isfield(aap.options,'diagnostic_videos') && ~aap.options.diagnostic_videos
     aas_log(aap,false,'Diagnostic videos disabled (check aap.options.diagnostic_videos)');
 else
     global st

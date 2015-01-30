@@ -39,4 +39,4 @@ aap = aas_addsubject(aap,{[11 78] []},{'rest_raw.fif','task_raw.fif'});
 
 %% RUN
 aa_doprocessing(aap);
-aas_garbagecollection(aap,true);
+% aas_garbagecollection(aap,true);
