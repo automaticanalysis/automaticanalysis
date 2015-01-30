@@ -9,22 +9,22 @@
         <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
-		<Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
+        <Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
         <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
         <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>3</subject_directory_format>
         <subject_filenames_format desc='Format of filenames within session directory' ui='optionlist' options='manual|CBU060500|S01'>1</subject_filenames_format>
         <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
         <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
-		<reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
-		<stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
+        <reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
+        <stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
         <stats_ppi desc='Directory for single subject PPI statistics' ui='dir'>PPI</stats_ppi>
-		<rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
+        <rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
         <dartelsubjdirname desc='Name of DARTEL subject directory' ui='dir'>dartel</dartelsubjdirname>
         <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
         <analysisid ui='dir_part'></analysisid>
         <analysisid_suffix ui='dir_part'></analysisid_suffix>
-      	<continueanalysis desc='Continue previous analysis?' ui='yesno'>1</continueanalysis>
-		<remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
+        <continueanalysis desc='Continue previous analysis?' ui='yesno'>1</continueanalysis>
+        <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
         <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
         <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>%s</subjectoutputformat>
         <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
@@ -33,17 +33,19 @@
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
-		<megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
+        <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
+        <spmdir desc="Path(s) to SPM" ui="dir"></spmdir>		
         <spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
         <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
         <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-		<freesurferdir desc='Path to freesurfer' ui='dir'>/usr/share/freesurfer</freesurferdir>
-		<freesurfershell desc='Shell used to run FreeSurfer' ui='text'>csh</freesurfershell>
-		<freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-		<freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
-		<neuromagdir desc='Path to Neuromag' ui='dir'>/imaging/local/software/neuromag</neuromagdir>
+        <freesurferdir desc='Path to freesurfer' ui='dir'>/usr/share/freesurfer</freesurferdir>
+        <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>csh</freesurfershell>
+        <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
+        <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
+        <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
+        <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
@@ -61,8 +63,8 @@
                     <meg_session desc='MEG acquisition' ui='custom'></meg_session>                        
                     <diffusion_session desc='Diffusion acquisition' ui='custom'></diffusion_session>                        
                     <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
-                            <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
-                            </diffusion_session_probtrackx>
+                        <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
+                        </diffusion_session_probtrackx>
                     </diffusion_session_bedpostx>                        
                 </subject>
                 <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
@@ -72,15 +74,15 @@
                 <splitsession_cv_fold_hyper desc='Hyperalignment of an ROI' ui='custom'>
                 </splitsession_cv_fold_hyper>
             </study>
-                            
+            
         </parallel_dependencies>
         <realtime>
             <path desc='Directory for realtime data' ui='dir'>/home/rcusack/realtime</path>
         </realtime>
     </directory_conventions>
     <options>
-		<NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
-		<verbose desc='How verbose to be' ui='yesno'>1</verbose>
+        <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
+        <verbose desc='How verbose to be' ui='yesno'>1</verbose>
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
@@ -142,14 +144,14 @@
         </s3>
         <numdummies desc='Number of dummy scans' ui='int'>5</numdummies>
         <topscannumber desc='Ignore EPI scans after this one' ui='int'/>
- 	  
-		<input>
-			<list desc='List of subjects and sessions' ui='dir'></list>
-			<selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
-			<referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
-			<correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
-		</input>
-	  
+        
+        <input>
+            <list desc='List of subjects and sessions' ui='dir'></list>
+            <selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
+            <referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+            <correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
+        </input>
+        
         <subjects>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>

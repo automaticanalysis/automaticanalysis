@@ -163,8 +163,10 @@ switch task
                         aas_log(aap,true,err);
                     end
                     % Put this in its place
-                    startingParameters(whichitem)=aSE.(fnames{fieldind});
-                end
+                    if ~isempty(aSE.(fnames{fieldind}))
+                        startingParameters(whichitem)=aSE.(fnames{fieldind});
+                    end;
+                end;
             else
                startingParameters = aSE; 
             end

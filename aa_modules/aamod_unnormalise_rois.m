@@ -77,10 +77,20 @@ switch task
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
         
+        % Find what interpolation method to use
+        if ~isfield(aap.tasklist.currenttask.settings,'interp') || isempty(aap.tasklist.currenttask.settings.interp)
+            interp=defs.write.interp;
+        else
+            interp=aap.tasklist.currenttask.settings.interp;
+        end;
+        
+        % Use it for normalise and reslice
+        aap.spm.defaults.normalise.write.interp=interp;
+        
         % Flags to pass to routine to create resliced images
         % (spm_reslice)
         resFlags = struct(...
-            'interp', defs.write.interp,...       % interpolation type
+            'interp', aap.tasklist.currenttask.settings.interp,...       % interpolation type
             'wrap', defs.write.wrap,...           % wrapping info (ignore...)
             'mask', defs.write.mask,...           % masking (see spm_reslice)
             'which', 1,...     % what images to reslice

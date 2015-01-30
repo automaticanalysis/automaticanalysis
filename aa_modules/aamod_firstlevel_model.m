@@ -120,7 +120,9 @@ switch task
         % avoid overwrite dialog
         prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
         if ~isempty(prevmask)
-            spm_unlink(fullfile(SPM.swd, prevmask)); 
+            for ind=1:size(prevmask,1)
+                spm_unlink(fullfile(SPM.swd, prevmask(ind,:)));
+            end;
         end
                 
         SPMest = spm_spm(SPMdes);
