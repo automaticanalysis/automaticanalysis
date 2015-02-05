@@ -9,7 +9,7 @@ switch task
         aap = aas_report_add(aap,subj,'<table><tr><td>');
 
         %% 1. Bad channels
-        [~, txt] = unix(sprintf('grep "bad channels (" %s',logfname));
+        [junk, txt] = unix(sprintf('grep "bad channels (" %s',logfname));
         txt = textscan(txt,'%s','delimiter','\n'); txt = txt{1}{1};
         aap = aas_report_add(aap,subj,'<h4>Bad channels:</h4>');
         aap = aas_report_add(aap,subj,sprintf('<h5>%s</h5>',txt));
@@ -47,6 +47,7 @@ switch task
             legend({'error(cm)','velocity(cm/s)','rotation(rad/s)','translation(cm)'},'Location','NorthEastOutside')
             title(basename(movfname),'Interpreter','none');
             
+            set(fig,'Renderer','zbuffer');
             print(fig,'-djpeg',figfname);
             aas_log(aap,0,sprintf('- Figure saved to %s\n',figfname));
             close(fig)
@@ -65,9 +66,9 @@ switch task
             logtrfname  = fullfile(sesspath,sprintf('%s.log',fstem));
 
             aap = aas_report_add(aap,subj,'<h4>Transformation:</h4>');
-            [~, txt] = unix(sprintf('grep Rotation %s',logtrfname)); txt = txt(1:end-1);
+            [junk, txt] = unix(sprintf('grep Rotation %s',logtrfname)); txt = txt(1:end-1);
             aap = aas_report_add(aap,subj,[fstem ': ' txt '<br>']);
-            [~, txt] = unix(sprintf('grep Position %s',logtrfname)); txt = txt(1:end-1);
+            [junk, txt] = unix(sprintf('grep Position %s',logtrfname)); txt = txt(1:end-1);
             aap = aas_report_add(aap,subj,[fstem ': ' txt '<br>']);
         end
         

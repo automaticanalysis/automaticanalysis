@@ -7,7 +7,7 @@
 % Alejandro Vicente Grabovetsky Jan-2012
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_realignunwarpDCCN(aap,task,subj)
+function [aap,resp]=aamod_realignunwarp(aap,task,subj)
 
 resp='';
 
@@ -87,7 +87,8 @@ switch task
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
-                print('-djpeg','-r150',fn);
+                set(f,'Renderer','zbuffer');
+                print(f,'-djpeg','-r150',fn);
                 close(f);
                 
                 aap = aas_report_add(aap,'moco','<td>');

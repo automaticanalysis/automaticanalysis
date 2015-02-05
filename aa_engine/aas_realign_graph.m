@@ -40,6 +40,7 @@ StS = diff(sum(abs(horzcat(DmovePars,RmovePars/(QA_ROT/QA_TRANSL))),2));
 
 %% Plot
 fg= spm_figure;
+set(fg,'Renderer','zbuffer');
 
 % translation over time series
 ax=axes('Position',[0.1 0.65 0.8 0.2],'Parent',fg,'XGrid','on','YGrid','on');

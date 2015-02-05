@@ -177,7 +177,7 @@ for d = 1:size(Y{1},axisDim)
 end
 % Save video
 if ~isempty(movieFN)
-    aviObject = close(aviObject);
+    junk = close(aviObject);
 end
 try
     % Return figure 1 to not be on top!

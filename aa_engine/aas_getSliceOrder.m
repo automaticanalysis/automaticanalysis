@@ -45,7 +45,7 @@ switch(dicomHdr.sliceorder)
     otherwise
         
         if isfield(dicomHdr, 'Private_0019_1029')
-            [~, aap.tasklist.currenttask.settings.sliceorder] = sort(dicomHdr.Private_0019_1029);
+            [junk, aap.tasklist.currenttask.settings.sliceorder] = sort(dicomHdr.Private_0019_1029);
             dicomHdr.sliceorder = 'custom (determined from field Private_0019_1029)';
         else
             error('BAD ORDER! Check your slice order, and/or set it manually!');
@@ -60,6 +60,7 @@ if isfield(aap.tasklist.currenttask.settings, 'slicetime') && isempty(aap.taskli
         % NOTE, this will not work for a 3D sequence
         % Reason 1) A 3D sequence does not have slice order
         % Reason 2) The RepetitionTime is not actually the Volume TR
+        % NOTE, this will not work for sparse imaging
         aap.tasklist.currenttask.settings.TRs = dicomHdr.RepetitionTime;
     end
     aap.tasklist.currenttask.settings.slicetime=aap.tasklist.currenttask.settings.TRs/V.dim(3);

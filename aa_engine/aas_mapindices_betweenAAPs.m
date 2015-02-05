@@ -73,7 +73,7 @@ localDomainNames = aas_getNames_bydomain(localAA, curDomain);
 remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
 
 if ~strcmp(curDomain, 'study')
-    [~,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
+    [junk,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
     
 else
     map.(curDomain) = 1;

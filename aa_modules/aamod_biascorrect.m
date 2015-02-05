@@ -66,7 +66,9 @@ switch task
             
             spm_orthviews('reposition', [0 0 0])
             
-            print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+            f = spm_figure('GetWin','Graphics');
+            set(f,'Renderer','zbuffer');
+            print(f, '-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '_' num2str(d) '.jpeg']));
         end
         

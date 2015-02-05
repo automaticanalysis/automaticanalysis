@@ -41,7 +41,7 @@ switch task
         % also load the estimated SPM file, need for contrasts
         SPM = des_struct(mbSPM);
         
-        if ~isfield(SPM, 'xCon') | isempty(SPM.xCon)
+        if ~isfield(SPM, 'xCon') || isempty(SPM.xCon)
            aas_log(aap, 1, 'SPM model contains no contrasts! Try adding aamod_firstlevel_contrasts to your tasklist before this module.'); 
         end
         
@@ -95,7 +95,7 @@ switch task
             for e = 1 : numEvents
                 
                 % Get the average duration of this event (convert to secs)
-                [~, durations] = event_onsets(mbSPM, eSpecs(:, e));
+                [junk, durations] = event_onsets(mbSPM, eSpecs(:, e));
                 avgDur = mean(durations .* SPM.xY.RT);
                 
                 % Calculate % Signal change for this event

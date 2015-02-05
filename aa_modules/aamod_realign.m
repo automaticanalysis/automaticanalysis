@@ -78,7 +78,8 @@ switch task
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
-                print('-djpeg','-r150',fn);
+                set(f,'Renderer','zbuffer');
+                print(f,'-djpeg','-r150',fn);
                 close(f);
 
                 

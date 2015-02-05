@@ -32,7 +32,7 @@ else
 end
 
 % Get the domain indices for this level (e.g., stream indices for this subject)
-[~, domainI] = aas_getN_bydomain(aap, streamDomain, reqestedIndices);
+[junk, domainI] = aas_getN_bydomain(aap, streamDomain, reqestedIndices);
 
 order = {'input' 'output'};
 if strcmp(varargin{end},'input') || strcmp(varargin{end},'output')

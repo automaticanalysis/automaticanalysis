@@ -115,7 +115,7 @@ function colors = distinguishable_colors(n_colors,bg,func)
     dX = bsxfun(@minus,lab,lastlab); % displacement of last from all colors on list
     dist2 = sum(dX.^2,2);  % square distance
     mindist2 = min(dist2,mindist2);  % dist2 to closest previously-chosen color
-    [~,index] = max(mindist2);  % find the entry farthest from all previously-chosen colors
+    [junk,index] = max(mindist2);  % find the entry farthest from all previously-chosen colors
     colors(i,:) = rgb(index,:);  % save for output
     lastlab = lab(index,:);  % prepare for next iteration
   end

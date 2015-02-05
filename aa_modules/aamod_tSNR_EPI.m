@@ -246,7 +246,7 @@ switch task
                     aviObject = addframe(aviObject,getframe(2,windowSize));
                 end
                 
-                aviObject = close(aviObject);
+                junk = close(aviObject);
             end
         end
         
@@ -308,7 +308,7 @@ switch task
             K.RT))
         eval(legStr);
         
-        set(gcf,'PaperPositionMode','auto')
+        set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '_tSNR.jpeg']));
         
@@ -347,7 +347,7 @@ switch task
             eval(legStr);
         end
         
-        set(gcf,'PaperPositionMode','auto')
+        set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '_timecourse.jpeg']));
         

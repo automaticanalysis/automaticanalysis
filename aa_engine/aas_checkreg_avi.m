@@ -123,7 +123,7 @@ else
             fJframe.fFigureClient.getWindow.setAlwaysOnTop(false)
         catch
         end
-        close(aviObject);
+        junk = close(aviObject);
         warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
         
         % ~FSL
@@ -137,6 +137,7 @@ else
                 set(f,'Position',[1 1 size(img,2) size(img,1)],'PaperPositionMode','auto','InvertHardCopy','off');
                 try
                     imshow(img,'Border','tight');
+                    set(f,'Renderer','zbuffer');
                     print(f,'-djpeg','-r150',slicesFilename);
                 catch
                 end;

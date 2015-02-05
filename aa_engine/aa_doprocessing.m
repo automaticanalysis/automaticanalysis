@@ -74,7 +74,7 @@
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
 
-aa_init(aap);
+aap = aa_init(aap);
 
 if (exist('bucket','var'))
     % Get username

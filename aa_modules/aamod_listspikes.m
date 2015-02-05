@@ -137,8 +137,10 @@ switch task
         
         
         %% Save graphical output to common diagnostics directory
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+        set(2,'Renderer','zbuffer');
+        print(2,'-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
+        try close(2); catch; end
     case 'checkrequirements'
 
     otherwise

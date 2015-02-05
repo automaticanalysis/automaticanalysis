@@ -135,7 +135,9 @@ switch task
         % Outline of structural!
         spm_ov_reorient('context_init', 2)
         
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+        f = spm_figure('GetWin','Graphics');
+        set(f,'Renderer','zbuffer');
+        print(f,'-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' mriname '.jpeg']));
         
         %% Diagnostic VIDEO

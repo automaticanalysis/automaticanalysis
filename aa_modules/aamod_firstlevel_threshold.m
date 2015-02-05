@@ -229,7 +229,7 @@ switch task
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
-            mon = imresize(mon(1:size(mon,2)*2/3,:,:),0.5);
+            mon = mon(1:size(mon,2)*2/3,:,:);
             imwrite(mon,fn3d);
             
             % Outputs
