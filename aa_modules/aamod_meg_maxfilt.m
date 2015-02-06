@@ -10,9 +10,11 @@ switch task
 
         %% 1. Bad channels
         [junk, txt] = unix(sprintf('grep "bad channels (" %s',logfname));
-        txt = textscan(txt,'%s','delimiter','\n'); txt = txt{1}{1};
-        aap = aas_report_add(aap,subj,'<h4>Bad channels:</h4>');
-        aap = aas_report_add(aap,subj,sprintf('<h5>%s</h5>',txt));
+        if ~isempty(txt)
+            txt = textscan(txt,'%s','delimiter','\n'); txt = txt{1}{1};
+            aap = aas_report_add(aap,subj,'<h4>Bad channels:</h4>');
+            aap = aas_report_add(aap,subj,sprintf('<h5>%s</h5>',txt));
+        end
         
         %% 2. Movement (courtesy to Jason Taylor and Rik Henson)
         [pth,fstem] = spm_fileparts(logfname);        
