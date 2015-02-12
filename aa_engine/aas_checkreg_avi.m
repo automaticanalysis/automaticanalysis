@@ -123,7 +123,11 @@ else
             fJframe.fFigureClient.getWindow.setAlwaysOnTop(false)
         catch
         end
-        junk = close(aviObject);
+        if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
+            close(aviObject);
+        else
+            junk = close(aviObject);
+        end
         warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
         
         % ~FSL

@@ -349,7 +349,7 @@ set(f,'Renderer','zbuffer');
 print(f,'-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W_blob.jpg']));
 
-close(1); clear global st;
+close(f); clear global st;
 
 %% Another diagnostic image, looking at how well the segmentation worked...
 Pthresh = 0.95;
