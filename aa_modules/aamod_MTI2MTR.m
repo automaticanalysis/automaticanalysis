@@ -17,8 +17,8 @@ switch task
         mtidir = fullfile(aas_getsubjpath(aap, subj), 'MTI');
         
         mtifn = aas_getfiles_bystream(aap,subj,'MTI');
-        mtiMT = deblank(mtifn(1,:));
-        mtibaseline = deblank(mtifn(2,:));
+        mtibaseline = deblank(mtifn(1,:)); % baseline is the first (see aamod_convert_specialseries lines 23-27)
+        mtiMT = deblank(mtifn(2,:));
         
         %% Coregister
         % Coregister MT to baseline

@@ -135,7 +135,7 @@ classdef aaq_qsub<aaq
                 
                 % Loop if we are still waiting for jobs to finish...
                 if waitforalljobs == 1;
-                    if isempty(obj.taskstomonitor)
+                    if isempty(obj.taskinqueue) && isempty(obj.taskstomonitor)
                         waitforalljobs = 0;
                     end
                 end                

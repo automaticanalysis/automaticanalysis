@@ -233,7 +233,7 @@ switch task
             imwrite(mon,fn3d);
             
             % Outputs
-            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr, fullfile(anadir,V.fname)); end
+            if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
             if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             
