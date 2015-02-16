@@ -365,7 +365,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 		  if showmask == 1  && cleanup ~= 2
 
 			showme = char([mask ',1'], [p filesep spm_select('List', [p], ['^' nm(4:end) '.(img|nii)']) ',1']);
-			evalc('spm_check_registration(showme);');
+			try spm_check_registration(showme); catch, end
 
 		  end;
 
