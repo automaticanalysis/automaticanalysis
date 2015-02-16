@@ -14,13 +14,13 @@ for path2check = {FSbin mniFSbin fastFSbin}
         pth = [pth ':' path2check{1}];
     end;
 end
-setenv('PATH',pth);
 
-setenv('FREESURFER_HOME',aap.directory_conventions.freesurferdir);
-setenv('FSF_OUTPUT_FORMAT','nii.gz');
-
-%setenv('MNI_PERL5LIB', fullfile(aap.directory_conventions.freesurferdir, 'mni/lib/perl5/5.8.5'))
-%setenv('PERL5LIB', '/opt/freesurfer/mni/lib/perl5/5.8.5')
+ENV = {'PATH',pth;...
+    'SUBJECTS_DIR',getenv('SUBJECTS_DIR');...
+    'FREESURFER_HOME',aap.directory_conventions.freesurferdir;...
+    'FSF_OUTPUT_FORMAT','nii.gz';...
+    'MNI_PERL5LIB', fullfile(aap.directory_conventions.freesurferdir, 'mni/lib/perl5/5.8.5');...
+    'PERL5LIB', fullfile(aap.directory_conventions.freesurferdir, 'mni/lib/perl5/5.8.5')};
 
 FSsetup='';
 for setupscript = {deblank(aap.directory_conventions.freesurfersetup) deblank(aap.directory_conventions.freesurferenvironment)}
@@ -33,15 +33,29 @@ for setupscript = {deblank(aap.directory_conventions.freesurfersetup) deblank(aa
     end
 end
 
-switch (aap.directory_conventions.freesurfershell)
-    case {'none','tcsh','bash'}
-        cmd=[FSsetup FScmd];
-    case 'csh'
-        cmd=[FSsetup 'csh -c ' FScmd];
+switch aap.directory_conventions.freesurfershell
+    case 'none'
+        for e = 1:size(ENV,1)
+            setenv(ENV{e,1},ENV{e,2});
+        end
+        cmd = [FSsetup FScmd];
+    case 'bash'
+        cmd=[FSsetup 'bash -c "'];
+        for e = 1:size(ENV,1)
+            cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
+        end
+        cmd = [cmd FScmd '"'];
+    case {'csh', 'tcsh'}
+        cmd=[FSsetup aap.directory_conventions.freesurfershell ' -c "'];
+        for e = 1:size(ENV,1)
+            cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
+        end
+        cmd = [cmd FScmd '"'];
 end
 
 disp(cmd)
-[s w]=aas_shell(cmd);
+
+[s, w]=aas_shell(cmd);
 
 % Display error if there was one
 if (s)
