@@ -96,8 +96,8 @@ for k1=1:length(aap.tasklist.main.module)
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
                 % write provenance
-                fprintf(pfid,'<%s> <%s> <%s> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
-				fprintf(cfid,'%s\t%s\t%s\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename);
+                fprintf(pfid,'<%s> <%s> <%s_%05d> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
+				fprintf(cfid,'%s\t%s\t%s_%05d\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
             else
                 
                 [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
@@ -110,8 +110,8 @@ for k1=1:length(aap.tasklist.main.module)
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     % write provenance
-                    fprintf(pfid,'<%s> <%s> <%s> .\n',sourcestagename,inputstreamname,stagename);
-					fprintf(cfid,'%s\t%s\t%s\n',sourcestagename,inputstreamname,stagename);
+                    fprintf(pfid,'<%s_%05d> <%s> <%s_%05d> .\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
+					fprintf(cfid,'%s_%05d\t%s\t%s_%05d\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
                     stream=[];
                     stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
