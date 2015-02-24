@@ -18,6 +18,8 @@
             </inputstreams>
             
             <outputstreams>
+                <stream desc='tensor'>dki_DT</stream>
+                <stream desc='kurtosis'>dki_DK</stream>
                 <stream>dki_FA</stream>
                 <stream>dki_MD</stream>
                 <stream>dki_L1</stream>
