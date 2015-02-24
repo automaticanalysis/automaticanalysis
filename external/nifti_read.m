@@ -1,4 +1,4 @@
-% Reads NIFTI files up to 5D
+% Reads NIFTI files up to 10D
 
 function Y = nifti_read(fname)
 N = nifti(fname);
@@ -17,7 +17,7 @@ Y3D = spm_read_vols(spm_vol(fname));
 end
 
 function inds = get_inds(dim)
-[inds(:,3), inds(:,2), inds(:,1)] = ind2sub(dim,1:prod(dim));
+[inds(:,7), inds(:,6), inds(:,5), inds(:,4), inds(:,3), inds(:,2), inds(:,1)] = ind2sub(dim,1:prod(dim));
 for i = size(inds,2):-1:1
     if ~std(inds(:,i)), break; end
 end

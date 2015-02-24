@@ -11,7 +11,8 @@ create(N);
 
 dim = [dim 1];
 for i = 1:prod(dim(4:end))
-    N.dat(:,:,:,i) = Y(:,:,:,i);    
+    N.dat(:,:,:,i) = Y(:,:,:,i);   
+    spm_get_space([N.dat.fname ',' num2str(i)], V.mat);
 end
 N.dat = reshape(N.dat,dim);
 end
