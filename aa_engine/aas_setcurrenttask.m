@@ -74,17 +74,16 @@ if exist('k','var')
         
     end;
     aap.acq_details.selected_sessions=selected_sessions;
-    
-    % Set SPM defaults appropriately
-    global defaults
-    defaults=aap.spm.defaults;
-    if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
-        defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
-        if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
-		if strcmp(defaults.modality,'MEG'), defaults.modality = 'EEG'; end
-    end
-    
-end;
+end
+
+% Set SPM defaults appropriately
+global defaults
+defaults=aap.spm.defaults;
+if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
+    defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
+    if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
+    if strcmp(defaults.modality,'MEG'), defaults.modality = 'EEG'; end
+end
 
 end
 
