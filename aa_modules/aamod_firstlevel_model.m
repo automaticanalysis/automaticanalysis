@@ -142,6 +142,7 @@ switch task
         if aap.tasklist.currenttask.settings.firstlevelmasking
             allbetas=vertcat(allbetas,...
                 dir(fullfile(anadir,'mask.*')));
+            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',dir(fullfile(anadir,'mask.*')));            
         end
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
