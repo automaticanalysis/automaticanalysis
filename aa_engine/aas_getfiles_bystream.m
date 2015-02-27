@@ -9,7 +9,7 @@
 % Rhodri Cusack MRC CBU Cambridge, Feb 2010
 % Tibor Auer MRC CBU Cambridge, 2012-2013
 
-function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
+function [allfiles md5 inpstreamdesc]=aas_getfiles_bystream(aap,varargin)
 
 % Indices are all the numeric inputs
 reqestedIndices = [varargin{cellfun(@(x) isnumeric(x), varargin)}];

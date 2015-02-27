@@ -1,4 +1,4 @@
-function img = aas_getfiles_bystream_multilevel(aap,varargin)
+function [img, md5, inpstreamdesc] = aas_getfiles_bystream_multilevel(aap,varargin)
 % Multilevel streamlocator: session/specified --> subject --> study
 % Inputs:
 %   aap
@@ -17,12 +17,12 @@ index = varargin(1:end-1);
     
 img = '';
 email0 = aap.options.email; aap.options.email = ''; % silence;
-try img = aas_getfiles_bystream(aap,index{:},streamname,source); catch, end
+try [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,index{:},streamname,source); catch, end
 if isempty(img)
-    try img = aas_getfiles_bystream(aap,'subject',index{2}(1),streamname,source); catch, end
+    try [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'subject',index{2}(1),streamname,source); catch, end
 end
 if isempty(img)
-    try img = aas_getfiles_bystream(aap,'study',[],streamname,source); catch, end
+    try [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'study',[],streamname,source); catch, end
 end
 aap.options.email = email0;
 if ~isempty(img)

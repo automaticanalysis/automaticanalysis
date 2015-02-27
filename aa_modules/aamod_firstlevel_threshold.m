@@ -15,7 +15,11 @@ switch task
         resp='subject';   % this module needs to be run once per subject
         
     case 'report'
-        CON = aap.tasksettings.aamod_firstlevel_contrasts.contrasts(2).con;
+        % load dependency
+        CONmodulename = aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).tobecompletedfirst{1};
+        [tag, ind] = strtok_ptrn(CONmodulename,'_0');
+        index = sscanf(ind,'_%d');        
+        CON = aap.tasksettings.(tag)(index).contrasts(2).con;
         for C = 1:numel(CON)
             % Study summary
             if ~isfield(aap.report,sprintf('html_C%02d',C)) % new contrast

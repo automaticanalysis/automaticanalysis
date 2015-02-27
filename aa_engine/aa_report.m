@@ -34,6 +34,9 @@ aap.internal.total=0;
 aap.internal.stagesnotdone=0;
 stage_study_done = false;
 
+% Provenance
+aap.prov = aa_provenance(aap);
+
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))
     aap.report.html_main.fname=fullfile(studyroot,aap.directory_conventions.reportname);
@@ -89,9 +92,18 @@ for k=1:numel(stages)
         all_stage = cell_index(stages, stages{k});
         istage = cell_index({aap.tasklist.main.module.name}, stages{k});
         istage = istage(all_stage==k);
+        % - backup fields
         aapreport = aap.report;
+        aapprov = aap.prov;
+        
         aap = aas_setcurrenttask(aap,istage);
+        
+        % - restore fields
         aap.report = aapreport;
+        aap.prov = aapprov;
+        
+        % add provenance
+        aap.prov.addModule(istage);
         
         % build dependency
         dep = aas_dependencytree_allfromtrunk(aap,domain);
@@ -128,6 +140,9 @@ end
 aap = aas_report_add(aap,[],'EOF');
 aap = aas_report_add(aap,0,'EOF');
 fclose all;
+
+% Provenance
+aap.prov.serialise;
 
 % Show report
 web(['file://' aap.report.html_main.fname]);
