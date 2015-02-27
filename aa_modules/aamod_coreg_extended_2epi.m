@@ -11,11 +11,11 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        d = dir(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_structural2*']));
+        d = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aas_checkreg_*'));
         if isempty(d)
             aas_checkreg(aap,subj,'meanepi','structural');
         end
-        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aas_checkreg_*.jpg'));
         for d = 1:numel(fdiag)
             aap = aas_report_add(aap,subj,'<table><tr><td>');
             aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),fdiag(d).name));
