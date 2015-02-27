@@ -1,4 +1,4 @@
-function [aap resp]=aamod_diffusion_dkifit(aap,task,subjind,diffsessind)
+function [aap resp]=aamod_diffusion_dki_tractography_prepare(aap,task,subjind,diffsessind)
 resp='';
 
 switch task
@@ -6,9 +6,8 @@ switch task
     case 'doit'
         %% Fetch inputs
         % Get nii filenames from stream
-        diffinput=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'diffusion_data');
-        bvals=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvals');
-        bvecs=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvecs');
+        DT=nifti_read(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'dki_DT'));
+        KT=nifti_read(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'dki_KT'));
         betmask=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask');
         
         % Find which line of betmask contains the brain mask
@@ -17,19 +16,12 @@ switch task
                 break
             end;
         end;        
-        betmask=betmask(betind,:);
+        betmask=deblank(betmask(betind,:));
         
-        %% Apply dkifit
-        data_in = spm_read_vols(spm_vol(diffinput));
-        data_mask = spm_read_vols(spm_vol(betmask));
-        bval = importdata(bvals);
-        bvec = importdata(bvecs);
-        [S0, DT, KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
-        [dMK, dMD, dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
+        alfa = aap.tasklist.currenttask.settings.alfa;
         
-        %% Calculate metrics
-        [MK, AK, RK] = fun_DKI_metrics(DT,KT,data_mask);
-        [MD, FA, AD, RD, L1, L2, L3, V1, V2, V3] = fun_DTI_metrics(DT,data_mask);
+        %% Calculate direction field
+        [NM, DirM, DirF] = fun_DKI_extract_directions(DT,KT,nifti_read(betmask),alfa);
         
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
