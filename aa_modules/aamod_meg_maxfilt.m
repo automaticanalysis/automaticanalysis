@@ -160,15 +160,15 @@ switch task
                         if trans == sess, continue; end % do not trans to itself
                         ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
                             'meg_session',[subj,trans],'meg');
+                        trcmd_par = sprintf(' -trans %s ',ref_str);
                         outtrpfx    = ['trans' aap.acq_details.meg_sessions(trans).name '_' outtrpfx];
                     else % 0
-                        ref_str = 'default';
+                        trcmd_par = sprintf(' -trans default -origin %g %g %g -frame head ',spherefit(1),spherefit(2)-13,spherefit(3)+6);
                         outtrpfx    = ['transdef_'  outtrpfx];
                     end
                 else
                     aas_log(aap,1,'Trans reference: Unrecognised option!');
                 end
-                trcmd_par = sprintf(' -trans %s -origin %g %g %g -frame head ',ref_str,spherefit(1),spherefit(2)-13,spherefit(3)+6);
                 intrfname   = outtrfname;
                 outtrfname  = fullfile(sesspath,sprintf('%s%s.fif',outtrpfx,fstem));
                 logtrfname  = fullfile(sesspath,sprintf('%s%s.log',outtrpfx,fstem));
