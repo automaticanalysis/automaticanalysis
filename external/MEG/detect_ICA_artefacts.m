@@ -1,13 +1,20 @@
-function [remove,weights,TraMat,temcor,spacor,varexpl,ICs] = detect_ICA_artefacts(S);
+function [Out,ICs] = detect_ICA_artefacts(S)
 
 % Version 2.0 of ICA artifact detection for SPM8/12
+%                  Rik.Henson@mrc-cbu.cam.ac.uk, March 2013, with thanks to Nitin Williams and Jason Taylor
+%
+% Updated 6-2-15 to gather outputs into single "Out" structure (and keep separate ICs identified by each reference)
+%
+% Needs EEGLAB on Matlab path to perform ICA
+% Needs SPM/Fieldtrip on Matlab path to perform any filtering (though could be replaced by Matlab filtfilt)
 %
 % Main purpose is to return a FieldTrip/SPM TraMat to be applied later by,
 % for example, spm_eeg_montage, to project out of data topographic patterns 
-% related to artifacts. 
+% related to artifacts, as defined by correlations between ICs and
+% user-provided reference signals (eg recorded EOG/ECG). 
 % 
 % ICA is applied and those ICs that are artifacts are defined 1) temporally 
-% by correlating with recorded EOG or ECG, using boot-strapping testing if 
+% by correlating with references, using boot-strapping testing if 
 % necessary, and/or 2) spatially, by correlating with user-supplied
 % topographies for classic artifactual sources, eg ocular or cardiac.
 % Note that temporal correlation on its own can remove true brain signals
@@ -25,8 +32,11 @@ function [remove,weights,TraMat,temcor,spacor,varexpl,ICs] = detect_ICA_artefact
 % - which is where MaxFilter's movement compensation also helps (Taylor & 
 % Henson, 2014, Biomag conference).
 %
-% Outputs:
-%   remove   = cell array of IC numbers believed to be artifacts
+% Fields of Out:
+%   allrem   = cell array of IC numbers believed to be artifacts across all references 
+%   bothrem  = cell array of IC numbers believed to be artifacts for each reference (spatial+temporal)
+%   temprem   = cell array of IC numbers believed to be artifacts for each temporal reference
+%   spatrem   = cell array of IC numbers believed to be artifacts for each spatial reference
 %   weights  = full ICA weight matrix
 %   TraMat   = channel trajectory matrix to project artifacts from data
 %   temcor   = matrix of Pearson temporal correlations between each IC and 
@@ -34,6 +44,8 @@ function [remove,weights,TraMat,temcor,spacor,varexpl,ICs] = detect_ICA_artefact
 %   spacor   = matrix of Pearson spatial correlations between each IC topo  
 %              and each reference topography
 %   varexpl  = vector of variance explained by each IC
+%
+% Additional (large) output if requested:
 %   ICs      = ICs themselves! (may be big) (all optional outputs)
 %
 % Inputs (fields of argument structure "S"):
@@ -45,9 +57,9 @@ function [remove,weights,TraMat,temcor,spacor,varexpl,ICs] = detect_ICA_artefact
 %   VarThr     = percentage of variance required to be an important artifactual IC (eg 1/PCA_dim, or could be 0) (DEFAULT possible)
 %   FiltPars   = 1x2 or 1x3 matrix for low- or band- pass filtering before calculating correlation ([]=none=default), where third element is Sampling Rate
 %   TemAbsPval = p-value threshold for absolute temporal correlation to define artifact (eg 0.01)
-%   TemRelPval = Z-value for relative threshold of absolute temporal correlation to define artifact (eg 3)
+%   TemRelPval = additional Z-value for relative threshold of absolute temporal correlation to define artifact (eg 3)
 %   SpaAbsPval = p-value threshold for absolute spatial correlation to define artifact (eg 0.01)
-%   SpaRelPval = Z-value for relative threshold of absolute spatial correlation to define artifact (eg 2)
+%   SpaRelPval = additional Z-value for relative threshold of absolute spatial correlation to define artifact (eg 2)
 %   PermPval   = p-value for boot-strapped absolute temporal correlation to define artifact (e.g, 0.05)
 %   Nperm      = number of permutations to create null distribution of Pearson (eg 1000)
 %
@@ -55,15 +67,10 @@ function [remove,weights,TraMat,temcor,spacor,varexpl,ICs] = detect_ICA_artefact
 %   weights    = IC weights; only necessary if passed own ICs as above
 %   compvars   = IC variances; only necessary if passed own ICs as above
 %
-% Needs EEGLAB on Matlab path to perform ICA
-% Needs SPM/Fieldtrip on Matlab path to perform any filtering (though could be replaced by Matlab filtfilt)
-%
 % Could be extended to bootstrap spatial correlations too, though would
 % need to do 2D FT to allow for spatial correlation in topographies...
 %
 % Could be extended to correlate with template power spectra (eg muscle artifact)
-%
-% Rik.Henson@mrc-cbu.cam.ac.uk, March 2013, with thanks to Nitin Williams and Jason Taylor
 
 %% Inputs
 try TemAbsPval = S.TemAbsPval;  catch TemAbsPval = 1; end
@@ -122,6 +129,7 @@ try Nperm = S.Nperm;        catch Nperm = round((4*sqrt(CorPval)/CorPval)^2);   
 
 
 %% Initialize
+Out = [];
 Nsamp = size(d,2);
 if rem(Nsamp,2)==0  % Must be odd number of samples for fft below
     d     = d(:,2:Nsamp);
@@ -137,8 +145,12 @@ try
     ICs = S.ICs;
     ICs = ICs(:,1:Nsamp);
 catch
-    if ~isempty(Rseed); warning('Random seed requested'); end
-    [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800);
+    try
+        [Out.weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
+    catch
+        if ~isempty(Rseed); warning('Random seed requested but no facility with standard runica?'); end
+        [Out.weights,sphere,compvars,bias,signs,lrates,ICs] = runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800);
+    end
 end
 
 
@@ -162,10 +174,10 @@ end
 % figure; for i=1:PCA_dim; plot(ICs(:,i)); title(i); pause; end
 % figure; for i=1:PCA_dim; plot(ICs(30000:40000,i)); title(i); pause; end
 
-iweights  = pinv(weights);
+iweights  = pinv(Out.weights);
 remove = {};
-temcor = zeros(Nrefs,PCA_dim); tempval = zeros(Nrefs,PCA_dim);
-spacor = zeros(Nrefs,PCA_dim); spapval = zeros(Nrefs,PCA_dim);
+Out.temcor = zeros(Nrefs,PCA_dim); tempval = zeros(Nrefs,PCA_dim);
+Out.spacor = zeros(Nrefs,PCA_dim); spapval = zeros(Nrefs,PCA_dim);
 reltemcor = zeros(Nrefs,PCA_dim); relspacor = zeros(Nrefs,PCA_dim);
 temremove  = cell(1,Nrefs); sparemove  = cell(1,Nrefs);
 for r = 1:Nrefs
@@ -174,9 +186,9 @@ for r = 1:Nrefs
     %% Check temporal correlation with any reference channels
     if ~isempty(refs.tem{r})
         for k = 1:PCA_dim
-            [temcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
+            [Out.temcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
         end
-        reltemcor(r,:) = zscore(temcor(r,:));
+        reltemcor(r,:) = zscore(Out.temcor(r,:));
         
         if Nperm > 0
             permcor = zeros(1,PCA_dim);
@@ -203,76 +215,67 @@ for r = 1:Nrefs
             fprintf('\n')
             %         figure,hist(maxcor)
             
-            temremove{r} = find(abs(temcor(r,:)) > prctile(maxcor,100*(1-TemPval)));
+            temremove{1,r} = find(abs(Out.temcor(r,:)) > prctile(maxcor,100*(1-TemPval)));
             
         else
-            temremove{r} = find(tempval(r,:) < TemAbsPval);
+            temremove{1,r} = find(tempval(r,:) < TemAbsPval);
         end
         
-        temremove{r} = [0 intersect(temremove{r},find(abs(reltemcor(r,:)) > TemRelZval))];  % 0 for no temp comps found, rather than none asked for (ie, passed empty)
+        temremove{1,r} = [0 intersect(temremove{1,r},find(abs(reltemcor(r,:)) > TemRelZval))];  % 0 for no temp comps found, rather than none asked for (ie, passed empty)
     end
     
     %% Check spatial correlation with any reference channels
     if ~isempty(refs.spa{r})
         for k = 1:PCA_dim
-            [spacor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
+            [Out.spacor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
         end
-        relspacor(r,:) = zscore(spacor(r,:));
+        relspacor(r,:) = zscore(Out.spacor(r,:));
         
-        sparemove{r} = find(spapval(r,:) < SpaAbsPval);
-        sparemove{r} = intersect(sparemove{r},find(abs(relspacor(r,:)) > SpaRelZval));
+        sparemove{1,r} = find(spapval(r,:) < SpaAbsPval);
+        sparemove{1,r} = intersect(sparemove{1,r},find(abs(relspacor(r,:)) > SpaRelZval));
         
         if ~isempty(temremove{r}) % where a 0 entry is important for case where none found, rather than none asked for
-            remove{r} = intersect(temremove{r},sparemove{r});
+            tmp = intersect(temremove{1,r},sparemove{1,r});
+            remove{1,r} = tmp(:)';  % Silly procedure to allow empty cell arrays of same size for concatenation later
         else
-            remove{r} = sparemove{r};
+            remove{1,r} = sparemove{1,r};
         end
     else
-        if ~isempty(temremove{r}) 
-            temremove{r}(find(temremove{r}==0))=[]; % get rid of any 0s from above
-            remove{r} = temremove{r}; 
+        if ~isempty(temremove{1,r}) 
+            temremove{1,r}(find(temremove{1,r}==0))=[]; % get rid of any 0s from above
+            remove{1,r} = temremove{1,r}; 
         end
     end
 end
-%figure,hist(temcor')
+
+Out.temprem = temremove;
+Out.spatrem = sparemove;
+Out.bothrem = remove;
+
+%figure,hist(Out.temcor')
 %figure,hist(reltemcor')
-%figure,hist(spacor')
+%figure,hist(Out.spacor')
 %figure,hist(log10(spapval+eps'))
 %figure,hist(relspacor')
 
-% checking/making each element of remove{} a row vector
-
-rmat=[];
-for ridx=1:length(remove),
-   
-    if iscolumn(remove{ridx}),
-    
-    rmat=[rmat,remove{ridx}']; 
-    
-    else
-        
-    rmat=[rmat,remove{ridx}];
-    
-    end
-    
-end
-
-remove = unique(rmat);  % find unique ICs
+remove = unique(cat(2,remove{:}));  % find unique ICs
 
 %% Variance Thresholding
-varexpl   = 100*compvars/sum(compvars);
-varenough = find(varexpl > VarThr);
+Out.varexpl   = 100*compvars/sum(compvars);
+varenough = find(Out.varexpl > VarThr);
 remove    = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
 
+Out.allrem = remove;
+
 % figure; for i=remove; plot(ICs(30000:40000,i)); title(i); pause; end
+remove = Out.([S.remove 'rem']);
 
 if ~isempty(remove)
     finalics  = setdiff([1:PCA_dim],remove);
-    TraMat    = iweights(:,finalics) * weights(finalics,:);
+    Out.TraMat    = iweights(:,finalics) * Out.weights(finalics,:);
 else
-    TraMat    = eye(size(d,1));
+    Out.TraMat    = eye(size(d,1));
 end
-
 
 return
 
@@ -285,7 +288,7 @@ return
 % chanind = D.indchantype(in.type);
 % 
 % d = D(chanind,:);
-% w = weights; iw = pinv(w);
+% w = Out.weights; iw = pinv(w);
 % d = w*d;
 % 
 % %toinspect = remove; % !!! If just want to look at sig correlations with EOG/ECG

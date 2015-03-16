@@ -17,11 +17,19 @@ switch task
         %% RUN
         S = []; S.D = D;
         achans = cat(2,ICA.chans{:});
+        if isfield(ICA,'ica') % new format
+            TraMat = cell(1,numel(ICA.ica));
+            for i = 1:numel(ICA.ica)
+                TraMat{i} = ICA.ica{i}.TraMat;
+            end
+        else % old format
+            TraMat = ICA.TraMat;
+        end
         for c = 1:length(achans)
             S.montage.labelorg{c} = D.chanlabels{achans(c)};
         end
         S.montage.labelnew = S.montage.labelorg;
-        S.montage.tra      = blkdiag(ICA.TraMat{:});
+        S.montage.tra      = blkdiag(TraMat{:});
         S.keepothers       = 1;
         S.prefix           = 'M';
         D = spm_eeg_montage(S);

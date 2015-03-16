@@ -26,9 +26,10 @@ switch task
         ICA.Rseed = 1;              % to make reproducible
         
         ICA.TemAbsPval = .05/ICA.PCA_dim; % 0.05;  % Too liberal if not permuted?
-        ICA.TemRelZval = aap.tasklist.currenttask.settings.artifactdetection.TemRelZval;         % SETTINGS for detect artifact
+        ICA.TemRelZval = aap.tasklist.currenttask.settings.artifactdetection.TemRelZval;    % SETTINGS for detect artifact
         ICA.SpaAbsPval = .05/ICA.PCA_dim; % 0.05;  % Too liberal if not permuted?
-        ICA.SpaRelZval = aap.tasklist.currenttask.settings.artifactdetection.SpaRelZval;         % SETTINGS for detect artifact % 3 is too strict (since high topo correlation anyway)
+        ICA.SpaRelZval = aap.tasklist.currenttask.settings.artifactdetection.SpaRelZval;    % SETTINGS for detect artifact % 3 is too strict (since high topo correlation anyway)
+        ICA.remove = aap.tasklist.currenttask.settings.artifactdetection.remove;            % SETTINGS for remove artifact
         
         ICA.refs.tem = {};                % Reference signal for correlating with ICs
         if isempty(samp), samp = 1:size(D,2); end;
@@ -44,10 +45,10 @@ switch task
             chans{m} = find(strcmp(D.chantype,modalities{m}));  % RH: Bad coding: modalities{2} may not be Grads - see other comment about only converting grads
             ICA.d  = D(chans{m},:);
             ICA.FiltPars = [ICA.FiltPars D.fsample];
-            [remove{m},weights{m},TraMat{m},temcor{m},spacor{m}] = detect_ICA_artefacts(ICA);
+            ica{m} = detect_ICA_artefacts(ICA);
         end
         
         %% Outputs
-        save(outfname,'remove','TraMat','temcor','spacor','weights','chans');
+        save(outfname,'chans','ica');
         aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
 end

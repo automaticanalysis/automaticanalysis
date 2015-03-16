@@ -158,7 +158,7 @@ switch task
                 elseif isnumeric(trans)
                     if trans % session number
                         if trans == sess, continue; end % do not trans to itself
-                        ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
+                        ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
                             'meg_session',[subj,trans],'meg');
                         trcmd_par = sprintf(' -trans %s ',ref_str);
                         outtrpfx    = ['trans' aap.acq_details.meg_sessions(trans).name '_' outtrpfx];

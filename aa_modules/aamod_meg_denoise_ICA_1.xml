@@ -16,6 +16,13 @@
                 <ref_chans>EOG061:EOG062:ECG063</ref_chans>
                 <TemRelZval>3</TemRelZval>
                 <SpaRelZval>2</SpaRelZval>
+                <!-- Remove artifacts
+                all  - artifacts across all references 
+                both - artifacts for each reference (spatial+temporal)
+                temp - artifacts for each temporal reference
+                spat - artifacts for each spatial reference
+                -->
+                <remove desc='artifects to be removed' options='all|both|temp|spat' ui='optionlist'>all</remove>
             </artifactdetection>
             
             <inputstreams>
