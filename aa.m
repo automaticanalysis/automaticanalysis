@@ -26,7 +26,7 @@ classdef aa
             fclose(fid);
             d = textscan(l1,'%% aa version %4.2f %s %d');
             obj.Version = d{1};
-            obj.Name = sprintf('aa %3.1f',obj.Version);
+            obj.Name = 'aa';
             obj.Date = sprintf('%s %d',d{2}{1},d{3});
             obj.ManuscriptRef = l2(3:end);
             obj.ManuscriptURL = l3(3:end);

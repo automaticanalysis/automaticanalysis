@@ -103,7 +103,7 @@ for k=1:numel(stages)
         aap.prov = aapprov;
         
         % add provenance
-        aap.prov.addModule(istage);
+        if aap.prov.isvalid, aap.prov.addModule(istage); end
         
         % build dependency
         dep = aas_dependencytree_allfromtrunk(aap,domain);
