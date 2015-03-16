@@ -84,7 +84,7 @@ switch task
         Outputs.sl = '';
         Outputs.Rend = '';
         
-        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
+        if aas_stream_has_contents(aap,subj,'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
             if size(tmpfile,1) > 1 % in case of norm_write (first: native, second: normalised)
                 tmpfile = tmpfile(2,:); 

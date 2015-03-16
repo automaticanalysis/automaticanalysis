@@ -21,7 +21,9 @@ switch task
                 % [AVG] we cannot cocatenate the single root with
                 % multiple 3D image files, so this expects already the
                 % full location of the 3D images instead...
-                imageFns = aap.acq_details.subjects(subj).seriesnumbers{sess};
+                DICOMHEADERS{1}.RepetitionTime = [];
+                DICOMHEADERS{1}.EchoTime = [];
+				imageFns = aap.acq_details.subjects(subj).seriesnumbers{sess};
                 
                 sesspth=aas_getsesspath(aap,subj,sess);
                 
@@ -37,6 +39,7 @@ switch task
                     % [AVG] Add file to what will be described as output...
                     finalepis = [finalepis fullfile(sesspth, [fn ext])];
                 end
+                V0 = spm_vol(finalepis);
             else
                 %Only one file, assume 4D
                 DICOMHEADERS{1}.RepetitionTime = [];
@@ -46,7 +49,7 @@ switch task
                 if ~isempty(niftisearchpth)
                     niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).seriesnumbers{sess});
                 end
-                V=spm_vol(niftifile);
+                V = spm_vol(niftifile);
                 V0 = V;
                 sesspth=aas_getsesspath(aap,subj,sess);
                 aas_makedir(aap,sesspth);

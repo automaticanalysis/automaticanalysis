@@ -87,9 +87,9 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>firstlevel_brainmask</stream>
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_betas</stream>
+                <stream>firstlevel_brainmask</stream>
             </outputstreams>
             
         </currenttask>
