@@ -10,9 +10,6 @@ function [aap,resp]=aamod_tSNR_EPI(aap,task,subj,sess)
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';  % this module needs to be run once per subject
-        
     case 'summary'
         sesspath=aas_getsesspath(aap,subj,sess);
         resp=sprintf('Estimate tSNR of EPI series of %s\n',sesspath);
@@ -198,7 +195,7 @@ switch task
         % Save the SNR image!
         sV = V;
         sV.n = [1 1]; % make sure it is 3D
-        sV.fname = fullfile(aas_getsubjpath(aap,subj), ...
+        sV.fname = fullfile(aas_getsesspath(aap,subj,sess), ...
             ['tSNR_' aap.acq_details.sessions(sess).name '.nii']);
         spm_write_vol(sV, EPIsnr);
         
@@ -364,5 +361,5 @@ switch task
         end
         %% DESCRIBE OUTPUTS
         
-        aap=aas_desc_outputs(aap,subj,'tSNR',sV.fname);
+        aap=aas_desc_outputs(aap,'session',[subj sess],'tSNR',sV.fname);
 end
