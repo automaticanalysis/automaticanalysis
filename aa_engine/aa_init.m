@@ -22,7 +22,7 @@ addpath(aap.directory_conventions.spmdir);
     
 spm_jobman('initcfg');
 
-if ~isfield(aap,'spm') || ~isfield(aap.spm,'defaults')
+if ~isfield(aap,'spm') || ~isfield(aap.spm,'defaults') || numel(fields(aap.spm.defaults))<5
     try
         aap.spm.defaults=spm_get_defaults;
     catch
@@ -32,7 +32,7 @@ if ~isfield(aap,'spm') || ~isfield(aap.spm,'defaults')
         else
             aap.spm.defaults=defaults;
         end;
-    end;
+    end;    
     
     % Make copy of aap
     aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
@@ -76,6 +76,16 @@ else
     % Check whether already in path, give warning if not
     if isempty(which('eeglab'))
        aas_log(aap,false,sprintf('EEG lab not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.eeglabdir'));
+    end;
+end;
+
+% Path to GIFT
+if ~isempty(aap.directory_conventions.GIFTdir)
+    addpath(genpath(aap.directory_conventions.GIFTdir));
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('icatb_runAnalysis'))
+       aas_log(aap,false,sprintf('GIFT not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.GIFTdir'));
     end;
 end;
 
