@@ -192,7 +192,7 @@ classdef aa_provenance < handle
                     end
                     if ~isempty(strfind(src,'Remote')) % remote src --> add
                         [junk,src] = strtok(src,':'); src = src(3:end);
-                        rstage = smod.remotestream(cell_index({smod.remotestream.stream},istream));
+                        rstage = smod.remotestream(strcmp({smod.remotestream.stream},istream));
                         idsrc = obj.addModule(rstage);
                     else % local --> already added
                         [lname, ind] = strtok_ptrn(src,'_0');
