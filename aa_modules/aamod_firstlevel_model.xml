@@ -30,7 +30,11 @@
             <!-- high pass filter in seconds -->
             <highpassfilter>128</highpassfilter>
             
-            <!-- First level model masking -->
+            <!-- First level model masking
+			0 - none
+			1 - implicit
+			otherwise (0-1) - fraction threshold
+			-->
             <firstlevelmasking>1</firstlevelmasking>
             
             <!-- 'None' or 'AR(1)' -->
