@@ -35,6 +35,8 @@ switch task
         tsdiffana(imgs,0);
         
         mriname = aas_prepare_diagnostic(aap, subjInd);
+        
+        set(gcf,'Renderer','zbuffer');
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '_' mriname '_' aap.acq_details.sessions(sessInd).name '.jpeg']));
         
@@ -53,6 +55,7 @@ end
 function diag(aap,subjInd,sessInd)
 tsfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
 tsdiffplot(tsfn);
-try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-print('-djpeg','-r75',fullfile(aas_getsesspath(aap, subjInd, sessInd),'diagnostic_aamod_tsdiffana'));
+try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
+set(f,'Renderer','zbuffer');
+print(f,'-djpeg','-r150',fullfile(aas_getsesspath(aap, subjInd, sessInd),'diagnostic_aamod_tsdiffana'));
 end

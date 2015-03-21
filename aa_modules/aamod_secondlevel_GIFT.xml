@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Group ICA analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <selected_subjects></selected_subjects>
+            <selected_session></selected_session>
+            <subject_to_dimest desc='subject index for dimensionality estimation'></subject_to_dimest>
+                        
+            <numICs>40</numICs>
+            <PCA1>30</PCA1>
+            <PCA2>30</PCA2>
+            <algorithm>2</algorithm>
+            
+            <!-- Time series preprocessing:
+                'remove mean per timepoint'
+                'variance normalization'
+            -->
+            <preproc>remove mean per timepoint</preproc>
+            <group_pca_type>subject specific</group_pca_type>
+            
+            <inputstreams>
+                <stream>firstlevel_brainmask</stream>    
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>gift_parameters</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

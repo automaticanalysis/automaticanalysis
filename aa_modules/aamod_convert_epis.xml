@@ -51,6 +51,7 @@
 
                 <stream>cov_echo_5_5</stream>
                 <stream>epi_t2star</stream>
+                <stream>epi_snr</stream>
                 <stream>epi_protondensity</stream>
                 <stream>dummyscans</stream>
                 <stream>dummyscans_nulled</stream>

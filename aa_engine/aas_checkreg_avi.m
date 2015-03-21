@@ -2,7 +2,7 @@
 
 function aas_checkreg_avi(aap, p, axisDim, suffix, slicesD)
 
-if ~aap.options.diagnostic_videos
+if isfield(aap.options,'diagnostic_videos') && ~aap.options.diagnostic_videos
     aas_log(aap,false,'Diagnostic videos disabled (check aap.options.diagnostic_videos)');
 else
     global st
@@ -123,7 +123,11 @@ else
             fJframe.fFigureClient.getWindow.setAlwaysOnTop(false)
         catch
         end
-        close(aviObject);
+        if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
+            close(aviObject);
+        else
+            junk = close(aviObject);
+        end
         warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
         
         % ~FSL
@@ -137,6 +141,7 @@ else
                 set(f,'Position',[1 1 size(img,2) size(img,1)],'PaperPositionMode','auto','InvertHardCopy','off');
                 try
                     imshow(img,'Border','tight');
+                    set(f,'Renderer','zbuffer');
                     print(f,'-djpeg','-r150',slicesFilename);
                 catch
                 end;

@@ -91,6 +91,9 @@ switch task
         %% DESIGN MATRIX %%
         %%%%%%%%%%%%%%%%%%%
         SPM.xY.P = allfiles;
+        if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
+            spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
+        end
         SPMdes = spm_fmri_spm_ui(SPM);
 
         SPMdes.xX.X = double(SPMdes.xX.X);
@@ -110,8 +113,7 @@ switch task
 
         % Turn off masking if requested
         if ~aap.tasklist.currenttask.settings.firstlevelmasking
-            SPMdes.xM.I=0;
-            SPMdes.xM.TH=-inf(size(SPMdes.xM.TH));
+            SPMdes.xM=-inf(size(SPMdes.xX.X,1),1);
         end
 
         %%%%%%%%%%%%%%%%%%%
@@ -142,6 +144,9 @@ switch task
         if aap.tasklist.currenttask.settings.firstlevelmasking
             allbetas=vertcat(allbetas,...
                 dir(fullfile(anadir,'mask.*')));
+            mask = dir(fullfile(anadir,'mask.*'));
+            mask=strcat(repmat([anadir filesep],[numel(mask) 1]),char({mask.name}));
+            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);            
         end
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);

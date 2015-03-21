@@ -336,7 +336,8 @@ end
 
 spm_orthviews('reposition', [0 0 0])
 
-try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
+set(f,'Renderer','zbuffer');
 print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
 
@@ -351,11 +352,12 @@ for r = 1:size(outNSeg,1)
 end
 spm_orthviews('reposition', [0 0 0])
 
-try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
+set(f,'Renderer','zbuffer');
 print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W_blob.jpg']));
 
-close(1); clear global st;
+close(f); clear global st;
 
 %% Another diagnostic image, looking at how well the segmentation worked...
 Pthresh = 0.95;
@@ -366,7 +368,8 @@ ROIdata = roi2hist(Simg, outSeg, Pthresh);
 
 title(sprintf('GM vs WM... T(%d) = %0.2f, p = %1.4f', stats.df, stats.tstat, pv))
 
-print('-djpeg','-r150',...
+set(2,'Renderer','zbuffer');
+print(2,'-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_Hist.jpg']));
 try close(2); catch; end
 

@@ -251,7 +251,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 
 
 	% get, load current parameters; consider special case of assessing pwd
-	  [p, nm, ~, ~] = spm_fileparts(rps(i,:));
+	  [p, nm] = spm_fileparts(rps(i,:));
 	  if isempty(p),  p = pwd;  end;
 	  pr = load(deblank(rps(i,:)));
 
@@ -261,7 +261,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 
 
 		  mask = spm_select('List', p, ['^' nm(4:end) '.(img|nii)']);
-		  [~, ~, e, ~] = spm_fileparts(mask);
+		  [junk, junk, e] = spm_fileparts(mask);
 		  if isempty(mask)
 
 			np = strrep(p, filesep, '/');
@@ -303,7 +303,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 						  end;
 						  vol = vol .* (clus_vol == targ);
 						  V = V(1);
-						  [p, nm, e, ~] = spm_fileparts(V.fname);
+						  [p, nm, e] = spm_fileparts(V.fname);
 						  V.fname = [p filesep nm '_mask' e];
 						  V.pinfo = [1 0]';
 						  V.dt = [spm_type('uint8') spm_platform('bigend')];
@@ -365,7 +365,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 		  if showmask == 1  && cleanup ~= 2
 
 			showme = char([mask ',1'], [p filesep spm_select('List', [p], ['^' nm(4:end) '.(img|nii)']) ',1']);
-			evalc('spm_check_registration(showme);');
+			try spm_check_registration(showme); catch, end
 
 		  end;
 
@@ -522,12 +522,12 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 
 
 		% annotate
-		  [xm,~] = find(mot == max(mot(:)));
-		  [xd,~] = find(deg == max(deg(:)));
-		  [~, xt] = find(td == max(td(:)));
-		  [~, xs] = find(sts == max(sts(:)));
+		  [xm] = find(mot == max(mot(:)));
+		  [xd] = find(deg == max(deg(:)));
+		  [junk, xt] = find(td == max(td(:)));
+		  [junk, xs] = find(sts == max(sts(:)));
 		  axes('Position',[0.005,0.005,0.1,0.1],'Visible','off');
-		  text(1,0.1,['MaxVal@scan: T:' sprintf('%01.1f', max(mot(:))) ' mm @ scan ' num2str(xm(1)) '; R: ' sprintf('%01.1f', max(deg(:))) ' ° @ scan ' num2str(xd(1)) '; TD: '  sprintf('%01.1f', max(td(:))) ' mm @ scan ' num2str(xt) '; STS: '  sprintf('%01.1f', max(sts(:))) ' mm @ scan ' num2str(xs) '.'],'FontSize',8,'interpreter','none');
+		  text(1,0.1,['MaxVal@scan: T:' sprintf('%01.1f', max(mot(:))) ' mm @ scan ' num2str(xm(1)) '; R: ' sprintf('%01.1f', max(deg(:))) ' ï¿½ @ scan ' num2str(xd(1)) '; TD: '  sprintf('%01.1f', max(td(:))) ' mm @ scan ' num2str(xt) '; STS: '  sprintf('%01.1f', max(sts(:))) ' mm @ scan ' num2str(xs) '.'],'FontSize',8,'interpreter','none');
 
 
 		% save (always, irrespective of debug_mode)
@@ -616,7 +616,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 
 
 		% now generate motmask, find, save datapoint with maximum total displacement
-		  [~,maxp] = max(squeeze(sum(sum(sum(store_td)))));
+		  [junk,maxp] = max(squeeze(sum(sum(sum(store_td)))));
 		  V.fname = [p filesep 'mw_motmask.img'];
 		  V.dt = [16 0];
 		  V.descrip = ['Max total displacement (mm at scan #' num2str(maxp) '); data from ' p];
@@ -669,7 +669,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 		% prepare storage, folder, files
 		  mfps = zeros(size(steps,1),size(pr,1));
 		  img = [p filesep spm_select('List', p, ['^' nm(4:end) '.(img|nii)'])];
-		  [~, ~, e, ~] = spm_fileparts(img);
+		  [junk, junk, e] = spm_fileparts(img);
 		  try
 
 			mkdir([p filesep mydir]);
@@ -818,7 +818,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 			  try
 
 				% cleaner solution (but: requires statistics toolbox)...
-				  [muhat, ~] = expfit(sort(targ));
+				  [muhat] = expfit(sort(targ));
 
 			  catch
 
@@ -1099,7 +1099,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 					  foutnm = [];
 				  else
 
-					  [foutp, foutnm, ~, ~] = spm_fileparts(fout);
+					  [foutp, foutnm] = spm_fileparts(fout);
 				  end;
 
 
@@ -1141,7 +1141,7 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 	  disp(['   ... results from this run, analyzing ' num2str(size(rps,1)) ' session(s), were stored in ']);
 	  for i = 1:size(rps,1)
 
-		  [p, ~, ~, ~] = spm_fileparts(rps(i,:));
+		  [p] = spm_fileparts(rps(i,:));
 		  if isempty(p),  p = pwd;  end;
 		  disp(['   ... ' p ' for session ' num2str(i) ';']);
 	  end;

@@ -15,7 +15,11 @@ switch task
         resp='subject';   % this module needs to be run once per subject
         
     case 'report'
-        CON = aap.tasksettings.aamod_firstlevel_contrasts.contrasts(2).con;
+        % load dependency
+        CONmodulename = aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).tobecompletedfirst{1};
+        [tag, ind] = strtok_ptrn(CONmodulename,'_0');
+        index = sscanf(ind,'_%d');        
+        CON = aap.tasksettings.(tag)(index).contrasts(2).con;
         for C = 1:numel(CON)
             % Study summary
             if ~isfield(aap.report,sprintf('html_C%02d',C)) % new contrast
@@ -80,7 +84,7 @@ switch task
         Outputs.sl = '';
         Outputs.Rend = '';
         
-        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
+        if aas_stream_has_contents(aap,subj,'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
             if size(tmpfile,1) > 1 % in case of norm_write (first: native, second: normalised)
                 tmpfile = tmpfile(2,:); 
@@ -229,11 +233,11 @@ switch task
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
-            mon = imresize(mon(1:size(mon,2)*2/3,:,:),0.5);
+            mon = mon(1:size(mon,2)*2/3,:,:);
             imwrite(mon,fn3d);
             
             % Outputs
-            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr, fullfile(anadir,V.fname)); end
+            if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
             if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             

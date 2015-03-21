@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='meg_session' desc='MEG ICA denoise' modality='MEG'>
+        <currenttask domain='meg_session' desc='MEG ICA denoise 1: detect' modality='MEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
@@ -16,6 +16,13 @@
                 <ref_chans>EOG061:EOG062:ECG063</ref_chans>
                 <TemRelZval>3</TemRelZval>
                 <SpaRelZval>2</SpaRelZval>
+                <!-- Remove artifacts
+                all  - artifacts across all references 
+                both - artifacts for each reference (spatial+temporal)
+                temp - artifacts for each temporal reference
+                spat - artifacts for each spatial reference
+                -->
+                <remove desc='artifects to be removed' options='all|both|temp|spat' ui='optionlist'>all</remove>
             </artifactdetection>
             
             <inputstreams>

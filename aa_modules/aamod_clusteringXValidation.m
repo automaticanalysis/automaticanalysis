@@ -140,7 +140,7 @@ switch task
             end
             
             % Sort the mappings so they make sense again
-            [~,i] = sort(group2loo(:,1), 'ascend');
+            [junk,i] = sort(group2loo(:,1), 'ascend');
             group2loo = group2loo(i,:);
             
             % Now let's reconstruct the connectivity fingerprints of each module in the left out individual
@@ -172,7 +172,7 @@ switch task
             connectivitySimil = corr(seedVoxConnectivity(keepTargets,:), moduleConnectivity(keepTargets,:), 'type', 'Spearman');
             
             % Find the most similar module for each voxel
-            [~, bestMod] = max(connectivitySimil, [], 2);
+            [junk, bestMod] = max(connectivitySimil, [], 2);
             
             % Create the binary spatial pattern, save for this subject
             subjSpatialPatterns(:,:,subjInd) = (repmat(bestMod, 1, numModules) == repmat(1:numModules, numSeedVox, 1))';

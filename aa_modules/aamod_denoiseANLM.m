@@ -129,7 +129,7 @@ switch task
                     aviObject = addframe(aviObject,getframe(2,windowSize));
                 end
                 
-                aviObject = close(aviObject);
+                junk = close(aviObject);
             end
         end
         

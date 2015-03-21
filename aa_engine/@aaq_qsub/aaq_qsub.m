@@ -2,6 +2,7 @@ classdef aaq_qsub<aaq
     properties
         scheduler = [];
         jobnotrun = [];
+		taskinqueue = [];
         taskstomonitor = [];
     end
     properties (Hidden)
@@ -69,9 +70,24 @@ classdef aaq_qsub<aaq
                     end
                 end
                 
-                taskreported = [];
+                taskstarted = [];
+                for ftmind=1:numel(obj.taskinqueue)
+                    JobID = obj.taskinqueue(ftmind);
+                    Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
+                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
+                    state = Task.State;
+                    
+                    if ~strcmp(state,'pending')
+                        msg = sprintf('MODULE %s RUNNING: Job%d.', moduleName,JobID);
+                        aas_log(obj.aap,false,msg);
+                        taskstarted(end+1) = ftmind;
+                    end
+                end
+                obj.taskstomonitor = horzcat(obj.taskstomonitor, obj.taskinqueue(taskstarted));
+                obj.taskinqueue(taskstarted) = [];
                 
-                for ftmind=1:numel(obj.taskstomonitor)                    
+                taskreported = [];
+                for ftmind=1:numel(obj.taskstomonitor)
                     JobID = obj.taskstomonitor(ftmind);
                     Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
                     moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
@@ -86,7 +102,8 @@ classdef aaq_qsub<aaq
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             
                             taskreported(end+1) = ftmind;
-                        case 'finished' % without error
+
+						case 'finished' % without error
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
                             dtvf = dts2dtv(Task.FinishTime);
@@ -113,13 +130,12 @@ classdef aaq_qsub<aaq
                             
                             taskreported(end+1) = ftmind;
                     end
-                end
-                
+                end				
                 obj.taskstomonitor(taskreported) = [];
                 
                 % Loop if we are still waiting for jobs to finish...
                 if waitforalljobs == 1;
-                    if isempty(obj.taskstomonitor)
+                    if isempty(obj.taskinqueue) && isempty(obj.taskstomonitor)
                         waitforalljobs = 0;
                     end
                 end                
@@ -192,7 +208,7 @@ classdef aaq_qsub<aaq
                 %                     job.stagename, timReq./(60*60), memReq./(1024^3))
                 
                 % And monitor for files with the job output
-                obj.taskstomonitor(end+1)=J.ID;
+				obj.taskinqueue(end+1) = J.ID;
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end

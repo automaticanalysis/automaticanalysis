@@ -504,6 +504,7 @@ switch task
         % [TA modification]
         %aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis(ndummies+1:end));
         aap=aas_desc_outputs(aap,domain,indices,'epi',finalepis);
+        aap=aas_desc_outputs(aap,domain,indices,'epi_snr',fullfile(domainpath,'echo_snr.nii'));
         
         if dumpnull
             aap=aas_desc_outputs(aap,domain,indices,'dummy_scans_nulled',finalepis_nulled(1:ndummies));

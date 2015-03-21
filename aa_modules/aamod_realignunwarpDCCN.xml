@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='SPM unwarp and motion correction' modality='MRI'>
+        <currenttask domain='subject'  mfile_alias='aamod_realignunwarp' desc='SPM unwarp and motion correction (DCCN)' modality='MRI'>
             
             <qsub>
                 <timeBase>1</timeBase>
@@ -55,6 +55,13 @@
                 <prefix>'u'</prefix> <!-- prefix for images -->
             </uwroptions>
             
+			<mfp desc="Motion Fingerprint: Wilke M, NeuroImage 2012, 59: 2062-2072">
+                <run>0</run>
+                <keep desc="include how many mfp timecourses in resulting txt-file [1-9]">3</keep>
+                <shifted desc="Volterra option 1">1</shifted>
+                <squared desc="Volterra option 2">0</squared>
+            </mfp>
+			
         </currenttask>        
     </tasklist>
 </aap>

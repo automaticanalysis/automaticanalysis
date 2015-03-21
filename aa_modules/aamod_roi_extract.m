@@ -1,4 +1,4 @@
-function [aap,resp]=aamod_roi_extract_devel(aap,task,i,j)
+function [aap,resp]=aamod_roi_extract(aap,task,varargin)
 
 % Extract ROI data from image volume(s), either 4D (e.g., resting state
 % timecourses) or 4D (e.g., grey matter signal). Gets data from image files
@@ -51,7 +51,7 @@ switch task
     case 'doit'
         
 %% Begin:
-        
+       
 % Input arguments:
 instream   = aap.tasklist.currenttask.inputstreams.stream{1};
 outstream  = aap.tasklist.currenttask.outputstreams.stream{1};
@@ -90,7 +90,7 @@ VV = spm_vol(ROIfile);
 ROIfstem = spm_str_manip(ROIfile,'rt');
 
 % Get files by stream:
-Datafiles = aas_getfiles_bystream(aap,i,j,instream);
+Datafiles = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream);
 % Read data:
 VY = spm_vol(Datafiles);
 %VY = [VY{:}];
@@ -240,7 +240,7 @@ end
         % Describe outputs:
         outfile = fullfile(pth,'ROI.mat');
         save(outfile,'ROI');
-        aap = aas_desc_outputs(aap,i,j,outstream,outfile);
+        aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstream,outfile);
                  
 end
         

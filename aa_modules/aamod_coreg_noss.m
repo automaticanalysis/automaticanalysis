@@ -62,12 +62,13 @@ switch task
 
         % Save graphical output - this will now be done by report task
         try
-            figure(spm_figure('FindWin', 'Graphics'));
+            f = spm_figure('FindWin', 'Graphics');
         catch
-            figure(1);
+            f = figure(1);
         end
         if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
-            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+            set(f,'Renderer','zbuffer');
+            print(f,'-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
         end
 
         % Reslice images

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='DKI Tractorgraphy: prepare direction field (by Rafael Henriques)'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+                        
+            <alfa desc='Adjustable parameter for estimating direction field'>4</alfa>
+            
+            <inputstreams>
+                <stream desc='tensor'>dki_DT</stream>
+                <stream desc='kurtosis'>dki_KT</stream>
+                <stream>BETmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream desc='direction field'>dki_DirF</stream>
+                <stream desc='number of ODF maxima'>dki_NM</stream>
+                <stream desc='ODF maxima for each direction'>dki_DirM</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

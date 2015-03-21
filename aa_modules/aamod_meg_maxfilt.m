@@ -4,13 +4,83 @@ resp='';
 
 switch task
     case 'report'
+        [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meg_session',[subj,sess],'meg','output'));
+        logfname  = fullfile(sesspath,sprintf('%s.log',fstem));
+        aap = aas_report_add(aap,subj,'<table><tr><td>');
+
+        %% 1. Bad channels
+        [junk, txt] = unix(sprintf('grep "bad channels (" %s',logfname));
+        if ~isempty(txt)
+            txt = textscan(txt,'%s','delimiter','\n'); txt = txt{1}{1};
+            aap = aas_report_add(aap,subj,'<h4>Bad channels:</h4>');
+            aap = aas_report_add(aap,subj,sprintf('<h5>%s</h5>',txt));
+        end
         
+        %% 2. Movement (courtesy to Jason Taylor and Rik Henson)
+        [pth,fstem] = spm_fileparts(logfname);        
+        movfname = fullfile(pth,[fstem '.mov']);
+        figfname = fullfile(pth,[fstem '.jpg']);
+        
+        % Parse log file for movement params:
+        unix(sprintf('sed -n -e ''/^#t/ p'' %s  | sed -e ''s/[^0-9,.]*//g'' -e ''s/#e = //g'' > %s',logfname,movfname));
+        
+        % Load data:
+        mov = dlmread(movfname,',');
+        
+        % Check whether valid:
+        aap = aas_report_add(aap,subj,'<h4>Movement:</h4>');
+        if numel(mov)==0
+            aap = aas_report_add(aap,subj,sprintf('<h5>WARNING: No movement data - was SSS run in MF call that created %s?</h5>',movfname));
+        else % plot
+            try    fig = spm_figure('FindWin'); clf;
+            catch, fig = figure('color','w','paperpositionmode','auto');
+            end
+            time=mov(:,1);
+            subplot(2,1,1);
+            plot(time,mov(:,3),'g'); % goodness of fit
+            legend('          gof(0:1)','Location','NorthEastOutside');
+            title(basename(movfname),'Interpreter','none');
+            
+            subplot(2,1,2); hold on
+            plot(time,mov(:,2),'r'); % error
+            plot(time,mov(:,4),'k'); % velocity
+            plot(time,mov(:,5),'b'); % rotation
+            plot(time,mov(:,6),'c'); % translation
+            legend({'error(cm)','velocity(cm/s)','rotation(rad/s)','translation(cm)'},'Location','NorthEastOutside')
+            title(basename(movfname),'Interpreter','none');
+            
+            set(fig,'Renderer','zbuffer');
+            print(fig,'-djpeg',figfname);
+            aas_log(aap,0,sprintf('- Figure saved to %s\n',figfname));
+            close(fig)
+            
+            % Return maximum translation, rotation:
+            md = max(mov(:,6))-min(mov(:,6));
+            mr = max(mov(:,5))-min(mov(:,5));
+            
+            aap = aas_report_addimage(aap,subj,figfname);
+            aap = aas_report_add(aap,subj,sprintf('<h5>Max translation=%gcm. Max rotation=%grad/s.</h5>',md,mr));
+        end
+        
+        %% 3. Transdef
+        if ~isempty(aap.tasklist.currenttask.settings.transform)
+            [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meg_session',[subj,sess],'trans_meg','output'));
+            logtrfname  = fullfile(sesspath,sprintf('%s.log',fstem));
+
+            aap = aas_report_add(aap,subj,'<h4>Transformation:</h4>');
+            [junk, txt] = unix(sprintf('grep Rotation %s',logtrfname)); txt = txt(1:end-1);
+            aap = aas_report_add(aap,subj,[fstem ': ' txt '<br>']);
+            [junk, txt] = unix(sprintf('grep Position %s',logtrfname)); txt = txt(1:end-1);
+            aap = aas_report_add(aap,subj,[fstem ': ' txt '<br>']);
+        end
+        
+        aap = aas_report_add(aap,subj,'</td></tr></table>');                
     case 'doit'
         %% Initialise
-        sessdir = aas_getsesspath(aap,subj,sess);
+        sesspath = aas_getsesspath(aap,subj,sess);
         infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');        
-        outfname = fullfile(sessdir,['mf2pt2_' basename(infname) '.fif']); % specifying output filestem
-        delete(fullfile(sessdir,'*mf2pt2_*'));
+        outfname = fullfile(sesspath,['mf2pt2_' basename(infname) '.fif']); % specifying output filestem
+        delete(fullfile(sesspath,'*mf2pt2_*'));
         [pth, fstem, ext] = fileparts(outfname);
         
         %% Sphere fit
@@ -45,12 +115,11 @@ switch task
         hpicmd = sprintf(' -linefreq 50 -hpistep %d -hpisubt %s -hpicons -movecomp inter -hp %s',...
             aap.tasklist.currenttask.settings.hpi.step,...
             aap.tasklist.currenttask.settings.hpi.subt,...
-            fullfile(sessdir,[fstem '_headposition.pos']));
+            fullfile(sesspath,[fstem '_headposition.pos']));
 
         % Preparing names of output and log files
-        outpfx    = '';
-        outfname  = fullfile(sessdir,sprintf('%s%s.fif',outpfx,fstem));
-        logfname  = fullfile(sessdir,sprintf('%s%s.log',outpfx,fstem));
+        outfname  = fullfile(sesspath,sprintf('%s.fif',fstem));
+        logfname  = fullfile(sesspath,sprintf('%s.log',fstem));
         
         skipstr = '';
         
@@ -89,20 +158,20 @@ switch task
                 elseif isnumeric(trans)
                     if trans % session number
                         if trans == sess, continue; end % do not trans to itself
-                        ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,1),... % raw data
+                        ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
                             'meg_session',[subj,trans],'meg');
+                        trcmd_par = sprintf(' -trans %s ',ref_str);
                         outtrpfx    = ['trans' aap.acq_details.meg_sessions(trans).name '_' outtrpfx];
                     else % 0
-                        ref_str = 'default';
+                        trcmd_par = sprintf(' -trans default -origin %g %g %g -frame head ',spherefit(1),spherefit(2)-13,spherefit(3)+6);
                         outtrpfx    = ['transdef_'  outtrpfx];
                     end
                 else
                     aas_log(aap,1,'Trans reference: Unrecognised option!');
                 end
-                trcmd_par = sprintf(' -trans %s -origin %g %g %g -frame head ',ref_str,spherefit(1),spherefit(2)-13,spherefit(3)+6);
                 intrfname   = outtrfname;
-                outtrfname  = fullfile(sessdir,sprintf('%s%s.fif',outtrpfx,fstem));
-                logtrfname  = fullfile(sessdir,sprintf('%s%s.log',outtrpfx,fstem));
+                outtrfname  = fullfile(sesspath,sprintf('%s%s.fif',outtrpfx,fstem));
+                logtrfname  = fullfile(sesspath,sprintf('%s%s.log',outtrpfx,fstem));
                 
                 % Assembling MF command
                 mfcmd_rest=[
@@ -120,11 +189,11 @@ switch task
                 end
             end
         end
-        
+                
         %% Outputs
         aap=aas_desc_outputs(aap,subj,sess,'meg_head',...
-            char(fullfile(sessdir,[fstem '_headpoints.txt']),...
-            fullfile(sessdir,[fstem '_headposition.pos'])));        
+            char(fullfile(sesspath,[fstem '_headpoints.txt']),...
+            fullfile(sesspath,[fstem '_headposition.pos'])));        
         aap=aas_desc_outputs(aap,subj,sess,'meg',outfname);        
         if ~isempty(aap.tasklist.currenttask.settings.transform)
             aap=aas_desc_outputs(aap,subj,sess,'trans_meg',outtrfname);

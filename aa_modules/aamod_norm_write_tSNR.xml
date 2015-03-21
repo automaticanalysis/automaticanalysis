@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' mfile_alias='aamod_norm_write' desc='SPM normalisation write (stream mean EPI)' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <vox desc='voxel size of normalised images'>2 2 2</vox>
+            
+            <inputstreams>
+                <stream>normalisation_seg_sn</stream>  
+                <stream>structural</stream> 
+                <stream>tSNR</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>tSNR</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasklist>
+   <currenttask domain='diffusion_session' mfile_alias='aamod_roi_extract' desc='Extract data in ROIs' modality='MRI'>
+        <ROIfile>/imaging/camcan/templates/JHU-WhiteMatter-labels-2mm.nii</ROIfile>
+        <output_raw>0</output_raw>
+        <do_svd>1</do_svd>
+        <NvoxThr>0.5</NvoxThr>
+        <ROIvals></ROIvals>
+        <verbose>0</verbose>
+        <inputstreams>
+            <stream>dki_MK</stream>
+        </inputstreams>
+        <outputstreams>
+            <stream>roidata_dki_MK</stream>
+        </outputstreams>
+   </currenttask>
+  </tasklist>
+</aap>

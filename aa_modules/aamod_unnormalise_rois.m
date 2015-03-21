@@ -176,7 +176,7 @@ switch task
             spm_orthviews('reposition', [0 0 0])
             
             try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            set(gcf,'PaperPositionMode','auto')
+            set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                 [mfilename '__' mriname '.jpeg']));
         catch

@@ -34,6 +34,9 @@ aap.internal.total=0;
 aap.internal.stagesnotdone=0;
 stage_study_done = false;
 
+% Provenance
+aap.prov = aa_provenance(aap);
+
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))
     aap.report.html_main.fname=fullfile(studyroot,aap.directory_conventions.reportname);
@@ -60,7 +63,6 @@ aap.report.fbase = basename(aap.report.html_main.fname);
 
 % Handle session
 inSession = false;
-nSessions = numel(aap.acq_details.sessions);
 
 for k=1:numel(stages)
     fprintf('Fetching report for %s...\n',stages{k});    
@@ -79,10 +81,10 @@ for k=1:numel(stages)
     if ~strcmp(domain,'[unknown]')
         
         % Set inSession flag
-        if strcmp(domain,'session') && ~inSession
+        if ~isempty(strfind(domain,'session')) && ~inSession
             inSession = true;
         end
-        if ~strcmp(domain,'session') && inSession
+        if isempty(strfind(domain,'session')) && inSession
             inSession = false;
         end
         
@@ -90,9 +92,18 @@ for k=1:numel(stages)
         all_stage = cell_index(stages, stages{k});
         istage = cell_index({aap.tasklist.main.module.name}, stages{k});
         istage = istage(all_stage==k);
+        % - backup fields
         aapreport = aap.report;
+        aapprov = aap.prov;
+        
         aap = aas_setcurrenttask(aap,istage);
+        
+        % - restore fields
         aap.report = aapreport;
+        aap.prov = aapprov;
+        
+        % add provenance
+        if aap.prov.isvalid, aap.prov.addModule(istage); end
         
         % build dependency
         dep = aas_dependencytree_allfromtrunk(aap,domain);
@@ -110,7 +121,7 @@ for k=1:numel(stages)
             if inSession
                 if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td>');
-                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
             end
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
@@ -119,7 +130,7 @@ for k=1:numel(stages)
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if sess == numel(aap.acq_details.([domain 's'])), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end;
     end
@@ -129,6 +140,9 @@ end
 aap = aas_report_add(aap,[],'EOF');
 aap = aas_report_add(aap,0,'EOF');
 fclose all;
+
+% Provenance
+aap.prov.serialise;
 
 % Show report
 web(['file://' aap.report.html_main.fname]);

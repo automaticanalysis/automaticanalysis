@@ -354,6 +354,7 @@ efficiencyVals = floor(log(min(effic))):0.1:ceil(log(max(effic)));
 set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
 
 fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
+set(h,'Renderer','zbuffer');
 print(h,'-djpeg','-r150',fname);
 close(h);
 
