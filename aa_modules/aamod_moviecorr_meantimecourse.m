@@ -5,7 +5,7 @@
 % timecourse across all of the other subjects
 %
 
-function [aap,resp]=aamod_moviecorr_meantimecourse(aap,task,i,j)
+function [aap,resp]=aamod_moviecorr_meantimecourse(aap,task,subj,sess)
 
 resp='';
 
@@ -14,12 +14,12 @@ switch task
         
     case 'doit'
         nsub=length(aap.acq_details.subjects);
-        subj_imgs=aas_getimages_bystream(aap,i,j,'epi');
+        subj_imgs=aas_getimages_bystream(aap,subj,sess,'epi');
         % This is a subject-level thing
-        mean_imgs=aas_getfiles_bystream(aap,'meanepitimecourse');
+        mean_imgs=aas_getfiles_bystream(aap,'isc_session',sess,'meanepitimecourse');
         % A bit messy - now filter for the session files in the study directory we care about
-        mean_imgs=mean_imgs(strmatch(fullfile(aas_getstudypath(aap),aap.acq_details.sessions(j).name),mean_imgs),:);
-        if (size(subj_imgs,1)~=size(mean_imgs,1))
+        % mean_imgs=mean_imgs(strmatch(fullfile(aas_getstudypath(aap),aap.acq_details.sessions(j).name),mean_imgs),:);
+        if (~aap.tasklist.currenttask.settings.truncatevolumes && size(subj_imgs,1)~=size(mean_imgs,1))
             aas_log(aap,true,sprintf('Expected same number of images in epi and meanepitimecourse\n'));
             Vfirstmean=spm_vol(mean_imgs(1,:));
             Vfirstsubj=spm_vol(subj_imgs(1,:));
@@ -27,7 +27,7 @@ switch task
                 aas_log(aap,true,sprintf('Need same image dimensions and space for mean and individual subject.'));
             end;
         end;
-        nimg=size(subj_imgs,1);
+        nimg=size(mean_imgs,1);
         nsubj=length(aap.acq_details.subjects);
         
         for imgind=1:nimg
@@ -61,10 +61,10 @@ switch task
         % Any correlations outside -1 to 1 must be division errors
         corr(corr<-1)=-1;
         corr(corr>1)=1;
-        V1.fname=fullfile(aas_getsesspath(aap,i,j),'moviecorr_meantimecourse.nii');
+        V1.fname=fullfile(aas_getsesspath(aap,subj,sess),'moviecorr_meantimecourse.nii');
         V1.dt(1)=spm_type('float32');
         spm_write_vol(V1,corr(:,:,:));
-        aap = aas_desc_outputs(aap,i,j,'moviecorr_meantimecourse','moviecorr_meantimecourse.nii');
+        aap = aas_desc_outputs(aap,subj,sess,'moviecorr_meantimecourse','moviecorr_meantimecourse.nii');
     case 'checkrequirements'
         
     otherwise

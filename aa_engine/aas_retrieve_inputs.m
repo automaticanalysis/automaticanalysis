@@ -258,7 +258,10 @@ for depind=1:length(deps)
                     % Get read to write the stream file
                     [aap datecheck_md5_recalc]=aas_md5(aap,fns_dest_full,[],'filestats');
                     if exist(inputstreamdesc,'file')
-                        delete(inputstreamdesc);
+                        try
+                            delete(inputstreamdesc);
+                        catch
+                        end;
                     end;
                     fid_inp=fopen(inputstreamdesc,'w');
                     fprintf(fid_inp,'MD5\t%s\t%s\n',md5,datecheck_md5_recalc);

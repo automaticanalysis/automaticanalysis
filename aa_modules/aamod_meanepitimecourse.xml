@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='study' desc='Get mean timecourse across subjects' modality='MRI'>
+        <currenttask domain='isc_session' desc='Get mean timecourse across subjects' modality='MRI'>
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <truncatevolumes>1</truncatevolumes> <!-- If different numbers of volumes across subjects, trucate to least (set to 1) or throw error (set to 0) -->
             <inputstreams>
-﻿                <stream>epi</stream>  
+﻿                <stream ismodified='0'>epi</stream>  
             </inputstreams>
             
             <outputstreams>

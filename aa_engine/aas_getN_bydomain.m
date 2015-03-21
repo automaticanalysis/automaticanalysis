@@ -23,10 +23,10 @@ switch (domain)
         N=aap.options.searchlight.Npackage;
         I=1:N;
         
-    case {'session','meg_session'}
+    case {'session','meg_session','isc_session'}
         
         switch domain
-            case 'session'
+            case {'session','isc_session'}
                 sessions = aap.acq_details.sessions;
                 if ~isempty(indices), seriesnumbers = aap.acq_details.subjects(indices(1)).seriesnumbers; end
             case 'meg_session'

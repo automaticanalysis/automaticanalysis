@@ -71,6 +71,9 @@
                     <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
                     </hyperalignment_subject>
                 </hyperalignment_searchlight_package>
+                <isc_session desc='inter-subject correlation for a session' ui='custom'>
+                </isc_session>
+                
                 <splitsession_cv_fold_hyper desc='Hyperalignment of an ROI' ui='custom'>
                 </splitsession_cv_fold_hyper>
             </study>
