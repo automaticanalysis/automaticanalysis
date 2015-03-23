@@ -5,7 +5,7 @@
 % more convenient when you have many subjects as the correspondence between
 % subject name and series numbers is more transparent.
 %
-%function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries)
+%function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,args)
 % name= subject filename (may include UNIX wildcards, e.g., CBU060500*/*)
 % seriesnumbers=
 %	DICOM source: series numbers of EPIs for this subject
@@ -17,8 +17,10 @@
 % ignoreseries parameter=series numbers of any series to be ignored in the
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
+% args= 1x2N cell, containing N arguments (odd: name, even: val). E.g.:
+% 	{'--structural', serienum}: specifying serienumber for structural
 
-function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,diffusion_seriesnumbers)
+function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,diffusion_seriesnumbers,args)
 
 % Blank template for a subject entry
 f=fieldnames(aap.schema.acq_details.subjects);
@@ -99,9 +101,28 @@ if nargin>=6
     thissubj.diffusion_seriesnumbers=diffusion_seriesnumbers;
 end;
 
+if nargin >=7 % extra parameters
+    structural = get_arg(args,'--structural');
+    if ~isempty(structural)
+        aap.options.autoidentifystructural_choose.subject(end+1) = struct(...
+            'name',mri_findvol(aap,name),...
+            'serie',structural);
+    end
+end
+
 % And put into acq_details, replacing a single blank entry if it exists
-if (length(aap.acq_details.subjects)==1 & length(aap.acq_details.subjects.mriname)==0 & length(aap.acq_details.subjects.megname)==0)
+if (length(aap.acq_details.subjects)==1 && isempty(aap.acq_details.subjects.mriname) && isempty(aap.acq_details.subjects.megname))
     aap.acq_details.subjects=thissubj;
 else
     aap.acq_details.subjects(end+1)=thissubj;
 end;
+end
+
+function val = get_arg(args,name)
+    val = [];
+    ind = find(strcmp(args,name));
+    if ~isempty(ind)
+        val = args{ind+1};
+    end
+end
+

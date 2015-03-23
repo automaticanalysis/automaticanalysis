@@ -25,9 +25,28 @@ switch task
         if (~isempty(aap.acq_details.subjects(i).structural))
             structseries=aap.acq_details.subjects(i).structural;
         else
+            % Check if there is any preference for this subject
+            % structural
+            settings = aap.options.autoidentifystructural_choose.subject;
+            allSubj = strcmp({settings(:).name}, '*');
+            thisSubj = strcmp({settings(:).name}, aap.acq_details.subjects(i).mriname);
+            if any(allSubj)
+                structural_choose = settings(allSubj).serie;
+            elseif any(thisSubj)
+                structural_choose = settings(thisSubj).serie;
+            else
+                structural_choose = 0;
+            end
+            
             % Load up automatically scanned value, validate
             aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
             ais=load(aisfn);
+            if any(structural_choose)
+                ais.series_spgr=intersect(ais.series_spgr,structural_choose);
+                if isempty(ais.series_spgr)
+                    aas_log(aap,1,sprintf('ERROR:%s.',sprintf(' structural serie %d not found',structural_choose)));
+                end
+            end
             if (length(ais.series_spgr)>1)
                 if aap.options.autoidentifystructural_multiple
                     aas_log(aap,false,sprintf('Was expecting multiple structurals and found %d.',length(ais.series_spgr)));
