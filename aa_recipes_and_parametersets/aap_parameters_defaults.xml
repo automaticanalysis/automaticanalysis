@@ -94,6 +94,12 @@
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
         <autoidentifystructural_average desc='Average across structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_average>
         <autoidentifystructural_multiple desc='We require several structurals to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifystructural_multiple>
+		<autoidentifystructural_choose desc='Subjectspecific preference' ui='none'>
+            <subject>
+                <name desc='Subject name' ui='text'></name>
+                <serie desc='Serie number' ui='double'></serie>
+            </subject>
+        </autoidentifystructural_choose>
         <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>1</autoidentifyt2>		
         <autoidentifyt2_chooselast desc='Automatically select last of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_chooselast>
         <autoidentifyt2_choosefirst desc='Automatically select first of T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_choosefirst>
@@ -106,6 +112,7 @@
         <aa_maxver desc='Maximum allowed aa version' ui='double'>Inf</aa_maxver>
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
+		<garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
         <qsub desc='Qsub options' ui='none'>
             <memoryMult desc='Memory multiplier for qsub' ui='double'>1</memoryMult>
             <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
