@@ -357,26 +357,6 @@ end
 
 %% Utils
 
-function dep = dep_read(fname)
-fid = fopen(fname,'r');
-% dep = {};
-
-while ~feof(fid)
-    line = fgetl(fid);
-    [src, res] = strtok_ptrn(line(2:end),'> <');
-    [str, res] = strtok_ptrn(res(4:end),'> <');
-    if any(str=='.')
-        [junk, str] = strtok(str,'.');
-        str = str(2:end);
-    end
-    trg = res(4:end-3);
-    dep.(trg).(str) = src;
-    %     dep(end+1,1:3) = {trg str src};
-end
-
-fclose(fid);
-end
-
 function u = url(fname)
 %-File URL scheme
 if ispc, s='/'; else s=''; end
