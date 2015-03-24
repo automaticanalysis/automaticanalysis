@@ -18,7 +18,9 @@ switch task
 	case 'report' % [TA]
         d = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_aas_checkreg_*'));
         if isempty(d)
-            aas_checkreg(aap,subjInd,aap.tasklist.currenttask.inputstreams.stream{2},aap.tasklist.currenttask.inputstreams.stream{1});
+            % find input
+            in_fname = aas_getfiles_bystream_dep(aap,'subject',subjInd,aap.tasklist.currenttask.inputstreams.stream{2});
+            aas_checkreg(aap,subjInd,in_fname,aap.tasklist.currenttask.outputstreams.stream{1});
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)

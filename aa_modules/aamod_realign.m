@@ -22,6 +22,7 @@ switch task
         
         aap = aas_report_add(aap,subj,'<table><tr>');
         for sess=1:nsess
+            if sess > aas_getN_bydomain(aap,'session',subj), break; end
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
