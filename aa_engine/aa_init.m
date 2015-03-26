@@ -128,6 +128,14 @@ if ~isempty(aap.directory_conventions.eeglabdir)
     end
 end;
 
+% GIFT
+if isfield(aap.directory_conventions,'GIFTdir') && ~isempty(aap.directory_conventions.GIFTdir)
+    p_ind = cell_index(p,aap.directory_conventions.GIFTdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
+
 % clean
 reqpath=reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
