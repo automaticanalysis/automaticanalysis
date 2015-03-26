@@ -147,6 +147,6 @@ aap.prov.serialise;
 % Show report
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
-save('aap_parameters_reported.mat', 'aap');
+save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
 
 end
