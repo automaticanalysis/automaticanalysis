@@ -27,7 +27,7 @@ switch task
             inds = 1:length(streams);
         end
         % determine normalised struct
-        struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+        struct = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
         sname = basename(struct);
         struct = struct((sname(:,1)=='w'),:);
         for streamind = inds

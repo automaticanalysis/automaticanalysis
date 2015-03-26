@@ -8,4 +8,4 @@ stages = {aap.tasklist.main.module.name};
 istage = find(strcmp(stages,name));
 aap = aas_setcurrenttask(aap,istage(index));
 
-fname = aas_getfiles_bystream_multilevel(aap,domain,indices,stream);
+fname = aas_getfiles_bystream_multilevel(aap,domain,indices,stream,'output');
