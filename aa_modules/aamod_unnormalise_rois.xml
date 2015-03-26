@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Unnormalise ROIs from MNI to native and GM mask them' modality='MRI'>
+        <currenttask domain='subject' desc='Unnormalise ROIs from MNI to native (meanepi) and GM mask them' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
@@ -9,17 +9,24 @@
             </qsub>
             
             <permanenceofoutput>3</permanenceofoutput>
+			
+			<ROIlist></ROIlist>
+           
+            <maskNum>1</maskNum>			
+
+            <interp>0</interp>
+
             <inputstreams>
                 <stream>meanepi</stream>
-                <stream>segmasksExclusive</stream>
+                <stream isessential="0">segmasksExclusive</stream>
+                <stream isessential="0">aamod_coreg_noss_00001.structural</stream> 
+                <stream isessential="0">aamod_coreg_extended_1_00001.structural</stream> 
                 <stream>normalisation_seg_inv_sn</stream>
             </inputstreams>
+			
             <outputstreams>
                 <stream>rois</stream>
             </outputstreams>
-            <diagnostic>1</diagnostic>
-            <maskNum>1</maskNum>
-            <ROIlist></ROIlist>
         </currenttask>
     </tasklist>
 </aap>
