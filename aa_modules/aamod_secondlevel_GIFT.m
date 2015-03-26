@@ -54,25 +54,56 @@ switch task
             );
         sesInfo.userInput.mask_ind = find(mask);
         
-        %% ICA parameters
-        sesInfo.userInput.numComp = settings.numICs;
-        sesInfo.userInput.numOfPC1 = settings.PCA1;
-        sesInfo.userInput.numOfPC2 = settings.PCA2;
+        %% Estimate dimensions
+        if settings.dimest
+            mask = zeros(sesInfo.userInput.HInfo.DIM(1:3));
+            mask(sesInfo.userInput.mask_ind) = 1;
+            mask = (mask == 1);
+            sessind = sesInfo.userInput.files;
+            if ~isempty(settings.subject_to_dimest)
+                sessind = settings.subject_to_dimest;
+            end
+            for sess = 1:numel(sessind)
+                sesInfo.userInput.estimated_comps(sess) = icatb_estimate_dimension(sesInfo.userInput.files(sess).name,mask,icatb_checkPrecision('single', 0));
+            end
+        end
+        
+         %% ICA parameters
+        if isfield(sesInfo.userInput,'estimated_comps')
+            if ~ischar(settings.numICs)
+                aas_log(aap,true,'Dimensionality is estimated, therfore numICs should specify method (e.g. mean, min, max)');
+            end
+            sesInfo.userInput.numComp = round(eval([lower(settings.numICs), '(sesInfo.userInput.estimated_comps);']));
+            sesInfo.userInput.numOfPC1 = round(1.5*sesInfo.userInput.numComp);
+            sesInfo.userInput.numOfPC2 = sesInfo.userInput.numComp;
+        else
+            if isempty(settings.numICs) || ~isnumeric(settings.numICs)
+                aas_log(aap,true,'Number of components must be specified!');
+            else
+                sesInfo.userInput.numComp = settings.numICs;
+            end
+            if ~isempty(settings.PCA1)
+                sesInfo.userInput.numOfPC1 = settings.PCA1;
+            else
+                sesInfo.userInput.numOfPC1 = round(1.5*sesInfo.userInput.numComp);
+            end
+            if ~isempty(settings.PCA2)
+                sesInfo.userInput.numOfPC2 = settings.PCA2;
+            else
+                sesInfo.userInput.numOfPC2 = sesInfo.userInput.numComp;
+            end
+        end
 
         sesInfo.userInput.algorithm = settings.algorithm;
         sesInfo.userInput.preproc_type = settings.preproc;
         sesInfo.userInput.ICA_Options = icatb_icaOptions([sesInfo.userInput.numComp, length(sesInfo.userInput.mask_ind)],sesInfo.userInput.algorithm,'off');
-         
-        %% Estimate dimensions
-        mask = zeros(sesInfo.userInput.HInfo.DIM(1:3));
-        mask(sesInfo.userInput.mask_ind) = 1;
-        mask = (mask == 1);
-        sessind = sesInfo.userInput.files;
-        if ~isempty(settings.subject_to_dimest)
-            sessind = settings.subject_to_dimest;
-        end
-        for sess = 1:numel(sessind)
-            sesInfo.userInput.estimated_comps(sess) = icatb_estimate_dimension(sesInfo.userInput.files(sess).name,mask,icatb_checkPrecision('single', 0));
+        
+        sesInfo.userInput.scaleType = settings.scaleType;
+        
+        switch settings.analysis
+            case 2
+                sesInfo.userInput.icasso_opts = settings.icasso;
+            otherwise
         end
         
         %% Save parameters ans run
