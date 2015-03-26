@@ -8,13 +8,10 @@ function aap=aas_garbagecollection(aap, actuallydelete, modulestoscan, permanenc
 
 fprintf('Garbage collection started...\n');
 
+if ~exist('aap','var'), aap = pwd; end % we are in studypath (for "standanole" use)
+
 if ~isstruct(aap) % first parameter is studypath (for "standanole" use)
 	if ~isempty(aap), cd(aap); end
-end
-
-% First, load AAP structure and make sure that the one loaded is already
-% processed
-if ~exist('aap','var') || ~isstruct(aap)
     if ~exist('aap_parameters.mat','file')
         error('aap structure not found');
     else
