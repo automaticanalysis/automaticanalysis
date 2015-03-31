@@ -40,7 +40,7 @@ switch task
         sesInfo.userInput.numOfSess = sess;
         sesInfo.userInput.numOfGroups1 = sesInfo.userInput.numOfSub*sesInfo.userInput.numOfSess;
 
-        mask = spm_read_vols(spm_vol(strvcat(firstlevel_brainmask,sesInfo.userInput.files.name)));
+        mask = spm_read_vols(spm_vol(firstlevel_brainmask));
         mask = min(mask,[],4);
         V = spm_vol(firstlevel_brainmask(1,:));        
         sesInfo.userInput.maskFile = fullfile(sesInfo.userInput.pwd,'Mask.nii');
