@@ -90,13 +90,8 @@ switch task
         
         % Check if there is any preference for this subject
         % structural
-        settings = aap.options.autoidentifystructural_choose.subject;
-        allSubj = strcmp({settings(:).name}, '*');
-        thisSubj = strcmp({settings(:).name}, aap.acq_details.subjects(i).mriname);
-        if any(allSubj)
-            structural_choose = settings(allSubj).serie;
-        elseif any(thisSubj)
-            structural_choose = settings(thisSubj).serie;
+        if ~isempty(aap.acq_details.subjects(i).structural)
+            structural_choose = aap.acq_details.subjects(i).structural;
         else
             structural_choose = 0;
         end  
@@ -218,7 +213,7 @@ switch task
         
         if (aap.options.autoidentifystructural)
             if length(series_spgr)>1
-                if structural_choose
+                if any(structural_choose)
                     series_spgr = intersect(series_spgr,structural_choose);
                     if isempty(series_spgr)
                         aas_log(aap,1,sprintf('Automatic series id failed -%s.',sprintf(' structural serie %d not found',structural_choose)));

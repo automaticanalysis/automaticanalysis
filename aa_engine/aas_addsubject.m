@@ -104,9 +104,7 @@ end;
 if nargin >=7 % extra parameters
     structural = get_arg(args,'--structural');
     if ~isempty(structural)
-        aap.options.autoidentifystructural_choose.subject(end+1) = struct(...
-            'name',mri_findvol(aap,name),...
-            'serie',structural);
+        thissubj.structural = structural;
     end
 end
 

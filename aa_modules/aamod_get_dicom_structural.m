@@ -25,19 +25,6 @@ switch task
         if (~isempty(aap.acq_details.subjects(i).structural))
             structseries=aap.acq_details.subjects(i).structural;
         else
-            % Check if there is any preference for this subject
-            % structural
-            settings = aap.options.autoidentifystructural_choose.subject;
-            allSubj = strcmp({settings(:).name}, '*');
-            thisSubj = strcmp({settings(:).name}, aap.acq_details.subjects(i).mriname);
-            if any(allSubj)
-                structural_choose = settings(allSubj).serie;
-            elseif any(thisSubj)
-                structural_choose = settings(thisSubj).serie;
-            else
-                structural_choose = 0;
-            end
-            
             % Load up automatically scanned value, validate
             aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
             ais=load(aisfn);
