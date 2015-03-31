@@ -2,6 +2,11 @@
 
 function [aap]=aa_init(aap)
 
+global aa
+if ~isobject(aa)
+    aas_log(aap,true,'aa is not inittialized properly: Use aa_ver*');
+end
+
 global aacache
 aacache.bcp_path = path;
 

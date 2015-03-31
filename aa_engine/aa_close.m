@@ -7,7 +7,7 @@ if isstruct(aacache) && isfield(aacache,'bcp_path')
     path(aacache.bcp_path);
 end
 
-clear global aacache aaparallel aaworker taskqueue localtaskqueue;
+clear global aa aacache aaparallel aaworker taskqueue localtaskqueue;
 
 end
 
