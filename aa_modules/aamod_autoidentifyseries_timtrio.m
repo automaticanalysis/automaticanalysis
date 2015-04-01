@@ -216,7 +216,7 @@ switch task
                 if any(structural_choose)
                     series_spgr = intersect(series_spgr,structural_choose);
                     if isempty(series_spgr)
-                        aas_log(aap,1,sprintf('Automatic series id failed -%s.',sprintf(' structural serie %d not found',structural_choose)));
+                        aas_log(aap,1,sprintf('Automatic series is failed -%s.',sprintf(' structural serie %d not found',structural_choose)));
                     end
                 elseif aap.options.autoidentifystructural_chooselast
                     series_spgr = series_spgr(length(series_spgr));
