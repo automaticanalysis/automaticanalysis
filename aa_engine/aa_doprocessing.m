@@ -408,6 +408,10 @@ if ~isempty(aap.options.email)
     end
 end
 
+if isfield(aap.options,'garbagecollection') && aap.options.garbagecollection
+    aas_garbagecollection(aap,1)
+end
+    
 aa_close;
 
 end

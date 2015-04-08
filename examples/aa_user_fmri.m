@@ -14,6 +14,7 @@ aa_ver4_nocloud
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
 aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
+aap = aas_configforSPM12(aap);
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value localsingle
@@ -64,4 +65,3 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[
 %% DO ANALYSIS
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-aas_garbagecollection(aap,true);

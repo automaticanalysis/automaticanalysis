@@ -88,6 +88,14 @@ switch task
                 rawdata_allseries={s3resp.CommonPrefixes.Prefix};
         end
         
+        % Check if there is any preference for this subject
+        % structural
+        if ~isempty(aap.acq_details.subjects(i).structural)
+            structural_choose = aap.acq_details.subjects(i).structural;
+        else
+            structural_choose = 0;
+        end  
+        
         series_spgr=[];
         series_newfieldmap=[];
         series_tmaps=[];
@@ -154,20 +162,11 @@ switch task
                     
                     if (aap.options.autoidentifystructural)
                         if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_structural))
-                            if (series_spgr & ...
-                                    aap.options.autoidentifystructural_chooselast==0  & ...
-                                    aap.options.autoidentifystructural_choosefirst==0 & ...
-                                    aap.options.autoidentifystructural_average==0 & ...
-                                    aap.options.autoidentifystructural_multiple==0) %[AVG] for MP2RAGE, for instance
-                                aas_log(aap,1,'Automatic series id failed - more than one MPRAGE acquisition was found.');
-                            end
                             series_spgr=[series_spgr seriesnum];
                         end
                     end
                     
                     if (aap.options.autoidentifyt2)
-                        % Use directory name rather than protocol to
-                        % recognise t maps
                         if (findstr(hdr{1}.ProtocolName,aap.directory_conventions.protocol_t2))
                             series_t2=[series_t2 seriesnum];
                         end
@@ -185,6 +184,7 @@ switch task
             end
             
         end
+        
         % Save file
         [ais_p ais_f ais_e]=fileparts(aisfn);
         aas_makedir(aap,ais_p);
@@ -209,13 +209,17 @@ switch task
             else
                 aas_log(aap,1,'Automatic series id failed - one of the fieldmap acquisitions was not found.');
             end
-        end
-        
+        end        
         
         if (aap.options.autoidentifystructural)
             if length(series_spgr)>1
-                if aap.options.autoidentifystructural_chooselast
-                    series_spgr=series_spgr(length(series_spgr));
+                if any(structural_choose)
+                    series_spgr = intersect(series_spgr,structural_choose);
+                    if isempty(series_spgr)
+                        aas_log(aap,1,sprintf('Automatic series is failed -%s.',sprintf(' structural serie %d not found',structural_choose)));
+                    end
+                elseif aap.options.autoidentifystructural_chooselast
+                    series_spgr = series_spgr(length(series_spgr));
                 elseif aap.options.autoidentifystructural_choosefirst
                     series_spgr = series_spgr(1);
                 end

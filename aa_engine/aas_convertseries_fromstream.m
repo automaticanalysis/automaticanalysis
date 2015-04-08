@@ -104,7 +104,10 @@ for subdirind=1:length(subdirs)
                 infoD = tmp{1}; % dicominfo(deblank(dicomdata_subdir(k,:)));
                 
                 TR = [];
+                TE = [];
                 sliceorder = '';
+                slicetimes = [];
+                echospacing = [];
                 
                 % Private field containing info about TR and slices
                 fi = 'Private_0029_1020';
@@ -135,31 +138,41 @@ for subdirind=1:length(subdirs)
                             otherwise
                                 sliceorder = 'Order undetermined';
                         end
-                    end
-                    
+                    end                    
                 end
                 
-                % if we didn't find that private field, use the
-                % ReptitionTime field.
+                % if we didn't find that private field, use standard fields.
                 if isempty(TR) && isfield(infoD, 'RepetitionTime')
                     TR = infoD.RepetitionTime;
                     fprintf('Sequence has a TR of %.1f ms\n', TR);
                 else
                     fprintf('TR not found!\n');
                 end
-                
-                % Try to get sliceorder from other fields...
-                collectSOinfo = false;
-                if isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}))
-                    collectSOinfo = true;
+                if isempty(TE) && isfield(infoD, 'EchoTime')
+                    TE = infoD.EchoTime;
+                    fprintf('Sequence has a TE of %.1f ms\n', TE);
+                else
+                    fprintf('TE not found!\n');
+                end
+                if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo')
+                    slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
+                    [junk, sliceorder] = sort(slicetimes);
+                end
+                if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo')
+                    pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
+                    echospacing = 1/(pBWpe * infoD.NumberOfPhaseEncodingSteps); % in s
                 end
                 
+                % Try to get sliceorder from other fields...
+                collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
             end
             
-            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before
-            % saving (and in seconds!)
+            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
             if exist('TR','var'), tmp{1}.volumeTR = TR/1000; end
+            if exist('TE','var'), tmp{1}.volumeTE = TE/1000; end
             if exist('sliceorder','var'), tmp{1}.sliceorder = sliceorder; end
+            if exist('slicetimes','var'), tmp{1}.slicetimes = slicetimes/1000; end
+            if exist('echospacing','var'), tmp{1}.echospacing = echospacing; end
             
             % Collecting timing and slice location info so we can
             % reconstruct the slice order.  TemporalPositionIdentifier is

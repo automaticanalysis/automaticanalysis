@@ -54,6 +54,10 @@ classdef aa
             end
             
             fprintf('Ready.\n');
+            
+            % Release
+            global aa
+            aa = obj;
         end
     end
 end

@@ -33,18 +33,12 @@ switch task
             aap.tasklist.currenttask.settings.match, ... % (match)
             aap.tasklist.currenttask.settings.writeunwarpedEPI]; % (writeunwarpedEPI)
 
-        % retrieve actual values
-        try % tert (based on the first EPI) --> TODO: session-specific fieldmaps
-            EPI_DICOMHEADERS=load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header'));
-            if isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberOfPhaseEncodingSteps')
-                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberOfPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
-            elseif isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberofPhaseEncodingSteps')
-                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberofPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
-            else
-                error('ERROR:Field for number of phase encoding steps not found!\n');
-            end
-        catch
-            aas_log(aap,0,'Error during retrieving Total EPI Readout Time - Default is used!');
+        % retrieve actual values (based on the first EPI) --> TODO: session-specific fieldmaps
+        EPI_DICOMHEADERS = load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header')); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
+        if isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing')
+            pm_defs(4) = EPI_DICOMHEADERS.NumberOfPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
+        else
+            aas_log(aap,true,'ERROR:Field for number of phase encoding steps and/or echospacing not found!\nERROR:You may need to rerun aamod_convert_epis.');
         end
         try % te1 and te2
             FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,'fieldmap_dicom_header'));

@@ -62,7 +62,7 @@ if (hit)
 else
     
     if length(indices)~=(length(targetdomaintree)-1)
-        aas_log(aap,true,sprintf('Expected %d indicies for domain "%s" but got %d',length(sourcedomaintree)-1,targetdomain,length(indices)));
+        aas_log(aap,true,sprintf('Expected %d indicies for domain "%s" but got %d',length(targetdomaintree)-1,targetdomain,length(indices)));
     end;
     
     

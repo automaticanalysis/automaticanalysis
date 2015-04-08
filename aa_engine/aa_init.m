@@ -2,6 +2,11 @@
 
 function [aap]=aa_init(aap)
 
+global aa
+if ~isobject(aa)
+    aas_log(aap,true,'aa is not inittialized properly: Use aa_ver*');
+end
+
 global aacache
 aacache.bcp_path = path;
 
@@ -127,6 +132,14 @@ if ~isempty(aap.directory_conventions.eeglabdir)
         reqpath{end+1} = p{ip};
     end
 end;
+
+% GIFT
+if isfield(aap.directory_conventions,'GIFTdir') && ~isempty(aap.directory_conventions.GIFTdir)
+    p_ind = cell_index(p,aap.directory_conventions.GIFTdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
 
 % clean
 reqpath=reqpath(strcmp('',reqpath)==0);

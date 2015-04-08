@@ -74,8 +74,7 @@ if exist('k','var')
         
     end;
     aap.acq_details.selected_sessions=selected_sessions;
-
-
+    
     % Set SPM defaults appropriately
     global defaults
     defaults=aap.spm.defaults;
@@ -85,6 +84,7 @@ if exist('k','var')
         if strcmp(defaults.modality,'MEG'), defaults.modality = 'EEG'; end
     end
 end
+
 end
 
 
