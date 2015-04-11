@@ -88,6 +88,15 @@ end;
 % Calculate MD5
 [aap md5_base64]=aas_md5(aap,trimmedoutputs,localroot);
 
+% Alert archiving system to new data if it is at work here
+dotpath=fullfile(localroot,['.' streamnme(1:end-4)]);
+if exist(dotpath,'dir')
+    localchangelog=fullfile(dotpath,'log_localchanges.txt');
+    lclfid=fopen(localchangelog,'a');
+    fprintf(lclfid,'%s\tSTREAM REWRITTEN BY aa\n',datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'));
+    fclose(lclfid);
+end;
+
 % Write stream descriptor
 fid=fopen(descriptor,'w');
 fprintf(fid,'MD5\t%s\n',md5_base64);
