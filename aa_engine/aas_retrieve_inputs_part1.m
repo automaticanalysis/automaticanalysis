@@ -1,7 +1,7 @@
 % Retrieves inputs from a particular stream to a particular destination
 %
 
-function [gotinputs streamfiles]=aas_retrieve_inputs(aap,inputstream,gotinputs,deps)
+function [gotinputs streamfiles]=aas_retrieve_inputs_part1(aap,inputstream,gotinputs,deps)
 global aaworker
 
 for depind=1:length(deps)
