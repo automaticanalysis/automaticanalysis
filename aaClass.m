@@ -2,7 +2,7 @@
 % Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.
 % http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00090/abstract
 
-classdef aa
+classdef aaClass
     properties
         Path
     end
@@ -17,7 +17,7 @@ classdef aa
     end
     
     methods
-        function obj = aa(cloud)
+        function obj = aaClass(cloud)
             % Greet
             aafile = [mfilename('fullpath') '.m'];
             fid = fopen(aafile,'rt');
