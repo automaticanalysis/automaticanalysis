@@ -154,11 +154,11 @@ for subdirind=1:length(subdirs)
                 else
                     fprintf('TE not found!\n');
                 end
-                if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && isfield(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')
+                if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
                     slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
                     [junk, sliceorder] = sort(slicetimes);
                 end
-                if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && isfield(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode')
+                if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'BandwidthPerPixelPhaseEncode')
                     pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
                     echospacing = 1/(pBWpe * infoD.NumberOfPhaseEncodingSteps); % in s
                 end
