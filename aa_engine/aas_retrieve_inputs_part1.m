@@ -124,8 +124,10 @@ for depind=1:length(deps)
 
                 % Issue retrieval request if this stream is archived
                 if isarchived
+                    % Have to retrieve at the remote location, as this is
+                    % where the archiving info is stored
                     aas_log(aap,false,sprintf(' requesting retrieval of %s',streamname), aap.gui_controls.colours.inputstreams);
-                    aas_archive_request_retrieval(aap,outputstreamdesc);
+                    aas_archive_request_retrieval(aap,remoteoutputstreamdesc);
                 end;
 
                 % Get filenames
@@ -223,6 +225,7 @@ for depind=1:length(deps)
                     streamfiles(depind).dest=dest;
                     streamfiles(depind).inputstreamdesc=inputstreamdesc;
                     streamfiles(depind).outputstreamdesc=outputstreamdesc;
+                    streamfiles(depind).remoteoutputstreamdesc=remoteoutputstreamdesc;
                     streamfiles(depind).md5=md5;
                     streamfiles(depind).fns_dest_full=fns_dest_full;
                     streamfiles(depind).fns_dest=fns_dest;

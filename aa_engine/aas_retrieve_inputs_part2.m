@@ -29,9 +29,16 @@ while any(depnotdone)
             else
                 % Check if this stream is back from archive, if it was ever
                 % there
-                fid_check=fopen(streamfiles(depind).outputstreamdesc,'r');
-                line=fgetl(fid_check);
-                fclose(fid_check);
+                switch streamfiles(depind).streamlocation
+                    case 'remote'
+                        fid_check=fopen(streamfiles(depind).remoteoutputstreamdesc,'r');
+                        line=fgetl(fid_check);
+                        fclose(fid_check);
+                    case 'local'
+                        fid_check=fopen(streamfiles(depind).outputstreamdesc,'r');
+                        line=fgetl(fid_check);
+                        fclose(fid_check);
+                end;
                 
                 % If not archived
                 if strcmp(line(1:11),'ARCHIVED TO')
@@ -101,8 +108,7 @@ while any(depnotdone)
                             end;
                             fclose(fid_inp);
                             depnotdone(depind)=false;
-                                                        depnotdone(depind)=false;
-
+                            
                         case 'local'
                             
                             aas_log(aap,false,sprintf(' retrieving stream %s from %s to %s',streamfiles(depind).streamname,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
@@ -146,34 +152,34 @@ while any(depnotdone)
                                 fclose(lclfid);
                             end;
                             
-%                             % Bring across archiving if present, adjusting
-%                             % as necessary to ensure duplicate (hard
-%                             % linked) streams are archived only once, but
-%                             % deleted twice
-%                             [pth nme ext]=fileparts(streamfiles(depind).outputstreamdesc);
-%                             srcdotpath=fullfile(streamfiles(depind).src,['.' nme],[streamfiles(depind).md5 'v1']);
-%                             [pth nme ext]=fileparts(streamfiles(depind).inputstreamdesc);
-%                             destdotpath=fullfile(streamfiles(depind).dest,['.' nme],[streamfiles(depind).md5 'v1']);
-%                             if exist(srcdotpath,'dir')
-%                                 aas_log(aap,false,sprintf('Found archive %s',srcdotpath));
-%                                 if ~exist(destdotpath,'dir')
-%                                     aas_makedir(aap,destdotpath);
-%                                     % Always just copy local change log, as each end
-%                                     % has its own independent life
-%                                     srclocalchangelog=fullfile(srcdotpath,'log_localchanges.txt');
-%                                     if exist(srclocalchangelog,'file')
-%                                         copyfile(srclocalchangelog,destdotpath);
-%                                     end;
-%                                     % But symlink s3 log if not modified, so we don't
-%                                     % duplicate backing up
-%                                     srcs3changelog=fullfile(srcdotpath,'log_s3changes.txt');                                    
-%                                     if (streamfiles(depind).ismodified)
-%                                         copyfile(srcs3changelog,destdotpath);
-%                                     else
-%                                         aas_shell(['ln -f ' srcs3changelog ' ' destdotpath]);
-%                                     end;
-%                                 end;
-%                             end;
+                            %                             % Bring across archiving if present, adjusting
+                            %                             % as necessary to ensure duplicate (hard
+                            %                             % linked) streams are archived only once, but
+                            %                             % deleted twice
+                            %                             [pth nme ext]=fileparts(streamfiles(depind).outputstreamdesc);
+                            %                             srcdotpath=fullfile(streamfiles(depind).src,['.' nme],[streamfiles(depind).md5 'v1']);
+                            %                             [pth nme ext]=fileparts(streamfiles(depind).inputstreamdesc);
+                            %                             destdotpath=fullfile(streamfiles(depind).dest,['.' nme],[streamfiles(depind).md5 'v1']);
+                            %                             if exist(srcdotpath,'dir')
+                            %                                 aas_log(aap,false,sprintf('Found archive %s',srcdotpath));
+                            %                                 if ~exist(destdotpath,'dir')
+                            %                                     aas_makedir(aap,destdotpath);
+                            %                                     % Always just copy local change log, as each end
+                            %                                     % has its own independent life
+                            %                                     srclocalchangelog=fullfile(srcdotpath,'log_localchanges.txt');
+                            %                                     if exist(srclocalchangelog,'file')
+                            %                                         copyfile(srclocalchangelog,destdotpath);
+                            %                                     end;
+                            %                                     % But symlink s3 log if not modified, so we don't
+                            %                                     % duplicate backing up
+                            %                                     srcs3changelog=fullfile(srcdotpath,'log_s3changes.txt');
+                            %                                     if (streamfiles(depind).ismodified)
+                            %                                         copyfile(srcs3changelog,destdotpath);
+                            %                                     else
+                            %                                         aas_shell(['ln -f ' srcs3changelog ' ' destdotpath]);
+                            %                                     end;
+                            %                                 end;
+                            %                             end;
                             
                             if isempty(streamfiles(depind).fns)
                                 aas_log(aap,false,sprintf('No inputs in stream %s',streamfiles(depind).streamname));
