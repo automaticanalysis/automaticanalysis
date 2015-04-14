@@ -43,7 +43,7 @@ while any(depnotdone)
                     % Retrieve remote or local stream?
                     switch streamfiles(depind).streamlocation
                         case 'remote'
-                            aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,inputstream.host,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
+                            aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
                             
                             oldpth='';
                             
@@ -61,14 +61,14 @@ while any(depnotdone)
                                     if (numtotransfer>0)
                                         aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
                                     end;
-                                    inps=[fullfile(src,streamfiles(depind).fns{ind}) ' '];
+                                    inps=[fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
                                     oldpth=newpth;
                                     numtotransfer=1;
                                 else
-                                    inps=[inps fullfile(src,streamfiles(depind).fns{ind}) ' '];
+                                    inps=[inps fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
                                     numtotransfer=numtotransfer+1;
                                 end;
-                                if (wasnamechange)
+                                if (streamfiles(depind).wasnamechange)
                                     aas_copyfromremote(aap, streamfiles(depind).inputstream.host, fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}),streamfiles(depind).fns_dest_full{ind},'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
                                     numtotransfer=0;
                                     inps='';
@@ -100,7 +100,9 @@ while any(depnotdone)
                                 aas_log(aap,false,sprintf('No inputs in stream %s',streamname));
                             end;
                             fclose(fid_inp);
-                            
+                            depnotdone(depind)=false;
+                                                        depnotdone(depind)=false;
+
                         case 'local'
                             
                             aas_log(aap,false,sprintf(' retrieving stream %s from %s to %s',streamfiles(depind).streamname,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);

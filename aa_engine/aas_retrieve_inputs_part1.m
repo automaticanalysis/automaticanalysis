@@ -4,6 +4,8 @@
 function [gotinputs streamfiles]=aas_retrieve_inputs_part1(aap,inputstream,gotinputs,deps)
 global aaworker
 
+streamfiles=[];
+
 for depind=1:length(deps)
     % I'm doing this for you, dear reader. More readable names!
     domain=deps{depind}{1};
@@ -118,8 +120,14 @@ for depind=1:length(deps)
                 fid=fopen(outputstreamdesc,'r');
                 
                 % Load checksum with error checking
-                [aap md5]=aas_load_md5(aap,fid,streamname);
-                
+                [aap,md5,datecheck, isarchived]=aas_load_md5(aap,fid,streamname);
+
+                % Issue retrieval request if this stream is archived
+                if isarchived
+                    aas_log(aap,false,sprintf(' requesting retrieval of %s',streamname), aap.gui_controls.colours.inputstreams);
+                    aas_archive_request_retrieval(aap,outputstreamdesc);
+                end;
+
                 % Get filenames
                 fns=textscan(fid,'%s');
                 fns=fns{1};
@@ -224,6 +232,7 @@ for depind=1:length(deps)
                     streamfiles(depind).ismodified=ismodified;
                     streamfiles(depind).streamlocation='remote';
                     streamfiles(depind).inputstream=inputstream;
+                    streamfiles(depind).wasnamechange=wasnamechange;
                 end
                 
                 gotinputs=[gotinputs;fns_dest_full];
