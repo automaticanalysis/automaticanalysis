@@ -65,7 +65,7 @@ aap.report.fbase = basename(aap.report.html_main.fname);
 inSession = false;
 
 for k=1:numel(stages)
-    fprintf('Fetching report for %s...\n',stages{k});    
+    fprintf('Fetching report for %s...\n',stages{k});
     % domain
     if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
         xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
@@ -77,8 +77,28 @@ for k=1:numel(stages)
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
     domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
     
+    % Switch for stage
+    all_stage = cell_index(stages, stages{k});
+    istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+    istage = istage(all_stage==k);
+    % - backup fields
+    aapreport = aap.report;
+    aapprov = aap.prov;
+    
+    aap = aas_setcurrenttask(aap,istage);
+    
+    % - restore fields
+    aap.report = aapreport;
+    aap.prov = aapprov;
+    
+    % add provenance
+    if aap.prov.isvalid, aap.prov.addModule(istage); end
+    
     % Skip stages of unknown domain - most like aamod_importfilesasstream
     if ~strcmp(domain,'[unknown]')
+        
+        % build dependency
+        dep = aas_dependencytree_allfromtrunk(aap,domain);
         
         % Set inSession flag
         if ~isempty(strfind(domain,'session')) && ~inSession
@@ -87,26 +107,6 @@ for k=1:numel(stages)
         if isempty(strfind(domain,'session')) && inSession
             inSession = false;
         end
-        
-        % Switch for stage
-        all_stage = cell_index(stages, stages{k});
-        istage = cell_index({aap.tasklist.main.module.name}, stages{k});
-        istage = istage(all_stage==k);
-        % - backup fields
-        aapreport = aap.report;
-        aapprov = aap.prov;
-        
-        aap = aas_setcurrenttask(aap,istage);
-        
-        % - restore fields
-        aap.report = aapreport;
-        aap.prov = aapprov;
-        
-        % add provenance
-        if aap.prov.isvalid, aap.prov.addModule(istage); end
-        
-        % build dependency
-        dep = aas_dependencytree_allfromtrunk(aap,domain);
         
         % run through
         for d = 1:numel(dep)

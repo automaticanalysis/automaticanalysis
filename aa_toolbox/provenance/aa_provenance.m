@@ -55,6 +55,10 @@ classdef aa_provenance < handle
                     });
                 
                 % aa
+                global aa
+                if ~isobject(aa)
+                    aaClass;
+                end
                 aagent = aa;
                 obj.pp.agent('idaa',{...
                     'prov:type','aa:PipelineProcessor',...
@@ -155,9 +159,11 @@ classdef aa_provenance < handle
                 index = smod.index;
                 
                 idname = ['idActivity_' name];
+                if ~isempty(smod.extraparameters), sfx = smod.extraparameters.aap.directory_conventions.analysisid_suffix; 
+                else sfx = ''; end
                 idattr = {...
                     'aap',aas_setcurrenttask(obj.aap,stageindex),...
-                    'Location',fullfile([obj.studypath smod.extraparameters.aap.directory_conventions.analysisid_suffix],name),...
+                    'Location',fullfile([obj.studypath sfx],name),...
                     };
                 
                 checkinput = true;
