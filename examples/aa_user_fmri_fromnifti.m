@@ -13,7 +13,7 @@ aa_ver4_nocloud
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_parameters_defaults.xml','aa_user_fmri_fromnifti.xml');
+aap=aarecipe('aap_parameters_defaults.xml','aap_tasklist_fmri_fromnifti.xml');
 aap = aas_configforSPM12(aap);
 
 
