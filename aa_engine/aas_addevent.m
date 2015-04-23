@@ -10,8 +10,8 @@
 % dur=event durations (in scans), either a single element (if all
 %   occurrences have the same duration) or in order that corresponds to ons
 % parametric = (multiple) parametric modulator with 3 fields
-%   parametric(n).name = name of the modulator
-%   parametric(n).P = modulator vector itself
+%   parametric(n).name = name of the modulator or 'time' (automatic temporal modulation)
+%   parametric(n).P = modulator vector itself or empty (automatic temporal modulation)
 %   parametric(n).h = polynomial expansion
 %
 % Examples
@@ -62,14 +62,18 @@ end
 
 % sort the onsets, and apply same reordering to dur & parametric
 % [AVG] - replacd junk by ons, since we *DO* want to sort the onsets
-[ons ind]=sort(ons);
-if (length(dur)>1)
+[ons, ind]=sort(ons);
+if length(dur)>1
     dur=dur(ind);
 end;
-if (~isempty(parametric))
+if ~isempty(parametric)
     % [AVG] reorder parametric modulator even if there's more than one!
     for p = 1:length(parametric)
-        parametric(p).P = parametric(p).P(ind);
+        if strcmp(parameric(p).name,'time') && isempty(parametric(p).P) % automatic temporal modulation 
+            parametric(p).P = ons;
+        else
+            parametric(p).P = parametric(p).P(ind);
+        end
     end
 end
 
