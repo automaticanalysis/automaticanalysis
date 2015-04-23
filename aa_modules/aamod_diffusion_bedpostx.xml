@@ -27,7 +27,6 @@
                 <stream>mean_d_stdsamples</stream>
                 <stream>mean_f1samples</stream>
                 <stream>mean_f2samples</stream>
-                <stream>mean_fsamples</stream>
                 <stream>mean_ph1samples</stream>
                 <stream>mean_ph2samples</stream>
                 <stream>merged_ph2samples</stream>
