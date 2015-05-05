@@ -43,6 +43,14 @@
             <!-- enable/disable orthogoanlisation (only for SPM12 and above) -->
             <orthogonalisation>1</orthogonalisation>
             
+            <!-- write residuals (only for SPM12 and above) 
+            (empty) - do not write
+            0       - corrected for no effect
+            NaN     - corrected for all effect
+            >0      - corrected for a given contrast
+            -->
+            <writeresiduals></writeresiduals>
+            
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
             <TR></TR>
@@ -94,6 +102,7 @@
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_betas</stream>
                 <stream>firstlevel_brainmask</stream>
+                <stream>epi</stream>
             </outputstreams>
             
         </currenttask>

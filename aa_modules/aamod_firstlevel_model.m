@@ -128,7 +128,28 @@ switch task
         end
                 
         SPMest = spm_spm(SPMdes);
-
+        
+        % Saving Residuals
+        if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
+            fprintf('Writing residuals...');
+            VRes = spm_write_residuals(SPMest,aap.tasklist.currenttask.settings.writeresiduals);
+            for s = 1:numel(SPM.nscan)
+                sesspath = aas_getsesspath(aap,subj,subjSessionI(s));
+                fres = char({VRes(sum(SPM.nscan(1:s-1))+1:sum(SPM.nscan(1:s))).fname}');
+                for f = 1:size(fres,1)
+                    movefile(fres(f,:),sesspath);
+                end
+                residuals{subjSessionI(s)} = horzcat(repmat([sesspath filesep],[SPM.nscan(s) 1]),fres);
+                if aap.options.NIFTI4D
+                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))));
+                    fres = cellstr(residuals{subjSessionI(s)});
+                    residuals{subjSessionI(s)} = fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s)));                
+                    delete(fres{:});
+                end                
+            end
+            fprintf('Done.\n');
+        end        
+        
         %% Describe outputs
         cd (cwd);
 
@@ -150,6 +171,12 @@ switch task
         end
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
+        
+        if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
+            for s = subjSessionI
+                aap=aas_desc_outputs(aap,subj,s,'epi',residuals{s});
+            end
+        end
 
         %% DIAGNOSTICS...
 %         h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
