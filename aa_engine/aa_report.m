@@ -115,7 +115,9 @@ for k=1:numel(stages)
             try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
             try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
             
-            if sess == 1, aap = aas_report_add(aap,subj,['<h2>Stage: ' stages{k} '</h2>']); end
+            if sess == 1, aap = aas_report_add(aap,subj,...
+                    ['<h2>Stage: ' stages{k} aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
+            end
             
             % evaluate with handling sessions
             if inSession

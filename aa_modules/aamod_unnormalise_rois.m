@@ -136,16 +136,18 @@ switch task
         end
     case 'report'
         localpath = aas_getpath_bydomain(aap,'subject',subj);
-        struct = aas_getfiles_bystream_dep(aap,'subject',subj,'structural');
-        aas_checkreg(aap,subj,'rois',struct);
-        
-%         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
-%         for d = 1:numel(fdiag)
-%             aap = aas_report_add(aap,subj,'<table><tr><td>');
-%             imgpath = fullfile(localpath,fdiag(d).name);
-%             aap=aas_report_addimage(aap,subj,imgpath);
-%             [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
-%             if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
-%             aap = aas_report_add(aap,subj,'</td></tr></table>');
-%         end
+        d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
+        if isempty(d)
+            struct = aas_getfiles_bystream_dep(aap,'subject',subj,'structural');
+            aas_checkreg(aap,subj,'rois',struct);
+        end
+        fdiag = dir(fullfile(localpath,'diagnostic_aas_checkreg_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            imgpath = fullfile(localpath,fdiag(d).name);
+            aap=aas_report_addimage(aap,subj,imgpath);
+            [p, f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
 end

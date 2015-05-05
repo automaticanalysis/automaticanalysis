@@ -15,8 +15,10 @@ switch task
         %% 0) Check that the templates we need exist!
         % Get the T1 template
         sTimg = aap.directory_conventions.T1template;
-        if (~exist(sTimg,'file')) % try in SPM
-            if sTimg(1) ~= '/', sTimg = fullfile(fileparts(which('spm')),sTimg); end
+        if ~exist(sTimg,'file') % try in SPM
+            if sTimg(1) ~= '/', sTimg = fullfile(aap.directory_conventions.spmdir,sTimg); end
+        else
+            sTimg = which(sTimg);
         end
         if ~exist(sTimg,'file'),
             aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
