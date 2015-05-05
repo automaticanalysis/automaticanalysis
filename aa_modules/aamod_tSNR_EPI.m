@@ -29,13 +29,16 @@ switch task
         end
         
         %% retrieve TR from DICOM header & set up the HiPass filter
+        K.RT = [];
         % if TR is manually specified (not recommended as source of error)
-        if (isfield(aap.tasklist.currenttask.settings,'TR'))
+        if isfield(aap.tasklist.currenttask.settings,'TR') && ~isempty(aap.tasklist.currenttask.settings.TR)
             K.RT = aap.tasklist.currenttask.settings.TR;
         else
             % Get TR from DICOM header
-            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
-            K.RT = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+            if aas_stream_has_contents(aap,subj,sess,'epi_dicom_header');
+                DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
+                K.RT = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+            end
         end
         % High pass filter or detrend data
         % Let's first set up the parameters...
@@ -43,11 +46,18 @@ switch task
         K.HParam = aap.tasklist.currenttask.settings.HParam; % cut-off period in seconds
         % If total length > filter cut-off
         
-        if K.RT * length(K.row) > K.HParam
-            fprintf('\nWill do high pass filtering of time series with a %d second cut-off', K.HParam)
+        doFilt = ~isempty(K.RT) && ~isempty(K.HParam);
+        
+        if doFilt
+            if K.RT * length(K.row) > K.HParam
+                aas_log(aap,false,sprintf('Will do high pass filtering of time series with a %d second cut-off', K.HParam));
+            else
+                aas_log(aap,false,'Will do linear detrending across time series')
+            end
         else
-            fprintf('\nWill do linear detrending across time series')
+            aas_log(aap,false,'No high pass filtering will be applied on the time series')
         end
+        
         %% Get started with the processing
         % Voxel based measures
         V = spm_vol(deblank(EPIimg(1,:))); % A typical volume...
@@ -131,31 +141,33 @@ switch task
                                 end
                             end
                             
-                            if K.RT * length(K.row) > K.HParam
-                                % Create the frequencies to be removed and apply them...
-                                % Important: first dimension must be time dimension!
-                                EPIdata = reshape(spm_filter(K, reshape(EPIdata,size(EPIdata,1),[])),size(EPIdata));
-                                % And the ROI data...
-                                if x == 1 && y == 1 && z == 1
-                                    for r = 1:size(ROIimg,1)
-                                        mROI{r}(:,1) = spm_filter(K, mROI{r});
+                            if doFilt
+                                if K.RT * length(K.row) > K.HParam
+                                    % Create the frequencies to be removed and apply them...
+                                    % Important: first dimension must be time dimension!
+                                    EPIdata = reshape(spm_filter(K, reshape(EPIdata,size(EPIdata,1),[])),size(EPIdata));
+                                    % And the ROI data...
+                                    if x == 1 && y == 1 && z == 1
+                                        for r = 1:size(ROIimg,1)
+                                            mROI{r}(:,1) = spm_filter(K, mROI{r});
+                                        end
                                     end
-                                end
-                            else
-                                % Use linear detrending instead (might be slower due to loops)
-                                for a = 1:length(Xind)
-                                    for b = 1:length(Yind)
-                                        vRow = squeeze(EPIdata(:,a,b,:));
-                                        mRow = repmat(mean(vRow,1), [size(EPIimg,1) 1]);
-                                        vRow = detrend(vRow);
-                                        % Add mean back after detrending!
-                                        EPIdata(:,a,b,:) = vRow + mRow;
+                                else
+                                    % Use linear detrending instead (might be slower due to loops)
+                                    for a = 1:length(Xind)
+                                        for b = 1:length(Yind)
+                                            vRow = squeeze(EPIdata(:,a,b,:));
+                                            mRow = repmat(mean(vRow,1), [size(EPIimg,1) 1]);
+                                            vRow = detrend(vRow);
+                                            % Add mean back after detrending!
+                                            EPIdata(:,a,b,:) = vRow + mRow;
+                                        end
                                     end
-                                end
-                                % And the ROI data...
-                                if x == 1 && y == 1 && z == 1
-                                    for r = 1:size(ROIimg,1)
-                                        mROI{r}(:,1) = detrend(mROI{r}) + mean(mROI{r});
+                                    % And the ROI data...
+                                    if x == 1 && y == 1 && z == 1
+                                        for r = 1:size(ROIimg,1)
+                                            mROI{r}(:,1) = detrend(mROI{r}) + mean(mROI{r});
+                                        end
                                     end
                                 end
                             end
