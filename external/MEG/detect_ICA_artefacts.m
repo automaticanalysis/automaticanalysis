@@ -3,6 +3,7 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 % Version 2.0 of ICA artifact detection for SPM8/12
 %                  Rik.Henson@mrc-cbu.cam.ac.uk, March 2013, with thanks to Nitin Williams and Jason Taylor
 %
+% Updated 23-4-15 to allow IC's to be re-created from previously calculated IC weights (eg if want to use function to re-threshold)
 % Updated 6-2-15 to gather outputs into single "Out" structure (and keep separate ICs identified by each reference)
 %
 % Needs EEGLAB on Matlab path to perform ICA
@@ -35,23 +36,29 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 % Fields of Out:
 %   allrem   = cell array of IC numbers believed to be artifacts across all references 
 %   bothrem  = cell array of IC numbers believed to be artifacts for each reference (spatial+temporal)
-%   temprem   = cell array of IC numbers believed to be artifacts for each temporal reference
-%   spatrem   = cell array of IC numbers believed to be artifacts for each spatial reference
+%   temprem  = T x N cell array of IC numbers believed to be artifacts for each of N temporal references, where:
+%              T = 1 corresponds to single IC with max correlation
+%              T = 2 corresponds to ICs with correlations surviving absolute p-value
+%              T = 3 corresponds to ICs with correlations surviving relative Z-score across correlations
+%              T = 4 (optional on Nperm below) corresponds to ICs with correlations surviving boot-strapped, phase-permuted p-value
+%   spatrem  = T x N cell array of IC numbers believed to be artifacts for each of N spatial references, like for temrem above (except no bootstrap option)
 %   weights  = full ICA weight matrix
 %   TraMat   = channel trajectory matrix to project artifacts from data
 %   temcor   = matrix of Pearson temporal correlations between each IC and 
 %              each reference channel
 %   spacor   = matrix of Pearson spatial correlations between each IC topo  
 %              and each reference topography
-%   varexpl  = vector of variance explained by each IC
+%   compvars = vector of IC loadings 
+%   varexpl  = vector of variance explained by each IC (simple function of compvars)
 %
 % Additional (large) output if requested:
-%   ICs      = ICs themselves! (may be big) (all optional outputs)
+%   all_remove = ICs that survive strictest definition of all thresholds for both temporal and spatial definitions
+%   ICs        = ICs themselves! (may be big) (all optional outputs)
 %
 % Inputs (fields of argument structure "S"):
 %   d          = Channel (Sensor) X Time matrix of EEG/MEG data to be corrected
-%   refs.tem    = N cell array of 1 X Time vectors for N reference channels (eg EOG)
-%   refs.spa    = N cell array of 1 X Channel vector for N reference topographies 
+%   refs.tem   = N cell array of 1 X Time vectors for N reference channels (eg EOG)
+%   refs.spa   = N cell array of 1 X Channel vector for N reference topographies 
 %                (order *must match* refs.tem; with empty cells if not available!)
 %   PCA_dim    = number of PCs for data reduction priot to ICA (eg 60)
 %   VarThr     = percentage of variance required to be an important artifactual IC (eg 1/PCA_dim, or could be 0) (DEFAULT possible)
@@ -60,12 +67,14 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 %   TemRelPval = additional Z-value for relative threshold of absolute temporal correlation to define artifact (eg 3)
 %   SpaAbsPval = p-value threshold for absolute spatial correlation to define artifact (eg 0.01)
 %   SpaRelPval = additional Z-value for relative threshold of absolute spatial correlation to define artifact (eg 2)
-%   PermPval   = p-value for boot-strapped absolute temporal correlation to define artifact (e.g, 0.05)
+%   PermPval   = p-value for boot-strapped absolute temporal correlation to define artifact (eg 0.05)
 %   Nperm      = number of permutations to create null distribution of Pearson (eg 1000)
+%   thresholding = artifact thresholding (one or more of 1:4) (see T above)
+%   remove     = artifacts to be removed ('all'|'both'|'temp'|'spat') (see fields *rem of Out above)
 %
 %   ICs        = (optional) if already have ICs and just want to re-check correlations with references
-%   weights    = IC weights; only necessary if passed own ICs as above
-%   compvars   = IC variances; only necessary if passed own ICs as above
+%   weights    = (optional) IC weights if want this function to recreate ICs (and also necessary if passed own ICs as above)
+%   compvars   = (optional) IC weights if want this function to recreate ICs (and also necessary if passed own ICs as above)
 %
 % Could be extended to bootstrap spatial correlations too, though would
 % need to do 2D FT to allow for spatial correlation in topographies...
@@ -73,24 +82,8 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 % Could be extended to correlate with template power spectra (eg muscle artifact)
 
 %% Inputs
-try TemAbsPval = S.TemAbsPval;  catch TemAbsPval = 1; end
-try SpaAbsPval = S.SpaAbsPval;  catch SpaAbsPval = 1; end
-try TemRelZval = S.TemRelZval;  catch TemRelZval = 0; end
-try SpaRelZval = S.SpaRelZval;  catch SpaRelZval = 0; end
-  
-if TemAbsPval == 1 & SpaAbsPval == 1 & TemRelZval == 0 & SpaRelZval == 0 
-    error('Must have at least one temporal or spatial absolute or relative threshold for artifacts')
-end
-
-try refs.tem = S.refs.tem;    catch refs.tem = []; end
-try refs.spa = S.refs.spa;    catch refs.spa = []; end
-
-if ~isempty(refs.tem) & TemAbsPval == 1 & TemRelZval == 0
-    error('No thresholds for temporal reference channels')
-end
-if ~isempty(refs.spa) & SpaAbsPval == 1 & SpaRelZval == 0
-    error('No thresholds for spatial reference topographies')
-end
+try refs.tem = S.refs.tem;    catch, refs.tem = []; end
+try refs.spa = S.refs.spa;    catch, refs.spa = []; end
 
 if isempty(refs.tem) 
     if isempty(refs.spa)
@@ -98,14 +91,21 @@ if isempty(refs.tem)
     else
         refs.tem = cell(1,length(refs.spa));
     end
-else
-    if isempty(refs.spa)
-        refs.spa = cell(1,length(refs.tem));
-    elseif length(refs.tem) ~= length(refs.spa)
-        error('Number of temporal references needs to match number of spatial references')
-    end
+% else
+%     if isempty(refs.spa)
+%         refs.spa = cell(1,length(refs.tem));
+%     elseif length(refs.tem) ~= length(refs.spa)
+%         error('Number of temporal references needs to match number of spatial references')
+%     end
 end
-Nrefs = length(refs.tem);
+
+Nrefs(1) = length(refs.tem);
+Nrefs(2) = length(refs.spa);
+
+try TemAbsPval = S.TemAbsPval;  catch, TemAbsPval = 1; end
+try SpaAbsPval = S.SpaAbsPval;  catch, SpaAbsPval = 1; end
+try TemRelZval = S.TemRelZval;  catch, TemRelZval = 0; end
+try SpaRelZval = S.SpaRelZval;  catch, SpaRelZval = 0; end
 
 if isfield(S,'ICs')
     try
@@ -116,16 +116,30 @@ if isfield(S,'ICs')
     end
 end
 
-try d = S.d;                catch error('Must provide Channel x Time MEG data matrix'); end
-try PCA_dim = S.PCA_dim;    catch PCA_dim = round(0.75*size(d,1)); end
-try VarThr = S.VarThr;      catch VarThr = 0; end % could default to 100/PCA_dim?
-try FiltPars = S.FiltPars;  catch FiltPars = []; end
+try d = S.d; catch, error('Must provide Channel x Time MEG data matrix'); end
 
-try Rseed = S.Rseed;        catch Rseed = []; end  % If want reproducibility
+if isfield(S,'weights')
+    try
+        compvars = S.compvars;
+    catch
+        error('If passing pre-computed IC weights, then must also pass compvars')
+    end
+    try
+        S.ICs = S.weights * d;
+    catch
+        error('Pre-specified IC weights do not match data size')
+    end
+end
+
+try PCA_dim = S.PCA_dim;    catch, PCA_dim = round(0.75*size(d,1)); end
+try VarThr = S.VarThr;      catch, VarThr = 0; end % could default to 100/PCA_dim?
+try FiltPars = S.FiltPars;  catch, FiltPars = []; end
+
+try Rseed = S.Rseed;        catch, Rseed = []; end  % If want reproducibility
 
 % For permutation testing of temporal correlations (to turn off, pass S.Nperm = 0)
-try PermPval = S.PermPval;  catch PermPval = .05/(2*PCA_dim);                   end % Kind of 2-tailed Bonferonni!
-try Nperm = S.Nperm;        catch Nperm = round((4*sqrt(CorPval)/CorPval)^2);   end % http://www.epibiostat.ucsf.edu/biostat/sen/statgen/permutation.html#_how_many_permutations_do_we_need
+try PermPval = S.PermPval;  catch, PermPval = .05/(2*PCA_dim);                   end % Kind of 2-tailed Bonferonni!
+try Nperm = S.Nperm;        catch, Nperm = round((4*sqrt(CorPval)/CorPval)^2);   end % http://www.epibiostat.ucsf.edu/biostat/sen/statgen/permutation.html#_how_many_permutations_do_we_need
 
 
 %% Initialize
@@ -146,24 +160,24 @@ try
     ICs = ICs(:,1:Nsamp);
 catch
     try
-        [Out.weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
+        [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
     catch
         if ~isempty(Rseed); warning('Random seed requested but no facility with standard runica?'); end
-        [Out.weights,sphere,compvars,bias,signs,lrates,ICs] = runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800);
+        [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(d,'pca',PCA_dim,'extended',1,'maxsteps',800);
     end
 end
-
+Out.weights = weights;
 
 %% Filtering (if any) (and transposition for speed)
 if length(FiltPars) == 3
     fprintf('Bandpass filtering from %d to %d Hz (warning - can fail)\n',FiltPars(1), FiltPars(2));
-    for r=1:Nrefs
+    for r=1:Nrefs(1)
         refs.tem{r} = ft_preproc_bandpassfilter(refs.tem{r}, FiltPars(3), FiltPars(1:2),  [], 'but','twopass','reduce');
     end
     ICs  = ft_preproc_bandpassfilter(ICs,  FiltPars(3), FiltPars(1:2),  [], 'but','twopass','reduce')';
 elseif length(FiltPars) == 2
     fprintf('Lowpass filtering to %d Hz\n',FiltPars(1));
-    for r=1:Nrefs
+    for r=1:Nrefs(1)
         refs.tem{r} = ft_preproc_lowpassfilter(refs.tem{r}, FiltPars(2), FiltPars(1),  5, 'but','twopass','reduce');
     end
     ICs  = ft_preproc_lowpassfilter(ICs,  FiltPars(2), FiltPars(1),  5, 'but','twopass','reduce')';
@@ -175,103 +189,106 @@ end
 % figure; for i=1:PCA_dim; plot(ICs(30000:40000,i)); title(i); pause; end
 
 iweights  = pinv(Out.weights);
-remove = {};
-Out.temcor = zeros(Nrefs,PCA_dim); tempval = zeros(Nrefs,PCA_dim);
-Out.spacor = zeros(Nrefs,PCA_dim); spapval = zeros(Nrefs,PCA_dim);
-reltemcor = zeros(Nrefs,PCA_dim); relspacor = zeros(Nrefs,PCA_dim);
-temremove  = cell(1,Nrefs); sparemove  = cell(1,Nrefs);
-for r = 1:Nrefs
-    %parfor r = 1:Nrefs        % If want to parallelise (could parallelise Nperm loop below instead)
+Out.temcor = zeros(Nrefs(1),PCA_dim); tempval = zeros(Nrefs(1),PCA_dim);
+Out.spacor = zeros(Nrefs(2),PCA_dim); spapval = zeros(Nrefs(2),PCA_dim);
+%reltemcor = zeros(Nrefs(1),PCA_dim); relspacor = zeros(Nrefs(2),PCA_dim);
+temremove  = cell(4,Nrefs(1)); sparemove  = cell(3,Nrefs(2));
+
+for r = 1:Nrefs(1)
     
     %% Check temporal correlation with any reference channels
-    if ~isempty(refs.tem{r})
-        for k = 1:PCA_dim
-            [Out.temcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
-        end
-        reltemcor(r,:) = zscore(Out.temcor(r,:));
-        
-        if Nperm > 0
-            permcor = zeros(1,PCA_dim);
-            maxcor  = zeros(Nperm,1);
-            
-            ff = fft(refs.tem{r}',Nsamp);
-            mf = abs(ff);
-            wf = angle(ff);
-            hf = floor((length(ff)-1)/2);
-            rf = mf;
-            
-            for l = 1:Nperm
-                btdata = zeros(size(ff));
-                rf(2:hf+1)=mf(2:hf+1).*exp((0+1i)*wf(randperm(hf)));    % randomising phases (preserve mean, ie rf(1))
-                rf((hf+2):length(ff))=conj(rf((hf+1):-1:2));            % taking complex conjugate
-                btdata = ifft(rf,Nsamp);                                % Inverse Fourier transform
-                
-                for k = 1:PCA_dim
-                    permcor(k) = corr(btdata,ICs(:,k));
-                end
-                maxcor(l) = max(abs(permcor));
-                fprintf('.');
-            end
-            fprintf('\n')
-            %         figure,hist(maxcor)
-            
-            temremove{1,r} = find(abs(Out.temcor(r,:)) > prctile(maxcor,100*(1-TemPval)));
-            
-        else
-            temremove{1,r} = find(tempval(r,:) < TemAbsPval);
-        end
-        
-        temremove{1,r} = [0 intersect(temremove{1,r},find(abs(reltemcor(r,:)) > TemRelZval))];  % 0 for no temp comps found, rather than none asked for (ie, passed empty)
+    for k = 1:PCA_dim
+        [Out.temcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
     end
     
-    %% Check spatial correlation with any reference channels
-    if ~isempty(refs.spa{r})
-        for k = 1:PCA_dim
-            [Out.spacor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
-        end
-        relspacor(r,:) = zscore(Out.spacor(r,:));
+    [~,temremove{1,r}] = max(abs(Out.temcor(r,:)));
+    
+    temremove{2,r} = find(tempval(r,:) < TemAbsPval);
+    
+    temremove{3,r} = find(abs(zscore(Out.temcor(r,:))) > TemRelZval);
+    
+    if Nperm > 0
+        permcor = zeros(1,PCA_dim);
+        maxcor  = zeros(Nperm,1);
         
-        sparemove{1,r} = find(spapval(r,:) < SpaAbsPval);
-        sparemove{1,r} = intersect(sparemove{1,r},find(abs(relspacor(r,:)) > SpaRelZval));
+        ff = fft(refs.tem{r}',Nsamp);
+        mf = abs(ff);
+        wf = angle(ff);
+        hf = floor((length(ff)-1)/2);
+        rf = mf;
         
-        if ~isempty(temremove{r}) % where a 0 entry is important for case where none found, rather than none asked for
-            tmp = intersect(temremove{1,r},sparemove{1,r});
-            remove{1,r} = tmp(:)';  % Silly procedure to allow empty cell arrays of same size for concatenation later
-        else
-            remove{1,r} = sparemove{1,r};
+        for l = 1:Nperm % could parfor...
+            rf(2:hf+1)=mf(2:hf+1).*exp((0+1i)*wf(randperm(hf)));    % randomising phases (preserve mean, ie rf(1))
+            rf((hf+2):length(ff))=conj(rf((hf+1):-1:2));            % taking complex conjugate
+            btdata = ifft(rf,Nsamp);                                % Inverse Fourier transform
+            
+            for k = 1:PCA_dim
+                permcor(k) = corr(btdata,ICs(:,k));
+            end
+            maxcor(l) = max(abs(permcor));
+            fprintf('.');
         end
-    else
-        if ~isempty(temremove{1,r}) 
-            temremove{1,r}(find(temremove{1,r}==0))=[]; % get rid of any 0s from above
-            remove{1,r} = temremove{1,r}; 
-        end
+        fprintf('\n')
+        %         figure,hist(maxcor)
+        
+        temremove{4,r} = find(abs(Out.temcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
     end
 end
 
-Out.temprem = temremove;
-Out.spatrem = sparemove;
-Out.bothrem = remove;
+for r = 1:Nrefs(2)        
+    %% Check spatial correlation with any reference channels
+        for k = 1:PCA_dim
+            [Out.spacor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
+        end
+        
+        [~,sparemove{1,r}] = max(abs(Out.spacor(r,:)));
+        
+        sparemove{2,r} = find(spapval(r,:) < SpaAbsPval);
 
-%figure,hist(Out.temcor')
-%figure,hist(reltemcor')
-%figure,hist(Out.spacor')
-%figure,hist(log10(spapval+eps'))
-%figure,hist(relspacor')
-
-remove = unique(cat(2,remove{:}));  % find unique ICs
+        sparemove{3,r} = find(abs(zscore(Out.spacor(r,:))) > SpaRelZval);
+end
 
 %% Variance Thresholding
-Out.varexpl   = 100*compvars/sum(compvars);
-varenough = find(Out.varexpl > VarThr);
-remove    = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
+Out.compvars = compvars;
+Out.varexpl = 100*compvars/sum(compvars);
+varenough   = find(Out.varexpl > VarThr);
 
-Out.allrem = remove;
+Out.temrem = temremove;
+Out.sparem = sparemove;
 
-% figure; for i=remove; plot(ICs(30000:40000,i)); title(i); pause; end
-remove = Out.([S.remove 'rem']);
+thresholding = S.thresholding;
+if ~Nperm, thresholding(thresholding == 4) = []; end % remove thresholding if not permutation
+for r = 1:Nrefs(1)
+    remove = 1:PCA_dim;
+    for t = thresholding
+        remove = intersect(remove,temremove{t,r});
+    end
+    remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
+    Out.bothrem{1,r} = remove;
+end
 
-if ~isempty(remove)
-    finalics  = setdiff([1:PCA_dim],remove);
+thresholding(thresholding == 4) = []; % there is no option for permutation in spatial
+for r = 1:Nrefs(2)
+    remove = 1:PCA_dim;
+    for t = thresholding
+        remove = intersect(remove,sparemove{t,r});
+    end    
+    remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
+    Out.bothrem{2,r} = remove;
+end
+
+Out.allrem = 1:PCA_dim;
+if Nrefs(1) > 0
+    Out.allrem = intersect(Out.allrem,cat(2,Out.bothrem{1,:}));
+end
+if Nrefs(2) > 0
+    Out.allrem = intersect(Out.allrem,cat(2,Out.bothrem{2,:}));
+end
+ 
+toremove = Out.([S.remove 'rem']);
+
+if ~isempty(toremove)
+    finalics  = setdiff(1:PCA_dim,toremove);
     Out.TraMat    = iweights(:,finalics) * Out.weights(finalics,:);
 else
     Out.TraMat    = eye(size(d,1));
