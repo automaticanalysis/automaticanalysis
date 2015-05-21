@@ -8,6 +8,7 @@
                 <stream>native_grey</stream>
                 <stream>native_white</stream>
                 <stream>native_csf</stream>
+                <stream isessential='0'>seg8</stream>
             </inputstreams>
 
             <outputstreams>
