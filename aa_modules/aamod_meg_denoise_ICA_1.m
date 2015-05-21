@@ -52,7 +52,7 @@ switch task
         chans = {}; remove = {}; weights = {}; temcor = {}; spacor = {}; TraMat = {};
         for m = 1:numel(modalities)
             ICA.refs.spa = {arttopos.HEOG{m}', arttopos.VEOG{m}', arttopos.ECG{m}'};  % Assumes modalities ordered same way!!!
-            if m == 2, ICA.refs.spa{3} = []; end  % ECG topography too variable, so just select on timecourse?
+            if m == 2, ICA.refs.spa(3) = []; end  % ECG topography too variable, so just select on timecourse?
             chans{m} = find(strcmp(D.chantype,modalities{m}));  % RH: Bad coding: modalities{2} may not be Grads - see other comment about only converting grads
             ICA.d  = D(chans{m},:);
             ICA.FiltPars = [ICA.FiltPars D.fsample];

@@ -212,7 +212,7 @@ switch task
             % Sessionwise custom plot or MFP
             if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
                 mw_mfp(outpars);
-                fn=dir(fullfile(pth,'mw_mpf_*.txt'));
+                fn=dir(fullfile(pth,'mw_mfp_*.txt'));
                 outpars = fullfile(pth,fn(1).name);
                 if strcmp(aap.options.wheretoprocess,'localsingle')
                     movefile(...
