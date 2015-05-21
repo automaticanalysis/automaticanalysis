@@ -108,9 +108,15 @@ switch task
             if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
                 finalepis = finalepis{1};
                 ind = find(finalepis=='-');
-                if isempty(ind), ind = find(finalepis=='.'); end; ind(2) = ind(end);
-                finalepis = [finalepis(1:ind(2)-1) '.nii'];
-                spm_file_merge(V0(aap.acq_details.numdummies+1:end),finalepis,0);
+                sfx = '';
+                if isempty(ind), 
+                    ind = find(finalepis=='.');
+                    sfx = '_4D';
+                end
+                ind(2) = ind(end);
+                finalepis = [finalepis(1:ind(2)-1) sfx '.nii'];
+                V0 = cell2mat(V0);
+                spm_file_merge(char({V0(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
             end
             % And describe outputs
             aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
