@@ -210,13 +210,15 @@ switch task
             iYepi = img_rot90(iYepi);
             iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
             [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);
-            mon = tr_3Dto2D(img(:,:,:,1));
-            mon(:,:,2) = tr_3Dto2D(img(:,:,:,2));
-            mon(:,:,3) = tr_3Dto2D(img(:,:,:,3));
-            fnsl = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',c,SPM.xCon(c).name));
-            imwrite(mon,fnsl);
-            dlmwrite(strrep(fnsl,'_overlay.jpg','.txt'),[min(v(v~=0)), max(v)]);
-            
+
+            for a = 0:2
+                mon = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,1),a),a));
+                mon(:,:,2) = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,2),a),a));
+                mon(:,:,3) = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,3),a),a));
+                fnsl(a+1,:) = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                imwrite(mon,deblank(fnsl(a+1,:)));
+            end
+            dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
             % Render
             if numel(Z)  < 2 % Render fails with only one active voxel
                 Z = horzcat(Z,Z);
