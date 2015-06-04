@@ -36,27 +36,30 @@ switch task
             case 'structural'
                 mod = 't1';
         end
-        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-spm --%s',subjname,struct,reg,mod);
+        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-fsl --%s',subjname,struct,reg,mod);
         [s, w] = aas_runFScommand(aap,FScommand);
         
         % Register SRC to FS
+        flags = aap.spm.defaults.coreg.write;
+        flags.interp = aap.tasklist.currenttask.settings.interp;
+        flags.which = [1 0];
         srcwfs = '';
         for i = 1:numel(srcstream)
-            src = aas_getfiles_bystream(aap, subj,srcstream{i}); 
-            flags = aap.spm.defaults.coreg.write;
-            flags.interp = aap.tasklist.currenttask.settings.interp;
-            flags.which = [1 0];
-            spm_reslice({struct src},flags);
-            src = fullfile(fileparts(src),[flags.prefix basename(src)]);
-            FScommand = sprintf('mri_vol2surf --mov %s.nii --reg %s --hemi rh --o %s2FS_rh.mgh',src,reg,src);        
-            if FWHM, FScommand = [FScommand sprintf(' --surf-fwhm %d',FWHM)]; end            
-            [s, w] = aas_runFScommand(aap,FScommand);
-            FScommand = sprintf('mri_vol2surf --mov %s.nii --reg %s --hemi lh --o %s2FS_lh.mgh',src,reg,src);        
-            if FWHM, FScommand = [FScommand sprintf(' --surf-fwhm %d',FWHM)]; end            
-            [s, w] = aas_runFScommand(aap,FScommand);
-            %% Output stream
-            srcwfs(end+1,:) = [strrep(src,[subjpath '/'],'') '2FS_rh.mgh'];
-            srcwfs(end+1,:) = [strrep(src,[subjpath '/'],'') '2FS_lh.mgh'];
+            fsrc = aas_getfiles_bystream(aap, subj,srcstream{i}); 
+            for f = 1:size(fsrc,1)
+                src = deblank(fsrc(f,:));
+                spm_reslice({struct src},flags);
+                src = fullfile(fileparts(src),[flags.prefix basename(src)]);
+                FScommand = sprintf('mri_vol2surf --mov %s.nii --reg %s --hemi rh --o %s2FS_rh.mgh',src,reg,src);        
+                if FWHM, FScommand = [FScommand sprintf(' --surf-fwhm %d',FWHM)]; end            
+                [s, w] = aas_runFScommand(aap,FScommand);
+                FScommand = sprintf('mri_vol2surf --mov %s.nii --reg %s --hemi lh --o %s2FS_lh.mgh',src,reg,src);        
+                if FWHM, FScommand = [FScommand sprintf(' --surf-fwhm %d',FWHM)]; end            
+                [s, w] = aas_runFScommand(aap,FScommand);
+                %% Output stream
+                srcwfs(end+1,:) = [strrep(src,[subjpath '/'],'') '2FS_rh.mgh'];
+                srcwfs(end+1,:) = [strrep(src,[subjpath '/'],'') '2FS_lh.mgh'];
+            end
             aap = aas_desc_outputs(aap,subj,[srcstream{i} '_FS'],srcwfs);
         end
 end

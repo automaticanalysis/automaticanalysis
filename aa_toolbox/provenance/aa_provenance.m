@@ -199,6 +199,10 @@ classdef aa_provenance < handle
                     if ~isempty(strfind(src,'Remote')) % remote src --> add
                         [junk,src] = strtok(src,':'); src = src(3:end);
                         rstage = smod.remotestream(strcmp({smod.remotestream.stream},istream));
+                        if isempty(rstage) % try specified steamname
+                            [junk,rem] = strtok_ptrn({smod.remotestream.stream},istream);
+                            rstage = smod.remotestream(strcmp(rem,istream));
+                        end
                         idsrc = obj.addModule(rstage);
                     else % local --> already added
                         [lname, ind] = strtok_ptrn(src,'_0');

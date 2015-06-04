@@ -40,7 +40,7 @@ switch aap.directory_conventions.freesurfershell
         end
         cmd = [FSsetup FScmd];
     case 'bash'
-        cmd=[FSsetup 'bash -c "'];
+        cmd=['bash -c ". ' FSsetup];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
         end
