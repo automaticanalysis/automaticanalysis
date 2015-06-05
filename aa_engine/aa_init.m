@@ -94,6 +94,20 @@ else
     end;
 end;
 
+% Path to BrainWavelet
+if ~isempty(aap.directory_conventions.BrainWaveletdir)
+    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'BWT'));
+    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','cprintf'));
+    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','NIfTI'));
+    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','wmtsa','dwt'));
+    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','wmtsa','utils'));
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('WaveletDespike'))
+       aas_log(aap,false,sprintf('BrainWavelet not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.BrainWaveletdir'));
+    end;
+end
+
 % Path to spm modifications to the top
 addpath(fullfile(mfp,'extrafunctions','spm_mods'),'-begin');
 
@@ -134,8 +148,16 @@ if ~isempty(aap.directory_conventions.eeglabdir)
 end;
 
 % GIFT
-if isfield(aap.directory_conventions,'GIFTdir') && ~isempty(aap.directory_conventions.GIFTdir)
+if ~isempty(aap.directory_conventions.GIFTdir)
     p_ind = cell_index(p,aap.directory_conventions.GIFTdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
+
+% BrainWavelet
+if ~isempty(aap.directory_conventions.BrainWaveletdir)
+    p_ind = cell_index(p,aap.directory_conventions.BrainWaveletdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
     end

@@ -51,6 +51,7 @@
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
         <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'>/cn_apps/fieldtrip</fieldtripdir>
+        <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/cn_apps/BrainWavelet</BrainWaveletdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>

@@ -101,7 +101,7 @@ function count = cprintf(style,format,varargin)
 %    2011-03-04: Performance improvement
 %    2010-06-27: Fix for R2010a/b; fixed edge case reported by Sharron; CPRINTF with no args runs the demo
 %    2009-09-28: Fixed edge-case problem reported by Swagat K
-%    2009-05-28: corrected nargout behavior sugegsted by Andreas Gäb
+%    2009-05-28: corrected nargout behavior sugegsted by Andreas Gï¿½b
 %    2009-05-13: First version posted on <a href="http://www.mathworks.com/matlabcentral/fileexchange/authors/27420">MathWorks File Exchange</a>
 %
 % See also:
@@ -186,8 +186,13 @@ function count = cprintf(style,format,varargin)
   % Get a handle to the Command Window component
   mde = com.mathworks.mde.desk.MLDesktop.getInstance;
   cw = mde.getClient('Command Window');
-  xCmdWndView = cw.getComponent(0).getViewport.getComponent(0);
-
+  try
+    xCmdWndView = cw.getComponent(0).getViewport.getComponent(0);
+  catch % no CW (called on cluster?)
+    count1 = fprintf(2,format,varargin{:});
+    if nargout, count = count1;  end
+    return
+  end
   % Store the CW background color as a special color pref
   % This way, if the CW bg color changes (via File/Preferences), 
   % it will also affect existing rendered strs
