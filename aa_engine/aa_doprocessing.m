@@ -143,14 +143,14 @@ end
 aap.internal.pwd=pwd;
 
 if (isempty(aaparallel))
+    aaparallel.workerlist=[];
+    aaparallel.numberofworkers=8;
+    aaparallel.memory = 4; % GB
+    aaparallel.walltime = 24; % hours
+    % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
+    aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
+    
     while(1)
-        aaparallel.workerlist=[];
-        
-        aaparallel.numberofworkers=8;
-        
-        % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
-        aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
-        
         if (exist('workerid','var'))
             aaparallel.processkey=workerid;
         else
@@ -158,15 +158,11 @@ if (isempty(aaparallel))
         end
         aaparallel.nextworkernumber=num2str(aaparallel.processkey*1000);
         
-        
         pth=aaworker_getparmpath(aap,0,true);
-        [subpth nme ext]=fileparts(pth);
-        
-        fn=dir(fullfile(subpth,[sprintf('aaworker,%d',aaparallel.processkey) '*']));
+        fn=dir(fullfile(fileparts(pth),[sprintf('aaworker,%d',aaparallel.processkey) '*']));
         if (isempty(fn)) % No directories starting with this process key
             break;
         end
-        
     end
 else
     % Clear out all of the old workers: this is non-unionised enterprise

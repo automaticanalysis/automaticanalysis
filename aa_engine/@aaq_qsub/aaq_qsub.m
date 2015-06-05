@@ -1,9 +1,9 @@
 classdef aaq_qsub<aaq
     properties
-        scheduler = [];
-        jobnotrun = [];
-		taskinqueue = [];
-        taskstomonitor = [];
+        scheduler = []
+        jobnotrun = []
+		taskinqueue = []
+        taskstomonitor = []
     end
     properties (Hidden)
         SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
@@ -12,9 +12,13 @@ classdef aaq_qsub<aaq
         function [obj]=aaq_qsub(aap)
             global aaworker;
             global aaparallel;
+            aaparallel.numberofworkers=1;
             try
-                %obj.scheduler=cbu_scheduler('custom',{'compute',aaparallel.numberofworkers,4,24*3600,aaworker.parmpath});
-                obj.scheduler=cbu_scheduler('custom',{'compute',1,4,24*3600,aaworker.parmpath});
+                obj.scheduler=cbu_scheduler('custom',{'compute',...
+                    aaparallel.numberofworkers,...
+                    aaparallel.memory,...
+                    aaparallel.walltime*3600,...
+                    aaworker.parmpath});
                 obj.SubmitArguments0 = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
                 obj.scheduler.SubmitArguments = obj.SubmitArguments0;
                 % ensure MAXFILTER license
