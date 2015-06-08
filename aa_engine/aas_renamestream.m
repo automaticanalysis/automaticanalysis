@@ -1,7 +1,6 @@
-function aap=aas_modifystream(aap,stage,origstream,newstream,type)
-% AAS_MODIFYSTREAM 
-% Modify the name of a TYPE (input|output) of stream of a STAGE 
-% from ORIGSTREAM to NEWSTREAM
+function aap=aas_renamestream(aap,stage,origstream,newstream,type)
+% AAS_RENAMESTREAM 
+% Rename a TYPE (input|output) of stream of a STAGE from ORIGSTREAM to NEWSTREAM
 
 if nargin < 5
     type = 'input';
@@ -24,7 +23,7 @@ stageindex = ind(end);
 %% Locate ORIGSTREAM
 ind = cell_index(aap.tasksettings.(stagename)(end).([type 'streams']).stream,origstream);
 
-%% Modify ORIGSTREAM
+%% Rename ORIGSTREAM
 aap.tasksettings.(stagename)(end).([type 'streams']).stream{ind}=newstream;
 aap.aap_beforeuserchanges.tasksettings.(stagename)(end).([type 'streams']).stream{ind}=newstream;
 aap.schema.tasksettings.(stagename)(end).([type 'streams']).stream{ind}=newstream;
