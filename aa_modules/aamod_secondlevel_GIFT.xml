@@ -46,7 +46,7 @@
             
             <inputstreams>
                 <stream>firstlevel_brainmask</stream>    
-                <stream ismodified='0'>aamod_smooth_00001.epi</stream>
+                <stream ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>
