@@ -3,9 +3,12 @@
 function [aap]=aa_init(aap)
 
 global aa
-if ~isobject(aa)
-    aaClass;
+if isobject(aa) % aa was not closed previously
+    aas_log(aap,false,'WARNING: Previous execution of aa was detected! Closing...')
+    aa_close;
+    aas_log(aap,false,'WARNING: Done!')
 end
+aaClass;
 
 global aacache
 aacache.bcp_path = path;
