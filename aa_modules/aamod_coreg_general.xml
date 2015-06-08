@@ -3,11 +3,11 @@
     <tasklist>
         <currenttask domain='subject' desc='SPM coregistration and reslicing of images (general)' modality='MRI'>
             <inputstreams>
-                <stream>structural</stream>
-                <stream>t2</stream> <!-- this one coreg'ed to previous -->
+                <stream isrenameable='1'>structural</stream>
+                <stream isrenameable='1'>t2</stream> <!-- this one coreg'ed to previous -->
             </inputstreams>
             <outputstreams>
-                <stream>t2</stream>
+                <stream isrenameable='1'>t2</stream>
             </outputstreams>
         </currenttask>
     </tasklist>

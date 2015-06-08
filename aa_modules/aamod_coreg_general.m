@@ -121,7 +121,7 @@ switch task
         %% Describe the outputs and Diagnostics 
         % For source diag only
         if strcmp(aap.options.wheretoprocess,'localsingle')
-           aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},inpstream{1});
+           aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},inpstream{tInd});
         end
         
         % For outputs
@@ -145,7 +145,7 @@ switch task
             
             aap = aas_desc_outputs(aap,domain,varargin{:},outpstream{s},otherimfn2);
             if strcmp(aap.options.wheretoprocess,'localsingle')
-                aas_checkreg(aap,domain,varargin{:},outpstream{s},inpstream{1});
+                aas_checkreg(aap,domain,varargin{:},outpstream{s},inpstream{tInd});
             end
         end
         
