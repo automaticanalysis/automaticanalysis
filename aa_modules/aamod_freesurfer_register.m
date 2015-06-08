@@ -36,7 +36,7 @@ switch task
             case 'structural'
                 mod = 't1';
         end
-        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-fsl --%s',subjname,struct,reg,mod);
+        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-spm --%s',subjname,struct,reg,mod);
         [s, w] = aas_runFScommand(aap,FScommand);
         
         % Register SRC to FS

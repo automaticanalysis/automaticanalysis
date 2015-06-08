@@ -40,16 +40,18 @@ switch aap.directory_conventions.freesurfershell
         end
         cmd = [FSsetup FScmd];
     case 'bash'
-        cmd=['bash -c ". ' FSsetup];
+        cmd=[aap.directory_conventions.freesurfershell ' -c "'];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
         end
+        cmd = [cmd '. ' FSsetup];
         cmd = [cmd FScmd '"'];
     case {'csh', 'tcsh'}
-        cmd=[FSsetup aap.directory_conventions.freesurfershell ' -c "'];
+        cmd=[aap.directory_conventions.freesurfershell ' -c "'];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
         end
+        cmd = [cmd FSsetup];
         cmd = [cmd FScmd '"'];
 end
 
