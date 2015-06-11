@@ -14,6 +14,7 @@
             
             <artifactdetection>
                 <ref_chans>EOG061:EOG062:ECG063</ref_chans>
+                <useECGtopo>0</useECGtopo>
                 <!-- Permutation based thresholding of ICs
                 0  - no permutaion
                 >0 - number of permutations (e.g. 1000)

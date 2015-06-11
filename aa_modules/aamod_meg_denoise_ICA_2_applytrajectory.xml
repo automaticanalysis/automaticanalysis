@@ -8,6 +8,8 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
             
+             <toremove desc='artifacts to be removed' options='both|temp|spat' ui='optionlist'>both</toremove>
+            
             <inputstreams>
                 <stream>meg</stream>
                 <stream>meg_ica</stream>
