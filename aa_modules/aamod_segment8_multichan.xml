@@ -28,7 +28,7 @@
             </affinestartingestimate>
 			
             <inputstreams>
-                <stream>structural</stream>
+                <stream diagnostic="1">structural</stream>
                 <stream isessential="0">t2</stream> 
             </inputstreams>
             
