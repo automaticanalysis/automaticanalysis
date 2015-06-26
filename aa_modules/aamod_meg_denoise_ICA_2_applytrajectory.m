@@ -26,9 +26,11 @@ switch task
                     toremove{m} = ICA.ica{m}.allrem;
             end
         end
+        
+        weights = ICA.ica{m}.weights;
         iweights  = pinv(ICA.ica{m}.weights); % weights will be in output file from previous step
         finalics  = setdiff(1:PCA_dim,toremove{m}); % to
-        TraMat{m} = iweights(:,finalics) * Out.weights(finalics,:);        
+        TraMat{m} = iweights(:,finalics) * weights(finalics,:);        
         
         %% RUN
         S = []; S.D = D;

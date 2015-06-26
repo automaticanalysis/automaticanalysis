@@ -6,12 +6,12 @@
 % subject=subject for whom this model applies
 % session=session for which this applies
 % eventname=name of the stimulus or response event
-% ons=event onset times (in scans). Does not need to be sorted
-% dur=event durations (in scans), either a single element (if all
+% ons=event onset times (in seconds or scans accoding to xBF.UNITS). Does not need to be sorted
+% dur=event durations (in seconds or scans accoding to xBF.UNITS), either a single element (if all
 %   occurrences have the same duration) or in order that corresponds to ons
 % parametric = (multiple) parametric modulator with 3 fields
 %   parametric(n).name = name of the modulator or 'time' (automatic temporal modulation)
-%   parametric(n).P = modulator vector itself or empty (automatic temporal modulation)
+%   parametric(n).P = modulator vector (one entry for each non-dummy scan) itself or empty (automatic temporal modulation)
 %   parametric(n).h = polynomial expansion
 %
 % Examples
@@ -69,7 +69,7 @@ end;
 if ~isempty(parametric)
     % [AVG] reorder parametric modulator even if there's more than one!
     for p = 1:length(parametric)
-        if strcmp(parameric(p).name,'time') && isempty(parametric(p).P) % automatic temporal modulation 
+        if strcmp(parametric(p).name,'time') && isempty(parametric(p).P) % automatic temporal modulation 
             parametric(p).P = ons;
         else
             parametric(p).P = parametric(p).P(ind);

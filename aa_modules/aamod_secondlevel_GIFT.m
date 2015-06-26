@@ -102,6 +102,7 @@ switch task
         
         switch settings.analysis
             case 2
+                sesInfo.userInput.which_analysis = 2;
                 sesInfo.userInput.icasso_opts = settings.icasso;
             otherwise
         end
