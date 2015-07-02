@@ -9,7 +9,7 @@ if nargin < 5
 end
 
 if strcmp(type,'output')
-    aas_log(aap,true,'Modifying outputstreams is not implemented yet!');
+    aas_log(aap,false,'Make sure that you know what you are doing!');
 end
 
 %% Locate STAGE

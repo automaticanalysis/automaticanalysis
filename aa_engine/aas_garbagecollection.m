@@ -83,7 +83,7 @@ for modind=modulestoscan
         if ~isstruct(streamname{1})
             streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1},aap.tasklist.currenttask.name);
         else
-            if isfield(streamname{1}.CONTENT,'diagnostic') && streamname{1}.CONTENT.diagnostic, continue; end % skip diagnostic inputstream
+            if isfield(streamname{1}.ATTRIBUTE,'diagnostic') && streamname{1}.ATTRIBUTE.diagnostic, continue; end % skip diagnostic inputstream
             streamfn=sprintf('stream_%s_inputto_%s.txt',streamname{1}.CONTENT,aap.tasklist.currenttask.name);
         end
         inps=[inps findstreamfiles(aap,streamfn)];

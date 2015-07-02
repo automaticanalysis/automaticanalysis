@@ -81,7 +81,7 @@ switch task
         ROIfstem = spm_str_manip(ROIfile,'rt');
         
         %% Process
-        for in = aap.tasklist.currenttask.inputstreams.stream
+        for in =  aas_getstreams(aap,'in')
             instream = in{1};            
             
             % Get files by stream:

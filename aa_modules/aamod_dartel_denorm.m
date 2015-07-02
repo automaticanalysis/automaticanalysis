@@ -45,7 +45,7 @@ switch task
         regstreams = inpstreams(1:end-3);
 
         % Affine Template2mni
-        xfm = load(aas_getfiles_bystream(aap, subj, sess, 'dartel_templatetomni_xfm'));
+        xfm = load(aas_getfiles_bystream_multilevel(aap, subj, sess, 'dartel_templatetomni_xfm'));
         for i = 1:numel(images)
             if ~exist(fullfile(aas_getpath_bydomain(aap,domain,[subj,sess]),[basename(images{i}) '.nii']),'file')
                 copyfile(images{i},fullfile(aas_getpath_bydomain(aap,domain,[subj,sess]),[basename(images{i}) '.nii']));
