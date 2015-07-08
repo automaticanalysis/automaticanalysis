@@ -19,6 +19,12 @@ switch task
                 niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).(stream){1});
             end
         end
+        comp = false;
+        if strcmp(spm_file(niftifile,'Ext'),'gz'),
+            comp = true;
+            gunzip(niftifile);
+            niftifile = niftifile(1:end-3);
+        end
         V=spm_vol(niftifile);
         sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
         aas_makedir(aap,sesspth);
@@ -28,6 +34,7 @@ switch task
         V(1).fname=fn;
         V(1).n=[1 1];
         % Write out the files, now likely in 3d
+        if comp, delete(niftifile); end
         spm_write_vol(V(1),Y);        
         aap=aas_desc_outputs(aap,subj,stream,fn);
         

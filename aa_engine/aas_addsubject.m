@@ -14,6 +14,7 @@
 %		- string: full or realtive path (from rawdatadir - only one is supported) to 4D NIFTI of one fMRI session
 %		- string: full or realtive path (from rawdatadir - only one is supported) to wholebrain EPI (only after fMRI)
 %		- cell array (nested): full path to 3D NIFTI files of one fMRI session
+%       all strings can be structures with fields 'fname' (path to image) and 'hdr' (path to header)
 % ignoreseries parameter=series numbers of any series to be ignored in the
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
@@ -41,51 +42,56 @@ try
 catch
     aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
 end;
-try
-    if isnumeric(seriesnumbers) || isnumeric(seriesnumbers{1}) % DICOM series number
-        thissubj.seriesnumbers=seriesnumbers;
-    else
-        fMRI = {}; MEG = {};
-        fMRIdim = [];
-        for s = 1:numel(seriesnumbers)
-            if iscell(seriesnumbers{s}) % multiple 3D files
-                fMRI{end+1} = seriesnumbers{s};
-            elseif ischar(seriesnumbers{s}) % single NIFTI file
-                if exist(seriesnumbers{s},'file') % full path
-                    V = spm_vol(seriesnumbers{s});
-                else
-                    if ~isempty(thissubj.megname) % try meg
-                        if exist(fullfile(meg_findvol(aap,thissubj.megname,1),seriesnumbers{s}),'file')
-                            MEG{end+1} = seriesnumbers{s};
-                            continue;
-                        end
-                    end
-                    % try to find in rawdatadir
-                    V = spm_vol(fullfile(aas_findvol(aap,''),seriesnumbers{s}));
-                end
-                if numel(V) > 1 % 4D --> fMRI
-                    fMRI{end+1} = seriesnumbers{s};
-                    fMRIdim = V(1).dim;
-                else % 3D --> structural
-                    if ~isempty(fMRIdim) && all(fMRIdim(1:2) == V.dim(1:2)) % same inplane resolution as fMRI
-                        thissubj.wholebrain_epi=seriesnumbers(s);
-                    else
-                        thissubj.structural=seriesnumbers(s);
-                    end
-                end
-            else isnumeric(seriesnumbers{s}) % mixed: DICOM series number for fMRI
-                thissubj.seriesnumbers=seriesnumbers{s};
+
+if isnumeric(seriesnumbers) || isnumeric(seriesnumbers{1}) % DICOM series number
+    thissubj.seriesnumbers=seriesnumbers;
+else
+    fMRI = {}; MEG = {};
+    fMRIdim = [];
+    for s = 1:numel(seriesnumbers)
+        if iscell(seriesnumbers{s}) % multiple 3D files
+            fMRI{end+1} = seriesnumbers{s};
+        elseif ischar(seriesnumbers{s}) || isstruct(seriesnumbers{s}) % single NIFTI file
+            if isstruct(seriesnumbers{s})
+                fname = seriesnumbers{s}.fname;
+            else
+                fname = seriesnumbers{s};
             end
-        end
-        if ~isempty(fMRI)
-            thissubj.seriesnumbers=fMRI;
-        end
-        if ~isempty(MEG)
-            thissubj.megseriesnumbers=MEG;
+            if exist(fname,'file') % full path
+                V = spm_vol(fname);
+            else
+                % try meg
+                if ~isempty(thissubj.megname)
+                    if exist(fullfile(meg_findvol(aap,thissubj.megname,1),fname),'file')
+                        MEG{end+1} = fname;
+                        continue;
+                    end
+                end
+                
+                % try to find in rawdatadir
+                V = spm_vol(fullfile(aas_findvol(aap,''),fname));
+            end
+            if numel(V) > 1 % 4D --> fMRI
+                fMRI{end+1} = seriesnumbers{s};
+                fMRIdim = V(1).dim;
+            else % 3D --> structural
+                if ~isempty(fMRIdim) && all(fMRIdim(1:2) == V.dim(1:2)) % same inplane resolution as fMRI
+                    thissubj.wholebrain_epi=seriesnumbers(s);
+                else
+                    thissubj.structural=seriesnumbers(s);
+                end
+            end
+        else isnumeric(seriesnumbers{s}) % mixed: DICOM series number for fMRI
+            thissubj.seriesnumbers=seriesnumbers{s};
         end
     end
-catch
-end;
+    if ~isempty(fMRI)
+        thissubj.seriesnumbers=fMRI;
+    end
+    if ~isempty(MEG)
+        thissubj.megseriesnumbers=MEG;
+    end
+end
 
 
 % [djm 20/3/06]
@@ -117,10 +123,10 @@ end;
 end
 
 function val = get_arg(args,name)
-    val = [];
-    ind = find(strcmp(args,name));
-    if ~isempty(ind)
-        val = args{ind+1};
-    end
+val = [];
+ind = find(strcmp(args,name));
+if ~isempty(ind)
+    val = args{ind+1};
+end
 end
 
