@@ -203,18 +203,21 @@ switch task
             rYepi=reshape(rYepi,size(Ytemplate));
             
             % Overlay
-            for iSl = 1:nSl % Adjust slice selection according to the activation
-                iYepi = rYepi(:,:,iSl:nSl:end);
-                if any(iYepi(:)~=0), break; end
-            end
-            iYepi = img_rot90(iYepi);
-            iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
-            [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);
-
-            for a = 0:2
-                mon = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,1),a),a));
-                mon(:,:,2) = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,2),a),a));
-                mon(:,:,3) = tr_3Dto2D(img_rot90(shiftdim(img(:,:,:,3),a),a));
+            for a = 0:2 % in 3 axes
+                arYepi = shiftdim(rYepi,a);
+                aYtemplate = shiftdim(Ytemplate,a);
+                
+                for iSl = 1:nSl % Adjust slice selection according to the activation
+                    iYepi = arYepi(:,:,iSl:nSl:end);
+                    if any(iYepi(:)~=0), break; end
+                end
+                iYepi = img_rot90(iYepi);
+                iYtemplate = img_rot90(aYtemplate(:,:,iSl:nSl:end));
+                
+                [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);                                
+                mon = tr_3Dto2D(img_rot90(img(:,:,:,1),a==2));
+                mon(:,:,2) = tr_3Dto2D(img_rot90(img(:,:,:,2),a==2));
+                mon(:,:,3) = tr_3Dto2D(img_rot90(img(:,:,:,3),a==2));
                 fnsl(a+1,:) = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
                 imwrite(mon,deblank(fnsl(a+1,:)));
             end

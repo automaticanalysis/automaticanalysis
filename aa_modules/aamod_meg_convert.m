@@ -8,7 +8,8 @@ switch task
     case 'doit'
         %% Initialise
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');        
+        inputstreams = aas_getstreams(aap,'in');
+        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],inputstreams{2});        
         outfname = fullfile(sessdir,['spm12_' basename(infname)]); % specifying output filestem
         
         chan=load(aas_getfiles_bystream(aap,'channellabels'));

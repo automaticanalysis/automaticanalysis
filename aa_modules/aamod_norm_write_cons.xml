@@ -12,6 +12,7 @@
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>  
+				<stream diagnostic="1">structural</stream>
                 <stream>firstlevel_cons</stream>
             </inputstreams>
             

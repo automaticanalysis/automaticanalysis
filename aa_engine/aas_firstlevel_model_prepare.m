@@ -137,7 +137,7 @@ else
         end
         % [AVG] This is for backwards compatibility!
         if ~exist('TR','var') || isempty(TR)
-            TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+            TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         end
         
         if (sess==subjSessionI(1))

@@ -11,7 +11,7 @@
             
             <inputstreams>
                 <stream>channellabels</stream>
-                <stream>meg</stream>
+                <stream isrenameable='1'>meg</stream>
             </inputstreams>
             
             <outputstreams>

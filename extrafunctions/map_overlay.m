@@ -2,7 +2,7 @@
 % Positive and negative values presented with different colormaps.
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [img0 cmap v] = map_overlay(bg,stat,trans)
+function [img0, cmap, v] = map_overlay(bg,stat,trans)
 % Gray - Blue - Yellow-Red (Stronger change is darker)
 % cmap = vertcat(gray(128), create_grad([0 0 1],[1 1 1],64),...
 %     create_grad([1 1 1],[1 1 0],32),create_grad([1 1 0],[1 0 0],32));
@@ -45,5 +45,7 @@ if any(bg(:))
             end
         end
     end
+    v = v';    
+else
+    error('ERROR: No voxel in background image!');
 end
-v = v';
