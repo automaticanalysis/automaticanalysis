@@ -5,10 +5,10 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <rform desc='Regularisation type (0 1 or 2)'>0</rform>            
+            <rform desc='Regularisation type (0 - Linear Elastic Energy; 1 - Membrane Energy; 2 - Bending Energy)'>0</rform>            
             <specialrequirements desc='need more memory'><highmemory/></specialrequirements>
             
-			<exclude desc='Exclude subjects from template creation (array of subject indices)'></exclude>
+			<exclude desc='Exclude subjects from template creation (array of subject indices or cell arays of mrinames or subjnames)'></exclude>
             
 			<inputstreams>
                 <stream isessential='0' desc='Add an already existing template set (6 Templates [1-6])'>dartel_template</stream>
