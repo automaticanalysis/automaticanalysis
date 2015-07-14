@@ -58,7 +58,7 @@ switch task
         if settings.useaasessions
             [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
             subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-            sessnames = {aap.acq_details.sessions(subjSessionI).name};
+            sessnames = {aap.acq_details.sessions(sessInds).name};
             selected_sessions = subjSessionI;
             nsess = length(selected_sessions);
             nsess_all = length(sessnames);
@@ -330,7 +330,9 @@ close(h);
 
 h = figure; set(h, 'Position', [1 1 1280 720]); % HD
 subplot('Position', [tWidth 0.1 0.6-tWidth 0.9/20*numel(cons)]); % assume not more then 20 contrast
-imagesc(columnsCon)
+imagesc(columnsCon);
+colormap(vertcat(create_grad([0 0 1],[1 1 1],128),create_grad([1 1 1],[1 0 0],128)));
+caxis([-max(abs(columnsCon(:))) max(abs(columnsCon(:)))]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
 set(gca, 'XAxisLocation','top');
@@ -350,7 +352,8 @@ end
 
 ylim([0.5 numel(cons)+0.5])
 xlabel('Log Efficiency')
-efficiencyVals = floor(log(min(effic))):0.1:ceil(log(max(effic)));
+Xs = xlim;
+efficiencyVals = create_grad(Xs(1),Xs(2),5);
 set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
 
 fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
