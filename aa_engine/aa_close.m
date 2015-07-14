@@ -16,7 +16,7 @@ if isstruct(taskqueue) && isfield(taskqueue,'scheduler')
     end
 end
 
-clear global aa aacache aaparallel aaworker taskqueue localtaskqueue;
+clear global aa aacache aaparallel aaworker defaults taskqueue localtaskqueue;
 
 end
 

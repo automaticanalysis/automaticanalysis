@@ -52,7 +52,9 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         else
             [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin{:});
         end
+        aas_log(aap,false,sprintf('Load stream from file %s...',inpstreamdesc));
         if exist(inpstreamdesc,'file'), break; end
+        aas_log(aap,false,sprintf('\b but not found'));
     end
     if (~exist(inpstreamdesc,'file'))
         aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));

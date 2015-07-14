@@ -11,7 +11,11 @@
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
 global defaults
-if ~isstruct(defaults) || ~isfield(defaults,'modality')
+try defaults = aap.spm.defaults; catch, defaults = []; end
+if ~isstruct(defaults)
+    defaults = spm_get_defaults;
+end
+if ~isfield(defaults,'modality')
     aas_log(aap,0,'WARNING:defaults.modality is not set; FMRI is assumed');
     defaults.modality = 'FMRI'; % default modality
 end
