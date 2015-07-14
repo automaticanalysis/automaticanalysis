@@ -174,13 +174,7 @@ hdr.EchoTime = [];
 % retrieve info
 info = loadjson(fname);
 for f = fieldnames(info)'
-    paramname = f{1};
-    str = textscan(paramname,'%s','Delimiter','_'); str = str{1};
-    paramname = '';
-    for s = str'
-        paramname = [paramname upper(s{1}(1)) s{1}(2:end)];
-    end
-    hdr.(paramname) = info.(f{1});
+    hdr.(f{1}) = info.(f{1});
 end
 
 % convert timings to ms (DICOM default)

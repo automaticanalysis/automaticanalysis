@@ -2,9 +2,13 @@
 % Required:
 %     - aap.directory_conventions.rawdatadir: path to BIDS
 % Optional:
-%     - aap.acq_details.input.selected_sessions: selection of a subset of
-%           tasks/runs based on their names (e.g. 'task001_run001')
-%           (default = [], all tasks/runs are selected)
+%     - aap.acq_details.input.selected_sessions:
+%           selection of a subset of tasks/runs based on their names (e.g. 'task001_run001')
+%           - elements are strings: selecting for preprocessing and analysis
+%           - elements are cells:
+%               - one cell is a selection for one "aamod_firstlevel_model" (in the tasklist)
+%               - tasks/runs selected for any "aamod_firstlevel_model" are pre-processed
+%           (default = [], all tasks/runs are selected for both preprocessing and analysis)
 %     - aap.acq_details.input.correctEVfordummies: whether number of
 %           dummies should be take into account when defining onset times (default = 1);
 %           Also requires:
@@ -29,7 +33,9 @@ if ~aap.directory_conventions.continueanalysis
     end
 end
 
-aap.tasksettings.aamod_firstlevel_model.xBF.UNITS  ='secs';
+for m = 1:numel(aap.tasksettings.aamod_firstlevel_model)
+    aap.tasksettings.aamod_firstlevel_model(m).xBF.UNITS  ='secs';
+end
 
 %% Process
 % Set BIDS
@@ -42,7 +48,7 @@ iID = cell_index(SUBJ(1,:),'subject_id');
 % Add
 for subj = 2:size(SUBJ,1)
     subjID = SUBJ{subj,iID};
-    SESS = spm_select('List',fullfile(BIDS,subjID),'dir','sess');
+    SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
     if isempty(SESS)
         aap = add_data(aap,subjID,fullfile(BIDS,subjID));
     else
@@ -57,6 +63,9 @@ end
 
 function aap = add_data(aap,subjstr,sesspath)
 
+% locate first_level modules
+stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_model');
+
 % Correct EV onstets for number of dummies?
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies;
 
@@ -67,61 +76,92 @@ if any(strcmp(cf,'functional'))
     for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'functional'),[subjstr '_task.*_bold.nii.gz']))'
         taskname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
         
-        if ~isempty(aap.acq_details.input.selected_sessions) && ~any(strcmp(aap.acq_details.input.selected_sessions,taskname)), continue; end
+        if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
         
         aap = aas_addsession(aap,taskname);
         
         % Data
         TR = 0;
-        hdrfname = [strtok(taskname,'_') '_bold.json'];        
-        hdrdir = sesspath;
-        while ~exist(fullfile(hdrdir,hdrfname),'file') && ~strcmp(hdrdir,'/')
-            hdrdir = fileparts(hdrdir);
-        end
-        if exist(fullfile(hdrdir,hdrfname),'file') 
-            images = horzcat(images,struct('fname',cfname{1},'hdr',fullfile(hdrdir,hdrfname)));
-            info = loadjson(fullfile(hdrdir,hdrfname));
-            if isfield(info,'repetition_time'), TR = info.repetition_time; end
+        % Search for header
+        hdrfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskname,'_bold.json']));
+        if ~isempty(hdrfname)
+            images = horzcat(images,struct('fname',cfname{1},'hdr',hdrfname));
+            info = loadjson(hdrfname);
+            if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
         else
             images = horzcat(images,cfname{1});
         end
         
         % Model
-        if ~TR
-            aas_log(aap,false,sprintf('WARNING: No header found for subject %s task/run %s\n',subjstr,taskname))
-            aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!')
+        if any(stagenumModel)
+            iModel = [];
+            for m = 1:numel(stagenumModel)
+                sess = textscan(aap.tasklist.main.module(stagenumModel(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
+                if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(stagenumModel(m)).index; end
+            end
+            
+            if ~TR
+                aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s\n',subjstr,taskname))
+                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!')
+            end
+            
+            % Search for event file
+            eventfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskname '_events.tsv'])); % default: next to the image
+            if isempty(eventfname)
+                aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjstr,taskname));
+            else
+                EVENTS = tsvread(eventfname);
+                iName = cell_index(EVENTS(1,:),'trial_type');
+                iOns = cell_index(EVENTS(1,:),'onset');
+                iDur = cell_index(EVENTS(1,:),'duration');
+                names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
+                for t = 2:size(EVENTS,1)
+                    iEV = strcmp(names,EVENTS{t,iName});
+                    onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
+                    durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
+                end
+                for m = iModel
+                    for e = 1:numel(names)
+                        aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjstr,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                    end
+                end
+            end;
         end
-
-        % Search for event file
-        eventfname = fullfile(sesspath,'functional',[subjstr '_' taskname '_events.tsv']); % default: next to the image
-        if ~exist(eventfname,'file'), eventfname = fullfile(sesspath,'functional',[subjstr '_' strtok(taskname,'_') '_events.tsv']); end % same for all run
-        if ~exist(eventfname,'file'), eventfname = fullfile(aap.directory_conventions.rawdatadir,[taskname '_events.tsv']); end % same for all subjects
-        if ~exist(eventfname,'file'), eventfname = fullfile(aap.directory_conventions.rawdatadir,[strtok(taskname,'_') '_events.tsv']); end % same for all subjects and runs
-        if ~exist(eventfname,'file')
-            aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjstr,taskname));
-        else
-            EVENTS = tsvread(eventfname);
-            iName = cell_index(EVENTS(1,:),'trial_type');
-            iOns = cell_index(EVENTS(1,:),'onset');
-            iDur = cell_index(EVENTS(1,:),'duration');
-            names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
-            for t = 2:size(EVENTS,1)
-                iEV = cell_index(names,EVENTS{t,iName});
-                onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
-                durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
-            end
-            for e = 1:numel(names)
-                aap = aas_addevent(aap,'aamod_firstlevel_model_00001',subjstr,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
-            end
-        end;
     end
 end
 aap = aas_addsubject(aap,subjstr,images);
 end
 
+function fname = retrieve_file(fname)
+% fully specified fname with fullpath
+
+% pre-process fname
+[p, f, e] = fileparts(fname);
+ntags = 1:(numel(find(fname=='_'))+1);
+if isnan(str2double(f(end))) % last entry is not runnumber
+    e = ['_' list_index(f,1,ntags(end)) e];
+    ntags(end) = [];
+    f = list_index(f,1,ntags);
+end
+
+% search
+if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
+% one level up
+p = fileparts(fileparts(p)); ntags(end-2) = [];
+if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags) e])); end
+if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
+if numel(ntags) > 2 % we are in session folder
+    % one level up
+    p = fileparts(p); ntags(end-2) = [];
+    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags) e])); end
+    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
+end
+if ~exist(fname,'file'), fname = ''; end
+end
+
 function LIST = tsvread(fname)
 filestr = fileread(fname);
 nLines = sum(double(filestr)==10);
-LIST = textscan(filestr,'%s','Delimiter','\t'); 
+LIST = textscan(filestr,'%s','Delimiter','\t');
 LIST = reshape(LIST{1},[],nLines)';
 end
