@@ -8,6 +8,7 @@ streamIn = aap.tasklist.currenttask.inputstreams.stream;
 % the sessions that are common to this subject and selected_sessions
 [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
 subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+numSess = numel(subjSessionI);
 
 for s = 1 : length(streamIn)
    if isstruct(streamIn{s})

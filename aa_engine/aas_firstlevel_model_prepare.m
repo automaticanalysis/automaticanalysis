@@ -7,6 +7,7 @@ subjname = aap.acq_details.subjects(subj).mriname;
 % the sessions that are common to this subject and selected_sessions
 [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
 subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+numSess = numel(subjSessionI);
 
 %% Get data (EPI) files, and the models...
 files = cell(numSess,1);

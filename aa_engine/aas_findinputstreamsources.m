@@ -27,8 +27,8 @@ for k1=1:length(aap.tasklist.main.module)
     % Find streams to be loaded remotely
     remotestream=aap.tasklist.main.module(k1).remotestream;
     
-    if (isfield(aap.schema.tasksettings.(stagename),'inputstreams'))
-        inputstreams=aap.schema.tasksettings.(stagename).inputstreams;
+    if (isfield(aap.schema.tasksettings.(stagename)(index),'inputstreams'))
+        inputstreams=aap.schema.tasksettings.(stagename)(index).inputstreams;
         
         
         % Random evil check?  Why is this here??

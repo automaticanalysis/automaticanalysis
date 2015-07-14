@@ -34,3 +34,4 @@ for k=1:length(aap.tasklist.initialisation.module)
     end;
 end;
 aap.directory_conventions.subjectoutputformat = '%s'; % evaluated subjectnames assumed
+aap.directory_conventions.megsubjectoutputformat = '%s'; % evaluated subjectnames assumed

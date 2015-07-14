@@ -23,10 +23,17 @@ switch task
         
         %% Run
         % Obtain image geometry
+        junk = spm_vol(sTimg);
+        dim = abs(junk.dim);
+        [junk, vox] = spm_get_bbox(sTimg); vox = abs(vox);
+        bbox = dim.*vox;
+        
         junk = spm_vol(Simg);
         dim = abs(junk.dim);
         [junk, vox] = spm_get_bbox(Simg); vox = abs(vox);
-        dim(1) = 182/vox(1);
+        dim(1) = ceil(bbox(1)/vox(1));
+        dim(2) = ceil(bbox(2)/vox(2));
+        dim(3) = ceil(bbox(3)/vox(3));
         
         % Reslice template to image geometry
         aas_runfslcommand(aap,sprintf('fslcreatehd %d %d %d 1 %8.6f %8.6f %8.6f 1 0 0 0 2 %s',dim(:),vox(:),fullfile(localroot,'tmp.nii')));
