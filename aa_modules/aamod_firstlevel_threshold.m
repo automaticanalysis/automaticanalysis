@@ -35,9 +35,9 @@ switch task
             % Single subject
             aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',C,CON(C).name));
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
-                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',C,CON(C).name));
+                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',C,CON(C).name));
             if exist(f{1},'file')
-                tstat = dlmread(strrep(f{1},'_overlay.jpg','.txt'));
+                tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,CON(C).name));
                 
