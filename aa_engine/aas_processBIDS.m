@@ -74,8 +74,18 @@ diffusionimages = {};
 cf = cellstr(spm_select('List',sesspath,'dir'));
 if any(strcmp(cf,'anatomy')), images = horzcat(images,cellstr(fullfile(sesspath,'anatomy',[subjstr '_T1w_001.nii.gz']))); end
 if any(strcmp(cf,'diffusion'))
-    diffusionimages = horzcat(diffusionimages,cellstr(fullfile(sesspath,'diffusion',[subjstr '_dwi_001.nii.gz']))); 
-    
+    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'diffusion'),[subjstr '_dwi_.*.nii.gz']))
+        sessfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '.nii'},{'',''});
+        sessname = sessfname;
+        bvalfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' sessfname '.bval']));
+        bvecfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' sessfname '.bvec']));
+        if ~isempty(bvalfname) && ~isempty(bvecfname)
+            aap = aas_add_diffusion_session(aap,sessname);
+            diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname)); 
+        else
+            aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjstr,sessfname))
+        end
+    end
 end
 if any(strcmp(cf,'functional'))
     for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'functional'),[subjstr '_task.*_bold.nii.gz']))'
