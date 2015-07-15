@@ -82,7 +82,11 @@ if exist('k','var')
         defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
         if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
         if strcmp(defaults.modality,'MEG'), defaults.modality = 'EEG'; end
+    else
+       aas_log(aap,0,'WARNING:defaults.modality is not set; (F)MRI is assumed');
+       defaults.modality = 'FMRI'; % default modality
     end
+    aap.spm.defaults.modality = defaults.modality;
 end
 
 end

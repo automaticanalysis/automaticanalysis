@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='Convert EPIs'>
+        <currenttask domain='session' desc='Convert EPIs' modality='MRI'>
             
             <qsub>
                 <timeBase>0.15</timeBase>

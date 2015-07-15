@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' mfile_alias="aamod_get_dicom_specialseries" desc='Get DICOM files for MT'>
+        <currenttask domain='subject' mfile_alias="aamod_get_dicom_specialseries" desc='Get DICOM files for MT' modality='MRI'>
             
             <qsub>
                 <timeBase>0.05</timeBase>

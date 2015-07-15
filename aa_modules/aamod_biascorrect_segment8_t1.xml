@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
 	<tasklist>
-		<currenttask mfile_alias='aamod_biascorrect_segment8' domain='subject' desc='Bias correct a structural image using SPM8 segmentation routine'>
+		<currenttask mfile_alias='aamod_biascorrect_segment8' domain='subject' desc='Bias correct a structural image using SPM8 segmentation routine' modality='MRI'>
 
             <permanenceofoutput>2</permanenceofoutput>
             

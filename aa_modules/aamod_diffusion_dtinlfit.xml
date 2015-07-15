@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='diffusion_session' desc='Run nonlinear DTI fit (by Marta Correia)'>
+        <currenttask domain='diffusion_session' desc='Run nonlinear DTI fit (by Marta Correia)' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>

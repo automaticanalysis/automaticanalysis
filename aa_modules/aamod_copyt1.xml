@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
    <tasksettings>
-       <aamod_copyt1 domain='subject' desc='Copying T1 structural'>
+       <aamod_copyt1 domain='subject' desc='Copying T1 structural' modality='MRI'>
            
            <permanenceofoutput>1</permanenceofoutput>
            

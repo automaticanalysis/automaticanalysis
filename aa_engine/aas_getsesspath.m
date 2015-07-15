@@ -16,7 +16,7 @@ if ~isstruct(defaults)
     defaults = spm_get_defaults;
 end
 if ~isfield(defaults,'modality')
-    aas_log(aap,0,'WARNING:defaults.modality is not set; FMRI is assumed');
+    aas_log(aap,0,'WARNING:defaults.modality is not set; (F)MRI is assumed');
     defaults.modality = 'FMRI'; % default modality
 end
 
