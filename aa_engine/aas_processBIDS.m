@@ -70,24 +70,40 @@ stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_mod
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies;
 
 images = {};
+diffusionimages = {};
 cf = cellstr(spm_select('List',sesspath,'dir'));
 if any(strcmp(cf,'anatomy')), images = horzcat(images,cellstr(fullfile(sesspath,'anatomy',[subjstr '_T1w_001.nii.gz']))); end
+if any(strcmp(cf,'diffusion'))
+    diffusionimages = horzcat(diffusionimages,cellstr(fullfile(sesspath,'diffusion',[subjstr '_dwi_001.nii.gz']))); 
+    
+end
 if any(strcmp(cf,'functional'))
     for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'functional'),[subjstr '_task.*_bold.nii.gz']))'
-        taskname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
+        taskfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
+        info = []; TR = 0;
+        taskname = taskfname;
         
+        % Header
+        hdrfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname,'_bold.json']));
+        if ~isempty(hdrfname)
+            info = loadjson(hdrfname);
+            if isfield(info,'TaskName')
+                taskname = info.TaskName;
+                taskname = strrep(taskname,' ',''); 
+                taskname = strrep(taskname,',',''); 
+                taskname = strrep(taskname,'(',''); 
+                taskname = strrep(taskname,')',''); 
+            end
+            if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
+        end
+        
+        % Skip?
         if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
-        
         aap = aas_addsession(aap,taskname);
         
         % Data
-        TR = 0;
-        % Search for header
-        hdrfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskname,'_bold.json']));
-        if ~isempty(hdrfname)
+        if isstruct(info)
             images = horzcat(images,struct('fname',cfname{1},'hdr',hdrfname));
-            info = loadjson(hdrfname);
-            if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
         else
             images = horzcat(images,cfname{1});
         end
@@ -106,7 +122,7 @@ if any(strcmp(cf,'functional'))
             end
             
             % Search for event file
-            eventfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskname '_events.tsv'])); % default: next to the image
+            eventfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname '_events.tsv'])); % default: next to the image
             if isempty(eventfname)
                 aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjstr,taskname));
             else
@@ -129,7 +145,7 @@ if any(strcmp(cf,'functional'))
         end
     end
 end
-aap = aas_addsubject(aap,subjstr,images);
+aap = aas_addsubject(aap,subjstr,images,[],[],diffusionimages);
 end
 
 function fname = retrieve_file(fname)

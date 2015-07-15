@@ -80,6 +80,8 @@ switch task
                 end
                 DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
                 DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
+                DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
+                [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
                 
                 % Image
                 V = spm_vol(niftifile);
@@ -149,27 +151,33 @@ end;
 end
 
 function hdr = header_dcmhdr(fname)
-    flines = cellstr(fileread(fname));
+% minimal fileds
+hdr.RepetitionTime = [];
+hdr.EchoTime = [];
+hdr.SliceTiming = [];
 
-    inds = strfind(flines,'Repetition Time');
-    for i = 1:numel(inds)
-        if ~isempty(inds{i}), break; end
-    end
-    str = textscan(flines{i}(inds{i}:end),'%s');
-    hdr.RepetitionTime = str2double(str{1}{end});
+flines = cellstr(fileread(fname));
 
-    inds = strfind(flines,'Echo Time');
-    for i = 1:numel(inds)
-        if ~isempty(inds{i}), break; end
-    end
-    str = textscan(flines{i}(inds{i}:end),'%s');
-    hdr.EchoTime = str2double(str{1}{end});
+inds = strfind(flines,'Repetition Time');
+for i = 1:numel(inds)
+    if ~isempty(inds{i}), break; end
+end
+str = textscan(flines{i}(inds{i}:end),'%s');
+hdr.RepetitionTime = str2double(str{1}{end});
+
+inds = strfind(flines,'Echo Time');
+for i = 1:numel(inds)
+    if ~isempty(inds{i}), break; end
+end
+str = textscan(flines{i}(inds{i}:end),'%s');
+hdr.EchoTime = str2double(str{1}{end});
 end
 
 function hdr = header_json(fname) % BIDS
 % minimal fileds
 hdr.RepetitionTime = [];
 hdr.EchoTime = [];
+hdr.SliceTiming = [];
 
 % retrieve info
 info = loadjson(fname);
@@ -180,4 +188,5 @@ end
 % convert timings to ms (DICOM default)
 hdr.RepetitionTime = hdr.RepetitionTime*1000;
 hdr.EchoTime = hdr.EchoTime*1000;
+hdr.SliceTiming = hdr.SliceTiming*1000;
 end
