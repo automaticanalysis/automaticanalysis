@@ -8,7 +8,14 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
             
-             <toremove desc='artifacts to be removed' options='both|temp|spat' ui='optionlist'>both</toremove>
+            <thresholding desc='artifact thresholding'>1 2 3 4</thresholding>
+                <!-- Remove artifacts (choose one)
+                all  - artifacts across all references 
+                both - artifacts for each reference (spatial+temporal)
+                temp - artifacts for each temporal reference
+                spat - artifacts for each spatial reference
+                -->
+            <toremove desc='artifacts to be removed' options='both|temp|spat' ui='optionlist'>both</toremove>
             
             <inputstreams>
                 <stream>meg</stream>
