@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='Find diffusion input files from nifti' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <numdummies>0</numdummies>
+            
+            <inputstreams>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>diffusion_data</stream>
+                <stream>bvals</stream>
+                <stream>bvecs</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

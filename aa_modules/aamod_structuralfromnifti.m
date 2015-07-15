@@ -16,7 +16,7 @@ switch task
         if ~exist(niftifile,'file')
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
-                niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).(stream){1});
+                niftifile = fullfile(niftisearchpth,aap.acq_details.subjects(subj).(stream){1}); % only the first file is processed
             end
         end
         comp = false;
