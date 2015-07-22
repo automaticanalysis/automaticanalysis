@@ -17,7 +17,7 @@ clear all
 
 %% Initialize AA and set basic recipe (aap_tasklist_dartelvbm8.xml)
 
-aa_ver4_nocloud()
+aa_ver4
 aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_dartelvbm8.xml');
 
   

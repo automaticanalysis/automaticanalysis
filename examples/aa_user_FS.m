@@ -9,7 +9,7 @@
 %% INITIALISE
 clear
 
-aa_ver4_nocloud
+aa_ver4
 
 %% DEFINE SPECIFIC PARAMETERS
 % ANALYSIS RECIPE
