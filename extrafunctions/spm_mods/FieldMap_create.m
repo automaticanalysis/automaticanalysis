@@ -24,7 +24,7 @@ function [VDM IPcell]=FieldMap_create(fm_imgs,epi_img,pm_defs)
 % Chloe Hutton 
 % $Id: FieldMap_create.m 3670 2010-01-11 14:08:02Z chloe $
 %
-% Tibor Auer (4D suppot lines 192, 230)
+% Tibor Auer: 4D suppot (lines 192, 230)
 % $Id: FieldMap.m 4571 2013-11-14 14:30:00Z tauer $
 %_______________________________________________________________________
 

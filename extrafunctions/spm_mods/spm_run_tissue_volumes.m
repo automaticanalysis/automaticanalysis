@@ -7,6 +7,9 @@ function out = spm_run_tissue_volumes(cmd, job)
 
 % Ged Ridgway
 % $Id: spm_run_tissue_volumes.m 5800 2013-12-10 18:33:15Z guillaume $
+%
+% Tibor Auer: look for structural only if needed (lines 48-65)
+% $Id: spm_run_tissue_volumes.m 5801 2015-05-26 12:00:00Z tibor.auer@mrc.cbu.cam.ac.uk $
 
 switch lower(cmd)
     %----------------------------------------------------------------------    

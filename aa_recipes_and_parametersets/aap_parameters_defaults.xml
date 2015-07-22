@@ -34,7 +34,7 @@
         <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
-        <spmdir desc="Path(s) to SPM software" ui="dir"></spmdir>		
+        <spmdir desc="Path(s) to SPM software (>SPM12 r6470 required)" ui="dir"></spmdir>		
         <spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
