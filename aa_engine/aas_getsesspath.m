@@ -10,17 +10,13 @@
 
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
-global defaults
-try defaults = aap.spm.defaults; catch, defaults = []; end
-if ~isstruct(defaults)
-    defaults = spm_get_defaults;
-end
-if ~isfield(defaults,'modality')
-    aas_log(aap,0,'WARNING:defaults.modality is not set; (F)MRI is assumed');
-    defaults.modality = 'FMRI'; % default modality
+
+if ~isfield(aap.spm.defaults,'modality')
+    aas_log(aap,0,'WARNING:modality is not set; (F)MRI is assumed');
+    aap.spm.defaults.modality = 'FMRI'; % default modality
 end
 
-switch defaults.modality
+switch aap.spm.defaults.modality
     case 'FMRI'
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
     case 'EEG'
