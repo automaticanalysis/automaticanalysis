@@ -234,7 +234,10 @@ switch task
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
             fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
-            img = spm_render_aa(dat,0.5,rendfile);
+            global prevrend
+            prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
+            out = spm_render(dat,0.5,rendfile); 
+            clear img; for i = 1:numel(out), img(1:size(out{i},1),1:size(out{i},2),:,i) = out{i}; end
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
