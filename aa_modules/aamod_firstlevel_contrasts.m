@@ -339,6 +339,7 @@ set(gca, 'XAxisLocation','top');
 xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',12,'FontWeight','Bold');
 set(xlab,'FontSize',12,'FontWeight','Bold');
+set(xlab,'Interpreter','none');
 
 subplot('Position', [0.6 0.1 0.35 0.9/20*numel(cons)]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel','');
