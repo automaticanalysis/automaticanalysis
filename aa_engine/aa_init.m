@@ -5,16 +5,15 @@ function [aap]=aa_init(aap)
 global aa
 if isobject(aa) % aa was not closed previously
     aas_log(aap,false,'WARNING: Previous execution of aa was detected! Closing...')
-    aa_close;
+    aa_close('killjobs');
     aas_log(aap,false,'WARNING: Done!')
+else
+    aa = aaClass;
 end
-aaClass;
+
 
 global aacache
 aacache.bcp_path = path;
-
-% Get root aa directory
-mfp=fileparts(fileparts(which('aa_doprocessing')));
 
 %% Set Paths
 % Path for SPM
@@ -112,11 +111,11 @@ else
 end
 
 % Path to spm modifications to the top
-addpath(fullfile(mfp,'extrafunctions','spm_mods'),'-begin');
+addpath(fullfile(aa.Path,'extrafunctions','spm_mods'),'-begin');
 
 %% Build required path list for cluster submission
 % aa
-reqpath=textscan(genpath(mfp),'%s','delimiter',':'); reqpath = reqpath{1};
+reqpath=textscan(genpath(aa.Path),'%s','delimiter',':'); reqpath = reqpath{1};
 
 p = textscan(path,'%s','delimiter',':'); p = p{1};
 
@@ -172,3 +171,5 @@ exc = cell_index(reqpath,'.git');
 if exc, reqpath(exc) = []; end
 
 aacache.reqpath = reqpath;
+% switch off warnings
+aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
