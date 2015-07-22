@@ -1,6 +1,6 @@
-function [p v] = histc2D(r, l, u, m)
+function [p, v] = histc2D(r, l, u, m)
 if nargin < 4
-  m = (r ~= 0);
+    m = (r ~= 0);
 end
 lr = min(r(m));
 ur = max(r(m));
@@ -14,8 +14,16 @@ end
 for i = l:u
     v(i-l+1) = (i-l)/cr+lr;
 end
-pr = masked((r-lr)*cr+l,m,false);    
+pr = masked((r-lr)*cr+l,m,false);
 p0 = masked(r,m,true);
 p = round(pr + p0);
 p(p>u) = u;
+end
 
+function mm = masked(a, m, i)
+a = double(a);
+if (nargin>2) && i
+    m = not(m);
+end
+mm = a.*m;
+end

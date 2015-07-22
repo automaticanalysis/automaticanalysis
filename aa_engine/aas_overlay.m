@@ -37,3 +37,27 @@ colormap(cm);
 cb = colorbar;
 yT = [walley(v) find(v<0, 1, 'last' ) find(v>0, 1 ) peak(v)];
 set(cb,'YTick',yT,'YTickLabel',v(yT));
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+function mon = tr_RGBtoMontage(RGB)
+for s = 1:size(RGB,3)
+    mon(:,:,:,s) = squeeze(RGB(:,:,s,:));
+end
+end
+
+function res = peak(a)
+for i = 1:length(a)
+    if a(i) == max(a), break, end
+end
+res = i;
+end
+
+function res = walley(a)
+for i = 1:length(a)
+    if a(i) == min(a), break, end
+end
+res = i;
+end

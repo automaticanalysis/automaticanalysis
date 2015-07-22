@@ -21,7 +21,7 @@ if nargin < 3
     [junk, movieFN] = fileparts(imageFN{1});
     
     % Make a movie file
-    movieFN = fullfile(getHome, ...
+    movieFN = fullfile(getenv('HOME'), ...
         [movieFN '.avi']);
 end
 if nargin < 4 || isempty(axisDim)
