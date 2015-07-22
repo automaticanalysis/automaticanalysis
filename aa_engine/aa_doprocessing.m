@@ -313,6 +313,10 @@ for l=1:length(mytasks)
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
+            if (numel(indices) >= 2) && ... % if session domain
+                    ~any(aap.acq_details.selected_sessions==indices(2)) % session not selected
+                continue;
+            end
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
