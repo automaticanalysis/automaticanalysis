@@ -185,7 +185,7 @@ while 1==1
     try axes(H.previous); axes(H.next); catch end
 
     try [x y]=ginput(1);
-    catch fprintf('Exited.\n'); return;
+    catch, fprintf('Exited.\n'); return;
     end
 
     if gco==H.print
@@ -226,7 +226,7 @@ while 1==1
                         inp=eval(inp{1});
                         tc=fix(inp*D.Radc);
                 end
-            catch inp=[];
+            catch, inp=[];
             end
         end
     elseif gca==H.Sm || gca==H.magtopo % select channel
@@ -301,7 +301,7 @@ if continuous
 else
     trigtimes=D.events.start; trigcodes=[];
     % why D.events.start+1 and not D.events.start?? am I out by a sample??
-    try enam=D.events.names{e}; catch enam=''; end
+    try enam=D.events.names{e}; catch, enam=''; end
     set(999,'name',fullfile(D.path,sprintf('%s - Event %g of %g: %s',D.fname,e,length(D.events.types),enam)));
 end
 
@@ -516,7 +516,7 @@ end
 switch chtype
     case {'mags','eeg'}
         try subimage(z,colormap(map))
-        catch subimage(z,colormap(jet))
+        catch, subimage(z,colormap(jet))
         end
     case {'grads'}
         subimage(z,colormap(hot))

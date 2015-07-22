@@ -10,7 +10,8 @@ function aa_emeg_headmask(varargin)
 
 if ~isempty(varargin) && exist(varargin{1},'file')
     try V=spm_vol(varargin{1});
-    catch delete(varargin{1});
+    catch
+        delete(varargin{1});
         error('Failed to load %s; file may be corrupt?',varargin{1})
     end
 else

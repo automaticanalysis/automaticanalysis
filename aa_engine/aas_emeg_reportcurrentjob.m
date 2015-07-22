@@ -10,7 +10,7 @@ dots=repmat('.',[1 size(tasks,2)-length(task)]);
 txt=sprintf('\n%s:%s%s',action,dots,task);
 
 % subject
-if length(subblock)>0
+if ~isempty(subblock)
     try
         if strcmp('internal',aap.schema.tasksettings.(task).ATTRIBUTE.domain)
             txt=[txt sprintf(' #%g\n',subblock{1})]; % for any internal domain
@@ -21,7 +21,7 @@ if length(subblock)>0
                 subname=aap.acq_details.subjects(subblock{1}).mriname;
             end
             try dots=repmat('.',[1 size(char(subs(1,:,:)),2)-length(subname)]);
-            catch dots='...';
+            catch, dots='...';
             end
             txt=[txt sprintf('; subject:%s%s\n',dots,aap.acq_details.subjects(subblock{1}).megname)];
         end

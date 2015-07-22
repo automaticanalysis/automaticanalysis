@@ -127,12 +127,12 @@ else
             desc=loopvar{x};
         elseif isstruct(loopvar{x})
             try c={loopvar{x}.id};
-            catch c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
+            catch, c=strcat(struct2cell(loopvar{x}),'.'); % Convert structure to cell
             end
             doneflag=fullfile(doneflagdir,[c{:} 'done']); % file in directory
             desc=[c{:}];
         end
-        if (length(dir(doneflag)))
+        if ~isempty(dir(doneflag))
             aas_log(aap,0,sprintf('- completed previously: %s for %s',task.stagename,desc));
         else
             % now queue current stage

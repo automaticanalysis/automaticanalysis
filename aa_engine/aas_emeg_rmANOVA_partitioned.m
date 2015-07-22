@@ -364,7 +364,7 @@ for vd=1:length(sensorvoldirs)
 
             %% prepare directory for 2nd level contrasts
             try cd(secondlevdir);
-            catch mkdir(secondlevdir); cd(secondlevdir);
+            catch, mkdir(secondlevdir); cd(secondlevdir);
             end
 
             %% for each event, get 1st level contrast files

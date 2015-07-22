@@ -5,7 +5,7 @@ if ~exist('aap','var');
     [aap ok]=spm_select(1,'any','Please select aap_parameters file or script to generate aap structure','',pwd,'^aa.*\.m.*$');
     if ~ok; return; end
     try load(aap);
-    catch error('\nFailed to load aap structure.\n')
+    catch, error('\nFailed to load aap structure.\n')
     end
 end
 addpath /imaging/dm01/MEG/aaMEG/
@@ -275,7 +275,7 @@ for g=1:length(groups) % ignore . and ..
                         cfile=fullfile(indir,effects{e},'beta_0001.img');
                         Y=spm_read_vols(spm_vol(cfile));
                         txt='Superimposed on contrast';
-                    catch error('Failed to find %s',cfile)
+                    catch, error('Failed to find %s',cfile)
                     end
                 end
 

@@ -37,7 +37,7 @@ catch
 
     if ~isstruct(aap);
         try load(aap);
-        catch error('\nFailed to load aap structure.\n')
+        catch, error('\nFailed to load aap structure.\n')
         end
     end
 
@@ -45,7 +45,7 @@ catch
 end
 
 %% check job and decide whether to use ui
-try ui=aap.options.userinterface; catch ui=1; end
+try ui=aap.options.userinterface; catch, ui=1; end
 if strcmp(args{2},'doit');
     ui=0;
 elseif strcmp(args{2},'domain')
@@ -94,7 +94,7 @@ if ~exist(xmlfile,'file');
 end
 
 try xml=xml_read(xmlfile);
-catch error('\nFound %s, but failed to read it.\n',[task '.xml']);
+catch, error('\nFound %s, but failed to read it.\n',[task '.xml']);
 end
 
 try
@@ -109,7 +109,7 @@ end
 
 %% get appropriate index for repeated tasks, or set to 1
 try index=aap.tasklist.currenttask.index;
-catch index=1;
+catch, index=1;
 end
 
 %% get subject (and block) if needed but not specified
@@ -120,7 +120,7 @@ if strcmp(taskattributes.domain,'subject') || strcmp(taskattributes.domain,'sess
         if ui
             try 
                 try subblock=spm_input('Please select subject:','+1','m',char(aap.acq_details.subjects.megname),1:length(aap.acq_details.subjects),1);
-                catch subblock=spm_input('Please select subject:','+1','m',char(aap.acq_details.subjects.mriname),1:length(aap.acq_details.subjects),1);
+                catch, subblock=spm_input('Please select subject:','+1','m',char(aap.acq_details.subjects.mriname),1:length(aap.acq_details.subjects),1);
                 end
             catch % if aap not filled/available, select directory
                 [aap.acq_details.subjects.megname ok]=spm_select(1,'dir','Please select subject directory');
@@ -236,7 +236,7 @@ for f=1:length(settings) % according to xml
                     try
                         values=textscan(defs.(settings{f}).ATTRIBUTE.values,'%s','delimiter','|,');
                         values=values{1};
-                    catch values=[];
+                    catch, values=[];
                     end
                     if length(values)~=length(options); values=1:length(options); end;
                 end
