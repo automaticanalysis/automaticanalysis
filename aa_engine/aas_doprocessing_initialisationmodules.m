@@ -4,13 +4,13 @@ function [aap]=aas_doprocessing_initialisationmodules(aap)
 % THE MODULES LISTED IN AAP.TASKLIST.INITIALISATIONMODULES ARE ALWAYS RUN
 for k=1:length(aap.tasklist.initialisation.module)
     % allow full path of module to be provided
-[stagepath stagename]=fileparts(aap.tasklist.initialisation.module(k).name);
-
-% retrieve description from module
+    [stagepath, stagename]=fileparts(aap.tasklist.initialisation.module(k).name);
+    
+    % retrieve description from module
     description=aap.schema.tasksettings.(stagename).ATTRIBUTE.desc;
     % find out whether this module needs to be executed once per study, subject or session
     domain=aap.schema.tasksettings.(stagename).ATTRIBUTE.domain;
-
+    
     switch (domain)
         case 'study'
             % now run current stage
@@ -32,6 +32,8 @@ for k=1:length(aap.tasklist.initialisation.module)
         otherwise
             aas_log(aap,1,sprintf('Unknown domain %s associated with stage %s',domain,stagename));
     end;
+    if strcmp(stagename,'aamod_evaluatesubjectnames')  % evaluated subjectnames assumed
+        aap.directory_conventions.subjectoutputformat = '%s';
+        aap.directory_conventions.megsubjectoutputformat = '%s';
+    end
 end;
-aap.directory_conventions.subjectoutputformat = '%s'; % evaluated subjectnames assumed
-aap.directory_conventions.megsubjectoutputformat = '%s'; % evaluated subjectnames assumed

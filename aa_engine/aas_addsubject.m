@@ -14,7 +14,7 @@
 %		- string: full or realtive path (from rawdatadir - only one is supported) to 4D NIFTI of one fMRI session
 %		- string: full or realtive path (from rawdatadir - only one is supported) to wholebrain EPI (only after fMRI)
 %		- cell array (nested): full path to 3D NIFTI files of one fMRI session
-%       all strings can be structures with fields 'fname' (path to image) and 'hdr' (path to header)
+%       all strings can be structures with fields 'fname' (path to image), and 'hdr', 'bval', 'bvec' (path to header, bvals and bvecs)
 % ignoreseries parameter=series numbers of any series to be ignored in the
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
@@ -57,20 +57,24 @@ else
             else
                 fname = seriesnumbers{s};
             end
-            if exist(fname,'file') % full path
-                V = spm_vol(fname);
-            else
+            if ~exist(fname,'file') % full path
                 % try meg
                 if ~isempty(thissubj.megname)
-                    if exist(fullfile(meg_findvol(aap,thissubj.megname,1),fname),'file')
+                    tmpaap = aap;
+                    tmpaap.directory_conventions.megsubjectoutputformat = '%s';
+                    if exist(fullfile(meg_findvol(aap,thissubj.megname,'fp'),fname),'file') ||...
+                            ~isempty(meg_findvol(tmpaap,fname)) % try empty room
                         MEG{end+1} = fname;
                         continue;
                     end
                 end
                 
                 % try to find in rawdatadir
-                V = spm_vol(fullfile(aas_findvol(aap,''),fname));
+                fname = fullfile(aas_findvol(aap,''),fname);
             end
+            
+            try V = spm_vol(fname); catch, aas_log(aap,1,sprintf('ERROR: File %s does not exist!',fname)); end
+            
             if numel(V) > 1 % 4D --> fMRI
                 fMRI{end+1} = seriesnumbers{s};
                 fMRIdim = V(1).dim;
