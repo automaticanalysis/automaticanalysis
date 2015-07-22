@@ -57,6 +57,70 @@ savejson('complex_sparse',data2json)
 json2data=loadjson(ans)
 
 fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  an all-zero sparse matrix\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=sparse(2,3);
+savejson('all_zero_sparse',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  an empty sparse matrix\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=sparse([]);
+savejson('empty_sparse',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  an empty 0-by-0 real matrix\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=[];
+savejson('empty_0by0_real',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  an empty 0-by-3 real matrix\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=zeros(0,3);
+savejson('empty_0by3_real',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a sparse real column vector\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=sparse([0,3,0,1,4]');
+savejson('sparse_column_vector',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a sparse complex column vector\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=data2json-1i*data2json;
+savejson('complex_sparse_column_vector',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a sparse real row vector\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=sparse([0,3,0,1,4]);
+savejson('sparse_row_vector',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a sparse complex row vector\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=data2json-1i*data2json;
+savejson('complex_sparse_row_vector',data2json)
+json2data=loadjson(ans)
+
+fprintf(1,'\n%%=================================================\n')
 fprintf(1,'%%  a structure\n')
 fprintf(1,'%%=================================================\n\n')
 
@@ -64,6 +128,7 @@ data2json=struct('name','Think Different','year',1997,'magic',magic(3),...
                  'misfits',[Inf,NaN],'embedded',struct('left',true,'right',false))
 savejson('astruct',data2json,struct('ParseLogical',1))
 json2data=loadjson(ans)
+class(json2data.astruct.embedded.left)
 
 fprintf(1,'\n%%=================================================\n')
 fprintf(1,'%%  a structure array\n')
@@ -92,6 +157,25 @@ fprintf(1,'%%  invalid field-name handling\n')
 fprintf(1,'%%=================================================\n\n')
 
 json2data=loadjson('{"ValidName":1, "_InvalidName":2, ":Field:":3, "项目":"绝密"}')
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a 2D cell array\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json={{1,{2,3}},{4,5},{6};{7},{8,9},{10}};
+savejson('data2json',data2json)
+json2data=loadjson(ans)  % only savejson works for cell arrays, loadjson has issues
+
+fprintf(1,'\n%%=================================================\n')
+fprintf(1,'%%  a 2D struct array\n')
+fprintf(1,'%%=================================================\n\n')
+
+data2json=repmat(struct('idx',0,'data','structs'),[2,3])
+for i=1:6
+    data2json(i).idx=i;
+end
+savejson('data2json',data2json)
+json2data=loadjson(ans)
 
 rand ('state',rngstate);
 

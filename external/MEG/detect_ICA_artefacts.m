@@ -36,12 +36,12 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 % Fields of Out:
 %   allrem   = cell array of IC numbers believed to be artifacts across all references 
 %   bothrem  = cell array of IC numbers believed to be artifacts for each reference (spatial+temporal)
-%   temprem  = T x N cell array of IC numbers believed to be artifacts for each of N temporal references, where:
+%   temrem  = T x N cell array of IC numbers believed to be artifacts for each of N temporal references, where:
 %              T = 1 corresponds to single IC with max correlation
 %              T = 2 corresponds to ICs with correlations surviving absolute p-value
 %              T = 3 corresponds to ICs with correlations surviving relative Z-score across correlations
 %              T = 4 (optional on Nperm below) corresponds to ICs with correlations surviving boot-strapped, phase-permuted p-value
-%   spatrem  = T x N cell array of IC numbers believed to be artifacts for each of N spatial references, like for temrem above (except no bootstrap option)
+%   sparem  = T x N cell array of IC numbers believed to be artifacts for each of N spatial references, like for temrem above (except no bootstrap option)
 %   weights  = full ICA weight matrix
 %   TraMat   = channel trajectory matrix to project artifacts from data
 %   temcor   = matrix of Pearson temporal correlations between each IC and 
