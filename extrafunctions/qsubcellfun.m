@@ -27,7 +27,7 @@ end
 qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 
 try
-    scheduler=cbu_scheduler('custom',{'compute',nWorkers,4,24*3600,qsubpath});
+    scheduler=feval(aap.directory_conventions.qsubscheduler,'custom',{'compute',nWorkers,4,24*3600,qsubpath});
 catch ME
     warning('Cluster computing is not supported!\n');
     error('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);

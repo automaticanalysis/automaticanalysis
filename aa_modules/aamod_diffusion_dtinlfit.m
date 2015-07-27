@@ -25,9 +25,9 @@ switch task
         bval = importdata(bvals);
         bvec = importdata(bvecs);
     
-        if strcmp(aap.options.wheretoprocess, 'localsingle') % local execution - use parfor for slices
-            P = cbupool(size(data_mask,3));
-            P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:00:05';
+        if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
+            P = feval(aap.directory_conventions.poolprofile,size(data_mask,3));
+            P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:01:00';
             matlabpool(P);
             try
                 parfor z = 1:size(data_in,3)
