@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='meg_session' desc='Use MAXFILT' modality='MEG'>
+        <currenttask domain='subject' desc='Use MAXFILT' modality='MEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
@@ -20,6 +20,7 @@
             </sss>
             
             <hpi>
+                <session desc='Name of the session providing HPI for empty room (if applicable)' ui='text'></session>
                 <step>10</step>
                 <subt>amp</subt>
             </hpi>
@@ -28,13 +29,13 @@
             <!-- empty: no transform; 0: default; 1-: session number to take as reference -->
                         
             <inputstreams>
-                <stream>meg</stream>
+                <stream isrenameable='1'>meg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>meg</stream>                
-                <stream>trans_meg</stream>
-                <stream>meg_head</stream>
+                <stream isrenameable='1'>meg</stream>                
+                <stream isrenameable='1'>trans_meg</stream>
+                <stream isrenameable='1'>meg_head</stream>
             </outputstreams>
             
         </currenttask>
