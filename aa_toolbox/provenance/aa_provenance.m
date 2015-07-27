@@ -57,7 +57,7 @@ classdef aa_provenance < handle
                 % aa
                 global aa
                 if ~isobject(aa)
-                    aaClass;
+                    aa = aaClass;
                 end
                 aagent = aa;
                 obj.pp.agent('idaa',{...

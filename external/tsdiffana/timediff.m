@@ -19,7 +19,7 @@ if nargin < 1
     imgs = [];
 end
 if isempty(imgs)
-    imgs = cbu_get_imgs(Inf, 'Select time series images');
+    imgs = spm_select(Inf, 'image', 'Select time series images');
 end
 if isempty(imgs), return, end
 if iscell(imgs)

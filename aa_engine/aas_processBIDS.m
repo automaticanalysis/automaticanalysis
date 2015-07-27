@@ -191,3 +191,9 @@ nLines = sum(double(filestr)==10);
 LIST = textscan(filestr,'%s','Delimiter','\t');
 LIST = reshape(LIST{1},[],nLines)';
 end
+
+function str = strrep_multi(str, old, new)
+for i = 1:numel(old)
+    str = strrep(str, old{i}, new{i});
+end
+end
