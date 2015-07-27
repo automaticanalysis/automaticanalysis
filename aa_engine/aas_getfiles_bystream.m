@@ -25,7 +25,16 @@ else
         case 1
             streamDomain = 'subject';
         case 2
-            streamDomain = 'session';
+            if isfield(aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE,'modality')
+                switch aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE.modality
+                    case 'MRI'
+                        streamDomain = 'session';
+                    case 'MEG'
+                        streamDomain = 'meg_session';
+                end
+            else
+                streamDomain = 'session';
+            end
         otherwise
             aas_log(aap, 1, sprintf('Can''t determine the domain for stream ''%s'', givin these indices: %s. Try using this, aas_getfiles_bystream(aap, ''streamDomain'', [%s], ''%s'')', streamName, strjoin(arrayfun(@(x) sprintf('[%d]',x),reqestedIndices, 'UniformOutput', false)), strjoin(arrayfun(@(x) sprintf('%d',x),reqestedIndices, 'UniformOutput', false)), streamName));
     end
