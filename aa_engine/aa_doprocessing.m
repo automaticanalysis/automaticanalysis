@@ -117,9 +117,6 @@ global localtaskqueue;
 if (exist('username','var'))
     aaworker.username=username;
     aap=aws_setupqnames(aap,username);
-    if (exist('secretkey','var'))
-        aaworker.aacc=aacc(username,secretkey);
-    end
 end
 
 

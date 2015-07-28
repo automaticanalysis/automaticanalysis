@@ -3,7 +3,6 @@
 % You should no longer need to change this module - you may just
 % modify the .xml or model in your user script
 % **********************************************************************
-% Based on spm_getSPM, aas_overlaywithtemplate
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_firstlevel_threshold(aap,task,subj)
