@@ -36,17 +36,17 @@ function [Out,ICs] = detect_ICA_artefacts(S)
 % Fields of Out:
 %   allrem   = cell array of IC numbers believed to be artifacts across all references 
 %   bothrem  = cell array of IC numbers believed to be artifacts for each reference (spatial+temporal)
-%   temrem  = T x N cell array of IC numbers believed to be artifacts for each of N temporal references, where:
+%   temprem  = T x N cell array of IC numbers believed to be artifacts for each of N temporal references, where:
 %              T = 1 corresponds to single IC with max correlation
 %              T = 2 corresponds to ICs with correlations surviving absolute p-value
 %              T = 3 corresponds to ICs with correlations surviving relative Z-score across correlations
 %              T = 4 (optional on Nperm below) corresponds to ICs with correlations surviving boot-strapped, phase-permuted p-value
-%   sparem  = T x N cell array of IC numbers believed to be artifacts for each of N spatial references, like for temrem above (except no bootstrap option)
+%   spatrem  = T x N cell array of IC numbers believed to be artifacts for each of N spatial references, like for temrem above (except no bootstrap option)
 %   weights  = full ICA weight matrix
 %   TraMat   = channel trajectory matrix to project artifacts from data
-%   temcor   = matrix of Pearson temporal correlations between each IC and 
+%   tempcor   = matrix of Pearson temporal correlations between each IC and 
 %              each reference channel
-%   spacor   = matrix of Pearson spatial correlations between each IC topo  
+%   spatcor   = matrix of Pearson spatial correlations between each IC topo  
 %              and each reference topography
 %   compvars = vector of IC loadings 
 %   varexpl  = vector of variance explained by each IC (simple function of compvars)
@@ -189,8 +189,8 @@ end
 % figure; for i=1:PCA_dim; plot(ICs(30000:40000,i)); title(i); pause; end
 
 iweights  = pinv(Out.weights);
-Out.temcor = zeros(Nrefs(1),PCA_dim); tempval = zeros(Nrefs(1),PCA_dim);
-Out.spacor = zeros(Nrefs(2),PCA_dim); spapval = zeros(Nrefs(2),PCA_dim);
+Out.tempcor = zeros(Nrefs(1),PCA_dim); tempval = zeros(Nrefs(1),PCA_dim);
+Out.spatcor = zeros(Nrefs(2),PCA_dim); spapval = zeros(Nrefs(2),PCA_dim);
 %reltemcor = zeros(Nrefs(1),PCA_dim); relspacor = zeros(Nrefs(2),PCA_dim);
 temremove  = cell(4,Nrefs(1)); sparemove  = cell(3,Nrefs(2));
 
@@ -198,14 +198,14 @@ for r = 1:Nrefs(1)
     
     %% Check temporal correlation with any reference channels
     for k = 1:PCA_dim
-        [Out.temcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
+        [Out.tempcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
     end
     
-    [~,temremove{1,r}] = max(abs(Out.temcor(r,:)));
+    [~,temremove{1,r}] = max(abs(Out.tempcor(r,:)));
     
     temremove{2,r} = find(tempval(r,:) < TemAbsPval);
     
-    temremove{3,r} = find(abs(zscore(Out.temcor(r,:))) > TemRelZval);
+    temremove{3,r} = find(abs(zscore(Out.tempcor(r,:))) > TemRelZval);
     
     if Nperm > 0
         permcor = zeros(1,PCA_dim);
@@ -231,21 +231,21 @@ for r = 1:Nrefs(1)
         fprintf('\n')
         %         figure,hist(maxcor)
         
-        temremove{4,r} = find(abs(Out.temcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
+        temremove{4,r} = find(abs(Out.tempcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
     end
 end
 
 for r = 1:Nrefs(2)        
     %% Check spatial correlation with any reference channels
         for k = 1:PCA_dim
-            [Out.spacor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
+            [Out.spatcor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
         end
         
-        [~,sparemove{1,r}] = max(abs(Out.spacor(r,:)));
+        [~,sparemove{1,r}] = max(abs(Out.spatcor(r,:)));
         
         sparemove{2,r} = find(spapval(r,:) < SpaAbsPval);
 
-        sparemove{3,r} = find(abs(zscore(Out.spacor(r,:))) > SpaRelZval);
+        sparemove{3,r} = find(abs(zscore(Out.spatcor(r,:))) > SpaRelZval);
 end
 
 %% Variance Thresholding
@@ -253,8 +253,8 @@ Out.compvars = compvars;
 Out.varexpl = 100*compvars/sum(compvars);
 varenough   = find(Out.varexpl > VarThr);
 
-Out.temrem = temremove;
-Out.sparem = sparemove;
+Out.temprem = temremove;
+Out.spatrem = sparemove;
 
 thresholding = S.thresholding;
 if ~Nperm, thresholding(thresholding == 4) = []; end % remove thresholding if not permutation

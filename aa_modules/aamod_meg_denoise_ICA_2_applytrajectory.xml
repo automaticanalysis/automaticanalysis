@@ -15,7 +15,7 @@
                 temp - artifacts for each temporal reference
                 spat - artifacts for each spatial reference
                 -->
-            <toremove desc='artifacts to be removed' options='both|temp|spat' ui='optionlist'>both</toremove>
+            <toremove desc='artifacts to be removed' options='both|temp|spat' ui='optionlist'>all</toremove>
             
             <inputstreams>
                 <stream>meg</stream>

@@ -13,24 +13,31 @@ switch task
         D=spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
         ICA = load(infname_ica);
         
+        thresholding = 1:size(ICA.ica{1}.temrem,1); % default
+        if isfield(aap.tasklist.currenttask.settings,'thresholding') && ~isempty(aap.tasklist.currenttask.settings.thresholding)
+            thresholding = aap.tasklist.currenttask.settings.thresholding;
+        end
+        
         %% Define toremove
         PCA_dim = size(ICA.ica{1}.weights,1);
         toremove = cell(1,numel(ICA.ica));
         for m=1:numel(ICA.ica)
             switch aap.tasklist.currenttask.settings.toremove
                 case 'temp' % define artefacts based on temporal correlation only
-                    toremove{m} = intersect(1:PCA_dim,unique(cat(2,ICA.ica{m}.temprem{:})));
+                    toremove{m} = intersect(1:PCA_dim,unique(cat(2,ICA.ica{m}.temprem{thresholding,:})));
                 case 'spat' % define artefacts based on spatial correlation only
-                    toremove{m} = intersect(1:PCA_dim,unique(cat(2,ICA.ica{m}.spatrem{:})));
-                case 'both' % define artefacts based on both (DEFAULT)
+                    toremove{m} = intersect(1:PCA_dim,unique(cat(2,ICA.ica{m}.spatrem{thresholding,:})));
+                case 'both' % define artefacts based on both
+                    toremove{m} = intersect(1:PCA_dim,unique(cat(2,ICA.ica{m}.bothrem{thresholding,:})));
+                case 'all' % define artefacts across all references (DEFAULT)
                     toremove{m} = ICA.ica{m}.allrem;
             end
+                
+            weights = ICA.ica{m}.weights;
+            iweights  = pinv(ICA.ica{m}.weights); % weights will be in output file from previous step
+            finalics  = setdiff(1:PCA_dim,toremove{m}); % to
+            TraMat{m} = iweights(:,finalics) * weights(finalics,:);
         end
-        
-        weights = ICA.ica{m}.weights;
-        iweights  = pinv(ICA.ica{m}.weights); % weights will be in output file from previous step
-        finalics  = setdiff(1:PCA_dim,toremove{m}); % to
-        TraMat{m} = iweights(:,finalics) * weights(finalics,:);        
         
         %% RUN
         S = []; S.D = D;
