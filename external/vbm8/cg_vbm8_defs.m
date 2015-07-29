@@ -3,9 +3,13 @@ function cg_vbm8_defs(job)
 % in the original directory.
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cg_vbm8_defs.m 433 2011-10-07 07:42:49Z gaser $
+% $Id: cg_vbm8_defs.m 440 2012-03-28 07:50:58Z gaser $
 
 % remove potential file number at the end
+
+
+% we need spm_def2det.m from HDW toolbox
+addpath(fullfile(spm('dir'),'toolbox','HDW'));
 
 many_images = 0;
 

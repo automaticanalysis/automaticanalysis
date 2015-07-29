@@ -151,7 +151,8 @@ warpreg.def  = @(val)cg_vbm8_get_defaults('opts.warpreg', val{:});
 warpreg.tag = 'warpreg';
 warpreg.name = 'Warping Regularisation';
 warpreg.strtype = 'e';
-warpreg.num = [1 1];
+warpreg.num     = [1 5];
+warpreg.val     = {[0 0.001 0.5 0.05 0.2]};
 warpreg.help = {[...
 'The objective function for registering the tissue probability maps to the ',...
 'image to process, involves minimising the sum of two terms. ',...

@@ -6,7 +6,7 @@ function cg_vbm8_batch(namefile,writeonly,vbm8_defaults)
 % vbm8_defaults - use this default file instead of cg_vbm8_defaults.m
 %
 %_______________________________________________________________________
-% $Id: cg_vbm8_batch.m 404 2011-04-11 10:03:40Z gaser $
+% $Id: cg_vbm8_batch.m 437 2012-01-13 08:58:11Z gaser $
 
 if nargin < 1
 	fprintf('Syntax: cg_vbm8_batch(namefile)\n');
@@ -59,7 +59,7 @@ end
 
 try
   spm_jobman('initcfg');
-  spm_jobman('run_nogui',matlabbatch);
+  spm_jobman('run',matlabbatch);
 end
 
 spm_unlink(char(namefile))

@@ -17,7 +17,7 @@ PEwarp								8 May 2012																																			Alejandro Vicente Gra
 Templates/freesurfer_daface*		15 August 2014			https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface																		Tibor Auer
 TFCE			r67 (mod)			28 July 2014			http://dbm.neuro.uni-jena.de/tfce/																							Tibor Auer
 Utilities							2 May 2012				http://mrtools.mgh.harvard.edu/index.php/Downloads																			Jonathan Peelle
-vbm8			r435				4 April 2013			http://dbm.neuro.uni-jena.de/vbm8/																							Jonathan Peelle
+vbm8			r442				29 July 2015			http://dbm.neuro.uni-jena.de/vbm8/																							Tibor Auer
 XML_IO_Tools	RC (do not update!)	13 Februar 2010			http://www.mathworks.com/matlabcentral/fileexchange/12907-xml-io-tools														Tibor Auer
 catstruct.m		4.1					22 July 2015			http://www.mathworks.com/matlabcentral/fileexchange/7842-catstruct															Tibor Auer
 cprintf.m		1.10				22 July 2015			http://www.mathworks.com/matlabcentral/fileexchange/24093-cprintf-display-formatted-colored-text-in-the-command-window		Tibor Auer

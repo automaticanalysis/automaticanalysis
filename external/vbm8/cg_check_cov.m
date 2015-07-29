@@ -6,10 +6,10 @@ function cg_check_cov(vargin)
 % An output image will be save with SD at each voxel.
 %_______________________________________________________________________
 % Christian Gaser
-% $Id: cg_check_cov.m 425 2011-08-22 14:40:10Z gaser $
+% $Id: cg_check_cov.m 438 2012-03-08 08:40:04Z gaser $
 
 global fname jY h1 h2 YpY slice_array
-rev = '$Rev: 425 $';
+rev = '$Rev: 438 $';
 
 if nargin == 1
   P = char(vargin.data);
@@ -158,6 +158,8 @@ for i=1:n
 end
 
 threshold_cov = mean(mean_cov) - 2*std(mean_cov);
+
+fprintf('Mean covariance: %3.2f\n',mean(mean_cov));
 
 [tmp fname] = spm_str_manip(char(V.fname),'C');
 fprintf('Compressed filenames: %s  \n',tmp);

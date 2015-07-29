@@ -1,5 +1,5 @@
 /* Christian Gaser
- * $Id: sanlm_float.c 404 2011-04-11 10:03:40Z gaser $ 
+ * $Id: sanlm_float.c 436 2012-01-09 16:59:24Z gaser $ 
  *
  *
  * This code is a modified version of MABONLM3D.c 
@@ -642,6 +642,7 @@ Nthreads = 1;
 
 #ifdef _OPENMP
     Nthreads = omp_get_num_procs();
+    omp_set_num_threads(Nthreads);
     printf("Using %d processors\n",Nthreads);fflush(stdout);
 #endif
 

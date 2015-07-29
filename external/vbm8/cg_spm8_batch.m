@@ -1,7 +1,7 @@
 function cg_spm8_batch(batchname)
 % wrapper for using spm8 batch mode (see cg_vbm8_batch.sh)
 %_______________________________________________________________________
-% $Id: cg_spm8_batch.m 404 2011-04-11 10:03:40Z gaser $
+% $Id: cg_spm8_batch.m 437 2012-01-13 08:58:11Z gaser $
 
 if nargin < 1
 	fprintf('Syntax: cg_spm8_batch(batchname)\n');
@@ -25,6 +25,6 @@ end
 
 warning off
 spm_jobman('initcfg');
-spm_jobman('run_nogui',matlabbatch);
+spm_jobman('run',matlabbatch);
 
 exit
