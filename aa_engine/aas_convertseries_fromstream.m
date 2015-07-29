@@ -233,10 +233,15 @@ for subdirind=1:length(subdirs)
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
         if isfield(aap.options, 'customDCMconvert') && ~isempty(aap.options.customDCMconvert)
             aas_log(aap, false, sprintf('Using alternate %s script...', aap.options.customDCMconvert))
-            eval(sprintf('conv=%s(DICOMHEADERS_selected,''all'',''flat'',''nii'')', aap.options.customDCMconvert));
+            custompath = spm_file(aap.options.customDCMconvert,'path');
+            addpath(custompath);
+            aap.options.customDCMconvert = spm_file(aap.options.customDCMconvert,'basename');
         else
-            conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+            custompath = '';
+            aap.options.customDCMconvert = 'spm_dicom_convert';
         end
+        conv = feval(aap.options.customDCMconvert,DICOMHEADERS_selected,'all','flat','nii');
+        if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];

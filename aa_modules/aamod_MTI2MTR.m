@@ -36,13 +36,10 @@ switch task
         mtiMT = fullfile(pth, [flags.write.prefix fname ext]);
         
         %% Skull-strip MT and baseline
-        for f = {'mtibaseline' 'mtiMT'}
-            fn = eval(f{1});
-            [pth, fname, ext] = fileparts(fn);
-            bfn = fullfile(pth, ['b' fname ext]);
-            aas_runfslcommand(aap,sprintf('bet %s %s -f 0.6',fn,bfn));
-            eval(sprintf('b%s=bfn;',f{1}));
-        end
+        bmtibaseline = spm_file(mtibaseline,'prefix','b');
+        aas_runfslcommand(aap,sprintf('bet %s %s -f 0.6',mtibaseline,bmtibaseline));
+        bmtiMT = spm_file(mtiMT,'prefix','b');
+        aas_runfslcommand(aap,sprintf('bet %s %s -f 0.6',mtiMT,bmtiMT));
         
         %% Compute MTR
         R1 = spm_read_vols(spm_vol(bmtiMT));

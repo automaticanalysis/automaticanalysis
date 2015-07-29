@@ -32,7 +32,7 @@ classdef aa_provenance < handle
 				obj.isvalid = true;
 			
                 % Initialise
-                obj.pp = eval(basename(obj.provlib));
+                obj.pp = feval(basename(obj.provlib));
                 obj.pp.add_namespace('nfo','http://www.semanticdesktop.org/ontologies/2007/03/22/nfo');
                 obj.pp.add_namespace('aa','http://automaticanalysis.org/'); % TODO: place
                 obj.pp.add_namespace('nidm','http://www.incf.org/ns/nidash/nidm#');
@@ -118,7 +118,7 @@ classdef aa_provenance < handle
                 obj.pp.wasGeneratedBy(idResults,'-',now);
                 obj.pp.wasAssociatedWith(idResults,'idaa');
                                 
-                obj.p = eval(basename(obj.provlib));
+                obj.p = feval(basename(obj.provlib));
             end
             
         end

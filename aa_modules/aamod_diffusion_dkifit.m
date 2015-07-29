@@ -24,12 +24,12 @@ switch task
         data_mask = spm_read_vols(spm_vol(betmask));
         bval = importdata(bvals);
         bvec = importdata(bvecs);
-        [S0, DT, KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
-        [dMK, dMD, dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
+        [dki.S0, dki.DT, dki.KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
+        [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
         
         %% Calculate metrics
-        [MK, AK, RK] = fun_DKI_metrics(DT,KT,data_mask);
-        [MD, FA, AD, RD, L1, L2, L3, V1, V2, V3] = fun_DTI_metrics(DT,data_mask);
+        [dki.MK, dki.AK, dki.RK] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
+        [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(DT,data_mask);
         
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
@@ -42,7 +42,7 @@ switch task
                 aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
                 continue; 
             end
-            Y = eval(metric);  
+            Y = dki.(metric);  
             nifti_write(fullfile(sesspath,[outstreams{outind} '.nii']),Y,outstreams{outind},V);
             aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams{outind},[outstreams{outind} '.nii']);
         end

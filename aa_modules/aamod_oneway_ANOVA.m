@@ -13,7 +13,7 @@ switch task
         UFp = 0.001;
         
         if ischar(settings.cells)
-            settings.cells = eval(settings.cells);
+            settings.cells = str2num(settings.cells);
         end
         
         % New option to allow suffix to output file in extraparameters

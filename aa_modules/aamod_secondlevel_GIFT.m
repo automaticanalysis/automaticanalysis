@@ -73,7 +73,7 @@ switch task
             if ~ischar(settings.numICs)
                 aas_log(aap,true,'Dimensionality is estimated, therfore numICs should specify method (e.g. mean, min, max)');
             end
-            sesInfo.userInput.numComp = round(eval([lower(settings.numICs), '(sesInfo.userInput.estimated_comps);']));
+            sesInfo.userInput.numComp = round(feval(lower(settings.numICs), sesInfo.userInput.estimated_comps));
             sesInfo.userInput.numOfPC1 = round(1.5*sesInfo.userInput.numComp);
             sesInfo.userInput.numOfPC2 = sesInfo.userInput.numComp;
         else

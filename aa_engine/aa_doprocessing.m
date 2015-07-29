@@ -234,7 +234,7 @@ end
 
 % Choose where to run all tasks
 try
-  eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
+  taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
 catch
   aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
 end

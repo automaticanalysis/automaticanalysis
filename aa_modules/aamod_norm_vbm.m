@@ -66,6 +66,7 @@ switch task
         end
         
 end
+end
 
 %------------------------------------------------------------------------
 function savefields(fnam, p)
@@ -80,7 +81,7 @@ if numel(fn)==0
 end
 
 for i=1:length(fn),
-    eval([fn{i} '= p.' fn{i} ';']);
+    assignin('caller',fn{i},p.(fn{i}));
 end
 
 if str2double(version('-release'))>=14,
@@ -89,7 +90,7 @@ else
     save(fnam,fn{:});
 end
 
-return
+end
 %------------------------------------------------------------------------
 
 

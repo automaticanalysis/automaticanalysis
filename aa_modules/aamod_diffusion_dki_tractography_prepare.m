@@ -21,7 +21,7 @@ switch task
         alfa = aap.tasklist.currenttask.settings.alfa;
         
         %% Calculate direction field
-        [NM, DirM, DirF] = fun_DKI_extract_directions(DT,KT,nifti_read(betmask),alfa);
+        [dki.NM, dki.DirM, dki.DirF] = fun_DKI_extract_directions(DT,KT,nifti_read(betmask),alfa);
         
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
@@ -34,7 +34,7 @@ switch task
                 aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
                 continue; 
             end
-            Y = eval(metric);  
+            Y = dki.(metric);  
             nifti_write(fullfile(sesspath,[outstreams{outind} '.nii']),Y,outstreams{outind},V);
             aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams{outind},[outstreams{outind} '.nii']);
         end

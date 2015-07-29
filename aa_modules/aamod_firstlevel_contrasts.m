@@ -137,7 +137,7 @@ switch task
                 end
                 % support eval'ed strings to define contrasts (e.g. ones, eye)
                 if ischar(contrasts.con(conind).vector)
-                    contrasts.con(conind).vector = eval(...
+                    contrasts.con(conind).vector = str2num(...
                         contrasts.con(conind).vector);
                 end
                 % Make contract vector
