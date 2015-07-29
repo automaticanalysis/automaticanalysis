@@ -13,6 +13,7 @@ switch task
         if ~exist(megfile,'file') % try as empty_room
             srcdir = meg_findvol(aap,aap.acq_details.subjects(subj).megseriesnumbers{sess},'fp');
             megfile = spm_select('FPList',srcdir,'.*fif');
+            megfile = deblank(megfile(1,:)); % in case there are more, select the first
             aap.acq_details.subjects(subj).megseriesnumbers{sess} = 'empty_room.fif';
         end
         

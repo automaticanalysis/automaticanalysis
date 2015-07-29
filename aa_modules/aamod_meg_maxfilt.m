@@ -109,9 +109,11 @@ switch task
             delete(fullfile(sesspath,'*mf2pt2_*'));
             [pth, fstem, ext] = fileparts(outfname);
             
+            isEmptyRoom = strcmp(aap.acq_details.meg_sessions(sess).name,'empty_room');
+            
             %% Sphere fit
             spherefit = []; 
-            if ~strcmp(aap.acq_details.meg_sessions(sess).name,'empty_room') % if empty_room session, skip ...
+            if ~isEmptyRoom % if empty_room session, skip ...
                 addpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
                 try spherefit = meg_fit_sphere_rik(aap,infname,outfname);
                 catch
@@ -154,7 +156,7 @@ switch task
             end
             
             % HPI estimation and movement compensation
-            if ~strcmp(aap.acq_details.meg_sessions(sess).name,'empty_room')
+            if ~isEmptyRoom
                 hpicmd = sprintf(' -linefreq 50 -hpistep %d -hpisubt %s -hpicons -movecomp inter -hp %s',...
                     aas_getsetting(aap,'hpi.step',sess),...
                     aas_getsetting(aap,'hpi.subt',sess),...
@@ -190,7 +192,7 @@ switch task
             
             %% Trans (so that origin not same as SSS expansion origin above)
             if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
-                outtrfname   = outfname;
+                outtrfname = outfname;
                 outtrpfx = '';
                 for t = 1:numel(aap.tasklist.currenttask.settings.transform)
                     if iscell(aap.tasklist.currenttask.settings.transform)
@@ -204,6 +206,7 @@ switch task
                     elseif isnumeric(trans)
                         if trans % session number
                             if trans == sess, continue; end % do not trans to itself
+                            if isEmptyRoom && (trans == HPIsess), continue; end % do not trans empty_room to HPIsess
                             ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
                                 'meg_session',[subj,trans],instream);
                             trcmd_par = sprintf(' -trans %s ',ref_str);
@@ -239,7 +242,7 @@ switch task
             %% Outputs
             aap=aas_desc_outputs(aap,subj,sess,instream,outfname);
             
-            if ~strcmp(aap.acq_details.meg_sessions(sess).name,'empty_room')
+            if ~isEmptyRoom
                 aap=aas_desc_outputs(aap,subj,sess,[instream '_head'],...
                     char(fullfile(sesspath,[fstem '_headpoints.txt']),...
                     fullfile(sesspath,[fstem '_headposition.pos'])));
