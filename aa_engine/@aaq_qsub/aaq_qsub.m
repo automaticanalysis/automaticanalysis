@@ -6,6 +6,7 @@ classdef aaq_qsub<aaq
         taskstomonitor = []
     end
     properties (Hidden)
+        % ensure MAXFILTER license
         SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
     end
     methods
@@ -19,9 +20,7 @@ classdef aaq_qsub<aaq
                     aaparallel.memory,...
                     aaparallel.walltime*3600,...
                     aaworker.parmpath});
-                obj.SubmitArguments0 = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
-                obj.scheduler.SubmitArguments = obj.SubmitArguments0;
-                % ensure MAXFILTER license
+                obj.scheduler.SubmitArguments = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
             catch ME
                 warning('Cluster computing is not supported!\n');
                 warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
@@ -147,6 +146,36 @@ classdef aaq_qsub<aaq
             end
         end
         
+        function obj = scheduler_args(obj,varargin)
+            global aaparallel;
+            memory = aaparallel.memory;
+            walltime = aaparallel.walltime;
+            
+            for iarg = 1:numel(varargin)
+                if ~ischar(varargin{iarg}), continue; end
+                switch varargin{iarg}
+                    case 'mem'
+                        if ~isempty(varargin{iarg+1}), memory = varargin{iarg+1}; end
+                    case 'walltime'
+                        if ~isempty(varargin{iarg+1}), walltime = varargin{iarg+1}; end
+                end
+            end
+            
+            if round(memory) == memory % round
+                memory = sprintf('%dgb',memory);
+            else % non-round --> MB
+                memory = sprintf('%dmb',memory*1000);
+            end
+            
+            obj.scheduler.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.SubmitArguments0);
+            
+            %                 obj.scheduler.SubmitArguments = strcat(obj.SubmitArguments0,...
+            %                     sprintf(' -N Mod%02d_',job.k),...
+            %                     sprintf('%03d',job.indices));
+
+        end
+
+        
         function [obj]=killall(obj)
             for j = 1:numel(obj.scheduler.Jobs)
                 obj.scheduler.Jobs(1).delete;
@@ -163,34 +192,25 @@ classdef aaq_qsub<aaq
             end
             cd(qsubpath);
             
-            % Submit the job using qsubfeval
-            %             % Check how much memory and time we should assign to the job
-            % Not in use [TA]
-            %             try
-            %                 memReq = obj.aap.tasksettings.(job.stagename).qsub.memoryBase * ... % module specific multiplier
-            %                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-            %                     (1024^3); % GB
-            %                 timReq = obj.aap.tasksettings.(job.stagename).qsub.timeBase * ... % module specific multiplier
-            %                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
-            %                     60*60; % Hours
-            %             catch
-            %                 aas_log(obj.aap,false,...
-            %                     sprintf('%s does not contain information about qsub time/memory requirements!', job.stagename), ...
-            %                     [1 0 0])
-            %                 memReq = ... % No module specific multiplier
-            %                     obj.aap.options.qsub.memoryMult * ... % study specific multiplier
-            %                     (1024^3); % GB
-            %                 timReq = ... % No module specific multiplier
-            %                     obj.aap.options.qsub.timeMult * ... % study specific multiplier
-            %                     60*60; % Hours
-            %             end
-            
-            % Submit job
+            % Submit the job
             if ~isempty(obj.scheduler)
+                % Check how much memory and time we should assign to the job
+                qsubsettings = {'mem',[],'walltime',[]};
+%                 if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
+%                     qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
+%                     for f = fieldnames(qsub)'
+%                         switch f{1}
+%                             case 'memoryBase'
+%                                 qsubsettings{2} = qsub.memoryBase;
+%                             case 'timeBase'
+%                                 qsubsettings{4} = qsub.timeBase;
+%                         end
+%                     end
+%                 end
+           
+                obj = obj.scheduler_args(qsubsettings{:});
+                
                 J = createJob(obj.scheduler);
-%                 obj.scheduler.SubmitArguments = strcat(obj.SubmitArguments0,...
-%                     sprintf(' -N Mod%02d_',job.k),...
-%                     sprintf('%03d',job.indices));
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices};
