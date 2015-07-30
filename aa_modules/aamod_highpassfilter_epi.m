@@ -12,7 +12,7 @@ switch task
         
     case 'doit'
         sesspath=aas_getsesspath(aap,i,j);
-        imgs=aas_getimages_bystream(aap,i,j,'epi');
+        imgs=aas_getfiles_bystream(aap,i,j,'epi');
         nitem=0;
         nimg=size(imgs,1);
         for imgind=1:nimg
@@ -22,8 +22,8 @@ switch task
         
         
         % Get TR from DICOM header
-        if (length(aap.tasklist.currenttask.settings.TRs)==0)
-            DICOMHEADERS=load(fullfile(sesspath,'dicom_headers'));
+        if isempty(aap.tasklist.currenttask.settings.TRs)
+            DICOMHEADERS=load(aas_getfiles_bystream(aap,i,j,'epi_dicom_header'));
             aap.tasklist.currenttask.settings.TRs=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end;
 
