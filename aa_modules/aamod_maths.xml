@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Performing mathematical operations' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <!-- Operation must be a statement as written in the command window. 'X' refers to the data -->
+            <operation></operation>
+            
+            <inputstreams>
+                <stream isrenameable='1' isessential='1' diagnostic='0'>input</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>output</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
