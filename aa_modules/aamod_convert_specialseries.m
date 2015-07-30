@@ -10,7 +10,7 @@ switch task
     case 'doit'
         subjpath=aas_getsubjpath(aap,subj);
 
-        streamname = strrep(aas_getstreams(aap,'out'),'dicom_',''); streamname = streamname{1};
+        streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
 
         [aap, convertedfns, dcmhdr] = aas_convertseries_fromstream(aap, subj, ['dicom_' streamname]); 
         

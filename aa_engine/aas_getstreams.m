@@ -13,9 +13,9 @@ else % any
     task = aap.tasksettings.(stagename)(index);
 end
 
-streams = task.([select 'putstreams']).stream;
+streams = task.([select 'streams']).stream;
 if ~iscell(streams), streams = {streams}; end
-schemas = aap.schema.tasksettings.(stagename)(index).([select 'putstreams']).stream;
+schemas = aap.schema.tasksettings.(stagename)(index).([select 'streams']).stream;
 
 % Remove/save attributes
 attributes = {};

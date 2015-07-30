@@ -15,9 +15,9 @@ switch task
     case 'domain'
         resp = 'subject';
     case 'report'
-        resp = 'Get statistics on segmented structural images.'
+        resp = 'Get statistics on segmented structural images.';
     case 'doit'
-        streams = aas_getstreams(aap,'in');
+        streams = aas_getstreams(aap,'input');
         S.parts.desc = {'1=grey matter','2=white matter','3=csf'};
         
         %% Conventional

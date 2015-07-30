@@ -33,7 +33,7 @@ switch task
         try SubjRemoveThr  = aap.tasklist.currenttask.settings.SubjRemoveThr;  catch, SubjRemoveThr  = 3;  end
         try ROIRemoveThr   = aap.tasklist.currenttask.settings.ROIRemoveThr;   catch, ROIremoveThr   = 0;  end
         
-        for in = aas_getstreams(aap,'in')
+        for in = aas_getstreams(aap,'input')
             instream = in{1};
             
             %% Do it:

@@ -25,7 +25,7 @@ switch task
     case 'report'
     case 'doit'
         subjpath=aas_getsubjpath(aap,subj);
-        streamname = strrep(aas_getstreams(aap,'out'),'dicom_',''); streamname = streamname{1};
+        streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
         sesspath=fullfile(subjpath,streamname);
         
         % Obtain sereies index from the special_session names

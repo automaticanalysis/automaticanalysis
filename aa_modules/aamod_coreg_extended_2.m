@@ -157,8 +157,8 @@ end
 end
 
 function [diagstream, mainstream, wbstream] = process_streams(aap)
-inpstreams = aas_getstreams(aap,'in');
-outpstreams = aas_getstreams(aap,'out');
+inpstreams = aas_getstreams(aap,'input');
+outpstreams = aas_getstreams(aap,'output');
 if cell_index(inpstreams,'meanepi') % fMRI
     diagstream = 'meanepi';
 end

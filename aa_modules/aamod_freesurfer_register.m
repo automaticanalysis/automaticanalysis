@@ -15,7 +15,7 @@ switch task
         
         %% Try to delete old freesurfer running flags
         % Get data
-        inputstreams = aas_getstreams(aap,'in');
+        inputstreams = aas_getstreams(aap,'input');
         struct = aas_getfiles_bystream(aap, subj,inputstreams{2});
         reg = fullfile(subjpath,aap.directory_conventions.structdirname,'register.dat');        
         if numel(inputstreams) == 2

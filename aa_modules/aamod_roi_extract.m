@@ -81,7 +81,7 @@ switch task
         ROIfstem = spm_str_manip(ROIfile,'rt');
         
         %% Process
-        for in =  aas_getstreams(aap,'in')
+        for in =  aas_getstreams(aap,'input')
             instream = in{1};            
             
             % Get files by stream:

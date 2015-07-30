@@ -172,7 +172,7 @@ if (~notthislevelplease)
     index=aap.tasklist.main.module(currentstage).index;
     
     if (isfield(aap.schema.tasksettings.(stagename)(index),'outputstreams'))
-        outputstreams=aas_getstreams(aap,stagename,index,'out');
+        outputstreams=aas_getstreams(aap,stagename,index,'output');
         
         for i=1:length(outputstreams)
             % get simple streamname

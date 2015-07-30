@@ -62,7 +62,7 @@ switch task
         V = spm_vol(betmask); V.dt = spm_type('float32');
         sesspath = aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
 
-        outstreams=aas_getstreams(aap,'out');        
+        outstreams=aas_getstreams(aap,'output');        
         for outind=1:length(outstreams)
             metric = strrep(outstreams{outind},'dti_','');
             if ~exist(metric,'var')

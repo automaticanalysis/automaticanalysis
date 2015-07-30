@@ -18,7 +18,7 @@ switch task
         end
         
         % find out what streams we should normalise
-		streams=aas_getstreams(aap,'out');
+		streams=aas_getstreams(aap,'output');
         if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
             inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
         else
@@ -75,7 +75,7 @@ switch task
         template = fullfile(localpath,[nam ext]);
         
         % affine xfm
-        streams=aas_getstreams(aap,'in');
+        streams=aas_getstreams(aap,'input');
         xfmi = cell_index(streams,'dartel_templatetomni_xfm');
         if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
             xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;

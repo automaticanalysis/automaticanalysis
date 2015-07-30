@@ -13,7 +13,7 @@ switch task
     case 'report'
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,[subj,sess]);
-        inpstreams = aas_getstreams(aap,'in');
+        inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);
@@ -39,7 +39,7 @@ switch task
         %% Preapre
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,[subj,sess]);
-        inpstreams = aas_getstreams(aap,'in');
+        inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);

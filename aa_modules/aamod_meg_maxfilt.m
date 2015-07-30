@@ -103,7 +103,7 @@ switch task
         for sess = meg_sessions
             %% Initialise
             sesspath = aas_getsesspath(aap,subj,sess);
-            instream = aas_getstreams(aap,'in'); instream = instream{1};
+            instream = aas_getstreams(aap,'input'); instream = instream{1};
             infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],instream);
             outfname = fullfile(sesspath,['mf2pt2_' basename(infname) '.fif']); % specifying output filestem
             delete(fullfile(sesspath,'*mf2pt2_*'));

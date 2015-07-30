@@ -176,7 +176,7 @@ classdef aa_provenance < handle
             
             % Input(s)
             if checkinput
-                [inputs, inputattrs] = aas_getstreams(obj.IDs{id}.aap,'in');
+                [inputs, inputattrs] = aas_getstreams(obj.IDs{id}.aap,'input');
                 for i = 1:numel(inputs)
                     istream = inputs{i};
                     if any(istream=='.')
@@ -232,7 +232,7 @@ classdef aa_provenance < handle
             end
             
             % Output
-            for o = aas_getstreams(obj.IDs{id}.aap,'out')
+            for o = aas_getstreams(obj.IDs{id}.aap,'output')
                 ostream = o{1};
                 
                 prid_outputstream = obj.addStream(id,ostream);

@@ -20,7 +20,7 @@ switch task
         end
         
         % find out what streams we should normalise
-		streams=aas_getstreams(aap,'out');
+		streams=aas_getstreams(aap,'output');
         if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
             inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
         else
