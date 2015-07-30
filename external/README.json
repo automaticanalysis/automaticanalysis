@@ -1,0 +1,134 @@
+{
+	"external": {
+		"Description": "These are externally-developed packages which may be used by aa scripts. These are provided for convenience and to ensure compatibility; all software retains the license of its original distribution.",
+		"Legend": "Below is a list of all packages, version and\/or date downloaded, and maintainer:",
+		"Packages": [
+			{
+				"Name": "ANTS",
+				"Version": "",
+				"DateDownloaded": "08 May 2012",
+				"URL": "http:\/\/picsl.upenn.edu\/ANTS\/",
+				"aaMaintainer": "Alejandro Vicente Grabovetsky"
+			},
+			{
+				"Name": "DKI_Toolbox",
+				"Version": "",
+				"DateDownloaded": "01 July 2014",
+				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/rafael.henriques\/",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "DTInl",
+				"Version": "",
+				"DateDownloaded": "19 August 2014",
+				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/marta.correia\/",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "GLM_Flex",
+				"Version": "",
+				"DateDownloaded": "02 May 2012",
+				"URL": "http:\/\/mrtools.mgh.harvard.edu\/index.php\/Downloads",
+				"aaMaintainer": "Jonathan Peelle"
+			},
+			{
+				"Name": "JSONlab",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/33381-jsonlab--a-toolbox-to-encode-decode-json-files-in-matlab-octave",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "MEG",
+				"Version": "",
+				"DateDownloaded": "23 April 2015",
+				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/rik.henson",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "MFP",
+				"Version": "r1.3.6 (mod)",
+				"DateDownloaded": "22 August 2014",
+				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software\/",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "PEwarp",
+				"Version": "",
+				"DateDownloaded": "08 May 2012",
+				"URL": "",
+				"aaMaintainer": "Alejandro Vicente Grabovetsky"
+			},
+			{
+				"Name": "Templates\/freesurfer_daface*",
+				"Version": "",
+				"DateDownloaded": "15 August 2014",
+				"URL": "https:\/\/surfer.nmr.mgh.harvard.edu\/fswiki\/mri_deface",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "TFCE",
+				"Version": "r67 (mod)",
+				"DateDownloaded": "28 July 2014",
+				"URL": "http:\/\/dbm.neuro.uni-jena.de\/tfce\/",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "Utilities",
+				"Version": "",
+				"DateDownloaded": "02 May 2012",
+				"URL": "http:\/\/mrtools.mgh.harvard.edu\/index.php\/Downloads",
+				"aaMaintainer": "Jonathan Peelle"
+			},
+			{
+				"Name": "vbm8",
+				"Version": "r442",
+				"DateDownloaded": "29 July 2015",
+				"URL": "http:\/\/dbm.neuro.uni-jena.de\/vbm8\/",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "XML_IO_Tools",
+				"Version": "RC (do not update!)",
+				"DateDownloaded": "13 February 2010",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12907-xml-io-tools",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "catstruct.m",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/7842-catstruct",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "cprintf.m",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/24093-cprintf-display-formatted-colored-text-in-the-command-window",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "panel.m",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel ",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "sscanfitem.m",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "https:\/\/surfer.nmr.mgh.harvard.edu\/fswiki\/DownloadAndInstall",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
+				"Name": "strjoin.m",
+				"Version": "",
+				"DateDownloaded": "22 July 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/31862-strjoin",
+				"aaMaintainer": "Tibor Auer"
+			}
+		]
+	}
+}
