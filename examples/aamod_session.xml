@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='aa module tempate for sessions' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <parameter>1</parameter>
+            
+            <inputstreams>
+                <stream isrenameable='1' isessential='1' diagnostic='0'>main</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>main</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
