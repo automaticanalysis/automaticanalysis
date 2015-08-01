@@ -9,7 +9,6 @@ Package					Version			Date Downloaded			URL																							aa Maintainer
 ANTS										8 May 2012				http://picsl.upenn.edu/ANTS/																		Alejandro Vicente Grabovetsky
 DKI_Toolbox								1 July 2014			http://www.mrc-cbu.cam.ac.uk/people/rafael.henriques/														Tibor Auer
 DTInl										19 August 2014			http://www.mrc-cbu.cam.ac.uk/people/marta.correia/														Tibor Auer
-GLM_Flex									2 May 2012				http://mrtools.mgh.harvard.edu/index.php/Downloads														Jonathan Peelle
 JSONlab					1.1				22 July 2015			http://www.mathworks.com/matlabcentral/fileexchange/33381-jsonlab--a-toolbox-to-encode-decode-json-files-in-matlab-octave	Tibor Auer
 MEG										23 April 2015			http://www.mrc-cbu.cam.ac.uk/people/rik.henson															Tibor Auer
 MFP						r1.3.6 (mod)		22 August 2014			http://www.medizin.uni-tuebingen.de/kinder/en/research/neuroimaging/software/									Tibor Auer
