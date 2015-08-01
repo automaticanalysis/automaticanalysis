@@ -4,7 +4,7 @@ function h = img2hist(fileName, bins, name)
 if ischar(fileName)
     fileName = strvcat2cell(fileName);
 end
-if ischar(name)
+if (nargin >= 3) && ischar(name)
     name = strvcat2cell(name);
 end
 
@@ -16,10 +16,10 @@ colorsB = distinguishable_colors(length(fileName));
 histVals = cell(size(fileName));
 Y = cell(size(fileName));
 
-legStr = 'legend(';
 maxV = 0;
+legStr = cell(1,numel(fileName));
 
-for f = 1:length(fileName)
+for f = 1:numel(fileName)
     
     % Get image or matrix...
     if ischar(fileName{f})
@@ -37,7 +37,7 @@ for f = 1:length(fileName)
         bins =  -aMax:(aMax/100):aMax;
     end
     if nargin < 3
-        name = 'Image';
+        name{f} = 'Image';
     end
     
     % Now make a histogram and "normalise" it
@@ -51,21 +51,19 @@ for f = 1:length(fileName)
     ch = get(B,'child');
     set(ch, 'faceA', 0.3, 'edgeA', 0.2);
     
-    % T-value of deviation from mean
-    Tstats = testt(Y{f});
-    SRstats = wilcoxon(Y{f});
+    % T-value of deviation from zero-centered
+    zmean = Y{f}-mean(Y{f});
+    Tstats = testt(Y{f},zmean);
+    SRstats = wilcoxon(Y{f}',zmean');
     
     % Get legend information
-    tmpStr = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
-        name{f}, nanmean(Y{f}), nanmedian(Y{f}), nanstd(Y{f}), Tstats.tstat, SRstats.zval);
-    legStr = [legStr ...
-        '''' tmpStr ''','];
+    legStr{f} = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
+        name{f}, nanmean(Y{f}), nanmedian(Y{f}), nanstd(Y{f}), Tstats.tvalue, SRstats.z);
 end
-legStr = [legStr(1:end-1) ');'];
 
 xlabel('Value')
 ylabel('Proportion of voxels')
-eval(legStr);
+legend(legStr);
 
 %% Difference between 2 distributions
 if length(fileName) == 2
