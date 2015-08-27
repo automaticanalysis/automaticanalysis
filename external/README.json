@@ -95,6 +95,13 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "colorspace.m",
+				"Version": "",
+				"DateDownloaded": "01 August 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/28790-colorspace-transformations",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
 				"Name": "cprintf.m",
 				"Version": "",
 				"DateDownloaded": "22 July 2015",
@@ -102,10 +109,17 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "distinguishable_colors.m",
+				"Version": "(mod)",
+				"DateDownloaded": "01 August 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/29702-generate-maximally-perceptually-distinct-colors",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
 				"Name": "panel.m",
 				"Version": "",
 				"DateDownloaded": "22 July 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel ",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
