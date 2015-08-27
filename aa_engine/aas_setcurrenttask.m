@@ -81,7 +81,7 @@ if exist('k','var')
             sessionnmes = textscan(selected_sessions,'%s'); sessionnmes = sessionnmes{1};
             selected_sessions=[];
             for sessionnme = sessionnmes'
-                sessionind = cell_index({sessions.name},sessionnme{1});
+                sessionind = find(strcmp({sessions.name},sessionnme{1}));
                 if isempty(sessionind)
                     aas_log(aap,true,sprintf('Unknown session %s specified in selected_sessions field of a branch in the tasklist, sessions were %s',sessionnme,sprintf('%s ',sessions.name)));
                 end;

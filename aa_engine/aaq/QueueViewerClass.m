@@ -30,7 +30,7 @@ classdef QueueViewerClass < handle
         UIControls
         
         UpdateRate = 10
-        Clock = 0
+        Clock = []
     end
     
     methods
