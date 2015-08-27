@@ -33,14 +33,14 @@ end;
 
 % Both MEG & MRI or just MRI?
 try
-    if (length(name)==2)
+    if iscell(name) && (numel(name)==2)
         thissubj.megname=name{1};
         thissubj.mriname=name{2};
     else
         thissubj.mriname=name;
     end;
 catch
-    aas_log(aap,true,'In aas_addsubject, expecting either single name for MRI in single quotes, or two names for MEG written like this {''megname'',''mriname''}.');
+    aas_log(aap,true,'In aas_addsubject, name is expected to be either single string for MRI, or a cell of two for MEG written like this {''megname'',''mriname''}.');
 end;
 
 if isnumeric(seriesnumbers) || isnumeric(seriesnumbers{1}) % DICOM series number
