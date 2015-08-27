@@ -31,6 +31,7 @@ sample = [];
 for i = nl:numel(lines)
     sample = lines{i};
     if iscell(sample) || (size(sample,1) > 1)
+        sample = [];
         continue; 
     end
     if size(sample,1) > size(sample,2), sample = sample';  end
