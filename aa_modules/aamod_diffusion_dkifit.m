@@ -38,7 +38,7 @@ switch task
         outstreams=aas_getstreams(aap,'output');        
         for outind=1:length(outstreams)
             metric = strrep(outstreams{outind},'dki_','');
-            if ~exist(metric,'var')
+            if ~isfield(dti,metric)
                 aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
                 continue; 
             end

@@ -87,7 +87,7 @@ switch task
             [junk,fn] = fileparts(SMimg(m,:));
             if isempty(strfind(fn, 'rwc'))
                 indx = strfind(fn, 'rc');
-                eval(['m' MOlist{str2num(fn(indx + 2))} ' = spm_read_vols(spm_vol(SMimg(m,:)));'])
+                feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 2))}],spm_read_vols(spm_vol(SMimg(m,:)))));
             end
         end
         

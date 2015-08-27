@@ -81,7 +81,7 @@ if numel(fn)==0
 end
 
 for i=1:length(fn),
-    assignin('caller',fn{i},p.(fn{i}));
+    feval(@()assignin('caller',fn{i},p.(fn{i})));
 end
 
 if str2double(version('-release'))>=14,

@@ -43,7 +43,7 @@ switch task
             end
         end
         
-        dti.SO = SO;
+        dti.S0 = S0;
         dti.L1 = L1;
         dti.L2 = L2;
         dti.L3 = L3;
@@ -65,7 +65,7 @@ switch task
         outstreams=aas_getstreams(aap,'output');        
         for outind=1:length(outstreams)
             metric = strrep(outstreams{outind},'dti_','');
-            if ~exist(metric,'var')
+            if ~isfield(dti,metric)
                 aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
                 continue; 
             end
