@@ -3,7 +3,7 @@
 %     - aap.directory_conventions.rawdatadir: path to BIDS
 % Optional:
 %     - aap.acq_details.input.selected_sessions:
-%           selection of a subset of tasks/runs based on their names (e.g. 'task001_run001')
+%           selection of a subset of tasks/runs based on their names (e.g. 'task-001_run01')
 %           - elements are strings: selecting for preprocessing and analysis
 %           - elements are cells:
 %               - one cell is a selection for one "aamod_firstlevel_model" (in the tasklist)
@@ -53,7 +53,7 @@ for subj = 2:size(SUBJ,1)
         aap = add_data(aap,subjID,fullfile(BIDS,subjID));
     else
         for sess = 1:size(SESS,1)
-            aap = add_data(aap,[subjID '_' SESS(sess,:)],fullfile(BIDS,subjID,SESS(sess,:)));
+            aap = add_data(aap,[subjID '_' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))));
         end
     end
 end
@@ -62,6 +62,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function aap = add_data(aap,subjstr,sesspath)
+
+subjaa = strrep_multi(subjstr,{'sub-','ses-'},{'',''});
 
 % locate first_level modules
 stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_model');
@@ -72,13 +74,13 @@ numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummie
 images = {};
 diffusionimages = {};
 cf = cellstr(spm_select('List',sesspath,'dir'));
-if any(strcmp(cf,'anatomy')), images = horzcat(images,cellstr(fullfile(sesspath,'anatomy',[subjstr '_T1w_001.nii.gz']))); end
+if any(strcmp(cf,'anatomy')), images = horzcat(images,cellstr(fullfile(sesspath,'anatomy',[subjstr '_T1w.nii.gz']))); end
 if any(strcmp(cf,'diffusion'))
-    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'diffusion'),[subjstr '_dwi_.*.nii.gz']))
+    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'diffusion'),[subjstr '_dwi.*.nii.gz']))
         sessfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '.nii'},{'',''});
         sessname = sessfname;
-        bvalfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' sessfname '.bval']));
-        bvecfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' sessfname '.bvec']));
+        bvalfname = retrieve_file(fullfile(sesspath,'diffusion',[subjstr '_' sessfname '.bval']));
+        bvecfname = retrieve_file(fullfile(sesspath,'diffusion',[subjstr '_' sessfname '.bvec']));
         if ~isempty(bvalfname) && ~isempty(bvecfname)
             aap = aas_add_diffusion_session(aap,sessname);
             diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname)); 
@@ -91,18 +93,16 @@ if any(strcmp(cf,'functional'))
     for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'functional'),[subjstr '_task.*_bold.nii.gz']))'
         taskfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
         info = []; TR = 0;
-        taskname = taskfname;
+        taskname = strrep(taskfname,'task-','');
         
         % Header
-        hdrfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname,'_bold.json']));
+        [hdrfname, runstr] = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname,'_bold.json']));
         if ~isempty(hdrfname)
             info = loadjson(hdrfname);
             if isfield(info,'TaskName')
                 taskname = info.TaskName;
-                taskname = strrep(taskname,' ',''); 
-                taskname = strrep(taskname,',',''); 
-                taskname = strrep(taskname,'(',''); 
-                taskname = strrep(taskname,')',''); 
+                taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
+                taskname = strcat(taskname{:},runstr);
             end
             if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
         end
@@ -127,8 +127,8 @@ if any(strcmp(cf,'functional'))
             end
             
             if ~TR
-                aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s\n',subjstr,taskname))
-                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!')
+                aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjstr,taskname))
+                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
             end
             
             % Search for event file
@@ -148,39 +148,47 @@ if any(strcmp(cf,'functional'))
                 end
                 for m = iModel
                     for e = 1:numel(names)
-                        aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjstr,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                        aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjaa,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
                     end
                 end
             end;
         end
     end
 end
-aap = aas_addsubject(aap,subjstr,images,[],[],diffusionimages);
+aap = aas_addsubject(aap,subjaa,images,[],[],diffusionimages);
 end
 
-function fname = retrieve_file(fname)
+function [fname, runstr] = retrieve_file(fname)
+
 % fully specified fname with fullpath
 
 % pre-process fname
 [p, f, e] = fileparts(fname);
-ntags = 1:(numel(find(fname=='_'))+1);
-if isnan(str2double(f(end))) % last entry is not runnumber
-    e = ['_' list_index(f,1,ntags(end)) e];
-    ntags(end) = [];
-    f = list_index(f,1,ntags);
+tags = regexp(f,'_','split');
+% suffix
+if isempty(regexp(f(end),'[0-9]', 'once')) % last entry is suffix
+    e = [tags{end} e];
+    tags(end) = [];
+end
+ntags = 1:numel(tags);
+f = list_index(f,1,ntags);
+% tags
+itagtask = cell_index(tags,'task');
+itagrun = cell_index(tags,'run');
+if itagrun
+    runstr = ['_' tags{itagrun}];
+else
+    runstr = '';
 end
 
 % search
-if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
-% one level up
-p = fileparts(fileparts(p)); ntags(end-2) = [];
-if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags) e])); end
-if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
-if numel(ntags) > 2 % we are in session folder
+if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
+p = fileparts(p);
+while numel(ntags) > logical(itagtask)
     % one level up
-    p = fileparts(p); ntags(end-2) = [];
-    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags) e])); end
-    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags(1:end-1)) e])); end % try without runnumber
+    p = fileparts(p); ntags(end-(logical(itagtask)+logical(itagrun))) = [];
+    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags,0) e])); end
+    if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
 end
 if ~exist(fname,'file'), fname = ''; end
 end
