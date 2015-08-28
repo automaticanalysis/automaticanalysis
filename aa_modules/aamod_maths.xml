@@ -8,7 +8,7 @@
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
-            <!-- Operation must be a statement as written in the command window. 'X' refers to the data -->
+            <!-- Operation must be a statement as written in the command window. 'X' refers to the data. E.g.: 'std(X,[],4)' -->
             <operation></operation>
             
             <inputstreams>
