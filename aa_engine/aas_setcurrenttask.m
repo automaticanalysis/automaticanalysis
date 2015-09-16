@@ -22,19 +22,20 @@ aap=initaap;
 aap.internal=initinternal;
 
 if exist('k','var')    
-    % Set SPM defaults appropriately
+    % Set SPM defaults appropriately    
+    
+    if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
+        aap.spm.defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
+        if strcmp(aap.spm.defaults.modality,'MRI'), aap.spm.defaults.modality = 'FMRI'; end
+        if strcmp(aap.spm.defaults.modality,'MEG'), aap.spm.defaults.modality = 'EEG'; end
+    else
+        aas_log(aap,0,'WARNING:modality is not set; (F)MRI is assumed');
+        aap.spm.defaults.modality = 'FMRI'; % default modality
+    end
+    
     if nargin<=2 || ~cell_index(varargin,'nodefault')
         global defaults
         defaults=aap.spm.defaults;
-        if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
-            defaults.modality = aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE.modality;
-            if strcmp(defaults.modality,'MRI'), defaults.modality = 'FMRI'; end
-            if strcmp(defaults.modality,'MEG'), defaults.modality = 'EEG'; end
-        else
-            aas_log(aap,0,'WARNING:defaults.modality is not set; (F)MRI is assumed');
-            defaults.modality = 'FMRI'; % default modality
-        end
-        aap.spm.defaults.modality = defaults.modality;
     end
     
     stagename=aas_getstagetag(aap,k);
