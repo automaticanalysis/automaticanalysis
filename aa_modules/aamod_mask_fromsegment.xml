@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Create thresholded masks from the segmentations' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <threshold ui='optionlist' options='zero|exclusive|[value]'>0.9</threshold>           
+            
+            <inputstreams>
+                <stream isrenameable='1'>reference</stream>
+                <stream isrenameable='1'>grey</stream>
+                <stream isrenameable='1'>white</stream>
+                <stream isrenameable='1'>csf</stream>
+            </inputstreams>
+            
+            <outputstreams>               
+                <stream>segmasks</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
