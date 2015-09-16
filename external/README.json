@@ -7,21 +7,21 @@
 				"Name": "ANTS",
 				"Version": "",
 				"DateDownloaded": "08 May 2012",
-				"URL": "http:\/\/picsl.upenn.edu\/ANTS\/",
+				"URL": "http:\/\/picsl.upenn.edu\/ANTS",
 				"aaMaintainer": "Alejandro Vicente Grabovetsky"
 			},
 			{
 				"Name": "DKI_Toolbox",
 				"Version": "",
 				"DateDownloaded": "01 July 2014",
-				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/rafael.henriques\/",
+				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/rafael.henriques",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
 				"Name": "DTInl",
 				"Version": "",
 				"DateDownloaded": "19 August 2014",
-				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/marta.correia\/",
+				"URL": "http:\/\/www.mrc-cbu.cam.ac.uk\/people\/marta.correia",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
@@ -42,7 +42,7 @@
 				"Name": "MFP",
 				"Version": "r1.3.6 (mod)",
 				"DateDownloaded": "22 August 2014",
-				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software\/",
+				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
@@ -77,7 +77,7 @@
 				"Name": "vbm8",
 				"Version": "r442",
 				"DateDownloaded": "29 July 2015",
-				"URL": "http:\/\/dbm.neuro.uni-jena.de\/vbm8\/",
+				"URL": "http:\/\/dbm.neuro.uni-jena.de\/vbm8",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
@@ -116,12 +116,34 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "ggmfit.m",
+				"Version": "",
+				"DateDownloaded": "",
+				"URL": "http:\/\/www.ru.nl\/people\/donders\/beckmann-c",
+				"aaMaintainer": "Alejandro Vicente Grabovetsky"
+			},
+			{
+				"Name": "imagescnan.m",
+				"Version": "2.1",
+				"DateDownloaded": "16 September 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20516-imagescnan-m-v2-1--aug-2009-",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
 				"Name": "panel.m",
 				"Version": "",
 				"DateDownloaded": "22 July 2015",
 				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel",
 				"aaMaintainer": "Tibor Auer"
 			},
+			{
+				"Name": "rotateticklabel.m",
+				"Version": "(mod)",
+				"DateDownloaded": "",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/29800-scenes-objects-classification-toolbox",
+				"aaMaintainer": "Tibor Auer"
+			},
+
 			{
 				"Name": "sscanfitem.m",
 				"Version": "",
@@ -130,10 +152,17 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
-				"Name": "strjoin.m",
+				"Name": "testt.m",
 				"Version": "",
-				"DateDownloaded": "22 July 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/31862-strjoin",
+				"DateDownloaded": "16 September 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12699-testt",
+				"aaMaintainer": "Tibor Auer"
+			}
+			{
+				"Name": "wilcoxon.m",
+				"Version": "",
+				"DateDownloaded": "16 September 2015",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12702-wilcoxon-test",
 				"aaMaintainer": "Tibor Auer"
 			}
 		]
