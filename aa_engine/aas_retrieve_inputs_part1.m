@@ -58,7 +58,7 @@ for depind=1:length(deps)
         end;
         
         % Set up remote aap for this module
-        aap_remote=aas_setcurrenttask(aap_remote,modind);
+        aap_remote=aas_setcurrenttask(aap_remote,modind,'nodefault');
         
         % Check for recent additions to aap in case we're using an older
         % version on the remote machine
