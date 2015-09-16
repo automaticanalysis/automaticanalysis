@@ -13,7 +13,7 @@ switch task
         D=spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
         ICA = load(infname_ica);
         
-        thresholding = 1:size(ICA.ica{1}.temrem,1); % default
+        thresholding = 1:size(ICA.ica{1}.temprem,1); % default
         if isfield(aap.tasklist.currenttask.settings,'thresholding') && ~isempty(aap.tasklist.currenttask.settings.thresholding)
             thresholding = aap.tasklist.currenttask.settings.thresholding;
         end

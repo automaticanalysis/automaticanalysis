@@ -84,8 +84,8 @@ end
 % Defend against command insertion
 aap=aas_validatepaths(aap);
 
-% launch SPM if not already running
-aas_checkspmrunning(aap);
+% launch SPM if not already running - [TA] Do we really need this?
+% aas_checkspmrunning(aap);
 
 % Check this is compiled
 try
