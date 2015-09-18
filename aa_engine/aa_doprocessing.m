@@ -84,9 +84,6 @@ end
 % Defend against command insertion
 aap=aas_validatepaths(aap);
 
-% launch SPM if not already running - [TA] Do we really need this?
-% aas_checkspmrunning(aap);
-
 % Check this is compiled
 try
     utc_time();
@@ -381,10 +378,9 @@ for l=1:length(mytasks)
         % can take a while to scan all of the done flags
         taskqueue.runall(dontcloseexistingworkers, false);
         if ~isempty(localtaskqueue.jobqueue), 
-            % launch SPM if not already running
-            aas_checkspmrunning(aap,1);
             localtaskqueue.runall(dontcloseexistingworkers, false); 
         end
+        if isfield(taskqueue,'killed') && taskqueue.killed, break; end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
@@ -396,6 +392,8 @@ end
 %     sqs_delete_message(aap,aaworker.aapqname,receipthandle);
 % end
 % aas_log(aap,0,'Message deleted');
+
+taskqueue.QVClose;
 
 if ~isempty(aap.options.email)
     % In case the server is broken...

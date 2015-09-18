@@ -2,11 +2,13 @@ classdef aaq_qsub<aaq
     properties
         scheduler = []
         QV = []
+        killed = false
+    end
+    properties (Hidden)
         jobnotrun = []
 		taskinqueue = []
         taskstomonitor = []
-    end
-    properties (Hidden)
+
         % ensure MAXFILTER license
         SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
     end
@@ -93,14 +95,32 @@ classdef aaq_qsub<aaq
                 taskreported = [];
                 for ftmind=1:numel(obj.taskstomonitor)
                     JobID = obj.taskstomonitor(ftmind);
-                    Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
-                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
+                    Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
+                    if isempty(Jobs) % cleared by the GUI
+                        obj.QV.Hold = false;
+                        obj.killed = true;
+                        return;
+                    end
+                    Task = Jobs.Tasks;
+                    aap = aas_setcurrenttask(obj.aap,Task.InputArguments{3});
+                    moduleName = obj.aap.tasklist.main.module(Task.InputArguments{3}).name;
+                    indices = Task.InputArguments{4};
+                    datname = ''; datpath = '';
+                    if numel(indices) > 0 % subject specified
+                        datname = aas_getsubjname(aap,indices(1));  
+                        datpath = aas_getsubjpath(aap,indices(1)); 
+                    end
+                    if numel(indices) > 1 % session specified
+                        datname = aas_getsessname(aap,indices(1),indices(2));  
+                        datpath = aas_getsesspath(aap,indices(1),indices(2)); 
+                    end
+                    
                     state = Task.State;
                     if ~isempty(Task.Error), state = 'error'; end
                     
                     switch state
                         case 'failed' % failed to launch
-                            msg = sprintf('Job%d had failed to launch (Licence?)!\n Check logfile: %s\n',JobID,...
+                            msg = sprintf('Job%d had failed to launch (Licence?)!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JobID,...
                                 fullfile(obj.scheduler.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
                             % If there is an error, it is fatal...
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
@@ -111,8 +131,8 @@ classdef aaq_qsub<aaq
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
                             dtvf = dts2dtv(Task.FinishTime);
-                            msg = sprintf('MODULE %s FINISHED: Job%d used %s.',...
-                                moduleName,JobID,sec2dts(etime(dtvf,dtvs)));
+                            msg = sprintf('MODULE %s on %s FINISHED: Job%d used %s.',...
+                                moduleName,datname,JobID,sec2dts(etime(dtvf,dtvs)));
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!
@@ -122,7 +142,7 @@ classdef aaq_qsub<aaq
                             
                             taskreported(end+1) = ftmind;
                         case 'error' % running error
-                            msg = sprintf('Job%d had an error: %s\n',JobID,Task.ErrorMessage);
+                            msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JobID,datpath,datname,Task.ErrorMessage);
                             for e = 1:numel(Task.Error.stack)
                                 % Stop tracking to internal
                                 if strfind(Task.Error.stack(e).file,'distcomp'), break, end
@@ -139,23 +159,25 @@ classdef aaq_qsub<aaq
                 obj.taskstomonitor(taskreported) = [];
                 
                 % Loop if we are still waiting for jobs to finish...
-                if waitforalljobs == 1
+                if waitforalljobs
                     if isempty(obj.taskinqueue) && isempty(obj.taskstomonitor)
-                        waitforalljobs = 0;
+                        waitforalljobs = false;
                     end
                 end  
                 
                 % queue viewer
-                if waitforalljobs
-                    if isempty(obj.QV)
-                        obj.QV = aaq_qsubVeiwerClass(obj);
-                        obj.QV.setAutoUpdate(false);
-                    else
-                        obj.QV.UpdateAtRate;
-                    end
+                if isempty(obj.QV) || ~obj.QV.OnScreen
+                    obj.QV = aaq_qsubVeiwerClass(obj);
+                    obj.QV.Hold = true;
+                    obj.QV.setAutoUpdate(false);
+                else
+                    obj.QV.UpdateAtRate;
+                    if waitforalljobs, obj.QV.Hold = false; end
                 end
             end
-            
+        end
+        
+        function obj = QVClose(obj)
             if ~isempty(obj.QV)
                 obj.QV.Close;
                 obj.QV.delete;
@@ -197,6 +219,7 @@ classdef aaq_qsub<aaq
             for j = 1:numel(obj.scheduler.Jobs)
                 obj.scheduler.Jobs(1).delete;
             end
+            obj.killed = true;
         end
         
         function [obj]=qsub_q_job(obj,job)

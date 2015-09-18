@@ -19,11 +19,14 @@ classdef aaq_qsubVeiwerClass < QueueViewerClass
             switch modality
                 case'MRI'
                     field_subj = 'mriname';
+                    field_sess = 'sessions';
+                    % for backwad compatibilty
                     if ~isempty(strfind(modulename,'diffusion'))
                         field_sess = 'diffusion_sessions';
-                    else
-                        field_sess = 'sessions';
-                    end
+                    end      
+                case'DWI'
+                    field_subj = 'mriname';
+                    field_sess = 'diffusion_sessions';
                 case 'MEG'
                     field_subj = 'megname';
                     field_sess = 'meg_sessions';
@@ -31,7 +34,7 @@ classdef aaq_qsubVeiwerClass < QueueViewerClass
             if numel(indices) == 0, indicesstr = 'study';
             else
                 if numel(indices) >= 1, indicesstr = sprintf('\n\t- Subject %s',acq.subjects(indices(1)).(field_subj)); end
-                if numel(indices) >= 2, indicesstr = sprintf('%s\n\t- Session %s',acq.(field_sess)(indices(2)).name); end
+                if numel(indices) >= 2, indicesstr = sprintf('%s\n\t- Session %s',indicesstr,acq.(field_sess)(indices(2)).name); end
             end
             
             str = sprintf(['- Module: %s\n'...

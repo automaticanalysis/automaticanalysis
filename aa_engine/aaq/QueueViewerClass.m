@@ -24,6 +24,10 @@
 % Tibor Auer MRC CBU Cambridge 2012-2015
 
 classdef QueueViewerClass < handle
+    properties
+        OnScreen
+        Hold = true
+    end
     properties (Access = protected)
         Scheduler
         
@@ -156,10 +160,13 @@ classdef QueueViewerClass < handle
                 'Callback',{@doClose,obj});
             
             set(obj.UIControls.fig, 'Visible','on'); drawnow;
+            obj.OnScreen = true;
+            obj.Hold = false;
         end
         
         function Close(obj)
             delete(obj.UIControls.fig);
+            obj.OnScreen = false;
         end
         
         function Update(obj)
@@ -319,7 +326,7 @@ classdef QueueViewerClass < handle
                     end
                 end
             end
-            if isempty(q), msgbox('All jobs finished!','Queue','warn'); end
+            if isempty(q) && ~obj.Hold, msgbox('All jobs finished!','Queue','warn'); end
         end
         
         function KillAll(obj)
