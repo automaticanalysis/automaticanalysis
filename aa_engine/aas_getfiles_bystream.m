@@ -29,6 +29,12 @@ else
                 switch aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE.modality
                     case 'MRI'
                         streamDomain = 'session';
+                        % for backwad compatibilty
+                        if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
+                            streamDomain = 'diffusion_sessions';
+                        end
+                    case 'DWI'
+                        streamDomain = 'diffusion_session';
                     case 'MEG'
                         streamDomain = 'meg_session';
                 end

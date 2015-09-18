@@ -10,15 +10,11 @@
 
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
-
-if ~isfield(aap.spm.defaults,'modality')
-    aas_log(aap,0,'WARNING:modality is not set; (F)MRI is assumed');
-    aap.spm.defaults.modality = 'FMRI'; % default modality
-end
-
-switch aap.spm.defaults.modality
+switch aas_getmodality(aap)
     case 'FMRI'
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
+    case 'DWI'
+        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.diffusion_sessions(j).name);
     case 'EEG'
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.meg_sessions(j).name);
 end

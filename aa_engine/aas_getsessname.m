@@ -1,13 +1,10 @@
 function [nme]=aas_getsessname(aap,i,j)
 
-if ~isfield(aap.spm.defaults,'modality')
-    aas_log(aap,0,'WARNING:modality is not set; (F)MRI is assumed');
-    aap.spm.defaults.modality = 'FMRI'; % default modality
-end
-
-switch aap.spm.defaults.modality
+switch aas_getmodality(aap)
     case 'FMRI'
         sessions = aap.acq_details.sessions;
+    case 'DWI'
+        sessions = aap.acq_details.diffusion_sessions;
     case 'EEG'
         sessions = aap.acq_details.meg_sessions;
 end
