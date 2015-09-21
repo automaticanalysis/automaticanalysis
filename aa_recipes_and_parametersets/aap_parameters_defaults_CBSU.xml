@@ -20,7 +20,6 @@
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
             <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>CBU%06d*</subjectoutputformat>
             <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
-            <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
