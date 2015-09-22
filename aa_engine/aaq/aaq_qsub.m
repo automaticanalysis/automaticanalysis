@@ -79,7 +79,13 @@ classdef aaq_qsub<aaq
                 taskstarted = [];
                 for ftmind=1:numel(obj.taskinqueue)
                     JobID = obj.taskinqueue(ftmind);
-                    Task = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID).Tasks;
+                    Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
+                    if isempty(Jobs) % cleared by the GUI
+                        obj.QV.Hold = false;
+                        obj.killed = true;
+                        return;
+                    end
+                    Task = Jobs.Tasks;
                     moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
                     state = Task.State;
                     

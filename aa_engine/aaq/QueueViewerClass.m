@@ -247,7 +247,7 @@ classdef QueueViewerClass < handle
             if strcmp(get(gcbf,'SelectionType'),'open')
                 jobs = get(listbox,'String');
                 sel = get(listbox,'Value');
-                ID = regexp(jobs{sel},'job[ ]*[0-9]:','match');
+                ID = regexp(jobs{sel},'job[ ]*[0-9]*:','match');
                 ID = textscan(ID{1},'job %d:%*s'); ID = ID{1};
                 Task = obj.Scheduler.Jobs(ID).Tasks;
                 msgbox(obj.TaskInfo(Task),[Task.Parent.Name Task.Name],'help');

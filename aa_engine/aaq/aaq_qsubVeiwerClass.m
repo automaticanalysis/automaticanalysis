@@ -13,7 +13,7 @@ classdef aaq_qsubVeiwerClass < QueueViewerClass
     methods (Hidden=true)
         function str = TaskInfo(obj,Task)
             modulename = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
-            modality = Task.InputArguments{1}.schema.tasksettings.(modulename).ATTRIBUTE.modality;
+            modality = Task.InputArguments{1}.schema.tasksettings.(modulename)(1).ATTRIBUTE.modality;
             acq = Task.InputArguments{1}.acq_details;
             indices = Task.InputArguments{4};
             switch modality
