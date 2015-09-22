@@ -42,12 +42,11 @@ end
 BIDS = aap.directory_conventions.rawdatadir;
 
 % Look for subjects
-SUBJ = tsvread(fullfile(BIDS,'participants.tsv'));
-iID = cell_index(SUBJ(1,:),'subject_id');
+SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 
 % Add
 for subj = 2:size(SUBJ,1)
-    subjID = SUBJ{subj,iID};
+    subjID = deblank(SUBJ(subj,:));
     SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
     if isempty(SESS)
         aap = add_data(aap,subjID,fullfile(BIDS,subjID));
@@ -63,6 +62,10 @@ end
 
 function aap = add_data(aap,subjstr,sesspath)
 
+structDIR = 'anat';
+functionalDIR = 'func';
+diffusionDIR = 'dwi';
+
 subjaa = strrep_multi(subjstr,{'sub-','ses-'},{'',''});
 
 % locate first_level modules
@@ -74,13 +77,13 @@ numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummie
 images = {};
 diffusionimages = {};
 cf = cellstr(spm_select('List',sesspath,'dir'));
-if any(strcmp(cf,'anatomy')), images = horzcat(images,cellstr(fullfile(sesspath,'anatomy',[subjstr '_T1w.nii.gz']))); end
-if any(strcmp(cf,'diffusion'))
-    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'diffusion'),[subjstr '_dwi.*.nii.gz']))
+if any(strcmp(cf,structDIR)), images = horzcat(images,cellstr(fullfile(sesspath,structDIR,[subjstr '_T1w.nii.gz']))); end
+if any(strcmp(cf,diffusionDIR))
+    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjstr '_dwi.*.nii.gz']))
         sessfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '.nii'},{'',''});
         sessname = sessfname;
-        bvalfname = retrieve_file(fullfile(sesspath,'diffusion',[subjstr '_' sessfname '.bval']));
-        bvecfname = retrieve_file(fullfile(sesspath,'diffusion',[subjstr '_' sessfname '.bvec']));
+        bvalfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjstr '_' sessfname '.bval']));
+        bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjstr '_' sessfname '.bvec']));
         if ~isempty(bvalfname) && ~isempty(bvecfname)
             aap = aas_add_diffusion_session(aap,sessname);
             diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname)); 
@@ -89,14 +92,14 @@ if any(strcmp(cf,'diffusion'))
         end
     end
 end
-if any(strcmp(cf,'functional'))
-    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,'functional'),[subjstr '_task.*_bold.nii.gz']))'
+if any(strcmp(cf,functionalDIR))
+    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjstr '_task.*_bold.nii.gz']))'
         taskfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
         info = []; TR = 0;
         taskname = strrep(taskfname,'task-','');
         
         % Header
-        [hdrfname, runstr] = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname,'_bold.json']));
+        [hdrfname, runstr] = retrieve_file(fullfile(sesspath,functionalDIR,[subjstr '_' taskfname,'_bold.json']));
         if ~isempty(hdrfname)
             info = loadjson(hdrfname);
             if isfield(info,'TaskName')
@@ -132,7 +135,7 @@ if any(strcmp(cf,'functional'))
             end
             
             % Search for event file
-            eventfname = retrieve_file(fullfile(sesspath,'functional',[subjstr '_' taskfname '_events.tsv'])); % default: next to the image
+            eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjstr '_' taskfname '_events.tsv'])); % default: next to the image
             if isempty(eventfname)
                 aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjstr,taskname));
             else
