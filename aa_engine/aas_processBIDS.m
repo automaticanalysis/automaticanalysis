@@ -45,7 +45,7 @@ BIDS = aap.directory_conventions.rawdatadir;
 SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 
 % Add
-for subj = 2:size(SUBJ,1)
+for subj = 1:size(SUBJ,1)
     subjID = deblank(SUBJ(subj,:));
     SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
     if isempty(SESS)

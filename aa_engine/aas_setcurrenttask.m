@@ -46,7 +46,8 @@ if exist('k','var')
         end
     else
         aas_log(aap,0,'WARNING:modality is not set; (F)MRI is assumed');
-        aap.spm.defaults.modality = 'FMRI'; % default modality
+        modality = 'FMRI';
+        aap.spm.defaults.modality = modality; % default modality
         sessions = aap.acq_details.sessions;
     end
     
