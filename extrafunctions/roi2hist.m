@@ -101,5 +101,5 @@ xlabel('Voxel value')
 ylabel('Proportion of voxels')
 set(gca,'XTick', 0:ceil(maxI./20):maxI)
 
-legend(legStr);
-set(h,'interpreter','none');
+l = legend(legStr);
+set(l,'interpreter','none');
