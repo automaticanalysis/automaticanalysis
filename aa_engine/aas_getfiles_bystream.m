@@ -31,7 +31,7 @@ else
                         streamDomain = 'session';
                         % for backwad compatibilty
                         if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
-                            streamDomain = 'diffusion_sessions';
+                            streamDomain = 'diffusion_session';
                         end
                     case 'DWI'
                         streamDomain = 'diffusion_session';
@@ -41,6 +41,7 @@ else
             else
                 streamDomain = 'session';
             end
+            varargin = {streamDomain reqestedIndices varargin{cellfun(@(x) ischar(x), varargin)}};
         otherwise
             aas_log(aap, 1, sprintf('Can''t determine the domain for stream ''%s'', givin these indices: %s. Try using this, aas_getfiles_bystream(aap, ''streamDomain'', [%s], ''%s'')', streamName, strjoin(arrayfun(@(x) sprintf('[%d]',x),reqestedIndices, 'UniformOutput', false)), strjoin(arrayfun(@(x) sprintf('%d',x),reqestedIndices, 'UniformOutput', false)), streamName));
     end
