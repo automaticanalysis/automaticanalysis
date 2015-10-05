@@ -72,8 +72,15 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         if exist(inpstreamdesc,'file'), break; end
         aas_log(aap,false,sprintf('\b but not found'));
     end
-    if (~exist(inpstreamdesc,'file'))
-        aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
+    if (~exist(inpstreamdesc,'file')) 
+        if ~strcmp(aap.options.email,'noerror')
+            aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
+        else
+            inpstreamdesc = '';
+            allfiles = '';
+            md5 = '';             
+            return
+        end
     end;
     fid=fopen(inpstreamdesc,'r');
     
@@ -82,7 +89,7 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     % There should be an MD5 at the top
     lne=fgetl(fid);
     if ((length(lne)>3) && strcmp(lne(1:3),'MD5'))
-        allfiles=[];
+        allfiles='';
         md5=lne;
     else
         allfiles=lne;
@@ -98,8 +105,8 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     fclose(fid);
     
 else
-    allfiles = [];
-    md5 = [];
+    allfiles = '';
+    md5 = '';
 end
 
 end

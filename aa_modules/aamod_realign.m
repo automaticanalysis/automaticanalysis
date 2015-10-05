@@ -99,6 +99,8 @@ switch task
                 
                 aap = aas_report_add(aap,'moco','</td>');
             end
+        elseif numel(aap.acq_details.subjects) == 1
+            aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end
     case 'doit'
         % Get realignment defaults

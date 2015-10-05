@@ -148,7 +148,9 @@ for k1=1:length(aap.tasklist.main.module)
 end;
 fclose(pfid);
 % create provenance map
-unix(sprintf('rapper -o dot -i ntriples %s | dot -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'trp','png')));
+if ~unix('which dot')
+    unix(sprintf('rapper -o dot -i ntriples %s | dot -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'trp','png')));
+end
 fclose(cfid);
 
 % RECURSIVELY SEARCH DEPENDENCIES
