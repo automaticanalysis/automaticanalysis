@@ -393,7 +393,7 @@ end
 % end
 % aas_log(aap,0,'Message deleted');
 
-taskqueue.QVClose;
+if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
 
 if ~isempty(aap.options.email)
     % In case the server is broken...

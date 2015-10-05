@@ -15,6 +15,6 @@ switch aas_getmodality(aap)
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
     case 'DWI'
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.diffusion_sessions(j).name);
-    case 'EEG'
+    case {'MEG' 'EEG'}
         sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.meg_sessions(j).name);
 end
