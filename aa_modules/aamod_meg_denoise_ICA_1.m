@@ -23,6 +23,7 @@ switch task
         modalities = textscan(aap.tasklist.currenttask.settings.modalities,'%s','delimiter',':'); modalities = modalities{1}';
         arttopos=load(aas_getfiles_bystream(aap,'topography'));
         ref_chans = textscan(aap.tasklist.currenttask.settings.artifactdetection.ref_chans,'%s','delimiter',':'); ref_chans = ref_chans{1}';
+        ref_type = textscan(aap.tasklist.currenttask.settings.artifactdetection.ref_type,'%s','delimiter',':'); ref_type = ref_type{1}';
         samp = aap.tasklist.currenttask.settings.sampling;
                 
         D=spm_eeg_load(fullfile(sessdir,infname));  % INPUTSTREAM from Convert
@@ -40,24 +41,29 @@ switch task
         ICA.SpaAbsPval = .05/ICA.PCA_dim; % 0.05;  % Too liberal if not permuted?
         ICA.SpaRelZval = aap.tasklist.currenttask.settings.artifactdetection.SpaRelZval;    % SETTINGS for detect artifact % 3 is too strict (since high topo correlation anyway)
         ICA.thresholding = aap.tasklist.currenttask.settings.artifactdetection.thresholding;% SETTINGS for thresholding artifact
-        ICA.remove = aap.tasklist.currenttask.settings.artifactdetection.remove;            % SETTINGS for remove artifact
+%        ICA.remove = aap.tasklist.currenttask.settings.artifactdetection.remove;            % SETTINGS for remove artifact
         
-        ICA.refs.tem = {};                % Reference signal for correlating with ICs
+        ICA.refs.tem = {};  ICA.refs.spa = {};              % Reference signal for correlating with ICs
         if isempty(samp), samp = 1:size(D,2); end;
         for a = 1:length(ref_chans),
-            ICA.refs.tem{a} = D(find(strcmp(D.chanlabels,ref_chans{a})),samp);
+            ICA.refs.tem{a} = D(indchannel(D,ref_chans{a}),samp);
         end
+        ICA.refs.type = ref_type;
         
         %% RUN
-        chans = {}; remove = {}; weights = {}; temcor = {}; spacor = {}; TraMat = {};
-        for m = 1:numel(modalities)
-            ICA.refs.spa = {arttopos.HEOG{m}', arttopos.VEOG{m}', arttopos.ECG{m}'};  % Assumes modalities ordered same way!!!
-            if ~aap.tasklist.currenttask.settings.artifactdetection.useECGtopo, ICA.refs.spa(3) = []; end  % ECG topography may be too variable
-            chans{m} = find(strcmp(D.chantype,modalities{m}));  % RH: Bad coding: modalities{2} may not be Grads - see other comment about only converting grads
-            ICA.d  = D(chans{m},:);
+        chans = {}; 
+        for n = 1:numel(modalities)
+            m = find(strcmp(arttopos.modalities,modalities{n}));
+            for t = 1:numel(ICA.refs.type)
+                tmp = getfield(arttopos,ICA.refs.type{t}); 
+                ICA.refs.spa{t} = tmp{m}(:)'; % detect_ICA_artefacts below assumes 1xChan vector
+            end
+            %if ~aap.tasklist.currenttask.settings.artifactdetection.useECGtopo, ICA.refs.spa = []; end  % ECG topography may be too variable
+            chans{n} = find(strcmp(D.chantype,modalities{n}));  
+            ICA.d  = D(chans{n},:);
             ICA.FiltPars = [ICA.FiltPars D.fsample];
             try
-                ica{m} = detect_ICA_artefacts(ICA);
+                ica{n} = detect_ICA_artefacts(ICA);
             catch E
                 aas_log(aap,true,['MEG:detect_ICA_artefacts:' E.message]);
             end

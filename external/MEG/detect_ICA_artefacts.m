@@ -195,47 +195,51 @@ Out.spatcor = zeros(Nrefs(2),PCA_dim); spapval = zeros(Nrefs(2),PCA_dim);
 temremove  = cell(4,Nrefs(1)); sparemove  = cell(3,Nrefs(2));
 
 for r = 1:Nrefs(1)
-    
-    %% Check temporal correlation with any reference channels
-    for k = 1:PCA_dim
-        [Out.tempcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
-    end
-    
-    [~,temremove{1,r}] = max(abs(Out.tempcor(r,:)));
-    
-    temremove{2,r} = find(tempval(r,:) < TemAbsPval);
-    
-    temremove{3,r} = find(abs(zscore(Out.tempcor(r,:))) > TemRelZval);
-    
-    if Nperm > 0
-        permcor = zeros(1,PCA_dim);
-        maxcor  = zeros(Nperm,1);
+    if ~isempty(refs.tem{r})    % Check temporal correlation with any reference channels
         
-        ff = fft(refs.tem{r}',Nsamp);
-        mf = abs(ff);
-        wf = angle(ff);
-        hf = floor((length(ff)-1)/2);
-        rf = mf;
-        
-        for l = 1:Nperm % could parfor...
-            rf(2:hf+1)=mf(2:hf+1).*exp((0+1i)*wf(randperm(hf)));    % randomising phases (preserve mean, ie rf(1))
-            rf((hf+2):length(ff))=conj(rf((hf+1):-1:2));            % taking complex conjugate
-            btdata = ifft(rf,Nsamp);                                % Inverse Fourier transform
-            
-            for k = 1:PCA_dim
-                permcor(k) = corr(btdata,ICs(:,k));
-            end
-            maxcor(l) = max(abs(permcor));
-            fprintf('.');
+        for k = 1:PCA_dim
+            [Out.tempcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
         end
-        fprintf('\n')
-        %         figure,hist(maxcor)
         
-        temremove{4,r} = find(abs(Out.tempcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
+        [~,temremove{1,r}] = max(abs(Out.tempcor(r,:)));
+        
+        temremove{2,r} = find(tempval(r,:) < TemAbsPval);
+        
+        temremove{3,r} = find(abs(zscore(Out.tempcor(r,:))) > TemRelZval);
+        
+        if Nperm > 0
+            permcor = zeros(1,PCA_dim);
+            maxcor  = zeros(Nperm,1);
+            
+            ff = fft(refs.tem{r}',Nsamp);
+            mf = abs(ff);
+            wf = angle(ff);
+            hf = floor((length(ff)-1)/2);
+            rf = mf;
+            
+            for l = 1:Nperm % could parfor...
+                rf(2:hf+1)=mf(2:hf+1).*exp((0+1i)*wf(randperm(hf)));    % randomising phases (preserve mean, ie rf(1))
+                rf((hf+2):length(ff))=conj(rf((hf+1):-1:2));            % taking complex conjugate
+                btdata = ifft(rf,Nsamp);                                % Inverse Fourier transform
+                
+                for k = 1:PCA_dim
+                    permcor(k) = corr(btdata,ICs(:,k));
+                end
+                maxcor(l) = max(abs(permcor));
+                fprintf('.');
+            end
+            fprintf('\n')
+            %         figure,hist(maxcor)
+            
+            temremove{4,r} = find(abs(Out.tempcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
+        end
+    else
+        temremove{1,r} = []; temremove{2,r} = []; temremove{3,r} = []; temremove{4,r} = [];
     end
 end
 
-for r = 1:Nrefs(2)        
+for r = 1:Nrefs(2)    
+    if ~isempty(refs.spa{r})
     %% Check spatial correlation with any reference channels
         for k = 1:PCA_dim
             [Out.spatcor(r,k),spapval(r,k)] = corr(refs.spa{r}',iweights(:,k));
@@ -246,53 +250,66 @@ for r = 1:Nrefs(2)
         sparemove{2,r} = find(spapval(r,:) < SpaAbsPval);
 
         sparemove{3,r} = find(abs(zscore(Out.spatcor(r,:))) > SpaRelZval);
+    else
+        sparemove{1,r} = []; sparemove{2,r} = []; sparemove{3,r} = []; sparemove{4,r} = [];
+    end
 end
-
-%% Variance Thresholding
-Out.compvars = compvars;
-Out.varexpl = 100*compvars/sum(compvars);
-varenough   = find(Out.varexpl > VarThr);
 
 Out.temprem = temremove;
 Out.spatrem = sparemove;
 
-thresholding = S.thresholding;
-if ~Nperm, thresholding(thresholding == 4) = []; end % remove thresholding if not permutation
-for r = 1:Nrefs(1)
-    remove = 1:PCA_dim;
-    for t = thresholding
-        remove = intersect(remove,temremove{t,r});
-    end
-    remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
-    Out.bothrem{1,r} = remove;
-end
+%% Variance Thresholding
+Out.compvars = compvars;
+Out.varexpl = 100*compvars/sum(compvars);
+Out.varenough   = find(Out.varexpl > VarThr);
 
-thresholding(thresholding == 4) = []; % there is no option for permutation in spatial
-for r = 1:Nrefs(2)
-    remove = 1:PCA_dim;
-    for t = thresholding
-        remove = intersect(remove,sparemove{t,r});
-    end    
-    remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
-    Out.bothrem{2,r} = remove;
-end
-
-Out.allrem = 1:PCA_dim;
-if Nrefs(1) > 0
-    Out.allrem = intersect(Out.allrem,cat(2,Out.bothrem{1,:}));
-end
-if Nrefs(2) > 0
-    Out.allrem = intersect(Out.allrem,cat(2,Out.bothrem{2,:}));
-end
- 
-toremove = Out.([S.remove 'rem']);
-
-if ~isempty(toremove)
-    finalics  = setdiff(1:PCA_dim,toremove);
-    Out.TraMat    = iweights(:,finalics) * Out.weights(finalics,:);
-else
-    Out.TraMat    = eye(size(d,1));
-end
+% Thresholding moved to aamod_meg_denoise_ICA_2_applytrajectory...
+%
+% thresholding = S.thresholding;
+% if ~Nperm, thresholding(thresholding == 4) = []; end % remove thresholding if not permutation
+% for r = 1:Nrefs(1)
+%     if ~isempty(refs.tem{r})
+%         remove = 1:PCA_dim;
+%         for t = thresholding
+%             remove = intersect(remove,temremove{t,r});
+%         end
+%         remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
+%         Out.bothrem{1,r} = remove;
+%     end
+% end
+% 
+% thresholding(thresholding == 4) = []; % there is currently no option for permutation in spatial
+% for r = 1:Nrefs(2)
+%     if ~isempty(refs.spa{r})
+%         remove = 1:PCA_dim;
+%         for t = thresholding
+%             remove = intersect(remove,sparemove{t,r});
+%         end
+%         remove = intersect(remove,varenough);  % plus sufficient Variance Explained (if required)
+%         Out.bothrem{2,r} = remove;
+%     end
+% end
+% 
+% Out.allrem = 1:PCA_dim;
+% for r = 1:Nrefs(1)
+%     if ~isempty(refs.tem{r})
+%         Out.allrem = intersect(Out.allrem,Out.bothrem{1,r});
+%     end
+% end
+% for r = 1:Nrefs(2)
+%     if ~isempty(refs.spa{r})
+%         Out.allrem = intersect(Out.allrem,Out.bothrem{2,r});
+%     end
+% end
+%  
+% toremove = Out.([S.remove 'rem']);
+% 
+% if ~isempty(toremove)
+%     finalics  = setdiff(1:PCA_dim,toremove);
+%     Out.TraMat    = iweights(:,finalics) * Out.weights(finalics,:);
+% else
+%     Out.TraMat    = eye(size(d,1));
+% end
 
 return
 

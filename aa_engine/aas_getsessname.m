@@ -5,7 +5,7 @@ switch aas_getmodality(aap)
         sessions = aap.acq_details.sessions;
     case 'DWI'
         sessions = aap.acq_details.diffusion_sessions;
-    case 'EEG'
+    case {'MEG' 'EEG'}
         sessions = aap.acq_details.meg_sessions;
 end
 

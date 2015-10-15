@@ -14,7 +14,8 @@
             
             <artifactdetection>
                 <ref_chans>EOG061:EOG062:ECG063</ref_chans>
-                <useECGtopo>0</useECGtopo>
+				<!-- Which topography to use in artifact topography file (must match field in that file) -->
+                <ref_type>VEOG:HEOG:ECG</ref_type> 				
                 <!-- Permutation based thresholding of ICs
                 0  - no permutaion
                 >0 - number of permutations (e.g. 1000)
@@ -30,13 +31,6 @@
                 4 - (optional on doPermutation above) corresponds to ICs with correlations surviving boot-strapped,
                 -->
                 <thresholding desc='artifact thresholding'>1 2 3 4</thresholding>
-                <!-- Remove artifacts (choose one)
-                all  - artifacts across all references 
-                both - artifacts for each reference (spatial+temporal)
-                temp - artifacts for each temporal reference
-                spat - artifacts for each spatial reference
-                -->
-                <remove desc='artifacts to be removed' options='all|both|temp|spat' ui='optionlist'>all</remove>
             </artifactdetection>
             
             <inputstreams>
