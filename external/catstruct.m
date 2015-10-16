@@ -65,7 +65,7 @@ function A = catstruct(varargin)
 %                  (thanks to Isabel P)
 %   4.1 (feb 2015) fixed warning with narginchk
 
-narginchk(1,Inf) ;
+% narginchk(1,Inf) ;
 N = nargin ;
 
 if ~isstruct(varargin{end}),

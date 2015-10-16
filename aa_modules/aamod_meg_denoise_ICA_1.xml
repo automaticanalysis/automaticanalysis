@@ -10,33 +10,14 @@
             
             <modalities>MEGMAG:MEGPLANAR</modalities>
             
-            <sampling></sampling>
-            
-            <artifactdetection>
-                <ref_chans>EOG061:EOG062:ECG063</ref_chans>
-				<!-- Which topography to use in artifact topography file (must match field in that file) -->
-                <ref_type>VEOG:HEOG:ECG</ref_type> 				
-                <!-- Permutation based thresholding of ICs
-                0  - no permutaion
-                >0 - number of permutations (e.g. 1000)
-                -1 - automatic definition of number of permutations (see http://www.epibiostat.ucsf.edu/biostat/sen/statgen/permutation.html#_how_many_permutations_do_we_need)
-                -->
-                <doPermutation>0</doPermutation>
-                <TemRelZval>3</TemRelZval>
-                <SpaRelZval>2</SpaRelZval>
-                <!-- Thresholding (choose one or more)
-                1 - corresponds to single IC with max correlation
-                2 - corresponds to ICs with correlations surviving absolute p-value
-                3 - corresponds to ICs with correlations surviving relative Z-score across correlations
-                4 - (optional on doPermutation above) corresponds to ICs with correlations surviving boot-strapped,
-                -->
-                <thresholding desc='artifact thresholding'>1 2 3 4</thresholding>
-            </artifactdetection>
+            <!-- Number of PCA dimensions before ICA run -->
+            <PCA_dim>60</PCA_dim>
+
+            <!-- Random seed (if empty, then will get different answer each time run) -->
+            <Rseed>1</Rseed>
             
             <inputstreams>
-                <stream>topography</stream>
                 <stream>meg</stream>
-                <stream isessential='0'>meg_ica</stream>                
             </inputstreams>
             
             <outputstreams>
