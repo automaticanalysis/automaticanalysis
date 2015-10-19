@@ -87,6 +87,7 @@
         </realtime>
     </directory_conventions>
     <options>
+        <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>1</maximumretry>
         <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
         <verbose desc='How verbose to be' ui='yesno'>1</verbose>
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
@@ -102,7 +103,7 @@
         <autoidentifyt2_average desc='Average across T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_average>
         <autoidentifyt2_multiple desc='We require several T2 to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifyt2_multiple>
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
-        <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='yesno'>2</autoidentifyfieldmaps_number>
+        <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='double'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
         <aa_minver desc='Minimum allowed aa version' ui='double'>1</aa_minver>
         <aa_maxver desc='Maximum allowed aa version' ui='double'>Inf</aa_maxver>
