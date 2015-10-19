@@ -39,13 +39,14 @@
             <VarThr>0</VarThr> <!-- Variance explained threshold for ICs (normally 0 so that no thresholding on variance) -->
  
             <inputstreams>
-                <stream>meg</stream>              
+                <stream diagnostic="1">meg</stream>              
                 <stream>topography</stream>
                 <stream>meg_ica</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>meg</stream>                
+                <stream>meg_ica</stream>
             </outputstreams>
             
         </currenttask>

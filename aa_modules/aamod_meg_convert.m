@@ -35,16 +35,19 @@ switch task
         
         %% Rename any channels
         rename_chans = aap.tasklist.currenttask.settings.ChannelRename;
-        for e = 1:size(rename_chans,1)
-            ci = indchannel(D,rename_chans{e,1});
-            if isempty(ci)
-                aas_log(aap,false,sprintf('WARNING: No channel %s found',rename_chans{e,1}));
-                continue; 
-            end            
-            D = chanlabels(D, ci, rename_chans{e,2});
-            if ~isempty(rename_chans{e,3})
-                D = chantype(D, ci, rename_chans{e,3});
+        if size(rename_chans,1) > 0
+            for e = 1:size(rename_chans,1)
+                ci = indchannel(D,rename_chans{e,1});
+                if isempty(ci)
+                    aas_log(aap,false,sprintf('WARNING: No channel %s found',rename_chans{e,1}));
+                    continue;
+                end
+                D = chanlabels(D, ci, rename_chans{e,2});
+                if ~isempty(rename_chans{e,3})
+                    D = chantype(D, ci, rename_chans{e,3});
+                end
             end
+            D.save
         end
         
         %% Outputs

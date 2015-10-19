@@ -4,13 +4,81 @@ resp='';
 
 switch task
     case 'report'
+        %infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg','output'); infname = basename(infname(1,:));
+        load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica','output'));
         
+        % How get data and ica from input stream? Below returns outputs?
+        infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
+        %infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
+         
+        D = spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
+        %ICA = load(infname_ica);
+ 
+        str = [];
+        for m=1:length(toremove)
+            str = [str sprintf('Modality %d: %d ICs removed\n',m,length(toremove{m}))];
+        end
+        aap = aas_report_add(aap,'reg',str);
+        
+        for m = 1:length(modality)
+            
+            in.type = modality{m};
+ 
+            f = figure; set(f,'Position',[0 0 800 600]);
+            Nr = size(tempcor{m},1);
+            for r = 1:Nr
+                subplot(Nr,2,(r-1)*2+1),hist(tempcor{m}(r,:)'); title(sprintf('Modality %s, Reference %d: Histogram of Temporal Correlations',in.type,r));
+                subplot(Nr,2,(r-1)*2+2),hist(spatcor{m}(r,:)'); title(sprintf('Modality %s, Reference %d: Histogram of Spatial Correlations',in.type,r));
+            end
+            fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_hist_correlations.jpg',in.type));
+            print('-djpeg','-r150',fname)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap = aas_report_addimage(aap,subj,fname);
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+            
+            d = D(chans{m},:);
+            
+%            w = ICA.ica{m}.weights; 
+            iw = pinv(weights{m});
+            d = weights{m}*d;
+            
+            MaxT = round(10*D.fsample);
+            for i=1:length(toremove{m})
+                ii = toremove{m}(i);
+                f = figure; hold on, set(f,'Position',[0 0 800 600]);
+                title(sprintf('Modality %s, IC %d timecourse (and References)',in.type,ii)); 
+                plot(zscore(d(ii,1:MaxT)),'r');
+                [mc,mr] = max(abs(tempcor{m}(:,ii)));
+%                for r = 1:Nr[~,mr] = max(tempcor{m}(:,ii))
+                    plot(zscore(refs.tem{mr}(1:MaxT)),'Color','b') %[0 0 0]+0.5/Nr)
+%                end                
+                fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_IC%d_and_Ref_timecourses.jpg',in.type,ii));
+                print('-djpeg','-r150',fname)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                aap = aas_report_addimage(aap,subj,fname);
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+                
+                % Don't bother with power spectrum at moment
+                % [dum1,pow,dum2]=pow_spec(d(ii,:)',1/250,1,0,5); axis([0 80 min(pow) max(pow)]);
+
+                f=figure('color',[1 1 1],'deleteFcn',@dFcn);
+                in.ParentAxes = axes('parent',f); in.f = f;
+                title(sprintf('Modality %s, IC %d topography',in.type,ii)); 
+                spm_eeg_plotScalpData(iw(:,ii),D.coor2D(chans{m}),D.chanlabels(chans{m}),in);
+                fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_IC%d_topography.jpg',in.type,ii));
+                print('-djpeg','-r150',fname)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                aap = aas_report_addimage(aap,subj,fname);
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+            end
+        end
+       
     case 'doit'
         %% Initialise
         infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
         infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
         
-        D=spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
+        D = spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
         ICA = load(infname_ica);
        
         samp = aap.tasklist.currenttask.settings.sampling;
@@ -52,15 +120,19 @@ switch task
         VarThr = aap.tasklist.currenttask.settings.VarThr;            % SETTINGS for detect artifact
          
         %% Main loop
-        toremove = cell(1,numel(ICA.ica)); TraMat = cell(1,numel(ICA.ica));       
+        toremove = cell(1,numel(ICA.ica)); TraMat  = cell(1,numel(ICA.ica));
+        tempcor  = cell(1,numel(ICA.ica)); spatcor = cell(1,numel(ICA.ica));       
         for m = 1:numel(ICA.ica)
             
-            weights   = ICA.ica{m}.weights;
-            iweights  = pinv(weights); % weights will be in output file from previous step
+            modality{m}  = ICA.ica{m}.modality;
+            weights{m}   = ICA.ica{m}.weights;
+            chans{m}     = ICA.ica{m}.chans;
             
-            ICs = weights * D(ICA.ica{m}.chans,samp);
+            iweights  = pinv(weights{m}); % weights will be in output file from previous step
             
-            n = find(strcmp(arttopos.modalities,ICA.ica{m}.modality));
+            ICs = weights{m} * D(chans{m},samp);
+            
+            n = find(strcmp(arttopos.modalities,modality{m}));
             refs.spa = {};
             for r = 1:numel(ref_type)
                 tmp = getfield(arttopos,ref_type{r});
@@ -87,20 +159,20 @@ switch task
             % figure; for i=1:PCA_dim; plot(ICs(:,i)); title(i); pause; end
             % figure; for i=1:PCA_dim; plot(ICs(30000:40000,i)); title(i); pause; end
             
-            tempcor = zeros(length(refs.tem),PCA_dim); tempval = zeros(length(refs.tem),PCA_dim);           
+            tempcor{m} = zeros(length(refs.tem),PCA_dim); tempval = zeros(length(refs.tem),PCA_dim);           
             temprem  = cell(4,length(refs.tem));          
             for r = 1:length(refs.tem)
                 if ~isempty(refs.tem{r})    % Check temporal correlation with any reference channels
                     
                     for k = 1:PCA_dim
-                        [tempcor(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
+                        [tempcor{m}(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
                     end
                     
-                    [~,temprem{1,r}] = max(abs(tempcor(r,:)));
+                    [~,temprem{1,r}] = max(abs(tempcor{m}(r,:)));
                     
                     temprem{2,r} = find(tempval(r,:) < TemAbsPval);
                     
-                    temprem{3,r} = find(abs(zscore(tempcor(r,:))) > TemRelZval);
+                    temprem{3,r} = find(abs(zscore(tempcor{m}(r,:))) > TemRelZval);
                     
                     if Nperm > 0
                         permcor = zeros(1,PCA_dim);
@@ -126,27 +198,27 @@ switch task
                         fprintf('\n')
                         %         figure,hist(maxcor)
                         
-                        temprem{4,r} = find(abs(tempcor(r,:)) > prctile(maxcor,100*(1-PermPval)));
+                        temprem{4,r} = find(abs(tempcor{m}(r,:)) > prctile(maxcor,100*(1-PermPval)));
                     end
                 else
                     temprem{1,r} = []; temprem{2,r} = []; temprem{3,r} = []; temprem{4,r} = [];
                 end
             end
             
-            spatcor = zeros(length(refs.spa),PCA_dim); spatval = zeros(length(refs.spa),PCA_dim);
+            spatcor{m} = zeros(length(refs.spa),PCA_dim); spatval = zeros(length(refs.spa),PCA_dim);
             spatrem  = cell(3,length(refs.spa));
             for r = 1:length(refs.spa)
                 if ~isempty(refs.spa{r})
                     %% Check spatial correlation with any reference channels
                     for k = 1:PCA_dim
-                        [spatcor(r,k),spatval(r,k)] = corr(refs.spa{r}',iweights(:,k));
+                        [spatcor{m}(r,k),spatval(r,k)] = corr(refs.spa{r}',iweights(:,k));
                     end
                     
-                    [~,spatrem{1,r}] = max(abs(spatcor(r,:)));
+                    [~,spatrem{1,r}] = max(abs(spatcor{m}(r,:)));
                     
                     spatrem{2,r} = find(spatval(r,:) < SpaAbsPval);
                     
-                    spatrem{3,r} = find(abs(zscore(spatcor(r,:))) > SpaRelZval);
+                    spatrem{3,r} = find(abs(zscore(spatcor{m}(r,:))) > SpaRelZval);
                 else
                     spatrem{1,r} = []; spatrem{2,r} = []; spatrem{3,r} = []; spatrem{4,r} = [];
                 end
@@ -207,7 +279,7 @@ switch task
             toremove{m} = intersect(toremove{m},varenough); % Additional criterion of sufficient variance (normally ignored, ie varenough = [1:PCA_dim])
             
             finalics  = setdiff(1:PCA_dim,toremove{m}); % to
-            TraMat{m} = iweights(:,finalics) * weights(finalics,:);
+            TraMat{m} = iweights(:,finalics) * weights{m}(finalics,:);
         end
                
         if isempty(cat(2,toremove{:}))
@@ -217,7 +289,7 @@ switch task
         %% RUN
         S = []; S.D = D; achans = [];
         for m = 1:numel(ICA.ica)
-            achans = [achans ICA.ica{m}.chans];
+            achans = [achans chans{m}];
         end
         for c = 1:length(achans)
             S.montage.labelorg{c} = D.chanlabels{achans(c)};
@@ -230,9 +302,9 @@ switch task
         
         %% Outputs
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = basename(infname(1,:));
-        outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
-        save(outfname,'toremove','TraMat','tempval','tempcor','spatval','spatcor','varenough');
+        outfname = fullfile(sessdir,[S.prefix basename(infname_meg) '_ICA']); % specifying output filestem
+        save(outfname,'toremove','refs','TraMat','weights','modality','chans','tempval','tempcor','spatval','spatcor','varenough');
+        aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
         
         outfname = [S.prefix basename(infname_meg)];
         aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));
