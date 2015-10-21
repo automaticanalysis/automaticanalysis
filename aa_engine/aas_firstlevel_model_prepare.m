@@ -91,13 +91,13 @@ for sess = 1:numSess
     
     % Can we build an SPM model without any condition regressors?  Usually no,
     % but yes if we are using SPM for filtering, etc.
+    allowEmptyModel = false;
     if isfield(aap.tasklist.currenttask.settings, 'allowemptymodel') && aap.tasklist.currenttask.settings.allowemptymodel
-        allowEmptyModel = 1;
-    else
-        allowEmptyModel = 0;
+        allowEmptyModel = true;
     end
     
-    if ~allowEmptyModel && ( (isempty(modelnum)) && (isempty(modelCnum)) )
+    isEmptyModel = (isempty(modelnum)) && (isempty(modelCnum));
+    if isEmptyModel && ~allowEmptyModel
         aas_log(aap,true,'Cannot find model specification. Check either user script or aamod_firstlevel_model.xml');
     end
     

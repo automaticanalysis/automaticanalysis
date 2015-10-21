@@ -116,15 +116,21 @@ switch task
         if ~aap.tasklist.currenttask.settings.firstlevelmasking
             SPMdes.xM=-inf(size(SPMdes.xX.X,1),1);
         end
+        
+        % Correct epmty model for sphericity check
+        if isempty([SPMdes.Sess.U])
+            SPMdes.xX.W  = sparse(eye(size(SPMdes.xY.P,1)));
+            SPMdes.xVi.V = sparse(eye(size(SPMdes.xY.P,1)));            
+        end
 
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
         % avoid overwrite dialog
-        prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+        prevmask = spm_select('List',SPMdes.swd,'^mask\..{3}$');
         if ~isempty(prevmask)
             for ind=1:size(prevmask,1)
-                spm_unlink(fullfile(SPM.swd, prevmask(ind,:)));
+                spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
             end;
         end
                 
