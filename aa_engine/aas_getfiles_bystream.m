@@ -105,6 +105,7 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     fclose(fid);
     
 else
+    inpstreamdesc = '';
     allfiles = '';
     md5 = '';
 end

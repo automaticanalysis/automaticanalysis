@@ -249,7 +249,8 @@ classdef aa_provenance < handle
         end
         
         function [prid, id] = addStream(obj,idsrc,stream)
-            try
+            obj.IDs{idsrc}.aap.options.maximumretry = 1;
+            try                
                 [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
                     1,1,stream,'output'); % TODO: associate files
             catch

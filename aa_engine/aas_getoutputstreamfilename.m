@@ -38,10 +38,13 @@ while it < MAXIT
             aas_log(aap, true, sprintf('Found more than one stream matching filter %s - try fully qualifying stream inputs in this module?',fqi_filter));
         elseif numel(fqi)==1
             inpstreamdesc=fullfile(localroot,fqi(1).name);
+            break;
         elseif isempty(fqi)
             it = it + 1;
             pause(0.1);
-        end;
-    end;
+        end
+    else
+        break;
+    end
 end
 end
