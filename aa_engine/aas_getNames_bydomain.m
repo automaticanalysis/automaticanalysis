@@ -22,8 +22,10 @@ for d = 1 : length(domains)
                 names{d}{sessind} = ['isc_' aap.acq_details.sessions(sessind).name];
             end;
             
-        case {'subject'}
+        case 'subject'
             names{d} = {aap.acq_details.subjects.mriname};
+            % try megnames
+            if isempty(names{d}{1}), names{d} = {aap.acq_details.subjects.megname}; end;
             
         case 'study'
             names{d} = {aap.directory_conventions.analysisid};
