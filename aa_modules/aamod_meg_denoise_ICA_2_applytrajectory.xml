@@ -8,8 +8,8 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
                 
-            <ref_chans>'VEOG062:HEOG061:ECG063'</ref_chans>
-            <ref_type>'VEOG:HEOG:ECG'</ref_type>
+            <ref_chans>VEOG062:HEOG061:ECG063</ref_chans>
+            <ref_type>VEOG:HEOG:ECG</ref_type>
                                
             <!-- Thresholding (choose one or more)
             1 - corresponds to single IC with max correlation
