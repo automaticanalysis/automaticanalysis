@@ -37,7 +37,14 @@ switch task
         % Should now have just one model spec
         conditionnum = sessmatches & subjmatches;        
         
-        S.trialdef = aap.tasklist.currenttask.settings.condition(conditionnum).event;
+        if ~isempty([aap.tasklist.currenttask.settings.condition(conditionnum).event.trlshift]) % data-specified
+            S.trialdef = aap.tasklist.currenttask.settings.condition(conditionnum).event;
+        else  % user-specified
+            S.trl = aap.tasklist.currenttask.settings.condition(conditionnum).event.eventvalue;
+            if ~isempty(aap.tasklist.currenttask.settings.condition(conditionnum).event.conditionlabel)
+                S.conditionlabels = aap.tasklist.currenttask.settings.condition(conditionnum).event.conditionlabel;
+            end
+        end
            
         %% Run
         D = spm_eeg_epochs(S);

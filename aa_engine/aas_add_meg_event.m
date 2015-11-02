@@ -1,4 +1,12 @@
 function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventvalue,trialshift)
+% Op.1.: Using onsets from data --> may multiple calls per subject/session
+%     argument 5 (eventname)    - conditionlabel
+%     argument 6 (eventvalue)   - eventvalue
+%     argument 7 (trialshift)   - trlshift (must not be empty!!!)
+% Op.2.: Using user-specific onsets --> single call per subject/session
+%     argument 5 (eventname)    - conditionlabels or empty if provided in mat-file along with trl
+%     argument 6 (eventvalue)   - trl matrix or mat-file containing trl (and conditionlabels)
+%     argument 7 (trialshift)   - [] or unspecified
 
 % Regexp for number at the end of a module name, if present in format _%05d (e.g, _00001)
 m1 = regexp(modulename, '_\d{5,5}$');
@@ -16,7 +24,7 @@ if ~isempty(m1)
 elseif ~isempty(m2)
     modulename = modulename(1:m2-1);
     moduleindex = 1:length(find(strcmp({aap.tasklist.main.module.name}, modulename)));
-  
+    
 elseif ~isempty(m3)
     modulename = modulename(1:find(modulename=='_',1,'last')-1);
     moduleindex = cellfun(@str2num, [m3{:}]);
@@ -27,9 +35,11 @@ end
 
 subject = aas_mriname2subjname(subject);
 
+if nargin < 7, trialshift = []; end % onset from user
 event.conditionlabel=eventname;
 event.eventvalue=eventvalue;
-event.trialshift=trialshift;
+event.trlshift=trialshift;
+event.eventtype = [];
 
 % find models that corresponds and add events if they exist
 for m = 1 : length(moduleindex)
@@ -38,15 +48,23 @@ for m = 1 : length(moduleindex)
     
     whichmodel=[strcmp({aap.tasksettings.(modulename)(mInd).condition.subject},subject)] & [strcmp({aap.tasksettings.(modulename)(mInd).condition.session},session)];
     if (~any(whichmodel))
-        emptymod=[];
+        emptymod=aap.tasksettings.(modulename)(mInd).condition(1);
         emptymod.subject=subject;
         emptymod.session=session;
+        if ~isempty(event.trlshift) % data-specified
+            event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
+        end
         emptymod.event = event;
-        emptymod.event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
         aap.tasksettings.(modulename)(mInd).condition(end+1)=emptymod;
     else
-        event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
-        aap.tasksettings.(modulename)(mInd).condition(whichmodel).event(end+1) = event;
+        if ~isempty(event.trlshift) % data-specified
+            event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
+            aap.tasksettings.(modulename)(mInd).condition(whichmodel).event(end+1) = event;
+        else % user-specified
+            aas_log(aap,false,sprintf('WARNING: event(s) already specified for %s, %s...Overwriting!!!',subject, session));
+            aap.tasksettings.(modulename)(mInd).condition(whichmodel).event = event;
+        end
     end
     
+end
 end

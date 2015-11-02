@@ -19,9 +19,9 @@
                 <session></session>
                 <event>
                     <conditionlabel></conditionlabel>
-                    <eventtype></eventtype>
                     <eventvalue></eventvalue>
-                    <trlshift></trlshift> <!--- uauslly 34ms for visual, 9ms for auditory -->
+                    <eventtype></eventtype>                    
+                    <trlshift></trlshift> <!--- usually 34ms for visual, 9ms for auditory -->
                 </event>
             </condition>
             
