@@ -113,19 +113,21 @@ switch task
     case 'doit'
         
         %% Set up a jobs file with some advisable defaults for realign/unwarp!
-        jobs = {};
-        
+
         % Get the options from the XML!
-        jobs{1}.spatial{1}.realignunwarp.eoptions = ...
-            aap.tasklist.currenttask.settings.eoptions;
-        jobs{1}.spatial{1}.realignunwarp.uweoptions = ...
-            aap.tasklist.currenttask.settings.uweoptions;
-        jobs{1}.spatial{1}.realignunwarp.uwroptions = ...
-            aap.tasklist.currenttask.settings.uwroptions;
+        job = aap.tasklist.currenttask.settings;
+%         job.eoptions = aap.tasklist.currenttask.settings.eoptions;
+%         job.uweoptions = aap.tasklist.currenttask.settings.uweoptions;
+%         job.uwroptions = aap.tasklist.currenttask.settings.uwroptions;
         
-        % Need to place this string inside a cell
-        jobs{1}.spatial{1}.realignunwarp.eoptions.weight = ...
-            {jobs{1}.spatial{1}.realignunwarp.eoptions.weight };
+        % convert for function call:
+        if strcmp(job.eoptions.weight,'''''') % empty
+            job.eoptions.weight = {};
+        else
+            job.eoptions.weight = {job.eoptions.weight};
+        end
+        job.uweoptions.sot = str2num(job.uweoptions.sot);
+        job.uweoptions.expround = strrep(lower(job.uweoptions.expround),'''','');
         
         %% Get actual data!
         
@@ -133,7 +135,7 @@ switch task
             fprintf('\nGetting EPI images for session %s', aap.acq_details.sessions(sess).name)
             % Get EPIs
             EPIimg = aas_getimages_bystream(aap,subj,sess,'epi');
-            jobs{1}.spatial{1}.realignunwarp.data(sess).scans = cellstr(EPIimg);
+            job.data(sess).scans = cellstr(EPIimg);
             
             % Try get VDMs
             try
@@ -148,20 +150,18 @@ switch task
                         fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname), ...
                         sprintf('^vdm.*session%d.nii$',sess));
                 end
-                jobs{1}.spatial{1}.realignunwarp.data(sess).pmscan = ...
+                job.data(sess).pmscan = ...
                     cellstr(fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname, EPIimg));
                 fprintf('\nFound a VDM fieldmap')
             catch
-                jobs{1}.spatial{1}.realignunwarp.data(sess).pmscan = ...
+                job.data(sess).pmscan = ...
                     [];
                 fprintf('\nWARNING: Failed to find a VDM fieldmap')
             end
         end
         
         %% Run the job!
-        
-        spm_jobman('initcfg');
-        spm_jobman('run',jobs);
+        spm_run_realignunwarp(job);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
@@ -171,8 +171,8 @@ switch task
         %% Describe outputs
         for sess = aap.acq_details.selected_sessions
             rimgs=[];
-            for k=1:length(jobs{1}.spatial{1}.realignunwarp.data(sess).scans);
-                [pth nme ext]=fileparts(jobs{1}.spatial{1}.realignunwarp.data(sess).scans{k});
+            for k=1:length(job.data(sess).scans);
+                [pth nme ext]=fileparts(job.data(sess).scans{k});
                 rimgs=strvcat(rimgs,fullfile(pth,['u' nme ext]));
             end
             aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
