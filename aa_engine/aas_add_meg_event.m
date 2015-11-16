@@ -1,8 +1,12 @@
-function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventvalue,trialshift)
-% Op.1.: Using onsets from data --> may multiple calls per subject/session
+function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventdef,trialshift)
+% Op.1a.: Using onsets from data --> may multiple calls per subject/session
 %     argument 5 (eventname)    - conditionlabel
 %     argument 6 (eventvalue)   - eventvalue
 %     argument 7 (trialshift)   - trlshift (must not be empty!!!)
+% Op.1b.: Using onsets from data with eventtype specified --> may multiple calls per subject/session
+%     argument 5 (eventname)                    - conditionlabel
+%     argument 6 (evenettype and eventvalue)    - {evenettype eventvalue}
+%     argument 7 (trialshift)                   - trlshift (must not be empty!!!)
 % Op.2.: Using user-specific onsets --> single call per subject/session
 %     argument 5 (eventname)    - conditionlabels or empty if provided in mat-file along with trl
 %     argument 6 (eventvalue)   - trl matrix or mat-file containing trl (and conditionlabels)
@@ -33,13 +37,29 @@ else
     moduleindex = 1;
 end
 
-subject = aas_mriname2subjname(subject);
+if subject(1) ~= '*'
+    % check whether "subject" is in an evaluated form
+    aaps = aap;
+    aaps.directory_conventions.megsubjectoutputformat = '%s';
+    aaps.options.verbose = 0;
+    try 
+        subfound = meg_findvol(aaps,subject); 
+    catch
+        subfound = '';
+    end
+    if isempty(subfound), subject = aas_mriname2subjname(meg_findvol(aap,subject)); end
+end
 
 if nargin < 7, trialshift = []; end % onset from user
-event.conditionlabel=eventname;
-event.eventvalue=eventvalue;
-event.trlshift=trialshift;
+event.conditionlabel = eventname;
+event.trlshift = trialshift;
 event.eventtype = [];
+if iscell(eventdef) % specify eventtype
+    event.eventtype = eventdef{1};
+    event.eventvalue = eventdef{2};
+else
+    event.eventvalue = eventdef;
+end
 
 % find models that corresponds and add events if they exist
 for m = 1 : length(moduleindex)
@@ -51,14 +71,15 @@ for m = 1 : length(moduleindex)
         emptymod=aap.tasksettings.(modulename)(mInd).condition(1);
         emptymod.subject=subject;
         emptymod.session=session;
-        if ~isempty(event.trlshift) % data-specified
+        if ~isempty(event.trlshift) ... % data-specified
+                && isempty(event.eventtype) 
             event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
         end
         emptymod.event = event;
         aap.tasksettings.(modulename)(mInd).condition(end+1)=emptymod;
     else
         if ~isempty(event.trlshift) % data-specified
-            event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype;
+            if isempty(event.eventtype), event.eventtype = aap.tasksettings.(modulename)(mInd).eventtype; end
             aap.tasksettings.(modulename)(mInd).condition(whichmodel).event(end+1) = event;
         else % user-specified
             aas_log(aap,false,sprintf('WARNING: event(s) already specified for %s, %s...Overwriting!!!',subject, session));

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='meg_session' desc='Convert FIF to SPM' modality='MEG'>
+        <currenttask domain='meg_session' desc='Epoching continuous M/EEG data' modality='MEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>

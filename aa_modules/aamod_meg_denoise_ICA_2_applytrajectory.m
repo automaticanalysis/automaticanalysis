@@ -6,15 +6,9 @@ resp='';
 switch task
     case 'report'
         FNUM = 10;  % To avoid too many figures!
-        %infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg','output'); infname = basename(infname(1,:));
         load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica','output'));
-        
-        % How get data and ica from input stream? Below returns outputs?
         infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
-        %infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
-         
-        D = spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
-        %ICA = load(infname_ica);
+        D = spm_eeg_load(infname_meg);
  
         str = [];
         for m=1:length(toremove)
@@ -25,64 +19,73 @@ switch task
         for m = 1:length(modality)
             
             in.type = modality{m};
- 
-            f = figure(FNUM); clf; set(f,'Position',[0 0 800 600]);
-            Nr = size(tempcor{m},1);
-            for r = 1:Nr
-                if ~isempty(refs.tem{r})
-                    subplot(Nr,2,(r-1)*2+1),hist(tempcor{m}(r,:)'); title(sprintf('Modality %s, Reference %s: Histogram of Temporal Correlations',in.type,ref_type{r}));
+            
+            fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_hist_correlations.jpg',in.type));
+            if ~exist(fname,'file')
+                f = figure(FNUM); clf; set(f,'Position',[0 0 800 600]);
+                Nr = size(tempcor{m},1);
+                for r = 1:Nr
+                    if ~isempty(refs.tem{r})
+                        subplot(Nr,2,(r-1)*2+1),hist(tempcor{m}(r,:)'); title(sprintf('Modality %s, Reference %s: Histogram of Temporal Correlations',in.type,ref_type{r}));
+                    end
+                    if ~isempty(refs.spa{m}{r})
+                        subplot(Nr,2,(r-1)*2+2),hist(spatcor{m}(r,:)'); title(sprintf('Modality %s, Reference %s: Histogram of Spatial Correlations',in.type,ref_type{r}));
+                    end
                 end
-                if ~isempty(refs.spa{m}{r})
-                    subplot(Nr,2,(r-1)*2+2),hist(spatcor{m}(r,:)'); title(sprintf('Modality %s, Reference %s: Histogram of Spatial Correlations',in.type,ref_type{r}));
-                end
+                print('-djpeg',sprintf('-f%d',f),'-r150',fname)
+                close(f)
             end
-            fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_hist_correlations.jpg',in.type));
-            print('-djpeg',sprintf('-f%d',f),'-r150',fname)
-            aap = aas_report_add(aap,subj,'<table><tr><td>');
             aap = aas_report_addimage(aap,subj,fname);
-            aap = aas_report_add(aap,subj,'</td></tr></table>');
             
 %            d = D(chans{m},:);
             
 %            w = ICA.ica{m}.weights; 
             iw = pinv(weights{m});
 %            d = weights{m}*d;
-            d = artICs{m};
+            if ~isempty(toremove{m})
+                d = artICs{m};
+            end
             
             MaxT = round(10*D.fsample);
             for i=1:length(toremove{m})
                 ii = toremove{m}(i);
-                f = figure(FNUM); clf; hold on, set(f,'Position',[0 0 800 600]);
-                title(sprintf('Modality %s, IC %d timecourse (and maximally correlated reference)',in.type,ii)); 
-%                plot(zscore(d(ii,1:MaxT)),'r');
-                plot(zscore(d(1:MaxT,i)),'r');
-                [mc,mr] = max(abs(tempcor{m}(:,ii)));
-%                for r = 1:Nr
-                    plot(zscore(refs.tem{mr}(1:MaxT)),'Color','b') %[0 0 0]+0.5/Nr)
-%                end                
-                fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_IC%d_and_Ref_timecourses.jpg',in.type,ii));
-                print('-djpeg',sprintf('-f%d',f),'-r150',fname)
-                aap = aas_report_add(aap,subj,'<table><tr><td>');
-                aap = aas_report_addimage(aap,subj,fname);
-                aap = aas_report_add(aap,subj,'</td></tr></table>');
-                
-                % Don't bother with power spectrum at moment
-                % [dum1,pow,dum2]=pow_spec(d(ii,:)',1/250,1,0,5); axis([0 80 min(pow) max(pow)]);
 
-                f=figure(FNUM+1); clf; set(f,'color',[1 1 1],'deleteFcn',@dFcn); 
-                in.ParentAxes = axes('parent',f); in.f = f;
-                title(sprintf('Modality %s, IC %d topography',in.type,ii)); 
-                spm_eeg_plotScalpData(iw(:,ii),D.coor2D(chans{m}),D.chanlabels(chans{m}),in);
-                fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_IC%d_topography.jpg',in.type,ii));
-                print('-djpeg',sprintf('-f%d',f),'-r150',fname)
-                aap = aas_report_add(aap,subj,'<table><tr><td>');
-                aap = aas_report_addimage(aap,subj,fname);
-                aap = aas_report_add(aap,subj,'</td></tr></table>');
+                fname_tc = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_IC%d_and_Ref_timecourses.jpg',in.type,ii));
+                fname_top = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_IC%d_topography.jpg',in.type,ii));
+                if ~exist(fname_tc,'file') || ~exist(fname_top,'file')
+                    f = figure(FNUM); clf; hold on, set(f,'Position',[0 0 800 600]);
+                    %                plot(zscore(d(ii,1:MaxT)),'r');
+                    plot(zscore(d(1:MaxT,i)),'r');
+                    [junk,mr] = max(abs(tempcor{m}(:,ii)));
+                    %                for r = 1:Nr
+                    if ~isempty(refs.tem{mr}), plot(zscore(refs.tem{mr}(1:MaxT)),'Color','b'); end %[0 0 0]+0.5/Nr)
+                    %                end
+                    title(sprintf('Modality %s, IC %d timecourse (and maximally correlated reference %s)',in.type,ii,ref_type{mr}));
+                    print('-djpeg',sprintf('-f%d',f),'-r150',fname_tc)
+                    close(f)
+                
+                    % Don't bother with power spectrum at moment
+                    % [dum1,pow,dum2]=pow_spec(d(ii,:)',1/250,1,0,5); axis([0 80 min(pow) max(pow)]);
+
+                    f=figure(FNUM+1); clf; set(f,'color',[1 1 1],'deleteFcn',@dFcn);
+                    in.ParentAxes = axes('parent',f); in.f = f;
+                    spm_eeg_plotScalpData(iw(:,ii),D.coor2D(chans{m}),D.chanlabels(chans{m}),in);
+                    title(sprintf('Modality %s, IC %d topography (maximally correlated reference %s)',in.type,ii,ref_type{mr}));
+                    print('-djpeg',sprintf('-f%d',f),'-r150',fname_top)
+                    set(f,'DeleteFcn',[]);
+                    close(f)
+                end
+                
+                aap = aas_report_addimage(aap,subj,fname_tc);
+                aap = aas_report_addimage(aap,subj,fname_top);
             end
         end
        
     case 'doit'
         %% Initialise
+        % clear previous diagnostics
+        delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_*'));
+
         infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
         infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
         
@@ -119,7 +122,7 @@ switch task
         end
         FiltPars = [0.1 40 D.fsample];    % [0.1 40] %% [0.05 20];
         
-        PCA_dim = size(ICA.ica{1}.weights,1)
+        PCA_dim = size(ICA.ica{1}.weights,1);
         
         TemAbsPval = aap.tasklist.currenttask.settings.TemAbsPval;    % SETTINGS for detect artifact
         TemRelZval = aap.tasklist.currenttask.settings.TemRelZval;    % SETTINGS for detect artifact
@@ -237,11 +240,11 @@ switch task
                 varexpl   = 100*compvars/sum(compvars);
                 varenough = find(varexpl > VarThr);
             else
-                varenough = [1:PCA_dim];
+                varenough = 1:PCA_dim;
             end
                       
             %% Define toremove                  
-            toremove{m} = [1:PCA_dim];
+            toremove{m} = 1:PCA_dim;
             switch aap.tasklist.currenttask.settings.toremove
                 case 'temp' % define artefacts based on temporal correlation thresholds only
                     for t = 1:length(thresholding)
@@ -249,15 +252,17 @@ switch task
                     end
                 case 'spat' % define artefacts based on spatial correlation thresholds only
                     for t = 1:length(thresholding)
+                        if thresholding(t) == 4, continue; end
                         toremove{m} = intersect(toremove{m},unique(cat(2,spatrem{thresholding(t),:})));
                     end
                 case 'either' % define artefacts based on either spatial OR temporal correlation thresholds
-                    tempremove = [1:PCA_dim];
+                    tempremove = 1:PCA_dim;
                     for t = 1:length(thresholding)
                         tempremove = intersect(tempremove,unique(cat(2,temprem{thresholding(t),:})));
                     end
-                    spatremove = [1:PCA_dim];
+                    spatremove = 1:PCA_dim;
                     for t = 1:length(thresholding)
+                        if thresholding(t) == 4, continue; end
                         spatremove = intersect(spatremove,unique(cat(2,spatrem{thresholding(t),:})));
                     end
                     toremove{m} = unique([tempremove spatremove]);
@@ -268,11 +273,11 @@ switch task
                     else
                         toremove{m} = [];
                         for r = 1:size(temprem,2)
-                            bothremove = [1:PCA_dim];
+                            bothremove = 1:PCA_dim;
                             for t = 1:length(thresholding)  % "If" bit below to handle cases where no reference for some modalities (eg EEG topo), even if exist for other modalities
-                                if isempty(refs.tem{r}) & ~isempty(refs.spa{m}{r})
+                                if isempty(refs.tem{r}) && ~isempty(refs.spa{m}{r})
                                     both = spatrem{thresholding(t),r};
-                                elseif ~isempty(refs.tem{r}) & isempty(refs.spa{m}{r})
+                                elseif ~isempty(refs.tem{r}) && isempty(refs.spa{m}{r})
                                     both = temprem{thresholding(t),r};
                                 else
                                     both = intersect(temprem{thresholding(t),r},spatrem{thresholding(t),r});

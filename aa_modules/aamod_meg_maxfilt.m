@@ -25,11 +25,13 @@ switch task
             
             %% 2. Movement (courtesy to Jason Taylor and Rik Henson)
             [pth,fstem] = spm_fileparts(logfname);
-            movfname = fullfile(pth,[fstem '.mov']);
-            figfname = fullfile(pth,[fstem '.jpg']);
+            movfname = fullfile(pth,['diagnostic_aamod_meg_maxfilt_' fstem 'movpar.txt']);
+            figfname = fullfile(pth,['diagnostic_aamod_meg_maxfilt_' fstem 'movpar.jpg']);
             
             % Parse log file for movement params:
-            unix(sprintf('sed -n -e ''/^#t/ p'' %s  | sed -e ''s/[^0-9,.]*//g'' -e ''s/#e = //g'' > %s',logfname,movfname));
+            if ~exist(movfname,'file')
+                unix(sprintf('sed -n -e ''/^#t/ p'' %s  | sed -e ''s/[^0-9,.]*//g'' -e ''s/#e = //g'' > %s',logfname,movfname));
+            end
             
             % Load data:
             mov = [];
@@ -43,27 +45,29 @@ switch task
             if numel(mov)==0
                 aap = aas_report_add(aap,subj,sprintf('<h5>WARNING: No movement data! - Was HPI estimation and movement compensation run in MF call that created %s?</h5>',movfname));
             else % plot
-                try    fig = spm_figure('FindWin'); clf;
-                catch, fig = figure('color','w','paperpositionmode','auto');
+                if ~exist(figfname,'file')
+                    try    fig = spm_figure('FindWin'); clf;
+                    catch, fig = figure('color','w','paperpositionmode','auto');
+                    end
+                    time=mov(:,1);
+                    subplot(2,1,1);
+                    plot(time,mov(:,3),'g'); % goodness of fit
+                    legend('          gof(0:1)','Location','NorthEastOutside');
+                    title(basename(movfname),'Interpreter','none');
+                    
+                    subplot(2,1,2); hold on
+                    plot(time,mov(:,2),'r'); % error
+                    plot(time,mov(:,4),'k'); % velocity
+                    plot(time,mov(:,5),'b'); % rotation
+                    plot(time,mov(:,6),'c'); % translation
+                    legend({'error(cm)','velocity(cm/s)','rotation(rad/s)','translation(cm)'},'Location','NorthEastOutside')
+                    title(basename(movfname),'Interpreter','none');
+                    
+                    set(fig,'Renderer','zbuffer');
+                    print(fig,'-djpeg',figfname);
+                    aas_log(aap,false,sprintf('- Figure saved to %s\n',figfname));
+                    close(fig)
                 end
-                time=mov(:,1);
-                subplot(2,1,1);
-                plot(time,mov(:,3),'g'); % goodness of fit
-                legend('          gof(0:1)','Location','NorthEastOutside');
-                title(basename(movfname),'Interpreter','none');
-                
-                subplot(2,1,2); hold on
-                plot(time,mov(:,2),'r'); % error
-                plot(time,mov(:,4),'k'); % velocity
-                plot(time,mov(:,5),'b'); % rotation
-                plot(time,mov(:,6),'c'); % translation
-                legend({'error(cm)','velocity(cm/s)','rotation(rad/s)','translation(cm)'},'Location','NorthEastOutside')
-                title(basename(movfname),'Interpreter','none');
-                
-                set(fig,'Renderer','zbuffer');
-                print(fig,'-djpeg',figfname);
-                aas_log(aap,0,sprintf('- Figure saved to %s\n',figfname));
-                close(fig)
                 
                 % Return maximum translation, rotation:
                 md = max(mov(:,6))-min(mov(:,6));
@@ -103,6 +107,10 @@ switch task
         for sess = meg_sessions
             %% Initialise
             sesspath = aas_getsesspath(aap,subj,sess);
+            
+            % clear previous diagnostics
+            delete(fullfile(sesspath,'diagnostic_aamod_meg_maxfilt_*'));
+            
             instream = aas_getstreams(aap,'input'); instream = instream{1};
             infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],instream);
             outfname = fullfile(sesspath,['mf2pt2_' basename(infname) '.fif']); % specifying output filestem
@@ -173,12 +181,25 @@ switch task
             
             mfcall = fullfile(aap.directory_conventions.neuromagdir,'bin','util','maxfilter-2.2.12');
             
+            % calibration files
+            fnamectc = fullfile(aap.directory_conventions.neuromagdir,'databases','ctc','ct_sparse.fif');
+            fnamecal = fullfile(aap.directory_conventions.neuromagdir,'databases','sss','sss_cal.dat');
+            calibdir = aas_getsetting(aap,'calibrationdirectory');
+            if ~isempty(calibdir)
+                if ~exist(calibdir,'dir')
+                    aas_log(aap,true,sprintf('ERROR: Calibration directory %s not exist!',calibdir));
+                else
+                    if exist(fullfile(calibdir,'ct_sparse.fif'),'file'), fnamectc = fullfile(calibdir,'ct_sparse.fif'); end
+                    if exist(fullfile(calibdir,'sss_cal.dat'),'file'), fnamecal = fullfile(calibdir,'sss_cal.dat'); end
+                end
+            end
+            
             % Assembling MF command
             mfcmd_rest=[
                 mfcall ' -f ' infname ' -o ' outfname,...
-                [' -ctc ' fullfile(aap.directory_conventions.neuromagdir,'databases','ctc','ct_sparse.fif')] ' ',...
-                [' -cal ' fullfile(aap.directory_conventions.neuromagdir,'databases','sss','sss_cal.dat')] ' ',...
-                skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -force -v | tee ' logfname
+                ' -ctc ' fnamectc,...
+                ' -cal ' fnamecal,...
+                 ' ', skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -force -v | tee ' logfname
                 ];
             disp(mfcmd_rest);
             

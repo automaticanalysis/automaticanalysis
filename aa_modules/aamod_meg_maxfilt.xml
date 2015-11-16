@@ -8,6 +8,12 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
             
+            <hpi>
+                <session desc='Name of the session providing HPI for empty room (if applicable)' ui='text'></session>
+                <step>10</step>
+                <subt>amp</subt>
+            </hpi>
+            
             <autobad>
                 <interval>900</interval>
                 <badlimit>7</badlimit>
@@ -19,14 +25,9 @@
                 <corr>0.980</corr>
             </sss>
             
-            <hpi>
-                <session desc='Name of the session providing HPI for empty room (if applicable)' ui='text'></session>
-                <step>10</step>
-                <subt>amp</subt>
-            </hpi>
+            <calibrationdirectory desc='Directory containing one or more custom calibration files ct_sparse.fif and sss_cal.dat' ui='dir'></calibrationdirectory>
             
-            <transform>1 0</transform>
-            <!-- empty: no transform; 0: default; 1-: session number to take as reference -->
+            <transform desc='empty: no transform; 0: default; 1-: session number to take as reference' ui='double'>1 0</transform>
                         
             <inputstreams>
                 <stream isrenameable='1'>meg</stream>

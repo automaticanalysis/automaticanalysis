@@ -47,10 +47,11 @@ switch task
         end
            
         %% Run
+        S.prefix = 'e';
         D = spm_eeg_epochs(S);
 
         %% Outputs
-        outfname = fullfile(sessdir,['e' basename(infname)]); % specifying output filestem
+        outfname = fullfile(sessdir,[S.prefix basename(infname)]); % specifying output filestem
         fname(D,[outfname '.mat']);
         D.save;
         aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        

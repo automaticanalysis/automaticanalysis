@@ -45,7 +45,7 @@ switch task
                     [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
                 else
                     if ~isempty(Rseed), warning('Random seed requested but no facility with standard runica?'); end
-                    [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(d,'pca',actual_PCA_dim,'extended',1,'maxsteps',800); % will give different answer each time run
+                    [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800); % will give different answer each time run
                 end
                 ica{n}.weights = weights;
                 ica{n}.chans = chans;

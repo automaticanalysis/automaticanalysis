@@ -12,6 +12,8 @@
             <module><name>aamod_meg_convert</name></module>
             <module><name>aamod_meg_denoise_ICA_1</name></module>
             <module><name>aamod_meg_denoise_ICA_2_applytrajectory</name></module>
+            <module><name>aamod_meg_epochs</name></module>
+            <module><name>aamod_meg_average</name></module>
         </main>
     </tasklist>
 </aap>
