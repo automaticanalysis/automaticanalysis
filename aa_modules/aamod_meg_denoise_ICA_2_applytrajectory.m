@@ -85,7 +85,7 @@ switch task
         %% Initialise
         % clear previous diagnostics
         delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_*'));
-
+        
         infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
         infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
         
@@ -94,7 +94,7 @@ switch task
        
         samp = aap.tasklist.currenttask.settings.sampling;
         if isempty(samp),
-            samp = [1:D.nsamples];
+            samp = 1:D.nsamples;
         end
         if rem(length(samp),2)==0  % Must be odd number of samples any fft below
             samp(1) = [];
@@ -106,11 +106,29 @@ switch task
 
         refs.tem = {};  % Temporal reference signal for correlating with ICs
         for r = 1:length(ref_chans),
-            refs.tem{r} = D(indchannel(D,ref_chans{r}),samp);
+            if ~isempty(indchannel(D,ref_chans{r}))
+                refs.tem{r} = D(indchannel(D,ref_chans{r}),samp);
+            else
+                if ~exist(ref_chans{r},'file');
+                    error('Cannot find %s in channels nor in separate file',ref_chans{r});
+                else
+                    tmp = load(ref_chans{r}); 
+                    if ~isfield(tmp,'ref')
+                        error('No field in file %s equal to "ref"',ref_chans{r})
+                    else
+                        tmp = tmp.ref(:)';
+                    end
+                    if size(tmp,2) ~= D.nsamples || size(tmp,1) ~= 1
+                        error('Reference in file %s does not contain Nsamples x 1 vector',ref_chans{r})
+                    else
+                        refs.tem{r} = tmp(samp);  
+                    end
+                end
+            end
         end
 
         thresholding = aap.tasklist.currenttask.settings.thresholding;    % SETTINGS for thresholding artifact
-        if isempty(intersect(thresholding,[1:4]))
+        if isempty(intersect(thresholding,1:4))
             aas_log(aap,true,'ERROR: thresholding option must be one or more of [1:4]');
         end
         
@@ -145,9 +163,14 @@ switch task
             ICs = weights{m} * D(chans{m},samp);
             
             n = find(strcmp(arttopos.modalities,modality{m}));
-            for r = 1:numel(ref_type)
-                tmp = getfield(arttopos,ref_type{r});
-                refs.spa{m}{r} = tmp{n}(:)'; % detect_ICA_artefacts below assumes 1xChan vector
+            for r = 1:numel(ref_type)             
+                if ~isfield(arttopos,ref_type{r})
+                    warning('No topograph found for %s',ref_type{r})
+                    refs.spa{m}{r} = [];
+                else
+                    tmp = getfield(arttopos,ref_type{r});
+                    refs.spa{m}{r} = tmp{n}(:)'; % detect_ICA_artefacts below assumes 1xChan vector
+                end
             end
             
             %% Filtering (if any) (and transposition for speed)
