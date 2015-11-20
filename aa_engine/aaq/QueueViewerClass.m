@@ -175,7 +175,7 @@ classdef QueueViewerClass < handle
             promptstring{1} = ['Active jobs at ' datestr(now)];
             set(obj.UIControls.prompt_text, 'String',promptstring);
             set(obj.UIControls.listbox, 'String',cellstr(q));
-            set(obj.UIControls.listbox, 'Value', min([get(obj.UIControls.listbox, 'Value') numel(q)]))
+            set(obj.UIControls.listbox, 'Value', min([1 numel(q)]))
             drawnow;
         end
         

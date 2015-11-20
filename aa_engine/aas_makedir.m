@@ -3,10 +3,10 @@
 % Rhodri Cusack MRC CBU Cambridge Nov 2006
 
 function [aap,resp]=aas_makedir(aap,dirname)
-if (~length(dir(dirname)))
+if ~exist(dirname,'dir')
     try
         mkdir(dirname);
     catch
-        aas_log(aap,1,sprintf('Problem making directory%s',dirname));
-    end;
-end;
+        aas_log(aap,true,sprintf('ERROR: Problem making directory %s',dirname));
+    end
+end

@@ -39,7 +39,7 @@ for i = 1:numel(SEARCHPATH)
 end
 
 if ~isFound
-    fprintf('Subject %s* not found',subjpath);
+    aas_log(aap,true,sprintf('Subject %s* not found',subjpath));
     strSubj = '';
     return;
 end
