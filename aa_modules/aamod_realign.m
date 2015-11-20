@@ -109,15 +109,10 @@ switch task
         % Note starting directory so we can get back here in the end
         startingDir = pwd;
         
-        clear imgs;
-        
-        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
-        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-        
-        for sess = 1:numSess
+        imgs = {};
+        for sess = aap.acq_details.selected_sessions
             % get files from stream
-            epiFiles = aas_getfiles_bystream(aap, subj, subjSessionI(sess), 'epi');
-            imgs(sess) = {epiFiles};
+            imgs{end+1} = aas_getfiles_bystream(aap, subj, sess, 'epi');
         end
         
         % Flags to pass to routine to calculate realignment parameters
@@ -188,8 +183,8 @@ switch task
         
         %% Describe outputs
         movPars = {};
-        for sess = 1 : numSess
-            aas_log(aap,0,sprintf('Working with session %d', subjSessionI(sess)))
+        for sess = 1 : numel(aap.acq_details.selected_sessions)
+            aas_log(aap,0,sprintf('Working with session %d', aap.acq_details.selected_sessions(sess)))
             
             rimgs=[];
             for k=1:size(imgs{sess},1);
@@ -204,8 +199,8 @@ switch task
                     rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
                 end
             end
-            sessdir = aas_getsesspath(aap,subj,subjSessionI(sess));
-            aap = aas_desc_outputs(aap,subj,subjSessionI(sess),'epi',rimgs);
+            sessdir = aas_getsesspath(aap,subj,aap.acq_details.selected_sessions(sess));
+            aap = aas_desc_outputs(aap,subj,aap.acq_details.selected_sessions(sess),'epi',rimgs);
             
             % Get the realignment parameters...
             fn=dir(fullfile(pth,'rp_*.txt'));
@@ -218,20 +213,20 @@ switch task
                 outpars = fullfile(pth,fn(1).name);
                 if strcmp(aap.options.wheretoprocess,'localsingle')
                     movefile(...
-                        fullfile(aas_getsesspath(aap,subj,subjSessionI(sess)),'mw_motion.jpg'),...
+                        fullfile(aas_getsesspath(aap,subj,aap.acq_details.selected_sessions(sess)),'mw_motion.jpg'),...
                         fullfile(aas_getsubjpath(aap,subj),...
-                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(subjSessionI(sess)).name '.jpg'])...
+                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(aap.acq_details.selected_sessions(sess)).name '.jpg'])...
                         );
                 end
             else
                 aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...
                     fullfile(aas_getsubjpath(aap,subj),...
-                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(subjSessionI(sess)).name '.jpg'])...
+                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(aap.acq_details.selected_sessions(sess)).name '.jpg'])...
                     );
             end
             
-            aap = aas_desc_outputs(aap,subj,subjSessionI(sess),'realignment_parameter', outpars);
+            aap = aas_desc_outputs(aap,subj,aap.acq_details.selected_sessions(sess),'realignment_parameter', outpars);
             
             if sess==1
                 % mean only for first session
