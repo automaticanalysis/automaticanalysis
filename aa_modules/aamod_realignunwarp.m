@@ -126,7 +126,6 @@ switch task
         else
             job.eoptions.weight = {job.eoptions.weight};
         end
-        job.uweoptions.sot = str2num(job.uweoptions.sot);
         job.uweoptions.expround = strrep(lower(job.uweoptions.expround),'''','');
         
         %% Get actual data!

@@ -5,7 +5,12 @@ settingpath = textscan(settingstring,'%s','Delimiter','.'); settingpath = settin
 % Obtain setting
 val = aap.tasklist.currenttask.settings;
 for f = settingpath'
-    val = val.(f{1});
+    if isfield(val,f{1})
+        val = val.(f{1});
+    else
+        aas_log(aap,false,sprintf('WARNING: Setting <%s> is not specified!',settingstring));
+        val = [];
+    end
 end
 
 if nargin == 3 % index
@@ -18,7 +23,7 @@ if nargin == 3 % index
     
     try val = val{index};
     catch
-        aas_log(aap,0,sprintf('WARNING: Setting %s has fewer then %d elements.\nWARNING: First value will be applied!',settingstring,index));
+        aas_log(aap,false,sprintf('WARNING: Setting <%s> has fewer then %d elements.\nWARNING: First value will be applied!',settingstring,index));
         val = val{1};
     end
 end
