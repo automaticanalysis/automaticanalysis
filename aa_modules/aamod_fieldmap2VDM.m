@@ -61,7 +61,7 @@ switch task
             mkdir(FMdir)
         else
             % remove previous vdms
-            delete(fullfile(FMdir, 'vdm*.nii'));
+            delete(fullfile(FMdir, '*.nii'));
         end
         
         FMfn = aas_getfiles_bystream(aap,subj,'fieldmap');
@@ -77,7 +77,7 @@ switch task
         FMfns = dir(fullfile(FMdir, '*.nii'));
         if isempty(FMfns)
             for f = 1:size(FMfn,1)
-                aas_shell(['mv ' squeeze(FMfn(f,:)) ' ' FMdir]);
+                aas_shell(['cp ' squeeze(FMfn(f,:)) ' ' FMdir]);
             end
         end
         FieldMap_preprocess(FMdir,EPIdir,...

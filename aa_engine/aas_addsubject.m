@@ -5,7 +5,7 @@
 % more convenient when you have many subjects as the correspondence between
 % subject name and series numbers is more transparent.
 %
-%function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,args)
+%function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,diffusion_seriesnumbers,args)
 % name= subject filename (may include UNIX wildcards, e.g., CBU060500*/*)
 % seriesnumbers=
 %	DICOM source: series numbers of EPIs for this subject
@@ -19,7 +19,8 @@
 % analysis (e.g. a repeated structural) [added by djm 20/3/06]
 % specialseries= special series to be converted
 % args= 1x2N cell, containing N arguments (odd: name, even: val). E.g.:
-% 	{'--structural', serienum}: specifying serienumber for structural
+% 	{'--structural', serienum or cellstr of 3D NIFTI filename}: specifying structural
+% 	{'--fieldmap', serienums or cell of structure with fields 'fname' (3 (2x mag + 1x phase)x 3D NIFTI filenames) and 'hdr' (path to header)}: specifying fieldmap
 
 function [aap]=aas_addsubject(aap,name,seriesnumbers,ignoreseries,specialseries,diffusion_seriesnumbers,args)
 
@@ -51,8 +52,12 @@ else
     for s = 1:numel(seriesnumbers)
         if iscell(seriesnumbers{s}) % multiple 3D files
             fMRI{end+1} = seriesnumbers{s};
-        elseif ischar(seriesnumbers{s}) || isstruct(seriesnumbers{s}) % single NIFTI file
+        elseif ischar(seriesnumbers{s}) || isstruct(seriesnumbers{s}) % single NIFTI file or hdr+fname
             if isstruct(seriesnumbers{s})
+                if numel(seriesnumbers{s}.fname) > 1 % multiple 3D files
+                    fMRI{end+1} = seriesnumbers{s};
+                    continue;
+                end
                 fname = seriesnumbers{s}.fname;
             else
                 fname = seriesnumbers{s};
@@ -115,6 +120,10 @@ if nargin >=7 % extra parameters
     structural = get_arg(args,'--structural');
     if ~isempty(structural)
         thissubj.structural = structural;
+    end
+    fieldmap = get_arg(args,'--fieldmap');
+    if ~isempty(fieldmap)
+        thissubj.fieldmaps = fieldmap;
     end
 end
 

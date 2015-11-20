@@ -52,7 +52,7 @@ for subj = 1:size(SUBJ,1)
         aap = add_data(aap,subjID,fullfile(BIDS,subjID));
     else
         for sess = 1:size(SESS,1)
-            aap = add_data(aap,[subjID '_' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))));
+            aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))));
         end
     end
 end
@@ -66,7 +66,8 @@ structDIR = 'anat';
 functionalDIR = 'func';
 diffusionDIR = 'dwi';
 
-subjaa = strrep_multi(subjstr,{'sub-','ses-'},{'',''});
+subjaa = subjstr;
+subjstr = strrep(subjstr,'/','_');
 
 % locate first_level modules
 stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_model');

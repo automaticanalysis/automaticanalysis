@@ -7,6 +7,8 @@ resp='';
 switch task
     case 'report'
     case 'doit'
+        sliceaxes = {'x' 'y'};
+        
         if (not(iscell(aap.acq_details.subjects(subj).seriesnumbers)))
             aas_log(aap,true,'Was exepcting list of filenames in cell array instead of series numbers, check aas_addsubject command in user script');
         end;
@@ -15,90 +17,73 @@ switch task
             rejectimages= str2num(rejectimages);
         end;
         for sess=1:length(aap.acq_details.subjects(subj).seriesnumbers)
+            % Files
+            headerFn ='';
+            imageFn = aap.acq_details.subjects(subj).seriesnumbers{sess};
+            if isstruct(imageFn)
+                headerFn = imageFn.hdr;
+                imageFn = imageFn.fname;
+            end
+            headerfile = headerFn;
+            niftifile = imageFn;
+            if ~iscell(niftifile), niftifile = {niftifile}; end % 4D-NIFTI
+            if ~exist(niftifile{1},'file') % assume path realtive to (first) rawdatadir
+                niftisearchpth=aas_findvol(aap,'');
+                if ~isempty(niftisearchpth)
+                    niftifile = spm_file(imageFn,'path',niftisearchpth);
+                    if ~isempty(headerFn)
+                        headerfile = spm_file(headerFn,'path',niftisearchpth);
+                    end
+                end
+            end
+            comp = false;
+            if any(strcmp(spm_file(niftifile,'Ext'),'gz')),
+                comp = true;
+                gunzip(niftifile{1});
+                niftifile{1} = niftifile{1}(1:end-3);
+            end
+            
+            % Header
+            DICOMHEADERS{1} = struct;
+            if ~isempty(headerfile)
+                switch spm_file(headerfile,'Ext')
+                    case 'dcmhdr'
+                        DICOMHEADERS{1} = header_dcmhdr(headerfile);
+                    case 'json'
+                        DICOMHEADERS{1} = header_json(headerfile); % BIDS
+                end
+            end
+            DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
+            DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
+            DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
+            [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
+            DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
+            
+            % Image
             finalepis={};
-            if (iscell(aap.acq_details.subjects(subj).seriesnumbers{sess}))
-                % lots of files 3D
-                % [AVG] we cannot cocatenate the single root with
-                % multiple 3D image files, so this expects already the
-                % full location of the 3D images instead...
-                DICOMHEADERS{1}.RepetitionTime = [];
-                DICOMHEADERS{1}.EchoTime = [];
-                imageFns = aap.acq_details.subjects(subj).seriesnumbers{sess};
-                
-                sesspth=aas_getsesspath(aap,subj,sess);
-                
-                if ~exist(sesspth, 'dir')
-                    mkdir(sesspth);
+            V = spm_vol(niftifile); V = cell2mat(V);
+            sesspth=aas_getsesspath(aap,subj,sess);
+            aas_makedir(aap,sesspth);
+            fle = spm_file(niftifile,'basename');
+            ext = spm_file(niftifile,'Ext');
+            for fileind=1:numel(V)
+                Y=spm_read_vols(V(fileind));
+                if numel(niftifile) == 1 % 4D-NIFTI
+                    fn=fullfile(sesspth,sprintf('%s_%04d.%s',fle{1},fileind,ext{1}));
+                else % 3D-NIFTI
+                    fn=fullfile(sesspth,[fle{fileind} '.' ext{fileind}]);
                 end
-                
-                for f = 1:length(imageFns)
-                    % [AVG] Expects a cell array of images at the moment
-                    [root, fn, ext] = fileparts(imageFns{f});
-                    % [AVG] Copy file to module location
-                    unix(['cp ' imageFns{f} ' ' fullfile(sesspth, [fn ext])]);
-                    % [AVG] Add file to what will be described as output...
-                    finalepis = [finalepis fullfile(sesspth, [fn ext])];
+                V(fileind).fname=fn;
+                V(fileind).n=[1 1];
+                spm_write_vol(V(fileind),Y);
+                if (not(any(rejectimages==fileind)))
+                    finalepis=[finalepis fn];
                 end
-                V = spm_vol(finalepis);
-            else
-                %Only one file, assume 4D
-                
-                % Files
-                headerFn ='';
-                imageFn = aap.acq_details.subjects(subj).seriesnumbers{sess};
-                if isstruct(imageFn)
-                    headerFn = imageFn.hdr;
-                    imageFn = imageFn.fname;                    
-                end
-                headerfile = headerFn;
-                niftifile = imageFn;
-                if ~exist(niftifile,'file') % assume path realtive to (first) rawdatadir
-                    niftisearchpth=aas_findvol(aap,'');
-                    if ~isempty(niftisearchpth)
-                        niftifile = fullfile(niftisearchpth,imageFn);
-                        if ~isempty(headerFn)
-                            headerfile = fullfile(niftisearchpth,headerFn);
-                        end
-                    end
-                end                
-                comp = false;
-                if strcmp(spm_file(niftifile,'Ext'),'gz'),
-                    comp = true;
-                    gunzip(niftifile);
-                    niftifile = niftifile(1:end-3);
-                end
-                
-                % Header
-                DICOMHEADERS{1} = struct;
-                if ~isempty(headerfile)
-                    switch spm_file(headerfile,'Ext')
-                        case 'dcmhdr'
-                            DICOMHEADERS{1} = header_dcmhdr(headerfile);
-                        case 'json'
-                            DICOMHEADERS{1} = header_json(headerfile); % BIDS
-                    end
-                end
-                DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
-                DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
-                DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
-                [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
-                
-                % Image
-                V = spm_vol(niftifile);
-                sesspth=aas_getsesspath(aap,subj,sess);
-                aas_makedir(aap,sesspth);
-                [pth, fle, ext]=fileparts(niftifile);
-                for fileind=1:numel(V)
-                    Y=spm_read_vols(V(fileind));
-                    fn=fullfile(sesspth,[sprintf('%s_%04d',fle,fileind) ext]);                    
-                    V(fileind).fname=fn;
-                    V(fileind).n=[1 1];
-                    spm_write_vol(V(fileind),Y);
-                    if (not(any(rejectimages==fileind)))
-                        finalepis=[finalepis fn];
-                    end
-                end;
             end;
+            
+            if ~isempty(DICOMHEADERS{1}.PhaseEncodingDirection)
+                DICOMHEADERS{1}.NumberOfPhaseEncodingSteps = V(1).dim(cell_index(sliceaxes, DICOMHEADERS{1}.PhaseEncodingDirection(1)));
+            end
            
             % Write out the files
             
@@ -135,7 +120,7 @@ switch task
                 spm_file_merge(char({V(aap.acq_details.numdummies+1:end).fname}),finalepis,0);
             end
             % And describe outputs
-            if comp, delete(niftifile); end
+            if comp, delete(niftifile{1}); end
             aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
             aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
             dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
@@ -154,6 +139,8 @@ function hdr = header_dcmhdr(fname)
 % minimal fileds
 hdr.RepetitionTime = [];
 hdr.EchoTime = [];
+hdr.PhaseEncodingDirection = '';
+hdr.EchoSpacing = [];
 hdr.SliceTiming = [];
 
 flines = cellstr(fileread(fname));
@@ -177,12 +164,18 @@ function hdr = header_json(fname) % BIDS
 % minimal fileds
 hdr.RepetitionTime = [];
 hdr.EchoTime = [];
+hdr.PhaseEncodingDirection = '';
+hdr.EchoSpacing = [];
 hdr.SliceTiming = [];
 
 % retrieve info
 info = loadjson(fname);
 for f = fieldnames(info)'
     hdr.(f{1}) = info.(f{1});
+end
+
+if isfield(hdr,'EffectiveEchoSpacing')
+    hdr.EchoSpacing = hdr.EffectiveEchoSpacing*1000;
 end
 
 % convert timings to ms (DICOM default)
