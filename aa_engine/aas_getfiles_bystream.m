@@ -73,14 +73,11 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         aas_log(aap,false,sprintf('\b but not found'));
     end
     if (~exist(inpstreamdesc,'file')) 
-        if ~strcmp(aap.options.email,'noerror')
-            aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
-        else
-            inpstreamdesc = '';
-            allfiles = '';
-            md5 = '';             
-            return
-        end
+        aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
+        inpstreamdesc = '';
+        allfiles = '';
+        md5 = '';
+        return
     end;
     fid=fopen(inpstreamdesc,'r');
     

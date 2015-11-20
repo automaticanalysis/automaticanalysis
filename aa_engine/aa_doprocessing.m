@@ -116,16 +116,14 @@ if (exist('username','var'))
     aap=aws_setupqnames(aap,username);
 end
 
-
 % No longer preserve aaworker across sessions
 aaworker=[];
 
 try
     aaworker.parmpath;
 catch
-    [pth nme ext]=fileparts(tempname);
-    aaworker.parmpath=aaworker_getparmpath(aap,[filesep sprintf('%s_%s',datestr(now,30),nme)]);
-    aas_makedir(aap, aaworker.parmpath);
+    [junk, nme, junk]=fileparts(tempname);
+    aaworker.parmpath=aaworker_getparmpath(aap,sprintf('%s_%s',datestr(now,30),strtok(nme,'_')));
 end
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
@@ -136,7 +134,7 @@ end
 
 aap.internal.pwd=pwd;
 
-if (isempty(aaparallel))
+if isempty(aaparallel)
     aaparallel.workerlist=[];
     aaparallel.numberofworkers=8;
     aaparallel.memory = 4; % GB
@@ -301,9 +299,7 @@ for l=1:length(mytasks)
         
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
-        
-        % I don't think this supports "selectedsessions" branches but it should do
-        % - RC 2013-09-19
+       
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
@@ -314,8 +310,21 @@ for l=1:length(mytasks)
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
-            if (aas_doneflagexists(aap,doneflag))
-                if (strcmp(task,'doit'))
+            
+            % Check whether tasksettings have changed since the last execution,
+            % and if they have, then delete doneflag to trigger re-execution
+            if strcmp(task,'doit') && isfield(aap.options,'checktasksettingconsistency') && aap.options.checktasksettingconsistency && aas_doneflagexists(aap,doneflag)
+                prev_settings = load(strrep(doneflag,'done','aap_parameters')); prev_settings = prev_settings.aap.tasklist.currenttask.settings;
+                new_settings = aap.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index);
+                if ~aas_checktasksettingconsistency(aap,prev_settings,new_settings)
+                    aas_log(aap,false,sprintf('REDO: Settings of module %s_%05d have changed',...
+                        aap.tasklist.main.module(k).name,aap.tasklist.main.module(k).index));
+                    aas_delete_doneflag_bypath(aap,doneflag);
+                end
+            end
+            
+            if aas_doneflagexists(aap,doneflag)
+                if strcmp(task,'doit')
                     msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
                 end
             else

@@ -3,7 +3,9 @@
 function [aap]=aa_init(aap)
 
 global aa
-if isobject(aa) % aa was not closed previously
+
+% detect running aa
+if isobject(aa)
     aas_log(aap,false,'WARNING: Previous execution of aa was detected! Closing...')
     aa_close('killjobs');
     aas_log(aap,false,'WARNING: Done!')
@@ -11,6 +13,16 @@ else
     aa = aaClass;
 end
 
+% cleanup aaworker path
+if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanup)
+    aawp = aaworker_getparmpath(aap);
+    for d = dir(fullfile(aawp,'aaworker*'))'
+        if etime(clock,datevec(d.date,'dd-mmm-yyyy HH:MM:SS'))/(24*60*60) > aap.options.aaworkercleanup
+            aas_log(aap,false,sprintf('INFO: aaworker folder %s is older %d days...Deleting',d.name,aap.options.aaworkercleanup))
+            rmdir(fullfile(aawp,d.name));
+        end
+    end
+end
 
 global aacache
 aacache.bcp_path = path;

@@ -16,7 +16,7 @@ streamname = varargin{end};
 index = varargin(1:end-1);
     
 img = '';
-email0 = aap.options.email; aap.options.email = 'noerror'; % silence;
+verbose0 = aap.options.verbose; aap.options.verbose = -1; % ignore error
 [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,index{:},streamname,source);
 if isempty(img)
     [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'subject',index{2}(1),streamname,source);
@@ -24,7 +24,7 @@ end
 if isempty(img)
     [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'study',[],streamname,source);
 end
-aap.options.email = email0;
+aap.options.verbose = verbose0;
 if isempty(img)
     aas_log(aap,1,sprintf('%s stream %s not found',source,streamname));
 end
