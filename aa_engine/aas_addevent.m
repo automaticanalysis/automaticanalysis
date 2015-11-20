@@ -77,6 +77,18 @@ if ~isempty(parametric)
     end
 end
 
+if subject(1) ~= '*'
+    % check whether "subject" is in an evaluated form
+    aaps = aap; aaps.directory_conventions.subjectoutputformat = '%s';
+    aaps.options.verbose = 0;
+    try 
+        subfound = mri_findvol(aaps,subject); 
+    catch
+        subfound = '';
+    end
+    if isempty(subfound), subject = aas_mriname2subjname(mri_findvol(aap,subject)); end
+end
+
 % find models that corresponds and add events if they exist
 for m = 1 : length(moduleindex)
     
