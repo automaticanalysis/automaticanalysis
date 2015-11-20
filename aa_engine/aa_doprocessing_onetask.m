@@ -3,9 +3,15 @@
 %  analysis
 % rc: 3 June 2012
 %  changed dependency calculation code to allow for other kinds of parallel
+% ta: 13 Nov 2015
+%  accept aaworker (qsub)
 
-function aap=aa_doprocessing_onetask(aap,task,modulenum,indices)
+function aap=aa_doprocessing_onetask(aap,task,modulenum,indices,gaaworker)
+
 global aaworker
+if nargin == 5 % aaworker passed
+    aaworker = gaaworker;
+end
 
 aaworker.modulestarttime=now;
     
@@ -13,11 +19,10 @@ if aap.options.timelog
     tic
 end
 
-try
-    aaworker.parmpath;
-catch
+if ~isfield(aaworker,'parmpath')
+    aas_log(aap,false,'INFO: No engine detected!\nINFO: aaworker with ID=0 will be created');
     aaworker.parmpath=aaworker_getparmpath(aap,0);
-end;
+end
 
 % any task specific settings
 aap=aas_setcurrenttask(aap,modulenum);

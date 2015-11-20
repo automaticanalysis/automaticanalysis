@@ -94,18 +94,11 @@ if any(~isfield(remoteAAlocations, {'host', 'directory', 'allowcache', 'maxstage
 end
 
 global aaworker;
-try
-    aaworker.parmpath;
-catch
-    [pth nme ext] = fileparts(tempname);
-    aaworker.parmpath = aaworker_getparmpath(aap,[filesep sprintf('%s_%s',datestr(now,30),nme)]);
-    aas_makedir(aap, aaworker.parmpath);
-end
 
 % We need to transfer over the remote AAP files, will put them here
 studyPath = aas_getstudypath(aap);
-if ~exist(studyPath), aas_makedir(aap, studyPath); end
-
+aas_makedir(aap, studyPath);
+    
 % Collect remote AA structures here
 remoteAA = {};
 
@@ -117,6 +110,17 @@ local2remoteMaps = {};
 % Collect output streams from the remote AA locations
 % Reverse order, because priority is given to earlier array elements
 for locI = length(remoteAAlocations) : -1 : 1
+    
+    if remoteAAlocations(locI).allowcache == -1, remoteAAlocations(locI).allowcache = aap.directory_conventions.allowremotecache; end
+    if remoteAAlocations(locI).allowcache
+        try
+            aaworker.parmpath;
+        catch
+            [junk, nme, junk] = fileparts(tempname);
+            aaworker.parmpath = aaworker_getparmpath(aap,sprintf('%s_%s',datestr(now,30),strtok(nme,'_')));
+            aas_makedir(aap, aaworker.parmpath);
+        end
+    end
     
     % There should be this file at the remote AA location
     remoteAAPfn = fullfile(remoteAAlocations(locI).directory, 'aap_parameters.mat');

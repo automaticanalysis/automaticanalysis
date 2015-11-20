@@ -1,10 +1,10 @@
-function [aap]=aas_sackworker(aap,workerprocesskey);
+function [aap]=aas_sackworker(aap,aaworkerid)
 % Now recursive kill of child jobs as well
 
 global aaparallel
 
 % Get directory for worker directories
-parmpth=aaworker_getparmpath(aap,workerprocesskey,true);
+parmpth=aaworker_getparmpath(aap,aaworkerid,true);
 
 %
 try
@@ -29,6 +29,6 @@ end;
 
 % And remove
 try
-    aaparallel.workerlist(aaparallel.workerlist==workerprocesskey)=[];
+    aaparallel.workerlist(aaparallel.workerlist==aaworkerid)=[];
 catch
 end;

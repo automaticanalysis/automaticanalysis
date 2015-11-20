@@ -14,11 +14,6 @@
 
 function [aap]=aas_copyfromremote(aap,host,src,dest,varargin)
 
-% Need to set up garbage collection to limit size of this cache
-global aaworker
-[pth nme ext]=fileparts(aaworker.parmpath);
-cachedir=fullfile(pth,'remotecache');
-
 % Set the defaults arguments
 vdefaults = { ...
     'allow404',     0, [0 1], ...     % 0 = crash on 404s? 1 = allow them?
@@ -49,7 +44,7 @@ end;
 
 % Check cache. Either has files, or a flag if nothing came through.
 cachehit=false;
-if (allowremotecache)
+if allowremotecache
     % Check to see if already in cache
     md=java.security.MessageDigest.getInstance('MD5');
     if ~isempty(host)
@@ -60,6 +55,11 @@ if (allowremotecache)
     md5(md5<0)=255+md5(md5<0);
     md5=dec2hex(md5);
     md5=md5(:)';
+    
+    % Need to set up garbage collection to limit size of this cache
+    global aaworker
+    cachedir=fullfile(fileparts(aaworker.parmpath),'remotecache');
+    
     cachefn=fullfile(cachedir,md5);
     if exist(cachedir,'dir')
         docopy=true;
@@ -95,7 +95,7 @@ if (allowremotecache)
     end;
 end;
 
-if (~cachehit)
+if ~cachehit
     % Exponential back off if connection refused
     retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
     for retry=retrydelay

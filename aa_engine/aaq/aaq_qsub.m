@@ -233,9 +233,7 @@ classdef aaq_qsub<aaq
             
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
-            if (exist(qsubpath,'dir')==0)
-                mkdir(qsubpath);
-            end
+            aas_makedir(obj.aap,qsubpath);
             cd(qsubpath);
             
             % Submit the job
@@ -259,7 +257,7 @@ classdef aaq_qsub<aaq
                 J = createJob(obj.scheduler);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
-                inparg = {obj.aap,job.task,job.k,job.indices};
+                inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
                 
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
