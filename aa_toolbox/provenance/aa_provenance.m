@@ -161,8 +161,10 @@ classdef aa_provenance < handle
                 index = smod.index;
                 
                 idname = ['idActivity_' name];
-                if ~isempty(smod.extraparameters), sfx = smod.extraparameters.aap.directory_conventions.analysisid_suffix; 
-                else sfx = ''; end
+                if ~isempty(smod.extraparameters) && isfield(smod.extraparameters.aap,'directory_conventions')
+                    sfx = smod.extraparameters.aap.directory_conventions.analysisid_suffix; 
+                else sfx = ''; 
+                end
                 idattr = {...
                     'aap',aas_setcurrenttask(obj.aap,stageindex),...
                     'Location',fullfile([obj.studypath sfx],sprintf('%s_%05d',name,index)),...
