@@ -51,7 +51,10 @@ switch task
         
         % header
         hdr = loadjson(hdrfile);
-        dcmhdr{1}.EchoTime = hdr.EchoTime;
+        % convert timings to ms (DICOM default)
+        dcmhdr{1}.EchoTime = hdr.EchoTime*1000;
+        
+        %% Output
         dcmhdrfn=fullfile(aas_getsubjpath(aap,subj),'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
         aap=aas_desc_outputs(aap,subj,'fieldmap_dicom_header',dcmhdrfn);
