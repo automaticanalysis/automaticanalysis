@@ -46,7 +46,7 @@ switch task
                 refslice=aap.tasklist.currenttask.settings.refslice;
                 
                 aap.tasklist.currenttask.settings.sliceorder = hdr.slicetimes*1000;
-                aap.tasklist.currenttask.settings.refslice = aap.tasklist.currenttask.settings.sliceorder(sliceorder==refslice);
+                aap.tasklist.currenttask.settings.refslice = aap.tasklist.currenttask.settings.sliceorder(refslice);
                 sl_times = 0;
             else
                 if ~isempty(hdr.sliceorder) && isfield(hdr,'Private_0029_1020')

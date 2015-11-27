@@ -106,7 +106,7 @@ switch task
                         imgsGood(n,:) = [];
                     end
                 end
-                spm_write_sn(imgsGood,matname,aap.spm.defaults.normalise.write);
+                spm_write_sn(imgsGood,matname,flags);
             end
             
             wimgs=[];
