@@ -163,18 +163,16 @@
         </input>
         
         <subjects>
+            <subjname desc='Subject foldername' ui='dir'/>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
-            <structural desc='Structural session number in raw data' ui='int'/>
-            <wholebrain_epi desc='Wholebrain EPI session number in raw data (for partial volume fMRI)' ui='int'/>
+            <structural desc='Session number or filename for structural' ui='int'/>
+            <wholebrain_epi desc='Session number or filename for wholebrain EPI (for partial volume EPI)' ui='int'/>
             <tmaps desc='Real time t maps session number in raw data' ui='int'/>
             <specialseries desc='special series session number in raw data' ui='int'/>
             <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
-            <fieldmaps ui='intarray'/>
-            <newfieldmap ui='dir_part'/>
-            <structuralfn ui='dir_part'/>
-            <siemensfieldmap ui='intarray'/>
-            <seriesnumbers desc='Session numbers for EPI' ui='intarray' />
+            <fieldmaps desc='Session numbers or filename for fieldmaps' ui='intarray'/>
+            <seriesnumbers desc='Session numbers or filename for EPI' ui='intarray' />
             <megseriesnumbers desc='Session numbers for MEG' ui='intarray' />           
             <diffusion_seriesnumbers desc='Session numbers for diffusion data' ui='intarray' />
         </subjects>

@@ -24,20 +24,25 @@ switch task
         fieldfolds = {'rawmag' 'rawphase'};
         
         % Manually specified value for fieldmaps series number over-rides automatically scanned value
-        if (~isempty(aap.acq_details.subjects(subj).fieldmaps))
+        if ~isempty(aap.acq_details.subjects(subj).fieldmaps)
             fieldseries=aap.acq_details.subjects(subj).fieldmaps;
         else
             % Load up automatically scanned value, validate
-            aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
-            ais=load(aisfn);
-            if (length(ais.series_newfieldmap)>2)
-                aas_log(aap,false,sprintf('Was expecting only two fieldmaps, but autoidentify series found %d. Will proceed with last t2o, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_newfieldmap)));
-                fieldseries=ais.series_newfieldmap(end-1:end);
-            elseif (isempty(ais.series_newfieldmap))
-                aas_log(aap,true,'No fieldmaps found.');
-            else
-                fieldseries=ais.series_newfieldmap;
-            end;
+            ais=load(fullfile(subjpath,'autoidentifyseries_saved.mat'));
+            % Backward compatibility
+            if ~isfield(ais,'series_fieldmap'), ais.series_fieldmap = ais.series_newfieldmap; end
+                
+            switch numel(ais.series_fieldmap)
+                case 2
+                    fieldseries=ais.series_fieldmap;
+                case 1
+                    aas_log(aap,true,'ERROR: Was expecting two fieldmaps, but autoidentify series found only one!');
+                case 0
+                    aas_log(aap,true,'ERROR: No fieldmaps found.');
+                otherwise
+                    aas_log(aap,false,sprintf('WARNING: Was expecting only two fieldmaps, but autoidentify series found %d. Will proceed with last two, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',numel(ais.series_fieldmap)));
+                    fieldseries=ais.series_fieldmap(end-1:end);
+            end
         end;
         
         dicom_files_src = {};

@@ -9,13 +9,7 @@ switch task
     case 'description'
         resp='Fieldmaps dicom to nifti and copying';
         
-    case 'summary'
-        if (length(aap.acq_details.subjects(subj).siemensfieldmap)==0)
-            resp=sprintf('No fieldmaps for subject %s\n',aap.acq_details.subjects(subj).mriname);
-        else
-            resp=sprintf('Converted fieldmaps for subject %s \n', aas_getsubjname(aap,subj));
-        end;
-        
+
     case 'report'
     case 'doit'
         
