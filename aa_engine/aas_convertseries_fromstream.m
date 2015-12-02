@@ -62,12 +62,8 @@ for fileind=1:size(dicomdata,1)
     subdir_index(fileind)=s;
 end
 
-if (isempty(dicomdata))
+if isempty(dicomdata)
     aas_log(aap,1,sprintf('Did not find a dicom series called %s',dicomdirsearchpth));
-end
-
-if (length(dicomdata)==0)
-    aas_log(aap,1,sprintf('Did not find any dicom data (%s) in %s',aap.directory_conventions.dicomdatafilter,dicomsearchpth));
 end
 
 out_allechoes=[];

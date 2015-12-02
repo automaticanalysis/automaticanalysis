@@ -19,7 +19,7 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
     for d = dir(fullfile(aawp,'aaworker*'))'
         if etime(clock,datevec(d.date,'dd-mmm-yyyy HH:MM:SS'))/(24*60*60) > aap.options.aaworkercleanup
             aas_log(aap,false,sprintf('INFO: aaworker folder %s is older %d days...Deleting',d.name,aap.options.aaworkercleanup))
-            rmdir(fullfile(aawp,d.name));
+            rmdir(fullfile(aawp,d.name),'s');
         end
     end
 end
