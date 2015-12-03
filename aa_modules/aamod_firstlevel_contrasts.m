@@ -32,8 +32,6 @@ switch task
         end
         
     case 'doit'
-        mriname = aas_prepare_diagnostic(aap,subj);
-        
         cwd=pwd;
         % get the subdirectories in the main directory
         subj_dir  =  aas_getsubjpath(aap,subj);
@@ -71,13 +69,12 @@ switch task
         end        
         
         % Load up contrasts from task settings
-        [fle, subjname, ext] = fileparts(subj_dir);
-        contrasts_set = find(strcmp({settings.contrasts.subject}, [subjname ext]));
+        contrasts_set = find(strcmp({settings.contrasts.subject}, basename(subj_dir)));
         if (isempty(contrasts_set))
             % Try for wildcard
             contrasts_set=find(strcmp({settings.contrasts.subject},'*'));
             if (isempty(contrasts_set))
-                aas_log(aap,true,'Can''t find declaration of what contrasts to use  -  insert this in a local copy of aamod_firstlevel_contrasts.xml or put into user script');
+                aas_log(aap,true,'ERROR: Can''t find declaration of what contrasts to use  -  check user master script!');
             end
         end
         
@@ -272,13 +269,13 @@ switch task
         cd (cwd);
         
         %% DIAGNOSTICS (check distribution of T-values in contrasts)
-%         D = dir(fullfile(anadir, 'spmT_*.img'));
-%         for d = 1:length(D)
-%             h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
-%             saveas(h, fullfile(aap.acq_details.root, 'diagnostics', ...
-%                 [mfilename '__' mriname '_' contrasts.con(d).name '.fig']), 'fig');
-%             try close(h); catch; end
-%         end
+        D = dir(fullfile(anadir, 'spmT_*.img'));
+        for d = 1:length(D)
+            h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
+            print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
+                ['diagnostic_aamod_firstlevel_contrast_dist' contrasts.con(d).name '.jpg']));
+            close(h);
+        end
         
     case 'checkrequirements'
         

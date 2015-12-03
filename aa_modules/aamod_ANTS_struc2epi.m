@@ -177,7 +177,7 @@ switch task
         aap=aas_desc_outputs(aap,subj,'ANTs', outANTS);
         
         %% DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         %% Draw coregistration of structural to functional & delta structurals
         V = spm_vol(Simg);
@@ -193,7 +193,7 @@ switch task
         spm_orthviews('reposition', [0 0 0])
         
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' subjname '.jpeg']));
         
         %% Diagnostic VIDEO
         if aap.tasklist.currenttask.settings.diagnostic
@@ -202,7 +202,7 @@ switch task
             for d = 1:length(Ydims)
                 aas_image_avi( mEPIimg, ...
                     {Simg wSimg}, ...
-                    fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_' Ydims{d} '.avi']), ...
+                    fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' subjname '_' Ydims{d} '.avi']), ...
                     d, ... % Axis
                     [800 600], ...
                     2); % Rotations

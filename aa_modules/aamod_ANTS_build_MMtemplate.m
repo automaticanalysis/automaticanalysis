@@ -107,7 +107,7 @@ switch task
         end
         
         %% Diagnostic image?
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
                 
         %% Draw templates
         
@@ -117,5 +117,5 @@ switch task
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' subjname '.jpeg']));
 end

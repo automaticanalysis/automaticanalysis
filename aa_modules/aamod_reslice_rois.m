@@ -60,7 +60,7 @@ switch task
         aap=aas_desc_outputs(aap,subj,'roi',outstream);
         
         %% Save graphical output to common diagnostics directory
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         OVERcolours = aas_colours;
         
         spm_check_registration(mEPIimg)
@@ -72,5 +72,5 @@ switch task
         
         spm_orthviews('reposition', [0 0 0])
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));        
+            [mfilename '__' subjname '.jpeg']));        
 end

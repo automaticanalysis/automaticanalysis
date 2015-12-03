@@ -34,11 +34,11 @@ switch task
         
         tsdiffana(imgs,0);
         
-        mriname = aas_prepare_diagnostic(aap, subjInd);
+        subjname = aas_prepare_diagnostic(aap, subjInd);
         
         set(gcf,'Renderer','zbuffer');
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '_' mriname '_' aap.acq_details.sessions(sessInd).name '.jpeg']));
+            [mfilename '_' subjname '_' aap.acq_details.sessions(sessInd).name '.jpeg']));
         
         subjpth=aas_getsesspath(aap,subjInd,sessInd);
         aap=aas_desc_outputs(aap,subjInd,sessInd,'tsdiffana',fullfile(subjpth,'timediff.mat'));

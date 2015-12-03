@@ -58,7 +58,7 @@ switch task
             mimgfn = strvcat(mimgfn, fullfile(pth, sprintf('m%s%s', nm, ext)));
             
             %% Diagnostic image?
-            mriname = aas_prepare_diagnostic(aap,subj);
+            subjname = aas_prepare_diagnostic(aap,subj);
             
             % Draw image pre/post bias correction
             spm_check_registration(strvcat(Simg(d,:), ...
@@ -69,14 +69,14 @@ switch task
             f = spm_figure('GetWin','Graphics');
             set(f,'Renderer','zbuffer');
             print(f, '-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '_' num2str(d) '.jpeg']));
+                [mfilename '__' subjname '_' num2str(d) '.jpeg']));
         end
         
         %% DESCRIBE OUTPUTS
         aap=aas_desc_outputs(aap,subj, outputstream{:}, mimgfn);
 
         %% Diagnostic image?
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         % Draw image pre/post bias correction
         spm_check_registration(strvcat(Simg, ...
@@ -85,6 +85,6 @@ switch task
         spm_orthviews('reposition', [0 0 0])
         
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' subjname '.jpeg']));
         
 end

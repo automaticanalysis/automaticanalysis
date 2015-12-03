@@ -239,11 +239,11 @@ switch task
         end
         
         %% DIAGNOSTICS
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         aas_realign_graph(movPars)
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '_MP.jpeg']));
+            [mfilename '__' subjname '_MP.jpeg']));
         
         cd(startingDir);
         

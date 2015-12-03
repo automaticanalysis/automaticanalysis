@@ -59,10 +59,10 @@ switch task
         SPMdes = spm_fmri_spm_ui(SPM);
         
         %% DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap, subj);
+        subjname = aas_prepare_diagnostic(aap, subj);
         try
             saveas(1, fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.fig']));
+                [mfilename '__' subjname '.fig']));
         catch
         end
         

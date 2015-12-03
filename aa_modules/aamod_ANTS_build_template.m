@@ -80,7 +80,7 @@ switch task
         end
         
         %% DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap, subj);
+        subjname = aas_prepare_diagnostic(aap, subj);
         
         % Draw template
         
@@ -91,5 +91,5 @@ switch task
         f = spm_figure('GetWin','Graphics');
         set(f,'Renderer','zbuffer');
         print(f, '-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' subjname '.jpeg']));
 end

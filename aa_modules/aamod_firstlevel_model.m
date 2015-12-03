@@ -13,10 +13,10 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_model_design.jpg'),'file')
             load(aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.outputstreams.stream{1}));
             spm_DesRep('DesOrth',SPM.xX);
-            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
+            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_model_design.jpg'));
             close all;
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
@@ -100,10 +100,10 @@ switch task
         SPMdes.xX.X = double(SPMdes.xX.X);
         
         % DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap, subj);
+        subjname = aas_prepare_diagnostic(aap, subj);
         try
             saveas(1, fullfile(aap.acq_details.root, 'diagnostics', ...
-                                                [mfilename '__' mriname '.fig']));
+                                                [mfilename '__' subjname '.fig']));
         catch
         end
 
@@ -186,12 +186,12 @@ switch task
         end
 
         %% DIAGNOSTICS...
-%         h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
-%         saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
-%         saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
-%         
-%         close(h.regs)
-%         close(h.betas)
+        h = firstlevelmodelStats(anadir, [], fullfile(anadir, dir(fullfile(anadir,'mask.*'))));
+        print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_regs.jpg'));
+        print(h.betas,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_betas.jpg'));
+        
+        close(h.regs)
+        close(h.betas)
         
     case 'checkrequirements'
         

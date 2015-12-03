@@ -10,7 +10,7 @@ resp='';
 
 switch task
     case 'doit'
-        mriname = aas_prepare_diagnostic(aap, subj);
+        subjname = aas_prepare_diagnostic(aap, subj);
         
         % Is session specified in task header?
         if (isfield(aap.tasklist.currenttask.settings,'session'))
@@ -62,7 +62,7 @@ switch task
             h = img2hist(P, [], 'Contrast distributions');
             legend('off')
             print('-depsc2', fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '_' mriname '.eps']));
+                [mfilename '_' subjname '.eps']));
             try close(h); catch; end
             
             % Describe outputs
