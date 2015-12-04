@@ -1,4 +1,4 @@
-function [MK, AK, RK] = fun_DKI_metrics(DT,KT,Mask)
+function [MK, AK, RK, AWF, ADa, ADe, RDe, tortu] = fun_DKI_metrics(DT,KT,Mask)
 % Rafael Neto Henriques, 10/04/2014 MRC-CBU
 
 % Dir125
@@ -10,6 +10,7 @@ ZER1=zeros(N1,N2,N3);
 MK=ZER1;
 RK=ZER1;
 AK=ZER1;
+optionsT = optimset('TolX',1e-2,'Display', 'off');
 
 for k=1:N3
     for j=1:N2
@@ -31,6 +32,14 @@ for k=1:N3
                 [AKi,RKi]=fun_AK_RK(D,W,v1');
                 RK(i,j,k)=RKi;
                 AK(i,j,k)=AKi;
+                
+                % advanced metrics
+                [AWFi,Dai,Dei,tortui,ADai,ADei,RDei,Kmaxi]=run_DKI_single_fiber_model(D,W,V,Dir125('Nvis'),Dir125('Uvis'),optionsT);
+                AWF(i,j,k)=AWFi;
+                ADa(i,j,k)=ADai;
+                ADe(i,j,k)=ADei;
+                RDe(i,j,k)=RDei;
+                tortu(i,j,k)=tortui;
             end
         end
     end

@@ -28,7 +28,7 @@ switch task
         [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
         
         %% Calculate metrics
-        [dki.MK, dki.AK, dki.RK] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
+        [dki.MK, dki.AK, dki.RK, dki.AWF, dki.ADa, dki.ADe, dki.RDe, dki.tortu] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
         [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(DT,data_mask);
         
         %% Now describe outputs
