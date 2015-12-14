@@ -1,7 +1,7 @@
 function [De,Da,DTe,DTa,RDe,RDa,V]=EQ10EQ11_Fieremans(Dv,Kv,f,V)
 
 if nargin<4
-    load('Dir30_MK.mat')
+    V = Dir125('V');
 end
 
 N=size(V,1);

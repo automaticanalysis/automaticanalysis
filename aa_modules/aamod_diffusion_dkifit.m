@@ -29,7 +29,7 @@ switch task
         
         %% Calculate metrics
         [dki.MK, dki.AK, dki.RK, dki.AWF, dki.ADa, dki.ADe, dki.RDe, dki.tortu] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
-        [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(DT,data_mask);
+        [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(dki.DT,data_mask);
         
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
@@ -38,7 +38,7 @@ switch task
         outstreams=aas_getstreams(aap,'output');        
         for outind=1:length(outstreams)
             metric = strrep(outstreams{outind},'dki_','');
-            if ~isfield(dti,metric)
+            if ~isfield(dki,metric)
                 aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
                 continue; 
             end
