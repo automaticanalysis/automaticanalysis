@@ -104,28 +104,30 @@ switch task
         ref_chans = textscan(aap.tasklist.currenttask.settings.ref_chans,'%s','delimiter',':'); ref_chans = ref_chans{1}';
         ref_type = textscan(aap.tasklist.currenttask.settings.ref_type,'%s','delimiter',':'); ref_type = ref_type{1}';
 
-        refs.tem = {};  % Temporal reference signal for correlating with ICs
+        % Temporal reference signal for correlating with ICs
         for r = 1:length(ref_chans),
+            refs.tem{r} = [];
             if ~isempty(indchannel(D,ref_chans{r}))
                 refs.tem{r} = D(indchannel(D,ref_chans{r}),samp);
             else
                 if ~exist(ref_chans{r},'file');
-                    error('Cannot find %s in channels nor in separate file',ref_chans{r});
+                    aas_log(aap,false,sprintf('WARNING: Cannot find %s in channels nor in separate file',ref_chans{r}));
                 else
                     tmp = load(ref_chans{r}); 
                     if ~isfield(tmp,'ref')
-                        error('No field in file %s equal to "ref"',ref_chans{r})
+                        aas_log(aap,false,sprintf('WARNING: No field in file %s equal to "ref"',ref_chans{r}));
                     else
                         tmp = tmp.ref(:)';
                     end
                     if size(tmp,2) ~= D.nsamples || size(tmp,1) ~= 1
-                        error('Reference in file %s does not contain Nsamples x 1 vector',ref_chans{r})
+                        aas_log(aap,false,sprintf('WARNING: Reference in file %s does not contain Nsamples x 1 vector',ref_chans{r}));
                     else
                         refs.tem{r} = tmp(samp);  
                     end
                 end
             end
         end
+        if isempty(cell2mat(refs.tem)), aas_log(aap,false,'WARNING: No temporal reference has been found! Temporal artifacts cannot be removed!'); end
 
         thresholding = aap.tasklist.currenttask.settings.thresholding;    % SETTINGS for thresholding artifact
         if isempty(intersect(thresholding,1:4))
@@ -165,7 +167,8 @@ switch task
             n = find(strcmp(arttopos.modalities,modality{m}));
             for r = 1:numel(ref_type)             
                 if ~isfield(arttopos,ref_type{r})
-                    warning('No topograph found for %s',ref_type{r})
+                    aas_log(aap,false,sprintf('WARNING: No topograph found for %s',ref_type{r}));
+                    aas_log(aap,false,'    Spatial artifacts cannot be removed!');
                     refs.spa{m}{r} = [];
                 else
                     tmp = getfield(arttopos,ref_type{r});
