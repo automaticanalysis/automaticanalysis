@@ -10,6 +10,12 @@ ZER1=zeros(N1,N2,N3);
 MK=ZER1;
 RK=ZER1;
 AK=ZER1;
+AWF=ZER1;
+ADa=ZER1;
+ADe=ZER1;
+RDe=ZER1;
+tortu=ZER1;
+
 optionsT = optimset('TolX',1e-2,'Display', 'off');
 
 for k=1:N3
@@ -26,20 +32,12 @@ for k=1:N3
                 [da,is]=sort(dL);
                 v1=Vecs(:,is(3));
                 % Mean Kurtosis
-                MKi=fun_MK(D,W,V);
-                MK(i,j,k)=MKi;
+                MK(i,j,k)=fun_MK(D,W,V);
                 % radial e axial kurtosis
-                [AKi,RKi]=fun_AK_RK(D,W,v1');
-                RK(i,j,k)=RKi;
-                AK(i,j,k)=AKi;
+                [AK(i,j,k),RK(i,j,k)]=fun_AK_RK(D,W,v1');
                 
                 % advanced metrics
-                [AWFi,Dai,Dei,tortui,ADai,ADei,RDei,Kmaxi]=run_DKI_single_fiber_model(D,W,V,Dir125('Nvis'),Dir125('Uvis'),optionsT);
-                AWF(i,j,k)=AWFi;
-                ADa(i,j,k)=ADai;
-                ADe(i,j,k)=ADei;
-                RDe(i,j,k)=RDei;
-                tortu(i,j,k)=tortui;
+                [AWF(i,j,k),Dai,Dei,tortu(i,j,k),ADa(i,j,k),ADe(i,j,k),RDe(i,j,k),Kmaxi]=run_DKI_single_fiber_model(D,W,V,Dir125('Nvis'),Dir125('Uvis'),optionsT);
             end
         end
     end
