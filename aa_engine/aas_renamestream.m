@@ -9,7 +9,7 @@ if nargin < 5
 end
 
 if strcmp(type,'output')
-    aas_log(aap,false,'Make sure that you know what you are doing!');
+    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  Make sure that you know what you are doing!',origstream,stage,newstream));
 end
 
 %% Locate STAGE

@@ -75,7 +75,7 @@ for subdirind=1:length(subdirs)
     cd(outputpath_withsuffix);
     dicomdata_subdir=dicomdata(subdir_index==subdirind,:);
     % Limit number of volumes read in at a time
-    chunksize_volumes=16;
+    memLimit = meminfo; memLimit = memLimit.MemFree;
     k=1;
     
     % This array is used to collect sliceing timing info so we can
@@ -161,6 +161,8 @@ for subdirind=1:length(subdirs)
                 
                 % Try to get sliceorder from other fields...
                 collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
+                
+                chunksize_volumes=memLimit*1024/(tmp{1}.StartOfPixelData+tmp{1}.SizeOfPixelData)/4;
             end
             
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
@@ -227,16 +229,17 @@ for subdirind=1:length(subdirs)
         end
         % [AVG] to cope with modern cutting edge scanners, and other probs
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
-        if isfield(aap.options, 'customDCMconvert') && ~isempty(aap.options.customDCMconvert)
-            aas_log(aap, false, sprintf('Using alternate %s script...', aap.options.customDCMconvert))
-            custompath = spm_file(aap.options.customDCMconvert,'path');
+        if isfield(aap.directory_conventions, 'dicom_converter') && ~isempty(aap.directory_conventions.dicom_converter)
+            aas_log(aap, false, sprintf('INFO: Using alternative %s script...', aap.directory_conventions.dicom_converter))
+            custompath = spm_file(aap.directory_conventions.dicom_converter,'path');
             addpath(custompath);
-            aap.options.customDCMconvert = spm_file(aap.options.customDCMconvert,'basename');
+            dicom_converter = spm_file(aap.directory_conventions.dicom_converter,'basename');
         else
             custompath = '';
-            aap.options.customDCMconvert = 'spm_dicom_convert';
+            aas_log(aap, false, 'INFO: Using default spm_dicom_convert...')
+            dicom_converter = 'spm_dicom_convert';
         end
-        conv = feval(aap.options.customDCMconvert,DICOMHEADERS_selected,'all','flat','nii');
+        conv = feval(dicom_converter,DICOMHEADERS_selected,'all','flat','nii');
         if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         

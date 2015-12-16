@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:include href="/imaging/local/software/AA/release-4.1/aa_recipes_and_parametersets/aap_parameters_defaults_CBSU.xml" parse="xml"/>
+    <xi:include href="<path_to_aa>/aa_recipes_and_parametersets/aap_parameters_defaults.xml" parse="xml"/>
     <local>
 		<acq_details>
 			<root desc="Root on local machine for processed data" ui="dir">/imaging/xy00/World_Universe_and_Everything</root>

@@ -10,6 +10,8 @@ switch task
     case 'doit'
         % Check templates
         global aa
+        if ~isa(aa,'aaClass'), aa = aaClass; end
+        
         tmpdir = fullfile(aa.Path,'external','Templates');
         tmp_face = fullfile(tmpdir,'freesurfer_daface_face.gca');
         tmp_skull = fullfile(tmpdir,'freesurfer_daface_talairach_mixed_with_skull.gca');

@@ -37,11 +37,12 @@ switch task
                     movefile(...
                         fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
                 else
-                    aas_realign_graph(par{parind});
+                    f  = aas_realign_graph(par{parind});
                     print('-djpeg','-r150','-noui',...
                         fullfile(aas_getsubjpath(aap,subj),...
                         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
+                    close(f);
                 end
             end
 
@@ -172,19 +173,13 @@ switch task
         % Run the realignment
         spm_realign(imgs, reaFlags);
         
-        if (~isdeployed)
-            % Save graphical output
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end
-            print('-djpeg','-r150','-noui',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realign'));
-        end
-        
         % Run the reslicing
         spm_reslice(imgs, resFlags);
         
         %% Describe outputs
         movPars = {};
-        for sess = 1 : numel(aap.acq_details.selected_sessions)
-            aas_log(aap,0,sprintf('Working with session %d', aap.acq_details.selected_sessions(sess)))
+        for sess = acq_details.selected_sessions
+            aas_log(aap,0,sprintf('Working with session %d', aap.acq_details.sessions(sess)))
             
             rimgs=[];
             for k=1:size(imgs{sess},1);
@@ -199,8 +194,7 @@ switch task
                     rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
                 end
             end
-            sessdir = aas_getsesspath(aap,subj,aap.acq_details.selected_sessions(sess));
-            aap = aas_desc_outputs(aap,subj,aap.acq_details.selected_sessions(sess),'epi',rimgs);
+            aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
             
             % Get the realignment parameters...
             fn=dir(fullfile(pth,'rp_*.txt'));
@@ -213,20 +207,21 @@ switch task
                 outpars = fullfile(pth,fn(1).name);
                 if strcmp(aap.options.wheretoprocess,'localsingle')
                     movefile(...
-                        fullfile(aas_getsesspath(aap,subj,aap.acq_details.selected_sessions(sess)),'mw_motion.jpg'),...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),...
                         fullfile(aas_getsubjpath(aap,subj),...
-                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(aap.acq_details.selected_sessions(sess)).name '.jpg'])...
+                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
                 end
             else
-                aas_realign_graph(outpars);
+                f = aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...
                     fullfile(aas_getsubjpath(aap,subj),...
-                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(aap.acq_details.selected_sessions(sess)).name '.jpg'])...
+                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg'])...
                     );
+                close(f);
             end
             
-            aap = aas_desc_outputs(aap,subj,aap.acq_details.selected_sessions(sess),'realignment_parameter', outpars);
+            aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter', outpars);
             
             if sess==1
                 % mean only for first session
@@ -241,11 +236,10 @@ switch task
         %% DIAGNOSTICS
         subjname = aas_prepare_diagnostic(aap,subj);
         
-        aas_realign_graph(movPars)
+        f = aas_realign_graph(movPars);
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' subjname '_MP.jpeg']));
-        
-        cd(startingDir);
+        close(f);
         
     case 'checkrequirements'
         

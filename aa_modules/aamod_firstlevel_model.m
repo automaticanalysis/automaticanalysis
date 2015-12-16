@@ -186,7 +186,7 @@ switch task
         end
 
         %% DIAGNOSTICS...
-        h = firstlevelmodelStats(anadir, [], fullfile(anadir, dir(fullfile(anadir,'mask.*'))));
+        h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
         print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_regs.jpg'));
         print(h.betas,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_betas.jpg'));
         
