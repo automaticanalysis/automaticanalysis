@@ -76,16 +76,16 @@ for depind=1:length(deps)
         if any(remoteindices == 0)
             badIndex = find(remoteindices==0,1,'first');
             domainItems = aas_getNames_bydomain(aap, domain);
-            aas_log(aap, 1, sprintf('Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
+            aas_log(aap, false, sprintf('WARNING: Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
         end
-        
-        
+                
         % IT's possible that AAPs from different versions of AA have
         % different dependency lists... let's not error if that;s the case.
         %  Instead, just don't bother searching for it.
-        if length(aas_dependencytree_finddomain(domain, aap_remote.directory_conventions.parallel_dependencies,{})) ~= 0
+        if ~isempty(aas_dependencytree_finddomain(domain, aap_remote.directory_conventions.parallel_dependencies,{}))
             
-            src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
+            try src=aas_getpath_bydomain(aap_remote,domain,remoteindices,modind);
+            catch, continue; end % skip domain if not exist in remote
             
             remoteoutputstreamdesc=fullfile(src,sprintf('stream_%s_outputfrom_%s.txt',fromstreamname,inputstream.sourcestagename));
             
