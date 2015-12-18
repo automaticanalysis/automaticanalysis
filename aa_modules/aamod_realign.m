@@ -178,8 +178,8 @@ switch task
         
         %% Describe outputs
         movPars = {};
-        for sess = acq_details.selected_sessions
-            aas_log(aap,0,sprintf('Working with session %d', aap.acq_details.sessions(sess)))
+        for sess = aap.acq_details.selected_sessions
+            aas_log(aap,0,sprintf('Working with session %d: %s', sess, aap.acq_details.sessions(sess).name))
             
             rimgs=[];
             for k=1:size(imgs{sess},1);

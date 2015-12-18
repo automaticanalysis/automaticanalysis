@@ -43,11 +43,12 @@ switch task
                     movefile(...
                         fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
                 else
-                    aas_realign_graph(par{parind});
+                    f = aas_realign_graph(par{parind});
                     print('-djpeg','-r150','-noui',...
                         fullfile(aas_getsubjpath(aap,subj),...
                         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
+                    close(f);
                 end
             end
             
@@ -136,38 +137,19 @@ switch task
             EPIimg = aas_getimages_bystream(aap,subj,sess,'epi');
             job.data(sess).scans = cellstr(EPIimg);
             
-            % Try get VDMs
-            try
-                % first try to find a vdm with the session name in it
-                EPIimg   = spm_select('List', ...
-                    fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname), ...
-                    sprintf('^vdm.*%s.nii$', aap.acq_details.sessions(sess).name));
-                
-                % if this fails, try to get a vdm with session%d in it
-                if isempty(EPIimg)
-                    EPIimg   = spm_select('List', ...
-                        fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname), ...
-                        sprintf('^vdm.*session%d.nii$',sess));
-                end
-                job.data(sess).pmscan = ...
-                    cellstr(fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname, EPIimg));
-                fprintf('\nFound a VDM fieldmap')
-            catch
-                job.data(sess).pmscan = ...
-                    [];
-                fprintf('\nWARNING: Failed to find a VDM fieldmap')
-            end
+            % Get VDMs
+            VDMimg = aas_getimages_bystream(aap,subj,sess,'fieldmap');
+            job.data(sess).pmscan = cellstr(VDMimg);
         end
         
         %% Run the job!
         spm_run_realignunwarp(job);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
-            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-        end
+        print('-djpeg','-r150','-noui',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
         
         %% Describe outputs
+		movPars = {};
         for sess = aap.acq_details.selected_sessions
             rimgs=[];
             for k=1:length(job.data(sess).scans);
@@ -193,13 +175,18 @@ switch task
                         );
                 end
             else
-                aas_realign_graph(outpars);
+                f = aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...
                     fullfile(aas_getsubjpath(aap,subj),...
                     ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                     );
+                close(f);
             end
             
+            % Add it to the movement pars...
+            movPars = [movPars outpars];
+
+            % Save realign and unwarp pars
             fn=dir(fullfile(pth,'*uw.mat'));
             outpars = strvcat(outpars, fullfile(pth,fn(1).name));
             aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter',outpars);
@@ -210,6 +197,14 @@ switch task
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
             end
         end
+		
+		%% DIAGNOSTICS
+        subjname = aas_prepare_diagnostic(aap,subj);
+        
+        f = aas_realign_graph(movPars);
+        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+            [mfilename '__' subjname '_MP.jpeg']));
+        close(f);
         
     case 'checkrequirements'
         
