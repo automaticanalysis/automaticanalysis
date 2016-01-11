@@ -182,8 +182,8 @@ switch task
             aas_log(aap,0,sprintf('Working with session %d: %s', sess, aap.acq_details.sessions(sess).name))
             
             rimgs=[];
-            for k=1:size(imgs{sess},1);
-                [pth nme ext]=fileparts(imgs{sess}(k,:));
+            for k=1:size(imgs{aap.acq_details.selected_sessions==sess},1);
+                [pth nme ext]=fileparts(imgs{aap.acq_details.selected_sessions==sess}(k,:));
                 
                 % If we don't reslice the images after realignment, don't
                 % change the prefix of the images in our output stream
@@ -223,7 +223,7 @@ switch task
             
             aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter', outpars);
             
-            if sess==1
+            if sess==min(aap.acq_details.selected_sessions)
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));

@@ -130,16 +130,16 @@ switch task
         job.uweoptions.expround = strrep(lower(job.uweoptions.expround),'''','');
         
         %% Get actual data!
-        
+        job.data = [];
         for sess = aap.acq_details.selected_sessions
             fprintf('\nGetting EPI images for session %s', aap.acq_details.sessions(sess).name)
             % Get EPIs
             EPIimg = aas_getimages_bystream(aap,subj,sess,'epi');
-            job.data(sess).scans = cellstr(EPIimg);
+            job.data(end+1).scans = cellstr(EPIimg);
             
             % Get VDMs
             VDMimg = aas_getimages_bystream(aap,subj,sess,'fieldmap');
-            job.data(sess).pmscan = cellstr(VDMimg);
+            job.data(end).pmscan = cellstr(VDMimg);
         end
         
         %% Run the job!
@@ -152,8 +152,8 @@ switch task
 		movPars = {};
         for sess = aap.acq_details.selected_sessions
             rimgs=[];
-            for k=1:length(job.data(sess).scans);
-                [pth nme ext]=fileparts(job.data(sess).scans{k});
+            for k=1:length(job.data(aap.acq_details.selected_sessions==sess).scans);
+                [pth nme ext]=fileparts(job.data(aap.acq_details.selected_sessions==sess).scans{k});
                 rimgs=strvcat(rimgs,fullfile(pth,['u' nme ext]));
             end
             aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
@@ -191,7 +191,7 @@ switch task
             outpars = strvcat(outpars, fullfile(pth,fn(1).name));
             aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter',outpars);
             
-            if sess==1
+            if sess==min(aap.acq_details.selected_sessions)
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
