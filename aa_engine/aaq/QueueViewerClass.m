@@ -236,6 +236,8 @@ classdef QueueViewerClass < handle
         
         function doKillAll(killall_btn, evd, obj) %#ok
             obj.KillAll;
+            obj.Close;
+            delete(obj);
         end
 
         function doClose(close_btn, evd, obj) %#ok

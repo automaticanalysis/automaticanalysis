@@ -199,7 +199,7 @@ switch task
                 
                 % Check not empty
                 if (~any(cons{ccount}(:)))
-                    aas_log(aap,true,sprintf('Contrast %d has no non-zero values, not permitted.',contrasts_set(ccount)));
+                    aas_log(aap,true,sprintf('Contrast %d has no non-zero values, not permitted.',ccount));
                 end
                 
                 % Allow F tests

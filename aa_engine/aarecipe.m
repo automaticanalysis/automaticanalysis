@@ -107,7 +107,6 @@ function [outstages]=processbranch(aap,analysisid_suffix,selected_sessions,branc
 if (~isfield(branch,'module') || isempty(branch.module))
     %     aas_log(aap,false,sprintf('The branch in your tasklist with analysis id suffix %s appears to be empty. Have you remembered the <module> tag that must surround the <name> tag of each module, e.g., <module><name>aamod_smooth</name></module>?',analysisid_suffix));
     %     outstages=[];
-    
     extrastages.module.name = 'emptybranch';
     extrastages.module.extraparameters.aap.directory_conventions.analysisid_suffix=analysisid_suffix;
     extrastages.module.extraparameters.aap.acq_details.selected_sessions=selected_sessions;
@@ -132,7 +131,7 @@ else
             %...or a set of branches
         else
             clear extrastages
-            
+            selected_sessions_main = selected_sessions; % backup selected_sessions
             for branchnum=1:length(branch.module(stagenum).branch)
                 try
                     analysisid_suffix_append=branch.module(stagenum).branch(branchnum).analysisid_suffix;
@@ -178,6 +177,7 @@ else
                 
             end % End for branchnum=1:length(....
             
+            selected_sessions = selected_sessions_main; % restore selected_sessions
         end
         
         if (isfield(extrastages.module,'branch'))
@@ -225,6 +225,33 @@ else
                     end
                 end
                 
+                % Update the selected_sessions  
+                newStagestoRemove = [];
+                for stage = 1 : numNewStages
+                    outBranchSel = outstages.module(oIndex(oB)).extraparameters.aap.acq_details.selected_sessions;
+                    newStagesSel = newStages.module(stage).extraparameters.aap.acq_details.selected_sessions;
+                    
+                    outBranchSelC = textscan(outBranchSel,'%s','delimiter',' '); outBranchSelC = outBranchSelC{1};
+                    newStagesSelC = textscan(newStagesSel,'%s','delimiter',' '); newStagesSelC = newStagesSelC{1};
+                    sessionsSelC = textscan(selected_sessions,'%s','delimiter',' '); sessionsSelC = sessionsSelC{1};
+                    if any(strcmp(outBranchSelC,'*')), outBranchSel = union(newStagesSelC,sessionsSelC);
+                    else outBranchSel = outBranchSelC; end
+                    if any(strcmp(newStagesSelC,'*')), newStagesSel = union(outBranchSelC,sessionsSelC);
+                    else newStagesSel = newStagesSelC; end
+                    if any(strcmp(sessionsSelC,'*')), sessionsSel = union(newStagesSelC,outBranchSelC);
+                    else sessionsSel = sessionsSelC; end
+                    
+                    sessSel = intersect(outBranchSel,intersect(newStagesSel,sessionsSel));
+                    if isempty(sessSel)
+                        newStagestoRemove(end+1) = stage;
+                        continue;
+                    end
+                    sessSel = sprintf('%s ',sessSel{:}); sessSel(end) = '';
+                    
+                    newStages.module(stage).extraparameters.aap.acq_details.selected_sessions = sessSel;
+                end
+                newStages.module(newStagestoRemove) = [];
+                               
                 % Update the branchIDs
                 newStages.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID+(oB-1)*numNewBranches), newStages.module);
                 
