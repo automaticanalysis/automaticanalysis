@@ -5,11 +5,10 @@
 
 function aas_requiresversion(aap)
 
-minver=aap.options.aa_minver;
-maxver=aap.options.aa_maxver;
-
 global aa
-currver=aa.Version;
+currver = sscanf(aa.Version,'%d.%d.%d')'*[100^2 100 1]';
+minver  = sscanf(aap.options.aa_minver,'%d.%d.%d')'*[100^2 100 1]';
+maxver  = sscanf(aap.options.aa_maxver,'%d.%d.%d')'*[100^2 100 1]';
 
 if (currver>=minver && currver<=maxver) 
     aas_log(aap,0,sprintf('Current aa version %3.2f suitable for this user script\n',currver));
