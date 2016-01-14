@@ -7,10 +7,10 @@ global aa
 % detect running aa
 if isobject(aa)
     aas_log(aap,false,'WARNING: Previous execution of aa was detected! Closing...')
-    aa_close('killjobs');
+    aa_close('restorepath','restorewarnings','killjobs');
     aas_log(aap,false,'WARNING: Done!')
 else
-    aa = aaClass;
+    aa = aaClass('nopath','nogreet');
 end
 
 % cleanup aaworker path
