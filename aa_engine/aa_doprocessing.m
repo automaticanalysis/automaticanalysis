@@ -105,6 +105,7 @@ if (exist('analysisid','var'))
     aap.directory_conventions.analysisid=analysisid;
 end
 
+global aa;
 global defaults;
 global aaparallel;
 global aaworker;
@@ -223,7 +224,8 @@ end;
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aapsavefn=fullfile(aapsavepth,'aap_parameters');
-    aap.internal.aapversion=which('aa_doprocessing');
+    aap.internal.aapversion=aa.Version;
+    aap.internal.aappath=aa.Path;
     save(aapsavefn,'aap');
 end
 
