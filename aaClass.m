@@ -25,7 +25,7 @@ classdef aaClass
             l1 = fgetl(fid); l2 = fgetl(fid); l3 = fgetl(fid);
             fclose(fid);
             d = textscan(l1,'%% aa version %s %s %d');
-            obj.Version = d{1};
+            obj.Version = d{1}{1};
             obj.Date = sprintf('%s %d',d{2}{1},d{3});
             obj.ManuscriptRef = l2(3:end);
             obj.ManuscriptURL = l3(3:end);
@@ -39,7 +39,7 @@ classdef aaClass
             % Greet
             if ~cell_index(varargin,'nogreet')
                 d = textscan(obj.ManuscriptRef,'%s %s %s','delimiter','.','CollectOutput',true); d = d{1};
-                fprintf('Welcome to aa version %4.2f %s\n',obj.Version,obj.Date);
+                fprintf('Welcome to aa version %s %s\n',obj.Version,obj.Date);
                 fprintf(' If you publish work that has used aa, please cite our manuscript:\n');
                 fprintf(' <a href = "%s">%s</a>\n',obj.ManuscriptURL,d{1});
                 fprintf(' <a href = "%s">%s</a>\n',obj.ManuscriptURL,d{2});
