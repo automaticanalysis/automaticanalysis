@@ -29,12 +29,14 @@ classdef aaClass
             obj.Date = sprintf('%s %d',d{2}{1},d{3});
             obj.ManuscriptRef = l2(3:end);
             obj.ManuscriptURL = l3(3:end);
+            obj.Path = fileparts(aafile);
             
             % Path
-            obj.Path = fileparts(aafile);
-            fprintf('\nPlease wait a moment, adding <a href = "matlab: cd %s">%s</a> to the path\n',obj.Path,obj.Name);
-            addpath(genpath(obj.Path)); % recursively add AA subfolders
-            rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
+            if ~cell_index(varargin,'nopath')
+                fprintf('\nPlease wait a moment, adding <a href = "matlab: cd %s">%s</a> to the path\n',obj.Path,obj.Name);
+                addpath(genpath(obj.Path)); % recursively add AA subfolders
+                rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
+            end
             
             % Greet
             if ~cell_index(varargin,'nogreet')
