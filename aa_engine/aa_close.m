@@ -15,7 +15,7 @@ if cell_index(tasks,'restorepath')
 end
 
 % restore warnings
-if cell_index(tasks,'restorewarnings')
+if cell_index(tasks,'restorewarnings') && isfield(aacache,'warnings')
     for w = aacache.warnings
         warning(w);
     end

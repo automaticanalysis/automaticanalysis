@@ -1,4 +1,18 @@
-function [aap]=aarecipe(varargin)
+% Load parameter defaults and tasklist into the structure "aap"
+%
+% FORMAT aap = aarecipe(tasklist)
+% Parameter defaults are loaded from <aa DIR>/aa_recipes_and_parametersets/aap_parameters_defaults.xml
+%   - tasklist: XML-file containing the list of modules
+%
+% FORMAT aap = aarecipe(parameters,tasklist)
+%   - parameters: XML-file containing the parameter defaults
+%   - tasklist: XML-file containing the list of modules
+%
+%
+% Rhodri Cusack
+% Tibor Auer MRC CBU Cambridge 2016
+
+function aap = aarecipe(varargin)
 
 switch(nargin)
     case 0
@@ -9,7 +23,7 @@ switch(nargin)
     case 2
         defaultparameters=varargin{1};
         tasklistxml=varargin{2};
-end;
+end
 
 clear aap
 
@@ -255,9 +269,8 @@ else
                 % Update the branchIDs
                 newStages.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID+(oB-1)*numNewBranches), newStages.module);
                 
-                
+                % Add stages
                 outstages.module = [outstages.module newStages.module];
-                
                 
             end % End for oB = 1 : numOutputBranches
             

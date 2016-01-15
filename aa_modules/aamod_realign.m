@@ -69,13 +69,11 @@ switch task
         aap = aas_report_add(aap,subj,sprintf('<td>%8.3f</td>',varcomp));
         aap = aas_report_add(aap,subj,'</tr></table>');
         
-        aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realign.jpg'));
-
 		% Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject            
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
             for sess=1:nsess
-				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
+				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
                 
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
