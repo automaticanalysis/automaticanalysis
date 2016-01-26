@@ -16,12 +16,12 @@ switch task
         mvmax=[];
         mvstd=[];
         mvall=[];
-        nsess=length(aap.acq_details.sessions);
+        nsess=length(aap.acq_details.selected_sessions);
         
         qq=[];
         
         aap = aas_report_add(aap,subj,'<table><tr>');
-        for sess=1:nsess
+        for sess=aap.acq_details.selected_sessions
             if sess > aas_getN_bydomain(aap,'session',subj), break; end
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
@@ -72,7 +72,7 @@ switch task
 		% Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject            
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
-            for sess=1:nsess
+            for sess=aap.acq_details.selected_sessions
 				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
                 
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));

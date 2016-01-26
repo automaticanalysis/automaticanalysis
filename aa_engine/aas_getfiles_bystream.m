@@ -79,6 +79,12 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         md5 = '';
         return
     end;
+    
+    % to avoid conflict in case of parallel execution make a copy of the file in tmp
+    tmpfname = tempname;
+    copyfile(inpstreamdesc, tmpfname);
+    inpstreamdesc = tmpfname;
+    
     fid=fopen(inpstreamdesc,'r');
     
     ind=0;
@@ -101,6 +107,7 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     end;
     fclose(fid);
     
+    delete(tmpfname);
 else
     inpstreamdesc = '';
     allfiles = '';

@@ -32,14 +32,14 @@ classdef aaClass
             obj.Path = fileparts(aafile);
             
             % Path
-            if ~cell_index(varargin,'nopath')
+            if ~any(strcmp(varargin,'nopath'))
                 fprintf('\nPlease wait a moment, adding <a href = "matlab: cd %s">%s</a> to the path\n',obj.Path,obj.Name);
                 addpath(genpath(obj.Path)); % recursively add AA subfolders
                 rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
             end
             
             % Greet
-            if ~cell_index(varargin,'nogreet')
+            if ~any(strcmp(varargin,'nogreet'))
                 d = textscan(obj.ManuscriptRef,'%s %s %s','delimiter','.','CollectOutput',true); d = d{1};
                 fprintf('Welcome to aa version %s %s\n',obj.Version,obj.Date);
                 fprintf(' If you publish work that has used aa, please cite our manuscript:\n');
