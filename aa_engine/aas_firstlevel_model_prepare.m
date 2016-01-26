@@ -14,9 +14,10 @@ files = cell(numSess,1);
 allfiles='';
 model = cell(numSess,1);
 modelC = cell(numSess,1);
+inpStreams = aas_getstreams(aap,'input');
 
 for sess = 1:numSess
-    files{sess} = aas_getfiles_bystream(aap,subj,subjSessionI(sess),'epi');
+    files{sess} = aas_getfiles_bystream(aap,subj,subjSessionI(sess),inpStreams{1});
     if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D
         V = spm_vol(files{sess});
         f0 = files{sess};
