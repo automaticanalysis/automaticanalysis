@@ -17,7 +17,7 @@ switch task
         Simg = strvcat2cell(Simg);
         
         % Set subject paths
-        subjname = aap.acq_details.subjects(subj).mriname;
+        subjname = aap.acq_details.subjects(subj).subjname;
         subjpath = aas_getsubjpath(aap,subj);
         
         setenv('SUBJECTS_DIR', fileparts(subjpath))

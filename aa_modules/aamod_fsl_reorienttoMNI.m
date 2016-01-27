@@ -1,11 +1,17 @@
-function [aap, resp] = aamod_fsl_reorienttoMNI(aap,task,subj)
+function [aap, resp] = aamod_fsl_reorienttoMNI(aap,task,varargin)
 
 resp = '';
 
 switch task
     case 'doit'
         %% Init
-        localroot = fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
+        subj = varargin{1};
+        switch aap.tasklist.currenttask.domain
+            case 'subject' % structural
+                localroot = fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
+            case 'session' % fmri
+                localroot = aas_getsesspath(aap,subj,varargin{2});
+        end
         
         % Get the T1 template
         sTimg = aap.directory_conventions.T1template;
@@ -19,7 +25,8 @@ switch task
         end  
         
         % Get structural
-        Simg = aas_getfiles_bystream(aap,subj,'structural');        
+        Stream = aas_getstreams(aap,'input');
+        Simg = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),Stream{1});        
         
         %% Run
         % Obtain image geometry
@@ -28,7 +35,7 @@ switch task
         [junk, vox] = spm_get_bbox(sTimg); vox = abs(vox);
         bbox = dim.*vox;
         
-        junk = spm_vol(Simg);
+        junk = spm_vol(Simg); junk = junk(1);
         dim = abs(junk.dim);
         [junk, vox] = spm_get_bbox(Simg); vox = abs(vox);
         dim(1) = ceil(bbox(1)/vox(1));
@@ -57,6 +64,6 @@ switch task
         delete(fullfile(localroot,'tmp.nii'));
         delete(spm_file(sTimg,'path',localroot,'prefix','r'));
         
-        aap = aas_desc_outputs(aap,subj,'structural',spm_file(Simg,'prefix','r'));
+        aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),Stream{1},spm_file(Simg,'prefix','r'));
 end
 end
