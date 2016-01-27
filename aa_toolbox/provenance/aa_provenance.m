@@ -252,9 +252,14 @@ classdef aa_provenance < handle
         
         function [prid, id] = addStream(obj,idsrc,stream)
             obj.IDs{idsrc}.aap.options.maximumretry = 1;
+            if ~isempty(obj.IDs{idsrc}.aap.acq_details.selected_sessions)
+                sess = obj.IDs{idsrc}.aap.acq_details.selected_sessions(1);
+            else
+                sess = 1;
+            end
             try                
                 [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
-                    1,obj.IDs{idsrc}.aap.acq_details.selected_sessions(1),stream,'output'); % TODO: associate files
+                    1,sess,stream,'output'); % TODO: associate files
             catch
                 aas_log(obj.aap,false,sprintf('Outputstream %s of module %s not found!',stream,obj.IDs{idsrc}.aap.tasklist.currenttask.name));
                 prid = ''; id = 0;

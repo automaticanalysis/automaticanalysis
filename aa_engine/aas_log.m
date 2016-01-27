@@ -42,7 +42,7 @@ if iserr % errors
         cd(aap.internal.pwd)
     end
     
-    if aap.options.verbose ~= -1, error('aa error'); end % undocumented, for devel only
+    if aap.options.verbose ~= -1, error('aa error:\n%s\n',msg); end % undocumented, for devel only
 else % warnings
     if aap.options.verbose == 2, logitem(aap,[msg '\n'],style); end
 end
