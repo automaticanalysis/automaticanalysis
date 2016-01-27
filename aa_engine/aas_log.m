@@ -14,6 +14,11 @@ if nargin < 4 || ~aap.gui_controls.usecolouroutput
     style='text';
 end;
 
+if ~isstruct(aap) % defualt
+    aap.options.verbose = 2;
+    aap.options.email = '';
+end
+
 if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
 
 if iserr % errors
