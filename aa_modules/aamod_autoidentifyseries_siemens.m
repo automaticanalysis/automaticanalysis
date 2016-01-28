@@ -46,11 +46,11 @@ switch task
                 acqlist=[];
                 alldicomfiles={};
                 for thispth = allpths'
-                    fprintf('Examining folder %s\n',thispth);
-                    fn=dir(fullfile(thispth,aap.directory_conventions.dicomfilter));
+                    fprintf('Examining folder %s\n',thispth{1});
+                    fn=dir(fullfile(thispth{1},aap.directory_conventions.dicomfilter));
                     for fnind=1:length(fn)
                         if ~fn(fnind).isdir
-                            fullfn=fullfile(thispth,fn(fnind).name);
+                            fullfn=fullfile(thispth{1},fn(fnind).name);
                             H=aas_dicom_headers_light(fullfn);
                             if (isfield(H{1},'SeriesNumber') && isfield(H{1},'AcquisitionNumber'))
                                 serieslist=[serieslist H{1}.SeriesNumber];

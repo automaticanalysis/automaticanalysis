@@ -99,7 +99,7 @@ if exist('k','var')
             for sessionnme = sessionnmes'
                 sessionind = find(strcmp({sessions.name},sessionnme{1}));
                 if isempty(sessionind)
-                    aas_log(aap,true,sprintf('Unknown session %s specified in selected_sessions field of a branch in the tasklist, sessions were %s',sessionnme,sprintf('%s ',sessions.name)));
+                    aas_log(aap,true,sprintf('Unknown session %s specified in selected_sessions field of a branch in the tasklist, sessions were %s',sessionnme{1},sprintf('%s ',sessions.name)));
                 end;
                 selected_sessions=[selected_sessions sessionind];
             end

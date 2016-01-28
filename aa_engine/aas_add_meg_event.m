@@ -47,7 +47,7 @@ if subject(1) ~= '*'
     catch
         subfound = '';
     end
-    if isempty(subfound), subject = aas_megname2subjname(aap,meg_findvol(aap,subject)); end
+    if isempty(subfound), subject = aas_megname2subjname(meg_findvol(aap,subject)); end
 end
 
 if nargin < 7, trialshift = []; end % onset from user

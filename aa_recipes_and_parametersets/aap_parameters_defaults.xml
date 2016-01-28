@@ -106,8 +106,8 @@
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
         <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='double'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
-        <aa_minver desc='Minimum allowed aa version' ui='double'>1</aa_minver>
-        <aa_maxver desc='Maximum allowed aa version' ui='double'>Inf</aa_maxver>
+        <aa_minver desc='Minimum allowed aa version' ui='double'>4.1.0</aa_minver>
+        <aa_maxver desc='Maximum allowed aa version' ui='double'>99.99.99</aa_maxver>
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
 		<garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
@@ -163,7 +163,6 @@
         </input>
         
         <subjects>
-            <subjname desc='Subject foldername' ui='dir'/>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <structural desc='Session number or filename for structural' ui='int'/>

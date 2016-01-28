@@ -17,6 +17,9 @@ switch task
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);
+        for i = 1:numel(regstreams)
+            if ~aas_stream_has_contents(aap,domain,[subj sess],regstreams{i}), regstreams(i) = []; end
+        end
 
         streamfn = aas_getfiles_bystream(aap,domain,[subj sess],['native_' workstream],'output');
         streamfn = strtok_ptrn(basename(streamfn(1,:)),'-0');
@@ -43,6 +46,9 @@ switch task
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);
+        for i = 1:numel(regstreams)
+            if ~aas_stream_has_contents(aap,domain,[subj sess],regstreams{i}), regstreams(i) = []; end
+        end
 
         % Affine Template2mni
         xfm = load(aas_getfiles_bystream_multilevel(aap, subj, sess, 'dartel_templatetomni_xfm'));
