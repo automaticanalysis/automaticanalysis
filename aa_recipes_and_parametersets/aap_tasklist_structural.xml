@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+  <tasklist>
+    <initialisation>
+      <module><name>aamod_checkparameters</name></module>
+      <module><name>aamod_evaluatesubjectnames</name></module>            
+      <module><name>aamod_study_init</name></module>
+      <module><name>aamod_newsubj_init</name></module>
+    </initialisation>
+    
+    <main>      
+      <module><name>aamod_autoidentifyseries_timtrio</name></module> 
+	  <module><name>aamod_get_dicom_structural</name></module>
+	  <module><name>aamod_convert_structural</name></module>
+	  <module><name>aamod_coreg_extended_1</name></module>
+	  <module><name>aamod_biascorrect_structural</name></module>
+	  <module><name>aamod_freesurfer_deface</name></module>
+	  
+	  <module><name>aamod_freesurfer_initialise</name></module>                       
+      <module><name>aamod_freesurfer_autorecon_all</name></module>   
+
+	  <module><name>aamod_segment8_multichan</name></module>
+	  <module><name>aamod_structuralstats</name></module> 
+	  <module><name>aamod_dartel_createtemplate</name></module>                        
+  
+      <module>
+        <branch>
+          <analysisid_suffix>_modulated</analysisid_suffix>
+          <module>
+            <name>aamod_dartel_normmni</name>
+            <extraparameters>
+              <aap><tasklist><currenttask><settings>
+                      <preserve>1</preserve>
+              </settings></currenttask></tasklist></aap>
+            </extraparameters>
+          </module>
+          
+          <module><name>aamod_normalisebytotalgrey</name></module>
+          
+        </branch>
+      </module>                  
+    </main>
+  </tasklist>
+</aap>

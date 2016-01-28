@@ -1,62 +1,35 @@
-<?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
         <initialisation>
             <module><name>aamod_checkparameters</name></module>
-            <!-- <module><name>aamod_evaluatesubjectnames</name></module> -->
-            <!-- <module><name>aamod_make_subjects_short</name></module> -->
+            <module><name>aamod_evaluatesubjectnames</name></module>
             <module><name>aamod_study_init</name></module>
             <module><name>aamod_newsubj_init</name></module>
         </initialisation>
         <main>
-            <module><name>aamod_autoidentifyseries_timtrio</name></module> 
-            <module><name>aamod_get_dicom_diffusion</name></module> 
+            <module><name>aamod_get_dicom_diffusion</name></module>
             <module><name>aamod_convert_diffusion</name></module>
-            <module><name>aamod_3dto4d_diffusion</name></module>
-            <module><name>aamod_diffusion_eddycorrect</name></module>
             <module><name>aamod_diffusion_extractnodif</name></module>
-            <module><name>aamod_bet_diffusion</name></module>
-            <module><name>aamod_diffusion_dtifit</name></module>
-            <module><name>aamod_get_dicom_structural</name></module>
-            <module><name>aamod_convert_structural</name></module>
-            <module><name>aamod_coreg_structural2fa</name></module>
-            <module><name>aamod_norm_noss</name></module>
-            <!-- Auditory tractography --> 
-            <module>
-                <name>aamod_unnormalise_seeds</name>
-                <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                                    <rois>
-                                        <roi>
-                                            <filename>BilAud_hAA.nii.gz</filename>
-                                            <low>1</low>
-                                            <high>1</high>
-                                        </roi>
-                                    </rois>
-                                    <roi_path>/imaging/leire/Connectome/Seeds</roi_path>
-                    </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>      
-            <module>
-                <name>aamod_unnormalise_targets</name>
-                <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                                    <rois>
-                                        <roi>
-                                            <filename>%d.nii.gz</filename>
-                                            <low>1</low>
-                                            <high>120</high>
-                                        </roi>
-                                    </rois>
-                                    <roi_path>/imaging/leire/Connectome/Targets/ROIs_Ind_4mm_Aud120/</roi_path>
-                    </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
-            <module><name>aamod_diffusion_bedpostx</name></module>
-            <module><name>aamod_diffusion_probtrackx</name></module>
-            <module><name>aamod_diffusion_probtrackxsummarize_indv</name></module>
-            <module><name>aamod_diffusion_probtrackxsummarize_group</name></module>
+            <module><name>aamod_diffusion_bet</name></module>
             
+            <module>                    
+                <branch>
+                    <analysisid_suffix>_DKI</analysisid_suffix>
+                    <module><name>aamod_diffusion_smooth</name></module>
+                    <module><name>aamod_diffusion_dkifit</name></module>
+                    <module><name>aamod_diffusion_dki_tractography_prepare</name></module>
+                    <module><name>aamod_diffusion_coreg_extended_2DKI</name></module>
+                    <module><name>aamod_diffusion_norm_write_dartel_DKI</name></module>
+                    <module><name>aamod_diffusion_rois_dartel_denormDKI</name></module>
+                    <module><name>aamod_diffusion_dartel_denormDKI</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_DTI</analysisid_suffix>
+                    <module><name>aamod_diffusion_dtinlfit</name></module>
+                    <module><name>aamod_diffusion_coreg_extended_2DTI</name></module>
+                    <module><name>aamod_diffusion_norm_write_dartel_DTI</name></module>
+                </branch>
+            </module>
         </main>
     </tasklist>
 </aap>
