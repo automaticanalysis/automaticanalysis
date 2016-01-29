@@ -1,7 +1,7 @@
 function [SPM, anadir, files, allfiles, model, modelC] = ...
     aas_firstlevel_model_prepare(aap, subj)
 
-subjname = aap.acq_details.subjects(subj).mriname;
+subjname = aas_mriname2subjname(aap.acq_details.subjects(subj).mriname);
 
 % We can now have missing sessions per subject, so we're going to use only
 % the sessions that are common to this subject and selected_sessions
