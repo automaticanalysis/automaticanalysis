@@ -95,7 +95,8 @@ if exist('tasklistxml','var')
     
 end;
 
-% And copy in SPM defaults
+% SPM
+addpath(aap.directory_conventions.spmdir);
 try
     aap.spm.defaults=spm_get_defaults;
 catch
