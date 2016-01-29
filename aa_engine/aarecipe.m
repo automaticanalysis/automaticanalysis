@@ -30,7 +30,7 @@ clear aap
 % First work on default parameters
 if ~exist(defaultparameters,'file')
     fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
-end;
+end
 
 Pref.ReadAttr=0;
 aap=xml_read(defaultparameters,Pref);
@@ -41,7 +41,7 @@ aap.schema=xml_read(defaultparameters);
 if exist('tasklistxml','var')
     if ~exist(tasklistxml,'file')
         aas_log(aap,true,sprintf('Cannot find file %s as specified in call to aarecipe',tasklistxml));
-    end;
+    end
     Pref.ReadAttr=1;
     Pref.ReadSpec=0;
     xml_tasklist.schema=xml_read(tasklistxml,Pref);
@@ -57,7 +57,7 @@ if exist('tasklistxml','var')
     for task=1:length(aap.tasklist.initialisation.module)
         [aap index]=aas_addtaskparameters(aap,aap.tasklist.initialisation.module(task).name);
         aap.tasklist.initialisation.module(task).index=index;
-    end;
+    end
     % ...and for main modules...
     
     
@@ -75,7 +75,7 @@ if exist('tasklistxml','var')
         for task=1:length(aap.tasklist.main.module)
             [aap index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
             aap.tasklist.main.module(task).index=index;
-        end;
+        end
     end
     
     % When processing the branches, the indices for modules repeated had
@@ -88,25 +88,25 @@ if exist('tasklistxml','var')
         for tbcfind=1:length(tbcf_num)
             if (isnumeric(tbcf_num(tbcfind)))
                 tbcf_cell{tbcfind}=aas_getstagetag(aap,tbcf_num(tbcfind));
-            end;
-        end;
+            end
+        end
         aap.tasklist.main.module(task).tobecompletedfirst=tbcf_cell;
-    end;
+    end
     
-end;
+end
 
 % SPM
-addpath(aap.directory_conventions.spmdir);
+if ~isempty(aap.directory_conventions.spmdir), addpath(aap.directory_conventions.spmdir); end
 try
     aap.spm.defaults=spm_get_defaults;
 catch
     global defaults    
     if (~isstruct(defaults))
-        aas_log(aap,false,'SPM defaults has not been found global defaults will be used;');
+        aas_log(aap,false,'WARNING: SPM defaults has not been found, global defaults will be used');
     else
         aap.spm.defaults=defaults;
-    end;
-end;
+    end
+end
 
 % Make copy of aap
 aap.aap_beforeuserchanges=[];
@@ -197,7 +197,7 @@ else
         
         if (isfield(extrastages.module,'branch'))
             extrastages.module = rmfield(extrastages.module,'branch');
-        end;
+        end
         
         extrastages = checkhasrequiredfields(extrastages);
         if (exist('outstages','var'))
@@ -331,8 +331,8 @@ for stagenum=1:length(outstages.module)
     for reqfldsind=1:length(reqflds)
         if (~isfield(outstages.module(stagenum),reqflds{reqfldsind}))
             outstages.module(stagenum).(reqflds{reqfldsind})=[];
-        end;
-    end;
+        end
+    end
 end
 
 end
