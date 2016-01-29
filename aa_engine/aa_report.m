@@ -17,10 +17,12 @@ else
     studyroot=pwd;
 end;
 if ~exist('aap_parameters.mat','file')
-    error('aap structure not found');
+    error('ERROR: aap structure not found');
 else
     load('aap_parameters');
 end
+
+aa_init(aap);
 
 if ~exist('stages','var')
     stages={aap.tasklist.main.module.name};
@@ -150,5 +152,7 @@ aap.prov.serialise;
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
 save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
+
+aa_close;
 
 end

@@ -96,7 +96,13 @@ if exist('tasklistxml','var')
 end
 
 % SPM
-if ~isempty(aap.directory_conventions.spmdir), addpath(aap.directory_conventions.spmdir); end
+if ~isempty(aap.directory_conventions.spmdir)
+    addpath(aap.directory_conventions.spmdir); 
+    spm_jobman('initcfg');
+else
+    aas_log(aap,false,'WARNING: SPM path is not defined and cannot be loaded.')
+    aas_log(aap,false,'    Make sure that SPM is already in you path and configured!')
+end
 try
     aap.spm.defaults=spm_get_defaults;
 catch
