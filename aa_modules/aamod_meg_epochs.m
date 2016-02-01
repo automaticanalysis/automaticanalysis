@@ -15,7 +15,7 @@ switch task
         S.timewin = aap.tasklist.currenttask.settings.timewindow;
         
         %% Conditions
-        subjmatches=strcmp(aap.acq_details.subjects(subj).megname,{aap.tasklist.currenttask.settings.condition.subject});
+        subjmatches=strcmp(aas_megname2subjname(aap.acq_details.subjects(subj).megname),{aap.tasklist.currenttask.settings.condition.subject});
         sessmatches=strcmp(aap.acq_details.meg_sessions(sess).name,{aap.tasklist.currenttask.settings.condition.session});
         % If no exact spec found, try session wildcard, then subject
         % wildcard, then wildcard for both
