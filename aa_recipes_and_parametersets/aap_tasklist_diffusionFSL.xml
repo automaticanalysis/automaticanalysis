@@ -12,7 +12,6 @@
             <module><name>aamod_autoidentifyseries_timtrio</name></module> 
             <module><name>aamod_get_dicom_diffusion</name></module> 
             <module><name>aamod_convert_diffusion</name></module>
-            <module><name>aamod_3dto4d_diffusion</name></module>
             <module><name>aamod_diffusion_eddycorrect</name></module>
             <module><name>aamod_diffusion_extractnodif</name></module>
             <module><name>aamod_bet_diffusion</name></module>
