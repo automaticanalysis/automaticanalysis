@@ -1,55 +1,58 @@
-% Automatic analysis user script
+% Automatic analysis
+% User master script based on
+% github.com/rhodricusack/automaticanalysis/wiki/Manual:
+% Example (aa version 4.*)
+%
+% Tibor Auer, MRC-CBSU
+% 01-02-2016
 
-% Does two iterations, as at present, bedpostx won't run when launched from
-% within a condor module
+%% INITIALISE
+clear
 
-% for iteration=iteration_start:iteration_end
-%      if iteration==1
-%         aap=aarecipe('aap_tasklist_dti_part2_Leire_withprobtracx_3_TEST.xml');
-%         aap.options.wheretoprocess='localsingle';
-%     elseif iteration==2
-        aap=aarecipe('aap_tasklist_diffusion.xml');
-         if exist('runlocally','var') && runlocally
-             aap.options.wheretoprocess='localsingle';
-         else
-             aap.options.wheretoprocess='condor';
-         end;
-%     end;
-    
+SUBJ = {...
+     'S01' 140905; ...
+     'S02' 140910; ...
+     'S03' 140913; ...
+     'S04' 140928; ...
+     'S05' 140931; ...
+     };
 
-% DEFINE STUDY SPECIFIC PARAMETERS
-aap.options.aa_minver=4.0;
-aap.directory_conventions.subject_directory_format=3;
+aa_ver4
 
+%% DEFINE SPECIFIC PARAMETERS
+%  Default recipe without model
+aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_diffusion.xml');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','normalised_grey','normalised_white');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','native_grey','native_white','output');
 
+aap = aas_configforSPM12(aap);
 
-% Where to put the analyzed data
-aap.acq_details.root = '/imaging/leire/DTI_CamCan';
-aap.directory_conventions.analysisid='dti_analysis';
-aap.options.autoidentifyfieldmaps=false;
-aap.directory_conventions.rawdatadir='/imaging/rhodri/camcan/interim/raw/raw/cc700-interim-raw/raw';
+% Modify standard recipe module selection here if you'd like
+aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
+aap.options.NIFTI4D = 1;
+aap.options.email='xy01@mrc-cbu.cam.ac.uk';
 
-% aap=aas_addsubject(aap,'103515'); % files are in .nii not .nii.gz
-% format
-fn=dir('/imaging/rhodri/camcan/interim/raw/raw/cc700-interim-raw/raw');
-fnind=1;
-for fnind=1:length(fn)
-    if (length(aap.acq_details.subjects)==1)
-        break
-    end;
-    if (length(fn(fnind).name)==6) && exist(fullfile('/imaging/leire/DTI_CamCan',fn(fnind).name),'dir')
-        aap=aas_addsubject(aap,fn(fnind).name);
-    end;
-end;
-aap=aas_addsubject(aap,'CC110037_CBU110544',[],[],[],16);
+aap.options.autoidentifystructural_chooselast = 1;
+aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
+aap.tasksettings.aamod_dartel_normmni.fwhm=1;
 
-% One DTI session
-aap=aas_add_diffusion_session(aap,'diffusion');
+aap.tasksettings.aamod_convert_diffusion.numdummies = 0;
+aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.2;
+aap.tasksettings.aamod_diffusion_smooth.FWHM = 2.5;        
+aap.tasksettings.aamod_diffusion_dartel_denormDKI.interp=4;
+%% STUDY
+aap=aas_addinitialstream(aap,'rois',{'/imaging/camcan/templates/craddock_ROI_841_Linda_FCpaper.nii'});
 
-% PICK ONE SUBJECT FOR TESTING
-%aap.acq_details.subjects=aap.acq_details.subjects(1);
+% Directory for analysed data
+aap.acq_details.root = '/imaging/xy01/aa'; 
+aap.directory_conventions.analysisid = 'Diffusion'; 
 
-% DO PROCESSING
+% Add data
+aap = aas_add_diffusion_session(aap,'diffusion');
+for s = 1:size(SUBJ,1)
+   diffser = sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_CBU_DKI_30dir_2bvals$')),aap.directory_conventions.seriesoutputformat);
+   aap = aas_addsubject(aap,SUBJ{s,2},[],[],[],diffser);
+end
+
+%% DO ANALYSIS
 aa_doprocessing(aap);
-
-% end;

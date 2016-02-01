@@ -37,5 +37,3 @@ aap = aas_addsubject(aap,110252);
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
-aas_garbagecollection(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid),true);
-% clear all;

@@ -21,29 +21,30 @@ aa_ver4
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_structural.xml');
+aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_MTI.xml');
 aap = aas_configforSPM12(aap);
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
 aap.options.NIFTI4D = 1;
-aap.options.email='';
-aap.options.autoidentifyfieldmaps = 1;
-aap.options.autoidentifystructural_chooselast = 1;
-aap.options.autoidentifyt2=1;
-aap.options.autoidentifyt2_chooselast = 1;
+aap.options.email='xy01@mrc-cbu.cam.ac.uk';
 
+aap.options.autoidentifystructural_chooselast = 1;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
 aap.tasksettings.aamod_dartel_normmni.fwhm=1;
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy01/aa'; 
-aap.directory_conventions.analysisid = 'Structural'; 
+aap.acq_details.root = '/imaging/xy01/aa/CamCAN'; 
+aap.directory_conventions.analysisid = 'MTI'; 
 
 % Add data
+aap.acq_details.numdummies = 1;
+aap=aas_add_special_session(aap,'MTI_MT');
+aap=aas_add_special_session(aap,'MTI_baseline');
 for s = 1:size(SUBJ,1)
-   aap = aas_addsubject(aap,SUBJ{s,2},[]);
+   MTser = sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_CBU_MTR_TR50_MT$')),aap.directory_conventions.seriesoutputformat);
+   aap = aas_addsubject(aap,SUBJ{s,2},[],[],[MTser MTser+1]);
 end
 
 %% DO ANALYSIS
