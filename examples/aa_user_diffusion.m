@@ -33,7 +33,7 @@ aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 
 aap.options.autoidentifystructural_chooselast = 1;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
-aap.tasksettings.aamod_dartel_normmni.fwhm=1;
+aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 
 aap.tasksettings.aamod_convert_diffusion.numdummies = 0;
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.2;
