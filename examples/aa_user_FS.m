@@ -1,15 +1,13 @@
 % Automatic analysis
-% User master script based on
-% github.com/rhodricusack/automaticanalysis/wiki/Manual:
-% Example (aa version 4.*)
+% User master script example (aa version 5.*.*)
 %
 % Tibor Auer, MRC-CBSU
-% 20-03-2013
+% 01-02-2016
 
 %% INITIALISE
 clear
 
-aa_ver4
+aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 % ANALYSIS RECIPE

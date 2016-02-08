@@ -37,19 +37,6 @@ else
     moduleindex = 1;
 end
 
-if subject(1) ~= '*'
-    % check whether "subject" is in an evaluated form
-    aaps = aap;
-    aaps.directory_conventions.megsubjectoutputformat = '%s';
-    aaps.options.verbose = 0;
-    try 
-        subfound = meg_findvol(aaps,subject); 
-    catch
-        subfound = '';
-    end
-    if isempty(subfound), subject = aas_megname2subjname(meg_findvol(aap,subject)); end
-end
-
 if nargin < 7, trialshift = []; end % onset from user
 event.conditionlabel = eventname;
 event.trlshift = trialshift;

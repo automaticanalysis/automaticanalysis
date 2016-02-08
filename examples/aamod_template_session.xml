@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
 <aap>
     <tasklist>
         <currenttask domain='session' desc='aa module tempate for sessions' modality='MRI'>

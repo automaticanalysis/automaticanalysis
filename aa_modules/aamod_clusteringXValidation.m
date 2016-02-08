@@ -104,7 +104,7 @@ switch task
         
         for subjInd = 1 : numSubjs
             
-            fprintf('Working with LOO parcellations generated for %s\n', aap.acq_details.subjects(subjInd).mriname);
+            fprintf('Working with LOO parcellations generated for %s\n', aap.acq_details.subjects(subjInd).subjname);
             
             % Get the LOO generated modules
             looInfo = load(aas_getfiles_bystream(aap, subjInd, 'N-1_module_info'));

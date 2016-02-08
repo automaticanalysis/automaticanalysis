@@ -133,16 +133,15 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         set(gcf,'PaperPositionMode','auto')
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.jpeg']));
+                [mfilename '__' aap.acq_details.subjects(subj).subjname '.jpeg']));
         
         %% Diagnostic VIDEO of masks
         if aap.tasklist.currenttask.settings.diagnostic
             
             movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.avi']);
+                [mfilename '__' aap.acq_details.subjects(subj).subjname '.avi']);
             % Create movie file by defining aviObject
             try delete(movieFilename); catch; end
             aviObject = avifile(movieFilename,'compression','none');

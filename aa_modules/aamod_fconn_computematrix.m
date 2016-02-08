@@ -160,8 +160,7 @@ switch task
         
         % output
         [pth, nm, ext] = fileparts(spmName);
-        subName = aap.acq_details.subjects(subjInd).mriname;
-        fconnName = sprintf('%s-fconn%s.mat', subName, settings.matrixsuffix);
+        fconnName = sprintf('%s-fconn%s.mat', aap.acq_details.subjects(subjInd).subjname, settings.matrixsuffix);
         fconnPath = fullfile(pth, fconnName);
         
         % Add descriptives

@@ -8,9 +8,9 @@
 % formats are:
 %  0 = use directory_conventions.subject_directory_names (trimmed version produced by
 %   evaluate subject names
-%  1 = trim second _CBUxxxxxx off (use megname instead if it exists)
+%  1 = from data by trimming mriname or megname
 %  2 = use S01, S02, S03...
-%  3 = use acq_details.subjects as is
+%  3 = manual
 %
 % examples
 %   aas_getsubjpath(aap,1)   - path to first subject
@@ -20,22 +20,4 @@
 
 function [subjpath]=aas_getsubjpath(aap,i,varargin)
 
-root=aas_getstudypath(aap,varargin{:});
-
-switch (aap.directory_conventions.subject_directory_format)
-    case 1
-        if (isfield(aap.acq_details.subjects(i),'megname') && ~isempty(aap.acq_details.subjects(i).megname))
-            tmp=aas_megname2subjname(aap.acq_details.subjects(i).megname);
-        else
-            tmp = aas_mriname2subjname(aap.acq_details.subjects(i).mriname);
-        end
-        subjpath=fullfile(root, tmp);
-    case 2
-        subjpath=fullfile(root, sprintf('S%02d',i));
-    case 0
-        subjpath=fullfile(root, aap.directory_conventions.subject_directory_names{i});
-    case 3
-        subjpath=fullfile(root, aap.acq_details.subjects(i).mriname);
-    otherwise
-        aas_log(1,sprintf('Unknown subject directory format (aap.directory_conventions.subject_directory_format=%d',aap.directory_conventions.subject_directory_format));
-end;
+subjpath=fullfile(aas_getstudypath(aap,varargin{:}),aap.acq_details.subjects(i).subjname);

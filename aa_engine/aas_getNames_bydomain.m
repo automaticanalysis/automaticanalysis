@@ -23,9 +23,7 @@ for d = 1 : length(domains)
             end;
             
         case 'subject'
-            names{d} = {aap.acq_details.subjects.mriname};
-            % try megnames
-            if isempty(names{d}{1}), names{d} = {aap.acq_details.subjects.megname}; end;
+            names{d} = {aap.acq_details.subjects.subjname};
             
         case 'study'
             names{d} = {aap.directory_conventions.analysisid};

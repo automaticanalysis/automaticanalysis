@@ -11,8 +11,8 @@
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
         <Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
         <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
-        <subject_directory_format desc='Format of subject directory' ui='optionlist' options='manual|CBU060500|S01|full path as input'>3</subject_directory_format>
-        <subject_filenames_format desc='Format of filenames within session directory' ui='optionlist' options='manual|CBU060500|S01'>1</subject_filenames_format>
+        <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
+        <subject_directory_names desc='List of predefined subject names' ui='custom'></subject_directory_names>
         <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
         <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
         <reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
@@ -33,6 +33,7 @@
         <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
+        <dicom_converter desc='Path to custom dicom converter MATLAB function' ui='text'></dicom_converter>
         <spmdir desc="Path(s) to SPM software (>SPM12 r6470 required)" ui="dir"></spmdir>		
         <spmtoolsdir desc="Path(s) to SPM tools" ui="dir"></spmtoolsdir>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
@@ -106,7 +107,7 @@
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
         <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='double'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
-        <aa_minver desc='Minimum allowed aa version' ui='double'>4.1.0</aa_minver>
+        <aa_minver desc='Minimum allowed aa version' ui='double'>5.0.0</aa_minver>
         <aa_maxver desc='Maximum allowed aa version' ui='double'>99.99.99</aa_maxver>
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
@@ -157,23 +158,25 @@
         
         <input>
             <list desc='List of subjects and sessions' ui='dir'></list>
-            <selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'/>
+            <combinemultiple desc='Combine multiple entries/visits into one?' ui='yesno'>0</combinemultiple>
+            <selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'></selected_sessions>
             <referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
             <correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
         </input>
         
         <subjects>
+            <subjname desc='Subject foldername' ui='dir'/>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
             <structural desc='Session number or filename for structural' ui='int'/>
             <wholebrain_epi desc='Session number or filename for wholebrain EPI (for partial volume EPI)' ui='int'/>
-            <tmaps desc='Real time t maps session number in raw data' ui='int'/>
-            <specialseries desc='special series session number in raw data' ui='int'/>
-            <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
             <fieldmaps desc='Session numbers or filename for fieldmaps' ui='intarray'/>
             <seriesnumbers desc='Session numbers or filename for EPI' ui='intarray' />
             <megseriesnumbers desc='Session numbers for MEG' ui='intarray' />           
             <diffusion_seriesnumbers desc='Session numbers for diffusion data' ui='intarray' />
+            <tmaps desc='Real time t maps session number in raw data' ui='int'/>
+            <specialseries desc='special series session number in raw data' ui='int'/>
+            <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
         </subjects>
         <sessions desc='Functional sessions' ui='intarray'>
             <name desc='Session name' ui='dir_part'/>

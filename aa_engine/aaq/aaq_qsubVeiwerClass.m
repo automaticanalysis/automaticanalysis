@@ -16,24 +16,22 @@ classdef aaq_qsubVeiwerClass < QueueViewerClass
             modality = Task.InputArguments{1}.schema.tasksettings.(modulename)(1).ATTRIBUTE.modality;
             acq = Task.InputArguments{1}.acq_details;
             indices = Task.InputArguments{4};
+            
             switch modality
                 case'MRI'
-                    field_subj = 'mriname';
                     field_sess = 'sessions';
                     % for backwad compatibilty
                     if ~isempty(strfind(modulename,'diffusion'))
                         field_sess = 'diffusion_sessions';
                     end      
                 case'DWI'
-                    field_subj = 'mriname';
                     field_sess = 'diffusion_sessions';
                 case 'MEG'
-                    field_subj = 'megname';
                     field_sess = 'meg_sessions';
             end
             if numel(indices) == 0, indicesstr = 'study';
             else
-                if numel(indices) >= 1, indicesstr = sprintf('\n\t- Subject %s',acq.subjects(indices(1)).(field_subj)); end
+                if numel(indices) >= 1, indicesstr = sprintf('\n\t- Subject %s',acq.subjects(indices(1)).subjname); end
                 if numel(indices) >= 2, indicesstr = sprintf('%s\n\t- Session %s',indicesstr,acq.(field_sess)(indices(2)).name); end
             end
             

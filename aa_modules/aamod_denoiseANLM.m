@@ -80,7 +80,7 @@ switch task
             if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
                 mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
             end
-            mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
+
             try
                 %% Draw noisy and denoised structural...
                 spm_check_registration(strvcat(V.fname, dV.fname))
@@ -90,13 +90,13 @@ switch task
                 figure(1);
                 set(gcf,'PaperPositionMode','auto')
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' num2str(d) '.jpeg']));
+                    [mfilename '__' aap.acq_details.subjects(subj).subjname '_' num2str(d) '.jpeg']));
             catch
             end
             if aap.tasklist.currenttask.settings.diagnostic
                 
                 movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' num2str(d) '.avi']);
+                    [mfilename '__' aap.acq_details.subjects(subj).subjname '_' num2str(d) '.avi']);
                 % Create movie file by defining aviObject
                 try delete(movieFilename); catch; end
                 aviObject = avifile(movieFilename,'compression','none');

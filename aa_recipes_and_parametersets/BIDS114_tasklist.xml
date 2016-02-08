@@ -47,7 +47,7 @@
             <module>
                 <branch>
                     <analysisid_suffix>_Slow</analysisid_suffix>
-                    <selected_sessions>overtverbgeneration overtwordrepetition</selected_sessions>
+                    <selected_sessions>overtverbgeneration_test overtverbgeneration_retest overtwordrepetition_test overtwordrepetition_retest</selected_sessions>
                     <module><name>aamod_firstlevel_model</name></module>
                     <module><name>aamod_firstlevel_contrasts</name></module>
                     <module><name>aamod_firstlevel_threshold</name></module>
@@ -55,7 +55,7 @@
                 </branch>
                 <branch>
                     <analysisid_suffix>_Fast</analysisid_suffix>
-                    <selected_sessions>covertverbgeneration fingerfootlips linebisection</selected_sessions>
+                    <selected_sessions>covertverbgeneration_test covertverbgeneration_retest fingerfootlips_test fingerfootlips_retest linebisection_test linebisection_retest</selected_sessions>
                     <module><name>aamod_firstlevel_model</name></module>
                     <module><name>aamod_firstlevel_contrasts</name></module>
                     <module><name>aamod_firstlevel_threshold</name></module>

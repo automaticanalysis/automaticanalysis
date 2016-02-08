@@ -43,7 +43,7 @@ switch task
         EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
         
         % For each image, apply the warp of the mean EPI image
-        fprintf('\nPEwarping images for session: %s\n', aas_getsessname(aap,subj,sess))
+        fprintf('\nPEwarping images for session: %s\n', aas_getsessdesc(aap,subj,sess))
         
         PEimg=[];
         for f = 1:size(EPIimg, 1)

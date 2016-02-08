@@ -1,4 +1,4 @@
-% aa module tempate for sessions 
+% This is a tempate for a module code processing an MRI session
 
 function [aap,resp]=aamod_session(aap,task,subj,sess)
 resp='';

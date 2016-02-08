@@ -1,19 +1,17 @@
 % Automatic analysis
-% User master script based on
-% github.com/rhodricusack/automaticanalysis/wiki/Manual:
-% Example (aa version 4.*)
+% User master script example (aa version 5.*.*)
 %
 % Tibor Auer, MRC-CBSU
-% 09-12-2013
+% 01-02-2016
 
 %% INITIALISE
 clear
 
-aa_ver4
+aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_parameters_defaults.xml','aap_tasklist_fmri_fromnifti.xml');
+aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri_fromnifti.xml');
 aap = aas_configforSPM12(aap);
 
 
@@ -51,8 +49,8 @@ for s = 1:numel(d)
     subjstr = d(s).name;
     subj = d(s).name(5:end);
     aap = aas_addsubject(aap,subj,...
-        {fullfile(subjstr,[subj '_T1.nii']),...
-        fullfile(subjstr,[subj '_fMRI.nii'])});    
+        'structural',fullfile(subjstr,[subj '_T1.nii']),...
+        'functional',fullfile(subjstr,[subj '_fMRI.nii']));    
     aap = aas_addsession(aap,'run1');
     ev = importdata(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev1.txt']));
     aap = aas_addevent(aap,'aamod_firstlevel_model',subjstr,'run1','task',ev(:,1)',ev(:,2)');
@@ -64,4 +62,3 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:run1',
 %% DO ANALYSIS
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-% aas_garbagecollection(aap,true);

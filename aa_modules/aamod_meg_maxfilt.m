@@ -9,7 +9,7 @@ switch task
 
         for sess = 1:numel(aap.acq_details.meg_sessions)
             aap = aas_report_add(aap,subj,'<td>');
-            aap = aas_report_add(aap,subj,['<h3>Session: ' aas_getsessname(aap,subj,sess) '</h3>']);
+            aap = aas_report_add(aap,subj,['<h3>Session: ' aas_getsessdesc(aap,subj,sess) '</h3>']);
 
             [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meg_session',[subj,sess],'meg','output'));
             logfname  = fullfile(sesspath,sprintf('%s.log',fstem));
@@ -125,7 +125,7 @@ switch task
                 addpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
                 try spherefit = meg_fit_sphere_rik(aap,infname,outfname);
                 catch
-                    aas_log(aap,1,sprintf('ERROR: Spherefit failed for %s!\nERROR: No frame/origin will be applied!',aas_getsessname(aap,subj,sess)))
+                    aas_log(aap,1,sprintf('ERROR: Spherefit failed for %s!\nERROR: No frame/origin will be applied!',aas_getsessdesc(aap,subj,sess)))
                 end;
                 rmpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
             else
@@ -133,7 +133,7 @@ switch task
                     megfname = aas_getfiles_bystream(aap,'meg_session',[subj,HPIsess],'meg','output');
                     spherefit = load(spm_file(megfname,'suffix','_sphere_fit','ext','txt'),'-ASCII','spherefit');
                 else
-                    aas_log(aap,1,sprintf('WARNING: Session for HPI not defined!\nWARNING: HPI is not perfomed for %s!',aas_getsessname(aap,subj,sess)))
+                    aas_log(aap,1,sprintf('WARNING: Session for HPI not defined!\nWARNING: HPI is not perfomed for %s!',aas_getsessdesc(aap,subj,sess)))
                 end
             end
             

@@ -2,6 +2,8 @@
 % Required:
 %     - aap.directory_conventions.rawdatadir: path to BIDS
 % Optional:
+%     - aap.acq_details.input.combinemultiple:
+%           Combines multiple sessions per subjects (default = false)
 %     - aap.acq_details.input.selected_sessions:
 %           selection of a subset of tasks/runs based on their names (e.g. 'task-001_run01')
 %           - elements are strings: selecting for preprocessing and analysis
@@ -10,7 +12,7 @@
 %               - tasks/runs selected for any "aamod_firstlevel_model" are pre-processed
 %           (default = [], all tasks/runs are selected for both preprocessing and analysis)
 %     - aap.acq_details.input.correctEVfordummies: whether number of
-%           dummies should be take into account when defining onset times (default = 1);
+%           dummies should be take into account when defining onset times (default = true);
 %           Also requires:
 %               - aap.acq_details.numdummies: number of (acquired) dummy scans (default = 0);
 %               - "repetition_time" (TR) specified in JSON header
@@ -19,10 +21,16 @@
 
 function aap = aas_processBIDS(aap)
 
+global BIDSsettings;
+BIDSsettings.directories.structDIR = 'anat';
+BIDSsettings.directories.functionalDIR = 'func';
+BIDSsettings.directories.fieldmapDIR = 'fmap';
+BIDSsettings.directories.diffusionDIR = 'dwi';
+BIDSsettings.combinemultiple = aap.acq_details.input.combinemultiple;
+
 %% Init
 aap.directory_conventions.subjectoutputformat = '%s';
 aap.directory_conventions.subject_directory_format = 3;
-spm_jobman('initcfg');
 
 if ~aap.directory_conventions.continueanalysis
     sfx = 1;
@@ -33,11 +41,19 @@ if ~aap.directory_conventions.continueanalysis
     end
 end
 
-for m = 1:numel(aap.tasksettings.aamod_firstlevel_model)
-    aap.tasksettings.aamod_firstlevel_model(m).xBF.UNITS  ='secs';
+if isfield(aap.tasksettings,'aamod_firstlevel_model')
+    for m = 1:numel(aap.tasksettings.aamod_firstlevel_model)
+        aap.tasksettings.aamod_firstlevel_model(m).xBF.UNITS  ='secs';
+    end
 end
 
 %% Process
+if BIDSsettings.combinemultiple
+    aas_log(aap,false,'WARNING: You have selected combining multiple BIDS sessions!');
+    aas_log(aap,false,'    Make sure that you have also set aap.options.autoidentify*_* appropriately!');
+    aas_log(aap,false,'    N.B.: <aa sessionname> = <BIDS taskname>_<BIDS sessionname>');
+end
+
 % Set BIDS
 BIDS = aap.directory_conventions.rawdatadir;
 
@@ -60,14 +76,13 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function aap = add_data(aap,subjstr,sesspath)
+function aap = add_data(aap,mriname,sesspath)
 
-structDIR = 'anat';
-functionalDIR = 'func';
-diffusionDIR = 'dwi';
-
-subjaa = subjstr;
-subjstr = strrep(subjstr,'/','_');
+global BIDSsettings;
+structDIR = BIDSsettings.directories.structDIR;
+functionalDIR = BIDSsettings.directories.functionalDIR;
+fieldmapDIR = BIDSsettings.directories.fieldmapDIR;
+diffusionDIR = BIDSsettings.directories.diffusionDIR;
 
 % locate first_level modules
 stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_model');
@@ -75,91 +90,125 @@ stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_mod
 % Correct EV onstets for number of dummies?
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies;
 
-images = {};
-diffusionimages = {};
-cf = cellstr(spm_select('List',sesspath,'dir'));
-if any(strcmp(cf,structDIR)), images = horzcat(images,cellstr(fullfile(sesspath,structDIR,[subjstr '_T1w.nii.gz']))); end
-if any(strcmp(cf,diffusionDIR))
-    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjstr '_dwi.*.nii.gz']))
-        sessfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '.nii'},{'',''});
-        sessname = sessfname;
-        bvalfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjstr '_' sessfname '.bval']));
-        bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjstr '_' sessfname '.bvec']));
-        if ~isempty(bvalfname) && ~isempty(bvecfname)
-            aap = aas_add_diffusion_session(aap,sessname);
-            diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname)); 
-        else
-            aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjstr,sessfname))
-        end
-    end
+% Combine multiple sessions into one
+if BIDSsettings.combinemultiple
+    subjname = strtok(mriname,'/');
+else
+    subjname = strrep(mriname,'/','_');
 end
-if any(strcmp(cf,functionalDIR))
-    for cfname = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjstr '_task.*_bold.nii.gz']))'
-        taskfname = strrep_multi(basename(cfname{1}),{[subjstr '_'] '_bold.nii'},{'',''});
-        info = []; TR = 0;
-        taskname = strrep(taskfname,'task-','');
-        
-        % Header
-        [hdrfname, runstr] = retrieve_file(fullfile(sesspath,functionalDIR,[subjstr '_' taskfname,'_bold.json']));
-        if ~isempty(hdrfname)
-            info = loadjson(hdrfname);
-            if isfield(info,'TaskName')
-                taskname = info.TaskName;
-                taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
-                taskname = strcat(taskname{:},runstr);
-            end
-            if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
-        end
-        
-        % Skip?
-        if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
-        aap = aas_addsession(aap,taskname);
-        
-        % Data
-        if isstruct(info)
-            images = horzcat(images,struct('fname',cfname{1},'hdr',hdrfname));
-        else
-            images = horzcat(images,cfname{1});
-        end
-        
-        % Model
-        if any(stagenumModel)
-            iModel = [];
-            for m = 1:numel(stagenumModel)
-                sess = textscan(aap.tasklist.main.module(stagenumModel(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
-                if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(stagenumModel(m)).index; end
-            end
-            
-            if ~TR
-                aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjstr,taskname))
-                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
-            end
-            
-            % Search for event file
-            eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjstr '_' taskfname '_events.tsv'])); % default: next to the image
-            if isempty(eventfname)
-                aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjstr,taskname));
-            else
-                EVENTS = tsvread(eventfname);
-                iName = cell_index(EVENTS(1,:),'trial_type');
-                iOns = cell_index(EVENTS(1,:),'onset');
-                iDur = cell_index(EVENTS(1,:),'duration');
-                names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
-                for t = 2:size(EVENTS,1)
-                    iEV = strcmp(names,EVENTS{t,iName});
-                    onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
-                    durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
+
+structuralimages = {};
+functionalimages = {};
+fieldmapimages = {};
+diffusionimages = {};
+for cf = cellstr(spm_select('List',sesspath,'dir'))'
+    switch cf{1}
+        case structDIR
+            structuralimages = horzcat(structuralimages,cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_T1w.*.nii.gz'])));
+        case diffusionDIR
+            for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
+                sessfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '.nii'},{'',''});
+                sessname = sessfname;
+                bvalfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval']));
+                bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec']));
+                if ~isempty(bvalfname) && ~isempty(bvecfname)
+                    aap = aas_add_diffusion_session(aap,sessname);
+                    diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname));
+                else
+                    aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjname,sessfname))
                 end
-                for m = iModel
-                    for e = 1:numel(names)
-                        aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjaa,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+            end
+        case fieldmapDIR
+            fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json']));
+            skipnext = false;
+            for f = fmaps'
+                if skipnext
+                    skipnext = false;
+                    continue; 
+                end
+                jfname = spm_file(f{1},'basename');
+                ind = find(jfname=='_',1,'last');
+                ftype = jfname(ind+1:end);
+                switch ftype
+                    case 'phasediff'
+                        fmap.hdr = loadjson(f{1});
+                        if isfield(fmap.hdr,'IntendedFor')
+                            fmap.hdr.session = get_taskname(sesspath,subjname,fmap.hdr.IntendedFor);
+                        else
+                            fmap.hdr.session = '*';
+                        end
+                        fmap.fname = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[strrep(jfname,ftype,'') '.*.nii.gz']));
+                    case 'phase1'
+                        skipnext = true;
+                    case 'fieldmap'
+                end
+                fieldmapimages = horzcat(fieldmapimages,fmap);
+            end            
+        case functionalDIR
+            for cfname = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))'
+                taskfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '_bold.nii'},{'',''});
+                taskname = get_taskname(sesspath,subjname,cfname{1});
+                               
+                % Header
+                info = []; TR = 0;
+                hdrfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
+                if ~isempty(hdrfname)
+                    info = loadjson(hdrfname);
+                    if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
+                end
+                
+                % Skip?
+                if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
+                aap = aas_addsession(aap,taskname);
+                
+                % Data
+                if isstruct(info)
+                    functionalimages = horzcat(functionalimages,struct('fname',cfname{1},'hdr',hdrfname));
+                else
+                    functionalimages = horzcat(functionalimages,cfname{1});
+                end
+                
+                % Model
+                if any(stagenumModel)
+                    iModel = [];
+                    for m = 1:numel(stagenumModel)
+                        sess = textscan(aap.tasklist.main.module(stagenumModel(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
+                        if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(stagenumModel(m)).index; end
+                    end
+                    
+                    if ~TR
+                        aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjname,taskname))
+                        aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
+                    end
+                    
+                    % Search for event file
+                    eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); % default: next to the image
+                    if isempty(eventfname)
+                        aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
+                    else
+                        EVENTS = tsvread(eventfname);
+                        iName = cell_index(EVENTS(1,:),'trial_type');
+                        iOns = cell_index(EVENTS(1,:),'onset');
+                        iDur = cell_index(EVENTS(1,:),'duration');
+                        names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
+                        for t = 2:size(EVENTS,1)
+                            iEV = strcmp(names,EVENTS{t,iName});
+                            onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
+                            durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
+                        end
+                        for m = iModel
+                            for e = 1:numel(names)
+                                aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                            end
+                        end
                     end
                 end
-            end;
-        end
+            end
+        otherwise
+            aas_log(aap,false,sprintf('NYI: Input %s is not supported',cf{1}));
     end
 end
-aap = aas_addsubject(aap,subjaa,images,[],[],diffusionimages);
+aap = aas_addsubject(aap,subjname,mriname,'structural',structuralimages,'functional',functionalimages,'fieldmaps',fieldmapimages,'diffusion',diffusionimages);
 end
 
 function [fname, runstr] = retrieve_file(fname)
@@ -176,25 +225,51 @@ if isempty(regexp(f(end),'[0-9]', 'once')) % last entry is suffix
 end
 ntags = 1:numel(tags);
 f = list_index(f,1,ntags);
-% tags
-itagtask = cell_index(tags,'task');
-itagrun = cell_index(tags,'run');
-if itagrun
-    runstr = ['_' tags{itagrun}];
-else
-    runstr = '';
+% suffix
+itags = [cell_index(tags,'acq'), cell_index(tags,'run')]; itags(~itags) = [];
+runstr = '';
+for t = itags
+    runstr = [runstr '_' tags{t}];
 end
 
 % search
+itags = [cell_index(tags,'ses'), cell_index(tags,'sub')]; itags(~itags) = [];
+itagrun = cell_index(tags,'run');
 if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
 p = fileparts(p);
-while numel(ntags) > logical(itagtask)
+for t = itags
     % one level up
-    p = fileparts(p); ntags(end-(logical(itagtask)+logical(itagrun))) = [];
+    p = fileparts(p); ntags(t) = [];
     if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags,0) e])); end
     if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
 end
 if ~exist(fname,'file'), fname = ''; end
+end
+
+function taskname = get_taskname(sesspath,subjname,fname)
+global BIDSsettings;
+functionalDIR = BIDSsettings.directories.functionalDIR;
+taskfname = strrep_multi(basename(fname),{[subjname '_'] '_bold.nii'},{'',''});
+taskname = strrep(taskfname,'task-','');
+
+% Header
+[hdrfname, runstr] = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
+if ~isempty(hdrfname)
+    info = loadjson(hdrfname);
+    if isfield(info,'TaskName')
+        taskname = info.TaskName;
+        taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
+        taskname = strcat(taskname{:});
+        if BIDSsettings.combinemultiple
+            sesstr = '';
+            if ~isempty(strfind(basename(sesspath),'ses-'))
+                sesstr = ['_' strrep(basename(sesspath),'ses-','')];
+            end
+            taskname = [taskname,sesstr];
+        end
+        taskname = [taskname,runstr];
+    end
+end
 end
 
 function LIST = tsvread(fname)

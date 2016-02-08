@@ -158,9 +158,8 @@ switch task
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' aap.acq_details.subjects(subj).subjname '.jpeg']));
         
         %% Diagnostic VIDEO of coregistration
         if aap.tasklist.currenttask.settings.diagnostic
@@ -173,7 +172,7 @@ switch task
                 
             for d = 1:length(Ydims)
                 movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' Ydims{d} '.avi']);
+                    [mfilename '__' aap.acq_details.subjects(subj).subjname '_' Ydims{d} '.avi']);
                 % Create movie file by defining aviObject
                 try delete(movieFilename); catch; end
                 aviObject = avifile(movieFilename,'compression','none');

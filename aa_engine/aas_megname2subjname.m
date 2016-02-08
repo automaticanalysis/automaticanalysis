@@ -1,13 +1,14 @@
-function subjName = aas_megname2subjname(name)
+function subjName = aas_megname2subjname(aap,name)
 
-subjName = '';
+subjName = name;
 
-numpos=strfind(name,'meg');
+% subjprefix
+subjprefix = aap.directory_conventions.megsubjectoutputformat;
+subjprefix = subjprefix(1:regexp(subjprefix,'[%*]','once')-1);
+
+numpos=strfind(name,subjprefix);
 if ~isempty(numpos)
     subjName =name(numpos(1):length(name));
-    subjName=strtok(subjName,'/');
 end
 
-if isempty(subjName)
-    subjName = name;
-end
+subjName=strtok(subjName,'*/');

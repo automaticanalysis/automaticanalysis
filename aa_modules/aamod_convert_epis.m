@@ -39,12 +39,29 @@ switch task
                 aas_log(aap,1,sprintf('Problem creating directory for session\n%s',domainpath));
             end
         end
-        
-        if (iscell(aap.acq_details.subjects(subj).seriesnumbers))
-            seriesnumbers=aap.acq_details.subjects(subj).seriesnumbers{sess};
-        else
-            seriesnumbers=aap.acq_details.subjects(subj).seriesnumbers(sess);
+
+        % Locate series
+        mrisess = sess;
+        for d = 1:numel(aap.acq_details.subjects(subj).mriname)
+            seriesnumbers = aap.acq_details.subjects(subj).seriesnumbers{d};
+            mrisess = mrisess - numel(seriesnumbers);
+            if mrisess < 1
+                mrisess = numel(seriesnumbers) + mrisess;
+                break;
+            end
         end
+        
+        % Multi-echo enabled or not?
+        if iscell(seriesnumbers)
+            seriesnumbers=seriesnumbers{mrisess};
+        else
+            seriesnumbers=seriesnumbers(mrisess);
+        end
+%         if (iscell(aap.acq_details.subjects(subj).seriesnumbers))
+%             seriesnumbers=aap.acq_details.subjects(subj).seriesnumbers{sess};
+%         else
+%             seriesnumbers=aap.acq_details.subjects(subj).seriesnumbers(sess);
+%         end
         
         
         numechoes=length(seriesnumbers);

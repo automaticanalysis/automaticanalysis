@@ -1,13 +1,14 @@
-function subjName = aas_mriname2subjname(name)
+function subjName = aas_mriname2subjname(aap,name)
 
-subjName = '';
+subjName = name;
 
-numpos=strfind(name,'CBU');
+% subjprefix
+subjprefix = aap.directory_conventions.subjectoutputformat;
+subjprefix = subjprefix(1:regexp(subjprefix,'[%*]','once')-1);
+
+numpos=strfind(name,subjprefix);
 if ~isempty(numpos)
     subjName =name(numpos(1):length(name));
-    subjName=strtok(subjName,' /\\_,.');
 end
 
-if isempty(subjName)
-    subjName = name;
-end
+subjName=strtok(subjName,' */\\_,.');

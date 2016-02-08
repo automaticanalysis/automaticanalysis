@@ -30,7 +30,7 @@ http://www.automaticanalysis.org
    - **MATLAB** - It has been tested with version r2009a and later
    - **SPM** - It has been tested with versions SPM5 and later (SPM12 is recommended!)
  - Recommended software for features:
-   - For MEG: Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
+   - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
    - For generating and serialising provenance: [Raptor RDF Syntax Library](http://librdf.org/raptor)
  - Recommended/Partially supported software for analysis:
@@ -71,7 +71,7 @@ Optional:
  - For MEG: 
    - *directory_conventions/rawmegdatadir*: Directories to find raw MEG data
    - *directory_conventions/megsubjectoutputformat*: `sprintf` formatting string to get subject directory as stored in *directory_conventions/rawmegdatadir*		
-   - *directory_conventions/neuromagdir*: Path to Neuromag  
+   - *directory_conventions/neuromagdir*: Path to Neuromag (maxfilter)
 
  - Optional analysis software:
    - FMRIB Software Library:

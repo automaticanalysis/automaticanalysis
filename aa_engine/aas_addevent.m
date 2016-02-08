@@ -45,17 +45,6 @@ else
     moduleindex = 1;
 end
 
-% if (length(modulename>6))
-%     moduleindex=str2num(modulename(end-4:end));
-%     if (~strcmp(['_' sprintf('%05d',moduleindex)],modulename(length(modulename)-5:end)))
-%         moduleindex=1;
-%     else
-%         modulename=modulename(1:length(modulename)-6);
-%     end
-% else
-%     moduleindex=1;
-% end
-
 if (~exist('parametric','var'))
     parametric=[];
 end
@@ -75,18 +64,6 @@ if ~isempty(parametric)
             parametric(p).P = parametric(p).P(ind);
         end
     end
-end
-
-if subject(1) ~= '*'
-    % check whether "subject" is in an evaluated form
-    aaps = aap; aaps.directory_conventions.subjectoutputformat = '%s';
-    aaps.options.verbose = 0;
-    try 
-        subfound = mri_findvol(aaps,subject); 
-    catch
-        subfound = '';
-    end
-    if isempty(subfound), subject = aas_mriname2subjname(mri_findvol(aap,subject)); end
 end
 
 % find models that corresponds and add events if they exist

@@ -1,6 +1,6 @@
 % AA module - fieldmap from NIFTI
 
-function [aap,resp]=aamod_fieldmapfromnifti(aap,task,subj)
+function [aap,resp]=aamod_fieldmapfromnifti(aap,task,subj,sess)
 
 resp='';
 
@@ -13,26 +13,35 @@ switch task
             'rawphase'...
             };
        
-        sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.fieldmapsdirname);
+        sesspth=fullfile(aas_getsesspath(aap,subj,sess),aap.directory_conventions.fieldmapsdirname);
         aas_makedir(aap,sesspth);
                
+        %% locate
         if ~iscell(aap.acq_details.subjects(subj).fieldmaps)
             aas_log(aap,true,'Was exepcting list of filenames in cell array');
         end;
-        niftistruct = aap.acq_details.subjects(subj).fieldmaps{1};
+        niftistruct = [];
+        % try session-specific --> visit-specific --> rest
+        d = aas_get_series(aap,'functional',subj,sess);
+        fieldmaps = [aap.acq_details.subjects(subj).fieldmaps(d:end) aap.acq_details.subjects(subj).fieldmaps(1:d-1)];
+        for n = horzcat(fieldmaps{:})
+            if strcmp(n{1}.hdr.session,aap.acq_details.sessions(sess).name) || strcmp(n{1}.hdr.session,'*'), niftistruct = n{1}; end
+        end
+        if isempty(niftistruct), aas_log(aap,true,sprintf('ERROR: No fieldmap found for session %s',aap.acq_details.sessions(sess).name)); end
+
         niftifile = niftistruct.fname; % checks first only
         hdrfile = niftistruct.hdr;
         if ~exist(niftifile{1},'file')
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
                 niftifile = spm_file(niftifile,'path',niftisearchpth);
-                hdrfile = spm_file(hdrfile,'path',niftisearchpth);
+                if ischar(hdrfile), hdrfile = spm_file(hdrfile,'path',niftisearchpth); end
             end
         end
         
-        % images
+        %% images
         for f = 1:numel(niftifile)
-            comp = strcmp(spm_file(niftifile{1},'Ext'),'gz');
+            comp = strcmp(spm_file(niftifile{f},'Ext'),'gz');
             if comp
                 gunzip(niftifile{f});
                 niftifile{f} = niftifile{f}(1:end-3);
@@ -47,17 +56,19 @@ switch task
             
             if comp, delete(niftifile{f}); end
         end
-        aap=aas_desc_outputs(aap,subj,'fieldmap',char(fn));
+        aap=aas_desc_outputs(aap,'session',[subj sess],'fieldmap',char(fn));
         
-        % header
-        hdr = loadjson(hdrfile);
+        %% header
+        if ischar(hdrfile), hdrfile = loadjson(hdrfile); end
         % convert timings to ms (DICOM default)
-        dcmhdr{1}.EchoTime = hdr.EchoTime*1000;
+        for f = fieldnames(hdrfile)'
+            if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+        end
         
         %% Output
-        dcmhdrfn=fullfile(aas_getsubjpath(aap,subj),'fieldmap_dicom_header.mat');
+        dcmhdrfn=fullfile(aas_getsesspath(aap,subj,sess),'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
-        aap=aas_desc_outputs(aap,subj,'fieldmap_dicom_header',dcmhdrfn);
+        aap=aas_desc_outputs(aap,'session',[subj sess],'fieldmap_dicom_header',dcmhdrfn);
         
     case 'checkrequirements'
         

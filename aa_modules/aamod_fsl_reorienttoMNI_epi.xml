@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_fsl_reorienttoMNI" domain='session' desc='Reorient EPI to MNI using FSL FLIRT' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

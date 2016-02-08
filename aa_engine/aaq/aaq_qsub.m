@@ -50,7 +50,7 @@ classdef aaq_qsub<aaq
             while any(obj.jobnotrun) || waitforalljobs
                 
                 % Lets not overload the filesystem
-                pause(1);
+                pause(0.5);
                 
                 for i=1:njobs
                     if (obj.jobnotrun(i))
@@ -113,11 +113,11 @@ classdef aaq_qsub<aaq
                     indices = Task.InputArguments{4};
                     datname = ''; datpath = '';
                     if numel(indices) > 0 % subject specified
-                        datname = aas_getsubjname(aap,indices(1));  
+                        datname = aas_getsubjdesc(aap,indices(1));  
                         datpath = aas_getsubjpath(aap,indices(1)); 
                     end
                     if numel(indices) > 1 % session specified
-                        datname = aas_getsessname(aap,indices(1),indices(2));  
+                        datname = aas_getsessdesc(aap,indices(1),indices(2));  
                         datpath = aas_getsesspath(aap,indices(1),indices(2)); 
                     end
                     
@@ -172,7 +172,10 @@ classdef aaq_qsub<aaq
                 end  
                 
                 % queue viewer
-                if isempty(obj.QV) || ~obj.QV.OnScreen
+%                 if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
+%                     return
+%                 end
+                if isempty(obj.QV) || ~obj.QV.OnScreen % closed
                     obj.QV = aaq_qsubVeiwerClass(obj);
                     obj.QV.Hold = true;
                     obj.QV.setAutoUpdate(false);

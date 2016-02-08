@@ -76,7 +76,7 @@ switch task
         
         % Check if there is an affine starting estimate for this subject
         allSubj = strcmp({settings.subject(:).name}, '*');
-        thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).mriname);
+        thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).subjname);
         
         if any(allSubj)
             subjectOptions = settings.subject(allSubj);

@@ -16,14 +16,11 @@ if ~isempty(subblock)
             txt=[txt sprintf(' #%g\n',subblock{1})]; % for any internal domain
         else
             subs=struct2cell(aap.acq_details.subjects);
-            subname=aap.acq_details.subjects(subblock{1}).megname;
-            if isempty(subname);
-                subname=aap.acq_details.subjects(subblock{1}).mriname;
-            end
+            subname=aap.acq_details.subjects(subblock{1}).subjname;
             try dots=repmat('.',[1 size(char(subs(1,:,:)),2)-length(subname)]);
             catch, dots='...';
             end
-            txt=[txt sprintf('; subject:%s%s\n',dots,aap.acq_details.subjects(subblock{1}).megname)];
+            txt=[txt sprintf('; subject:%s%s\n',dots,subname)];
         end
     catch
         % if manually running a job on an aap structure that didn't include it then can ignore this

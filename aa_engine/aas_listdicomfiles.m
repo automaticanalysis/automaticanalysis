@@ -2,14 +2,16 @@ function [aap,resp]=aas_listdicomfiles(aap,subj,seriesnum)
 global aaworker
 resp={};
 
+if numel(subj) < 2, subj(2) = 1; end
+
 dicomdirsearchpth=fullfile(aas_findvol(aap,subj),sprintf(aap.directory_conventions.seriesoutputformat,seriesnum));
 
 switch(aap.directory_conventions.remotefilesystem)
     case 'none'
-        subjpath=aas_getsubjpath(aap,subj);
+        subjpath=aas_getsubjpath(aap,subj(1));
         aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
         ais=load(aisfn);
-        resp=ais.alldicomfiles{seriesnum};
+        resp=ais.alldicomfiles{subj(2)}{seriesnum};
     case 's3'
         
         % Just get everything with that prefix

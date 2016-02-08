@@ -4,15 +4,17 @@
 % creates the output stream.
 % function aap=aamod_get_dicom_structural(aap,task,subjind,diffsessind)
 
-function [aap resp]=aamod_get_dicom_diffusion(aap,task,subjind,diffsessind)
+function [aap resp]=aamod_get_dicom_diffusion(aap,task,subj,sess)
 global aaworker
 resp='';
 
 switch task
     case 'report'
     case 'doit'
-        dsesspth= aas_getpath_bydomain(aap,'diffusion_session',[subjind diffsessind]);
-        [aap fns]=aas_listdicomfiles(aap,subjind,aap.acq_details.subjects(subjind).diffusion_seriesnumbers(diffsessind));
+        dsesspth= aas_getpath_bydomain(aap,'diffusion_session',[subj sess]);
+        [d, mriser] = aas_get_series(aap,'diffusion',subj,sess);
+        
+        [aap fns]=aas_listdicomfiles(aap,[subj d],mriser);
         
         outfns={};
         for fnind=1:length(fns)
@@ -21,7 +23,7 @@ switch task
             outfns{end+1}=[nme ext];
         end;
         
-        aap=aas_desc_outputs(aap,'diffusion_session',[subjind diffsessind],'dicom_diffusion',outfns);
+        aap=aas_desc_outputs(aap,'diffusion_session',[subj sess],'dicom_diffusion',outfns);
 end
 end
 

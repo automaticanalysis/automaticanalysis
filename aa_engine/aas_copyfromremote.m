@@ -67,14 +67,14 @@ if allowremotecache
             fprintf('Cache status check\n source: %s\n cache: %s\n dest: %s\n',src,cachefn,dest);
             % Check whether it is in the destination location already
             if exist(dest,'dir')
-                [pth nme ext]=fileparts(src);
+                [junk, nme, ext]=fileparts(src);
                 dest=fullfile(dest,[nme ext]);
                 fprintf(' dest is directory, now:%s\n',dest);
             end;
             if exist(dest,'file')
                 fprintf(' check whether recopy necessary\n');
-                stats_src=dir(cachefn)
-                stats_dest=dir(dest)
+                stats_src=dir(cachefn);
+                stats_dest=dir(dest);
                 if (stats_src.bytes==stats_dest.bytes) && (stats_src.datenum==stats_dest.datenum)
                     fprintf(' no copy necessary\n');
                     docopy=false;
@@ -85,15 +85,15 @@ if allowremotecache
                 fprintf(' doing copy\n');
                 copyfile(cachefn,dest);
             end;
-            cachehit=true;
             aas_log(aap,false,sprintf('Cache of remote file retrieve - got %s',cachefn));
+            cachehit=true;
         end;
         if exist([cachefn '_noexist'],'file')
             aas_log(aap,false,sprintf('Cache of remote file retrieve - did not exist\n src:%s\n cache:%s\n dest: %s',src,cachefn,dest));
             cachehit=true;
-        end;
-    end;
-end;
+        end
+    end
+end
 
 if ~cachehit
     % Exponential back off if connection refused
@@ -105,7 +105,7 @@ if ~cachehit
         else
             cmd = sprintf('rsync -vt %s %s', src, dest);
         end
-        [s w]=aas_shell(cmd,allow404);
+        [s, w]=aas_shell(cmd,allow404);
         if (s==0)
             if vargs.verbose
                 aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
@@ -127,20 +127,27 @@ if ~cachehit
     if allowremotecache
         aas_makedir(aap,cachedir);
         if exist(dest,'dir')
-            [pth nme ext]=fileparts(src);
-            dest_exact=fullfile(dest,[nme ext]);
-        else
-            dest_exact=dest;
-        end;
-        if (~exist(dest_exact,'file'))
+            [junk, nme, ext]=fileparts(src);
+            dest=fullfile(dest,[nme ext]);
+        end
+        if ~exist(dest,'file')
             fid=fopen([cachefn '_noexist'],'w');
             fprintf(fid,sprintf('%f',now));
             fclose(fid);
         else
-            copyfile(dest_exact,cachefn);
+            copyfile(dest,cachefn);
         end;
     end;
     
     
 end;
 
+% Check whether it is an aap_parameter and conversion is required
+if strfind(dest,'aap_parameters')
+    aap_dest = load(dest);
+    if ~isfield(aap_dest.aap.acq_details.subjects(1),'subjname')
+        aap_dest.aap = aa_convert_subjects(aap_dest.aap);
+        save(dest,'-struct','aap_dest');
+        aas_log(aap,false,sprintf('Remote aap %s has been converted',dest),'m');
+    end
+end

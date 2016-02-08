@@ -1,5 +1,8 @@
+% Automatic analysis
+% User master script example (aa version 5.*.*)
+%
 % This is an example how to connect fmri to a sructural pipeline to obtain DARTEL normalisation parameters
-% It connects to a fully preprocessed structural dataset in /imaging/xy01/aa/Structural
+% It connects to a fully preprocessed structural dataset in /imaging/xy00/aa/Structural
 % It uses a tasklist aap_tasklist_fmri_connect.xml (included)
 %
 % Further features resting state analysis:
@@ -22,7 +25,7 @@ SUBJ = {...
      'S05' 140931; ...
      };
  
-aa_ver4
+aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
@@ -32,7 +35,7 @@ aap = aas_configforSPM12(aap);
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
 aap.options.NIFTI4D = 1;
-aap.options.email='xy01@mrc-cbu.cam.ac.uk';
+aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 aap.tasksettings.aamod_slicetiming.sliceorder=[32:-1:1];
 aap.tasksettings.aamod_slicetiming.refslice = 16; 
 aap.tasksettings.aamod_norm_write_dartel.vox = [3 3 3];
@@ -58,8 +61,9 @@ end
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy01/aa'; 
+aap.acq_details.root = '/imaging/xy00/aa'; 
 aap.directory_conventions.analysisid = 'Functional'; 
+aap.directory_conventions.subject_directory_format = 3;
 
 % Add data
 aap = aas_addsession(aap,'resting');
@@ -77,7 +81,7 @@ for subj = 1:size(SUBJ,1)
     for sess = 1:size(ser_epi,1)
         ser{3}(sess) = sscanf(deblank(ser_epi(sess,:)),aap.directory_conventions.seriesoutputformat);
     end
-    aap = aas_addsubject(aap,SUBJ{subj,2},ser);
+    aap = aas_addsubject(aap,SUBJ{subj,1},SUBJ{subj,2},'functional',ser);
 end
 
 %% CONNECT

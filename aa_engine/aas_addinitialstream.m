@@ -28,7 +28,7 @@ end;
 
 if strcmp(domain, 'subject') || strcmp(domain, 'session')
     if ischar(varargin{1})
-        subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.mriname}));
+        subjnum=find(strcmp(varargin{1},{aap.acq_details.subjects.subjname}));
         if (isempty(subjnum))
             aas_log(aap,true,sprintf('Cannot find subject %s in list - is aas_addinitialstream command after aas_addsubject command?',varargin{1}));
         end;
@@ -50,7 +50,6 @@ end
 
 % First, see if a module at the appropriate domain for this stream already
 % exists
-
 moduleexists=false;
 for modposintasklist=1:length(aap.tasklist.main.module)
     if strcmp(aap.tasklist.main.module(modposintasklist).name,'aamod_importfilesasstream') ...

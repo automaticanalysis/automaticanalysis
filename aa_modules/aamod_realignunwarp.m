@@ -138,14 +138,8 @@ switch task
             job.data(end+1).scans = cellstr(EPIimg);
             
             % Get VDMs
-            VDMimg = cellstr(aas_getfiles_bystream(aap,subj,'fieldmap'));
-            % first try to find a vdm with the session name in it
-            VDMind = cell_index(VDMimg,sprintf('%s.nii',aap.acq_details.sessions(sess).name));
-            % if this fails, try to get a vdm with session%d in it
-            if ~VDMind, VDMind = cell_index(VDMimg,sprintf('session%d.nii',sess)); end
-            if ~VDMind, aas_log(aap,true,'ERROR: Failed to find a VDM fieldmap'); end
-            aas_log(aap,false,sprintf('INFO: Found a VDM fieldmap: %s',VDMimg{VDMind}));
-            job.data(end).pmscan = VDMimg(VDMind);
+            VDMimg = aas_getfiles_bystream(aap,subj,sess,'fieldmap');
+            job.data(end).pmscan = cellstr(VDMimg);
         end
         
         %% Run the job!

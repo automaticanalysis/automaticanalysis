@@ -15,7 +15,6 @@ switch task
         settings = aap.tasklist.currenttask.settings;
         
         % Subject name and directory
-        subjName = aap.acq_details.subjects(subj).mriname;
         subjDir = aas_getsubjpath(aap, subj);
         
         % Load the SPM model
@@ -70,7 +69,7 @@ switch task
             subjI = [];
             for r = 1 : length(roiDesc)
                 if ischar(roiDesc(r).subject)
-                    if strcmp(roiDesc(r).subject, '*') || strcmp(roiDesc(r).subject, aap.acq_details.subjects(subj).mriname)
+                    if strcmp(roiDesc(r).subject, '*') || strcmp(roiDesc(r).subject, aap.acq_details.subjects(subj).subjname)
                         subjI = r;
                         break;
                     end

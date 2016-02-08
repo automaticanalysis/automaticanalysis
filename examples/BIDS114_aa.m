@@ -1,9 +1,17 @@
-% This is the user master script to process BIDS multimodal NIfTI dataset ds114 (https://github.com/INCF/BIDS-examples/tree/master/ds114)
+% Automatic analysis
+% User master script example (aa version 5.*.*)
+%
+% This is an example how to process BIDS multimodal NIfTI dataset "ds114" 
+% (https://github.com/INCF/BIDS-examples/tree/master/ds114
+% It uses a tasklist BIDS114_tasklist.xml (included)
+%
+% Tibor Auer, MRC-CBSU
+% 08-02-2016
 
 %% INITIALISE
 clear
 
-aa_ver4
+aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
@@ -13,7 +21,7 @@ aap = aas_configforSPM12(aap);
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value qsub | localsingle
 aap.options.NIFTI4D = 1;										% typical value 0
-aap.options.email='xy01@mrc-cbu.cam.ac.uk';
+aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 
 aap.tasksettings.aamod_dartel_norm_write.vox = 1;
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
@@ -28,27 +36,38 @@ aap.tasksettings.aamod_firstlevel_threshold(2).overlay.nth_slice = 9;
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy01/aa'; 
+aap.acq_details.root = '/imaging/xy00/aa'; 
 aap.directory_conventions.analysisid = 'BIDS114'; 
 
 % Add data
 aap.directory_conventions.rawdatadir = '/Data/BIDS/ds114';
 aap.acq_details.numdummies = 0;
+aap.acq_details.input.combinemultiple = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
 aap = aas_processBIDS(aap);
 
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtverbgeneration',[1],'Task','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtwordrepetition',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtverbgeneration_test',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtwordrepetition_test',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtverbgeneration_retest',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','singlesession:overtwordrepetition_retest',[1],'Task','T');
 aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00001','*','sameforallsessions',[1],'Task','T');
  
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:covertverbgeneration',[1],'Task','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips',[1 0 0],'Finger','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips',[0 1 0],'Foot','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips',[0 0 1],'Lips','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection',[1 0 0 -1 0],'Task:Resp-NoResp','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection',[-1 0 0 1 0],'Task:NoResp-Resp','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection',[0 0 -1 0 1],'Control:Resp-NoResp','T');
-aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection',[0 0 1 0 -1],'Control:NoResp-Resp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:covertverbgeneration_test',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_test',[1 0 0],'Finger','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_test',[0 1 0],'Foot','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_test',[0 0 1],'Lips','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_test',[1 0 0 -1 0],'Task:Resp-NoResp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_test',[-1 0 0 1 0],'Task:NoResp-Resp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_test',[0 0 -1 0 1],'Control:Resp-NoResp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_test',[0 0 1 0 -1],'Control:NoResp-Resp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:covertverbgeneration_retest',[1],'Task','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_retest',[1 0 0],'Finger','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_retest',[0 1 0],'Foot','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:fingerfootlips_retest',[0 0 1],'Lips','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_retest',[1 0 0 -1 0],'Task:Resp-NoResp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_retest',[-1 0 0 1 0],'Task:NoResp-Resp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_retest',[0 0 -1 0 1],'Control:Resp-NoResp','T');
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:linebisection_retest',[0 0 1 0 -1],'Control:NoResp-Resp','T');
 
 %% DO ANALYSIS
 aa_doprocessing(aap);

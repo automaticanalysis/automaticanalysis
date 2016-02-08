@@ -42,10 +42,8 @@ switch task
         DMLTobj = aap.tasklist.currenttask.settings.DMLTobj;
         
         % Classification labels
-        % Name of subject...
-        subjname = aap.acq_details.subjects(subj).mriname;
         % Get model data from aap
-        subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.DMLT.subject});
+        subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{aap.tasklist.currenttask.settings.DMLT.subject});
         % If no exact spec found, try subject wildcard
         if (~any(subjmatches))
             subjwild=strcmp('*',{aap.tasklist.currenttask.settings.DMLT.subject});

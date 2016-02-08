@@ -80,18 +80,6 @@ else
     session=[];
 end;
 
-if subject(1) ~= '*'
-    % check whether "subject" is in an evaluated form
-    aaps = aap; aaps.directory_conventions.subjectoutputformat = '%s';
-    aaps.options.verbose = 0;
-    try 
-        subfound = mri_findvol(aaps,subject); 
-    catch
-        subfound = '';
-    end
-    if isempty(subfound), subject = aas_mriname2subjname(mri_findvol(aap,subject)); end
-end
-
 % find model that corresponds and add contrast to this if it exists
 for m = 1 : length(moduleindex)
     

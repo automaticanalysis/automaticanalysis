@@ -120,7 +120,7 @@ switch task
             EPIimg{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
             
             % For each image, apply the space of the mean EPI image
-            fprintf('\nCoregistering images for session: %s\n', aas_getsessname(aap,subj,sess))
+            fprintf('\nCoregistering images for session: %s\n', aas_getsessdesc(aap,subj,sess))
             for e = 1:size(EPIimg{sess},1)
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)

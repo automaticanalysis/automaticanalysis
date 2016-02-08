@@ -19,13 +19,13 @@ for k=1:length(aap.tasklist.initialisation.module)
         case 'subject'
             for i=1:length(aap.acq_details.subjects)
                 % now run current stage
-                aas_log(aap,0,sprintf('INITIALISATION MODULE %s: %s for %s',stagename,description,aas_getsubjname(aap,i)));
+                aas_log(aap,0,sprintf('INITIALISATION MODULE %s: %s for %s',stagename,description,aas_getsubjdesc(aap,i)));
                 [aap,resp]=aa_feval(fullfile(stagepath,stagename),aap,'doit',i);
             end;
         case 'session'
             for i=1:length(aap.acq_details.subjects)
                 for j=aap.acq_details.selected_sessions
-                    aas_log(aap,0,sprintf('INITIALISATION MODULE %s: %s for %s',stagename,description,aas_getsessname(aap,i,j)));
+                    aas_log(aap,0,sprintf('INITIALISATION MODULE %s: %s for %s',stagename,description,aas_getsessdesc(aap,i,j)));
                     [aap,resp]=aa_feval(fullfile(stagepath,stagename),aap,'doit',i,j);
                 end;
             end;

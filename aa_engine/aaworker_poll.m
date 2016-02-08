@@ -47,12 +47,12 @@ if (exist(taskpth))
                                 writedoneflag(aaworker,mytask.doneflag);
                                 aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s COMPLETED',stagetag));
                             case 'subject'
-                                aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s RUNNING: %s for %s',stagetag,mytask.description,aas_getsubjname(aaworker.aap,mytask.i)));
+                                aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s RUNNING: %s for %s',stagetag,mytask.description,aas_getsubjdesc(aaworker.aap,mytask.i)));
                                 [aaworker.aap,resp]=feval(aaworker.aap.tasklist.main.module(mytask.k).name,aaworker.aap,mytask.task,mytask.i);
                                 writedoneflag(aaworker,mytask.doneflag);
                                 aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s COMPLETED',aaworker.aap.tasklist.main.module(mytask.k).name));
                             case 'session'
-                                aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s RUNNING: %s for %s ',aaworker.aap.tasklist.main.module(mytask.k).name,mytask.description,aas_getsessname(aaworker.aap,mytask.i,mytask.j)));
+                                aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s RUNNING: %s for %s ',aaworker.aap.tasklist.main.module(mytask.k).name,mytask.description,aas_getsessdesc(aaworker.aap,mytask.i,mytask.j)));
                                 [aaworker.aap,resp]=feval(aaworker.aap.tasklist.main.module(mytask.k).name,aaworker.aap,mytask.task,mytask.i,mytask.j);
                                 writedoneflag(aaworker,mytask.doneflag);
                                 aas_log(aaworker.aap,0,sprintf('\nAAWORKER %s COMPLETED',aaworker.aap.tasklist.main.module(mytask.k).name));

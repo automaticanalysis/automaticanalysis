@@ -3,7 +3,7 @@
 function contrasts = mvpaa_loadContrasts(aap,p)
 
 % Name of subject...
-subjname = aap.acq_details.subjects(p).mriname;
+subjname = aap.acq_details.subjects(p).subjname;
 
 % Get model data from aap
 subjmatches=strcmp(subjname,{aap.tasklist.currenttask.settings.model.subject});

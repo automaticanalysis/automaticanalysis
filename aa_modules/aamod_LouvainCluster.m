@@ -82,7 +82,7 @@ switch task
         % Collect the connectivity matrices for each subject
         fprintf('\nLoading Subjects ...\n');
         for subInd = subjectI
-            fprintf('\t%s\n', aap.acq_details.subjects(subInd).mriname);
+            fprintf('\t%s\n', aap.acq_details.subjects(subInd).subjname);
             matrixFile = aas_getfiles_bystream(aap, subInd, 'firstlevel_fConnMatrix_avg');
             load(matrixFile);
             

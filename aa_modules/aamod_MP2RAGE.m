@@ -230,7 +230,6 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
         
             %% Draw mean EPI...
             spm_check_registration(FI_img)
@@ -264,7 +263,7 @@ switch task
             
             try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.jpeg']));
+                [mfilename '__' aap.acq_details.subjects(subj).subjname '.jpeg']));
         
         % Different thresholding, by gradient?
         
@@ -330,7 +329,7 @@ switch task
             
             try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.jpeg']));
+                [mfilename '__' aap.acq_details.subjects(subj).subjname '.jpeg']));
         catch
         end
         

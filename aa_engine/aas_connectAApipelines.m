@@ -134,13 +134,14 @@ for locI = length(remoteAAlocations) : -1 : 1
     % Load it!
     if ~exist(destAAPfn, 'file'), aas_log(aap, 1, sprintf('Cannot find %s', remoteAAPfn)); end
     remoteAA{locI} = load(destAAPfn); remoteAA{locI} = remoteAA{locI}.aap;
+    
     %
     %       % NOT BOTHERING TO CHECK SUBJECTS AND SESSIONS, BECAUSE WE
     %       DON'T WANT TO FORCE ALL DOMAINS TO BE PRESENT IN ALL AAs
     %
     %     % Check that all subjects in the local AA are present in the remote AA
-    %     localSub = {aap.acq_details.subjects.mriname};
-    %     remoteSub = {remoteAA{locI}.acq_details.subjects.mriname};
+    %     localSub = {aap.acq_details.subjects.subjname};
+    %     remoteSub = {remoteAA{locI}.acq_details.subjects.subjname};
     %     subMatch = ismember(localSub, remoteSub);
     %     if any(~subMatch)
     %         aas_log(aap, 1, sprintf('Remote AAP (%s:%s) doesn''t have subjects: %s', remoteAAlocations(locI).host, remoteAAPfn, strjoin(localSub(~subMatch))));

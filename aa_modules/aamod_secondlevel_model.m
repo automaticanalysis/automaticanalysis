@@ -104,7 +104,7 @@ switch task
                         end;
                     end;
                     if (~foundit)
-                        aas_log(aap,true,sprintf('Contrast %d not found in subject %s',n,aap.acq_details.subjects(s).mriname));
+                        aas_log(aap,true,sprintf('Contrast %d not found in subject %s',n,aap.acq_details.subjects(s).subjname));
                     end;
                     SPM.xY.P{s}   = confiles{s}(fileind,:);
                     SPM.xY.VY(s)   = spm_vol(SPM.xY.P{s});

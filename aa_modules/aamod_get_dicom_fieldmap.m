@@ -4,74 +4,64 @@
 % creates the output stream.
 % function aap=aamod_get_dicom_fieldmap(aap,task,subj)
 
-function [aap resp]=aamod_get_dicom_fieldmap(aap,task,subj)
+function [aap resp]=aamod_get_dicom_fieldmap(aap,task,subj,sess)
 global aaworker
 
 resp='';
 
 switch task
-    case 'description'
-        resp=sprintf('Getting fieldmaps DICOM files');
-        
-    case 'summary'
-        resp=sprintf('Getting fieldmaps DICOM files\n');
-        
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,subj);
-        fieldpath=fullfile(subjpath,aap.directory_conventions.fieldmapsdirname);
+        sesspath=aas_getsesspath(aap,subj,sess);
+        fieldpath=fullfile(sesspath,aap.directory_conventions.fieldmapsdirname);
         
         fieldfolds = {'rawmag' 'rawphase'};
         
+        %% Locate series
         % Manually specified value for fieldmaps series number over-rides automatically scanned value
-        if ~isempty(aap.acq_details.subjects(subj).fieldmaps)
+        if ~isempty(cell2mat(aap.acq_details.subjects(subj).fieldmaps))
             fieldseries=aap.acq_details.subjects(subj).fieldmaps;
         else
-            % Load up automatically scanned value, validate
-            ais=load(fullfile(subjpath,'autoidentifyseries_saved.mat'));
-            % Backward compatibility
-            if ~isfield(ais,'series_fieldmap'), ais.series_fieldmap = ais.series_newfieldmap; end
-                
-            switch numel(ais.series_fieldmap)
-                case 2
-                    fieldseries=ais.series_fieldmap;
-                case 1
-                    aas_log(aap,true,'ERROR: Was expecting two fieldmaps, but autoidentify series found only one!');
-                case 0
-                    aas_log(aap,true,'ERROR: No fieldmaps found.');
-                otherwise
-                    aas_log(aap,false,sprintf('WARNING: Was expecting only two fieldmaps, but autoidentify series found %d. Will proceed with last two, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',numel(ais.series_fieldmap)));
-                    fieldseries=ais.series_fieldmap(end-1:end);
-            end
-        end;
+            % Load up automatically scanned value
+            ais=load(aas_getfiles_bystream(aap,subj,'autoidentifyseries'));
+            fieldseries=ais.series_fieldmap;
+        end
+        % locate epi
+        [d, mriser] = aas_get_series(aap,'functional',subj,sess);
+
+        % locate the first pair of fieldmaps after epi
+        if numel(mriser) > 1, mriser = mriser(end); end % last echo
+        fieldseries = fieldseries{d};
+        fieldseries = fieldseries(fieldseries>mriser);
+        if numel(fieldseries)>2
+            aas_log(aap,false,sprintf('INFO:autoidentifyseries found %d fieldmaps after EPI serie %d',numel(fieldseries),mriser));
+            aas_log(aap,false,'INFO:Will proceed with the first two, but you might want to try using the ignoreseries field in aas_addsubject in your user script.');
+            fieldseries=fieldseries(1:2);
+        elseif numel(fieldseries)<2
+            aas_log(aap,true,sprintf('ERROR:Was expecting only two fieldmaps after EPI serie %d, but autoidentifyseries found only %d',mriser,numel(fieldseries)));
+        end
         
-        dicom_files_src = {};
+        %% Obtain
         % Go through each fieldmap
         out=[];
         for seriesind=1:length(fieldseries)
-            [aap dicom_files_src]=aas_listdicomfiles(aap,subj,fieldseries(seriesind));
+            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],fieldseries(seriesind));
+            newpath = fullfile(fieldpath, fieldfolds{seriesind});
             
             % Now copy files to this module's directory
-            aas_makedir(aap,fullfile(fieldpath, fieldfolds{seriesind}));
+            aas_makedir(aap,newpath);
             outstream={};
             switch(aap.directory_conventions.remotefilesystem)
                 case 'none'
                     for ind=1:length(dicom_files_src)
-                        copyfile(deblank(dicom_files_src{ind}),fullfile(fieldpath, fieldfolds{seriesind}));
-                        [pth nme ext]=fileparts(dicom_files_src{ind});
-                        outstream{ind}=fullfile(fullfile(fieldpath, fieldfolds{seriesind}),[nme ext]);
+                        copyfile(deblank(dicom_files_src{ind}),newpath);
                     end;
                 case 's3'
-                    s3fles={};
-                    for ind=1:length(dicom_files_src)
-                        [pth nme ext]=fileparts(dicom_files_src{ind});
-                        s3fles=[s3fles [nme ext]];
-                        outstream{ind}=fullfile(fullfile(fieldpath, fieldfolds{seriesind}),s3fles{ind});
-                    end;
+                    s3fles=spm_file(dicom_files_src,'filename');
                     s3_copyfrom_filelist(aap,fullfile(fieldpath, fieldfolds{seriesind}),s3fles,aaworker.bucketfordicom,pth);
             end;
-            out=[out outstream];
-        end;
+            out=[out spm_file(dicom_files_src,'path',newpath)];
+        end
         
-        aap=aas_desc_outputs(aap,subj,'dicom_fieldmap',out);
-end;
+        aap=aas_desc_outputs(aap,subj,sess,'dicom_fieldmap',out);
+end

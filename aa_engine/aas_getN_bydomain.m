@@ -28,7 +28,7 @@ switch (domain)
         switch domain
             case {'session','isc_session'}
                 sessions = aap.acq_details.sessions;
-                if ~isempty(indices), seriesnumbers = aap.acq_details.subjects(indices(1)).seriesnumbers; end
+                if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).seriesnumbers{:}); end
             case 'meg_session'
                 sessions = aap.acq_details.meg_sessions;
                 if ~isempty(indices), seriesnumbers = aap.acq_details.subjects(indices(1)).megseriesnumbers; end

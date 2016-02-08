@@ -13,7 +13,7 @@ resp='';
 switch task
     case 'doit'
         
-        fprintf('Working with data from participant %s. \n',aap.acq_details.subjects(p).mriname)
+        fprintf('Working with data from participant %s. \n',aap.acq_details.subjects(p).subjname)
         
         Stats = []; EP = [];
         load(aas_getfiles_bystream(aap,p,'MVPaa'));

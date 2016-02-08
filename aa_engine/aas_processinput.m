@@ -25,6 +25,9 @@
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function aap = aas_processinput(aap)
+
+aap.directory_conventions.subject_directory_format = 1;
+
 if ~aap.directory_conventions.continueanalysis
     sfx = 1;
     analysisid0 = aap.directory_conventions.analysisid;

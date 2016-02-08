@@ -37,21 +37,5 @@ switch (domain)
         directory=[aap.acq_details.diffusion_sessions(index).name '.bedpostX'];
         
     case {'subject','hyperalignment_subject'}
-        switch (aap.directory_conventions.subject_directory_format)
-            case 1
-                if (isfield(aap.acq_details.subjects(index),'megname') && ~isempty(aap.acq_details.subjects(index).megname))
-                    tmp=aas_megname2subjname(aap.acq_details.subjects(index).megname);
-                else
-                    tmp = aas_mriname2subjname(aap.acq_details.subjects(index).mriname);
-                end
-                directory= tmp;
-            case 2
-                directory=sprintf('S%02d',index);
-            case 0
-                directory=aap.directory_conventions.subject_directory_names{index};
-            case 3
-                directory=aap.acq_details.subjects(index).mriname;
-            otherwise
-                aas_log(1,sprintf('Unknown subject directory format (aap.directory_conventions.subject_directory_format=%d',aap.directory_conventions.subject_directory_format));
-        end;
-end;
+        directory=aap.acq_details.subjects(index).subjname;  
+end

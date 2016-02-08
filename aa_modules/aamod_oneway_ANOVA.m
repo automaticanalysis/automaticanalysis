@@ -76,7 +76,7 @@ switch task
         allCellImgs(1,:) = [];
         
         % Add in subject names (there are subject columns!)
-        colNames = [colNames {aap.acq_details.subjects.mriname}];
+        colNames = [colNames {aap.acq_details.subjects.subjname}];
         
         
         %-Assemble SPM structure

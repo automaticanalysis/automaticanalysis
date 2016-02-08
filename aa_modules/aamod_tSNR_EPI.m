@@ -226,7 +226,7 @@ switch task
         if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
         end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
+        subjname = aap.acq_details.subjects(subj).subjname;
         for r = 1:size(ROIimg,1)
             [junk, ROIname{r}] = fileparts(ROIimg(r,:));
             
@@ -234,7 +234,7 @@ switch task
             if aap.tasklist.currenttask.settings.diagnostic
                 
                 movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' ROIname{r} '.avi']);
+                    [mfilename '__' subjname '_' ROIname{r} '.avi']);
                 % Create movie file by defining aviObject
                 try delete(movieFilename); catch; end
                 aviObject = avifile(movieFilename,'compression','none');
@@ -328,7 +328,7 @@ switch task
             
             set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '_tSNR.jpeg']));
+                [mfilename '__' subjname '_tSNR.jpeg']));
             
             %% Time-course results figure!
             
@@ -367,7 +367,7 @@ switch task
             
             set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
             print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '_timecourse.jpeg']));
+                [mfilename '__' subjname '_timecourse.jpeg']));
         end
         %% DESCRIBE OUTPUTS
         

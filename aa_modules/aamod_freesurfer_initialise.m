@@ -17,10 +17,11 @@ switch task
         Simg = strvcat2cell(Simg);
         
         % Set subject paths
+        subjname = aap.acq_details.subjects(subj).subjname;
         subjpath = aas_getsubjpath(aap,subj);
-        subjname = basename(subjpath);        
+        
         setenv('SUBJECTS_DIR', fileparts(subjpath));
-        setenv('FREESURFER_DIR', aap.directory_conventions.freesurferdir)
+        setenv('FREESURFER_DIR', aap.directory_conventions.freesurferdir);
         
         %% initialise fileserver folder structure and nii and mgh files
         aas_freesurfer_init(aap, subjpath, subjname, Simg, 1);

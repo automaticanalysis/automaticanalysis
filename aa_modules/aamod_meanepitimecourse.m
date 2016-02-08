@@ -23,7 +23,7 @@ switch task
                 nimgs=min(nimgs,size(fn{i},1));
             else
                 if (i>1 && nimgs~=size(fn{i},1))
-                    aas_log(aap,true,sprintf('Corresponding sessions of each subject must have the same number of EPI sessions - not true for session %s of subject %s as got %d not %d scans.',aap.acq_details.sessions(i).name,aap.acq_details.subjects(i).mriname,size(fn{i},1),nimgs));
+                    aas_log(aap,true,sprintf('Corresponding sessions of each subject must have the same number of EPI sessions - not true for session %s of subject %s as got %d not %d scans.',aap.acq_details.sessions(i).name,aap.acq_details.subjects(i).subjname,size(fn{i},1),nimgs));
                 end;
                 nimgs=size(fn{i},1);
             end;

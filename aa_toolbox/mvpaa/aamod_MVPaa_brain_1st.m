@@ -11,8 +11,8 @@ switch task
         
         %% PREPARATIONS...
         
-        mriname = strtok(aap.acq_details.subjects(p).mriname, '/');
-        fprintf('Working with data from participant %s. \n', mriname)
+        subjname = aap.acq_details.subjects(p).subjname;
+        fprintf('Working with data from participant %s. \n', subjname)
         
         % Get the contrasts for this subject...
         aap.tasklist.currenttask.settings.contrasts = mvpaa_loadContrasts(aap,p);
@@ -79,7 +79,7 @@ switch task
         %% DESCRIBE OUTPUTS
         aap.tasklist.currenttask.settings.brainSize = brainSize;        
         EP = aap.tasklist.currenttask.settings;
-        save(fullfile(aas_getsubjpath(aap,p), [mriname '.mat']), ...
+        save(fullfile(aas_getsubjpath(aap,p), [subjname '.mat']), ...
             'Stats', 'EP')
-        aap=aas_desc_outputs(aap,p,'MVPaa', fullfile(aas_getsubjpath(aap,p), [mriname '.mat']));
+        aap=aas_desc_outputs(aap,p,'MVPaa', fullfile(aas_getsubjpath(aap,p), [subjname '.mat']));
 end

@@ -1,18 +1,16 @@
 % Automatic analysis
-% User master script based on
-% github.com/rhodricusack/automaticanalysis/wiki/Manual:
-% Example (aa version 4.*)
+% User master script example (aa version 5.*.*)
 %
 % Tibor Auer, MRC-CBSU
-% 09-12-2013
+% 01-02-2016
 
 %% INITIALISE
 clear
 
-aa_ver4
+aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-%  Default recipe without model
+%  Default recipe with model
 aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
 aap = aas_configforSPM12(aap);
 
@@ -34,8 +32,8 @@ aap.directory_conventions.analysisid = 'Nature_Paper';
 
 % Add data
 aap = aas_addsession(aap,'Loc');
-aap = aas_addsubject(aap,90973,[7]);
-aap = aas_addsubject(aap,90979,[7]);
+aap = aas_addsubject(aap,90973,'functional',[7]);
+aap = aas_addsubject(aap,90979,'functional',[7]);
 
 % Add model
 % Obtain TR from the first session

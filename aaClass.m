@@ -1,6 +1,6 @@
-% aa version 4.3.0 Jan 2016
+% aa version 5.0.0 Feb 2016
 % Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.
-% http://journal.frontiersin.org/Journal/10.3389/fninf.2014.00090/abstract
+% http://dx.doi.org/10.3389/fninf.2014.00090
 
 classdef aaClass
     properties

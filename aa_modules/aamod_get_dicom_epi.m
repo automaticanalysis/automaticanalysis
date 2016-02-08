@@ -2,9 +2,9 @@
 % using aas_listdicomfiles, and copies them into the session directory of
 % this module, either across the local filesystem or from s3. It then
 % creates the output stream.
-% function aap=aamod_get_dicom_epi(aap,task,i,j)
+% function aap=aamod_get_dicom_epi(aap,task,subj,sess)
 
-function [aap resp]=aamod_get_dicom_epi(aap,task,i,j)
+function [aap resp]=aamod_get_dicom_epi(aap,task,subj,sess)
 global aaworker
 resp='';
 
@@ -17,16 +17,13 @@ switch task
         
     case 'report'
     case 'doit'
-        % Multi-echo enabled or not?
-        if (iscell(aap.acq_details.subjects(i).seriesnumbers))
-            seriesnum=aap.acq_details.subjects(i).seriesnumbers{j};
-        else
-            seriesnum=aap.acq_details.subjects(i).seriesnumbers(j);
-        end
-        % Go through each echo
+        %% Locate series
+        [d, seriesnum] = aas_get_series(aap,'functional',subj,sess);
+        
+        %% Go through each echo
         out=[];
         for seriesind=1:length(seriesnum)
-            [aap dicom_files_src]=aas_listdicomfiles(aap,i,seriesnum(seriesind));
+            [aap dicom_files_src]=aas_listdicomfiles(aap,[subj d],seriesnum(seriesind));
 
             % trim number of files to a multiple of "multipleof"
             multipleof=aap.tasklist.currenttask.settings.multipleof;
@@ -42,9 +39,9 @@ switch task
             
             % Now copy files to this module's directory
             if (length(seriesnum)==1)
-                echopath=aas_getsesspath(aap,i,j);
+                echopath=aas_getsesspath(aap,subj,sess);
             else
-                echopath=fullfile(aas_getsesspath(aap,i,j),sprintf('echo%d',seriesind));
+                echopath=fullfile(aas_getsesspath(aap,subj,sess),sprintf('echo%d',seriesind));
             end
             aas_makedir(aap,echopath);
             outstream={};
@@ -70,25 +67,25 @@ switch task
                     s3_copyfrom_filelist(aap,echopath,s3fles,aaworker.bucketfordicom,pth);
                     
                     % Check Drupal registration of series
-                    series_numbers=aap.acq_details.subjects(i).seriesnumbers(j);
+                    series_numbers=aap.acq_details.subjects(subj).seriesnumbers(sess);
                     if (~iscell(series_numbers))
                         series_numbers={series_numbers};
                     end
                     for seriesind=1:length(series_numbers)
-                        dicomdirsearchpth=fullfile(aap.acq_details.subjects(i).mriname,sprintf(aap.directory_conventions.seriesoutputformat,series_numbers{seriesind}));
+                        dicomdirsearchpth=fullfile(aap.acq_details.subjects(subj).mriname{1},sprintf(aap.directory_conventions.seriesoutputformat,series_numbers{seriesind}));
                         field_attr=[];
                         field_attr.seriesid.value=dicomdirsearchpth;
-                        field_attr.indataset.nid=aap.acq_details.subjects(i).drupalnid;
+                        field_attr.indataset.nid=aap.acq_details.subjects(subj).drupalnid;
                         
-                        attr.parent_node=aap.acq_details.subjects(i).drupalnid;
+                        attr.parent_node=aap.acq_details.subjects(subj).drupalnid;
                         
-                        [pth nme ext]=fileparts(aas_getsubjpath(aap,i));
-                        field_attr.seriesalias.value=fullfile(aap.acq_details.sessions(j).name);
+                        [pth nme ext]=fileparts(aas_getsubjpath(aap,subj));
+                        field_attr.seriesalias.value=fullfile(aap.acq_details.sessions(sess).name);
                         [aap waserror drupalnid]=drupal_checkexists(aap,'series',sprintf(aap.directory_conventions.seriesoutputformat,series_numbers{seriesind}),field_attr);
-                        aap.acq_details.subjects(i).seriesnumbers_drupalnid{j}{seriesind}=drupalnid;
+                        aap.acq_details.subjects(subj).seriesnumbers_drupalnid{sess}{seriesind}=drupalnid;
                     end
             end
             out=[out outstream];
         end
-        aap=aas_desc_outputs(aap,i,j,'dicom_epi',out);
+        aap=aas_desc_outputs(aap,subj,sess,'dicom_epi',out);
 end

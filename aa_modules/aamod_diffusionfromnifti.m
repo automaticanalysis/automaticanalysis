@@ -16,16 +16,19 @@ switch task
             numdummies=aap.tasklist.currenttask.settings.numdummies;
         end
         
-        if not(iscell(aap.acq_details.subjects(subj).diffusion_seriesnumbers))
-            aas_log(aap,true,'Was exepcting list of filenames in cell array instead of series numbers, check aas_addsubject command in user script');
-        end;
+        %% Select
+        series = horzcat(aap.acq_details.subjects(subj).diffusion_seriesnumbers{:});
+        if ~iscell(series) || ~isstruct(series{1})
+            aas_log(aap,true,'ERROR: Was expecting list of struct(s) of fname+bval+bvec in cell array');
+        end
+        series = series{sess};
         
         %% Process - assume 4D
         finalepis={}; 
         % Files
-        niftifile = aap.acq_details.subjects(subj).diffusion_seriesnumbers{sess}.fname;
-        bvalfile = aap.acq_details.subjects(subj).diffusion_seriesnumbers{sess}.bval;
-        bvecfile = aap.acq_details.subjects(subj).diffusion_seriesnumbers{sess}.bvec;
+        niftifile = series.fname;
+        bvalfile = series.bval;
+        bvecfile = series.bvec;
         if ~exist(niftifile,'file') % assume path realtive to (first) rawdatadir
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)

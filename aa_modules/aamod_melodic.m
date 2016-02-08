@@ -23,12 +23,10 @@ switch task
             end
         end
         
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-        
         %% CONCATENATE THE DATA...
         fprintf('\nConcatenating the data')
         
-        data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', mriname));
+        data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', aap.acq_details.subjects(subj).subjname));
         
         [junk, w]=aas_runfslcommand(aap, ...
             sprintf('fslmerge -t %s %s', ...

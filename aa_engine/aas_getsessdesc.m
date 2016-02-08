@@ -1,4 +1,4 @@
-function [nme]=aas_getsessname(aap,j)
+function [nme]=aas_getsessdesc(aap,i,j)
 
 switch aas_getmodality(aap)
     case 'FMRI'
@@ -14,3 +14,5 @@ if ~isempty(sessions(j).name)
 else
     nme='(unknown)';
 end;
+
+nme=[aas_getsubjdesc(aap,i),'; session ',nme];

@@ -34,7 +34,7 @@ switch task
         explicitMask = settings.explicitmask;
         maskThreshold = settings.maskthreshold;
         
-        subjname = aap.acq_details.subjects(subjInd).mriname;
+        subjname = aap.acq_details.subjects(subjInd).subjname;
         
         subjPath = aas_getsubjpath(aap, subjInd);
         
