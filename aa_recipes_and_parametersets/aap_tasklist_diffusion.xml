@@ -17,8 +17,6 @@
             <module><name>aamod_structuralstats</name></module> 
             <module><name>aamod_dartel_createtemplate</name></module>
             <module><name>aamod_dartel_norm_write</name></module>         
-            <module><name>aamod_dartel_normmni</name></module>            
-            <module><name>aamod_normalisebytotalgrey</name></module>
 			
             <module><name>aamod_get_dicom_diffusion</name></module>
             <module><name>aamod_convert_diffusion</name></module>
