@@ -1,7 +1,3 @@
-## 4.2 (initial) ##
-
-Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
-
 ## 4.3.0 ##
 
 #### Copyrights ####
@@ -76,6 +72,7 @@ Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
     - `aaClass` provides links to ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090), to ["the aa website"](http://automaticanalysis.org) and to examples
     - Allow specification of subject in the whole UMS in the same way: `aas_addcontrast`, `aas_addcovariate`, `aas_addevent`, `aamod_dartel_createtemplate`
     - `aap.options.checktasksettingconsistency`: Check whether settings have changed since the last execution and re-run the task accordingly regardless of the doneflag (experimental!)
+    - <aa version> and <aa path> are saved in the _aap\_parameters.mat_ file as fields `aap.internal.aapversion` and `aap.internal.aappath`
 
   - Running
     - `qsub` error provides links to code
@@ -89,3 +86,8 @@ Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
     - Vertical workflow chart
     - More consistent (and nicer :sparkles:) graph of contrasts 
     - `aamod_firstlevel_threshold` creates overlays along all three axes
+
+## 4.2 (initial) ##
+
+Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
+
