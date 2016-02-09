@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_reorienttomiddle' domain='session' desc='SPM Reorient EPI to its middle voxel' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.05</timeBase>
+                <memoryBase desc='Required memory in GB'>0.5</memoryBase>
+            </qsub>
+            
+            <inputstreams>
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
