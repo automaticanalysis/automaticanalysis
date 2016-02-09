@@ -5,7 +5,10 @@ switch modality
         seriesnumbers = aap.acq_details.subjects(subj).seriesnumbers;
     case 'diffusion'
         seriesnumbers = aap.acq_details.subjects(subj).diffusion_seriesnumbers;
+    case 'special'
+        seriesnumbers = aap.acq_details.subjects(subj).specialseries;
 end
+
 
 outsess = sess;
 for d = 1:numel(aap.acq_details.subjects(subj).mriname)

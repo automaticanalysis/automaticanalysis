@@ -38,9 +38,8 @@ switch task
         % Go through each subsessions
         out=[];
         for seriesind=1:numel(sessind)
-            [aap, dicom_files_src]=aas_listdicomfiles(aap,subj,...
-                aap.acq_details.subjects(subj).specialseries(sessind(seriesind))...
-                );
+            [d, mriser] = aas_get_series(aap,'special',subj,seriesind);
+            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],mriser);
             
             % Now copy files to this module's directory
             foldpath = fullfile(sesspath, sessfolds{seriesind});
