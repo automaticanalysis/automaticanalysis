@@ -122,3 +122,4 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_*','*','sameforallsessions
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

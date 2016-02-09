@@ -46,3 +46,4 @@ aap = aas_add_meg_event(aap,'aamod_meg_epochs',aas_getsubjname(aap,1),'psp_bp','
 
 %% RUN
 aa_doprocessing(aap);
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

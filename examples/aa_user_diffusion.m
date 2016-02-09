@@ -56,3 +56,4 @@ end
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

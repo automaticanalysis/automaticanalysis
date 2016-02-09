@@ -40,3 +40,4 @@ aap = aas_add_meg_event(aap,'aamod_meg_epochs','S2','psp_bp','BP',{'STI101_down'
 
 %% RUN
 aa_doprocessing(aap);
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

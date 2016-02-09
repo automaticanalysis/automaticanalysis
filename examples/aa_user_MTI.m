@@ -35,7 +35,7 @@ aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy01/aa/CamCAN'; 
+aap.acq_details.root = '/imaging/xy01/aa'; 
 aap.directory_conventions.analysisid = 'MTI'; 
 
 % Add data
@@ -44,8 +44,9 @@ aap=aas_add_special_session(aap,'MTI_MT');
 aap=aas_add_special_session(aap,'MTI_baseline');
 for s = 1:size(SUBJ,1)
    MTser = sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_CBU_MTR_TR50_MT$')),aap.directory_conventions.seriesoutputformat);
-   aap = aas_addsubject(aap,SUBJ{s,2},[],[],[MTser MTser+1]);
+   aap = aas_addsubject(aap,SUBJ{s,1},SUBJ{s,2},'specialseries',[MTser MTser+1]);
 end
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
