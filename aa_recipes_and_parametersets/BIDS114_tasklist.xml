@@ -14,10 +14,13 @@
             <module><name>aamod_structuralfromnifti</name></module>
             <module><name>aamod_diffusionfromnifti</name></module>
             <module><name>aamod_epifromnifti</name></module>
-            <module><name>aamod_tsdiffana</name></module>			
+
+            <module><name>aamod_reorienttomiddle_structural</name></module>
+            <module><name>aamod_reorienttomiddle_diffusion</name></module>
+            <module><name>aamod_reorienttomiddle_epi</name></module>
+            <module><name>aamod_tsdiffana</name></module>
             
             <!-- Structural -->
-            <module><name>aamod_fsl_reorienttoMNI</name></module>
             <module><name>aamod_biascorrect_structural</name></module>
             <module><name>aamod_coreg_extended_1</name></module>
             

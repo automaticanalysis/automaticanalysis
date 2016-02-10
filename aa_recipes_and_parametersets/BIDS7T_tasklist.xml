@@ -12,7 +12,9 @@
         <main>
             <!-- Data -->
             <module><name>aamod_structuralfromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_structural</name></module>
             <module><name>aamod_epifromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_epi</name></module>
             <module><name>aamod_tsdiffana</name></module>			
             
             <!-- Structural -->
