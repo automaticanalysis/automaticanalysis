@@ -1,3 +1,8 @@
+## 4.3.1 ##
+
+#### Bugfix ####
+  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.org/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_demo_v2.m))
+
 ## 4.3.0 ##
 
 #### Copyrights ####
