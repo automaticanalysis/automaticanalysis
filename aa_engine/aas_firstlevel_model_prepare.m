@@ -195,14 +195,6 @@ end
 % If no custom bf is specified, remove this field so SPM uses default behaviour
 if isempty(SPM.xBF.bf), SPM.xBF = rmfield(SPM.xBF, 'bf'); end
 
-%% Allow specifying UNITS
-% This should probably disappear, because UNITS is specified in xBF
-if isfield(aap.tasklist.currenttask.settings,'UNITS') && ...
-        ~isempty(aap.tasklist.currenttask.settings.UNITS)
-    SPM.xBF.UNITS =aap.tasklist.currenttask.settings.UNITS;
-    warning('UNITS should be specified in xBF.UNITS, not as it''s own setting. This setting may be removed in the future.');
-end
-
 %% Get slice order from sliceorder stream if it exists, check same
 % for all sessions
 usesliceorder = aas_stream_has_contents(aap,'sliceorder');

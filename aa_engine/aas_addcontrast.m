@@ -1,35 +1,41 @@
 % Adds an contrast for a model
-% function aap=aas_addcontrast(aap,modulename,subject,format,vector,conname,contype,automatic_movesandmeans)
-%
-% modulename=name of module (e.g.,'aamod_firstlevel_contrasts') for which this
-%   contrast applies
-% subject=subject for whom this model applies
-% format=format for contrast specification, one of:
-%  "sameforallsessions" - vector contains contrast to be applied to all sessions
-%  "singlesession:[sessionname]" - vector contains contrast for just one
-%     session, all other sessions will be set to 0. [sessionname] should be
-%     replaced with name of that session.
-%  "uniquebysession" - long contrast string that separately specifies
-%     contrast for every session
-% vector=vecor containing the contrast
-% conname=cell string label for contrast (if empty, then aamod_firstlevel_contrast will create one)
-% contype="T" or "F" (defaults to "T")
-% automatic_movesandmeans=1 or 0, add means & moves to contrast
-%   automatically?
+% FORMAT function aap = aas_addcontrast(aap, modulename, subjname, format, vector, conname, contype)
+%   - aap: aap structure with parameters and tasklist
+%   - modulename: name of module (e.g.,'aamod_firstlevel_contrasts') for which this contrast applies
+%   - subjname: subject for whom this model applies
+%   - format: format for specificying session(s) for which this contrast applies
+%       - "sameforallsessions" -> vector contains contrast to be applied to all sessions (within-subject contrast)
+%       - "singlesession:<session name>" -> vector contains contrast for just one session
+%       - "uniquebysession" -> within-subject contrast that separately specifies contrast for every session
+%   - vector: contrast
+%       - vector containing the weights for each regressor (of interest)
+%       - string defining the wights and the regressors in a format <weight>x<regressor name><main ('m') or parametric ('p')><number of basis/parametric function> (e.g. '+1xENC_DISPLm1|-1xENC_FIXATp3')
+%           N.B.: number of basis/parametric functions can be, e.g.:
+%             - "m2": 2nd order of the basis function (e.g. temporal derivative of canocical hrf) of the main regressor
+%             - "p3": depending on the number of basis functions and the order of expansions of parametric modulators (they are arranged after each other)
+%                     - dispersion derivative of the 1st order polynomial expansion of the first parametric modulator
+%                     - 2nd order polynomial expansion of the first parametric modulator
+%                     - 3rd order polynomial expansion of the first parametric modulator
+%                     - 1st order polynomial expansion of the second parametric modulator
+%                     - 2nd order polynomial expansion of the second parametric modulator
+%                     - 1st order polynomial expansion of the third parametric modulator
+%   - conname: string label for contrast (if empty, then aamod_firstlevel_contrasts will create one)
+%   - contype="T" or "F" (defaults to "T")
+%   - automatic_movesandmeans=1 or 0, add means & moves to contrast automatically?
 %
 % Examples
 %aap=aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:avtask',[0 0 1 1 1])
 %aap=aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:avtask',[0 0 1 1 1],'stimulus-fixation','T')
 
-function aap=aas_addcontrast(aap,modulename,subject,format,vector,conname,contype,automatic_movesandmeans)
+function aap = aas_addcontrast(aap, modulename, subjname, format, vector, conname, contype)
 
-% Regexp for number at the end of a module name, if present in format _%05d (e.g, _00001)
+% Regexp for number at the end of a module name, if present in format _%05d (e.g. _00001)
 m1 = regexp(modulename, '_\d{5,5}$');
 
 % Or, we could use '_*' at the end of the module name to specify all modules with that name
 m2 = regexp(modulename, '_\*$');
 
-% Or, we might specify certain modules with  '_X/X/X'
+% Or, we might specify certain modules with  '_X/X/X' (e.g. _00001/00002/00004)
 m3 = regexp(modulename, '[_/](\d+)', 'tokens');
 
 if ~isempty(m1)
@@ -48,32 +54,14 @@ else
     moduleindex = 1;
 end
 
-% % Get number from end of module name if present in format _%05d (e.g, _00001)
-% if (length(modulename>6))
-%     moduleindex=str2num(modulename(length(modulename)-4:end));
-%     if (~strcmp(['_' sprintf('%05d',moduleindex)],modulename(length(modulename)-5:end)))
-%         moduleindex=1;
-%     else
-%         modulename=modulename(1:length(modulename)-6);
-%     end;
-% else
-%     moduleindex=1;
-% end;
-
-
 if (~exist('conname','var'))
     conname=[];
 end;
-
 if (~exist('contype','var') || isempty(contype))
     contype='T';
 end;
 
-if (~exist('automatic_movesandmeans','var') || isempty(automatic_movesandmeans))
-    automatic_movesandmeans=true;
-end;
-
-[format rem]=strtok(format,':');
+[format, rem]=strtok(format,':');
 if (strcmp(format,'singlesession'))
     session=strtok(rem,':');
 else
@@ -85,10 +73,10 @@ for m = 1 : length(moduleindex)
     
     mInd = moduleindex(m);
     
-    whichcontrast=[strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subject)];
+    whichcontrast=strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subjname);
     if (~any(whichcontrast))
         emptycon=aap.tasksettings.(modulename)(mInd).contrasts(1); % The first one is usually empty, makes for a good template in case the structure changes
-        emptycon.subject=subject;
+        emptycon.subject=subjname;
         emptycon.con.format=format;
         emptycon.con.vector=vector;
         emptycon.con.session=session;

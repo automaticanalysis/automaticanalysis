@@ -59,6 +59,7 @@ if ~isempty(parametric)
     % [AVG] reorder parametric modulator even if there's more than one!
     for p = 1:length(parametric)
         if strcmp(parametric(p).name,'time') && isempty(parametric(p).P) % automatic temporal modulation 
+            parametric(p).name = 'time_tosc'; % to scale
             parametric(p).P = ons;
         else
             parametric(p).P = parametric(p).P(ind);

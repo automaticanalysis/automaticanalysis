@@ -40,6 +40,22 @@ if ~isempty(model{sess})
         else
             parametric=model{sess}.event(c).parametric;
             parLen = length(parametric);
+            
+            % scale temporal modulation
+            tmods_to_scale = find(strcmp({parametric.name},'time_tosc'));
+            if ~isempty(tmods_to_scale)
+                switch SPM.xBF.UNITS
+                    case 'secs'
+                        sf    = 1 / 60;
+                    case 'scans'
+                        sf    = SPM.xY.RT / 60;
+                    otherwise
+                        aas_log(aap,true,'ERROR: Unknown unit "%s".',SPM.xBF.UNITS);
+                end            
+                for p = tmods_to_scale
+                    parametric(p).P = parametric(p).P * sf;
+                end
+            end
         end
         
         SPM.Sess(sessnuminspm).U(c) = struct(...
