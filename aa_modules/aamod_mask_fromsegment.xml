@@ -10,7 +10,7 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <threshold ui='optionlist' options='zero|exclusive|[value]'>0.9</threshold>           
+            <threshold ui='optionlist' options='zero|exclusive|[value(s)]'>0.9</threshold>           
             
             <inputstreams>
                 <stream isrenameable='1'>reference</stream>

@@ -73,8 +73,10 @@ switch task
                 end
             otherwise
                 %% B) Specific thresholding of each mask
+                thr = aas_getsetting(aap,'threshold');
+                if numel(thr) == 1, thr(1:3) = thr; end
                 for a = 1:size(segimg,1)
-                    Y{a} = Y{a} > aap.tasklist.currenttask.settings.threshold;
+                    Y{a} = Y{a} > thr(a);
 
                     V{a}.fname = spm_file(segimg(a,:),'prefix','S_r');
                     outstream = strvcat(outstream, V{a}.fname); % Save to stream...
