@@ -62,7 +62,7 @@ try
 catch
     aas_log(aap,false,sprintf('ERROR in %s: incorrect arguments',mfilename),'Errors')
     help(mfilename);
-    return
+    error('ERROR in %s: incorrect arguments',mfilename);
 end
 
 %% Sanity, compatiblity check
