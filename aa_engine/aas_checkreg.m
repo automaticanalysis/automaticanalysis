@@ -83,7 +83,10 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
     end
 end
 
-switch spm('ver')
+spmver = spm('ver');
+if ~aap.options.diagnostic_videos, spmver = ''; end
+
+switch spmver
     case {'SPM12b' 'SPM12'}
     otherwise
         %% FSL
