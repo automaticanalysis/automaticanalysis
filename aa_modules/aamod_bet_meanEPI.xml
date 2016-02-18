@@ -16,7 +16,7 @@
             
             <outputstreams>
                 <stream>meanepi</stream>                
-                <stream>epiBETmask</stream>
+                <stream isrenameable='1'>epiBETmask</stream>
                 <stream>epiBETmesh</stream>
             </outputstreams>
             
@@ -27,19 +27,13 @@
             <!-- Do we want to output the masks & meshes from BET? 0 - NO; 1 - YES 
             This might slightly increase the accuracy of BET -->
             <masks>0</masks>
-            
-            <!-- Voxel kernel by which we smooth (essentially dilate) the BET mask [useful if BET eats into brain matter]? -->
-            <smooth>0</smooth>
-            <!-- Do we apply the brain masking on the structural...? 0 - NO; 1 - YES -->
-            <maskBrain>1</maskBrain>
-            
+
             <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed 
             Can add multiple, but then only first one will be used for BETting, but operation will be applied on both -->
             <structural>1</structural>
             
             <!-- Diagnostic videos? -->
             <diagnostic>0</diagnostic>
-            
         </currenttask>
     </tasklist>
 </aap>

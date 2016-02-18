@@ -15,7 +15,7 @@ switch task
         thr = aap.tasklist.currenttask.settings.maskingthreshold;
         switch thr
             case 1
-                mask = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,subj,sess,'brainmask');
+                mask = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[subj,sess],'brainmask');
                 
             case 0
                 % read image
