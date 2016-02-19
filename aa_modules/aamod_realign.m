@@ -79,7 +79,7 @@ switch task
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 set(f,'Renderer','zbuffer');
-                print(f,'-djpeg','-r150',fn);
+                if ~exist(fn,'file'), print(f,'-djpeg','-r150',fn); end
                 close(f);
 
                 

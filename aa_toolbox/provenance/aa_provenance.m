@@ -125,14 +125,15 @@ classdef aa_provenance < handle
             
         end
         
-        function serialise(obj)
+        function serialise(obj,serpath)
             if obj.isvalid
+                if nargin < 2, serpath = obj.studypath; end  % default
                 obj.pp.bundle(obj.IDs{1}.id,obj.p);
-                serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.provn'));
-                serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.ttl'));
+                serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.provn'));
+                serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.ttl'));
 %                 serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.json'));
                 if ~unix('which dot')
-                    serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.pdf'));
+                    serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.pdf'));
                 end
             end
         end

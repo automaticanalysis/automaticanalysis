@@ -83,9 +83,8 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     % to avoid conflict in case of parallel execution make a copy of the file in tmp
     tmpfname = tempname;
     copyfile(inpstreamdesc, tmpfname);
-    inpstreamdesc = tmpfname;
     
-    fid=fopen(inpstreamdesc,'r');
+    fid=fopen(tmpfname,'r');
     
     ind=0;
     

@@ -1,7 +1,10 @@
 % Automatic analysis - produces HTML summary of analysis
-% This feature is usable, but still under development.
+%
+% For reporting a remote pipeline, copy the aap_parameters.mat file to a
+% local directory and call aa_report from that directory without any argument
+%
 % Rhodri Cusack MRC CBU Cambridge 2004
-% Tibor Auer MRC CBU Cambridge 2012-2013
+% Tibor Auer MRC CBU Cambridge 2012-2016
 
 function [aap]=aa_report(studyroot,stages)
 
@@ -124,7 +127,7 @@ for k=1:numel(stages)
             % evaluate with handling sessions
             if inSession
                 if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
-                aap = aas_report_add(aap,subj,'<td>');
+                aap = aas_report_add(aap,subj,'<td valign="top">');
                 aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
             end
             if ~isdone
@@ -146,7 +149,7 @@ aap = aas_report_add(aap,0,'EOF');
 fclose all;
 
 % Provenance
-aap.prov.serialise;
+aap.prov.serialise(studyroot);
 
 % Show report
 web(['file://' aap.report.html_main.fname]);

@@ -9,14 +9,10 @@ switch task
         load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica','output'));
         infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
         D = spm_eeg_load(infname_meg);
- 
-        str = [];
-        for m=1:length(toremove)
-            str = [str sprintf('Modality %d: %d ICs removed<br>',m,length(toremove{m}))];
-        end
-        aap = aas_report_add(aap,subj,str);
         
         for m = 1:length(modality)
+           
+            aap = aas_report_add(aap,subj,sprintf('<h4>Modality %d (%s): %d ICs removed</h4>',m,modality{m},length(toremove{m})));
             
             in.type = modality{m};
             
@@ -79,8 +75,9 @@ switch task
                 aap = aas_report_addimage(aap,subj,fname_tc);
                 aap = aas_report_addimage(aap,subj,fname_top);
             end
+            
         end
-       
+
     case 'doit'
         %% Initialise
         % clear previous diagnostics
