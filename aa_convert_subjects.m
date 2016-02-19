@@ -28,3 +28,4 @@ aap.aap_beforeuserchanges.acq_details.subjects = newsubj;
 for s = 1:numel(aap.acq_details.subjects)
     aap = aamod_evaluatesubjectnames(aap,'doit',s);
 end
+aap.internal.aap_initial.acq_details.subjects = aap.acq_details.subjects;
