@@ -9,11 +9,12 @@
 %% INITIALISE
 clear
 
-aa_ver4_nocloud
+aa_ver4
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
 aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
+aap = aas_configforSPM12(aap);
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value localsingle
@@ -32,10 +33,9 @@ aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything';
 aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
 % Add data
+aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,90973,[7]);
-aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,90979,[7]);
-aap = aas_addsession(aap,'Loc');
 
 % Add model
 % Obtain TR from the first session
@@ -65,4 +65,3 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[
 %% DO ANALYSIS
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-aas_garbagecollection(aap,true);

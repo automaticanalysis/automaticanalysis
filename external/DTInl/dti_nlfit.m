@@ -9,7 +9,9 @@ function [S0 DT] = dti_nlfit(vdata, bvals, bvecs)
 %_______________________________________________________________________
 %
 % Copyright (C) 2014 MRC Congition and Brain Sciences Unit
-
+%
+% Correia MM, Carpenter TA, Williams GB (2009), Looking for the optimal DTI acquisition scheme given a maximum scan time: are more b-values a waste of time?, MRI, 27(2):163-75. 
+%
 % Marta Correia and Tibor Auer
 % $Id: dti_nlfit.m 2014-08-15 16:00:00Z ta02 $
 

@@ -20,14 +20,14 @@ switch task
         end
         
         % find out what streams we should normalise
-		streams=aas_getstreams(aap,'out');
+		streams=aas_getstreams(aap,'output');
         if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
             inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
         else
             inds = 1:length(streams);
         end
         % determine normalised struct
-        struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+        struct = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
         sname = basename(struct);
         struct = struct((sname(:,1)=='w'),:);
         for streamind = inds
@@ -51,7 +51,7 @@ switch task
             % Study summary
             aap = aas_report_add(aap,'reg',...
                 ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
-            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
+            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fdiag(1).name));
         end
     case 'doit'
         subj = varargin{1};
@@ -106,7 +106,7 @@ switch task
                         imgsGood(n,:) = [];
                     end
                 end
-                spm_write_sn(imgsGood,matname,aap.spm.defaults.normalise.write);
+                spm_write_sn(imgsGood,matname,flags);
             end
             
             wimgs=[];

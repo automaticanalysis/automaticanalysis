@@ -121,7 +121,7 @@ clear b block f
 %% prepare directory for 2nd level contrasts
 secondlevdir=fullfile(aap.acq_details.root,'GroupAnalysis',sprintf('FullFact_2ndLev_%s_%s',regexprep(S.voldir,{'-eeg','_BLOCK1'},{'',''}),S.fname));
 try cd(secondlevdir);
-catch mkdir(secondlevdir); cd(secondlevdir);
+catch, mkdir(secondlevdir); cd(secondlevdir);
 end
 
 %% load binary FDR p<0.05 ROIs for SS effect for each task
@@ -305,7 +305,7 @@ for s=1:length(aap.acq_details.subjects)
                     indiKcon=indiKcon+indiX(ss)*Y{q*4+ss};
                 end
                 Vout.fname=outfile;
-                try Vout=rmfield(Vout,{'private','pinfo'}); catch end
+                try Vout=rmfield(Vout,{'private','pinfo'}); catch, end
                 spm_write_vol(Vout,indiKcon);
             end
 

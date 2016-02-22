@@ -17,10 +17,12 @@ else
     studyroot=pwd;
 end;
 if ~exist('aap_parameters.mat','file')
-    error('aap structure not found');
+    error('ERROR: aap structure not found');
 else
     load('aap_parameters');
 end
+
+aa_init(aap);
 
 if ~exist('stages','var')
     stages={aap.tasklist.main.module.name};
@@ -33,6 +35,9 @@ aap.report.dependency={};
 aap.internal.total=0;
 aap.internal.stagesnotdone=0;
 stage_study_done = false;
+
+% Provenance
+aap.prov = aa_provenance(aap);
 
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))
@@ -60,10 +65,9 @@ aap.report.fbase = basename(aap.report.html_main.fname);
 
 % Handle session
 inSession = false;
-nSessions = numel(aap.acq_details.sessions);
 
 for k=1:numel(stages)
-    fprintf('Fetching report for %s...\n',stages{k});    
+    fprintf('Fetching report for %s...\n',stages{k});
     % domain
     if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
         xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
@@ -75,27 +79,36 @@ for k=1:numel(stages)
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
     domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
     
+    % Switch for stage
+    all_stage = cell_index(stages, stages{k});
+    istage = cell_index({aap.tasklist.main.module.name}, stages{k});
+    istage = istage(all_stage==k);
+    % - backup fields
+    aapreport = aap.report;
+    aapprov = aap.prov;
+    
+    aap = aas_setcurrenttask(aap,istage);
+    
+    % - restore fields
+    aap.report = aapreport;
+    aap.prov = aapprov;
+    
+    % add provenance
+    if aap.prov.isvalid, aap.prov.addModule(istage); end
+    
     % Skip stages of unknown domain - most like aamod_importfilesasstream
     if ~strcmp(domain,'[unknown]')
         
-        % Set inSession flag
-        if strcmp(domain,'session') && ~inSession
-            inSession = true;
-        end
-        if ~strcmp(domain,'session') && inSession
-            inSession = false;
-        end
-        
-        % Switch for stage
-        all_stage = cell_index(stages, stages{k});
-        istage = cell_index({aap.tasklist.main.module.name}, stages{k});
-        istage = istage(all_stage==k);
-        aapreport = aap.report;
-        aap = aas_setcurrenttask(aap,istage);
-        aap.report = aapreport;
-        
         % build dependency
         dep = aas_dependencytree_allfromtrunk(aap,domain);
+        
+        % Set inSession flag
+        if ~isempty(strfind(domain,'session')) && ~inSession
+            inSession = true;
+        end
+        if isempty(strfind(domain,'session')) && inSession
+            inSession = false;
+        end
         
         % run through
         for d = 1:numel(dep)
@@ -104,13 +117,15 @@ for k=1:numel(stages)
             try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
             try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
             
-            if sess == 1, aap = aas_report_add(aap,subj,['<h2>Stage: ' stages{k} '</h2>']); end
+            if sess == 1, aap = aas_report_add(aap,subj,...
+                    ['<h2>Stage: ' stages{k} aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
+            end
             
             % evaluate with handling sessions
             if inSession
                 if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td>');
-                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(dep{d}{2}(2)).name '</h3>']);
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
             end
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
@@ -119,7 +134,7 @@ for k=1:numel(stages)
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == nSessions, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if sess == numel(aap.acq_details.([domain 's'])), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end;
     end
@@ -130,9 +145,14 @@ aap = aas_report_add(aap,[],'EOF');
 aap = aas_report_add(aap,0,'EOF');
 fclose all;
 
+% Provenance
+aap.prov.serialise;
+
 % Show report
 web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
-save('aap_parameters_reported.mat', 'aap');
+save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
+
+aa_close;
 
 end

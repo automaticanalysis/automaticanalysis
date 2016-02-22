@@ -9,7 +9,7 @@
 % Rhodri Cusack MRC CBU Cambridge, Feb 2010
 % Tibor Auer MRC CBU Cambridge, 2012-2013
 
-function [allfiles md5]=aas_getfiles_bystream(aap,varargin)
+function [allfiles md5 inpstreamdesc]=aas_getfiles_bystream(aap,varargin)
 
 % Indices are all the numeric inputs
 reqestedIndices = [varargin{cellfun(@(x) isnumeric(x), varargin)}];
@@ -25,14 +25,30 @@ else
         case 1
             streamDomain = 'subject';
         case 2
-            streamDomain = 'session';
+            if isfield(aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE,'modality')
+                switch aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE.modality
+                    case 'MRI'
+                        streamDomain = 'session';
+                        % for backwad compatibilty
+                        if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
+                            streamDomain = 'diffusion_session';
+                        end
+                    case 'DWI'
+                        streamDomain = 'diffusion_session';
+                    case 'MEG'
+                        streamDomain = 'meg_session';
+                end
+            else
+                streamDomain = 'session';
+            end
+            varargin = {streamDomain reqestedIndices varargin{cellfun(@(x) ischar(x), varargin)}};
         otherwise
             aas_log(aap, 1, sprintf('Can''t determine the domain for stream ''%s'', givin these indices: %s. Try using this, aas_getfiles_bystream(aap, ''streamDomain'', [%s], ''%s'')', streamName, strjoin(arrayfun(@(x) sprintf('[%d]',x),reqestedIndices, 'UniformOutput', false)), strjoin(arrayfun(@(x) sprintf('%d',x),reqestedIndices, 'UniformOutput', false)), streamName));
     end
 end
 
 % Get the domain indices for this level (e.g., stream indices for this subject)
-[~, domainI] = aas_getN_bydomain(aap, streamDomain, reqestedIndices);
+[junk, domainI] = aas_getN_bydomain(aap, streamDomain, reqestedIndices);
 
 order = {'input' 'output'};
 if strcmp(varargin{end},'input') || strcmp(varargin{end},'output')
@@ -52,11 +68,23 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         else
             [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin{:});
         end
+        aas_log(aap,false,sprintf('Load stream from file %s...',inpstreamdesc));
         if exist(inpstreamdesc,'file'), break; end
+        aas_log(aap,false,sprintf('\b but not found'));
     end
-    if (~exist(inpstreamdesc,'file'))
+    if (~exist(inpstreamdesc,'file')) 
         aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
+        inpstreamdesc = '';
+        allfiles = '';
+        md5 = '';
+        return
     end;
+    
+    % to avoid conflict in case of parallel execution make a copy of the file in tmp
+    tmpfname = tempname;
+    copyfile(inpstreamdesc, tmpfname);
+    inpstreamdesc = tmpfname;
+    
     fid=fopen(inpstreamdesc,'r');
     
     ind=0;
@@ -64,7 +92,7 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     % There should be an MD5 at the top
     lne=fgetl(fid);
     if ((length(lne)>3) && strcmp(lne(1:3),'MD5'))
-        allfiles=[];
+        allfiles='';
         md5=lne;
     else
         allfiles=lne;
@@ -79,9 +107,11 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     end;
     fclose(fid);
     
+    delete(tmpfname);
 else
-    allfiles = [];
-    md5 = [];
+    inpstreamdesc = '';
+    allfiles = '';
+    md5 = '';
 end
 
 end

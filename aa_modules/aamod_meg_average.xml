@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meg_session' desc='Average epoched M/EEG data' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <robust>0</robust>
+            <conditionorder desc='Condition labels sperated with ":"'></conditionorder>
+            
+            <inputstreams>
+                <stream>meg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

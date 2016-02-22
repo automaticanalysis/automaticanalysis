@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meg_session' desc='MEG ICA denoise 2: Apply trajectory matrix' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+                
+            <ref_chans>VEOG062:HEOG061:ECG063</ref_chans>
+            <ref_type>VEOG:HEOG:ECG</ref_type>
+                               
+            <!-- Thresholding (choose one or more)
+            1 - corresponds to single IC with max correlation
+            2 - corresponds to ICs with correlations surviving absolute p-value
+            3 - corresponds to ICs with correlations surviving relative Z-score across correlations
+            4 - (optional on doPermutation above) corresponds to ICs with correlations surviving boot-strapped,
+            -->
+            <thresholding desc='artifact thresholding'>1 2 3 4</thresholding>
+            <!-- Remove artifacts (choose one)
+            temp - artifacts for each temporal reference
+            spat - artifacts for each spatial reference
+            either - artifacts for either temporal or spatial reference
+            both - artifacts on both temporal and spatial reference (assumes temp+spat references match in number and order)
+            -->
+            <toremove desc='artifacts to be removed' options='temp|spat|either|both' ui='optionlist'>both</toremove>
+            
+            <sampling></sampling> <!-- in case want to restrict artifact detection to certain time period (samples) -->
+            
+            <TemAbsPval>0.001</TemAbsPval> <!-- Absolute p-value threshold for temporal correlation (often too liberal if many samples) -->
+            <SpaAbsPval>0.001</SpaAbsPval> <!-- Absolute p-value threshold for spatial correlation (often too liberal if many samples) -->
+                 
+            <TemRelZval>3</TemRelZval> <!-- Relative Z-score threshold for temporal correlation -->
+            <SpaRelZval>3</SpaRelZval> <!-- Relative Z-score threshold for temporal correlation -->
+            
+            <doPermutation>0</doPermutation> <!-- Number of permutations for phase-randomised p-values (0=None) -->
+            
+            <VarThr>0</VarThr> <!-- Variance explained threshold for ICs (normally 0 so that no thresholding on variance) -->
+ 
+            <inputstreams>
+                <stream diagnostic="1">meg</stream>              
+                <stream>topography</stream>
+                <stream>meg_ica</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg</stream>                
+                <stream>meg_ica</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

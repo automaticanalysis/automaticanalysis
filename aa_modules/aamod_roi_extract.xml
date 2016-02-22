@@ -8,10 +8,10 @@
         <ROIvals></ROIvals>
         <verbose>0</verbose>
         <inputstreams>
-            <stream>normalised_grey</stream>
+            <stream isrenameable='1'>normalised_grey</stream>
         </inputstreams>
         <outputstreams>
-            <stream>roidata</stream>
+            <stream isrenameable='1'>roidata</stream>
         </outputstreams>
    </currenttask>
   </tasklist>

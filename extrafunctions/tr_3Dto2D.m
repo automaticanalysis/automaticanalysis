@@ -21,9 +21,9 @@ switch nargin
         nstart = varargin{2};
         nend = varargin{3};
         nlag = varargin{4};
-        if ~nstart 
+        if ~nstart
             nstart = 1;
-            nend = size(a,3);        
+            nend = size(a,3);
         end
         ns = nend - nstart + 1;
         mx = sqrtb(ns/nlag);
@@ -33,9 +33,9 @@ switch nargin
         nstart = varargin{2};
         nend = varargin{3};
         nlag = varargin{4};
-        if ~nstart 
+        if ~nstart
             nstart = 1;
-            nend = size(a,3);        
+            nend = size(a,3);
         end
         ns = nend - nstart + 1;
         mx = varargin{5};
@@ -67,4 +67,12 @@ for y = 1:my
         break;
     end
 end
+end
+
+function r = sqrtb(n)
+i = 0;
+while (i^2) < n
+    i = i+1;
+end
+r = i;
 end

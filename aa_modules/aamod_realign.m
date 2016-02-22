@@ -16,12 +16,13 @@ switch task
         mvmax=[];
         mvstd=[];
         mvall=[];
-        nsess=length(aap.acq_details.sessions);
+        nsess=length(aap.acq_details.selected_sessions);
         
         qq=[];
         
         aap = aas_report_add(aap,subj,'<table><tr>');
-        for sess=1:nsess
+        for sess=aap.acq_details.selected_sessions
+            if sess > aas_getN_bydomain(aap,'session',subj), break; end
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
@@ -36,11 +37,12 @@ switch task
                     movefile(...
                         fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
                 else
-                    aas_realign_graph(par{parind});
+                    f  = aas_realign_graph(par{parind});
                     print('-djpeg','-r150','-noui',...
                         fullfile(aas_getsubjpath(aap,subj),...
                         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
+                    close(f);
                 end
             end
 
@@ -67,18 +69,17 @@ switch task
         aap = aas_report_add(aap,subj,sprintf('<td>%8.3f</td>',varcomp));
         aap = aas_report_add(aap,subj,'</tr></table>');
         
-        aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realign.jpg'));
-
 		% Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject            
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
-            for sess=1:nsess
-				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
+            for sess=aap.acq_details.selected_sessions
+				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
                 
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
-                print('-djpeg','-r150',fn);
+                set(f,'Renderer','zbuffer');
+                print(f,'-djpeg','-r150',fn);
                 close(f);
 
                 
@@ -97,6 +98,8 @@ switch task
                 
                 aap = aas_report_add(aap,'moco','</td>');
             end
+        elseif numel(aap.acq_details.subjects) == 1
+            aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end
     case 'doit'
         % Get realignment defaults
@@ -105,15 +108,10 @@ switch task
         % Note starting directory so we can get back here in the end
         startingDir = pwd;
         
-        clear imgs;
-        
-        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
-        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-        
-        for sess = 1:numSess
+        imgs = {};
+        for sess = aap.acq_details.selected_sessions
             % get files from stream
-            epiFiles = aas_getfiles_bystream(aap, subj, subjSessionI(sess), 'epi');
-            imgs(sess) = {epiFiles};
+            imgs{end+1} = aas_getfiles_bystream(aap, subj, sess, 'epi');
         end
         
         % Flags to pass to routine to calculate realignment parameters
@@ -173,23 +171,17 @@ switch task
         % Run the realignment
         spm_realign(imgs, reaFlags);
         
-        if (~isdeployed)
-            % Save graphical output
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end
-            print('-djpeg','-r150','-noui',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realign'));
-        end
-        
         % Run the reslicing
         spm_reslice(imgs, resFlags);
         
         %% Describe outputs
         movPars = {};
-        for sess = 1 : numSess
-            aas_log(aap,0,sprintf('Working with session %d', subjSessionI(sess)))
+        for sess = aap.acq_details.selected_sessions
+            aas_log(aap,0,sprintf('Working with session %d: %s', sess, aap.acq_details.sessions(sess).name))
             
             rimgs=[];
-            for k=1:size(imgs{sess},1);
-                [pth nme ext]=fileparts(imgs{sess}(k,:));
+            for k=1:size(imgs{aap.acq_details.selected_sessions==sess},1);
+                [pth nme ext]=fileparts(imgs{aap.acq_details.selected_sessions==sess}(k,:));
                 
                 % If we don't reslice the images after realignment, don't
                 % change the prefix of the images in our output stream
@@ -200,8 +192,7 @@ switch task
                     rimgs=strvcat(rimgs,fullfile(pth,['r' nme ext]));
                 end
             end
-            sessdir = aas_getsesspath(aap,subj,subjSessionI(sess));
-            aap = aas_desc_outputs(aap,subj,subjSessionI(sess),'epi',rimgs);
+            aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
             
             % Get the realignment parameters...
             fn=dir(fullfile(pth,'rp_*.txt'));
@@ -210,26 +201,27 @@ switch task
             % Sessionwise custom plot or MFP
             if isfield(aap.tasklist.currenttask.settings,'mfp') && aap.tasklist.currenttask.settings.mfp.run
                 mw_mfp(outpars);
-                fn=dir(fullfile(pth,'mw_mpf_*.txt'));
+                fn=dir(fullfile(pth,'mw_mfp_*.txt'));
                 outpars = fullfile(pth,fn(1).name);
                 if strcmp(aap.options.wheretoprocess,'localsingle')
                     movefile(...
-                        fullfile(aas_getsesspath(aap,subj,subjSessionI(sess)),'mw_motion.jpg'),...
+                        fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),...
                         fullfile(aas_getsubjpath(aap,subj),...
-                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(subjSessionI(sess)).name '.jpg'])...
+                        ['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
                 end
             else
-                aas_realign_graph(outpars);
+                f = aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...
                     fullfile(aas_getsubjpath(aap,subj),...
-                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(subjSessionI(sess)).name '.jpg'])...
+                    ['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg'])...
                     );
+                close(f);
             end
             
-            aap = aas_desc_outputs(aap,subj,subjSessionI(sess),'realignment_parameter', outpars);
+            aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter', outpars);
             
-            if sess==1
+            if sess==min(aap.acq_details.selected_sessions)
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
@@ -240,13 +232,12 @@ switch task
         end
         
         %% DIAGNOSTICS
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
-        aas_realign_graph(movPars)
+        f = aas_realign_graph(movPars);
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '_MP.jpeg']));
-        
-        cd(startingDir);
+            [mfilename '__' subjname '_MP.jpeg']));
+        close(f);
         
     case 'checkrequirements'
         

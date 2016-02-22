@@ -74,8 +74,8 @@ end;
 % annotate
 xm = find(mot == max(mot(:)));
 xd = find(deg == max(deg(:)));
-[~, xt] = find(td == max(td(:)));
-[~, xs] = find(sts == max(sts(:)));
+[junk, xt] = find(td == max(td(:)));
+[junk, xs] = find(sts == max(sts(:)));
 axes('Position',[0.005,0.005,0.1,0.1],'Visible','off');
 text(1,0.1,['MaxVal@scan: T:' sprintf('%01.1f', max(mot(:))) ' mm @ scan ' num2str(xm) '; R: ' sprintf('%01.1f', max(deg(:))) ' � @ scan ' num2str(xd) '; TD: '  sprintf('%01.1f', max(td(:))) ' mm @ scan ' num2str(xt) '; STS: '  sprintf('%01.1f', max(sts(:))) ' mm @ scan ' num2str(xs) '.'],'FontSize',8,'interpreter','none');
 

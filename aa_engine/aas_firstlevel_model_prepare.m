@@ -1,21 +1,23 @@
 function [SPM, anadir, files, allfiles, model, modelC] = ...
     aas_firstlevel_model_prepare(aap, subj)
 
-subjname = aap.acq_details.subjects(subj).mriname;
+subjname = aas_mriname2subjname(aap.acq_details.subjects(subj).mriname);
 
 % We can now have missing sessions per subject, so we're going to use only
 % the sessions that are common to this subject and selected_sessions
 [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
 subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+numSess = numel(subjSessionI);
 
 %% Get data (EPI) files, and the models...
 files = cell(numSess,1);
 allfiles='';
 model = cell(numSess,1);
 modelC = cell(numSess,1);
+inpStreams = aas_getstreams(aap,'input');
 
 for sess = 1:numSess
-    files{sess} = aas_getfiles_bystream(aap,subj,subjSessionI(sess),'epi');
+    files{sess} = aas_getfiles_bystream(aap,subj,subjSessionI(sess),inpStreams{1});
     if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D
         V = spm_vol(files{sess});
         f0 = files{sess};
@@ -90,13 +92,13 @@ for sess = 1:numSess
     
     % Can we build an SPM model without any condition regressors?  Usually no,
     % but yes if we are using SPM for filtering, etc.
+    allowEmptyModel = false;
     if isfield(aap.tasklist.currenttask.settings, 'allowemptymodel') && aap.tasklist.currenttask.settings.allowemptymodel
-        allowEmptyModel = 1;
-    else
-        allowEmptyModel = 0;
+        allowEmptyModel = true;
     end
     
-    if ~allowEmptyModel && ( (isempty(modelnum)) && (isempty(modelCnum)) )
+    isEmptyModel = (isempty(modelnum)) && (isempty(modelCnum));
+    if isEmptyModel && ~allowEmptyModel
         aas_log(aap,true,'Cannot find model specification. Check either user script or aamod_firstlevel_model.xml');
     end
     
@@ -137,7 +139,7 @@ else
         end
         % [AVG] This is for backwards compatibility!
         if ~exist('TR','var') || isempty(TR)
-            TR=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+            TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         end
         
         if (sess==subjSessionI(1))

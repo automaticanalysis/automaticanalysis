@@ -63,7 +63,7 @@ switch task
         aap=aas_desc_outputs(aap,subj,outputstream{:}, outstream);
         
         %% DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         for d = aap.tasklist.currenttask.settings.structural
             %% Draw native template
@@ -78,7 +78,7 @@ switch task
             spm_orthviews('reposition', [0 0 0])
             
             print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '_' num2str(d) '.jpeg']));
+                [mfilename '__' subjname '_' num2str(d) '.jpeg']));
         end
 end
 end

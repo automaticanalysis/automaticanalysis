@@ -3,7 +3,6 @@
 % extract the gradient direction and b-values as a text file
 
 function [aap resp]=aamod_convert_diffusion(aap,task,subjind,diffsessind)
-global aaworker
 resp='';
 
 switch task

@@ -1415,7 +1415,7 @@ M       cg_realign.m
 M       cg_run_realign_estimate.m
 M       cg_cfg_realign.m
 
-(1) Added function to automatically set origin ucenter-of-mass.
+(1) Added function to automatically set origin center-of-mass.
 (2) Removed option for ignoring mat-information for realignmnt from GUI.
 ------------------------------------------------------------------------
 r432 | gaser | 2011-10-03 23:48:42
@@ -1443,3 +1443,68 @@ M       cg_vbm8_write.m
 Use old skull-stripping approach if graph-cut skull-stripping fails.
 ------------------------------------------------------------------------
 r435 | gaser | 2011-12-06 12:37:54
+
+M       Makefile.vbm
+M       cg_vbm8_defaults.m
+A       deepmask.nii
+M       CHANGES.txt
+M       sanlm_float.c
+M       cg_vbm8_write.m
+
+Preliminary version of local histogram equalization.
+------------------------------------------------------------------------
+r436 | gaser | 2012-01-09 17:59:16
+
+M       cg_vbm8_defaults.m
+M       cg_vbm8_batch.m
+A  +    histeq_mask.nii
+D       deepmask.nii
+M       cg_spm8_batch.m
+A       histeq_mask.txt
+M       cg_vbm8_write.m
+
+(1) Deselect local histogram equalization by default.
+(2) Removed call of "run_nogui" for spm_jobman.m in cg_*_batch.m.
+(3) Added histeq_mask.* for local histogram, equalization.
+------------------------------------------------------------------------
+r437 | gaser | 2012-01-13 09:57:40
+
+M       sanlmMex.mexw32
+M       down_cut.mexw64
+M       cg_vbm8_tools.m
+M       median3.mexw32
+M       AmapMex.mexw32
+M       eikonal3.mexw32
+M       sanlmMex.mexw64
+M       vbdist.mexw32
+M       CHANGES.txt
+M       down_cut.mexw32
+M       median3.mexw64
+M       AmapMex.mexw64
+M       cg_check_cov.m
+M       eikonal3.mexw64
+M       vbdist.mexw64
+M       cg_vbm8_write.m
+
+(1) Allow to deform 4D images with "Apply Deformations" (thanks to Robert
+    Welsh).
+(2) Recompilation for Windows systems.
+------------------------------------------------------------------------
+r438 | gaser | 2012-03-08 09:40:00
+
+ M      histeq_mask.nii
+M       CHANGES.txt
+ M      histeq_mask.txt
+M       cg_vbm8_write.m
+
+Added additional check whether gcut skull-stripping failed.
+------------------------------------------------------------------------
+r439 | gaser | 2012-03-23 16:46:37
+
+M       cg_vbm8_defs.m
+M       cg_ornlm.m
+M       CHANGES.txt
+
+Added HDW path to cg_vbm8_defs.m.
+------------------------------------------------------------------------
+r440 | gaser | 2012-03-28 09:50:46

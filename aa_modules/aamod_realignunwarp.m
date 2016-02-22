@@ -7,7 +7,7 @@
 % Alejandro Vicente Grabovetsky Jan-2012
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_realignunwarpDCCN(aap,task,subj)
+function [aap,resp]=aamod_realignunwarp(aap,task,subj)
 
 resp='';
 
@@ -23,12 +23,12 @@ switch task
         mvmax=[];
         mvstd=[];
         mvall=[];
-        nsess=length(aap.acq_details.sessions);
+        nsess=length(aap.acq_details.selected_sessions);
         
         qq=[];
         
         aap = aas_report_add(aap,subj,'<table><tr>');
-        for sess=1:nsess
+        for sess=aap.acq_details.selected_sessions
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
             fn = fullfile(aas_getsubjpath(aap,subj),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
@@ -43,11 +43,12 @@ switch task
                     movefile(...
                         fullfile(aas_getsesspath(aap,subj,sess),'mw_motion.jpg'),fn);
                 else
-                    aas_realign_graph(par{parind});
+                    f = aas_realign_graph(par{parind});
                     print('-djpeg','-r150','-noui',...
                         fullfile(aas_getsubjpath(aap,subj),...
                         ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                         );
+                    close(f);
                 end
             end
             
@@ -81,13 +82,14 @@ switch task
         % Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
-            for sess=1:nsess
+            for sess=aap.acq_details.selected_sessions
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
 
                 mvmax = squeeze(aap.report.mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
-                print('-djpeg','-r150',fn);
+                set(f,'Renderer','zbuffer');
+                print(f,'-djpeg','-r150',fn);
                 close(f);
                 
                 aap = aas_report_add(aap,'moco','<td>');
@@ -105,71 +107,59 @@ switch task
                 
                 aap = aas_report_add(aap,'moco','</td>');
             end
+        elseif numel(aap.acq_details.subjects) == 1
+            aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end
         
     case 'doit'
         
         %% Set up a jobs file with some advisable defaults for realign/unwarp!
-        jobs = {};
-        
+
         % Get the options from the XML!
-        jobs{1}.spatial{1}.realignunwarp.eoptions = ...
-            aap.tasklist.currenttask.settings.eoptions;
-        jobs{1}.spatial{1}.realignunwarp.uweoptions = ...
-            aap.tasklist.currenttask.settings.uweoptions;
-        jobs{1}.spatial{1}.realignunwarp.uwroptions = ...
-            aap.tasklist.currenttask.settings.uwroptions;
+        job = aap.tasklist.currenttask.settings;
+%         job.eoptions = aap.tasklist.currenttask.settings.eoptions;
+%         job.uweoptions = aap.tasklist.currenttask.settings.uweoptions;
+%         job.uwroptions = aap.tasklist.currenttask.settings.uwroptions;
         
-        % Need to place this string inside a cell
-        jobs{1}.spatial{1}.realignunwarp.eoptions.weight = ...
-            {jobs{1}.spatial{1}.realignunwarp.eoptions.weight };
+        % convert for function call:
+        if strcmp(job.eoptions.weight,'''''') % empty
+            job.eoptions.weight = {};
+        else
+            job.eoptions.weight = {job.eoptions.weight};
+        end
+        job.uweoptions.expround = strrep(lower(job.uweoptions.expround),'''','');
         
         %% Get actual data!
-        
+        job.data = [];
         for sess = aap.acq_details.selected_sessions
             fprintf('\nGetting EPI images for session %s', aap.acq_details.sessions(sess).name)
             % Get EPIs
-            EPIimg = aas_getimages_bystream(aap,subj,sess,'epi');
-            jobs{1}.spatial{1}.realignunwarp.data(sess).scans = cellstr(EPIimg);
+            EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
+            job.data(end+1).scans = cellstr(EPIimg);
             
-            % Try get VDMs
-            try
-                % first try to find a vdm with the session name in it
-                EPIimg   = spm_select('List', ...
-                    fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname), ...
-                    sprintf('^vdm.*%s.nii$', aap.acq_details.sessions(sess).name));
-                
-                % if this fails, try to get a vdm with session%d in it
-                if isempty(EPIimg)
-                    EPIimg   = spm_select('List', ...
-                        fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname), ...
-                        sprintf('^vdm.*session%d.nii$',sess));
-                end
-                jobs{1}.spatial{1}.realignunwarp.data(sess).pmscan = ...
-                    cellstr(fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.fieldmapsdirname, EPIimg));
-                fprintf('\nFound a VDM fieldmap')
-            catch
-                jobs{1}.spatial{1}.realignunwarp.data(sess).pmscan = ...
-                    [];
-                fprintf('\nWARNING: Failed to find a VDM fieldmap')
-            end
+            % Get VDMs
+            VDMimg = cellstr(aas_getfiles_bystream(aap,subj,'fieldmap'));
+            % first try to find a vdm with the session name in it
+            VDMind = cell_index(VDMimg,sprintf('%s.nii',aap.acq_details.sessions(sess).name));
+            % if this fails, try to get a vdm with session%d in it
+            if ~VDMind, VDMind = cell_index(VDMimg,sprintf('session%d.nii',sess)); end
+            if ~VDMind, aas_log(aap,true,'ERROR: Failed to find a VDM fieldmap'); end
+            aas_log(aap,false,sprintf('INFO: Found a VDM fieldmap: %s',VDMimg{VDMind}));
+            job.data(end).pmscan = VDMimg(VDMind);
         end
         
         %% Run the job!
-        
-        spm_jobman('initcfg');
-        spm_jobman('run',jobs);
+        spm_run_realignunwarp(job);
         
         try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-        if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
-            print('-djpeg','-r75',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
-        end
+        print('-djpeg','-r150','-noui',fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_realignunwarp_FM.jpg'));
         
         %% Describe outputs
+		movPars = {};
         for sess = aap.acq_details.selected_sessions
             rimgs=[];
-            for k=1:length(jobs{1}.spatial{1}.realignunwarp.data(sess).scans);
-                [pth nme ext]=fileparts(jobs{1}.spatial{1}.realignunwarp.data(sess).scans{k});
+            for k=1:length(job.data(aap.acq_details.selected_sessions==sess).scans);
+                [pth nme ext]=fileparts(job.data(aap.acq_details.selected_sessions==sess).scans{k});
                 rimgs=strvcat(rimgs,fullfile(pth,['u' nme ext]));
             end
             aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
@@ -191,23 +181,36 @@ switch task
                         );
                 end
             else
-                aas_realign_graph(outpars);
+                f = aas_realign_graph(outpars);
                 print('-djpeg','-r150','-noui',...
                     fullfile(aas_getsubjpath(aap,subj),...
                     ['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg'])...
                     );
+                close(f);
             end
             
+            % Add it to the movement pars...
+            movPars = [movPars outpars];
+
+            % Save realign and unwarp pars
             fn=dir(fullfile(pth,'*uw.mat'));
             outpars = strvcat(outpars, fullfile(pth,fn(1).name));
             aap = aas_desc_outputs(aap,subj,sess,'realignment_parameter',outpars);
             
-            if sess==1
+            if sess==min(aap.acq_details.selected_sessions)
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
             end
         end
+		
+		%% DIAGNOSTICS
+        subjname = aas_prepare_diagnostic(aap,subj);
+        
+        f = aas_realign_graph(movPars);
+        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+            [mfilename '__' subjname '_MP.jpeg']));
+        close(f);
         
     case 'checkrequirements'
         

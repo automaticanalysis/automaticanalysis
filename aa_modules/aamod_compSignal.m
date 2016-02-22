@@ -1,6 +1,6 @@
 % AA module wrapping...
-% WARNING: This version requires you first to run the aamod_mask_fromstruct
-% module present in the MVPaa toolbox and the aamod_fsl_BET module
+% WARNING: This version requires you first to run the
+% aamod_mask_fromsegment and the aamod_fsl_BET module (optional)
 %
 %--------------------------------------------------------------------------
 % COMP_SIGNAL creates regressors with mean signal intensity values for each
@@ -41,16 +41,7 @@ function [aap,resp]=aamod_compSignal(aap,task,subj,sess)
 resp='';
 
 switch task
-    case 'domain'
-        resp='session'; 
-        
-    case 'description'
-        resp='Get signal from the CSF, WM, GM and OOB compartments';
-        
-    case 'summary'
-        subjpath=aas_getsubjpath(subj);
-        resp=sprintf('Get signal from the CSF, WM, GM and OOB compartments %s\n',subjpath);
-        
+    
     case 'report'
         
     case 'doit'
@@ -59,73 +50,64 @@ switch task
         % 1 - FOR OOB, WE WANT TOP CORNERS RELATIVE TO HEAD, TO AVOID GHOSTING
         
         % Let us use the native space...
-        SMimg = aas_getfiles_bystream(aap,subj,'segmasksStrict');
+		inStreams = aas_getstreams(aap,'input');
         EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
-        BETimg = aas_getfiles_bystream(aap,subj,'epiBETmask');
-        
-        % Sanity checks
-        [junk,fn] = fileparts(EPIimg(1,:));
-        indx = strfind(fn, aap.directory_conventions.rawdataafterconversionprefix);
-        indx = indx(1);
-        if strfind(fn(1:indx-1), 'w')
-            aas_log(aap, true, ['You should use unnormalised (i.e. native) images to do this analysis.' ...
-                '\n\tThis should be run after the aamod_norm_noss and before aamod_norm_write'])
+		SMimg = aas_getfiles_bystream(aap,subj,inStreams{2});        
+        hasBET = false;
+        if aas_stream_has_contents(aap,subj,'epiBETmask')
+            BETimg = aas_getfiles_bystream(aap,subj,'epiBETmask');
+            hasBET = true;
         end
         
         % Now, let's see which order the masks appear in...
-        MOstr = aap.tasklist.currenttask.settings.maskOrder;
-        MOlist = {};
-        while ~isempty(MOstr)
-            [tmp, MOstr] = strtok(MOstr,',');
-            MOlist = [MOlist tmp];
-        end
+        MOlist = textscan(aap.tasklist.currenttask.settings.maskOrder,'%s','delimiter',':');
+        MOlist = MOlist{1}';
         
         % Load the segmented masks!
         mGM = []; mWM = []; mCSF = [];
         for m = 1:size(SMimg,1)
-            % The ones *not* including string 'rwc' are the native masks
             [junk,fn] = fileparts(SMimg(m,:));
-            if isempty(strfind(fn, 'rwc'))
-                indx = strfind(fn, 'rc');
-                eval(['m' MOlist{str2num(fn(indx + 2))} ' = spm_read_vols(spm_vol(SMimg(m,:)));'])
-            end
-        end
-        
-        % Try to load the BET masks
-        for m = 1:size(BETimg,1)
-            [junk,fn] = fileparts(BETimg(m,:));
-            if strfind(fn, 'outskin_mask')
-                mOOH = spm_read_vols(spm_vol(BETimg(m,:)));
-                mOOH = ~mOOH; % BET MASK IS INCLUSIVE HEAD...
-            elseif strfind(fn, 'skull_mask')
-                mSkull = spm_read_vols(spm_vol(BETimg(m,:)));
-            end
+            indx = find(fn=='c',1,'first');
+            feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 1))}],spm_read_vols(spm_vol(SMimg(m,:)))));
         end
         
         % Record the number of voxels in each compartment
         nG = sum(mGM(:)>0);
         nW = sum(mWM(:)>0);
         nC = sum(mCSF(:)>0);
-        nO = sum(mOOH(:)>0);
         
-        fprintf('\nRemoving White Matter voxels near Gray Matter')
+        fprintf('\nRemoving White Matter voxels near Gray Matter\n')
         mWM = rmNearVox(mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
         
         % MASKS ALREADY STRICT ENOUGH TYPICALLY (TAKES OUT TOO MUCH CSF)
         %fprintf('\nRemoving CerebroSpinalFluid voxels near Gray Matter')
         %mCSF = rmNearVox(mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
         
-        fprintf('\nRemoving CerebroSpinalFluid voxels near Skull')
-        mCSF = rmNearVox(mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
+        if hasBET
+            % Try to load the BET masks
+            for m = 1:size(BETimg,1)
+                [junk,fn] = fileparts(BETimg(m,:));
+                if strfind(fn, 'outskin_mask')
+                    mOOH = spm_read_vols(spm_vol(BETimg(m,:)));
+                    mOOH = ~mOOH; % BET MASK IS INCLUSIVE HEAD...
+                elseif strfind(fn, 'skull_mask')
+                    mSkull = spm_read_vols(spm_vol(BETimg(m,:)));
+                end
+            end
+            nO = sum(mOOH(:)>0);
+            
+            fprintf('Removing CerebroSpinalFluid voxels near Skull\n')
+            mCSF = rmNearVox(mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
+            
+            fprintf('Removing CerebroSpinalFluid voxels near OOH\n')
+            mCSF = rmNearVox(mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
+        end
         
-        fprintf('\nRemoving CerebroSpinalFluid voxels near OOH')
-        mCSF = rmNearVox(mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
-       
         %% Print the number of voxels in each compartment
-        fprintf('\nGrey Matter mask comprises %d (%d) voxels', sum(mGM(:)>0), nG)
-        fprintf('\nWhite Matter mask comprises %d (%d) voxels', sum(mWM(:)>0), nW)
-        fprintf('\nCereberoSpinal Fluid mask comprises %d (%d) voxels', sum(mCSF(:)>0), nC)
-        fprintf('\nOut of Head mask comprises %d (%d) voxels', sum(mOOH(:)>0), nO)
+        fprintf('Grey Matter mask comprises %d (%d) voxels\n', sum(mGM(:)>0), nG)
+        fprintf('White Matter mask comprises %d (%d) voxels\n', sum(mWM(:)>0), nW)
+        fprintf('CereberoSpinal Fluid mask comprises %d (%d) voxels\n', sum(mCSF(:)>0), nC)
+        if hasBET, fprintf('Out of Head mask comprises %d (%d) voxels\n', sum(mOOH(:)>0), nO); end
         
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             V = spm_vol(EPIimg);
@@ -141,34 +123,43 @@ switch task
             compTC(e,1) = mean(Y(mGM>0));
             compTC(e,2) = mean(Y(mWM>0));
             compTC(e,3) = mean(Y(mCSF>0));
-            compTC(e,4) = mean(Y(mOOH>0));
+            if hasBET, compTC(e,4) = mean(Y(mOOH>0)); end
         end
         
-        Rnames = {'GM', 'WM', 'CSF', 'OOH'};
+        %% DESCRIBE OUTPUTS!
+        sessdir = aas_getsesspath(aap,subj,sess);
+        save(fullfile(sessdir, 'compSignal.mat'), 'compTC')
+        aap=aas_desc_outputs(aap,subj,sess,'compSignal',fullfile(sessdir, 'compSignal.mat'));
+        
+        %% DIAGNOSTIC IMAGE
+        Rnames = {'GM', 'WM', 'CSF'};
+        if hasBET, Rnames{4} = 'OOH'; end
+        
         % Show an image of correlated timecourses...
         corrTCs(compTC, Rnames);
-
-        %% DIAGNOSTIC IMAGE
-        % Save graphical output to common diagnostics directory
-        if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
-            mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
-        end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-        set(gcf,'PaperPositionMode','auto')
-        print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.jpeg']));
-            
-            %% Diagnostic VIDEO of masks
-        if aap.tasklist.currenttask.settings.diagnostic && ...
+        set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
+        print('-djpeg','-r75',fullfile(sessdir, 'diagnostic_compSignal.jpg'));
+        close(gcf);
+        
+        %% Diagnostic VIDEO of masks
+        if strcmp(aap.options.wheretoprocess,'localsingle') && ...
+                aap.options.diagnostic_videos && ...
                 sess == aap.acq_details.selected_sessions(end)
-            
-            movieFilename = fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.avi']);
+            movieFilename = fullfile(sessdir, 'diagnostic_compSignal.avi');
             % Create movie file by defining aviObject
             try delete(movieFilename); catch; end
-            aviObject = avifile(movieFilename,'compression','none');
+            if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
+                aviObject = VideoWriter(movieFilename);
+                open(aviObject);
+            else
+                aviObject = avifile(movieFilename,'compression','none');
+            end
             
-            mA = mGM + 2*mOOH + 3*mWM + 4*mCSF + 5*mSkull;
+            mA = mGM + 3*mWM + 4*mCSF;
+            if hasBET
+                mA = mA + 2*mOOH + 5*mSkull;
+            end
+            
             try close(2); catch; end
             figure(2)
             set(2, 'Position', [0 0 1000 800])
@@ -184,18 +175,20 @@ switch task
                     'Yticklabel', {'N/A', 'GM', 'OOB', 'WM', 'CSF', 'Skull'})
                 zoomSubplot(h, 1.2)
                 
-                pause(0.01)                
+                pause(0.01)
                 % Capture frame and store in aviObject
-                aviObject = addframe(aviObject,getframe(2,windowSize));
+                if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
+                    writeVideo(aviObject,getframe(2,windowSize));
+                else
+                    aviObject = addframe(aviObject,getframe(2,windowSize));
+                end
             end
-
-            aviObject = close(aviObject);
+            if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
+                close(aviObject);
+            else
+                junk = close(aviObject);
+            end
             try close(2); catch; end
         end
-        
-        %% DESCRIBE OUTPUTS!
-        
-        EPIdir = fileparts(EPIimg(1,:));
-        save(fullfile(EPIdir, 'compSignal.mat'), 'compTC')
-        aap=aas_desc_outputs(aap,subj,sess,'compSignal',fullfile(EPIdir, 'compSignal.mat'));
+end
 end

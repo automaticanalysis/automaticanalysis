@@ -6,10 +6,10 @@ dots=repmat('.',[1 size(tasks,2)-length(task)]);
 txt=sprintf('\nRunning:%s%s',dots,task);
 
 % subject
-if length(subblock)>0
+if ~isempty(subblock)
     subs=aap.acq_details.subjects;
     try dots=repmat('.',[1 size(char(subs(1,:,:)),2)-length(aap.acq_details.subjects{subblock{1}})]);
-    catch dots='...';
+    catch, dots='...';
     end
     txt=[txt sprintf('; subject:%s%s',dots,aap.acq_details.subjects{subblock{1}})];
 else

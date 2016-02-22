@@ -18,13 +18,14 @@ switch task
         end
         
         % find out what streams we should normalise
-		streams=aas_getstreams(aap,'out');
+		streams=aas_getstreams(aap,'output');
         if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
             inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
         else
             inds = 1:length(streams);
         end
         for streamind = inds
+            if strcmp(streams{streamind}, 'dartel_templatetomni_xfm'), continue, end
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
             streamfn = streamfn(1,:);
             streamfn = strtok_ptrn(basename(streamfn),'-0');
@@ -45,7 +46,7 @@ switch task
             % Study summary
             aap = aas_report_add(aap,'reg',...
                 ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
-            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fn));
+            aap=aas_report_addimage(aap,'reg',fullfile(localpath,fdiag(1).name));
         end
     case 'doit'
         index{1} = aap.tasklist.currenttask.domain;
@@ -74,7 +75,7 @@ switch task
         template = fullfile(localpath,[nam ext]);
         
         % affine xfm
-        streams=aas_getstreams(aap,'in');
+        streams=aas_getstreams(aap,'input');
         xfmi = cell_index(streams,'dartel_templatetomni_xfm');
         if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
             xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;

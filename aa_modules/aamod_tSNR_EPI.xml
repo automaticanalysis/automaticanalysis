@@ -10,17 +10,19 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
+            <TR></TR>
+            <HParam>100</HParam>
+            
             <inputstreams>
-                <stream>rois</stream>
+                <stream isessential='0'>rois</stream>
                 <stream>epi</stream>
-                <stream>epi_dicom_header</stream>
+                <stream isessential='0'>epi_dicom_header</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>tSNR</stream>
             </outputstreams>
             
-            <HParam>100</HParam>
             <diagnostic>1</diagnostic>
             
         </currenttask>

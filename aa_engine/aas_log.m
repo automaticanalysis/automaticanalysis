@@ -7,19 +7,22 @@ function aas_log(aap,iserr,msg,style)
 
 % figure out whether the caller is an engine (aaq_*)
 ST = dbstack;
-isEngine = ~isempty(strfind(ST(2).name,'aaq'));
+isEngine = numel(ST) > 1 && ~isempty(strfind(ST(2).name,'aaq'));
 
-try
-    % don't attempt html tags if running outside of Matlab desktop
-    if (~exist('style','var') || ~aap.gui_controls.usecolouroutput)
-        style='text';
-    end;
-catch
+% don't attempt html tags if running outside of Matlab desktop
+if nargin < 4 || ~aap.gui_controls.usecolouroutput
     style='text';
 end;
 
-if (iserr)
-    try
+if ~isstruct(aap) % defualt
+    aap.options.verbose = 2;
+    aap.options.email = '';
+end
+
+if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
+
+if iserr % errors
+    if aap.options.verbose > 0
         logitem(aap,'\n\n**** automatic analysis failed - see reason and line numbers below\n','red');
         
         % suppress e-mail from low level functions in case of cluster computing
@@ -30,38 +33,23 @@ if (iserr)
             catch
             end
         end
-    catch
-        error('internal aa error fatal -1');
-    end;
-end;
-
-try
-    verbose=aap.options.verbose || iserr;
-catch
-    verbose=1;
-end;
-
-if (verbose)
-    try
         logitem(aap,[msg '\n'],style);
-    catch
-        error('internal aa error fatal -2');
-    end;
-end;
-if (iserr)
+        disp('for help, see the <a href="https://github.com/rhodricusack/automaticanalysis/wiki">aa wiki</a>')
+    end
+    
     global aaworker
     if (isfield(aaworker,'errorflagname'))
         fid=fopen(aaworker.errorflagname,'w');
         fprintf(fid,'%d:%d:%d %d:%02d:%02d  ',round(clock));
         fclose(fid);
-    end;
-    try
+    end
+    if isfield(aap,'internal') && isfield(aap.internal,'pwd') && exist(aap.internal.pwd,'dir')
         cd(aap.internal.pwd)
-    catch
-    end;
-    disp('for help, see the <a href="https://github.com/rhodricusack/automaticanalysis/wiki">aa wiki</a>')
-    error('aa error');
+    end
     
+    if aap.options.verbose ~= -1, error('aa error:\n%s\n',msg); end % undocumented, for devel only
+else % warnings
+    if aap.options.verbose == 2, logitem(aap,[msg '\n'],style); end
 end
 
 end
@@ -70,29 +58,25 @@ end
 function logitem(aap,msg,style)
 global aaparallel;
 
-if (~exist('style','var'))
+if nargin < 3
     style='text';
 end;
 
 % output to screen
-if (~isempty(strfind(msg,'parallel-manage-workers')))
+if ~isempty(strfind(msg,'parallel-manage-workers'))
     pmw_log.msg=msg;
     pmw_log.when=clock;
-    if (~isfield(aaparallel,'manage_workers_log'))
+    if ~isfield(aaparallel,'manage_workers_log')
         aaparallel.manage_workers_log=pmw_log;
     else
         aaparallel.manage_workers_log(end+1)=pmw_log;
     end;
 else
-    try
-        % no colours when deployed... (or when on command line)
-        if isdeployed || ~usejava('desktop')
-            fprintf(msg);
-        else
-            cprintf(style,msg);
-        end;
-    catch
+    % no colours when deployed... (or when on command line)
+    if isdeployed || ~usejava('desktop') || ~exist('cprintf','file')
         fprintf(msg);
+    else
+        cprintf(style,msg);
     end;
 end;
 % and to worker file?

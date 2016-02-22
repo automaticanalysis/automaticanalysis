@@ -21,18 +21,30 @@ switch (nargin)
         end;
 end;
 
-% Get stream name
-inpstreamdesc=fullfile(localroot,sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
+MAXIT = 1;
+if isfield(aap.options,'maximumretry'); MAXIT = aap.options.maximumretry; end
+it = 0;
 
-% If that doesn't exist...
-if (~exist(inpstreamdesc,'file'))
-    % ...look for fully qualified inputs
-    fqi_filter=fullfile(localroot,sprintf('stream_*.%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
-    fqi=dir(fqi_filter);
-    if (length(fqi)>1)
-        aas_log(aap, true, sprintf('Found more than one stream matching filter %s - try fully qualifying stream inputs in this module?',fqi_filter));
-    elseif (length(fqi)==1)
-        inpstreamdesc=fullfile(localroot,fqi(1).name);
-    end;
-end;
+while it < MAXIT
+    % Get stream name
+    inpstreamdesc=fullfile(localroot,sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
+    
+    % If that doesn't exist...
+    if (~exist(inpstreamdesc,'file'))
+        % ...look for fully qualified inputs
+        fqi_filter=fullfile(localroot,sprintf('stream_*.%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name));
+        fqi=dir(fqi_filter);
+        if (numel(fqi)>1)
+            aas_log(aap, true, sprintf('Found more than one stream matching filter %s - try fully qualifying stream inputs in this module?',fqi_filter));
+        elseif numel(fqi)==1
+            inpstreamdesc=fullfile(localroot,fqi(1).name);
+            break;
+        elseif isempty(fqi)
+            it = it + 1;
+            pause(0.1);
+        end
+    else
+        break
+    end
+end
 end

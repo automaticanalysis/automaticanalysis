@@ -16,7 +16,7 @@ switch task
     case 'description'
         resp='Check user parameters';
     case 'summary'
-        resp=['Check no parameter names mistyped'\n'];
+        resp='Check no parameter names mistyped\n';
     case 'doit'
         
         aap_afteruser=aap;
@@ -43,7 +43,7 @@ return;
 
 % RECURSIVE COMPARISON OF STRUCTURES BEFORE AND AFTER USER CHANGES
 
-function aas_recursivecompare(aap,aap_beforeuser,aap_afteruser,pth);
+function aas_recursivecompare(aap,aap_beforeuser,aap_afteruser,pth)
 
 bef_fieldnames=fieldnames(aap_beforeuser);
 for i=1:length(bef_fieldnames)
@@ -51,10 +51,10 @@ for i=1:length(bef_fieldnames)
     if (~isfield(aap_afteruser,bef_fieldnames{i}))
         aas_log(aap,1,sprintf('Field "%s" is present in recipe before user changes but was not after\n',newpth));
     end;
-    if (isstruct(getfield(aap_afteruser,bef_fieldnames{i})) & ~isstruct(getfield(aap_beforeuser,bef_fieldnames{i})))
+    if (isstruct(getfield(aap_afteruser,bef_fieldnames{i})) && ~isstruct(getfield(aap_beforeuser,bef_fieldnames{i})))
         aas_log(aap,1,sprintf('Field "%s" is a structure after user changes but was not before',newpth))
     end;
-    if (~isstruct(getfield(aap_afteruser,bef_fieldnames{i})) & isstruct(getfield(aap_beforeuser,bef_fieldnames{i})))
+    if (~isstruct(getfield(aap_afteruser,bef_fieldnames{i})) && isstruct(getfield(aap_beforeuser,bef_fieldnames{i})))
         aas_log(aap,1,sprintf('Field "%s" was a structure before user changes but was not after',newpth))
     end;
 end;
@@ -65,10 +65,10 @@ for i=1:length(aft_fieldnames)
     if (~isfield(aap_beforeuser,aft_fieldnames{i}))
         aas_log(aap,1,sprintf('Field "%s" is present in recipe after user changes but not before\n',newpth));
     end;
-    if (isstruct(getfield(aap_afteruser,aft_fieldnames{i})) & ~isstruct(getfield(aap_beforeuser,aft_fieldnames{i})))
+    if (isstruct(getfield(aap_afteruser,aft_fieldnames{i})) && ~isstruct(getfield(aap_beforeuser,aft_fieldnames{i})))
         aas_log(aap,1,sprintf('Field "%s" is a structure after user changes but was not before',newpth))
     end;
-    if (~isstruct(getfield(aap_afteruser,aft_fieldnames{i})) & isstruct(getfield(aap_beforeuser,aft_fieldnames{i})))
+    if (~isstruct(getfield(aap_afteruser,aft_fieldnames{i})) && isstruct(getfield(aap_beforeuser,aft_fieldnames{i})))
         aas_log(aap,1,sprintf('Field "%s" was a structure after user changes but was not before',newpth))
     end;
     

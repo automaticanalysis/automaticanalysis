@@ -26,7 +26,7 @@ end
 
 if ~isstruct(aap);
     try load(aap);
-    catch error('\nFailed to load aap structure.\n')
+    catch, error('\nFailed to load aap structure.\n')
     end
 end
 

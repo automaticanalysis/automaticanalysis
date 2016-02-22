@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' mfile_alias='aamod_roi_valid_structural' desc='Find valid ROIs: MTI' modality='MRI'>
+            <AbsVoxThr>10</AbsVoxThr>
+            <SubjRemoveStat>mode</SubjRemoveStat>
+            <SubjRemoveThr></SubjRemoveThr>
+            <ROIRemoveThr>0</ROIRemoveThr>
+
+            <inputstreams>
+                <stream>roidata_MTR</stream>
+            </inputstreams>
+            
+            <outputstreams>
+            	<stream>valid_roi_MTR</stream>
+            </outputstreams>
+			            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -32,8 +32,6 @@ switch task
         end
         
     case 'doit'
-        mriname = aas_prepare_diagnostic(aap,subj);
-        
         cwd=pwd;
         % get the subdirectories in the main directory
         subj_dir  =  aas_getsubjpath(aap,subj);
@@ -58,7 +56,7 @@ switch task
         if settings.useaasessions
             [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
             subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-            sessnames = {aap.acq_details.sessions(subjSessionI).name};
+            sessnames = {aap.acq_details.sessions(sessInds).name};
             selected_sessions = subjSessionI;
             nsess = length(selected_sessions);
             nsess_all = length(sessnames);
@@ -71,13 +69,12 @@ switch task
         end        
         
         % Load up contrasts from task settings
-        [fle, subjname, ext] = fileparts(subj_dir);
-        contrasts_set = find(strcmp({settings.contrasts.subject}, [subjname ext]));
+        contrasts_set = find(strcmp({settings.contrasts.subject}, basename(subj_dir)));
         if (isempty(contrasts_set))
             % Try for wildcard
             contrasts_set=find(strcmp({settings.contrasts.subject},'*'));
             if (isempty(contrasts_set))
-                aas_log(aap,true,'Can''t find declaration of what contrasts to use  -  insert this in a local copy of aamod_firstlevel_contrasts.xml or put into user script');
+                aas_log(aap,true,'ERROR: Can''t find declaration of what contrasts to use  -  check user master script!');
             end
         end
         
@@ -137,7 +134,7 @@ switch task
                 end
                 % support eval'ed strings to define contrasts (e.g. ones, eye)
                 if ischar(contrasts.con(conind).vector)
-                    contrasts.con(conind).vector = eval(...
+                    contrasts.con(conind).vector = str2num(...
                         contrasts.con(conind).vector);
                 end
                 % Make contract vector
@@ -202,7 +199,7 @@ switch task
                 
                 % Check not empty
                 if (~any(cons{ccount}(:)))
-                    aas_log(aap,true,sprintf('Contrast %d has no non-zero values, not permitted.',contrasts_set(ccount)));
+                    aas_log(aap,true,sprintf('Contrast %d has no non-zero values, not permitted.',ccount));
                 end
                 
                 % Allow F tests
@@ -272,13 +269,13 @@ switch task
         cd (cwd);
         
         %% DIAGNOSTICS (check distribution of T-values in contrasts)
-%         D = dir(fullfile(anadir, 'spmT_*.img'));
-%         for d = 1:length(D)
-%             h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
-%             saveas(h, fullfile(aap.acq_details.root, 'diagnostics', ...
-%                 [mfilename '__' mriname '_' contrasts.con(d).name '.fig']), 'fig');
-%             try close(h); catch; end
-%         end
+        D = dir(fullfile(anadir, 'spmT_*.img'));
+        for d = 1:length(D)
+            h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
+            print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
+                ['diagnostic_aamod_firstlevel_contrast_dist' contrasts.con(d).name '.jpg']));
+            close(h);
+        end
         
     case 'checkrequirements'
         
@@ -330,13 +327,16 @@ close(h);
 
 h = figure; set(h, 'Position', [1 1 1280 720]); % HD
 subplot('Position', [tWidth 0.1 0.6-tWidth 0.9/20*numel(cons)]); % assume not more then 20 contrast
-imagesc(columnsCon)
+imagesc(columnsCon);
+colormap(vertcat(create_grad([0 0 1],[1 1 1],128),create_grad([1 1 1],[1 0 0],128)));
+caxis([-max(abs(columnsCon(:))) max(abs(columnsCon(:)))]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
 set(gca, 'XAxisLocation','top');
 xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',12,'FontWeight','Bold');
 set(xlab,'FontSize',12,'FontWeight','Bold');
+set(xlab,'Interpreter','none');
 
 subplot('Position', [0.6 0.1 0.35 0.9/20*numel(cons)]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel','');
@@ -350,10 +350,12 @@ end
 
 ylim([0.5 numel(cons)+0.5])
 xlabel('Log Efficiency')
-efficiencyVals = floor(log(min(effic))):0.1:ceil(log(max(effic)));
+Xs = xlim;
+efficiencyVals = create_grad(Xs(1),Xs(2),5);
 set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
 
 fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
+set(h,'Renderer','zbuffer');
 print(h,'-djpeg','-r150',fname);
 close(h);
 

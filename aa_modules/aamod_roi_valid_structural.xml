@@ -8,11 +8,11 @@
             <ROIRemoveThr>0</ROIRemoveThr>
 
             <inputstreams>
-               <stream>roidata</stream>
+               <stream isrenameable='1'>roidata</stream>
             </inputstreams>
             
             <outputstreams>
-            	<stream>valid_roi</stream>
+            	<stream isrenameable='1'>valid_roi</stream>
             </outputstreams>
 			            
         </currenttask>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Group ICA analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <selected_subjects></selected_subjects>
+            <selected_session></selected_session>
+
+            <dimest desc='Estimate dimensionality'>1</dimest>
+            <subject_to_dimest desc='subject index for dimensionality estimation'></subject_to_dimest>
+            <numICs>mean</numICs>
+            <PCA1></PCA1>
+            <PCA2></PCA2>
+            
+            <!-- 1 - InfoMax
+                 2 - FastICA
+            -->
+            <algorithm>1</algorithm>
+            <!-- 0 - no scaling
+                 2 - Z-scoring
+            -->
+            <analysis desc='Group ICA Analysis' ui='optionlist' options='regular|ICASSO'>1</analysis>
+            <!--ICASSO options - only if ICASSO is selected -->
+            <icasso>
+                <sel_mode>randinit</sel_mode>
+                <num_ica_runs>20</num_ica_runs>
+                <min_cluster_size>2</min_cluster_size>
+                <max_cluster_size>2</max_cluster_size>
+            </icasso>
+            
+            <scaleType desc='Scaling of results'>0</scaleType>
+            
+            <!-- Time series preprocessing:
+                'remove mean per timepoint'
+                'variance normalization'
+            -->
+            <preproc>remove mean per timepoint</preproc>
+            <group_pca_type>subject specific</group_pca_type>
+            
+            <inputstreams>
+                <stream>firstlevel_brainmask</stream>    
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>gift_parameters</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

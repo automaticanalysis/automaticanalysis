@@ -13,10 +13,10 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_model_design.jpg'),'file')
             load(aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.outputstreams.stream{1}));
             spm_DesRep('DesOrth',SPM.xX);
-            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
+            saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_model_design.jpg'));
             close all;
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
@@ -34,6 +34,7 @@ switch task
         % the sessions that are common to this subject and selected_sessions
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+        numSess = numel(subjSessionI);
 
         % Add PPI if exist
         modname = aap.tasklist.currenttask.name;
@@ -91,15 +92,18 @@ switch task
         %% DESIGN MATRIX %%
         %%%%%%%%%%%%%%%%%%%
         SPM.xY.P = allfiles;
+        if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
+            spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
+        end
         SPMdes = spm_fmri_spm_ui(SPM);
 
         SPMdes.xX.X = double(SPMdes.xX.X);
         
         % DIAGNOSTIC
-        mriname = aas_prepare_diagnostic(aap, subj);
+        subjname = aas_prepare_diagnostic(aap, subj);
         try
             saveas(1, fullfile(aap.acq_details.root, 'diagnostics', ...
-                                                [mfilename '__' mriname '.fig']));
+                                                [mfilename '__' subjname '.fig']));
         catch
         end
 
@@ -110,21 +114,49 @@ switch task
 
         % Turn off masking if requested
         if ~aap.tasklist.currenttask.settings.firstlevelmasking
-            SPMdes.xM.I=0;
-            SPMdes.xM.TH=-inf(size(SPMdes.xM.TH));
+            SPMdes.xM=-inf(size(SPMdes.xX.X,1),1);
+        end
+        
+        % Correct epmty model for sphericity check
+        if isempty([SPMdes.Sess.U])
+            SPMdes.xX.W  = sparse(eye(size(SPMdes.xY.P,1)));
+            SPMdes.xVi.V = sparse(eye(size(SPMdes.xY.P,1)));            
         end
 
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
         % avoid overwrite dialog
-        prevmask = spm_select('List',SPM.swd,'^mask\..{3}$');
+        prevmask = spm_select('List',SPMdes.swd,'^mask\..{3}$');
         if ~isempty(prevmask)
-            spm_unlink(fullfile(SPM.swd, prevmask)); 
+            for ind=1:size(prevmask,1)
+                spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
+            end;
         end
                 
         SPMest = spm_spm(SPMdes);
-
+        
+        % Saving Residuals
+        if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
+            fprintf('Writing residuals...');
+            VRes = spm_write_residuals(SPMest,aap.tasklist.currenttask.settings.writeresiduals);
+            for s = 1:numel(SPM.nscan)
+                sesspath = aas_getsesspath(aap,subj,subjSessionI(s));
+                fres = char({VRes(sum(SPM.nscan(1:s-1))+1:sum(SPM.nscan(1:s))).fname}');
+                for f = 1:size(fres,1)
+                    movefile(fres(f,:),sesspath);
+                end
+                residuals{subjSessionI(s)} = horzcat(repmat([sesspath filesep],[SPM.nscan(s) 1]),fres);
+                if aap.options.NIFTI4D
+                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))));
+                    fres = cellstr(residuals{subjSessionI(s)});
+                    residuals{subjSessionI(s)} = fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s)));                
+                    delete(fres{:});
+                end                
+            end
+            fprintf('Done.\n');
+        end        
+        
         %% Describe outputs
         cd (cwd);
 
@@ -140,18 +172,28 @@ switch task
         if aap.tasklist.currenttask.settings.firstlevelmasking
             allbetas=vertcat(allbetas,...
                 dir(fullfile(anadir,'mask.*')));
+            mask = dir(fullfile(anadir,'mask.*'));
+            mask=strcat(repmat([anadir filesep],[numel(mask) 1]),char({mask.name}));
+            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);            
         end
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
+        
+        if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
+            for s = subjSessionI
+                aap=aas_desc_outputs(aap,subj,s,'epi',residuals{s});
+            end
+        end
 
         %% DIAGNOSTICS...
-%         h = firstlevelmodelStats(anadir, [], fullfile(anadir, 'mask.img'));
-%         saveas(h.regs, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_regs.eps']), 'psc2');
-%         saveas(h.betas, fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_betas.eps']), 'psc2');
-%         
-%         close(h.regs)
-%         close(h.betas)
-        
+        if ~isempty(SPMdes.xX.iC) % model is not empty
+            h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
+            print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_regs.jpg'));
+            print(h.betas,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_betas.jpg'));
+            
+            close(h.regs)
+            close(h.betas)
+        end
     case 'checkrequirements'
         
     otherwise

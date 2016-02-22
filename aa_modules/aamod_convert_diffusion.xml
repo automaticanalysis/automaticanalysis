@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='diffusion_session' desc='Convert diffusion image from DICOMs'>
+        <currenttask domain='diffusion_session' desc='Convert diffusion image from DICOMs' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>

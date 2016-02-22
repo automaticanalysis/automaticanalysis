@@ -2,7 +2,6 @@ function aap=aas_localconfig(aap)
 
 % no shortening of subject names
 aap.directory_conventions.T1template=fullfile('templates','T1.nii');
-aap.directory_conventions.seriesnamingconvention='AWS';
 aap.directory_conventions.seriesoutputformat='Series_%04d';
 aap.directory_conventions.outputformat='splitbymodule';
 aap.options.autoidentifyfieldmaps=0;

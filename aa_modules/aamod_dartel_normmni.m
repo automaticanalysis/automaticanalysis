@@ -33,7 +33,7 @@ switch task
         template = fullfile(aas_getsubjpath(aap,subj),[nam ext]);
  
         % affine xfm
-        streams=aas_getstreams(aap,'in');
+        streams=aas_getstreams(aap,'input');
         xfmi = cell_index(streams,'dartel_templatetomni_xfm');
         if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
             xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
@@ -53,11 +53,11 @@ switch task
         for streamind=1:length(streams)
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
             if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip
-            if cell_index(aas_getstreams(aap,'in'),streams{streamind})
+            if cell_index(aas_getstreams(aap,'input'),streams{streamind})
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, streams{streamind}));
             else  % renamed stream
                 streamname = strrep(streams{streamind},'normalised_','');
-                ind = cell_index(aas_getstreams(aap,'in'),streamname);
+                ind = cell_index(aas_getstreams(aap,'input'),streamname);
                 if ~ind, continue; end % for dartel_templatetomni_xfm
                 imgs = strvcat(imgs, aas_getfiles_bystream(aap, subj, ...
                     aap.tasklist.currenttask.inputstreams.stream{ind}));

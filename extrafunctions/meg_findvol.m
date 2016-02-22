@@ -4,9 +4,14 @@
 % 11 --> meg11_0011_cc710154/110210
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function strSubj = meg_findvol(aap,subjpath,fp)
+function strSubj = meg_findvol(aap,subjpath,varargin)
 
-if nargin < 3, fp = false; end
+
+fp = logical(cell_index(varargin,'fp'));
+fdate = '';
+for a = varargin
+    if ~isnan(str2double(a{1})), fdate = a{1}; end
+end
 
 
 %% Changed to comma separated list format [RC]
@@ -47,17 +52,23 @@ else % pattern
     strSubj = dir(fullfile(SEARCHPATH{i},subjpath)); strSubj = strSubj(end).name; % in case of multiple entries
 end
 strSubjDir = dir(fullfile(SEARCHPATH{i},strSubj));
-f1 = strSubjDir(3).name; % first entry
-if ~isdir(fullfile(SEARCHPATH{i},strSubj,f1)), f1 = '';
-else
-    try
-        junk = datenum(f1,'yymmdd'); % test if it is a 'date_time' folder
-    catch
-        f1 = '';
+ds = {strSubjDir(3:end).name}; 
+if isempty(fdate), dmatch = ds{1}; % first entry if no date specified
+else % select match
+    dmatch = '';
+    dind = cell_index(ds,fdate);
+    if any(dind), dmatch = ds{dind(1)}; % first match
+    else
+        fprintf('Subject %s* not found',subjpath);
+        strSubj = '';
+        return;
     end
 end
+
+if ~isdir(fullfile(SEARCHPATH{i},strSubj,dmatch)) || isnan(str2double(dmatch)), dmatch = ''; end % test if it is a 'date_time' folder
+
 if fp
-    strSubj = fullfile(SEARCHPATH{i},strSubj,f1);
+    strSubj = fullfile(SEARCHPATH{i},strSubj,dmatch);
 else
-    strSubj = fullfile(strSubj,f1);
+    strSubj = fullfile(strSubj,dmatch);
 end

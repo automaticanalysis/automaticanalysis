@@ -9,7 +9,7 @@ switch task
     case 'doit'
 
         % Get input
-        wstream = aas_getstreams(aap,'out'); wstream = strrep(wstream{1},'defaced_','');
+        wstream = aas_getstreams(aap,'output'); wstream = strrep(wstream{1},'defaced_','');
         Simg = aas_getfiles_bystream(aap,subjind,wstream); 
         [p, fn, ext] = fileparts(Simg);
         out = fullfile(p,['defaced_' fn ext]);

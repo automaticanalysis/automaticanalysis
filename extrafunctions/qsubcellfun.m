@@ -18,16 +18,19 @@ isaa = isstruct(varargin{2}{1}) && isfield(varargin{2}{1},'options') && ...
 if isaa, aap = varargin{2}{1}; end
 
 %% Initialise engine
-nWorkers = 8;
+nWorkers = 1;
 if isaa
+    qsubscheduler = aap.directory_conventions.qsubscheduler;
     qsubpath = fullfile(getenv('HOME'),'aaworker');
 else
+    xml = xml_read('aap_parameters_defaults_CBSU.xml');
+    qsubscheduler = xml.directory_conventions.qsubscheduler.CONTENT;
     qsubpath = pwd;
 end
 qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 
 try
-    scheduler=cbu_scheduler('custom',{'compute',nWorkers,4,24*3600,qsubpath});
+    scheduler=feval(qsubscheduler,'custom',{'compute',nWorkers,4,24*3600,qsubpath});
 catch ME
     warning('Cluster computing is not supported!\n');
     error('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);

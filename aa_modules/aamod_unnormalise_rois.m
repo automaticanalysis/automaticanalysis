@@ -8,17 +8,18 @@ resp='';
 
 switch task
     case 'checkrequirements'
-        ROIstr = aap.tasklist.currenttask.settings.ROIlist;
-                ROIlist = {};
-        while ~isempty(ROIstr)
-            [tmp, ROIstr] = strtok(ROIstr,',');
-            ROIlist = [ROIlist fullfile(...
-                aap.directory_conventions.ROIdir, tmp)];
+        ROIlist{1} = aap.tasklist.currenttask.settings.ROIlist;
+        if ~exist(ROIlist{1},'file')
+            ROIs = textscan(ROIlist{1},'%s','delimiter',','); ROIs = ROIs{1};
+            ROIlist = cell(numel(ROIs),1);
+            for r = 1:numel(ROIs)
+                ROIlist{r} = fullfile(aap.directory_conventions.ROIdir, ROIs{r});
+            end
         end
         
-        for r = 1:length(ROIlist)
+        for r = 1:numel(ROIlist)
             if ~exist(ROIlist{r}, 'file')
-                error(sprintf('The ROI %s file does not exist', ...
+                aas_log(aap,true,sprintf('The ROI %s file does not exist', ...
                     ROIlist{r}))
             end
             [junk, fn, ext] = fileparts(ROIlist{r});
@@ -27,12 +28,6 @@ switch task
             end;
         end;
     case 'doit'
-        
-        % Structural directory...
-        if ~exist(fullfile(aas_getsubjpath(aap,subj), 'structurals'), 'dir')
-            mkdir(fullfile(aas_getsubjpath(aap,subj), 'structurals'))
-        end
-        
         % Get segmentation masks we wish to use
         try
             SEGimg = aas_getfiles_bystream(aap,subj,'segmasksExclusive');
@@ -44,7 +39,7 @@ switch task
                     SEGimg = aas_getfiles_bystream(aap,subj,'segmasksZero');
                 catch
                     SEGimg = [];
-                    fprintf('No segmentation mask will be applied...\n');
+                    aas_log(aap,false,'No segmentation mask will be applied...\n');
                 end
             end
         end
@@ -69,108 +64,90 @@ switch task
         
         % Get inverse normalisation parameters
         invNormPar = aas_getfiles_bystream(aap,subj,'normalisation_seg_inv_sn');
+        
         % Normalisation flags...
         % Infinite bounding box needed to avoid ROIs being cut...
-        aap.spm.defaults.normalise.write.bb = [Inf Inf Inf; Inf Inf Inf];
-        aap.spm.defaults.normalise.write.vox = [Inf Inf Inf];
+        normFlags.interp = aap.tasklist.currenttask.settings.interp;
+        normFlags.bb = [Inf Inf Inf; Inf Inf Inf];
+        normFlags.vox = [Inf Inf Inf];
         
-        % Get realignment defaults
-        defs = aap.spm.defaults.realign;
-        
-        % Flags to pass to routine to create resliced images
-        % (spm_reslice)
-        resFlags = struct(...
-            'interp', defs.write.interp,...       % interpolation type
-            'wrap', defs.write.wrap,...           % wrapping info (ignore...)
-            'mask', defs.write.mask,...           % masking (see spm_reslice)
-            'which', 1,...     % what images to reslice
-            'mean', 0);           % write mean image
-        
-        % [AVG] Let's try without extraparameters, so we can have things in the
-        % tasklist instead...
-        % EP = aap.tasklist.currenttask.extraparameters;
+        % Reslice flags
+        resFlags = aap.spm.defaults.coreg.write;
+        resFlags.interp = aap.tasklist.currenttask.settings.interp;
+        resFlags.mask = 0;
+        resFlags.which = [1 0];
         
         % Get the ROIs from .xml
-        ROIstr = aap.tasklist.currenttask.settings.ROIlist;
-                ROIlist = {};
-        while ~isempty(ROIstr)
-            [tmp, ROIstr] = strtok(ROIstr,',');
-            ROIlist = [ROIlist fullfile(...
-                aap.directory_conventions.ROIdir, tmp)];
+        ROIlist{1} = aap.tasklist.currenttask.settings.ROIlist;
+        if ~exist(ROIlist{1},'file')
+            ROIs = textscan(ROIlist{1},'%s','delimiter',','); ROIs = ROIs{1};
+            ROIlist = cell(numel(ROIs),1);
+            for r = 1:numel(ROIs)
+                ROIlist{r} = fullfile(aap.directory_conventions.ROIdir, ROIs{r});
+            end
         end
-        
         outstream = '';
         
         % Loop through all ROIs
-        for r = 1:length(ROIlist)
+        for r = 1:numel(ROIlist)
             if ~exist(ROIlist{r}, 'file')
-                error(sprintf('The ROI %s file does not exist', ...
+                aas_log(aap,true,sprintf('The ROI %s file does not exist', ...
                     ROIlist{r}))
             end
             % Copy to structural dir...
-            unix(['cp ' ROIlist{r} ' ' fullfile(aas_getsubjpath(aap,subj), 'structurals') ]);
+            unix(['cp ' ROIlist{r} ' ' fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.structdirname) ]);
             
             [junk, fn, ext] = fileparts(ROIlist{r});
             % New location for ROI...
-            roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', [fn, ext]);
+            roi_fn = fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.structdirname, [fn, ext]);
             
             % Un-Normalise ROI to structural initially...
-            spm_write_sn(roi_fn, invNormPar, aap.spm.defaults.normalise.write);
+            spm_write_sn(roi_fn, invNormPar, normFlags);
             % Delete ROI in MNI space...
             unix(['rm -rf ' roi_fn]);
-            roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', ['w' fn, ext]);
+            roi_fn = fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.structdirname, ['w' fn, ext]);
             
             % Reslice to EPI...
             spm_reslice(strvcat(mEPIimg, roi_fn), resFlags)
             % Delete ROI in MNI space...
             unix(['rm -rf ' roi_fn]);
-            roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', ['rw' fn, ext]);
+            roi_fn = fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.structdirname, ['rw' fn, ext]);
             
             if ~isempty(SEGimg)
                 % Now mask our ROIs by segmented mask (t for trimmed)
                 conjMask(roi_fn, Mimg, [0.01 0.01], 't');
                 unix(['rm -rf ' roi_fn]);
-                roi_fn = fullfile(aas_getsubjpath(aap,subj), 'structurals', ['trw' fn, ext]);
+                roi_fn = fullfile(aas_getsubjpath(aap,subj), aap.directory_conventions.structdirname, ['trw' fn, ext]);
             end
             
             V = spm_vol(roi_fn);
             Y = spm_read_vols(V);
             if nansum(Y(:)>0) == 0
-                warning('This ROI contains no voxels')
+                aas_log(aap,false,'This ROI contains no voxels')
             end
             
             outstream = strvcat(outstream, roi_fn);
         end
         
-        % Diagnostic image?
-        % Save graphical output to common diagnostics directory
-        if ~exist(fullfile(aap.acq_details.root, 'diagnostics'), 'dir')
-            mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
-        end
-        mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-        try
-            %% Draw mean EPI...
-            spm_check_registration(mEPIimg)
-            
-            % This will only work for 1-7 ROIs
-            OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
-                [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
-            
-            % Add un-normalised ROIs...
-            for r = 1:size(outstream,1)
-                spm_orthviews('addcolouredimage',1,outstream(r,:), OVERcolours{r})
-            end
-            %% Diagnostic VIDEO of segmentations
-%             aas_checkreg_avi(aap, subj, 2)
-            
-            spm_orthviews('reposition', [0 0 0])
-            
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            set(gcf,'PaperPositionMode','auto')
-            print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
-                [mfilename '__' mriname '.jpeg']));
-        catch
-        end
-        
         aap=aas_desc_outputs(aap,subj,'rois',outstream);
+        % Diag
+        if strcmp(aap.options.wheretoprocess,'localsingle')
+            aas_checkreg(aap,subj,'rois','structural');
+        end
+    case 'report'
+        localpath = aas_getpath_bydomain(aap,'subject',subj);
+        d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
+        if isempty(d)
+            struct = aas_getfiles_bystream_dep(aap,'subject',subj,'structural');
+            aas_checkreg(aap,subj,'rois',struct);
+        end
+        fdiag = dir(fullfile(localpath,'diagnostic_aas_checkreg_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            imgpath = fullfile(localpath,fdiag(d).name);
+            aap=aas_report_addimage(aap,subj,imgpath);
+            [p, f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
 end

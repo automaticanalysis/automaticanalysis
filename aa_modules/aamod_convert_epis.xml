@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='Convert EPIs'>
+        <currenttask domain='session' desc='Convert EPIs' modality='MRI'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
@@ -51,6 +51,7 @@
 
                 <stream>cov_echo_5_5</stream>
                 <stream>epi_t2star</stream>
+                <stream>epi_snr</stream>
                 <stream>epi_protondensity</stream>
                 <stream>dummyscans</stream>
                 <stream>dummyscans_nulled</stream>

@@ -3,7 +3,7 @@
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_coreg_general' desc='SPM coregistration and reslicing of images (general)' modality='MRI'>
             <inputstreams>
-                <stream>structural</stream>
+                <stream diagnostic="1">structural</stream>
                 <stream>t2</stream> <!-- this one coreg'ed to previous -->
             </inputstreams>
             <outputstreams>

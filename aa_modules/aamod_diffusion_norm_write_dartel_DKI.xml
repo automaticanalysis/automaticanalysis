@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias="aamod_norm_write_dartel" domain='diffusion_session' desc='SPM DARTEL normalisation write (stream dissusion)' modality='MRI'>
+        <currenttask mfile_alias="aamod_norm_write_dartel" domain='diffusion_session' desc='SPM DARTEL normalisation write (stream dki_*)' modality='MRI'>
             
             <qsub>
                 <timeBase>0.75</timeBase>
@@ -16,8 +16,9 @@
             
 			<inputstreams>
 				<stream>aamod_dartel_createtemplate_00001.dartel_template</stream>
-				<stream>dartel_flowfield</stream>
-				<stream>structural</stream>
+                <stream isessential="0">aamod_dartel_norm_write_00001.dartel_templatetomni_xfm</stream>  
+                <stream>dartel_flowfield</stream>
+				<stream diagnostic="1">aamod_dartel_norm_write_00001.structural</stream>
                 <stream>dki_FA</stream> 
                 <stream>dki_MD</stream> 
                 <stream>dki_L1</stream> 
@@ -30,6 +31,11 @@
                 <stream>dki_MK</stream> 
                 <stream>dki_RK</stream> 
                 <stream>dki_AK</stream>
+                <stream>dki_AWF</stream>
+                <stream>dki_ADa</stream>
+                <stream>dki_ADe</stream>
+                <stream>dki_RDe</stream>
+                <stream>dki_tortu</stream>   
                 <stream>dki_dMK</stream> 
                 <stream>dki_dMD</stream> 
                 <stream>dki_dS0</stream>
@@ -48,6 +54,11 @@
                 <stream>dki_MK</stream> 
                 <stream>dki_RK</stream> 
                 <stream>dki_AK</stream>
+                <stream>dki_AWF</stream>
+                <stream>dki_ADa</stream>
+                <stream>dki_ADe</stream>
+                <stream>dki_RDe</stream>
+                <stream>dki_tortu</stream>
                 <stream>dki_dMK</stream> 
                 <stream>dki_dMD</stream> 
                 <stream>dki_dS0</stream>

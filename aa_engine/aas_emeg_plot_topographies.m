@@ -166,7 +166,7 @@ for p=1:npags
     if strcmp(layout,'subs x subs');
         t=t+1;s=0;
         if t>length(T); t=1; e=e+1; end
-        try ename=D.events.names{e}; catch ename=num2str(e); end
+        try ename=D.events.names{e}; catch, ename=num2str(e); end
         header={['Time = ' timelabel], ...
             ['Event = ' ename]};
     elseif strcmp(layout,'time x time');
@@ -181,7 +181,7 @@ for p=1:npags
             ['Time = ' timelabel]};
     elseif isempty(strfind(layout,'subs')); header={['File = ' data(s,:)]};
     elseif isempty(strfind(layout,'time')); header={['Time = ' timelabel]};
-    elseif isempty(strfind(layout,'evts')); try ename=D.events.names{e}; catch ename=num2str(e); end; header={['Event = ' ename]};
+    elseif isempty(strfind(layout,'evts')); try ename=D.events.names{e}; catch, ename=num2str(e); end; header={['Event = ' ename]};
     end
 
     switch figstyle
@@ -208,7 +208,7 @@ for p=1:npags
         colormap(hot)
     else
     try colormap(map);
-    catch colormap jet;
+    catch, colormap jet;
     end
     end
     cmax=-Inf; cmin=Inf; allmax=[];
@@ -231,7 +231,7 @@ for p=1:npags
 
                 if strcmp(layout(1:4),'evts'); e=y;
                 elseif strcmp(layout(8:11),'evts'); e=x;
-                else e=p; try ename=D.events.names{e}; catch ename=num2str(e); end;
+                else e=p; try ename=D.events.names{e}; catch, ename=num2str(e); end;
                 end
             end
 
@@ -314,7 +314,7 @@ for p=1:npags
                 if strcmp(layout(1:4),'subs'); title(regexprep(D.path,'^.*/(.*/[^/]*)','$1'),'interpreter','none'); end
                 if strcmp(layout(1:4),'time'); title(T(t)); end
                 if strcmp(layout(1:4),'evts');
-                    try title(D.events.names{e}); catch title(['Event ' num2str(e)]); end
+                    try title(D.events.names{e}); catch, title(['Event ' num2str(e)]); end
                 end
                 %set(get(sp{1},'title'),'position',[0.5 0.95 0])
             end
@@ -325,7 +325,7 @@ for p=1:npags
                 if strcmp(layout(1:4),'time'); text('position',get(l,'position'),'string',timelabel,'horizontalalignment','center','rotation',90); end
                 if strcmp(layout(1:4),'evts');
                     try text('position',get(l,'position'),'string',D.events.names{e},'horizontalalignment','center','rotation',90,'interpreter','none','fontsize',8);
-                    catch text('position',get(l,'position'),'string',['Event ' num2str(e)],'horizontalalignment','center','rotation',90,'interpreter','none','fontsize',8);
+                    catch, text('position',get(l,'position'),'string',['Event ' num2str(e)],'horizontalalignment','center','rotation',90,'interpreter','none','fontsize',8);
                     end
                 end
             end
@@ -334,7 +334,7 @@ for p=1:npags
                 if strcmp(layout(8:11),'subs'); title(regexprep(D.path,'^.*/(.*)/[^/]*','$1'),'interpreter','none'); end
                 if strcmp(layout(8:11),'time'); title(timelabel); end
                 if strcmp(layout(8:11),'evts');
-                    try title(D.events.names{e}); catch title(['Event ' num2str(e)]); end
+                    try title(D.events.names{e}); catch, title(['Event ' num2str(e)]); end
                 end
             end
 
@@ -456,7 +456,7 @@ for p=1:npags
         fprintf('\nAttempting to compress AVI using mencoder...')
         cmd=sprintf('/imaging/dm01/MoreTools/linux/MPlayer-1.0rc2/mencoder %s -o %s -ovc lavc -ffourcc DX50',fulloutfile,compfile);
         try unix(cmd);
-        catch fprintf('Failed!')
+        catch, fprintf('Failed!')
         end
         
         % this used lots of memory and if we try again it will probably 

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meg_session' desc='MEG ICA denoise 1: detect' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <modalities>MEGMAG:MEGPLANAR</modalities>
+            
+            <!-- Number of PCA dimensions before ICA run -->
+            <PCA_dim>60</PCA_dim>
+
+            <!-- Random seed (if empty, then will get different answer each time run) -->
+            <Rseed>1</Rseed>
+            
+            <inputstreams>
+                <stream>meg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg_ica</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

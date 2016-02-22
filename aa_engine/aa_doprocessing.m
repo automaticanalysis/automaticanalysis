@@ -74,7 +74,7 @@
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
 
-aa_init(aap);
+aap = aa_init(aap);
 
 if (exist('bucket','var'))
     % Get username
@@ -83,9 +83,6 @@ if (exist('bucket','var'))
 end
 % Defend against command insertion
 aap=aas_validatepaths(aap);
-
-% launch SPM if not already running
-aas_checkspmrunning(aap);
 
 % Check this is compiled
 try
@@ -108,6 +105,7 @@ if (exist('analysisid','var'))
     aap.directory_conventions.analysisid=analysisid;
 end
 
+global aa;
 global defaults;
 global aaparallel;
 global aaworker;
@@ -117,11 +115,7 @@ global localtaskqueue;
 if (exist('username','var'))
     aaworker.username=username;
     aap=aws_setupqnames(aap,username);
-    if (exist('secretkey','var'))
-        aaworker.aacc=aacc(username,secretkey);
-    end
 end
-
 
 % No longer preserve aaworker across sessions
 aaworker=[];
@@ -129,9 +123,8 @@ aaworker=[];
 try
     aaworker.parmpath;
 catch
-    [pth nme ext]=fileparts(tempname);
-    aaworker.parmpath=aaworker_getparmpath(aap,[filesep sprintf('%s_%s',datestr(now,30),nme)]);
-    aas_makedir(aap, aaworker.parmpath);
+    [junk, nme, junk]=fileparts(tempname);
+    aaworker.parmpath=aaworker_getparmpath(aap,sprintf('%s_%s',datestr(now,30),strtok(nme,'_')));
 end
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
@@ -142,15 +135,15 @@ end
 
 aap.internal.pwd=pwd;
 
-if (isempty(aaparallel))
+if isempty(aaparallel)
+    aaparallel.workerlist=[];
+    aaparallel.numberofworkers=8;
+    aaparallel.memory = 4; % GB
+    aaparallel.walltime = 24; % hours
+    % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
+    aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
+    
     while(1)
-        aaparallel.workerlist=[];
-        
-        aaparallel.numberofworkers=8;
-        
-        % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
-        aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
-        
         if (exist('workerid','var'))
             aaparallel.processkey=workerid;
         else
@@ -158,15 +151,11 @@ if (isempty(aaparallel))
         end
         aaparallel.nextworkernumber=num2str(aaparallel.processkey*1000);
         
-        
         pth=aaworker_getparmpath(aap,0,true);
-        [subpth nme ext]=fileparts(pth);
-        
-        fn=dir(fullfile(subpth,[sprintf('aaworker,%d',aaparallel.processkey) '*']));
+        fn=dir(fullfile(fileparts(pth),[sprintf('aaworker,%d',aaparallel.processkey) '*']));
         if (isempty(fn)) % No directories starting with this process key
             break;
         end
-        
     end
 else
     % Clear out all of the old workers: this is non-unionised enterprise
@@ -235,13 +224,14 @@ end;
 
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aapsavefn=fullfile(aapsavepth,'aap_parameters');
-    aap.internal.aapversion=which('aa_doprocessing');
+    aap.internal.aapversion=aa.Version;
+    aap.internal.aappath=aa.Path;
     save(aapsavefn,'aap');
 end
 
 % Choose where to run all tasks
 try
-  eval(sprintf('taskqueue=aaq_%s(aap);', aap.options.wheretoprocess));
+  taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
 catch
   aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
 end
@@ -311,17 +301,32 @@ for l=1:length(mytasks)
         
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
-        
-        % I don't think this supports "selectedsessions" branches but it should do
-        % - RC 2013-09-19
+       
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
+            if (numel(indices) >= 2) && ... % if session domain
+                    ~any(aap.acq_details.selected_sessions==indices(2)) % session not selected
+                continue;
+            end
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
-            if (aas_doneflagexists(aap,doneflag))
-                if (strcmp(task,'doit'))
+            
+            % Check whether tasksettings have changed since the last execution,
+            % and if they have, then delete doneflag to trigger re-execution
+            if strcmp(task,'doit') && isfield(aap.options,'checktasksettingconsistency') && aap.options.checktasksettingconsistency && aas_doneflagexists(aap,doneflag)
+                prev_settings = load(strrep(doneflag,'done','aap_parameters')); prev_settings = prev_settings.aap.tasklist.currenttask.settings;
+                new_settings = aap.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index);
+                if ~aas_checktasksettingconsistency(aap,prev_settings,new_settings)
+                    aas_log(aap,false,sprintf('REDO: Settings of module %s_%05d have changed',...
+                        aap.tasklist.main.module(k).name,aap.tasklist.main.module(k).index));
+                    aas_delete_doneflag_bypath(aap,doneflag);
+                end
+            end
+            
+            if aas_doneflagexists(aap,doneflag)
+                if strcmp(task,'doit')
                     msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
                 end
             else
@@ -348,6 +353,9 @@ for l=1:length(mytasks)
                             if (completefirst(k0i).sourcenumber>0)
                                 tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices,'doneflaglocations');
                                 for tbcf_depsind=1:length(tbcf_deps)
+                                    if strfind(completefirst(k0i).sourcedomain,'session') % skip session if not selected
+                                        if ~any(aap.acq_details.selected_sessions == tbcf_deps{tbcf_depsind}{2}(2)), continue; end
+                                    end
                                     tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
                                 end;
                             end
@@ -384,10 +392,9 @@ for l=1:length(mytasks)
         % can take a while to scan all of the done flags
         taskqueue.runall(dontcloseexistingworkers, false);
         if ~isempty(localtaskqueue.jobqueue), 
-            % launch SPM if not already running
-            aas_checkspmrunning(aap,1);
             localtaskqueue.runall(dontcloseexistingworkers, false); 
         end
+        if isfield(taskqueue,'killed') && taskqueue.killed, break; end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
@@ -400,6 +407,8 @@ end
 % end
 % aas_log(aap,0,'Message deleted');
 
+if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
+
 if ~isempty(aap.options.email)
     % In case the server is broken...
     try
@@ -408,6 +417,10 @@ if ~isempty(aap.options.email)
     end
 end
 
+if isfield(aap.options,'garbagecollection') && aap.options.garbagecollection
+    aas_garbagecollection(aap,1)
+end
+    
 aa_close;
 
 end

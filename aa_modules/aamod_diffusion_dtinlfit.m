@@ -25,9 +25,9 @@ switch task
         bval = importdata(bvals);
         bvec = importdata(bvecs);
     
-        if strcmp(aap.options.wheretoprocess, 'localsingle') % local execution - use parfor for slices
-            P = cbupool(size(data_mask,3));
-            P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:00:05';
+        if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
+            P = feval(aap.directory_conventions.poolprofile,size(data_mask,3));
+            P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:01:00';
             matlabpool(P);
             try
                 parfor z = 1:size(data_in,3)
@@ -43,10 +43,18 @@ switch task
             end
         end
         
-        AD = L1;
-        RD = (L2+L3)/2;
-        MD = (L1+L2+L3)/3;
-        FA = sqrt(3/2)*...
+        dti.S0 = S0;
+        dti.L1 = L1;
+        dti.L2 = L2;
+        dti.L3 = L3;
+        dti.V1 = V1;
+        dti.V2 = V2;
+        dti.V3 = V3;
+        
+        dti.AD = L1;
+        dti.RD = (L2+L3)/2;
+        dti.MD = (L1+L2+L3)/3;
+        dti.FA = sqrt(3/2)*...
             sqrt(var(cat(4, L1, L2, L3),[],4)*2./...
             (L1.^2+L2.^2+L3.^2));
         
@@ -54,24 +62,17 @@ switch task
         V = spm_vol(betmask); V.dt = spm_type('float32');
         sesspath = aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
 
-        outstreams=aap.tasklist.currenttask.outputstreams;        
-        for outind=1:length(outstreams.stream)
-            Y = eval(strrep(outstreams.stream{outind},'dti_',''));
-            Y(isnan(Y)) = 0;
-            if ndims(Y) == 3
-                nifti_write(fullfile(sesspath,[outstreams.stream{outind} '.nii']),...
-                    Y, outstreams.stream{outind},V);
-            else % 4D
-                for z = 1:size(Y,4)
-                    outfiles{z} = fullfile(sesspath,sprintf('%s-%04d.nii',outstreams.stream{outind},z));
-                    nifti_write(outfiles{z},Y(:,:,:,z),outstreams.stream{outind},V);
-                end
-                spm_file_merge(char(outfiles),fullfile(sesspath,[outstreams.stream{outind} '.nii']),0);
-                delete(fullfile(sesspath,[outstreams.stream{outind} '-*']));
+        outstreams=aas_getstreams(aap,'output');        
+        for outind=1:length(outstreams)
+            metric = strrep(outstreams{outind},'dti_','');
+            if ~isfield(dti,metric)
+                aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
+                continue; 
             end
-            aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams.stream{outind},[outstreams.stream{outind} '.nii']);
-        end;
-        
+            Y = dti.(metric);  
+            nifti_write(fullfile(sesspath,[outstreams{outind} '.nii']),Y,outstreams{outind},V);
+            aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams{outind},[outstreams{outind} '.nii']);
+        end
 end
 end
 

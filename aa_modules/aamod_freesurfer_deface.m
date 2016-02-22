@@ -9,9 +9,12 @@ switch task
     case 'report'
     case 'doit'
         % Check templates
-        tmpdir = fullfile(aa_path,'external','Templates');
-        tmp_face = fullfile(tmpdir,'freesurfer_daface_face.gca');
-        tmp_skull = fullfile(tmpdir,'freesurfer_daface_talairach_mixed_with_skull.gca');
+        global aa
+        if ~isa(aa,'aaClass'), aa = aaClass; end
+        
+        tmpdir = fullfile(aa.Path,'external','Templates');
+        tmp_face = fullfile(tmpdir,'freesurfer_deface_face.gca');
+        tmp_skull = fullfile(tmpdir,'freesurfer_deface_talairach_mixed_with_skull.gca');
         if ~exist(tmp_face,'file') || ~exist(tmp_skull,'file')
             aas_log(aap,true,sprintf('Templates required: %s, %s\n',tmp_face, tmp_skull));
         end

@@ -8,7 +8,7 @@ function cls = cg_vbm8_write(res,tc,bf,df,lb,jc,warp,tpm,job)
 % spm_preproc_write8.m 2531 2008-12-05 18:59:26Z john $
 %
 % Christian Gaser
-% $Id: cg_vbm8_write.m 435 2011-12-06 11:38:20Z gaser $
+% $Id: cg_vbm8_write.m 439 2012-03-23 15:46:43Z gaser $
 
 % get current release number
 A = ver;
@@ -21,11 +21,6 @@ end
 if exist('r','var')
   fprintf('VBM8 r%d: %s\n',r,res.image.fname);
 end
-
-% we need spm_def2det.m from HDW toolbox
-addpath(fullfile(spm('dir'),'toolbox','HDW'));
-% and spm_load_priors8 from New Segment toolbox
-addpath(fullfile(spm('dir'),'toolbox','Seg'));
 
 if ~isstruct(tpm) || (~isfield(tpm, 'bg1') && ~isfield(tpm, 'bg')),
     tpm = spm_load_priors8(tpm);
@@ -121,7 +116,7 @@ for n=1:N,
     end
 end
 
-do_cls   = any(tc(:)) || any(lb) || any(df) || nargout>1;
+do_cls   = any(tc(:)) || any(lb) || any(df) || any(jc) || nargout>1;
 tiss(Kb) = struct('Nt',[]);
 cls      = cell(1,Kb);
 for k1=1:Kb,
@@ -168,6 +163,17 @@ end
 
 spm_progress_bar('init',length(x3),['Working on ' nam],'Planes completed');
 M = tpm.M\res.Affine*res.image(1).mat;
+
+histeq_deep = 0;
+try
+    histeq_deep = cg_vbm8_get_defaults('extopts.histeq_deep');
+end
+
+if histeq_deep
+    tmp_histeq_mask = spm_vol(char(cg_vbm8_get_defaults('extopts.histeq_mask')));
+    histeq_mask = zeros(d(1:3),'uint8');
+    M2 = tmp_histeq_mask.mat\res.Affine*res.image(1).mat;
+end
 
 for z=1:length(x3),
 
@@ -225,6 +231,11 @@ for z=1:length(x3),
                 end
             end
 
+            if histeq_deep
+                [t01,t02,t03] = defs(Coef,z,res.MT,prm,x1,x2,x3,M2);
+                histeq_mask(:,:,z) = uint8(round(spm_sample_vol(tmp_histeq_mask,t01,t02,t03,0)));
+            end
+            
             sq = sum(q,3) + eps^2;
             for k1=1:Kb,
                 tmp            = q(:,:,k1);
@@ -263,7 +274,7 @@ for z=1:length(x3),
     src(:,:,z) = single(bf1.*f);
 end
 
-clear chan
+%clear chan
 
 % prevent NaN
  src(isnan(src)) = 0;
@@ -294,7 +305,7 @@ if do_cls && do_defs,
 
     vx_vol = sqrt(sum(res.image(1).mat(1:3,1:3).^2));
     scale_morph = 1/mean(vx_vol);
-  
+
     if gcut
         % skull-stripping using graph-cut
         opt.verb = 0; % display process (0=nothing, 1=only points, 2=times)
@@ -306,8 +317,8 @@ if do_cls && do_defs,
           fprintf('Graph-cut failed\n');
           gcut = 0;
         end  
-        % check whether graph-cut failed (if GM classification has changed too much)
-        if (sum(cls{1}(:))/sum(cls_old{1}(:))<0.8)
+        % check whether graph-cut failed
+        if (sum(mask(:))/sum((single(cls_old{1}(:))+single(cls_old{2}(:))+single(cls_old{3}(:)))/255)<0.8)
           fprintf('Graph-cut failed\n');
           gcut = 0;
           cls = cls_old;
@@ -364,7 +375,7 @@ if do_cls && do_defs,
     % fill remaining holes in label with 1
     mask = cg_morph_vol(label2,'close',round(scale_morph*2),0);    
     label2((label2 == 0) & (mask > 0)) = 1;
-  
+      
     % use index to speed up and save memory
     sz = size(mask);
     [indx, indy, indz] = ind2sub(sz,find(mask>0));
@@ -381,7 +392,39 @@ if do_cls && do_defs,
     % mask source image because Amap needs a skull stripped image
     % set label and source inside outside mask to 0
     vol(mask(indx,indy,indz)==0) = 0;
+
+    % use local histogram equalization
+    if histeq_deep
     
+        clear tmp_histeq_mask t01 t02 t03
+        
+        histeq_mask_ind = histeq_mask(indx,indy,indz);
+        clear histeq_mask;
+        
+   	    outermask_gt_0 = (vol > 0 ) & (histeq_mask_ind == 0);
+        max_vol = max(vol(outermask_gt_0));
+        vol = vol/max_vol;
+      	h1 = hist(vol(outermask_gt_0),512);
+
+       	histeq_mask_gt_0 = histeq_mask_ind >0;
+   	    vol(histeq_mask_gt_0) = histeq_deep*histeq(vol(histeq_mask_gt_0),h1) + (1-histeq_deep)*vol(histeq_mask_gt_0);
+
+      	vol = vol*max_vol;
+        
+   	    src(:) = 0;
+        src(indx, indy, indz) = vol;
+
+        for z=1:length(x3),
+            % Bias corrected image
+            % Write a plane of bias corrected data
+            if bf(1,1),
+                chan(1).Nc.dat(:,:,z,chan(1).ind(1),chan(1).ind(2)) = src(:,:,z);
+            end
+        end
+
+    end
+
+    clear chan
     % Amap parameters
     n_iters = 200; sub = 16; n_classes = 3; pve = 5; 
     iters_icm = 20;

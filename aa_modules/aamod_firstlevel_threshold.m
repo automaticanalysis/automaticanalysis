@@ -3,7 +3,6 @@
 % You should no longer need to change this module - you may just
 % modify the .xml or model in your user script
 % **********************************************************************
-% Based on spm_getSPM, aas_overlaywithtemplate
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function [aap,resp]=aamod_firstlevel_threshold(aap,task,subj)
@@ -15,7 +14,11 @@ switch task
         resp='subject';   % this module needs to be run once per subject
         
     case 'report'
-        CON = aap.tasksettings.aamod_firstlevel_contrasts.contrasts(2).con;
+        % load dependency
+        CONmodulename = aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).tobecompletedfirst{1};
+        [tag, ind] = strtok_ptrn(CONmodulename,'_0');
+        index = sscanf(ind,'_%d');        
+        CON = aap.tasksettings.(tag)(index).contrasts(2).con;
         for C = 1:numel(CON)
             % Study summary
             if ~isfield(aap.report,sprintf('html_C%02d',C)) % new contrast
@@ -31,9 +34,9 @@ switch task
             % Single subject
             aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',C,CON(C).name));
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
-                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',C,CON(C).name));
+                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',C,CON(C).name));
             if exist(f{1},'file')
-                tstat = dlmread(strrep(f{1},'_overlay.jpg','.txt'));
+                tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,CON(C).name));
                 
@@ -80,7 +83,7 @@ switch task
         Outputs.sl = '';
         Outputs.Rend = '';
         
-        if cell_index(aap.tasklist.currenttask.inputstreams.stream, 'structural') % Structural if available (backward compatibility)
+        if aas_stream_has_contents(aap,subj,'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
             if size(tmpfile,1) > 1 % in case of norm_write (first: native, second: normalised)
                 tmpfile = tmpfile(2,:); 
@@ -199,20 +202,25 @@ switch task
             rYepi=reshape(rYepi,size(Ytemplate));
             
             % Overlay
-            for iSl = 1:nSl % Adjust slice selection according to the activation
-                iYepi = rYepi(:,:,iSl:nSl:end);
-                if any(iYepi(:)~=0), break; end
+            for a = 0:2 % in 3 axes
+                arYepi = shiftdim(rYepi,a);
+                aYtemplate = shiftdim(Ytemplate,a);
+                
+                for iSl = 1:nSl % Adjust slice selection according to the activation
+                    iYepi = arYepi(:,:,iSl:nSl:end);
+                    if any(iYepi(:)~=0), break; end
+                end
+                iYepi = img_rot90(iYepi);
+                iYtemplate = img_rot90(aYtemplate(:,:,iSl:nSl:end));
+                
+                [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);                                
+                mon = tr_3Dto2D(img_rot90(img(:,:,:,1),a==2));
+                mon(:,:,2) = tr_3Dto2D(img_rot90(img(:,:,:,2),a==2));
+                mon(:,:,3) = tr_3Dto2D(img_rot90(img(:,:,:,3),a==2));
+                fnsl(a+1,:) = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                imwrite(mon,deblank(fnsl(a+1,:)));
             end
-            iYepi = img_rot90(iYepi);
-            iYtemplate = img_rot90(Ytemplate(:,:,iSl:nSl:end));
-            [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);
-            mon = tr_3Dto2D(img(:,:,:,1));
-            mon(:,:,2) = tr_3Dto2D(img(:,:,:,2));
-            mon(:,:,3) = tr_3Dto2D(img(:,:,:,3));
-            fnsl = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay.jpg',c,SPM.xCon(c).name));
-            imwrite(mon,fnsl);
-            dlmwrite(strrep(fnsl,'_overlay.jpg','.txt'),[min(v(v~=0)), max(v)]);
-            
+            dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
             % Render
             if numel(Z)  < 2 % Render fails with only one active voxel
                 Z = horzcat(Z,Z);
@@ -225,18 +233,21 @@ switch task
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
             fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
-            img = spm_render_aa(dat,0.5,rendfile);
+            global prevrend
+            prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
+            out = spm_render(dat,0.5,rendfile); 
+            clear img; for i = 1:numel(out), img(1:size(out{i},1),1:size(out{i},2),:,i) = out{i}; end
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
-            mon = imresize(mon(1:size(mon,2)*2/3,:,:),0.5);
+            mon = mon(1:size(mon,2)*2/3,:,:);
             imwrite(mon,fn3d);
             
             % Outputs
-            if exist(fullfile(anadir,V.fname),'file'), Outputs.thr = strvcat(Outputs.thr, fullfile(anadir,V.fname)); end
+            if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
             if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
-            
+            clear fnsl
         end
         cd (cwd);
         

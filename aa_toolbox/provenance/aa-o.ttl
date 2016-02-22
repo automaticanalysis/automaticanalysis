@@ -1,0 +1,2386 @@
+@prefix : <http://automaticanalysis.org/ns/aa-o#> .
+@prefix nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@base <http://automaticanalysis.org/ns/aa#> .
+
+<http://automaticanalysis.org/ns/aa#> rdf:type owl:Ontology ;
+                                      
+                                      rdfs:label "aa Ontology (aa-O)"@en ;
+                                      
+                                      rdfs:comment "This document is published by the automatic analysis group ."@en ;
+                                      
+                                      owl:versionInfo "Working Draft"@en ;
+                                      
+                                      rdfs:seeAlso "http://automaticanalysis.org" ;
+                                      
+                                      owl:versionIRI <http://automaticanalysis.org/ns/aa-o/0.0.1> ;
+                                      
+                                      owl:imports <http://www.w3.org/ns/prov-o-20130430> .
+
+
+#################################################################
+#
+#    Annotation properties
+#
+#################################################################
+
+
+###  http://purl.org/dc/elements/1.1/date
+
+<http://purl.org/dc/elements/1.1/date> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#byteSize
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#byteSize> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#created
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#created> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasLogicalPart
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasLogicalPart> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasPart
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasPart> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#identifier
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#identifier> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#isPartOf
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#isPartOf> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#lastModified
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#lastModified> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#links
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#links> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#url
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#url> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nco#creator
+
+<http://www.semanticdesktop.org/ontologies/2007/03/22/nco#creator> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#belongsToContainer
+
+nfo:belongsToContainer rdf:type owl:AnnotationProperty ;
+                       
+                       rdfs:label "belongsToContainer" ;
+                       
+                       rdfs:comment "Models the containment relations between Files and Folders (or CompressedFiles)." ;
+                       
+                       rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#isPartOf> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#bookmarks
+
+nfo:bookmarks rdf:type owl:AnnotationProperty ;
+              
+              rdfs:label "link" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#cardinality> 1 ;
+              
+              rdfs:comment "The address of the linked object. Usually a web URI." ;
+              
+              rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#links> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsBookmark
+
+nfo:containsBookmark rdf:type owl:AnnotationProperty ;
+                     
+                     rdfs:label "contains bookmark" ;
+                     
+                     rdfs:comment "The folder contains a bookmark." ;
+                     
+                     rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasLogicalPart> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsBookmarkFolder
+
+nfo:containsBookmarkFolder rdf:type owl:AnnotationProperty ;
+                           
+                           rdfs:label "contains folder" ;
+                           
+                           rdfs:comment "The folder contains a bookmark folder." ;
+                           
+                           rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasLogicalPart> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsPlacemark
+
+nfo:containsPlacemark rdf:type owl:AnnotationProperty ;
+                      
+                      rdfs:label "contains Placemark" ;
+                      
+                      rdfs:comment "Containment relation between placemark containers (files) and placemarks within." ;
+                      
+                      rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasLogicalPart> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileCreated
+
+nfo:fileCreated rdf:type owl:AnnotationProperty ;
+                
+                rdfs:label "fileCreated" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "File creation date" ;
+                
+                rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#created> ;
+                
+                rdfs:domain nfo:FileDataObject .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileLastAccessed
+
+nfo:fileLastAccessed rdf:type owl:AnnotationProperty ;
+                     
+                     rdfs:label "fileLastAccessed" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                     
+                     rdfs:comment "Time when the file was last accessed." ;
+                     
+                     rdfs:subPropertyOf <http://purl.org/dc/elements/1.1/date> ;
+                     
+                     rdfs:domain nfo:FileDataObject .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileLastModified
+
+nfo:fileLastModified rdf:type owl:AnnotationProperty ;
+                     
+                     rdfs:label "fileLastModified" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> "true"^^xsd:boolean ;
+                     
+                     rdfs:comment "last modification date" ;
+                     
+                     rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#lastModified> ;
+                     
+                     rdfs:domain nfo:FileDataObject .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileName
+
+nfo:fileName rdf:type owl:AnnotationProperty ;
+             
+             rdfs:label "fileName" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> "1" ;
+             
+             rdfs:comment "Name of the file, together with the extension" ;
+             
+             rdfs:domain :stream ,
+                         nfo:FileDataObject ;
+             
+             rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#prefLabel> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileSize
+
+nfo:fileSize rdf:type owl:AnnotationProperty ;
+             
+             rdfs:label "fileSize" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "The size of the file in bytes. For compressed files it means the size of the packed file, not of the contents. For folders it means the aggregated size of all contained files and folders " ;
+             
+             rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#byteSize> ;
+             
+             rdfs:domain nfo:FileDataObject .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileUrl
+
+nfo:fileUrl rdf:type owl:AnnotationProperty ;
+            
+            rdfs:label "fileUrl" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> "true"^^xsd:boolean ;
+            
+            rdfs:comment "URL of the file. It points at the location of the file. In cases where creating a simple file:// or http:// URL for a file is difficult (e.g. for files inside compressed archives) the applications are encouraged to use conventions defined by Apache Commons VFS Project at http://jakarta.apache.org/  commons/ vfs/ filesystems.html." ;
+            
+            rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#url> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#foundry
+
+nfo:foundry rdf:type owl:AnnotationProperty ;
+            
+            rdfs:label "foundry" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+            
+            rdfs:comment "The foundry, the organization that created the font." ;
+            
+            rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/03/22/nco#creator> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hasMediaStream
+
+nfo:hasMediaStream rdf:type owl:AnnotationProperty ;
+                   
+                   rdfs:label "hasMediaStream" ;
+                   
+                   rdfs:comment "Connects a media container with a single media stream contained within." ;
+                   
+                   rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#hasPart> .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#uuid
+
+nfo:uuid rdf:type owl:AnnotationProperty ;
+         
+         rdfs:label "uuid" ;
+         
+         rdfs:comment "Universally unique identifier of the filesystem. In the future, this property may have its parent changed to a more generic class." ;
+         
+         rdfs:subPropertyOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#identifier> ;
+         
+         rdfs:domain nfo:Filesystem .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nao#prefLabel
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nao#prefLabel> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nao#userVisible
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nao#userVisible> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#cardinality
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#cardinality> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#inverseProperty
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#inverseProperty> rdf:type owl:AnnotationProperty .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> rdf:type owl:AnnotationProperty .
+
+
+
+
+
+#################################################################
+#
+#    Datatypes
+#
+#################################################################
+
+
+###  http://www.w3.org/2001/XMLSchema#duration
+
+xsd:duration rdf:type rdfs:Datatype .
+
+
+
+
+
+#################################################################
+#
+#    Object Properties
+#
+#################################################################
+
+
+###  http://automaticanalysis.org/ns/aa#hasParallelComputing
+
+<http://automaticanalysis.org/ns/aa#hasParallelComputing> rdf:type owl:ObjectProperty ;
+                                                          
+                                                          rdfs:label "hasParallelComputing" ;
+                                                          
+                                                          prov:definition "Link the PipelineProcessor with its ParallelComputing resource." ;
+                                                          
+                                                          rdfs:range <http://automaticanalysis.org/ns/aa#ParallelComputingProvider> ;
+                                                          
+                                                          rdfs:domain <http://automaticanalysis.org/ns/aa#PipelineProcessor> .
+
+
+
+###  http://automaticanalysis.org/ns/aa#hasSoftwareAgent
+
+<http://automaticanalysis.org/ns/aa#hasSoftwareAgent> rdf:type owl:ObjectProperty ;
+                                                      
+                                                      rdfs:label "runs" ;
+                                                      
+                                                      prov:definition "Indicates that a SofwareAgent runs another one" ;
+                                                      
+                                                      rdfs:range nfo:Software ;
+                                                      
+                                                      rdfs:domain nfo:Software ,
+                                                                  prov:SoftwareAgent ;
+                                                      
+                                                      rdfs:range prov:SoftwareAgent .
+
+
+
+###  http://automaticanalysis.org/ns/aa#objectModel
+
+<http://automaticanalysis.org/ns/aa#objectModel> rdf:type owl:ObjectProperty ;
+                                                 
+                                                 rdfs:range <http://automaticanalysis.org/ns/aa#aaObjectModel> ;
+                                                 
+                                                 rdfs:domain prov:Bundle .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#belongsToContainer
+
+nfo:belongsToContainer rdf:type owl:ObjectProperty ;
+                       
+                       rdfs:label "belongsToContainer" ;
+                       
+                       rdfs:comment "Models the containment relations between Files and Folders (or CompressedFiles)." ;
+                       
+                       rdfs:domain :module ,
+                                   <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                       
+                       rdfs:range nfo:DataContainer ;
+                       
+                       rdfs:domain nfo:Software .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#bookmarks
+
+nfo:bookmarks rdf:type owl:ObjectProperty ;
+              
+              rdfs:label "link" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#cardinality> 1 ;
+              
+              rdfs:comment "The address of the linked object. Usually a web URI." ;
+              
+              rdfs:range <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+              
+              rdfs:domain nfo:Bookmark .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#compressionType
+
+nfo:compressionType rdf:type owl:ObjectProperty ;
+                    
+                    rdfs:label "compressionType" ;
+                    
+                    <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                    
+                    rdfs:comment "The type of the compression. Values include, 'lossy' and 'lossless'." ;
+                    
+                    rdfs:range nfo:CompressionType ;
+                    
+                    rdfs:domain nfo:Media .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#conflicts
+
+nfo:conflicts rdf:type owl:ObjectProperty ;
+              
+              rdfs:label "conflicts" ;
+              
+              rdfs:comment "States that a piece of software is in conflict with another piece of software." ;
+              
+              rdfs:range nfo:Software ;
+              
+              rdfs:domain nfo:Software .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsBookmark
+
+nfo:containsBookmark rdf:type owl:ObjectProperty ;
+                     
+                     rdfs:label "contains bookmark" ;
+                     
+                     rdfs:comment "The folder contains a bookmark." ;
+                     
+                     rdfs:range nfo:Bookmark ;
+                     
+                     rdfs:domain nfo:BookmarkFolder .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsBookmarkFolder
+
+nfo:containsBookmarkFolder rdf:type owl:ObjectProperty ;
+                           
+                           rdfs:label "contains folder" ;
+                           
+                           rdfs:comment "The folder contains a bookmark folder." ;
+                           
+                           rdfs:range nfo:BookmarkFolder ;
+                           
+                           rdfs:domain nfo:BookmarkFolder .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#containsPlacemark
+
+nfo:containsPlacemark rdf:type owl:ObjectProperty ;
+                      
+                      rdfs:label "contains Placemark" ;
+                      
+                      rdfs:comment "Containment relation between placemark containers (files) and placemarks within." ;
+                      
+                      rdfs:range nfo:Placemark ;
+                      
+                      rdfs:domain nfo:PlacemarkContainer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#depiction
+
+nfo:depiction rdf:type owl:ObjectProperty ;
+              
+              rdfs:label "depiction" ;
+              
+              rdfs:comment "Relates an information element to an image which depicts said element." ;
+              
+              rdfs:range nfo:Image ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#inverseProperty> nfo:depicts ;
+              
+              rdfs:domain rdfs:Resource .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#depicts
+
+nfo:depicts rdf:type owl:ObjectProperty ;
+            
+            rdfs:label "depicts" ;
+            
+            rdfs:comment "Relates an image to the information elements it depicts." ;
+            
+            rdfs:domain nfo:Image ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#inverseProperty> nfo:depiction ;
+            
+            rdfs:range rdfs:Resource .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#encryptionStatus
+
+nfo:encryptionStatus rdf:type owl:ObjectProperty ;
+                     
+                     rdfs:label "encryptionStatus" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                     
+                     rdfs:comment "The status of the encryption of the InformationElement." ;
+                     
+                     rdfs:domain <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+                     
+                     rdfs:range nfo:EncryptionStatus .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileOwner
+
+nfo:fileOwner rdf:type owl:ObjectProperty ;
+              
+              rdfs:label "fileOwner" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "The owner of the file as defined by the file system access rights feature." ;
+              
+              rdfs:range <http://www.semanticdesktop.org/ontologies/2007/03/22/nco#Contact> ;
+              
+              rdfs:domain nfo:FileDataObject .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileUrl
+
+nfo:fileUrl rdf:type owl:ObjectProperty ;
+            
+            rdfs:label "fileUrl" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> "true"^^xsd:boolean ;
+            
+            rdfs:comment "URL of the file. It points at the location of the file. In cases where creating a simple file:// or http:// URL for a file is difficult (e.g. for files inside compressed archives) the applications are encouraged to use conventions defined by Apache Commons VFS Project at http://jakarta.apache.org/  commons/ vfs/ filesystems.html." ;
+            
+            rdfs:domain nfo:FileDataObject ;
+            
+            rdfs:range rdfs:Resource .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#foundry
+
+nfo:foundry rdf:type owl:ObjectProperty ;
+            
+            rdfs:label "foundry" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+            
+            rdfs:comment "The foundry, the organization that created the font." ;
+            
+            rdfs:range <http://www.semanticdesktop.org/ontologies/2007/03/22/nco#Contact> ;
+            
+            rdfs:domain nfo:Font .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hasHash
+
+nfo:hasHash rdf:type owl:ObjectProperty ;
+            
+            rdfs:label "hasHash" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#userVisible> "false"^^xsd:boolean ;
+            
+            rdfs:comment "Links the file with it's hash value." ;
+            
+            rdfs:domain nfo:FileDataObject ;
+            
+            rdfs:range nfo:FileHash .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hasMediaFileListEntry
+
+nfo:hasMediaFileListEntry rdf:type owl:ObjectProperty ;
+                          
+                          rdfs:label "hasMediaFileListEntry" ;
+                          
+                          rdfs:comment "This property is intended to point to an RDF list of MediaFiles." ;
+                          
+                          rdfs:range nfo:MediaFileListEntry ;
+                          
+                          rdfs:domain nfo:MediaList .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hasMediaStream
+
+nfo:hasMediaStream rdf:type owl:ObjectProperty ;
+                   
+                   rdfs:label "hasMediaStream" ;
+                   
+                   rdfs:comment "Connects a media container with a single media stream contained within." ;
+                   
+                   rdfs:range <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                   
+                   rdfs:domain nfo:Media .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#supercedes
+
+nfo:supercedes rdf:type owl:ObjectProperty ;
+               
+               rdfs:label "supercedes" ;
+               
+               rdfs:comment "States that a piece of software supercedes another piece of software." ;
+               
+               rdfs:range nfo:Software ;
+               
+               rdfs:domain nfo:Software .
+
+
+
+
+
+#################################################################
+#
+#    Data properties
+#
+#################################################################
+
+
+###  http://automaticanalysis.org/ns/aa#isTrackKeeping
+
+<http://automaticanalysis.org/ns/aa#isTrackKeeping> rdf:type owl:DatatypeProperty ;
+                                                    
+                                                    rdfs:label "isTrackKeeping" ;
+                                                    
+                                                    prov:definition "Boolean property to indicate whether a PipelineProcessor keeps track of what needs to be done." ;
+                                                    
+                                                    rdfs:domain <http://automaticanalysis.org/ns/aa#PipelineProcessor> .
+
+
+
+###  http://automaticanalysis.org/ns/aa#version
+
+<http://automaticanalysis.org/ns/aa#version> rdf:type owl:DatatypeProperty ;
+                                             
+                                             rdfs:label "version" ;
+                                             
+                                             prov:definition "A unique version name or numbers generally assigned in increasing order to correspond to the development stages of an Information Element." ;
+                                             
+                                             rdfs:domain <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+                                             
+                                             rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#aspectRatio
+
+nfo:aspectRatio rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "aspectRatio" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "Visual content aspect ratio. (Width divided by Height)" ;
+                
+                rdfs:domain nfo:Visual ;
+                
+                rdfs:range xsd:float .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#averageBitrate
+
+nfo:averageBitrate rdf:type owl:DatatypeProperty ;
+                   
+                   rdfs:label "averageBitrate" ;
+                   
+                   <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                   
+                   rdfs:comment "The average overall bitrate of a media container. (i.e. the size of the piece of media in bits, divided by it's duration expressed in seconds)." ;
+                   
+                   rdfs:domain nfo:Media ;
+                   
+                   rdfs:subPropertyOf nfo:rate ;
+                   
+                   rdfs:range xsd:float .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#bitDepth
+
+nfo:bitDepth rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "bitDepth" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "A common superproperty for all properties signifying the amount of bits for an atomic unit of data. Examples of subproperties may include bitsPerSample and bitsPerPixel" ;
+             
+             rdfs:domain nfo:Media ;
+             
+             rdfs:range rdfs:Literal .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#bitrateType
+
+nfo:bitrateType rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "bitrateType" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "The type of the bitrate. Examples may include CBR and VBR." ;
+                
+                rdfs:domain nfo:Media ;
+                
+                rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#bitsPerSample
+
+nfo:bitsPerSample rdf:type owl:DatatypeProperty ;
+                  
+                  rdfs:label "bitsPerSample" ;
+                  
+                  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                  
+                  rdfs:comment "Amount of bits in each audio sample." ;
+                  
+                  rdfs:domain nfo:Audio ;
+                  
+                  rdfs:subPropertyOf nfo:bitDepth ;
+                  
+                  rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#channels
+
+nfo:channels rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "channels" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "Number of channels. This property is to be used directly if no detailed information is necessary. Otherwise use more detailed subproperties." ;
+             
+             rdfs:domain nfo:Audio ;
+             
+             rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#characterCount
+
+nfo:characterCount rdf:type owl:DatatypeProperty ;
+                   
+                   rdfs:label "characterCount" ;
+                   
+                   <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                   
+                   rdfs:comment "The amount of characters in the document." ;
+                   
+                   rdfs:domain nfo:TextDocument ;
+                   
+                   rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#characterPosition
+
+nfo:characterPosition rdf:type owl:DatatypeProperty ;
+                      
+                      rdfs:label "characterPosition" ;
+                      
+                      <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                      
+                      rdfs:comment "Character position of the bookmark." ;
+                      
+                      rdfs:domain nfo:Bookmark ;
+                      
+                      rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#codec
+
+nfo:codec rdf:type owl:DatatypeProperty ;
+          
+          rdfs:label "codec" ;
+          
+          rdfs:comment "The name of the codec necessary to decode a piece of media." ;
+          
+          rdfs:domain nfo:Media ;
+          
+          rdfs:range rdfs:Literal .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#colorCount
+
+nfo:colorCount rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "color count" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "The number of colors used/available in a raster image." ;
+               
+               rdfs:domain nfo:RasterImage ;
+               
+               rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#colorDepth
+
+nfo:colorDepth rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "colorDepth" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "Amount of bits used to express the color of each pixel." ;
+               
+               rdfs:domain nfo:Visual ;
+               
+               rdfs:subPropertyOf nfo:bitDepth ;
+               
+               rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#commentCharacterCount
+
+nfo:commentCharacterCount rdf:type owl:DatatypeProperty ;
+                          
+                          rdfs:label "commentCharacterCount" ;
+                          
+                          <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                          
+                          rdfs:comment "The amount of character in comments i.e. characters ignored by the compiler/interpreter." ;
+                          
+                          rdfs:domain nfo:SourceCode ;
+                          
+                          rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#count
+
+nfo:count rdf:type owl:DatatypeProperty ;
+          
+          rdfs:label "count" ;
+          
+          rdfs:comment "A common superproperty for all properties signifying the amount of atomic media data units. Examples of subproperties may include sampleCount and frameCount." ;
+          
+          rdfs:domain nfo:Media ;
+          
+          rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#definesClass
+
+nfo:definesClass rdf:type owl:DatatypeProperty ;
+                 
+                 rdfs:label "definesClass" ;
+                 
+                 rdfs:comment "Name of a class defined in the source code file." ;
+                 
+                 rdfs:domain nfo:SourceCode ;
+                 
+                 rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#definesFunction
+
+nfo:definesFunction rdf:type owl:DatatypeProperty ;
+                    
+                    rdfs:label "definesFunction" ;
+                    
+                    rdfs:comment "A name of a function/method defined in the given source code file." ;
+                    
+                    rdfs:domain nfo:SourceCode ;
+                    
+                    rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#definesGlobalVariable
+
+nfo:definesGlobalVariable rdf:type owl:DatatypeProperty ;
+                          
+                          rdfs:label "definesGlobalVariable" ;
+                          
+                          rdfs:comment "Name of a global variable defined within the source code file." ;
+                          
+                          rdfs:domain nfo:SourceCode ;
+                          
+                          rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#deletionDate
+
+nfo:deletionDate rdf:type owl:DatatypeProperty ;
+                 
+                 rdfs:label "deletionDate" ;
+                 
+                 <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                 
+                 rdfs:comment "The date and time of the deletion." ;
+                 
+                 rdfs:domain nfo:DeletedResource ;
+                 
+                 rdfs:range xsd:dateTime .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#duration
+
+nfo:duration rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "duration" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "Duration of a media piece." ;
+             
+             rdfs:domain nfo:Media ;
+             
+             rdfs:range xsd:duration .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#encoding
+
+nfo:encoding rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "encoding" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "The encoding used for the Embedded File. Examples might include BASE64 or UUEncode" ;
+             
+             rdfs:domain nfo:EmbeddedFileDataObject ;
+             
+             rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileCreated
+
+nfo:fileCreated rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "fileCreated" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "File creation date" ;
+                
+                rdfs:range xsd:dateTime .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileLastAccessed
+
+nfo:fileLastAccessed rdf:type owl:DatatypeProperty ;
+                     
+                     rdfs:label "fileLastAccessed" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                     
+                     rdfs:comment "Time when the file was last accessed." ;
+                     
+                     rdfs:range xsd:dateTime .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileLastModified
+
+nfo:fileLastModified rdf:type owl:DatatypeProperty ;
+                     
+                     rdfs:label "fileLastModified" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> "true"^^xsd:boolean ;
+                     
+                     rdfs:comment "last modification date" ;
+                     
+                     rdfs:range xsd:dateTime .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileName
+
+nfo:fileName rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "fileName" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> "1" ;
+             
+             rdfs:comment "Name of the file, together with the extension" ;
+             
+             rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fileSize
+
+nfo:fileSize rdf:type owl:DatatypeProperty ;
+             
+             rdfs:label "fileSize" ;
+             
+             <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+             
+             rdfs:comment "The size of the file in bytes. For compressed files it means the size of the packed file, not of the contents. For folders it means the aggregated size of all contained files and folders " ;
+             
+             rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#filesystemType
+
+nfo:filesystemType rdf:type owl:DatatypeProperty ;
+                   
+                   rdfs:label "filesystemType" ;
+                   
+                   <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                   
+                   rdfs:comment "Type of filesystem such as ext3 and ntfs." ;
+                   
+                   rdfs:domain nfo:Filesystem ;
+                   
+                   rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#fontFamily
+
+nfo:fontFamily rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "fontFamily" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "The name of the font family." ;
+               
+               rdfs:domain nfo:Font ;
+               
+               rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#frameCount
+
+nfo:frameCount rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "frameCount" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "The amount of frames in a video sequence." ;
+               
+               rdfs:domain nfo:Video ;
+               
+               rdfs:subPropertyOf nfo:count ;
+               
+               rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#frameRate
+
+nfo:frameRate rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "frameRate" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "Amount of video frames per second." ;
+              
+              rdfs:domain nfo:Video ;
+              
+              rdfs:subPropertyOf nfo:rate ;
+              
+              rdfs:range xsd:float .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#freeSpace
+
+nfo:freeSpace rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "freeSpace" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "Unoccupied storage space of the filesystem." ;
+              
+              rdfs:domain nfo:Filesystem ;
+              
+              rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#frontChannels
+
+nfo:frontChannels rdf:type owl:DatatypeProperty ;
+                  
+                  rdfs:label "frontChannels" ;
+                  
+                  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                  
+                  rdfs:comment "Number of front channels." ;
+                  
+                  rdfs:subPropertyOf nfo:channels ;
+                  
+                  rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hashAlgorithm
+
+nfo:hashAlgorithm rdf:type owl:DatatypeProperty ;
+                  
+                  rdfs:label "hashAlgorithm" ;
+                  
+                  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                  
+                  rdfs:comment "Name of the algorithm used to compute the hash value. Examples might include CRC32, MD5, SHA, TTH etc." ;
+                  
+                  rdfs:domain nfo:FileHash ;
+                  
+                  rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hashValue
+
+nfo:hashValue rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "hashValue" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#cardinality> 1 ;
+              
+              rdfs:comment "The actual value of the hash." ;
+              
+              rdfs:domain nfo:FileHash ;
+              
+              rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#height
+
+nfo:height rdf:type owl:DatatypeProperty ;
+           
+           rdfs:label "height" ;
+           
+           <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+           
+           rdfs:comment "Visual content height in pixels." ;
+           
+           rdfs:domain nfo:Visual ;
+           
+           rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#horizontalResolution
+
+nfo:horizontalResolution rdf:type owl:DatatypeProperty ;
+                         
+                         rdfs:label "horizontalResolution" ;
+                         
+                         <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                         
+                         rdfs:comment "Horizontal resolution of an image (if printed). Expressed in DPI." ;
+                         
+                         rdfs:domain nfo:Image ;
+                         
+                         rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#interlaceMode
+
+nfo:interlaceMode rdf:type owl:DatatypeProperty ;
+                  
+                  rdfs:label "interlaceMode" ;
+                  
+                  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                  
+                  rdfs:comment "True if the image is interlaced, false if not." ;
+                  
+                  rdfs:domain nfo:Visual ;
+                  
+                  rdfs:range xsd:boolean .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#isPasswordProtected
+
+nfo:isPasswordProtected rdf:type owl:DatatypeProperty ;
+                        
+                        rdfs:label "isPasswordProtected" ;
+                        
+                        <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                        
+                        rdfs:comment "States if a given resource is password-protected." ;
+                        
+                        rdfs:domain nfo:ArchiveItem ;
+                        
+                        rdfs:range xsd:boolean .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#lfeChannels
+
+nfo:lfeChannels rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "lfeChannels" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "Number of Low Frequency Expansion (subwoofer) channels." ;
+                
+                rdfs:subPropertyOf nfo:channels ;
+                
+                rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#lineCount
+
+nfo:lineCount rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "lineCount" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "The amount of lines in a text document" ;
+              
+              rdfs:domain nfo:TextDocument ;
+              
+              rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#occupiedSpace
+
+nfo:occupiedSpace rdf:type owl:DatatypeProperty ;
+                  
+                  rdfs:label "occupiedSpace" ;
+                  
+                  <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                  
+                  rdfs:comment "Occupied storage space of the filesystem." ;
+                  
+                  rdfs:domain nfo:Filesystem ;
+                  
+                  rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#originalLocation
+
+nfo:originalLocation rdf:type owl:DatatypeProperty ;
+                     
+                     rdfs:label "originalLocation" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                     
+                     rdfs:comment "The original location of the deleted resource." ;
+                     
+                     rdfs:domain nfo:DeletedResource ;
+                     
+                     rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#pageCount
+
+nfo:pageCount rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "pageCount" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "Number of pages." ;
+              
+              rdfs:domain nfo:PaginatedTextDocument ;
+              
+              rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#pageNumber
+
+nfo:pageNumber rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "pageNumber" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "Page linked by the bookmark." ;
+               
+               rdfs:domain nfo:Bookmark ;
+               
+               rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#paletteSize
+
+nfo:paletteSize rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "palette size" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "The number of colors defined in palette of the raster image." ;
+                
+                rdfs:domain nfo:RasterImage ;
+                
+                rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#permissions
+
+nfo:permissions rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "permissions" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "A string containing the permissions of a file. A feature common in many UNIX-like operating systems." ;
+                
+                rdfs:domain nfo:FileDataObject ;
+                
+                rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#programmingLanguage
+
+nfo:programmingLanguage rdf:type owl:DatatypeProperty ;
+                        
+                        rdfs:label "programmingLanguage" ;
+                        
+                        rdfs:comment "Indicates the name of the programming language this source code file is written in. Examples might include 'C', 'C++', 'Java' etc." ;
+                        
+                        rdfs:domain nfo:SourceCode ;
+                        
+                        rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#rate
+
+nfo:rate rdf:type owl:DatatypeProperty ;
+         
+         rdfs:label "rate" ;
+         
+         rdfs:comment "A common superproperty for all properties specifying the media rate. Examples of subproperties may include frameRate for video and sampleRate for audio. This property is expressed in units per second." ;
+         
+         rdfs:domain nfo:Media ;
+         
+         rdfs:range xsd:float .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#rearChannels
+
+nfo:rearChannels rdf:type owl:DatatypeProperty ;
+                 
+                 rdfs:label "rearChannels" ;
+                 
+                 <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                 
+                 rdfs:comment "Number of rear channels." ;
+                 
+                 rdfs:subPropertyOf nfo:channels ;
+                 
+                 rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#sampleCount
+
+nfo:sampleCount rdf:type owl:DatatypeProperty ;
+                
+                rdfs:label "sampleCount" ;
+                
+                <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                
+                rdfs:comment "The amount of samples in an audio clip." ;
+                
+                rdfs:domain nfo:Audio ;
+                
+                rdfs:subPropertyOf nfo:count ;
+                
+                rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#sampleRate
+
+nfo:sampleRate rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "sampleRate" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "The amount of audio samples per second." ;
+               
+               rdfs:domain nfo:Audio ;
+               
+               rdfs:subPropertyOf nfo:rate ;
+               
+               rdfs:range xsd:float .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#sideChannels
+
+nfo:sideChannels rdf:type owl:DatatypeProperty ;
+                 
+                 rdfs:label "sideChannels" ;
+                 
+                 <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                 
+                 rdfs:comment "Number of side channels" ;
+                 
+                 rdfs:subPropertyOf nfo:channels ;
+                 
+                 rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#streamPosition
+
+nfo:streamPosition rdf:type owl:DatatypeProperty ;
+                   
+                   rdfs:label "streamPosition" ;
+                   
+                   <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                   
+                   rdfs:comment "Stream position of the bookmark, suitable for e.g. audio books. Expressed in milliseconds" ;
+                   
+                   rdfs:domain nfo:Bookmark ;
+                   
+                   rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#totalSpace
+
+nfo:totalSpace rdf:type owl:DatatypeProperty ;
+               
+               rdfs:label "totalSpace" ;
+               
+               <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+               
+               rdfs:comment "Total storage space of the filesystem, which can be different from nie:contentSize because the latter includes filesystem format overhead." ;
+               
+               rdfs:domain nfo:Filesystem ;
+               
+               rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#uncompressedSize
+
+nfo:uncompressedSize rdf:type owl:DatatypeProperty ;
+                     
+                     rdfs:label "uncompressedSize" ;
+                     
+                     <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                     
+                     rdfs:comment "Uncompressed size of the content of a compressed file." ;
+                     
+                     rdfs:domain nfo:Archive ;
+                     
+                     rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#uuid
+
+nfo:uuid rdf:type owl:DatatypeProperty ;
+         
+         rdfs:label "uuid" ;
+         
+         rdfs:comment "Universally unique identifier of the filesystem. In the future, this property may have its parent changed to a more generic class." ;
+         
+         rdfs:range xsd:string .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#verticalResolution
+
+nfo:verticalResolution rdf:type owl:DatatypeProperty ;
+                       
+                       rdfs:label "verticalResolution" ;
+                       
+                       <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+                       
+                       rdfs:comment "Vertical resolution of an Image (if printed). Expressed in DPI" ;
+                       
+                       rdfs:domain nfo:Image ;
+                       
+                       rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#width
+
+nfo:width rdf:type owl:DatatypeProperty ;
+          
+          rdfs:label "width" ;
+          
+          <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+          
+          rdfs:comment "Visual content width in pixels." ;
+          
+          rdfs:domain nfo:Visual ;
+          
+          rdfs:range xsd:integer .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#wordCount
+
+nfo:wordCount rdf:type owl:DatatypeProperty ;
+              
+              rdfs:label "wordCount" ;
+              
+              <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#maxCardinality> 1 ;
+              
+              rdfs:comment "The amount of words in a text document." ;
+              
+              rdfs:domain nfo:TextDocument ;
+              
+              rdfs:range xsd:integer .
+
+
+
+
+
+#################################################################
+#
+#    Classes
+#
+#################################################################
+
+
+###  http://automaticanalysis.org/ns/aa#ParallelComputingProvider
+
+<http://automaticanalysis.org/ns/aa#ParallelComputingProvider> rdf:type owl:Class ;
+                                                               
+                                                               rdfs:label "Parallel Computing Provider" ;
+                                                               
+                                                               rdfs:subClassOf nfo:Application ,
+                                                                               prov:SoftwareAgent ;
+                                                               
+                                                               prov:definition "A parellel computing computer cluster software system" .
+
+
+
+###  http://automaticanalysis.org/ns/aa#PipelineProcessor
+
+<http://automaticanalysis.org/ns/aa#PipelineProcessor> rdf:type owl:Class ;
+                                                       
+                                                       rdfs:label "Pipeline Processor" ;
+                                                       
+                                                       rdfs:subClassOf nfo:Application ,
+                                                                       prov:SoftwareAgent ;
+                                                       
+                                                       prov:definition "A software (package) providing way to specify complex workflows." .
+
+
+
+###  http://automaticanalysis.org/ns/aa#aaObjectModel
+
+<http://automaticanalysis.org/ns/aa#aaObjectModel> rdf:type owl:Class ;
+                                                   
+                                                   rdfs:subClassOf nfo:Document .
+
+
+
+###  http://automaticanalysis.org/ns/aa#aaWorkflow
+
+<http://automaticanalysis.org/ns/aa#aaWorkflow> rdf:type owl:Class ;
+                                                
+                                                rdfs:subClassOf <http://automaticanalysis.org/ns/aa#aaObjectModel> .
+
+
+
+###  http://automaticanalysis.org/ns/aa-o#module
+
+:module rdf:type owl:Class ;
+        
+        rdfs:subClassOf prov:Activity ;
+        
+        rdfs:seeAlso "http://automaticanalysis.org/getting-started/aa-orientation-components/" ;
+        
+        prov:definition "It handles a single task, which may be peformed per study, per subject or per session." .
+
+
+
+###  http://automaticanalysis.org/ns/aa-o#stream
+
+:stream rdf:type owl:Class ;
+        
+        rdfs:subClassOf nfo:LocalFileDataObject ,
+                        prov:Collection ;
+        
+        rdfs:seeAlso "http://automaticanalysis.org/getting-started/streams-work/" ;
+        
+        prov:definition "A description of data (files and MD5 hash) needed or produced by a module." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> rdf:type owl:Class .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement
+
+<http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> rdf:type owl:Class ;
+                                                                              
+                                                                              rdfs:subClassOf prov:Entity .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nco#Contact
+
+<http://www.semanticdesktop.org/ontologies/2007/03/22/nco#Contact> rdf:type owl:Class .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Application
+
+nfo:Application rdf:type owl:Class ;
+                
+                rdfs:label "Application" ;
+                
+                rdfs:subClassOf nfo:Software ;
+                
+                rdfs:comment "An application" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Archive
+
+nfo:Archive rdf:type owl:Class ;
+            
+            rdfs:label "Archive" ;
+            
+            rdfs:subClassOf nfo:DataContainer ;
+            
+            rdfs:comment "A compressed file. May contain other files or folder inside. " .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#ArchiveItem
+
+nfo:ArchiveItem rdf:type owl:Class ;
+                
+                rdfs:label "ArchiveItem" ;
+                
+                rdfs:subClassOf nfo:EmbeddedFileDataObject ;
+                
+                rdfs:comment "A file entity inside an archive." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Attachment
+
+nfo:Attachment rdf:type owl:Class ;
+               
+               rdfs:label "Attachment" ;
+               
+               rdfs:subClassOf nfo:EmbeddedFileDataObject ;
+               
+               rdfs:comment "A file attached to another data object. Many data formats allow for attachments: emails, vcards, ical events, id3 and exif..." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Audio
+
+nfo:Audio rdf:type owl:Class ;
+          
+          rdfs:label "Audio" ;
+          
+          rdfs:subClassOf nfo:Media ;
+          
+          rdfs:comment "A file containing audio content" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Bookmark
+
+nfo:Bookmark rdf:type owl:Class ;
+             
+             rdfs:label "Bookmark" ;
+             
+             rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+             
+             rdfs:comment "A bookmark of a webbrowser. Use nie:title for the name/label, nie:contentCreated to represent the date when the user added the bookmark, and nie:contentLastModified for modifications. nfo:bookmarks to store the link." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#BookmarkFolder
+
+nfo:BookmarkFolder rdf:type owl:Class ;
+                   
+                   rdfs:label "Bookmark Folder" ;
+                   
+                   rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+                   
+                   rdfs:comment "A folder with bookmarks of a webbrowser. Use nfo:containsBookmark to relate Bookmarks. Folders can contain subfolders, use containsBookmarkFolder to relate them." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#CompressionType
+
+nfo:CompressionType rdf:type owl:Class ;
+                    
+                    rdfs:label "CompressionType" ;
+                    
+                    rdfs:subClassOf rdfs:Resource ;
+                    
+                    rdfs:comment "Type of compression. Instances of this class represent the limited set of values allowed for the nfo:compressionType property." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Cursor
+
+nfo:Cursor rdf:type owl:Class ;
+           
+           rdfs:label "Cursor" ;
+           
+           rdfs:subClassOf nfo:RasterImage ;
+           
+           rdfs:comment "A Cursor." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#DataContainer
+
+nfo:DataContainer rdf:type owl:Class ;
+                  
+                  rdfs:label "DataContainer" ;
+                  
+                  rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+                  
+                  rdfs:comment "A superclass for all entities, whose primary purpose is to serve as containers for other data object. They usually don't have any \"meaning\" by themselves. Examples include folders, archives and optical disc images." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#DeletedResource
+
+nfo:DeletedResource rdf:type owl:Class ;
+                    
+                    rdfs:label "DeletedResource" ;
+                    
+                    rdfs:subClassOf nfo:FileDataObject ;
+                    
+                    rdfs:comment "A file entity that has been deleted from the original source. Usually such entities are stored within various kinds of 'Trash' or 'Recycle Bin' folders." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Document
+
+nfo:Document rdf:type owl:Class ;
+             
+             rdfs:label "Document" ;
+             
+             rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+             
+             rdfs:comment "A generic document. A common superclass for all documents on the desktop." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#EmbeddedFileDataObject
+
+nfo:EmbeddedFileDataObject rdf:type owl:Class ;
+                           
+                           rdfs:label "EmbeddedFileDataObject" ;
+                           
+                           rdfs:subClassOf nfo:FileDataObject ;
+                           
+                           rdfs:comment "A file embedded in another data object. There are many ways in which a file may be embedded in another one. Use this class directly only in cases if none of the subclasses gives a better description of your case." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#EncryptionStatus
+
+nfo:EncryptionStatus rdf:type owl:Class ;
+                     
+                     rdfs:label "EncryptionStatus" ;
+                     
+                     rdfs:comment "The status of the encryption of an InformationElement. nfo:encryptedStatus means that the InformationElement has been encrypted and couldn't be decrypted by the extraction software, thus no content is available. nfo:decryptedStatus means that decryption was successfull and the content is available." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Executable
+
+nfo:Executable rdf:type owl:Class ;
+               
+               rdfs:label "Executable" ;
+               
+               rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+               
+               rdfs:comment "An executable file." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#FileDataObject
+
+nfo:FileDataObject rdf:type owl:Class ;
+                   
+                   rdfs:label "file" ;
+                   
+                   rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                   
+                   rdfs:comment "A resource containing a finite sequence of bytes with arbitrary information, that is available to a computer program and is usually based on some kind of durable storage. A file is durable in the sense that it remains available for programs to use after the current program has finished." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#FileHash
+
+nfo:FileHash rdf:type owl:Class ;
+             
+             rdfs:label "FileHash" ;
+             
+             rdfs:subClassOf rdfs:Resource ;
+             
+             rdfs:comment "A fingerprint of the file, generated by some hashing function." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Filesystem
+
+nfo:Filesystem rdf:type owl:Class ;
+               
+               rdfs:label "Filesystem" ;
+               
+               rdfs:subClassOf nfo:DataContainer ;
+               
+               rdfs:comment "A filesystem. Examples of filesystems include hard disk partitions, removable media, but also images thereof stored in files such as ISO." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#FilesystemImage
+
+nfo:FilesystemImage rdf:type owl:Class ;
+                    
+                    rdfs:label "FilesystemImage" ;
+                    
+                    rdfs:subClassOf nfo:Filesystem ;
+                    
+                    <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#deprecated> "true"^^xsd:boolean ;
+                    
+                    rdfs:comment "An image of a filesystem. Instances of this class may include CD images, DVD images or hard disk partition images created by various pieces of software (e.g. Norton Ghost). Deprecated in favor of nfo:Filesystem." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Folder
+
+nfo:Folder rdf:type owl:Class ;
+           
+           rdfs:label "Folder" ;
+           
+           rdfs:subClassOf nfo:DataContainer ;
+           
+           rdfs:comment "A folder/directory. Examples of folders include folders on a filesystem and message folders in a mailbox." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Font
+
+nfo:Font rdf:type owl:Class ;
+         
+         rdfs:label "Font" ;
+         
+         rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+         
+         rdfs:comment "A font." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#HardDiskPartition
+
+nfo:HardDiskPartition rdf:type owl:Class ;
+                      
+                      rdfs:label "HardDiskPartition" ;
+                      
+                      rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                      
+                      rdfs:comment "A partition on a hard disk" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#HtmlDocument
+
+nfo:HtmlDocument rdf:type owl:Class ;
+                 
+                 rdfs:label "HtmlDocument" ;
+                 
+                 rdfs:subClassOf nfo:PlainTextDocument ;
+                 
+                 rdfs:comment "A HTML document, may contain links to other files." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Icon
+
+nfo:Icon rdf:type owl:Class ;
+         
+         rdfs:label "Icon" ;
+         
+         rdfs:subClassOf nfo:Image ;
+         
+         rdfs:comment "An Icon (regardless of whether it's a raster or a vector icon. A resource representing an icon could have two types (Icon and Raster, or Icon and Vector) if required." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Image
+
+nfo:Image rdf:type owl:Class ;
+          
+          rdfs:label "Image" ;
+          
+          rdfs:subClassOf nfo:Visual ;
+          
+          rdfs:comment "A file containing an image." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#LocalFileDataObject
+
+nfo:LocalFileDataObject rdf:type owl:Class ;
+                        
+                        rdfs:label "local file" ;
+                        
+                        rdfs:subClassOf nfo:FileDataObject ;
+                        
+                        rdfs:comment "A local file data object which is stored on a local file system. Its nie:url always uses the file:/ protocol. The main use of this class is to distinguish local and non-local files." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Media
+
+nfo:Media rdf:type owl:Class ;
+          
+          rdfs:label "Media" ;
+          
+          rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+          
+          rdfs:comment "A piece of media content. This class may be used to express complex media containers with many streams of various media content (both aural and visual)." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#MediaFileListEntry
+
+nfo:MediaFileListEntry rdf:type owl:Class ;
+                       
+                       rdfs:label "MediaFileListEntry" ;
+                       
+                       rdfs:subClassOf rdfs:Resource ;
+                       
+                       rdfs:comment "A single node in the list of media files contained within an MediaList instance. This class is intended to provide a type all those links have. In valid NRL untyped resources cannot be linked. There are no properties defined for this class but the application may expect rdf:first and rdf:last links. The former points to the DataObject instance, interpreted as Media the latter points at another MediaFileListEntr. At the end of the list there is a link to rdf:nil." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#MediaList
+
+nfo:MediaList rdf:type owl:Class ;
+              
+              rdfs:label "MediaList" ;
+              
+              rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+              
+              rdfs:comment "A file containing a list of media files.e.g. a playlist" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#MediaStream
+
+nfo:MediaStream rdf:type owl:Class ;
+                
+                rdfs:label "MediaStream" ;
+                
+                rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                
+                rdfs:comment "A stream of multimedia content, usually contained within a media container such as a movie (containing both audio and video) or a DVD (possibly containing many streams of audio and video). Most common interpretations for such a DataObject include Audio and Video." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#MindMap
+
+nfo:MindMap rdf:type owl:Class ;
+            
+            rdfs:label "MindMap" ;
+            
+            rdfs:subClassOf nfo:Document ;
+            
+            rdfs:comment "A MindMap, created by a mind-mapping utility. Examples might include FreeMind or mind mapper." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#OperatingSystem
+
+nfo:OperatingSystem rdf:type owl:Class ;
+                    
+                    rdfs:label "OperatingSystem" ;
+                    
+                    rdfs:subClassOf nfo:Software ;
+                    
+                    rdfs:comment "An OperatingSystem" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#PaginatedTextDocument
+
+nfo:PaginatedTextDocument rdf:type owl:Class ;
+                          
+                          rdfs:label "PaginatedTextDocument" ;
+                          
+                          rdfs:subClassOf nfo:TextDocument ;
+                          
+                          rdfs:comment "A file containing a text document, that is unambiguously divided into pages. Examples might include PDF, DOC, PS, DVI etc." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Placemark
+
+nfo:Placemark rdf:type owl:Class ;
+              
+              rdfs:label "Placemark" ;
+              
+              rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+              
+              rdfs:comment "One placemark within a placemark container/file. Use nie:title for the name/label, nao:creator for defining the creator." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#PlacemarkContainer
+
+nfo:PlacemarkContainer rdf:type owl:Class ;
+                       
+                       rdfs:label "Placemark Container" ;
+                       
+                       rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+                       
+                       rdfs:comment "A data object containing placemark(s). Use nie:contentCreated to represent the date when the user created the dataobject, nao:creator for defining the creator, nie:contentLastModified for modifications. nfo:containsPlacemark to refer to individual placemarks within." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#PlainTextDocument
+
+nfo:PlainTextDocument rdf:type owl:Class ;
+                      
+                      rdfs:label "PlainTextDocument" ;
+                      
+                      rdfs:subClassOf nfo:TextDocument ;
+                      
+                      rdfs:comment "A file containing plain text (ASCII, Unicode or other encodings). Examples may include TXT, HTML, XML, program source code etc." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Presentation
+
+nfo:Presentation rdf:type owl:Class ;
+                 
+                 rdfs:label "Presentation" ;
+                 
+                 rdfs:subClassOf nfo:Document ;
+                 
+                 rdfs:comment "A Presentation made by some presentation software (Corel Presentations, OpenOffice Impress, MS Powerpoint etc.)" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#RasterImage
+
+nfo:RasterImage rdf:type owl:Class ;
+                
+                rdfs:label "RasterImage" ;
+                
+                rdfs:subClassOf nfo:Image ;
+                
+                rdfs:comment "A raster image." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#RemoteDataObject
+
+nfo:RemoteDataObject rdf:type owl:Class ;
+                     
+                     rdfs:label "RemoteDataObject" ;
+                     
+                     rdfs:subClassOf nfo:FileDataObject ;
+                     
+                     rdfs:comment "A file data object stored at a remote location. Don't confuse this class with a RemotePortAddress. This one applies to a particular resource, RemotePortAddress applies to an address, that can have various interpretations." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#RemotePortAddress
+
+nfo:RemotePortAddress rdf:type owl:Class ;
+                      
+                      rdfs:label "RemotePortAddress" ;
+                      
+                      rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                      
+                      rdfs:comment "An address specifying a remote host and port. Such an address can be interpreted in many ways (examples of such interpretations include mailboxes, websites, remote calendars or filesystems), depending on an interpretation, various kinds of data may be extracted from such an address." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Software
+
+nfo:Software rdf:type owl:Class ;
+             
+             rdfs:label "Software" ;
+             
+             rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ,
+                             <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#Agent> ;
+             
+             rdfs:comment "A piece of software. Examples may include applications and the operating system. This interpretation most commonly applies to SoftwareItems." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#SoftwareItem
+
+nfo:SoftwareItem rdf:type owl:Class ;
+                 
+                 rdfs:label "SoftwareItem" ;
+                 
+                 rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                 
+                 rdfs:comment "A DataObject representing a piece of software. Examples of interpretations of a SoftwareItem include an Application and an OperatingSystem." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#SoftwareService
+
+nfo:SoftwareService rdf:type owl:Class ;
+                    
+                    rdfs:label "SoftwareService" ;
+                    
+                    rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                    
+                    rdfs:comment "A service published by a piece of software, either by an operating system or an application. Examples of such services may include calendar, addressbook and mailbox managed by a PIM application. This category is introduced to distinguish between data available directly from the applications (Via some Interprocess Communication Mechanisms) and data available from files on a disk. In either case both DataObjects would receive a similar interpretation (e.g. a Mailbox) and wouldn't differ on the content level." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#SourceCode
+
+nfo:SourceCode rdf:type owl:Class ;
+               
+               rdfs:label "SourceCode" ;
+               
+               rdfs:subClassOf nfo:PlainTextDocument ;
+               
+               rdfs:comment "Code in a compilable or interpreted programming language." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Spreadsheet
+
+nfo:Spreadsheet rdf:type owl:Class ;
+                
+                rdfs:label "Spreadsheet" ;
+                
+                rdfs:subClassOf nfo:Document ;
+                
+                rdfs:comment "A spreadsheet, created by a spreadsheet application. Examples might include Gnumeric, OpenOffice Calc or MS Excel." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#TextDocument
+
+nfo:TextDocument rdf:type owl:Class ;
+                 
+                 rdfs:label "TextDocument" ;
+                 
+                 rdfs:subClassOf nfo:Document ;
+                 
+                 rdfs:comment "A text document" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Trash
+
+nfo:Trash rdf:type owl:Class ;
+          
+          rdfs:label "Trash" ;
+          
+          rdfs:subClassOf nfo:DataContainer ;
+          
+          rdfs:comment "Represents a container for deleted files, a feature common in modern operating systems." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#VectorImage
+
+nfo:VectorImage rdf:type owl:Class ;
+                
+                rdfs:label "VectorImage" ;
+                
+                rdfs:subClassOf nfo:Image .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Video
+
+nfo:Video rdf:type owl:Class ;
+          
+          rdfs:label "Video" ;
+          
+          rdfs:subClassOf nfo:Visual ;
+          
+          rdfs:comment "A video file." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Visual
+
+nfo:Visual rdf:type owl:Class ;
+           
+           rdfs:label "Visual" ;
+           
+           rdfs:subClassOf nfo:Media ;
+           
+           rdfs:comment "File containing visual content." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#WebDataObject
+
+nfo:WebDataObject rdf:type owl:Class ;
+                  
+                  rdfs:label "web data object" ;
+                  
+                  rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#DataObject> ;
+                  
+                  rdfs:comment "An information resources of which representations (files, streams) can be retrieved through a web server. They may be generated at retrieval time. Typical examples are pages served by PHP or AJAX or mp3 streams." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#Website
+
+nfo:Website rdf:type owl:Class ;
+            
+            rdfs:label "Website" ;
+            
+            rdfs:subClassOf <http://www.semanticdesktop.org/ontologies/2007/01/19/nie#InformationElement> ;
+            
+            rdfs:comment "A website, usually a container for remote resources, that may be interpreted as HTMLDocuments, images or other types of content." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nao#Agent
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nao#Agent> rdf:type owl:Class .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#DefiningProperty
+
+<http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#DefiningProperty> rdf:type owl:Class .
+
+
+
+###  http://www.w3.org/2000/01/rdf-schema#Resource
+
+rdfs:Resource rdf:type owl:Class .
+
+
+
+
+
+#################################################################
+#
+#    Individuals
+#
+#################################################################
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#decryptedStatus
+
+nfo:decryptedStatus rdf:type nfo:EncryptionStatus ,
+                             owl:NamedIndividual ;
+                    
+                    rdfs:label "DecryptedStatus" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#encryptedStatus
+
+nfo:encryptedStatus rdf:type nfo:EncryptionStatus ,
+                             owl:NamedIndividual ;
+                    
+                    rdfs:label "EncryptedStatus" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#hasHash
+
+nfo:hasHash rdf:type <http://www.semanticdesktop.org/ontologies/2007/08/15/nrl#DefiningProperty> ,
+                     owl:NamedIndividual ;
+            
+            rdfs:label "hasHash" ;
+            
+            <http://www.semanticdesktop.org/ontologies/2007/08/15/nao#userVisible> "false"^^xsd:boolean ;
+            
+            rdfs:comment "Links the file with it's hash value." .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#losslessCompressionType
+
+nfo:losslessCompressionType rdf:type nfo:CompressionType ,
+                                     owl:NamedIndividual ;
+                            
+                            rdfs:label "losslessCompressionType" .
+
+
+
+###  http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#lossyCompressionType
+
+nfo:lossyCompressionType rdf:type nfo:CompressionType ,
+                                  owl:NamedIndividual ;
+                         
+                         rdfs:label "lossyCompressionType" .
+
+
+
+
+###  Generated by the OWL API (version 3.5.0) http://owlapi.sourceforge.net
+

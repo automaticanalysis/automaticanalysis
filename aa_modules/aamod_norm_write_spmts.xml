@@ -11,7 +11,8 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>
-                <stream>normalisation_seg_sn</stream>  
+                <stream>normalisation_seg_sn</stream>
+				<stream diagnostic="1">structural</stream>
                 <stream>firstlevel_spmts</stream>
             </inputstreams>
             

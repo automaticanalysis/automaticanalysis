@@ -24,7 +24,7 @@ switch task
         aap.report.html=strcat(aap.report.html,sprintf('Spikes %d   Moves %d<br>',size(spikes,1),size(moves,1)));
     case 'doit'
         
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         try close(2); catch; end
         figure(2)
@@ -137,8 +137,10 @@ switch task
         
         
         %% Save graphical output to common diagnostics directory
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+        set(2,'Renderer','zbuffer');
+        print(2,'-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+            [mfilename '__' subjname '.jpeg']));
+        try close(2); catch; end
     case 'checkrequirements'
 
     otherwise

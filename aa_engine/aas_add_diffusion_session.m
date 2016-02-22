@@ -17,8 +17,14 @@ function [aap]=aas_add_diffusion_session(aap,name)
 thissess.name=name;
 
 % And put into acq_details, replacing a single blank entry if it exists
-if (length(aap.acq_details.diffusion_sessions)==1 & length(aap.acq_details.diffusion_sessions.name)==0)
+if (numel(aap.acq_details.diffusion_sessions)==1 && isempty(aap.acq_details.diffusion_sessions.name))
     aap.acq_details.diffusion_sessions=thissess;
 else
-    aap.acq_details.diffusion_sessions(end+1)=thissess;
+    doAdd = true;
+    for iSess = 1:numel(aap.acq_details.diffusion_sessions)
+        if strcmp(aap.acq_details.diffusion_sessions(iSess).name,thissess.name)
+            doAdd = false;
+        end
+    end
+    if doAdd, aap.acq_details.diffusion_sessions(end+1) = thissess; end
 end;

@@ -113,6 +113,11 @@ switch (length(varargin)-1)
     case 2
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).subject=subjnum;
         aap.tasksettings.aamod_importfilesasstream(modposinsettings).match(matchind).session=sessnum; %varargin{2};
+        % add sessum to selected sessions
+        selected_sessions = aap.tasklist.main.module(modposintasklist).extraparameters.aap.acq_details.selected_sessions;
+        selected_sessions = unique([selected_sessions, sessnum]);
+        aap.tasklist.main.module(modposintasklist).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
+        aap.aap_beforeuserchanges.tasklist.main.module(modposintasklist).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
 end;
 aap.aap_beforeuserchanges.tasksettings.aamod_importfilesasstream(modposinsettings).match=aap.tasksettings.aamod_importfilesasstream(modposinsettings).match;
 

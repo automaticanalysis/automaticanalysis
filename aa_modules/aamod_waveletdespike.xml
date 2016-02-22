@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Despiking with BrainWavelet Toolbox' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <!-- Masking threshold. Options:
+                - 1: binary mask provided in brainmask stream
+                - 0-1: probability thteshold for spm brainmask 
+                - 0: automatic intensity threshold based on the first scan
+            -->
+            <maskingthreshold desc='Brain masking'>0.8</maskingthreshold>
+            
+            <inputstreams>
+                <stream ismodified='0'>epi</stream>
+                <!-- binary mask -->
+                <stream isessential='0'>brainmask</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>epi</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

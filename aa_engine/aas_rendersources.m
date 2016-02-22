@@ -15,7 +15,7 @@ function aas_rendersources(S)
 %
 % djm 03/03/09, 10/06/09
 %% fill in defaults
-try S.Ic; catch S.Ic=1; end
+try S.Ic; catch, S.Ic=1; end
 try S.MCCs; catch; S.MCCs={'None','FDR'}; end
 try S.brain; catch; S.brain='/imaging/local/spm/spm5/rend/render_single_subj.mat'; end
 try S.style; catch; S.style=1; end
@@ -55,7 +55,7 @@ if ischar(S.Ic)
             end
             if oSPM.SPM.xCon(Ic(1)).c~=-oSPM.SPM.xCon(Ic(2)).c; gocatch; end
             tails=2;
-        catch fprintf('\n2 contrasts of type "%s" seem unbalanced.\n',S.Ic); debugnow
+        catch, fprintf('\n2 contrasts of type "%s" seem unbalanced.\n',S.Ic); debugnow
         end
     end
     switch S.Ic
@@ -133,7 +133,7 @@ if tails==2 && length(mccs)==2 && oSPM.SPM.xCon(ic).STAT~='P';
         datestr(now,0)};
 elseif tails==2 && oSPM.SPM.xCon(ic).STAT~='P';
     colors=[0 0 1; 1 0 0; 0 1 0];
-    txt={sprintf('t test: p<%g (each tail; %s). Warm=+ve, cold=-ve',S.thresh,mcc),...
+    txt={sprintf('t test: p<%g (each tail; %s). Warm=+ve, cold=-ve',S.thresh,mcc{1}),...
         datestr(now,0)};
 elseif tails==2 && oSPM.SPM.xCon(ic).STAT=='P';
     colors=[0 0 1; 1 0 0; 0 1 0];

@@ -35,14 +35,6 @@ switch task
         end
         
     case 'doit'
-        
-        
-        global defaults
-        global UFp
-        UFp=0.001;
-        
-        defaults.modality='FMRI'; % Some problems with the Results otherwise?
-        
         nsub=length(aap.acq_details.subjects);
         aas_log(aap,false,sprintf('%d subjects',nsub));
         % New option to allow suffix to output file in extraparameters

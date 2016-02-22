@@ -20,13 +20,12 @@
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
             <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>CBU%06d*</subjectoutputformat>
             <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
-            <seriesnamingconvention desc='Used by aas_getseriesnumber to choose naming convention of incoming data - CBU= Series_003_MPRAGE; CABI= fmri_3_4' ui='optionlist' options='CBU|CABI'>CBU</seriesnamingconvention>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
@@ -35,17 +34,25 @@
             <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/latest/x86_64/</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh</freesurferenvironment>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
+            <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
             <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICATv3.0a</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
             <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
+            <qsubscheduler desc='MATLAB function to set up qsub scheduler (should be in your MATLAB path)' ui='dir'>cbu_scheduler</qsubscheduler>
+            <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>cbupool</poolprofile>
         </directory_conventions>
         <options>
+            <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            
 			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
+            <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>1</garbagecollection>
+            <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'>7</aaworkercleanup>
 			<diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
         </options>
     </local>

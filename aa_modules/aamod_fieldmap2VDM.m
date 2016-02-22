@@ -20,80 +20,60 @@ switch task
     case 'report'
         
     case 'doit'
+        % Fieldmap path
+        FMdir = fullfile(aas_getsubjpath(aap, subj), aap.directory_conventions.fieldmapsdirname);
+        delete(fullfile(FMdir, '*.nii')); % remove previous vdms
         
-        % Defaults specified in this path
-        % You can set your own settings in your own copy of the XML or recipe!
-        pm_defs = ...
-            [aap.tasklist.currenttask.settings.te1, ... % te1
-            aap.tasklist.currenttask.settings.te2, ... % te2
-            aap.tasklist.currenttask.settings.epifm, ... % epifm
-            aap.tasklist.currenttask.settings.tert, ... % tert
-            aap.tasklist.currenttask.settings.kdir, ... % kdir
-            aap.tasklist.currenttask.settings.mask, ... % (mask)
-            aap.tasklist.currenttask.settings.match, ... % (match)
-            aap.tasklist.currenttask.settings.writeunwarpedEPI]; % (writeunwarpedEPI)
-
-        % retrieve actual values
-        try % tert (based on the first EPI) --> TODO: session-specific fieldmaps
-            EPI_DICOMHEADERS=load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header'));
-            if isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberOfPhaseEncodingSteps')
-                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberOfPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
-            elseif isfield(EPI_DICOMHEADERS.DICOMHEADERS{1},'NumberofPhaseEncodingSteps')
-                pm_defs(4) = EPI_DICOMHEADERS.DICOMHEADERS{1}.NumberofPhaseEncodingSteps*dcm_echospacing(EPI_DICOMHEADERS.DICOMHEADERS{1});
-            else
-                error('ERROR:Field for number of phase encoding steps not found!\n');
-            end
-        catch
-            aas_log(aap,0,'Error during retrieving Total EPI Readout Time - Default is used!');
+        % Flags
+        job.defaults.defaultsval = FieldMap('SetParams');
+        job.defaults.defaultsval.mflags.template = cellstr(job.defaults.defaultsval.mflags.template);
+        job.sessname = 'session';
+        job.anat = [];
+        
+        job.defaults.defaultsval.epifm = aas_getsetting(aap,'epifm');
+        job.defaults.defaultsval.blipdir = aas_getsetting(aap,'kdir');
+        job.defaults.defaultsval.maskbrain = aas_getsetting(aap,'mask');
+        job.matchvdm = aas_getsetting(aap,'match');
+        job.writeunwarped = aas_getsetting(aap,'writeunwarpedEPI');
+        
+        % EPI TotalEPIReadoutTime (based on the first EPI) --> TODO: session-specific fieldmaps
+        EPI_DICOMHEADERS = load(aas_getimages_bystream(aap,subj,1,'epi_dicom_header')); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
+        if isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing')
+            job.defaults.defaultsval.tert = EPI_DICOMHEADERS.NumberOfPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
+        else
+            aas_log(aap,true,'ERROR:Field for number of phase encoding steps and/or echospacing not found!\nERROR:You may need to rerun aamod_convert_epis.');
         end
-        try % te1 and te2
+        
+        try % Fieldmap EchoTimes
             FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,'fieldmap_dicom_header'));
             dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
             tes = sort(unique([dcmhdrs.EchoTime]),'ascend');
-            if numel(tes) > 2, error('wrong!'); end
-            pm_defs(1:2) = tes;
-        catch
-            aas_log(aap,0,'Error during retrieving Fieldmap Echo Times - Defaults are used!');
-        end
-        if ~all(pm_defs([1 2 4])) % retrieval error and no defaults specified
-            aas_log(aap,1,'Error during retrieving Timings and no Default Timings found!');
+            if numel(tes) ~= 2, error('Inappropriate fieldmap header!'); end
+            job.defaults.defaultsval.et = tes;
+        catch E
+            job.defaults.defaultsval.et = [aas_getsetting(aap,'te1') aas_getsetting(aap,'te2')];
+            aas_log(aap,false,sprintf('WARNING: Error during retrieving Fieldmap Echo Times: %s\nWARNING: Defaults are used!',E.message));
         end
         
-        % Fieldmap path
-        FMdir = fullfile(aas_getsubjpath(aap, subj), aap.directory_conventions.fieldmapsdirname);
-        
-        % The folder fieldmaps must exist...
-        if ~exist(FMdir, 'dir')
-            mkdir(FMdir)
-        else
-            % remove previous vdms
-            delete(fullfile(FMdir, 'vdm*.nii'));
+        % Fieldmaps
+        FM = aas_getfiles_bystream(aap,subj,'fieldmap');
+        for f = 1:size(FM,1)
+            aas_shell(['cp ' squeeze(FM(f,:)) ' ' FMdir]);
+            FMfn{f} = spm_file(FM(f,:),'path',FMdir);
         end
+        job.data.presubphasemag.phase = FMfn(3);
+        job.data.presubphasemag.magnitude = FMfn(1:2);
         
-        FMfn = aas_getfiles_bystream(aap,subj,'fieldmap');
-        
-        % This will work on all sessions (even those we have not selected)
-        EPIdir = cell(size(aap.acq_details.sessions, 1));
+        % EPI: This will work on all sessions (even those we have not selected)
         for s = aap.acq_details.selected_sessions
             % get files from stream
-            EPIdir{s} = aas_getsesspath(aap,subj,s);
+            job.session(s).epi{1} = spm_file(aas_getfiles_bystream(aap,subj,s,'epi'),'number',1);
         end
         
-        % If we cannot find any images in the FMdir, move images there...
-        FMfns = dir(fullfile(FMdir, '*.nii'));
-        if isempty(FMfns)
-            for f = 1:size(FMfn,1)
-                aas_shell(['mv ' squeeze(FMfn(f,:)) ' ' FMdir]);
-            end
-        end
-        FieldMap_preprocess(FMdir,EPIdir,...
-            pm_defs,...
-            'session');
-        
-        outstream = {};
+        FieldMap_Run(job);
         
         % Rename VDM files to their correspondent run names
-        if length(EPIdir) == 1
+        if numel(job.session) == 1
             VDMs = dir(fullfile(FMdir, 'vdm*.nii'));
             [junk, fn, ext] = fileparts(VDMs.name);
             aas_shell(['mv ' fullfile(FMdir, VDMs.name) ' ' ...
@@ -102,6 +82,7 @@ switch task
         
         VDMs = dir(fullfile(FMdir, '*session*.nii'));
         
+        outstream = {};
         for v = 1:length(VDMs)
             indx = strfind(VDMs(v).name, 'session');
             s = VDMs(v).name(indx+7:end-4); % Get number after 'session'

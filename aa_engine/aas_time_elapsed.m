@@ -1,4 +1,4 @@
-function time_elapsed
+function aas_time_elapsed
 % TIME_ELAPSED shows time past from tic...
 
 time = toc; hours = floor(time/3600); mins = floor(rem(time,3600)/60); secs = floor(rem(rem(time,3600),60));

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='Temporal filtering using SPM/FieldTrip (code from Rik Henson)' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <TR desc='in seconds'></TR>
+            
+            <filter>
+                <LowCutoffFreqency desc='in Hz'></LowCutoffFreqency>
+                <HighCutoffFreqency desc='in Hz'></HighCutoffFreqency>
+                <type ui='optionlist' options='but|firws|fir|firls|brickwall'>but</type>
+                <order>6</order>
+                <direction ui='optionlist' options='onepass|onepass-reverse|twopass|twopass-reverse|twopass-average|onepass-zerophase|onepass-minphase'>twopass</direction>
+                <!-- only if bandpass is specified-->
+                <bandstop>0</bandstop>
+            </filter>
+            
+            <inputstreams>
+                <stream isessential='1' isrenameable='1' diagnostic='0'>epi</stream>
+                <stream isessential='0' isrenameable='1'>epi_dicom_header</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>epi</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

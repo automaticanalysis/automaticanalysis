@@ -36,7 +36,7 @@ switch task
 
             % Could be specified as a string, e.g., [1:4]
             if ischar(aap.tasklist.currenttask.settings.struct_vols)
-                structVols = eval(aap.tasklist.currenttask.settings.struct_vols)
+                structVols = str2num(aap.tasklist.currenttask.settings.struct_vols);
             else
                 structVols = aap.tasklist.currenttask.settings.struct_vols;
             end

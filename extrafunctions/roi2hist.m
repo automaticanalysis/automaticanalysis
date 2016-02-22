@@ -9,7 +9,7 @@ if nargin < 3
     threshROI = [];
 end
 if nargin < 4 || isempty(legendExtra)
-   legendExtra =  cell(1,length(ROIimg));
+   legendExtra =  cell(1,numel(ROIimg));
 end
 
 % Load the data image
@@ -19,9 +19,9 @@ else
     Y = dataImg;
 end
 
-ROIname = cell(1:size(ROIimg,1));
-ROIvol = cell(1:size(ROIimg,1));
-ROIdata = cell(1:size(ROIimg,1));
+ROIname = cell(1,numel(ROIimg));
+ROIvol = cell(1,numel(ROIimg));
+ROIdata = cell(1,numel(ROIimg));
 
 for r = 1:length(ROIimg)    
     [junk, ROIname{r}] = fileparts(ROIimg{r});
@@ -43,7 +43,7 @@ for r = 1:length(ROIimg)
     end
 end
 
-for r = 1:length(ROIimg)
+for r = 1:numel(ROIimg)
     % Now get the voxels specific to each ROI
     ROIdata{r} = Y(ROIvol{r});
     ROIdata{r} = ROIdata{r}(isfinite(ROIdata{r}) & ROIdata{r} ~= 0); % We don't want to include zero values...
@@ -52,19 +52,17 @@ end
 %% tSNR results figure!
 colorsB = aas_colours;
 
-% We need to make a string for eval, that will print the legend...
-legStr = 'h = legend(';
-for r = 1:length(ROIimg)
-    legStr = [legStr ...
-        'sprintf(''%s; mn=%.2f; SD=%.2f; med=%.0f; (%.0fv) %s'', ' ...
-        'ROIname{' num2str(r) '}, '  ...
-        'mean(ROIdata{' num2str(r) '}), ' ...
-        'std(ROIdata{' num2str(r) '}), ' ...
-        'median(ROIdata{' num2str(r) '}), ' ...
-        'length(ROIdata{' num2str(r) '}), ' ...
-        'legendExtra{' num2str(r) '}),'];
+% We need to make a string for legend...
+legStr = cell(1,numel(ROIimg));
+for r = 1:numel(ROIimg)
+    legStr{r} = sprintf('%s; mn=%.2f; SD=%.2f; med=%.0f; (%.0fv) %s', ...
+        ROIname{r},  ...
+        mean(ROIdata{r}), ...
+        std(ROIdata{r}), ...
+        median(ROIdata{r}), ...
+        length(ROIdata{r}), ...
+        legendExtra{r});
 end
-legStr = [legStr(1:end-1) ');'];
 
 try close(2); catch; end
 
@@ -76,7 +74,7 @@ windI = 0;
 maxV = 0;
 hold on
 
-for r = 1:length(ROIimg)
+for r = 1:numel(ROIimg)
     % What range do the SNR values take?
     maxI = max(max(ROIdata{r}), maxI);
     minI = min(min(ROIdata{r}), minI);
@@ -84,7 +82,7 @@ for r = 1:length(ROIimg)
     windI = max(median(ROIdata{r}) + std(ROIdata{r}) * 3, windI);
 end
 vals = floor(minI):windI/250:ceil(maxI);
-for r = 1:length(ROIimg)
+for r = 1:numel(ROIimg)
     % Now make a histogram and "normalise" it
     H = hist(ROIdata{r}, vals);
     H = H./sum(H);
@@ -103,5 +101,5 @@ xlabel('Voxel value')
 ylabel('Proportion of voxels')
 set(gca,'XTick', 0:ceil(maxI./20):maxI)
 
-eval(legStr);
-set(h,'interpreter','none');
+l = legend(legStr);
+set(l,'interpreter','none');

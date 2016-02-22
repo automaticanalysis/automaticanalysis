@@ -24,29 +24,28 @@ switch task
         data_mask = spm_read_vols(spm_vol(betmask));
         bval = importdata(bvals);
         bvec = importdata(bvecs);
-        [MK,FA,MD,L1,L2,L3,V1,V2,V3,AK,RK,S0]=fun_DKI_OLS_rh(data_in,data_mask,bval,bvec);
-        [dMK,dMD,dS0]=fun_DKI_dMK_linear_rh(data_in,data_mask,bval);
+        [dki.S0, dki.DT, dki.KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
+        [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
         
-        % Now describe outputs
+        %% Calculate metrics
+        [dki.MK, dki.AK, dki.RK, dki.AWF, dki.ADa, dki.ADe, dki.RDe, dki.tortu] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
+        [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(dki.DT,data_mask);
+        
+        %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
         sesspath = aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
 
-        outstreams=aap.tasklist.currenttask.outputstreams;        
-        for outind=1:length(outstreams.stream)
-            Y = eval(strrep(outstreams.stream{outind},'dki_',''));
-            if ndims(Y) == 3
-                nifti_write(fullfile(sesspath,[outstreams.stream{outind} '.nii']),...
-                    Y, outstreams.stream{outind},V);
-            else % 4D
-                for z = 1:size(Y,4)
-                    outfiles{z} = fullfile(sesspath,sprintf('%s-%04d.nii',outstreams.stream{outind},z));
-                    nifti_write(outfiles{z},Y(:,:,:,z),outstreams.stream{outind},V);
-                end
-                spm_file_merge(char(outfiles),fullfile(sesspath,[outstreams.stream{outind} '.nii']),0);
-                delete(fullfile(sesspath,[outstreams.stream{outind} '-*']));
+        outstreams=aas_getstreams(aap,'output');        
+        for outind=1:length(outstreams)
+            metric = strrep(outstreams{outind},'dki_','');
+            if ~isfield(dki,metric)
+                aas_log(aap,false,sprintf('Metric %s for stream %s not exist!',metric,outstreams{outind}));
+                continue; 
             end
-            aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams.stream{outind},[outstreams.stream{outind} '.nii']);
-        end;
+            Y = dki.(metric);  
+            nifti_write(fullfile(sesspath,[outstreams{outind} '.nii']),Y,outstreams{outind},V);
+            aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams{outind},[outstreams{outind} '.nii']);
+        end
         
 end
 end

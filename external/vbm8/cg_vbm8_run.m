@@ -134,7 +134,7 @@ for iter=1:nit,
             obj.image    = spm_vol(images);
             spm_check_orientations(obj.image);
 
-            obj.fudge    = 5;
+            obj.fwhm    = 1;
             obj.biasreg  = cat(1,job.biasreg);
             obj.biasfwhm = cat(1,job.biasfwhm);
             obj.tpm      = tpm;
@@ -151,7 +151,7 @@ for iter=1:nit,
                 % Initial affine registration.
                 Affine  = eye(4);
                 if ~isempty(job.warp.affreg),
-                    VG = spm_vol(fullfile(spm('Dir'),'templates','T1.nii'));
+                    VG = spm_vol(fullfile(spm('Dir'),'toolbox','OldNorm','T1.nii'));
                     VF = spm_vol(obj.image(1));
                     
                     % smooth source with 8mm
@@ -175,7 +175,7 @@ for iter=1:nit,
                     end
                     [Affine, scale]  = spm_affreg(VG, VF1, aflags, M);
 
-                    aflags.WG  = spm_vol(fullfile(spm('Dir'),'apriori','brainmask.nii'));
+                    aflags.WG  = spm_vol(fullfile(spm('Dir'),'toolbox','FieldMap','brainmask.nii'));
                     aflags.sep = aflags.sep/2;
                     try
                         spm_plot_convergence('Init','Fine Affine Registration','Mean squared difference','Iteration');
@@ -185,7 +185,7 @@ for iter=1:nit,
                     Affine  = spm_affreg(VG, VF1, aflags, Affine, scale);
 
                     fprintf('Fine Affine Registration..\n');
-                    Affine  = spm_maff8(obj.image(1),job.warp.samp,obj.fudge,  tpm,Affine,job.warp.affreg);
+                    Affine  = spm_maff8(obj.image(1),job.warp.samp,obj.fwhm,  tpm,Affine,job.warp.affreg);
                 end;
                 obj.Affine = Affine;
             else
@@ -224,7 +224,7 @@ for iter=1:nit,
                     % or use default TPM
                     fprintf('Original TPM image %s was not found. use default TPM image instead.\n',res.tpm(1).fname);
                     for i=1:6
-                      job.tissue(i).tpm = fullfile(spm('dir'),'toolbox','Seg',['TPM.nii,' num2str(i)]);
+                      job.tissue(i).tpm = fullfile(spm('dir'),'tpm',['TPM.nii,' num2str(i)]);
                     end
                     tpm    = strvcat(cat(1,job.tissue(:).tpm));
                     tpm    = spm_load_priors8(tpm);

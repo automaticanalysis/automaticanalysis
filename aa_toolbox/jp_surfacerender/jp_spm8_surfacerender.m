@@ -125,7 +125,7 @@ fprintf('Rendering %s\n', img);
 
 % set the colormap
 if ischar(cmap)
-    col = eval(sprintf('%s(256);', cmap));
+    col = feval(cmap,256);
 else    
     col = jp_cmap(cmap, 256); % make a colormap that SPM is happy with
 end

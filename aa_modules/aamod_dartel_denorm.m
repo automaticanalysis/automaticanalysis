@@ -13,10 +13,13 @@ switch task
     case 'report'
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,[subj,sess]);
-        inpstreams = aas_getstreams(aap,'in');
+        inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);
+        for i = 1:numel(regstreams)
+            if ~aas_stream_has_contents(aap,domain,[subj sess],regstreams{i}), regstreams(i) = []; end
+        end
 
         streamfn = aas_getfiles_bystream(aap,domain,[subj sess],['native_' workstream],'output');
         streamfn = strtok_ptrn(basename(streamfn(1,:)),'-0');
@@ -39,13 +42,16 @@ switch task
         %% Preapre
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,[subj,sess]);
-        inpstreams = aas_getstreams(aap,'in');
+        inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, [subj sess], workstream));
         regstreams = inpstreams(1:end-3);
+        for i = 1:numel(regstreams)
+            if ~aas_stream_has_contents(aap,domain,[subj sess],regstreams{i}), regstreams(i) = []; end
+        end
 
         % Affine Template2mni
-        xfm = load(aas_getfiles_bystream(aap, subj, sess, 'dartel_templatetomni_xfm'));
+        xfm = load(aas_getfiles_bystream_multilevel(aap, subj, sess, 'dartel_templatetomni_xfm'));
         for i = 1:numel(images)
             if ~exist(fullfile(aas_getpath_bydomain(aap,domain,[subj,sess]),[basename(images{i}) '.nii']),'file')
                 copyfile(images{i},fullfile(aas_getpath_bydomain(aap,domain,[subj,sess]),[basename(images{i}) '.nii']));

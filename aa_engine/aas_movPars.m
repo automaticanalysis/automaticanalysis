@@ -36,6 +36,7 @@ maxD = size(moveMat,2) - 2; % Maximal derivative you want
 % the sessions that are common to this subject and selected_sessions
 [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subjI);
 subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+numSess = numel(subjSessionI);
 
 % Get the movement parameters for each session separately...
 moveRegs = cell(numSess,1);

@@ -14,7 +14,7 @@
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>  
-                <stream>structural</stream> 
+                <stream diagnostic="1">structural</stream> 
                 <stream>meanepi</stream>
             </inputstreams>
             

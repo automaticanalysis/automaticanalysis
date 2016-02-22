@@ -10,7 +10,7 @@ switch task
     case 'doit'
         subjpath=aas_getsubjpath(aap,subj);
 
-        streamname = strrep(aas_getstreams(aap,'out'),'dicom_',''); streamname = streamname{1};
+        streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
 
         [aap, convertedfns, dcmhdr] = aas_convertseries_fromstream(aap, subj, ['dicom_' streamname]); 
         
@@ -18,6 +18,12 @@ switch task
         % Restructure outputs!
         for c = 1:length(convertedfns)
             outstream = [outstream; convertedfns{c}];
+        end
+        
+        % reorder if there is a baseline session and it is not the first (for coregistration)
+        ind = cell_index(outstream,'baseline'); ind = ind(1);
+        if ind && (ind ~=1)
+            outstream = outstream([ind 1:ind-1 ind+1:end]);
         end
         
         aap = aas_desc_outputs(aap, 'subject', subj, streamname, outstream);

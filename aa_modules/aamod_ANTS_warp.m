@@ -8,7 +8,7 @@ resp='';
 
 switch task
     case 'doit'
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         %% Get ANTs warps
         ANTSimg = aas_getfiles_bystream(aap,subj,'ANTs');
@@ -123,7 +123,7 @@ switch task
                 
                 try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
                 print('-depsc2', fullfile(aap.acq_details.root, 'diagnostics', ...
-                    [mfilename '__' mriname '_' num2str(c) '.eps']));
+                    [mfilename '__' subjname '_' num2str(c) '.eps']));
             end
             warning on
         end

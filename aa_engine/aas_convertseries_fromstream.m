@@ -62,12 +62,8 @@ for fileind=1:size(dicomdata,1)
     subdir_index(fileind)=s;
 end
 
-if (isempty(dicomdata))
+if isempty(dicomdata)
     aas_log(aap,1,sprintf('Did not find a dicom series called %s',dicomdirsearchpth));
-end
-
-if (length(dicomdata)==0)
-    aas_log(aap,1,sprintf('Did not find any dicom data (%s) in %s',aap.directory_conventions.dicomdatafilter,dicomsearchpth));
 end
 
 out_allechoes=[];
@@ -79,7 +75,7 @@ for subdirind=1:length(subdirs)
     cd(outputpath_withsuffix);
     dicomdata_subdir=dicomdata(subdir_index==subdirind,:);
     % Limit number of volumes read in at a time
-    chunksize_volumes=16;
+    memLimit = meminfo; memLimit = memLimit.MemFree;
     k=1;
     
     % This array is used to collect sliceing timing info so we can
@@ -104,7 +100,10 @@ for subdirind=1:length(subdirs)
                 infoD = tmp{1}; % dicominfo(deblank(dicomdata_subdir(k,:)));
                 
                 TR = [];
+                TE = [];
                 sliceorder = '';
+                slicetimes = [];
+                echospacing = [];
                 
                 % Private field containing info about TR and slices
                 fi = 'Private_0029_1020';
@@ -135,31 +134,43 @@ for subdirind=1:length(subdirs)
                             otherwise
                                 sliceorder = 'Order undetermined';
                         end
-                    end
-                    
+                    end                    
                 end
                 
-                % if we didn't find that private field, use the
-                % ReptitionTime field.
+                % if we didn't find that private field, use standard fields.
                 if isempty(TR) && isfield(infoD, 'RepetitionTime')
                     TR = infoD.RepetitionTime;
                     fprintf('Sequence has a TR of %.1f ms\n', TR);
                 else
                     fprintf('TR not found!\n');
                 end
-                
-                % Try to get sliceorder from other fields...
-                collectSOinfo = false;
-                if isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}))
-                    collectSOinfo = true;
+                if isempty(TE) && isfield(infoD, 'EchoTime')
+                    TE = infoD.EchoTime;
+                    fprintf('Sequence has a TE of %.1f ms\n', TE);
+                else
+                    fprintf('TE not found!\n');
+                end
+                if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
+                    slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
+                    [junk, sliceorder] = sort(slicetimes);
+                end
+                if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'BandwidthPerPixelPhaseEncode')
+                    pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
+                    echospacing = 1/(pBWpe * infoD.NumberOfPhaseEncodingSteps); % in s
                 end
                 
+                % Try to get sliceorder from other fields...
+                collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
+                
+                chunksize_volumes=memLimit*1024/(tmp{1}.StartOfPixelData+tmp{1}.SizeOfPixelData)/4;
             end
             
-            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before
-            % saving (and in seconds!)
+            % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
             if exist('TR','var'), tmp{1}.volumeTR = TR/1000; end
+            if exist('TE','var'), tmp{1}.volumeTE = TE/1000; end
             if exist('sliceorder','var'), tmp{1}.sliceorder = sliceorder; end
+            if exist('slicetimes','var'), tmp{1}.slicetimes = slicetimes/1000; end
+            if exist('echospacing','var'), tmp{1}.echospacing = echospacing; end
             
             % Collecting timing and slice location info so we can
             % reconstruct the slice order.  TemporalPositionIdentifier is
@@ -218,12 +229,18 @@ for subdirind=1:length(subdirs)
         end
         % [AVG] to cope with modern cutting edge scanners, and other probs
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
-        if isfield(aap.options, 'customDCMconvert') && ~isempty(aap.options.customDCMconvert)
-            aas_log(aap, false, sprintf('Using alternate %s script...', aap.options.customDCMconvert))
-            eval(sprintf('conv=%s(DICOMHEADERS_selected,''all'',''flat'',''nii'')', aap.options.customDCMconvert));
+        if isfield(aap.directory_conventions, 'dicom_converter') && ~isempty(aap.directory_conventions.dicom_converter)
+            aas_log(aap, false, sprintf('INFO: Using alternative %s script...', aap.directory_conventions.dicom_converter))
+            custompath = spm_file(aap.directory_conventions.dicom_converter,'path');
+            addpath(custompath);
+            dicom_converter = spm_file(aap.directory_conventions.dicom_converter,'basename');
         else
-            conv=spm_dicom_convert(DICOMHEADERS_selected,'all','flat','nii');
+            custompath = '';
+            aas_log(aap, false, 'INFO: Using default spm_dicom_convert...')
+            dicom_converter = 'spm_dicom_convert';
         end
+        conv = feval(dicom_converter,DICOMHEADERS_selected,'all','flat','nii');
+        if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];

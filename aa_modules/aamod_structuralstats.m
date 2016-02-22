@@ -15,11 +15,12 @@ switch task
     case 'domain'
         resp = 'subject';
     case 'report'
-        resp = 'Get statistics on segmented structural images.'
+        resp = 'Get statistics on segmented structural images.';
     case 'doit'
-
-        streams = {'native_grey', 'native_white', 'native_csf'};
-
+        streams = aas_getstreams(aap,'input');
+        S.parts.desc = {'1=grey matter','2=white matter','3=csf'};
+        
+        %% Conventional
         for k=1:3
             img = aas_getfiles_bystream(aap, subjind, streams{k});
 
@@ -31,14 +32,23 @@ switch task
             S.parts.vox(k) = sum(Y(:));
             S.parts.mm3(k) = S.parts.vox(k)*volume;
         end % going through tissue classes
-
-        S.parts.desc = {'1=grey matter','2=white matter','3=csf'};
         S.TIV.mm3 = sum(S.parts.mm3);
         S.TIV.vox = sum(S.parts.vox);
+        
+        %% Corrected [RH]
+        if aas_stream_has_contents(aap, subjind, 'seg8')
+            job.matfiles = {aas_getfiles_bystream(aap,subjind,'seg8')};
+            job.tmax = 3;
+            job.mask = {fullfile(aap.directory_conventions.spmdir,'tpm','mask_ICV.nii,1')};
+            job.outf = '';
 
-        [pth, nm, ext] = fileparts(img);
+            out = spm_run_tissue_volumes('exec', job);
+            
+            S.parts.mm3_spm12 = [out.vol1 out.vol2 out.vol3]*1e6;
+            S.TIV.mm3_spm12 = sum(S.parts.mm3_spm12(1:3));
+        end
 
-        outfile = fullfile(pth, 'structuralstats.mat');
+        outfile = fullfile(fileparts(img), 'structuralstats.mat');
         save(outfile, 'S');
         aap = aas_desc_outputs(aap, subjind, 'structuralstats', outfile);
 end

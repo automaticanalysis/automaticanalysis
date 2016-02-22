@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasksettings>
-        <aamod_get_dicom_t1 domain='subject' desc='Get DICOM files for T1 structural'>
+        <aamod_get_dicom_t1 domain='subject' desc='Get DICOM files for T1 structural' modality='MRI'>
             
             <qsub>
                 <timeBase>0.05</timeBase>

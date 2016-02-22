@@ -3,9 +3,15 @@
 %  analysis
 % rc: 3 June 2012
 %  changed dependency calculation code to allow for other kinds of parallel
+% ta: 13 Nov 2015
+%  accept aaworker (qsub)
 
-function aap=aa_doprocessing_onetask(aap,task,modulenum,indices)
+function aap=aa_doprocessing_onetask(aap,task,modulenum,indices,gaaworker)
+
 global aaworker
+if nargin == 5 % aaworker passed
+    aaworker = gaaworker;
+end
 
 aaworker.modulestarttime=now;
     
@@ -13,11 +19,10 @@ if aap.options.timelog
     tic
 end
 
-try
-    aaworker.parmpath;
-catch
+if ~isfield(aaworker,'parmpath')
+    aas_log(aap,false,'INFO: No engine detected!\nINFO: aaworker with ID=0 will be created');
     aaworker.parmpath=aaworker_getparmpath(aap,0);
-end;
+end
 
 % any task specific settings
 aap=aas_setcurrenttask(aap,modulenum);
@@ -102,6 +107,7 @@ else
             if ~isempty(aap.internal.inputstreamsources{modulenum})
                 
                 allinputs={};
+                streamfiles=cell(length(aap.internal.inputstreamsources{modulenum}.stream),1);
                 for inpind=1:length(aap.internal.inputstreamsources{modulenum}.stream)
                     
                     inp=aap.internal.inputstreamsources{modulenum}.stream(inpind);
@@ -137,11 +143,19 @@ else
                     end
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
-                    gotinputs=aas_retrieve_inputs(aap,inp,allinputs,deps);
+                    [gotinputs sf]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
+                    streamfiles{inpind}=sf;
                     if isempty(gotinputs)
                         aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
                     end;
                     allinputs=[allinputs;gotinputs];
+                end;
+                
+                % Actually copy the data files
+                % This is now done separately to allow for asynchronous retrieval of all of the streams together, where they've  
+                % gone of too S3 or Glacier archive
+                for inpind=1:length(aap.internal.inputstreamsources{modulenum}.stream)
+                    aap=aas_retrieve_inputs_part2(aap,streamfiles{inpind});
                 end;
             end;
             

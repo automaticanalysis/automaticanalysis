@@ -1,5 +1,5 @@
 function vargs = vargParser(vargsin, vdefaults, valid)
-% vargs = vargParser(vargsin)
+% vargs = vargParser(vargsin,[vdefaults])
 %__________________________________________________________________________
 %
 % Returned Parameters
@@ -25,11 +25,18 @@ function vargs = vargParser(vargsin, vdefaults, valid)
 %   vargs = vargParser(varargin, vdefaults);
 %__________________________________________________________________________
 %   cwild 11/07/2007
-% 
+%   Tibor Auer MRC-CBSU 03/12/2015
 
     if mod(length(vargsin),2)
         error('Incorrect number of fields in user supplied arguments, must be a multiple of 2 (Specifier + Value). See ''help'' for details.');
-    elseif mod(length(vdefaults),3)
+    end
+    if nargin == 1
+        vdefaults = reshape(vargsin,2,[]);
+        vdefaults(3,:) = vdefaults(2,:);
+        vdefaults = vdefaults(:)';
+    end
+
+    if mod(length(vdefaults),3)
         error('Incorrect number of fields in defaults, must be a multiple of 3 (Specifier + Value + Valid Values). See ''help'' for details.');
     end
     
@@ -44,8 +51,8 @@ function vargs = vargParser(vargsin, vdefaults, valid)
         dValid = vdefaults{3*i};
         if ~ischar(dName)
             error(sprintf('Defaults: Name of argument #%d should be a string', i));
-        elseif isa(dVal, 'char') && ~isa(dValid, 'cell')
-            error(sprintf('Defaults: Argument #%d ''%s'' appears to be a string argument, and valid values should be specified as a cell array of strings', i, dName));
+        elseif isa(dVal, 'char') && ~isa(dValid, 'char') && ~isa(dValid, 'cell')
+            error(sprintf('Defaults: Argument #%d ''%s'' appears to be a string argument, and valid values should be specified as string or as a cell array of strings', i, dName));
         elseif isa(dVal, 'double') && ~isa(dValid, 'double')
             error(sprintf('Defaults: Argument #%d ''%s'' appears to be a numeric argument, and valid values should be specified as a 1xn matrix of numbers', i, dName));
         end

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='study' desc='Run bedpostX'>
+        <currenttask domain='study' desc='Run bedpostX' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -27,7 +27,6 @@
                 <stream>mean_d_stdsamples</stream>
                 <stream>mean_f1samples</stream>
                 <stream>mean_f2samples</stream>
-                <stream>mean_fsamples</stream>
                 <stream>mean_ph1samples</stream>
                 <stream>mean_ph2samples</stream>
                 <stream>merged_ph2samples</stream>

@@ -1,4 +1,18 @@
-function [aap]=aarecipe(varargin)
+% Load parameter defaults and tasklist into the structure "aap"
+%
+% FORMAT aap = aarecipe(tasklist)
+% Parameter defaults are loaded from <aa DIR>/aa_recipes_and_parametersets/aap_parameters_defaults.xml
+%   - tasklist: XML-file containing the list of modules
+%
+% FORMAT aap = aarecipe(parameters,tasklist)
+%   - parameters: XML-file containing the parameter defaults
+%   - tasklist: XML-file containing the list of modules
+%
+%
+% Rhodri Cusack
+% Tibor Auer MRC CBU Cambridge 2016
+
+function aap = aarecipe(varargin)
 
 switch(nargin)
     case 0
@@ -9,14 +23,14 @@ switch(nargin)
     case 2
         defaultparameters=varargin{1};
         tasklistxml=varargin{2};
-end;
+end
 
 clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
     fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
-end;
+end
 
 Pref.ReadAttr=0;
 aap=xml_read(defaultparameters,Pref);
@@ -27,7 +41,7 @@ aap.schema=xml_read(defaultparameters);
 if exist('tasklistxml','var')
     if ~exist(tasklistxml,'file')
         aas_log(aap,true,sprintf('Cannot find file %s as specified in call to aarecipe',tasklistxml));
-    end;
+    end
     Pref.ReadAttr=1;
     Pref.ReadSpec=0;
     xml_tasklist.schema=xml_read(tasklistxml,Pref);
@@ -43,7 +57,7 @@ if exist('tasklistxml','var')
     for task=1:length(aap.tasklist.initialisation.module)
         [aap index]=aas_addtaskparameters(aap,aap.tasklist.initialisation.module(task).name);
         aap.tasklist.initialisation.module(task).index=index;
-    end;
+    end
     % ...and for main modules...
     
     
@@ -61,7 +75,7 @@ if exist('tasklistxml','var')
         for task=1:length(aap.tasklist.main.module)
             [aap index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
             aap.tasklist.main.module(task).index=index;
-        end;
+        end
     end
     
     % When processing the branches, the indices for modules repeated had
@@ -74,24 +88,31 @@ if exist('tasklistxml','var')
         for tbcfind=1:length(tbcf_num)
             if (isnumeric(tbcf_num(tbcfind)))
                 tbcf_cell{tbcfind}=aas_getstagetag(aap,tbcf_num(tbcfind));
-            end;
-        end;
+            end
+        end
         aap.tasklist.main.module(task).tobecompletedfirst=tbcf_cell;
-    end;
+    end
     
-end;
+end
 
-% And copy in SPM defaults
+% SPM
+if ~isempty(aap.directory_conventions.spmdir)
+    addpath(aap.directory_conventions.spmdir); 
+    spm_jobman('initcfg');
+else
+    aas_log(aap,false,'WARNING: SPM path is not defined and cannot be loaded.')
+    aas_log(aap,false,'    Make sure that SPM is already in you path and configured!')
+end
 try
     aap.spm.defaults=spm_get_defaults;
 catch
     global defaults    
     if (~isstruct(defaults))
-        aas_log(aap,false,'SPM defaults has not been found global defaults will be used;');
+        aas_log(aap,false,'WARNING: SPM defaults has not been found, global defaults will be used');
     else
         aap.spm.defaults=defaults;
-    end;
-end;
+    end
+end
 
 % Make copy of aap
 aap.aap_beforeuserchanges=[];
@@ -107,7 +128,6 @@ function [outstages]=processbranch(aap,analysisid_suffix,selected_sessions,branc
 if (~isfield(branch,'module') || isempty(branch.module))
     %     aas_log(aap,false,sprintf('The branch in your tasklist with analysis id suffix %s appears to be empty. Have you remembered the <module> tag that must surround the <name> tag of each module, e.g., <module><name>aamod_smooth</name></module>?',analysisid_suffix));
     %     outstages=[];
-    
     extrastages.module.name = 'emptybranch';
     extrastages.module.extraparameters.aap.directory_conventions.analysisid_suffix=analysisid_suffix;
     extrastages.module.extraparameters.aap.acq_details.selected_sessions=selected_sessions;
@@ -132,7 +152,7 @@ else
             %...or a set of branches
         else
             clear extrastages
-            
+            selected_sessions_main = selected_sessions; % backup selected_sessions
             for branchnum=1:length(branch.module(stagenum).branch)
                 try
                     analysisid_suffix_append=branch.module(stagenum).branch(branchnum).analysisid_suffix;
@@ -178,11 +198,12 @@ else
                 
             end % End for branchnum=1:length(....
             
+            selected_sessions = selected_sessions_main; % restore selected_sessions
         end
         
         if (isfield(extrastages.module,'branch'))
             extrastages.module = rmfield(extrastages.module,'branch');
-        end;
+        end
         
         extrastages = checkhasrequiredfields(extrastages);
         if (exist('outstages','var'))
@@ -225,12 +246,38 @@ else
                     end
                 end
                 
+                % Update the selected_sessions  
+                newStagestoRemove = [];
+                for stage = 1 : numNewStages
+                    outBranchSel = outstages.module(oIndex(oB)).extraparameters.aap.acq_details.selected_sessions;
+                    newStagesSel = newStages.module(stage).extraparameters.aap.acq_details.selected_sessions;
+                    
+                    outBranchSelC = textscan(outBranchSel,'%s','delimiter',' '); outBranchSelC = outBranchSelC{1};
+                    newStagesSelC = textscan(newStagesSel,'%s','delimiter',' '); newStagesSelC = newStagesSelC{1};
+                    sessionsSelC = textscan(selected_sessions,'%s','delimiter',' '); sessionsSelC = sessionsSelC{1};
+                    if any(strcmp(outBranchSelC,'*')), outBranchSel = union(newStagesSelC,sessionsSelC);
+                    else outBranchSel = outBranchSelC; end
+                    if any(strcmp(newStagesSelC,'*')), newStagesSel = union(outBranchSelC,sessionsSelC);
+                    else newStagesSel = newStagesSelC; end
+                    if any(strcmp(sessionsSelC,'*')), sessionsSel = union(newStagesSelC,outBranchSelC);
+                    else sessionsSel = sessionsSelC; end
+                    
+                    sessSel = intersect(outBranchSel,intersect(newStagesSel,sessionsSel));
+                    if isempty(sessSel)
+                        newStagestoRemove(end+1) = stage;
+                        continue;
+                    end
+                    sessSel = sprintf('%s ',sessSel{:}); sessSel(end) = '';
+                    
+                    newStages.module(stage).extraparameters.aap.acq_details.selected_sessions = sessSel;
+                end
+                newStages.module(newStagestoRemove) = [];
+                               
                 % Update the branchIDs
                 newStages.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID+(oB-1)*numNewBranches), newStages.module);
                 
-                
+                % Add stages
                 outstages.module = [outstages.module newStages.module];
-                
                 
             end % End for oB = 1 : numOutputBranches
             
@@ -290,8 +337,8 @@ for stagenum=1:length(outstages.module)
     for reqfldsind=1:length(reqflds)
         if (~isfield(outstages.module(stagenum),reqflds{reqfldsind}))
             outstages.module(stagenum).(reqflds{reqfldsind})=[];
-        end;
-    end;
+        end
+    end
 end
 
 end

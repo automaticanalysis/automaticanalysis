@@ -46,7 +46,7 @@ elseif (numel(str) > 5) && strcmp(str(1:5), 'HEAD=')
     fprintf(aap.report.(ptr).fid,'%s',...
         sprintf('<a href="%s" target=_top>Registration summary</a> &nbsp;-&nbsp;',aap.report.html_reg.fname));
     fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>First-level contrasts</a>;',aap.report.html_C00.fname));
+        sprintf('<a href="%s" target=_top>First-level thresholded maps</a>;',aap.report.html_C00.fname));
     fprintf(aap.report.(ptr).fid,'%s\n','</TABLE><hr>');
     fprintf(aap.report.(ptr).fid,'%s\n','<TABLE BORDER=0>');    
 elseif strcmp(str, 'EOF')

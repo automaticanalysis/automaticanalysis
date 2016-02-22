@@ -87,7 +87,7 @@ switch task
             [junk,fn] = fileparts(SMimg(m,:));
             if isempty(strfind(fn, 'rwc'))
                 indx = strfind(fn, 'rc');
-                eval(['m' MOlist{str2num(fn(indx + 2))} ' = spm_read_vols(spm_vol(SMimg(m,:)));'])
+                feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 2))}],spm_read_vols(spm_vol(SMimg(m,:)))));
             end
         end
         
@@ -154,7 +154,7 @@ switch task
 %             mkdir(fullfile(aap.acq_details.root, 'diagnostics'))
 %         end
 %         mriname = strtok(aap.acq_details.subjects(subj).mriname, '/');
-%         set(gcf,'PaperPositionMode','auto')
+%         set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
 %         print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
 %                 [mfilename '__' mriname '.jpeg']));
 %             
@@ -189,7 +189,7 @@ switch task
 %                 aviObject = addframe(aviObject,getframe(2,windowSize));
 %             end
 % 
-%             aviObject = close(aviObject);
+%             junk = close(aviObject);
 %             try close(2); catch; end
 %         end
         

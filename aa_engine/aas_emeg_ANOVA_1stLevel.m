@@ -57,7 +57,7 @@ root='/imaging/local/spm/marsbar/marsbar-0.40/';
 for d=1:size(dirs,1); addpath(strcat(root,dirs(d,:)),'-END'); end
 warning on all
 
-try diagnostic=S.diagnostic; catch diagnostic=true; end
+try diagnostic=S.diagnostic; catch, diagnostic=true; end
 
 fprintf('\nProcessing %s: %s: First level:',S.voldir,S.fname)
 
@@ -159,7 +159,7 @@ end
 %% prepare directory for 2nd level contrasts
 secondlevdir=fullfile(aap.acq_details.root,'GroupAnalysis',sprintf('FullFact_2ndLev_%s_%s',regexprep(S.voldir,{'-eeg','_BLOCK1'},{'',''}),S.fname));
 try cd(secondlevdir);
-catch mkdir(secondlevdir); cd(secondlevdir);
+catch, mkdir(secondlevdir); cd(secondlevdir);
 end
 
 %% create 1st level contrasts for each subject

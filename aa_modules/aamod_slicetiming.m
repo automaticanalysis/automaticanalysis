@@ -30,37 +30,55 @@ switch task
         
         % get information from first file
         first_img = deblank(imgs(1,:));
+        DICOMHEADERS = load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header'));
+        hdr = DICOMHEADERS.DICOMHEADERS{1};
         V = spm_vol(first_img);
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D % 4D support [TA]
-			V = V(1); 
-		end
+            V = V(1);
+        end
         
         % retrieve stuff from DICOM header
         if aap.tasklist.currenttask.settings.autodetectSO == 1
-            % Get the headers from the file, so that we don't have to guess...
-            DICOMHEADERS=load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header'));
-            V = spm_vol(deblank(imgs(1,:)));
-            aap = aas_getSliceOrder(aap, V, DICOMHEADERS.DICOMHEADERS{1});            
+            % Get the headers from the file, so that we don't have to guess...            
+            if isnumeric(hdr.sliceorder) && ~isempty(hdr.slicetimes) % exact info
+                % save for outputs
+                sliceorder=hdr.sliceorder;
+                refslice=aap.tasklist.currenttask.settings.refslice;
+                
+                aap.tasklist.currenttask.settings.sliceorder = hdr.slicetimes*1000;
+                aap.tasklist.currenttask.settings.refslice = aap.tasklist.currenttask.settings.sliceorder(refslice);
+                sl_times = 0;
+            else
+                if ~isempty(hdr.sliceorder) && isfield(hdr,'Private_0029_1020')
+                    aap = aas_getSliceOrder(aap, V, hdr);            
+                end
+            end
         end
-        if (length(aap.tasklist.currenttask.settings.TRs)==0)
-            DICOMHEADERS=load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header'));
-            aap.tasklist.currenttask.settings.TRs=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
+        if isempty(aap.tasklist.currenttask.settings.TRs)
+            aap.tasklist.currenttask.settings.TRs=hdr.RepetitionTime/1000;
         end
-        if (length(aap.tasklist.currenttask.settings.slicetime)==0)
-            aap.tasklist.currenttask.settings.slicetime=aap.tasklist.currenttask.settings.TRs/V.dim(3);
-        end
+        
         % Sets slice time information
-        % value 1 is time to acquire one slice
-        % value 2 is time between beginning of last slice
-        % and beginning of first slice of next volume
-        
-        if (max(aap.tasklist.currenttask.settings.sliceorder)>V.dim(3))
-            aas_log(aap,1,'aap.tasklist.currenttask.settings.sliceorder seems to contain values higher than the number of slices!\n');
+        if exist('sl_times','var') % exact slicetiming info
+            % value 1 is 0
+            % value 2 is TR
+            sl_times = [0 aap.tasklist.currenttask.settings.TRs];
+        else
+            % value 1 is time to acquire one slice
+            % value 2 is timeRepetitionTime between beginning of last slice and beginning of first slice of next volume
+            if isempty(aap.tasklist.currenttask.settings.slicetime) % rough estimate only
+                aap.tasklist.currenttask.settings.slicetime=aap.tasklist.currenttask.settings.TRs/V.dim(3);
+            end
+            if (max(aap.tasklist.currenttask.settings.sliceorder)>V.dim(3))
+                aas_log(aap,1,'aap.tasklist.currenttask.settings.sliceorder seems to contain values higher than the number of slices!\n');
+            end
+            sl_times = [aap.tasklist.currenttask.settings.slicetime aap.tasklist.currenttask.settings.slicetime+(aap.tasklist.currenttask.settings.TRs-aap.tasklist.currenttask.settings.slicetime*V.dim(3))];
+            % outputs
+            sliceorder=aap.tasklist.currenttask.settings.sliceorder;
+            refslice=aap.tasklist.currenttask.settings.refslice;
         end
         
-        sl_times = [aap.tasklist.currenttask.settings.slicetime aap.tasklist.currenttask.settings.slicetime+(aap.tasklist.currenttask.settings.TRs-aap.tasklist.currenttask.settings.slicetime*V.dim(3))];
-        
-        % do slice timing correction, added refslice [de 200606]
+        % do slice timing correction
         spm_slice_timing(imgs,aap.tasklist.currenttask.settings.sliceorder,aap.tasklist.currenttask.settings.refslice ,sl_times);
         
         % Describe outputs
@@ -69,12 +87,9 @@ switch task
             [pth nme ext]=fileparts(imgs(k,:));
             rimgs=strvcat(rimgs,['a' nme ext]);
         end
-        sessdir=aas_getsesspath(aap,subj,sess);
         aap = aas_desc_outputs(aap,subj,sess,'epi',rimgs);
         
-        sliceorder=aap.tasklist.currenttask.settings.sliceorder;
         sliceorderfn=fullfile(dirn,'sliceorder.mat');
-        refslice=aap.tasklist.currenttask.settings.refslice;
         save(sliceorderfn,'sliceorder','refslice');
         aap = aas_desc_outputs(aap,subj,sess,'sliceorder',sliceorderfn);
         

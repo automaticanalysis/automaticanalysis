@@ -59,7 +59,7 @@ switch task
         aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
         
         %% Save graphical output to common diagnostics directory
-        mriname = aas_prepare_diagnostic(aap,subj);
+        subjname = aas_prepare_diagnostic(aap,subj);
         
         % This will only work for 1-7 segmentations
         OVERcolours = aas_colours;
@@ -74,7 +74,7 @@ switch task
         spm_orthviews('reposition', [0 0 0])
         
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '.jpeg']));
+            [mfilename '__' subjname '.jpeg']));
         
         % Another diagnostic image, looking at how well the segmentation worked...
         Pthresh = 0.95;
@@ -87,7 +87,7 @@ switch task
         title(sprintf('GM vs WM... T-val: %0.2f (df = %d)', stats.tstat, stats.df))
         
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' mriname '_Hist.jpeg']));
+            [mfilename '__' subjname '_Hist.jpeg']));
         
         %% Diagnostic VIDEO
         if aap.tasklist.currenttask.settings.diagnostic
@@ -97,7 +97,7 @@ switch task
                 if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
                     aas_image_avi(Simg, ...
                         outSeg, ...
-                        fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' mriname '_' Ydims{d} '.avi']), ...
+                        fullfile(aap.acq_details.root, 'diagnostics', [mfilename '__' subjname '_' Ydims{d} '.avi']), ...
                         d, ... % Axis
                         [800 600], ...
                         2, ... % Rotations

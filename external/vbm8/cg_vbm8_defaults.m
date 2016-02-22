@@ -7,16 +7,16 @@ function cg_vbm8_defaults
 %
 % Care must be taken when modifying this file
 %_______________________________________________________________________
-% $Id: cg_vbm8_defaults.m 432 2011-10-03 21:48:53Z gaser $
+% $Id: cg_vbm8_defaults.m 437 2012-01-13 08:58:11Z gaser $
 
 global vbm8
 
 % Estimation options
 %=======================================================================
-vbm8.opts.tpm       = {fullfile(spm('dir'),'toolbox','Seg','TPM.nii')}; % TPM.nii
+vbm8.opts.tpm       = {fullfile(spm('dir'),'tpm','TPM.nii')}; % TPM.nii
 vbm8.opts.ngaus     = [2 2 2 3 4 2];  % Gaussians per class
 vbm8.opts.affreg    = 'mni';    % Affine regularisation
-vbm8.opts.warpreg   = 4;      % Warping regularisation
+vbm8.opts.warpreg   = [0 0.001 0.5 0.05 0.2];  % Warping regularisation - see Dartel instructions
 vbm8.opts.biasreg   = 0.0001; % Bias regularisation
 vbm8.opts.biasfwhm  = 60;   % Bias FWHM
 vbm8.opts.samp      = 3;      % Sampling distance
@@ -85,13 +85,15 @@ vbm8.defs.interp    = 5;  % 5th degree B-spline
 
 % expert options
 %=======================================================================
-vbm8.extopts.cleanup   = 1;    % Cleanup: 0 - no; 1 - light; 2 -thorough
-vbm8.extopts.finalmask = 1;    % Final masking: 0 - no; 1 - yes
-vbm8.extopts.gcut      = 1;    % Skull-stripping with graph-cut: 0 - no; 1 - yes
-vbm8.extopts.kmeans    = 1;    % segmentation initialization: 0 - new segment; 1 - Kmeans
-vbm8.extopts.mrf       = 0.15; % MRF weighting
-vbm8.extopts.sanlm     = 2;    % use SANLM filter: 0 - no SANLM; 1 - SANLM with single-threading; 2 - SANLM with multi-threading
-vbm8.extopts.bias_fwhm = 60;   % FWHM of Kmeans internal bias correction
+vbm8.extopts.cleanup     = 1;    % Cleanup: 0 - no; 1 - light; 2 -thorough
+vbm8.extopts.finalmask   = 1;    % Final masking: 0 - no; 1 - yes
+vbm8.extopts.gcut        = 1;    % Skull-stripping with graph-cut: 0 - no; 1 - yes
+vbm8.extopts.kmeans      = 1;    % segmentation initialization: 0 - new segment; 1 - Kmeans
+vbm8.extopts.mrf         = 0.15; % MRF weighting
+vbm8.extopts.sanlm       = 2;    % use SANLM filter: 0 - no SANLM; 1 - SANLM with single-threading; 2 - SANLM with multi-threading
+vbm8.extopts.bias_fwhm   = 60;   % FWHM of Kmeans internal bias correction
+vbm8.extopts.histeq_deep = 1;    % weighting of local histogram equalization: 0 - no; 1 - full weighting (not recommended)
+vbm8.extopts.histeq_mask = {fullfile(spm('dir'),'toolbox','vbm8','histeq_mask.nii')};
 
 % experimental (not yet working)
 %=======================================================================

@@ -43,7 +43,7 @@
                 <uwfwhm>4</uwfwhm> <!-- FWHM of smoothing filter applied to images prior to estimation of deformation fields -->
                 <rem>1</rem> <!-- 1: movement parameters are re-estimated at each unwarping iteration -->
                 <noi>5</noi> <!-- maximum number of iterations -->
-                <expround>Average</expround> <!-- point in position space to perform Taylor-expansion around -->
+                <expround>average</expround> <!-- point in position space to perform Taylor-expansion around -->
             </uweoptions>
             
             <!--Reslicing parameters-->            

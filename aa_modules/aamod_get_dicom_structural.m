@@ -22,30 +22,37 @@ switch task
         structpath=fullfile(subjpath,aap.directory_conventions.structdirname);
         
         % Manually specified value for structural series number over-rides automatically scanned value
-        if (~isempty(aap.acq_details.subjects(i).structural))
-            structseries=aap.acq_details.subjects(i).structural;
+        if ~isempty(aap.acq_details.subjects(i).structural)
+            structural_choose = aap.acq_details.subjects(i).structural;
         else
-            % Load up automatically scanned value, validate
-            aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
-            ais=load(aisfn);
-            if (length(ais.series_spgr)>1)
-                if aap.options.autoidentifystructural_multiple
-                    aas_log(aap,false,sprintf('Was expecting multiple structurals and found %d.',length(ais.series_spgr)));
-                    structseries=ais.series_spgr;
-                elseif aap.options.autoidentifystructural_chooselast
-                    aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with last, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
-                    structseries=ais.series_spgr(end);
-                elseif aap.options.autoidentifystructural_choosefirst
-                    aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with first, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
-                    structseries = ais.series_spgr(1);
-                else
-                    aas_log(aap,true,sprintf('Was expecting only one structural, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
-                end
-            elseif (isempty(ais.series_spgr))
-                aas_log(aap,true,'No structural found.');
-            else
-                structseries=ais.series_spgr;
+            structural_choose = 0;
+        end
+        % Load up automatically scanned value, validate
+        aisfn=fullfile(subjpath,'autoidentifyseries_saved.mat');
+        ais=load(aisfn);
+        if any(structural_choose)
+            ais.series_spgr=intersect(ais.series_spgr,structural_choose);
+            if isempty(ais.series_spgr)
+                aas_log(aap,1,sprintf('ERROR:%s.',sprintf(' structural serie %d not found',structural_choose)));
             end
+        end
+        if (length(ais.series_spgr)>1)
+            if aap.options.autoidentifystructural_multiple
+                aas_log(aap,false,sprintf('Was expecting multiple structurals and found %d.',length(ais.series_spgr)));
+                structseries=ais.series_spgr;
+            elseif aap.options.autoidentifystructural_chooselast
+                aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with last, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
+                structseries=ais.series_spgr(end);
+            elseif aap.options.autoidentifystructural_choosefirst
+                aas_log(aap,false,sprintf('Was expecting only one structural, but autoidentify series found %d. Will proceed with first, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
+                structseries = ais.series_spgr(1);
+            else
+                aas_log(aap,true,sprintf('Was expecting only one structural, but autoidentify series found %d. You might want to try using the ignoreseries field in aas_addsubject in your user script.',length(ais.series_spgr)));
+            end
+        elseif (isempty(ais.series_spgr))
+            aas_log(aap,true,'No structural found.');
+        else
+            structseries=ais.series_spgr;
         end
         
         % Make structural directory

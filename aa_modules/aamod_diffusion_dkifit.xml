@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='diffusion_session' desc='Run DKI fit (by Rafael Henriques)'>
+        <currenttask domain='diffusion_session' desc='Run DKI fit (by Rafael Henriques)' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -18,6 +18,8 @@
             </inputstreams>
             
             <outputstreams>
+                <stream desc='tensor'>dki_DT</stream>
+                <stream desc='kurtosis'>dki_KT</stream>
                 <stream>dki_FA</stream>
                 <stream>dki_MD</stream>
                 <stream>dki_L1</stream>
@@ -29,6 +31,11 @@
                 <stream>dki_MK</stream>
                 <stream>dki_RK</stream>
                 <stream>dki_AK</stream>
+                <stream>dki_AWF</stream>
+                <stream>dki_ADa</stream>
+                <stream>dki_ADe</stream>
+                <stream>dki_RDe</stream>
+                <stream>dki_tortu</stream>                    
                 <stream>dki_S0</stream>
                 <stream>dki_dMK</stream>
                 <stream>dki_dMD</stream>

@@ -24,7 +24,7 @@ end
 if ~isstruct(D); D=spm_eeg_ldata(char(D)); end
 
 try D.events.repl; if min(D.events.repl)==1; catchnow; end
-catch fprintf('\nFound no averaged events. Nothing will be plotted.'); return
+catch, fprintf('\nFound no averaged events. Nothing will be plotted.'); return
 end
 
 if D.Nevents>16; fprintf('\nFound >16 events in this file. Nothing will be plotted'); return; end

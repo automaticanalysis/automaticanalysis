@@ -26,6 +26,8 @@ else
     nl = varargin{3};
 end
 
+sample = [];
+
 for i = nl:numel(lines)
     sample = lines{i};
     if iscell(sample) || (size(sample,1) > 1)
@@ -38,8 +40,6 @@ for i = nl:numel(lines)
     sample = strfind(sample,str);
     if ~isempty(sample) && ((nargin < 4) || ((nargin > 3) && any(sample == varargin{4})))
         break;
-    else
-        sample = [];
     end
 end
 if isempty(sample)

@@ -1,7 +1,7 @@
 function cg_slice_overlay(OV);
 %__________________________________________________________________________
 % Christian Gaser
-% $Id: cg_slice_overlay.m 404 2011-04-11 10:03:40Z gaser $
+% $Id: cg_slice_overlay.m 442 2014-07-25 09:28:03Z gaser $
 
 clear global SO
 global SO
@@ -158,7 +158,7 @@ switch lower(OV.transform)
 	case 'sagittal'
 		ref_img = ref_vol(:,:,Orig(3))';
 		slices_vx = slices/vx(1) + Orig(1);
-		image(ref_img)
+		image(fliplr(ref_img))
 		for i=slices_vx
 			h = line([i i],[1 dim(2)]);
 			set(h,'Color','r')
@@ -370,7 +370,7 @@ function SO = pr_basic_ui(imgs, dispf)
 %         (defaults to GUI select if no arguments passed)
 % dispf - optional flag: if set, displays overlay (default = 1)
 %
-% $Id: cg_slice_overlay.m 404 2011-04-11 10:03:40Z gaser $
+% $Id: cg_slice_overlay.m 442 2014-07-25 09:28:03Z gaser $
  
 if nargin < 1
   imgs = '';

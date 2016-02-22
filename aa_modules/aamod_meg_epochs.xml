@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meg_session' desc='Epoching continuous M/EEG data' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <baselinecorrection>1</baselinecorrection>
+            
+            <timewindow desc='Time window in PST ms (1x2 numeric array)'></timewindow>
+
+            <eventtype>STI101_up</eventtype>
+            
+            <condition>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <conditionlabel></conditionlabel>
+                    <eventvalue></eventvalue>
+                    <eventtype></eventtype>                    
+                    <trlshift></trlshift> <!--- usually 34ms for visual, 9ms for auditory -->
+                </event>
+            </condition>
+            
+            <inputstreams>
+                <stream>meg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -8,10 +8,15 @@
                 <memoryBase>0.5</memoryBase>
             </qsub>
             
-            
+			<!--
+			Specified in the UMS only! 
+			Nx3 cell array with collumns 'original channel name', 'new channel name', 'new channel type or empty string for keeping the original channel type'
+			-->
+            <ChannelRename></ChannelRename>          
+                
             <inputstreams>
                 <stream>channellabels</stream>
-                <stream>meg</stream>
+                <stream isrenameable='1'>meg</stream>
             </inputstreams>
             
             <outputstreams>
