@@ -5,7 +5,6 @@
         <directory_conventions>
             <fieldmapsdirname desc='Subdirectory in subject dir for fieldmaps' ui='dir'>fieldmaps</fieldmapsdirname>
             <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
-            <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
             <rawdatadir desc='Subdirectories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
@@ -25,7 +24,7 @@
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
             <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
-			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
+			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove:/imaging/local/software/spm_toolbox/vbm8</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
@@ -38,8 +37,9 @@
             <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICATv3.0a</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
+            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
-            <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/cn_apps/ANTs-1.9.x-Linux</ANTSdir>
+            <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
             <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>

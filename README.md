@@ -34,8 +34,11 @@ http://www.automaticanalysis.org
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
    - For generating and serialising provenance: [Raptor RDF Syntax Library](http://librdf.org/raptor)
  - Recommended/Partially supported software for analysis:
+   - [Advanced Normalization Tools](http://stnava.github.io/ANTs)
+   - [VBM8](http://www.neuro.uni-jena.de/vbm)
    - [FMRIB Software Library](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki)
    - [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/fswiki)
+   - [Automated Defacing Tools templates (*.gca)](https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface)
    - [Group ICA Of fMRI Toolbox](http://mialab.mrn.org/software/gift/index.html)
    - [EEGLab](http://sccn.ucsd.edu/eeglab)
    - [Advanced Normalization Tools](http://picsl.upenn.edu/software/ants)

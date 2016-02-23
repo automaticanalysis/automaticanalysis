@@ -3,7 +3,6 @@
     <directory_conventions>
         <fieldmapsdirname desc='Subdirectory in subject dir for fieldmaps' ui='dir'>fieldmaps</fieldmapsdirname>
         <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
-        <tmapsdirname desc='Subdirectory in subject dir for real-time T maps' ui='dir'>realtime_tmaps</tmapsdirname>
         <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
         <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
         <rawdatadir desc='Subdirectory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
@@ -19,7 +18,6 @@
         <stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
         <stats_ppi desc='Directory for single subject PPI statistics' ui='dir'>PPI</stats_ppi>
         <rfx desc='Directory for random effects statistics' ui='dir'>group_stats</rfx>
-        <dartelsubjdirname desc='Name of DARTEL subject directory' ui='dir'>dartel</dartelsubjdirname>
         <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
         <analysisid ui='dir_part'></analysisid>
         <analysisid_suffix ui='dir_part'></analysisid_suffix>
@@ -48,6 +46,7 @@
         <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
 		<GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
+        <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
         <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>

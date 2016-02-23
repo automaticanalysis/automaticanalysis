@@ -4,13 +4,6 @@
 		"Legend": "Below is a list of all packages, version and\/or date downloaded, and maintainer:",
 		"Packages": [
 			{
-				"Name": "ANTS",
-				"Version": "",
-				"DateDownloaded": "08 May 2012",
-				"URL": "http:\/\/picsl.upenn.edu\/ANTS",
-				"aaMaintainer": "Alejandro Vicente Grabovetsky"
-			},
-			{
 				"Name": "DKI_Toolbox",
 				"Version": "",
 				"DateDownloaded": "01 July 2014",
@@ -53,13 +46,6 @@
 				"aaMaintainer": "Alejandro Vicente Grabovetsky"
 			},
 			{
-				"Name": "Templates\/freesurfer_daface*",
-				"Version": "",
-				"DateDownloaded": "15 August 2014",
-				"URL": "https:\/\/surfer.nmr.mgh.harvard.edu\/fswiki\/mri_deface",
-				"aaMaintainer": "Tibor Auer"
-			},
-			{
 				"Name": "TFCE",
 				"Version": "r67 (mod)",
 				"DateDownloaded": "28 July 2014",
@@ -72,13 +58,6 @@
 				"DateDownloaded": "02 May 2012",
 				"URL": "http:\/\/mrtools.mgh.harvard.edu\/index.php\/Downloads",
 				"aaMaintainer": "Jonathan Peelle"
-			},
-			{
-				"Name": "vbm8",
-				"Version": "r442",
-				"DateDownloaded": "29 July 2015",
-				"URL": "http:\/\/dbm.neuro.uni-jena.de\/vbm8",
-				"aaMaintainer": "Tibor Auer"
 			},
 			{
 				"Name": "XML_IO_Tools",
