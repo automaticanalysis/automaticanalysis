@@ -6,11 +6,14 @@
 %   - format: format for specificying session(s) for which this contrast applies
 %       - "sameforallsessions" -> vector contains contrast to be applied to all sessions (within-subject contrast)
 %       - "singlesession:<session name>" -> vector contains contrast for just one session
+%       - "sessions:<session name>[+<session name>[...]]" -> vector contains contrast for some sessions
 %       - "uniquebysession" -> within-subject contrast that separately specifies contrast for every session
 %   - vector: contrast
 %       - vector containing the weights for each regressor (of interest)
-%       - string defining the wights and the regressors in a format <weight>x<regressor name><main ('m') or parametric ('p')><number of basis/parametric function> (e.g. '+1xENC_DISPLm1|-1xENC_FIXATp3')
-%           N.B.: number of basis/parametric functions can be, e.g.:
+%       - string defining the wights and the regressors (only for "singlesession:<session name>" and "sameforallsessions")
+%           format: <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xENC_DISPL|-1xENC_FIXAT' or '+1xENC_DISPLm1|-1xENC_FIXATp3')
+%           N.B.: You have to use regressor names with UPPERCASE letters only!
+%           number of basis/parametric functions can be, e.g.:
 %             - "m2": 2nd order of the basis function (e.g. temporal derivative of canocical hrf) of the main regressor
 %             - "p3": depending on the number of basis functions and the order of expansions of parametric modulators (they are arranged after each other)
 %                     - dispersion derivative of the 1st order polynomial expansion of the first parametric modulator
@@ -62,11 +65,18 @@ if (~exist('contype','var') || isempty(contype))
 end;
 
 [format, rem]=strtok(format,':');
-if (strcmp(format,'singlesession'))
-    session=strtok(rem,':');
-else
-    session=[];
-end;
+switch format
+    case {'singlesession','sessions'}
+        session = textscan(strtok(rem,':'),'%s','delimiter','+'); session = session{1};
+    otherwise
+        session=[];
+end
+
+% warning
+if ischar(vector)
+    aas_log(aap,false,'WARNING: You specified the contrast with regressor names.'); 
+    aas_log(aap,false,'    Make sure that you use regressor names with UPPERCASE letters only!'); 
+end
 
 % find model that corresponds and add contrast to this if it exists
 for m = 1 : length(moduleindex)

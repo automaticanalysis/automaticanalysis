@@ -1,4 +1,42 @@
-## 4.3.0 ##
+## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
+
+As the change in the major version implies, older user master scripts are not compatible with v5.0.0. Examples has been updated to demonstrate new syntax. In addition, pipelines processed with older versions cannot be re-processed with v5.0.0 (`aap` structure stored in _aap\_parameters.mat_ is not compatible). A script `aa_convert_subjects` is provided to convert `aap` structure stored in _aap\_parameters.mat_. When connecting to a remote pipeline processed with an older version of aa, `aa_convert_subjects` is automatically called; so no extra conversion is required. 
+
+#### New general features ####
+  - Improved documentation of several functions
+  - Explicit subject identifier `aap.acq_details.subjects.subjname`: `aas_addsubject`
+    - Subject name is more unambiguously specified
+    - Subject name is not tied to the data
+    - Same subject name can be used as a reference in the whole UMS
+
+  - Longitudinal/multi-visit measurement
+  - Session-specific fieldmaps
+  - `aas_addsubject` has a more intuitive parameterisation
+  - from NIfTI
+    - [BIDS](bids.neuroimaging.io) datasets are supported (full)
+  - reporting remote pipeline
+  - lightweighting: remove ANTs, VBM8 and FreeSurfer deface templates from the package and mark them as (optional) requirements
+
+#### New features for structural ####
+  - aamod_mask_fromsegment accepts different exact thresholds for GM, WM, CSF
+
+#### New features for fMRI ####
+  - Reorienting input images (structural, diffusion and EPI) to their middle voxel (`aamod_reorienttomiddle_*`)
+  - specifying contrast for certain sessions using format "sessions:<session name>[+<session name>[...]]"
+  - specifying contrast with condition names in a format <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xTASK|-1xREST' or '+1xTASKp1|-1xRESTm1'). N.B.: It requires regressor names with UPPERCASE letters only!
+	
+#### Bugfixes ####
+  - scaling automatic temporal modulation
+  - aamod_bet_meanepi
+  - aamod_waveletdespike using explicit brainmask
+
+## 4.3.1 ##
+
+#### Bugfix ####
+  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.org/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_demo_v2.m))
+  - Compatibility with MATLAB r2015b
+
+## 4.3.0 ([branch devel-share](https://github.com/rhodricusack/automaticanalysis/tree/devel-share)) ##
 
 #### Copyrights ####
   - Sorting _external_/_extrafunctions_
@@ -87,7 +125,7 @@
     - More consistent (and nicer :sparkles:) graph of contrasts 
     - `aamod_firstlevel_threshold` creates overlays along all three axes
 
-## 4.2 (initial) ##
+## 4.2 ([branch devel-share initial](https://github.com/rhodricusack/automaticanalysis/tree/devel-share)) ##
 
 Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
 

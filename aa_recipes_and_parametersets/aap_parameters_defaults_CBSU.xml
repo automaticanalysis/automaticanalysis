@@ -23,7 +23,7 @@
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r6685</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove:/imaging/local/software/spm_toolbox/vbm8</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>

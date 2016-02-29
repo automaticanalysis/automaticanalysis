@@ -133,40 +133,64 @@ switch task
                     connames{ccount} = sprintf('%s-run%02d',finalname,r-1);
                 end
                 % support eval'ed strings to define contrasts (e.g. ones, eye)
-                if ischar(contrasts.con(conind).vector)
+                if ischar(contrasts.con(conind).vector) &&...
+                        ~any(strcmp({'+' '-'},contrasts.con(conind).vector(1))) % not defined with EV names
                     contrasts.con(conind).vector = str2num(...
                         contrasts.con(conind).vector);
                 end
                 % Make contract vector
                 switch(contrasts.con(conind).format)
                     
-                    case {'singlesession','sameforallsessions'}
-                        if (strcmp(contrasts.con(conind).format,'singlesession'))
-                            sessforcon=[strcmp(sessnames,contrasts.con(conind).session)];
-                        else
+                    case {'singlesession','sessions','sameforallsessions'}
+                        sessforcon = zeros(1,nsess_all);
+                        if strcmp(contrasts.con(conind).format,'sameforallsessions')
                             % [AVG] To make the selected sessions work...
-                            sessforcon = zeros(1,nsess_all);
-                            for sess = selected_sessions
-                                sessforcon(sess) = 1;
-                            end
+                            sessforcon(selected_sessions) = 1;
+                        else
+                            [junk, indsess] = intersect(sessnames,contrasts.con(conind).session);
+                            sessforcon(indsess) = 1;
                         end
+                        
                         convec=[];
-                        sessnuminspm=1;
+                        sessnuminspm=0;
                         for sess=selected_sessions
+                            sessnuminspm=sessnuminspm+1;
                             numcolsinthissess = length(SPM.Sess(sessnuminspm).col);
                             if (sessforcon(sess))
-                                if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
-                                    aas_log(aap,true,sprintf('Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); disp(contrasts.con(conind).vector);
-                                elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess)
-                                    convec = [convec contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
-                                    %aas_log(aap,false,sprintf('Warning: Number of columns in contrast matrix for session %d is less than number of columns in model for this session - wanted %d columns, so padding to ',sess,numcolsinthissess)); disp(convec);
+                                if isnumeric(contrasts.con(conind).vector) % vcontrast vector
+                                    if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
+                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); disp(contrasts.con(conind).vector);
+                                    elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess) % padding if shorter
+                                        convec = [convec contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
+                                    else
+                                        convec = [convec contrasts.con(conind).vector];
+                                    end
+                                elseif ischar(contrasts.con(conind).vector) % contrast string
+                                    convec = [convec zeros(size(contrasts.con(conind).vector,1), numcolsinthissess)];
+                                    for cr = 1:size(contrasts.con(conind).vector,1)
+                                        cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%[^mp]%c%d','Delimiter','|');
+                                        if isempty(cs{3}) % simple format
+                                            cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%s','Delimiter','|');
+                                            cs{3}(1:numel(cs{1}),1) = 'm';
+                                            cs{4}(1:numel(cs{1}),1) = int32(1);
+                                        end
+                                        for e = 1:numel(cs{1})
+                                            switch cs{3}(e)
+                                                case 'm' % main trail
+                                                    EVpttrn = sprintf('Sn(%d) %s*',sess,cs{2}{e});
+                                                case 'p' % parametric
+                                                    EVpttrn = sprintf('Sn(%d) %sx',sess,cs{2}{e});
+                                            end
+                                            ind = cell_index(SPM.xX.name,EVpttrn);
+                                            convec(cr,ind(cs{4}(e))) = cs{1}(e);
+                                        end
+                                    end
                                 else
-                                    convec = [convec contrasts.con(conind).vector];
+                                    aas_log(aap,true,'ERROR: Contrast vector must be either string or row vector of numbers.');
                                 end
                             else
                                 convec = [convec zeros(size(contrasts.con(conind).vector,1), numcolsinthissess)];
                             end
-                            sessnuminspm=sessnuminspm+1;
                         end
                         
                         % If subjects have different # of sessions, then
