@@ -182,8 +182,13 @@ else
                         noDependI = find([extrastages_added.module.tobecompletedfirst]==0); % Stages that don't have dependencies
                         
                         % Update pointers to account for stages in the previous in branch
-                        extrastages_added.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst + numPrevBranchStages), extrastages_added.module(dependI));
-                        extrastages_added.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', 0), extrastages_added.module(noDependI));
+                        if ~isempty(dependI)
+                            extrastages_added.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst + numPrevBranchStages), extrastages_added.module(dependI));
+                        end
+                        
+                        if (~isempty(noDependI))
+                            extrastages_added.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', 0), extrastages_added.module(noDependI));
+                        end
                         
                         % Update the branchIDs in the current branch to account for the number in the previous branch number of branches in the previous branch
                         numPrevBranches = length(aa_unique([extrastages.module.branchID]));
@@ -230,12 +235,16 @@ else
                 % they will point to the last stage of the output branch.
                 noDependI = find([newStages.module.tobecompletedfirst]==0);
                 dependI = find([newStages.module.tobecompletedfirst]~=0);
-                newStages.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', oIndex(oB)), newStages.module(noDependI));
+                if ~isempty(noDependI)
+                    newStages.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', oIndex(oB)), newStages.module(noDependI));
+                end
                 
                 % Or, some new stages are dependent on other new stages, so
                 % they will have to be updated to account for the repeating
                 % nature of this operation.
-                newStages.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst+length(outstages.module)), newStages.module(dependI));
+                if ~isempty(dependI)
+                    newStages.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst+length(outstages.module)), newStages.module(dependI));
+                end
                 
                 % Update the analysis suffixes
                 outBranchSuffix = outstages.module(oIndex(oB)).extraparameters.aap.directory_conventions.analysisid_suffix;
