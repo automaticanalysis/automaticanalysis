@@ -6,7 +6,7 @@
 %		- subcells are separated with "_"
 %		- a header in the first line
 %	 	Required columns (may contain more): 
-%		- "ID": numbers for identifying subjects
+%		- "ID": subject identifiers
 %		- "FMRI1": cells for the fMRI measurement; it must contain the same number of subcells as the coresponding column header
 %			- first subcell is the CBU volunteer number (without "CBU")
 %			- series numbers are defined in the consecutive subcells with the same order as their names in the coresponding column header
@@ -25,8 +25,6 @@
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function aap = aas_processinput(aap)
-
-aap.directory_conventions.subject_directory_format = 1;
 
 if ~aap.directory_conventions.continueanalysis
     sfx = 1;
@@ -48,8 +46,9 @@ numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummie
 head = study_header(aap.acq_details.input.list);
 LIST = importdata(aap.acq_details.input.list);
 for v = 2:size(LIST,1)
-    ID = str2double(list_index(LIST{v},head.ID));
-    VOL = str2double(list_index(LIST{v},head.FMRI1));
+    ID = list_index(LIST{v},head.ID);
+    VOL = list_index(LIST{v},head.FMRI1);
+    if numel(regexp(VOL,'[0-9]')) == numel(VOL), VOL = str2double(VOL); end
     nSess = 2; aSess = [];
     while ~isempty(list_index(LIST{1},head.FMRI1,nSess))
         aSess = horzcat(aSess,str2double(list_index(LIST{v},head.FMRI1,nSess)));
@@ -57,16 +56,19 @@ for v = 2:size(LIST,1)
     end
     nSess = nSess - 2;
        
-    strSubj = mri_findvol(aap,VOL);
-    
     % One or more sessions
     if isfield(aap.acq_details.input, 'referencedirectory_tmpl')
-        refDir = strrep(aap.acq_details.input.referencedirectory_tmpl,'*',num2str(ID));
+        refDir = strrep(aap.acq_details.input.referencedirectory_tmpl,'*',ID);
     end
     if ~isfield(aap.acq_details.input, 'selected_sessions') || ~any(aap.acq_details.input.selected_sessions),...
             aap.acq_details.input.selected_sessions = 1:nSess; 
     end
-    aap=aas_addsubject(aap,VOL,aSess(aap.acq_details.input.selected_sessions));
+    
+    if aap.directory_conventions.subject_directory_format == 3
+        aap=aas_addsubject(aap,ID,VOL,'functional',aSess(aap.acq_details.input.selected_sessions));
+    else
+        aap=aas_addsubject(aap,VOL,'functional',aSess(aap.acq_details.input.selected_sessions));
+    end
     
     for i = aap.acq_details.input.selected_sessions
 		if ~aSess(i), continue; end
@@ -79,7 +81,7 @@ for v = 2:size(LIST,1)
         aap = aas_addsession(aap,session);
         if exist('refDir','var')
 			clear names durations onsets tmod pmod;
-            load(fullfile(refDir,['condition_vol_' num2str(ID) '-' session '.mat']));
+            load(fullfile(refDir,['condition_vol_' ID '-' session '.mat']));
             % [MDV] initialise pmod and tmod if they don't exist
             if ~exist('pmod','var'), pmod(1:numel(names)) = struct('name',[],'param',[],'poly',[]);end
             if ~exist('tmod','var'), tmod = cell(1,numel(names)); end
@@ -100,9 +102,9 @@ for v = 2:size(LIST,1)
                         parametric(n).P = pmod(iEV).param{n}';
                         parametric(n).h = pmod(iEV).poly{n};
                     end
-                    aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV},parametric);
+                    aap=aas_addevent(aap,firstlevel,aap.acq_details.subjects(end).subjname,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV},parametric);
                 else
-                    aap=aas_addevent(aap,firstlevel,strSubj,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV});
+                    aap=aas_addevent(aap,firstlevel,aap.acq_details.subjects(end).subjname,session,names{iEV},onsets{iEV}-numdummies*TR,durations{iEV});
                 end
             end
         end
