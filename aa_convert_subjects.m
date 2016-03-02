@@ -7,7 +7,6 @@ for field=fields'
 end
 fields(strcmp(fields,'subjname')) = [];
 newsubj.subjname = '';
-newsubj.megname = '';
 
 newsubj(1:numel(aap.acq_details.subjects)) = newsubj;
 
@@ -20,7 +19,6 @@ for s = 1:numel(oldsubj)
             newsubj(s).(field{1})={[]};
         end
     end
-    newsubj(s).megname = newsubj(s).megname{1};
 end
 
 aap.acq_details.subjects = newsubj;

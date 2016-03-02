@@ -41,7 +41,7 @@ fprintf('\nCollecting images');
 % get all image files for each subject
 images={};ipaths={};
 for s=1:length(aap.acq_details.subjects)
-    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).megname);
+    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).subjname);
     ipaths{s}=spm_select('FPList',fullfile(subdir,'figures'),'^.*\.(jpe?g|png)$');
     for b=aap.acq_details.selected_sessions
         fprintf('.')
@@ -49,7 +49,7 @@ for s=1:length(aap.acq_details.subjects)
         ipaths{s}=char(ipaths{s},spm_select('FPList',blockdir,'^.*\.(jpe?g|png)$'));
     end
     % collect anonymised image names (without extension)
-    images=[images; regexprep(cellstr(ipaths{s}),{sprintf('%s',aap.acq_details.subjects(s).megname),'\....$'},{'#',''})];
+    images=[images; regexprep(cellstr(ipaths{s}),{sprintf('%s',aap.acq_details.subjects(s).subjname),'\....$'},{'#',''})];
     % remove empty paths
     ipaths{s}(strmatch('/ ',ipaths{s}),:)=[];
 end

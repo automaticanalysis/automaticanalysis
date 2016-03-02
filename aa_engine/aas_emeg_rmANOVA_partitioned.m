@@ -207,8 +207,8 @@ for vd=1:length(sensorvoldirs)
 
             nsub=0;
             for s=1:length(aap.acq_details.subjects)
-                fprintf('\n%s',aap.acq_details.subjects(s).megname);
-                subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).megname);
+                fprintf('\n%s',aap.acq_details.subjects(s).subjname);
+                subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).subjname);
                 fn=strcat(subdir,filesep,files);
                 if ~all(cellfun(@exist,fn))
                     fprintf(' - Files not found!'); continue
@@ -250,7 +250,7 @@ for vd=1:length(sensorvoldirs)
                 %% ROI summary from FDR-corrected SS effect, for each task
                 if ~isempty(ROIs)
                     for r=1:length(RN)
-                        ROIdata{s,1,r}=aap.acq_details.subjects(s).megname;
+                        ROIdata{s,1,r}=aap.acq_details.subjects(s).subjname;
                         for v=1:length(Y)
                             ROIdata{s,v+1,r}=mean(Y{v}(ROIs(:,:,:,r)));
                         end
@@ -265,7 +265,7 @@ for vd=1:length(sensorvoldirs)
                         continue
                     end
                     %% individual K-weighted contrasts
-                    indiX=Numeric(strmatch(aap.acq_details.subjects(s).megname,Txt),:);
+                    indiX=Numeric(strmatch(aap.acq_details.subjects(s).subjname,Txt),:);
                     indiX=indiX-mean(indiX);
                     % meanX=[-0.476 -0.024 0.321 0.179]; moved outside loops
 
@@ -309,7 +309,7 @@ for vd=1:length(sensorvoldirs)
                 end
 
                 %         %% multiple regression of set-size data against individual K & SS at each voxel
-                %         X=Numeric([1 strmatch(aap.acq_details.subjects(s).megname,Txt)],:);
+                %         X=Numeric([1 strmatch(aap.acq_details.subjects(s).subjname,Txt)],:);
                 %         BetaK=zeros(size(Y{1}));
                 %         BetaLinear=BetaK;
                 %         conds={'VSTM_L', 'VSTM_R', 'ESTA_L', 'ESTA_R'};

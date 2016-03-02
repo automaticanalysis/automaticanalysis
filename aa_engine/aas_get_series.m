@@ -3,6 +3,8 @@ function [d, seriesnum] = aas_get_series(aap,modality,subj,sess)
 switch modality
     case 'functional'
         seriesnumbers = aap.acq_details.subjects(subj).seriesnumbers;
+    case 'meg'
+        seriesnumbers = aap.acq_details.subjects(subj).megseriesnumbers;
     case 'diffusion'
         seriesnumbers = aap.acq_details.subjects(subj).diffusion_seriesnumbers;
     case 'special'

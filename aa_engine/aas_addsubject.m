@@ -31,6 +31,7 @@ function aap = aas_addsubject(aap, varargin)
 
 %% Parse
 iMRIData = 1; % new subject
+iMEGData = 1;
 if isempty(aap.acq_details.subjects(end).subjname)
     subjind = 1;
 else
@@ -82,8 +83,6 @@ for field=fields'
     thissubj.(field{1})={[]};
 end
 fields(strcmp(fields,'subjname')) = [];
-fields(strcmp(fields,'megname')) = [];
-thissubj.megname = '';
 
 % search for existing subject
 if isfield(args,'name'), name = args.name; end
@@ -93,6 +92,7 @@ if ~isempty(name) % name specified --> check whether subject already exists
         subjind = subjserach; 
         thissubj = aap.acq_details.subjects(subjind);
         iMRIData = numel(thissubj.mriname)+1;
+        iMEGData = numel(thissubj.megname)+1;
         for field=fields'
             thissubj.(field{1}){end+1}=[];
         end
@@ -102,7 +102,7 @@ end
 %% Data
 try
     if iscell(data) && numel(data) == 2 % MEG
-        thissubj.megname=data{1};
+        thissubj.megname{iMEGData}=data{1};
         thissubj.mriname{iMRIData}=data{2};
         if isempty(name), name = aas_megname2subjname(aap,sprintf(aap.directory_conventions.megsubjectoutputformat,thissubj.megname)); end
     else % MRI
@@ -117,7 +117,7 @@ thissubj.subjname = name;
 
 %% Series
 if isfield(args,'functional')
-    if isnumeric(args.functional) || isnumeric(args.functional{1}) % DICOM series number
+    if isnumeric(args.functional) || isnumeric(args.functional{1}) % DICOM series number --> MRI
         thissubj.seriesnumbers{iMRIData}=args.functional;
     else
         fMRI = {}; MEG = {};
@@ -140,10 +140,10 @@ if isfield(args,'functional')
                 % Check if exists full path
                 % - try meg
                 if ~exist(fname,'file')
-                    if ~isempty(thissubj.megname)
+                    if ~isempty(thissubj.megname{iMEGData})
                         tmpaap = aap;
                         tmpaap.directory_conventions.megsubjectoutputformat = '%s';
-                        if exist(fullfile(meg_findvol(aap,thissubj.megname,'fp'),fname),'file') ||...
+                        if exist(fullfile(meg_findvol(aap,thissubj.megname{iMEGData},'fp'),fname),'file') ||...
                                 ~isempty(meg_findvol(tmpaap,fname)) % try empty room
                             MEG{end+1} = fname;
                             continue;
@@ -174,7 +174,7 @@ if isfield(args,'functional')
             thissubj.seriesnumbers{iMRIData}=fMRI;
         end
         if ~isempty(MEG)
-            thissubj.megseriesnumbers=MEG;
+            thissubj.megseriesnumbers{iMEGData}=MEG;
         end
     end
 end

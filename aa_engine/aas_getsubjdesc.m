@@ -1,18 +1,26 @@
 function nme=aas_getsubjdesc(aap,i)
 
 nme='';
-if ~isempty(aap.acq_details.subjects(i).megname)
-    nme=[nme 'MEG:' aap.acq_details.subjects(i).megname ' '];
-end;
-if ~isempty(aap.acq_details.subjects(i).mriname{1})
-    if isnumeric(aap.acq_details.subjects(i).mriname)
-        nme=[nme 'MRI:' num2str(aap.acq_details.subjects(i).mriname{1})];    
-    else
-        nme=[nme 'MRI:' aap.acq_details.subjects(i).mriname{1}];
+for d = 1:numel(aap.acq_details.subjects(i).megname)
+    if ~isempty(aap.acq_details.subjects(i).megname{d})
+        if isnumeric(aap.acq_details.subjects(i).megname{d})
+            nme=[nme '; MEG:' num2str(aap.acq_details.subjects(i).megname{d})];
+        else
+            nme=[nme '; MEG:' aap.acq_details.subjects(i).megname{d}];
+        end
     end
-end;
+end
+for d = 1:numel(aap.acq_details.subjects(i).mriname)
+    if ~isempty(aap.acq_details.subjects(i).mriname{d})
+        if isnumeric(aap.acq_details.subjects(i).mriname{d})
+            nme=[nme '; MRI:' num2str(aap.acq_details.subjects(i).mriname{d})];
+        else
+            nme=[nme '; MRI:' aap.acq_details.subjects(i).mriname{d}];
+        end
+    end
+end
 if isempty(nme)
-    nme='(unknown)';
+    nme='; (unknown)';
 end;
 
-nme=['subject "',aap.acq_details.subjects(i).subjname, '" - ', nme];
+nme=['subject "',aap.acq_details.subjects(i).subjname, '" -', nme(2:end)];

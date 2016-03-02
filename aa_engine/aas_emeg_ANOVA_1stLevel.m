@@ -168,8 +168,8 @@ Kfiles={};
 
 nsub=0;
 for s=1:length(aap.acq_details.subjects)
-    fprintf('\n%s: ',aap.acq_details.subjects(s).megname);
-    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).megname);
+    fprintf('\n%s: ',aap.acq_details.subjects(s).subjname);
+    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).subjname);
     fn=strcat(subdir,filesep,files);
 
     if ~all(cellfun(@exist,fn))
@@ -215,7 +215,7 @@ for s=1:length(aap.acq_details.subjects)
 
 %     if dorois
 %         % extract ROI data here for exporting to SPSS?
-%         temp=fullfile(secondlevdir,aap.acq_details.subjects(s).megname);
+%         temp=fullfile(secondlevdir,aap.acq_details.subjects(s).subjname);
 %         for r=1:length(R)
 %             marsy=get_marsy(R{r},char(fn),'mean');
 %             roiData{r}=summary_data(marsy);

@@ -184,8 +184,8 @@ Kfiles={};
 
 nsub=0;
 for s=1:length(aap.acq_details.subjects)
-    fprintf('\n%s: ',aap.acq_details.subjects(s).megname);
-    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).megname);
+    fprintf('\n%s: ',aap.acq_details.subjects(s).subjname);
+    subdir=fullfile(aap.acq_details.root,aap.acq_details.subjects(s).subjname);
     fn=strcat(subdir,filesep,files);
 
     if ~all(cellfun(@exist,fn))
@@ -203,9 +203,9 @@ for s=1:length(aap.acq_details.subjects)
         %         tits=strcat(temp1{1},temp2{1});
         %         vals=reshape(summary,1,[]);
         %         temp=regexprep(secondlevdir,'[^/]*N?ST?t\d_',''); % not ideal, but need shorter field names
-        %         temp=fullfile(secondlevdir,aap.acq_details.subjects(s).megname);
+        %         temp=fullfile(secondlevdir,aap.acq_details.subjects(s).subjname);
         %         aas_emeg_savestats(temp,tits,vals,tits,false,'ROIdata.mat');
-        temp=fullfile(secondlevdir,aap.acq_details.subjects(s).megname);
+        temp=fullfile(secondlevdir,aap.acq_details.subjects(s).subjname);
         for r=1:length(R)
             marsy=get_marsy(R{r},char(fn),'mean');
             summary=summary_data(marsy);
@@ -268,7 +268,7 @@ for s=1:length(aap.acq_details.subjects)
     %% ROI summary from FDR-corrected SS effect, for each task
     if ~isempty(ROIs)
         for r=1:length(RN)
-            ROIdata{s,1,r}=aap.acq_details.subjects(s).megname;
+            ROIdata{s,1,r}=aap.acq_details.subjects(s).subjname;
             for v=1:length(Y)
                 ROIdata{s,v+1,r}=mean(Y{v}(ROIs(:,:,:,r)));
             end
@@ -283,7 +283,7 @@ for s=1:length(aap.acq_details.subjects)
             continue
         end
         %% individual K-weighted contrasts
-        indiX=Numeric(strmatch(aap.acq_details.subjects(s).megname,Txt),:);
+        indiX=Numeric(strmatch(aap.acq_details.subjects(s).subjname,Txt),:);
         indiX=indiX-mean(indiX);
         % meanX=[-0.476 -0.024 0.321 0.179]; moved outside loops
 
@@ -327,7 +327,7 @@ for s=1:length(aap.acq_details.subjects)
     end
 
     %         %% multiple regression of set-size data against individual K & SS at each voxel
-    %         X=Numeric([1 strmatch(aap.acq_details.subjects(s).megname,Txt)],:);
+    %         X=Numeric([1 strmatch(aap.acq_details.subjects(s).subjname,Txt)],:);
     %         BetaK=zeros(size(Y{1}));
     %         BetaLinear=BetaK;
     %         conds={'VSTM_L', 'VSTM_R', 'ESTA_L', 'ESTA_R'};
