@@ -18,13 +18,13 @@
             <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
             <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
-            <subjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU CBU%06d*' ui='text'>CBU%06d*</subjectoutputformat>
+            <subjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>CBU%06d*</subjectoutputformat>
             <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
-            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg%2d_%04d*' ui='text'>meg%2d_%04d*</megsubjectoutputformat>
+            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
             <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_latest</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
