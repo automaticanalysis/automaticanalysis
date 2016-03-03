@@ -1,32 +1,33 @@
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
 
-As the change in the major version implies, older user master scripts are not compatible with v5.0.0. Examples has been updated to demonstrate new syntax. In addition, pipelines processed with older versions cannot be re-processed with v5.0.0 (`aap` structure stored in _aap\_parameters.mat_ is not compatible). A script `aa_convert_subjects` is provided to convert `aap` structure stored in _aap\_parameters.mat_. When connecting to a remote pipeline processed with an older version of aa, `aa_convert_subjects` is automatically called; so no extra conversion is required. 
+As the change in the major versioning implies, older user master scripts are not compatible with v5. Examples has been updated to demonstrate new syntax. In addition, pipelines processed with older versions cannot be re-processed with v5 (`aap` structure stored in _aap\_parameters.mat_ is not compatible). A script `aa_convert_subjects` is provided to convert `aap` structure stored in _aap\_parameters.mat_. When connecting to a remote pipeline processed with an older version of aa, `aa_convert_subjects` is automatically called; so no explicit conversion is required. 
 
 #### New general features ####
-  - Improved documentation of several functions
+  - More detailed documentation of several key functions
   - Explicit subject identifier `aap.acq_details.subjects.subjname`: `aas_addsubject`
     - Subject name is more unambiguously specified
     - Subject name is not tied to the data
     - Same subject name can be used as a reference in the whole UMS
 
   - Longitudinal/multi-visit measurement
+  - In case of selected_session, only relevant inputs will be retrieved
   - Session-specific fieldmaps
   - `aas_addsubject` has a more intuitive parameterisation
-  - from NIfTI
+  - From NIfTI
     - [BIDS](bids.neuroimaging.io) datasets are supported (full)
-  - reporting remote pipeline
-  - lightweighting: remove ANTs, VBM8 and FreeSurfer deface templates from the package and mark them as (optional) requirements
+  - Reporting remote pipeline
+  - Lightweighting: remove ANTs, VBM8 and FreeSurfer deface templates from the package and mark them as (optional) requirements
 
 #### New features for structural ####
   - aamod_mask_fromsegment accepts different exact thresholds for GM, WM, CSF
 
 #### New features for fMRI ####
   - Reorienting input images (structural, diffusion and EPI) to their middle voxel (`aamod_reorienttomiddle_*`)
-  - specifying contrast for certain sessions using format "sessions:<session name>[+<session name>[...]]"
-  - specifying contrast with condition names in a format <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xTASK|-1xREST' or '+1xTASKp1|-1xRESTm1'). N.B.: It requires regressor names with UPPERCASE letters only!
+  - Specifying contrast for certain sessions using format "sessions:<session name>[+<session name>[...]]"
+  - Specifying contrast with condition names in a format <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xTASK|-1xREST' or '+1xTASKp1|-1xRESTm1'). N.B.: It requires regressor names with UPPERCASE letters only!
 	
 #### Bugfixes ####
-  - scaling automatic temporal modulation
+  - Scaling automatic temporal modulation
   - aamod_bet_meanepi
   - aamod_waveletdespike using explicit brainmask
 
@@ -43,10 +44,10 @@ As the change in the major version implies, older user master scripts are not co
   - Acknowledging externals in [README.json](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/external/README.json)
 
 #### New general features ####
-  - dynamic modification of streams (`aas_renamestream`)
-  - selected_sessions now works also for branching
+  - Dynamic modification of streams (`aas_renamestream`)
+  - Selected_sessions now works also for branching
 
-  - from NIfTI
+  - From NIfTI
     - 3D NIfTI inputs are fully supported
     - NIfTI fieldmaps are supported (`aamod_fieldmapfromnifti`)
     - [BIDS](bids.neuroimaging.io) datasets are supported (partial)

@@ -143,8 +143,16 @@ else
                     end
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
-                    [gotinputs sf]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
-                    streamfiles{inpind}=sf;
+                    % subselect dependency
+                    toSelect = logical([]);
+                    for d = 1:numel(deps)
+                        toSelect(d) = isempty(strfind(deps{d}{1},'session')) ||...      % not a session
+                            (numel(deps{d}{2}) < 2) ||...                               % not applicable (e.g. isc_session)
+                            any(deps{d}{2}(2) == aap.acq_details.selected_sessions);    % selected session
+                    end
+                    deps = deps(toSelect);
+                    
+                    [gotinputs, streamfiles{inpind}]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
                     if isempty(gotinputs)
                         aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
                     end;
