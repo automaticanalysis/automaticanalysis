@@ -20,25 +20,31 @@ switch task
         %% Locate series
         % Manually specified value for fieldmaps series number over-rides automatically scanned value
         if ~isempty(cell2mat(aap.acq_details.subjects(subj).fieldmaps))
-            fieldseries=aap.acq_details.subjects(subj).fieldmaps;
+            fieldseries0=aap.acq_details.subjects(subj).fieldmaps;
         else
             % Load up automatically scanned value
             ais=load(aas_getfiles_bystream(aap,subj,'autoidentifyseries'));
-            fieldseries=ais.series_fieldmap;
+            fieldseries0=ais.series_fieldmap;
         end
         % locate epi
         [d, mriser] = aas_get_series(aap,'functional',subj,sess);
 
         % locate the first pair of fieldmaps after epi
         if numel(mriser) > 1, mriser = mriser(end); end % last echo
-        fieldseries = fieldseries{d};
-        fieldseries = fieldseries(fieldseries>mriser);
+        fieldseries0 = fieldseries0{d};
+        fieldseries = fieldseries0(fieldseries0>mriser);
         if numel(fieldseries)>2
             aas_log(aap,false,sprintf('INFO:autoidentifyseries found %d fieldmaps after EPI serie %d',numel(fieldseries),mriser));
             aas_log(aap,false,'INFO:Will proceed with the first two, but you might want to try using the ignoreseries field in aas_addsubject in your user script.');
             fieldseries=fieldseries(1:2);
         elseif numel(fieldseries)<2
-            aas_log(aap,true,sprintf('ERROR:Was expecting only two fieldmaps after EPI serie %d, but autoidentifyseries found only %d',mriser,numel(fieldseries)));
+            if numel(fieldseries0)>=2
+                aas_log(aap,false,sprintf('INFO:autoidentifyseries found no fieldmaps after EPI serie %d',mriser));
+                aas_log(aap,false,'INFO:Will proceed with the last acquired before the EPI.');
+                fieldseries=fieldseries0(end-1:end);
+            else
+                aas_log(aap,true,sprintf('ERROR:Was expecting two fieldmaps after EPI serie %d, but autoidentifyseries found only %d',mriser,numel(fieldseries)));
+            end
         end
         
         %% Obtain
