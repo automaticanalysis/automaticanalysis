@@ -1,3 +1,14 @@
+## 5.0.1 ##
+
+#### New features for structural ####
+  - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
+
+#### New features for fMRI ####
+  - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
+
+#### Bugfixes ####
+  - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_structural.xml)
+  
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
 
 As the change in the major versioning implies, older user master scripts are not compatible with v5. Examples has been updated to demonstrate new syntax. In addition, pipelines processed with older versions cannot be re-processed with v5 (`aap` structure stored in _aap\_parameters.mat_ is not compatible). A script `aa_convert_subjects` is provided to convert `aap` structure stored in _aap\_parameters.mat_. When connecting to a remote pipeline processed with an older version of aa, `aa_convert_subjects` is automatically called; so no explicit conversion is required. 
@@ -20,13 +31,11 @@ As the change in the major versioning implies, older user master scripts are not
 
 #### New features for structural ####
   - aamod_mask_fromsegment accepts different exact thresholds for GM, WM, CSF
-  - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
 
 #### New features for fMRI ####
   - Reorienting input images (structural, diffusion and EPI) to their middle voxel (`aamod_reorienttomiddle_*`)
   - Specifying contrast for certain sessions using format "sessions:<session name>[+<session name>[...]]"
   - Specifying contrast with condition names in a format <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xTASK|-1xREST' or '+1xTASKp1|-1xRESTm1'). N.B.: It requires regressor names with UPPERCASE letters only!
-  - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
 	
 #### Bugfixes ####
   - Scaling automatic temporal modulation
