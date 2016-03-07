@@ -334,9 +334,10 @@ for l=1:length(mytasks)
                 switch (task)
                     case 'checkrequirements'
                         [aap,resp]=aa_feval_withindices(mfile_alias,aap,task,indices);
-                        if (length(resp)>0)
+                        if ~isempty(resp)
                             aas_log(aap,0,['\n***WARNING: ' resp]);
                         end
+                        taskqueue.aap = aap;
                     case 'doit'
                         tic
                         % before starting current stage, delete done_

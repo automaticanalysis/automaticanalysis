@@ -239,6 +239,17 @@ switch task
             aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstream,outfile);
             
         end
+    case 'checkrequirements'
+        in =  aas_getstreams(aap,'input');
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            if ~strcmp(out{s},['roidata_' in{s}])
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},['roidata_' in{s}],'output');
+            end
+            aas_log(aap,false,['INFO: output stream: ''roidata_' in{s} '''']);
+        end        
 end
 
 

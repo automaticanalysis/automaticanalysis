@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
   <tasklist>
-   <currenttask domain='session' mfile_alias='aamod_roi_extract' desc='Extract data in ROIs' modality='MRI'>
+   <currenttask mfile_alias='aamod_roi_extract' domain='session' desc='Extract data in ROIs' modality='MRI'>
         <ROIfile>/imaging/camcan/templates/craddock_tcorr05_2level_841ROI.nii</ROIfile>
         <output_raw>0</output_raw>
         <do_svd>1</do_svd>

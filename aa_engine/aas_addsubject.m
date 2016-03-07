@@ -1,5 +1,5 @@
 % Automatic analysis - add subject to the analysis. 
-% You may call it multiple times to add more (DICOM) sources to a particular subject (MRI only!).
+% You may call it multiple times to add more sources to a particular subject.
 %
 % FORMAT function aap = aas_addsubject(aap, [name], data, [['name',<subject name>], ['functional',<functional series>], ['diffusion',<diffusion series>], ['structural',<structural series>], ['fieldmaps',<fieldmaps series>], ['specialseries',<specialseries>], ['ignoreseries',<ignoreseries>]])
 %   - aap: aap structure with parameters and tasklist

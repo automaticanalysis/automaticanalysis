@@ -20,11 +20,13 @@ As the change in the major versioning implies, older user master scripts are not
 
 #### New features for structural ####
   - aamod_mask_fromsegment accepts different exact thresholds for GM, WM, CSF
+  - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
 
 #### New features for fMRI ####
   - Reorienting input images (structural, diffusion and EPI) to their middle voxel (`aamod_reorienttomiddle_*`)
   - Specifying contrast for certain sessions using format "sessions:<session name>[+<session name>[...]]"
   - Specifying contrast with condition names in a format <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xTASK|-1xREST' or '+1xTASKp1|-1xRESTm1'). N.B.: It requires regressor names with UPPERCASE letters only!
+  - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
 	
 #### Bugfixes ####
   - Scaling automatic temporal modulation

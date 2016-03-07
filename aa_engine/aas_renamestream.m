@@ -18,6 +18,7 @@ stageindex = sscanf(index,'_%05d');
 if ~isfield(aap.tasksettings,stagename) || (numel(aap.tasksettings.(stagename)) < stageindex)
     aas_log(aap,1,sprintf('ERROR: Stage %s not found!',stage));
 end
+modulenumber = cell_index({aap.tasklist.main.module.name},stagename); modulenumber = modulenumber(stageindex);
 
 %% Check task
 odot = origstream == '.';
@@ -50,7 +51,16 @@ else
     aas_log(aap,1,sprintf('ERROR: Stream %s of module %s not found!',origstream,stagename));
 end
 stream = aap.schema.tasksettings.(stagename)(end).([type 'streams']).stream{ind};
-
+switch type
+    case 'input'
+        internalstore = 'inputstreamsources';
+    case 'output'
+        internalstore = 'outputstreamdestinations';
+end
+storedstreams = aap.internal.(internalstore){modulenumber}.stream;
+if isempty(storedstreams), streamindex = NaN;
+else streamindex = cell_index({storedstreams.name},origstreamname); end
+        
 %% Check ORIGSTREAM
 if (~isstruct(stream) || ~isfield(stream.ATTRIBUTE,'isrenameable') || ~stream.ATTRIBUTE.isrenameable) && toRename % no attributes --> assume non-renameable --> allow specifying only
     aas_log(aap,1,sprintf('ERROR: Stream %s of module %s does not support renaming!\nERROR: Check attribute "isrenameable"!',origstream,stagename));
@@ -68,12 +78,22 @@ end
 if ~iscell(aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream)
     aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
     aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+    aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
 else
     aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
     aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+end
+if ~isnan(streamindex)
+    aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+    aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
 end
 if ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
 else % with attributes
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
+    aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
 end
