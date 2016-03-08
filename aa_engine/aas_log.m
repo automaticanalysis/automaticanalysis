@@ -9,17 +9,18 @@ function aas_log(aap,iserr,msg,style)
 ST = dbstack;
 isEngine = numel(ST) > 1 && ~isempty(strfind(ST(2).name,'aaq'));
 
+% aap defaults
+if ~isstruct(aap) 
+    aap.options.verbose = 2;
+    aap.options.email = '';
+	aap.gui_controls.usecolouroutput = false;
+end
+if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
+
 % don't attempt html tags if running outside of Matlab desktop
 if nargin < 4 || ~aap.gui_controls.usecolouroutput
     style='text';
 end;
-
-if ~isstruct(aap) % defualt
-    aap.options.verbose = 2;
-    aap.options.email = '';
-end
-
-if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
 
 if iserr % errors
     if aap.options.verbose > 0

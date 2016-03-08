@@ -29,14 +29,13 @@ end;
 [s,w]=system([prefix cmd]);
 if (~quiet)
     if (strcmp('shell-init: error',w))
-        aas_log(aap,false,sprintf('Likely Linux error %s\n',w));
+        aas_log([],false,sprintf('Likely Linux error %s\n',w));
     end;
 end;
 
 if (s && ~quiet)
     [s,wenv]=system('/usr/bin/env');
-    aap=[];
-    aas_log(aap,false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',w,[prefix cmd],wenv));
+    aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',w,[prefix cmd],wenv));
 end;
 % strip off tcsh: errors at start (see http://www.mathworks.com/support/solutions/data/1-18DNL.html?solution=1-18DNL)
 [l r]=strtok(w,10);
