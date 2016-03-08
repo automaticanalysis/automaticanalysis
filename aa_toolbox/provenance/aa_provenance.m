@@ -13,8 +13,10 @@ classdef aa_provenance < handle
         aap
         studypath
         
-        dep
         relations = {}
+        
+        % so far only one subject and sessopn is supported
+        indices = [1 1]
     end
     
     properties (SetAccess = private)
@@ -26,7 +28,6 @@ classdef aa_provenance < handle
         function obj = aa_provenance(aap)
             obj.aap = aap;
             obj.studypath = fullfile(obj.aap.acq_details.root,obj.aap.directory_conventions.analysisid);
-            obj.dep = dep_read(fullfile(obj.studypath,'aap_prov.trp'));
             obj.provlib = which('spm_provenance'); % check availability
             if ~isempty(obj.provlib)
 				obj.isvalid = true;
@@ -145,15 +146,20 @@ classdef aa_provenance < handle
                 [tag, ind] = strtok_ptrn(stageindex.stagetag,'_0');
                 name = ['Remote ' stageindex.host '_' tag];
                 index = sscanf(ind,'_%d');
-                raap = load(stageindex.aapfilename); raap = raap.aap;
+                loaded = load(stageindex.aapfilename); raap = loaded.aap;
                 
                 iname = cell_index({raap.tasklist.main.module.name},tag);
                 iindex = cell2mat({raap.tasklist.main.module(iname).index}) == index;
                 rstageindex = iname(iindex);
                 
+                curr_aap = aas_setcurrenttask(raap,rstageindex);
+                curr_aap.options.verbose = -1;
+                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,obj.indices),...
+                    '^aap_parameters.*mat$'));
+                
                 idname = ['idRemoteActivity_' tag];
                 idattr = {...
-                    'aap',aas_setcurrenttask(raap,rstageindex),...
+                    'aap',loaded.aap,...
                     'Location',[stageindex.host fullfile(fileparts(stageindex.aapfilename),stageindex.stagetag)],...
                     };
                 
@@ -168,8 +174,14 @@ classdef aa_provenance < handle
                     sfx = smod.extraparameters.aap.directory_conventions.analysisid_suffix; 
                 else sfx = ''; 
                 end
+                
+                curr_aap = aas_setcurrenttask(obj.aap,stageindex);
+                curr_aap.options.verbose = -1;
+                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,obj.indices),...
+                    '^aap_parameters.*mat$'));
+                
                 idattr = {...
-                    'aap',aas_setcurrenttask(obj.aap,stageindex),...
+                    'aap',loaded.aap,...
                     'Location',fullfile([obj.studypath sfx],sprintf('%s_%05d',name,index)),...
                     };
                 
@@ -193,14 +205,16 @@ classdef aa_provenance < handle
                     isOptional = numel(inputattrs)>=i && isstruct(inputattrs{i}) && isfield(inputattrs{i},'isessential') && ~inputattrs{i}.isessential;
                     
                     % find source
-                    if isfield(obj.dep.(sprintf('%s_%05d',name,index)),istream)
-                        src = obj.dep.(sprintf('%s_%05d',name,index)).(istream);
+                    inputstreamindex = strcmp({loaded.aap.internal.inputstreamsources{stageindex}.stream.name},inputs{i});
+                    if any(inputstreamindex)
+                        srcindex = loaded.aap.internal.inputstreamsources{stageindex}.stream(inputstreamindex).sourcenumber;
+                        src = sprintf('%s_%05d',loaded.aap.tasklist.main.module(srcindex).name,loaded.aap.tasklist.main.module(srcindex).index);
                     else
                         if isOptional
                             continue;
                         else
                             aas_log(obj.aap,true,...
-                                sprintf('Inputstream %s of module %s not found!',istream,sprintf('%s_%05d',name,index)));
+                                sprintf('Inputstream %s of module %s not listed in depenedency!',istream,sprintf('%s_%05d',name,index)));
                         end
                     end
                     if ~isempty(strfind(src,'Remote')) % remote src --> add
@@ -258,11 +272,11 @@ classdef aa_provenance < handle
             if ~isempty(obj.IDs{idsrc}.aap.acq_details.selected_sessions)
                 sess = obj.IDs{idsrc}.aap.acq_details.selected_sessions(1);
             else
-                sess = 1;
+                sess = obj.indices(2);
             end
             try                
                 [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
-                    1,sess,stream,'output'); % TODO: associate files
+                    obj.indices(1),sess,stream,'output'); % TODO: associate files
             catch
                 aas_log(obj.aap,false,sprintf('Outputstream %s of module %s not found!',stream,obj.IDs{idsrc}.aap.tasklist.currenttask.name));
                 prid = ''; id = 0;

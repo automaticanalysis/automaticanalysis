@@ -7,15 +7,31 @@ if not(isempty(fslsetup)) && not(fslsetup(end)==';')
     fslsetup=[fslsetup ';'];
 end;
 
+ENV = {...
+    'MATLABPATH', path;...
+    'FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype ...
+    };
+
 switch (aap.directory_conventions.fslshell)
     case 'none'
+        for e = 1:size(ENV,1)
+            setenv(ENV{e,1},ENV{e,2});
+        end
         cmd=[fslsetup fslcmd];
         [s w]=aas_shell(cmd);
-    case 'csh'
-        cmd=['csh -c "' fslsetup 'setenv FSLOUTPUTTYPE ' aap.directory_conventions.fsloutputtype ';' fslcmd '"'];
+    case {'csh' 'tcsh'}
+        cmd=[aap.directory_conventions.fslshell ' -c "'];
+        for e = 1:size(ENV,1)
+            cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
+        end
+        cmd = [cmd fslcmd '"'];
         [s w]=aas_shell(cmd);
     case 'bash'
-        cmd=['bash -c "' fslsetup 'export FSLOUTPUTTYPE=' aap.directory_conventions.fsloutputtype ';' fslcmd '"'];
+        cmd=[aap.directory_conventions.fslshell ' -c "'];
+        for e = 1:size(ENV,1)
+            cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
+        end
+        cmd = [cmd fslcmd '"'];
         [s w]=aas_shell(cmd);
 end;
 

@@ -248,7 +248,7 @@ switch task
             if ~strcmp(out{s},['roidata_' in{s}])
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},['roidata_' in{s}],'output');
             end
-            aas_log(aap,false,['INFO: output stream: ''roidata_' in{s} '''']);
+            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''roidata_' in{s} '''']);
         end        
 end
 

@@ -9,6 +9,8 @@
 #### Bugfixes ####
   - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_structural.xml)
   - aas_log with empty `aap`
+  - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
+  - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
   
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
 
