@@ -36,6 +36,9 @@ classdef QueueViewerClass < handle
         UpdateRate = 10
         Clock = []
     end
+    properties (Access = private)
+        JobsToIgnore = []
+    end
     
     methods
         function obj = QueueViewerClass(scheduler)
@@ -307,6 +310,7 @@ classdef QueueViewerClass < handle
             Jobs = [obj.Scheduler.Jobs];
             q = {};
             for j = 1:numel(Jobs)
+                if any(obj.JobsToIgnore == Jobs(j).ID), continue; end
                 Task = Jobs(j).Tasks;
                 if ~strcmp(Task.State,'finished')
                     q{end+1} = obj.TaskLabel(Task);
@@ -324,7 +328,7 @@ classdef QueueViewerClass < handle
                             set(obj.UIControls.autoupdate_chk,'Value',false);
                             chkAutoUpdate(obj.UIControls.autoupdate_chk, [], obj)
                         end
-                        Jobs(j).delete;
+                        obj.JobsToIgnore(end+1) = Jobs(j).ID;
                     end
                 end
             end
