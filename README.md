@@ -28,7 +28,7 @@ http://www.automaticanalysis.org
  - System: Linux or MacOX (Windows is not supported. Sorry!)
  - Softwares: 
    - **MATLAB** - It has been tested with version r2009a and later
-   - **SPM** - It has been tested with versions SPM5 and later (SPM12 is recommended!)
+   - **SPM** - It has been tested with versions SPM5 and later (SPM12 r6685 is recommended!)
  - Recommended software for features:
    - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
