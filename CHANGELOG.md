@@ -11,6 +11,11 @@
   - aas_log with empty `aap`
   - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
   - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
+  - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging and [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) will not interfere with `aaq`
+  - Distributions of the contrasts
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
+  - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
+  - full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
   
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
 

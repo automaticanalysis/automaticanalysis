@@ -10,16 +10,6 @@ function [aap,resp]=aamod_secondlevel_model(aap,task,i)
 resp='';
 
 switch task
-    case 'domain'
-        resp='study';   % this module needs to be run once per study
-        
-    case 'description'
-        resp='SPM second level (RFX) model';
-        
-    case 'summary'
-        subjpath=aas_getsubjpath(i);
-        resp=sprintf('Second level model %s\n',subjpath);
-        
     case 'report'
         if ~exist(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
             load(aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}));
@@ -70,7 +60,8 @@ switch task
 %             end;
         end;
         %                phs = 1; conname='UF_S'
-        
+        allSPMs = {};
+        allbetas = {};
         for n=1:length(flSPM{1}.SPM.xCon)
             
             if strcmp(flSPM{1}.SPM.xCon(n).STAT, 'T')
@@ -158,20 +149,22 @@ switch task
                 
                 
                 % Output streams
-                % Describe outputs
                 %  secondlevel_spm
-                aap=aas_desc_outputs(aap,'secondlevel_spm',fullfile(rfxdir,'SPM.mat'));
+                allSPMs{end+1} = fullfile(rfxdir,'SPM.mat');
                 
                 %  secondlevel_betas (includes related statistical files)
-                allbetas=vertcat(...
-                    dir(fullfile(rfxdir,'beta_*')),...
-                    dir(fullfile(rfxdir,'ResMS.*')),...
-                    dir(fullfile(rfxdir,'RPV.*')),...
-                    dir(fullfile(rfxdir,'mask.*')));
-                betafns=strcat(repmat([rfxdir filesep],[numel(allbetas) 1]),char({allbetas.name}));
-                aap=aas_desc_outputs(aap,'secondlevel_betas',betafns);
+                allbetas{end+1} = char(...
+                    spm_select('FPList',rfxdir,'^beta_.*'),...
+                    spm_select('FPList',rfxdir,'^ResMS.*'),...
+                    spm_select('FPList',rfxdir,'^RPV.*'),...
+                    spm_select('FPList',rfxdir,'^mask.*')...
+                    );
             end
-        end;
+        end
+        
+        %% Describe outputs
+        aap=aas_desc_outputs(aap,'secondlevel_spm',char(allSPMs));
+        aap=aas_desc_outputs(aap,'secondlevel_betas',char(allbetas));
     case 'checkrequirements'
         
     otherwise
