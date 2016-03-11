@@ -1,5 +1,16 @@
 % This function loads an image (or matrix), and plots a histogram from it
-function h = img2hist(fileName, bins, name)
+%
+% FORMAT function h = img2hist(fileName, [bins], [name], [prcOutlier])
+%   - h:            handle to the plot
+%
+%   - fileName:     
+%       filename of the image (vcat strings for multiple images) or
+%       cell of matrices
+%   - bins:         number of bins
+%   - name:         title for plots (vcat strings for multiple images)
+%   - prcOutlier:   percentile threshold for detecting outliers
+
+function h = img2hist(fileName, bins, name, prcOutlier)
 
 if ischar(fileName)
     fileName = strvcat2cell(fileName);
@@ -7,6 +18,7 @@ end
 if (nargin >= 3) && ischar(name)
     name = strvcat2cell(name);
 end
+if nargin < 4, prcOutlier = 0; end
 
 %% tSNR results figure!
 h = figure;
@@ -29,7 +41,13 @@ for f = 1:numel(fileName)
     end
     
     % Linearise (exclude NaN and zero values)
-    Y{f} = Y{f}(and(~isnan(Y{f}), Y{f} ~= 0));
+    Y{f} = Y{f}((~isnan(Y{f}) & Y{f} ~= 0));
+    
+    % Remove Outliers
+    if prcOutlier
+        r = prctile(Y{f}(:),[prcOutlier 100-prcOutlier]);
+        Y{f} = Y{f}((Y{f} >= r(1)) & (Y{f} <= r(2)));
+    end
     
     % Parameters for histogram
     if nargin < 2 || isempty(bins)
@@ -63,7 +81,7 @@ end
 
 xlabel('Value')
 ylabel('Proportion of voxels')
-legend(legStr);
+legend(legStr,'interpreter','none');
 
 %% Difference between 2 distributions
 if length(fileName) == 2

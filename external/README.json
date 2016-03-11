@@ -116,6 +116,13 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "powerStudent.m",
+				"Version": "",
+				"DateDownloaded": "10 March 2016",
+				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/2907-powerstudent",
+				"aaMaintainer": "Tibor Auer"
+			}
+			{
 				"Name": "rotateticklabel.m",
 				"Version": "(mod)",
 				"DateDownloaded": "",
@@ -139,7 +146,7 @@
 			}
 			{
 				"Name": "wilcoxon.m",
-				"Version": "",
+				"Version": "(mod)",
 				"DateDownloaded": "16 September 2015",
 				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12702-wilcoxon-test",
 				"aaMaintainer": "Tibor Auer"

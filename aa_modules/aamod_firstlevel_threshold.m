@@ -10,35 +10,31 @@ function [aap,resp]=aamod_firstlevel_threshold(aap,task,subj)
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';   % this module needs to be run once per subject
-        
     case 'report'
-        % load dependency
-        CONmodulename = aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).tobecompletedfirst{1};
-        [tag, ind] = strtok_ptrn(CONmodulename,'_0');
-        index = sscanf(ind,'_%d');        
-        CON = aap.tasksettings.(tag)(index).contrasts(2).con;
-        for C = 1:numel(CON)
+        % Now get contrasts...
+        fSPM = aas_getfiles_bystream(aap, subj,'firstlevel_spm');
+        load(fSPM);
+        
+        for C = 1:numel(SPM.xCon)
             % Study summary
             if ~isfield(aap.report,sprintf('html_C%02d',C)) % new contrast
                 aap.report.(sprintf('html_C%02d',C)).fname = fullfile(aap.report.condir,[aap.report.fbase sprintf('_C%02d.htm',C)]);
                 aap = aas_report_add(aap,'C00',...
                     sprintf('<a href="%s" target=_top>%s</a><br>',...
                     aap.report.(sprintf('html_C%02d',C)).fname,...
-                    ['Contrast: ' CON(C).name]));
-                aap = aas_report_add(aap,sprintf('C%02d',C),['HEAD=Contrast: ' CON(C).name]);                
+                    ['Contrast: ' SPM.xCon(C).name]));
+                aap = aas_report_add(aap,sprintf('C%02d',C),['HEAD=Contrast: ' SPM.xCon(C).name]);                
             end
             aap = aas_report_add(aap,sprintf('C%02d',C),['Subject: ' basename(aas_getsubjpath(aap,subj)) '<br>']);
             
             % Single subject
-            aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',C,CON(C).name));
+            aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',C,SPM.xCon(C).name));
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
-                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',C,CON(C).name));
+                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',C,SPM.xCon(C).name));
             if exist(f{1},'file')
                 tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
-                    sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,CON(C).name));
+                    sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,SPM.xCon(C).name));
                 
                 % Add images to Single subject report
                 aap = aas_report_add(aap,subj,'<table><tr>');
@@ -64,14 +60,6 @@ switch task
         end
         
     case 'doit'
-        
-        cwd=pwd;
-        % get the subdirectories in the main directory
-        subj_dir = aas_getsubjpath(aap,subj);
-        
-        anadir = fullfile(subj_dir,aap.directory_conventions.stats_singlesubj);
-        cd(anadir);
-        
         % Init
         try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
         corr = aap.tasklist.currenttask.settings.threshold.correction;  % correction
@@ -82,6 +70,13 @@ switch task
         Outputs.thr = '';
         Outputs.sl = '';
         Outputs.Rend = '';
+        
+        cwd=pwd;
+        localroot = aas_getsubjpath(aap,subj);
+        
+        % get the subdirectories in the main directory
+        anadir = fullfile(localroot,aap.directory_conventions.stats_singlesubj);
+        cd(anadir);
         
         if aas_stream_has_contents(aap,subj,'structural') % Structural if available (backward compatibility)
             tmpfile = aas_getfiles_bystream(aap, subj,'structural');
@@ -214,10 +209,10 @@ switch task
                 iYtemplate = img_rot90(aYtemplate(:,:,iSl:nSl:end));
                 
                 [img, cm, v] = map_overlay(iYtemplate,iYepi,1-tra);                                
-                mon = tr_3Dto2D(img_rot90(img(:,:,:,1),a==2));
-                mon(:,:,2) = tr_3Dto2D(img_rot90(img(:,:,:,2),a==2));
-                mon(:,:,3) = tr_3Dto2D(img_rot90(img(:,:,:,3),a==2));
-                fnsl(a+1,:) = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                mon = tr_3Dto2D(img_tr(img(:,:,:,1),a==2));
+                mon(:,:,2) = tr_3Dto2D(img_tr(img(:,:,:,2),a==2));
+                mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
+                fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
                 imwrite(mon,deblank(fnsl(a+1,:)));
             end
             dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
@@ -232,10 +227,10 @@ switch task
             dat.dim = dim;
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-            fn3d = fullfile(aas_getsubjpath(aap,subj),sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
+            fn3d = fullfile(localroot,sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
             global prevrend
             prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
-            out = spm_render(dat,0.5,rendfile); 
+            out = spm_render(dat,0.5,rendfile); spm_figure('Close','Graphics');
             clear img; for i = 1:numel(out), img(1:size(out{i},1),1:size(out{i},2),:,i) = out{i}; end
             mon = tr_3Dto2D(squeeze(img(:,:,1,[1 3 5 2 4 6])));
             mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
@@ -245,7 +240,9 @@ switch task
             
             % Outputs
             if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
-            if exist(fnsl,'file'), Outputs.sl = strvcat(Outputs.sl, fnsl); end
+            for f = 1:size(fnsl,1)
+                if exist(fnsl(f,:),'file'), Outputs.sl = strvcat(Outputs.sl, fnsl(f,:)); end
+            end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             clear fnsl
         end
@@ -261,4 +258,24 @@ switch task
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
+end
+
+%% UTILS
+
+function fo = img_rot90(fi)
+for i = 1:size(fi,3)
+    fo(:,:,i) = rot90(fi(:,:,i),1);
+end
+end
+
+function fo = img_tr(fi,toDo)
+if nargin < 2, toDo = true; end
+if toDo
+    nslice = size(fi,3);
+    for i = 1:nslice
+        fo(:,:,i) = fliplr(rot90(fi(:,:,i),1));
+    end
+else
+    fo = fi;
+end
 end

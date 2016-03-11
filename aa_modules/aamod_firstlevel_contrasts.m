@@ -10,16 +10,6 @@ resp='';
 
 
 switch task
-    case 'domain'
-        resp='subject'; % this module needs to be run once per subject
-        
-    case 'description'
-        resp='SPM5 contrasts';
-        
-    case 'summary'
-        subjpath=aas_getsubjpath(subj);
-        resp=sprintf('Contrasts %s\n',subjpath);
-        
     case 'report' % [TA]
         if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg'),'file')
             efficiency(aap,subj);
@@ -254,7 +244,7 @@ switch task
             if all(cons{conind}(:) == 0)
                 continue
             end
-            if length(SPM.xCon)==0
+            if isempty(SPM.xCon)
                 SPM.xCon = spm_FcUtil('Set', connames{conind}, contype{conind},'c', cons{conind}', SPM.xX.xKXs);
             else
                 SPM.xCon(end+1) = spm_FcUtil('Set', connames{conind}, contype{conind},'c', cons{conind}', SPM.xX.xKXs);
@@ -293,11 +283,11 @@ switch task
         cd (cwd);
         
         %% DIAGNOSTICS (check distribution of T-values in contrasts)
-        D = dir(fullfile(anadir, 'spmT_*.img'));
-        for d = 1:length(D)
-            h = img2hist(fullfile(anadir, D(d).name), [], contrasts.con(d).name);
+        cons = SPM.xCon; cons = cons([cons.STAT]=='T');
+        for c = cons
+            h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
             print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
-                ['diagnostic_aamod_firstlevel_contrast_dist' contrasts.con(d).name '.jpg']));
+                ['diagnostic_aamod_firstlevel_contrast_dist_' strrep(c.name,' ','') '.jpg']));
             close(h);
         end
         
