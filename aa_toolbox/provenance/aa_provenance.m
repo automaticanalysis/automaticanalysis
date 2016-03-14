@@ -281,17 +281,17 @@ classdef aa_provenance < handle
                 aas_log(obj.aap,false,sprintf('Outputstream %s of module %s not found!',stream,obj.IDs{idsrc}.aap.tasklist.currenttask.name));
                 prid = ''; id = 0;
                 return
-            end
-            
+            end            
             [junk, MD5] = strtok(MD5); MD5 = MD5(2:end);
             
+            % Add stream
             idname = ['id' stream];
             idattr = {...
                 'streamname',stream,...
                 'filename',fname,...
                 'hash',MD5,...
                 };
-            [prid, id] = obj.Stream(idname,idattr);
+            [prid, id] = obj.Stream(idname,idattr,files);
         end
         
         function [prid id] = Module(obj,idname,attr) % 'Location', 'Stagename','Index'
@@ -312,7 +312,7 @@ classdef aa_provenance < handle
             end
         end
         
-        function [prid id] = Stream(obj,idname,attr) % 'streamname','filename(full)','hash';
+        function [prid id] = Stream(obj,idname,attr,files) % 'streamname','filename(full)','hash';
             [prid, num, id]= obj.idExist(idname,attr);
             if isempty(prid)
                 obj.IDs{end+1} = struct('id', [idname num2str(num+1)]);
@@ -340,6 +340,22 @@ classdef aa_provenance < handle
                     'nfo:fileName',{spm_file(obj.IDs{id}.filename,'filename'),'xsd:string'},...
                     'nfo:hasHash',obj.IDs{end}.id,...
                     });
+                
+                % add file(s)
+                for f = 1:size(files,1)
+                    obj.IDs{end+1} = struct(...
+                        'id',sprintf('%s_file%d',prid,f),...
+                        'filename',deblank(files(f,:)) ...
+                        );
+                    id_file = numel(obj.IDs);
+                    obj.p.entity(obj.IDs{id_file}.id,{...
+                        'prov:type','nfo:LocalFileDataObject',...
+                        'prov:label',sprintf('%s file #%d',obj.IDs{id}.streamname,f),...
+                        'nfo:fileUrl',url(obj.IDs{id_file}.filename),...
+                        'nfo:fileName',{spm_file(obj.IDs{id_file}.filename,'filename'),'xsd:string'},...
+                        });
+                    obj.p.hadMember(obj.IDs{id}.id,obj.IDs{id_file}.id);
+                end
             end
         end
         
