@@ -6,6 +6,9 @@
 #### New features for fMRI ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
 
+#### New features for MEG ####
+  - downsampling added to [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_meg_maxfilt.xml)
+
 #### Bugfixes ####
   - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_structural.xml)
   - aas_log with empty `aap`

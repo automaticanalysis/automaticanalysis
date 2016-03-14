@@ -124,8 +124,8 @@ switch task
             if ~isEmptyRoom % if empty_room session, skip ...
                 addpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
                 try spherefit = meg_fit_sphere_rik(aap,infname,outfname);
-                catch
-                    aas_log(aap,1,sprintf('ERROR: Spherefit failed for %s!\nERROR: No frame/origin will be applied!',aas_getsessdesc(aap,subj,sess)))
+                catch E
+                    aas_log(aap,1,sprintf('ERROR: Spherefit failed for %s: %s!\nERROR: No frame/origin will be applied!',aas_getsessdesc(aap,subj,sess),E.message))
                 end;
                 rmpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
             else
@@ -260,8 +260,34 @@ switch task
                 end
             end
             
+            outs{1} = outfname; logs{1} = logfname;
+            if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
+                outs{2} = outtrfname; logs{2} = logtrfname;
+            end
+            
+            %% Downsampling
+            if ~isempty(aas_getsetting(aap,'downsampling'))
+                for i = 1:numel(outs)
+                    outdsfname = spm_file(outs{i},'prefix','ds_');
+                    mfcmd_ds=[
+                        mfcall ' -f ' outs{i} ' -o ' outdsfname,...
+                        ' -ds ' num2str(aas_getsetting(aap,'downsampling')) ' -force -v | tee --append ' logs{i}
+                        ];
+                    disp(mfcmd_ds);
+                    
+                    % Executing MF
+                    [status, maxres] = unix(mfcmd_ds); % this stops screen-dumping?
+                    if status ~= 0
+                        aas_log(aap,1,'Trans MaxFilter failed!')
+                    else
+                        disp(maxres);
+                    end
+                    outs{i} = outdsfname;
+                end
+            end
+            
             %% Outputs
-            aap=aas_desc_outputs(aap,subj,sess,instream,outfname);
+            aap=aas_desc_outputs(aap,subj,sess,instream,outs{1});
             
             if ~isEmptyRoom
                 aap=aas_desc_outputs(aap,subj,sess,[instream '_head'],...
@@ -270,7 +296,7 @@ switch task
             end
             
             if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
-                aap=aas_desc_outputs(aap,subj,sess,['trans_' instream],outtrfname);
+                aap=aas_desc_outputs(aap,subj,sess,['trans_' instream],outs{2});
             end
         end
 end
