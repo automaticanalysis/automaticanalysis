@@ -5,20 +5,20 @@
 
 #### New features for fMRI ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
+- full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
 
 #### New features for MEG ####
   - downsampling added to [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_meg_maxfilt.xml)
 
 #### Bugfixes ####
   - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_structural.xml)
-  - aas_log with empty `aap`
+  - aas_log works with empty `aap`
   - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
   - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
   - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging and [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) will not interfere with `aaq`
-  - Distributions of the contrasts
+  - Distributions of the contrasts are reported
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
   - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
-  - full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
   - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)
   
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
