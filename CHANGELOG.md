@@ -1,4 +1,4 @@
-## 5.0.1 ##
+## 5.1.0 ##
 
 #### New features for structural ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
@@ -16,6 +16,7 @@
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
   - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
   - full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
+  - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)
   
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
 
