@@ -63,7 +63,7 @@ Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_rec
  - *directory_conventions/seriesoutputformat*: `sprintf` formatting string to get series directory as stored in subject directory
  - *directory_conventions/protocol_structural*: Name of the structural/anatomical protocol as stored in the DICOM header
  - *directory_conventions/dicomfilter*: Directory listing filter to find DICOM data
- - *directory_conventions/spmdir*: Path to SPM
+ - *directory_conventions/spmdir*: Path to SPM. **N.B.: You should not modify SPM version in your UMS but rather in your local parameter file.**
 Optional:
  - For distortion correction using fieldmap:
    - *directory_conventions/protocol_fieldmap*: Name of the fieldmap protocol as stored in the DICOM header

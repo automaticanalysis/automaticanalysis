@@ -103,7 +103,7 @@ classdef aaq_qsub<aaq
                     JobID = obj.taskstomonitor(ftmind);
                     Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
-                        obj.QV.Hold = false;
+                        if obj.QV.isvalid, obj.QV.Hold = false; end
                         obj.killed = true;
                         return;
                     end
