@@ -57,6 +57,7 @@
 				
   - Running
     - Compatibility with MATLAB pre-r2012b (local execution only)
+    - aas_add_meg_session now prevents adding the same session multiple times (e.g. when the function is called per subject)
     - `qsub` cleans jobs from previous execution
     - Iterative file retrieval (`aap.options.maximumretry`) 
 	- Specifying streams as diagnostic (`aas_garbagecollection` will not touch them)
