@@ -7,5 +7,11 @@ thissess.name=name;
 if (length(aap.acq_details.meg_sessions)==1 && isempty(aap.acq_details.meg_sessions.name))
     aap.acq_details.meg_sessions=thissess;
 else
-    aap.acq_details.meg_sessions(end+1)=thissess;
-end;
+    doAdd = true;
+    for iSess = 1:numel(aap.acq_details.meg_sessions)
+        if strcmp(aap.acq_details.meg_sessions(iSess).name,thissess.name)
+            doAdd = false;
+        end
+    end
+    if doAdd, aap.acq_details.meg_sessions(end+1) = thissess; end    
+end
