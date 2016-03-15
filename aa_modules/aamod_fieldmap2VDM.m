@@ -37,7 +37,8 @@ switch task
         try % Fieldmap EchoTimes
             FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'fieldmap_dicom_header'));
             dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
-            tes = sort(unique([dcmhdrs.EchoTime]),'ascend');
+            tes = sort(unique([dcmhdrs.volumeTE]),'ascend')*1000; % in ms
+            if numel(tes) ~= 2, tes = sort(unique([dcmhdrs.EchoTime]),'ascend'); end % try original (backward compatibility)
             if numel(tes) ~= 2, error('Inappropriate fieldmap header!'); end
             job.defaults.defaultsval.et = tes;
         catch E

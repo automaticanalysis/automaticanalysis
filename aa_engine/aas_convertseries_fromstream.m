@@ -90,15 +90,12 @@ for subdirind=1:length(subdirs)
         while (k<=size(dicomdata_subdir,1))
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
-            
-            % [AVG] Let us use get the TR and save it to the DICOMHEADERS
+            infoD = tmp{1};
+                
             if k == 1
-                
-                % [CW] dicominfo() comes from image processing toolbox,
-                % so let's try to make due without it.  Also seems
-                % inefficient to re-read dicominfo if we just did it.
-                infoD = tmp{1}; % dicominfo(deblank(dicomdata_subdir(k,:)));
-                
+                chunksize_volumes=memLimit*1024/(infoD.StartOfPixelData+infoD.SizeOfPixelData)/4;
+            end
+    
                 TR = [];
                 TE = [];
                 sliceorder = '';
@@ -161,26 +158,23 @@ for subdirind=1:length(subdirs)
                 
                 % Try to get sliceorder from other fields...
                 collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
-                
-                chunksize_volumes=memLimit*1024/(tmp{1}.StartOfPixelData+tmp{1}.SizeOfPixelData)/4;
-            end
             
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
-            if exist('TR','var'), tmp{1}.volumeTR = TR/1000; end
-            if exist('TE','var'), tmp{1}.volumeTE = TE/1000; end
-            if exist('sliceorder','var'), tmp{1}.sliceorder = sliceorder; end
-            if exist('slicetimes','var'), tmp{1}.slicetimes = slicetimes/1000; end
-            if exist('echospacing','var'), tmp{1}.echospacing = echospacing; end
+            if exist('TR','var'), infoD.volumeTR = TR/1000; end
+            if exist('TE','var'), infoD.volumeTE = TE/1000; end
+            if exist('sliceorder','var'), infoD.sliceorder = sliceorder; end
+            if exist('slicetimes','var'), infoD.slicetimes = slicetimes/1000; end
+            if exist('echospacing','var'), infoD.echospacing = echospacing; end
             
             % Collecting timing and slice location info so we can
             % reconstruct the slice order.  TemporalPositionIdentifier is
             % basically the volume number, InstanceNumber is the temporal
             % position in that acqusition, and SliceLocation is spatial
             if collectSOinfo
-                sliceInfo(end+1, :) = [tmp{1}.TemporalPositionIdentifier tmp{1}.InstanceNumber tmp{1}.SliceLocation];
+                sliceInfo(end+1, :) = [infoD.TemporalPositionIdentifier infoD.InstanceNumber infoD.SliceLocation];
             end
             
-            DICOMHEADERS=[DICOMHEADERS tmp];
+            DICOMHEADERS=[DICOMHEADERS {infoD}];
             
             if (DICOMHEADERS{end}.AcquisitionNumber~=oldAcquisitionNumber)
                 thispass_numvolumes=thispass_numvolumes+1;
