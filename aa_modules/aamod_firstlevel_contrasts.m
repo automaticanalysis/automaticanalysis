@@ -11,8 +11,8 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg'),'file')
-            efficiency(aap,subj);
+        if isempty(spm_select('List',aas_getsubjpath(aap,subj),'^diagnostic_.*jpg'))
+            diag(aap,subj);
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         for d = 1:numel(fdiag)
@@ -253,8 +253,8 @@ switch task
         SPM = spm_contrasts(SPM);
         
         % Efficiency based on Rik Henson's script [TA]
-        if settings.estimateefficiency
-            efficiency(aap, subj, SPM); 
+        if settings.estimateefficiency && strcmp(aap.options.wheretoprocess,'localsingle')
+            diag(aap, subj, SPM); 
         end
         
         % Describe outputs
@@ -282,15 +282,6 @@ switch task
         end
         cd (cwd);
         
-        %% DIAGNOSTICS (check distribution of T-values in contrasts)
-        cons = SPM.xCon; cons = cons([cons.STAT]=='T');
-        for c = cons
-            h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
-            print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
-                ['diagnostic_aamod_firstlevel_contrast_dist_' strrep(c.name,' ','') '.jpg']));
-            close(h);
-        end
-        
     case 'checkrequirements'
         
     otherwise
@@ -299,7 +290,7 @@ switch task
 end
 end
 
-function h = efficiency(aap,subj,SPM)
+function h = diag(aap,subj,SPM)
 % Based on Rik Henson's script
 
 % Note this calculation of efficiency takes the 'filtered and whitened'
@@ -311,6 +302,17 @@ function h = efficiency(aap,subj,SPM)
 if nargin < 3 % SPM is not passed (e.g. reporting)
     load(aas_getfiles_bystream(aap,subj,'firstlevel_spm'));
 end
+
+% distribution
+cons = SPM.xCon; cons = cons([cons.STAT]=='T');
+for c = cons
+    h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
+    print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
+        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep(c.name,' ','') '.jpg']));
+    close(h);
+end
+
+% efficiency
 X = SPM.xX.xKXs.X;
 iXX=inv(X'*X);
 

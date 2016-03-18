@@ -81,7 +81,7 @@ classdef aaq_qsub<aaq
                     JobID = obj.taskinqueue(ftmind);
                     Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
-                        obj.QV.Hold = false;
+                        if obj.QV.isvalid, obj.QV.Hold = false; end
                         obj.killed = true;
                         return;
                     end
@@ -187,7 +187,7 @@ classdef aaq_qsub<aaq
         end
         
         function obj = QVClose(obj)
-            if ~isempty(obj.QV)
+            if ~isempty(obj.QV) && obj.QV.isvalid
                 obj.QV.Close;
                 obj.QV.delete;
                 obj.QV = [];

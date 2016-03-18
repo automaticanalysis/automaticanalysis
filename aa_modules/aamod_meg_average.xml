@@ -9,7 +9,7 @@
             </qsub>
             
             <robust>0</robust>
-            <conditionorder desc='Condition labels sperated with ":"'></conditionorder>
+            <conditionorder desc='Condition labels separated with ":"'></conditionorder>
             
             <inputstreams>
                 <stream>meg</stream>

@@ -1,5 +1,8 @@
 ## 5.1.0 ##
 
+#### New general features ####
+  - [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/aa_export_toBIDS.m) export raw data from aa pipeline in BIDS format (limited functionality)
+
 #### New features for structural ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
 
@@ -15,8 +18,10 @@
   - aas_log works with empty `aap`
   - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
   - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
-  - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging and [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) will not interfere with `aaq`
-  - Distributions of the contrasts are reported
+  - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging
+  - Termination of the pipeline via [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) is correctly detected by [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsub.m) and [aa_doprocessing](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aa_doprocessing.m)
+  - [aamod_fieldmapfromnifti](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_fieldmapfromnifti.xml) now correctly outputs TEs from specified header
+  - Reporting includes distributions of (both the first- and second-level) contrasts
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
   - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
   - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)

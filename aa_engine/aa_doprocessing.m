@@ -395,7 +395,7 @@ for l=1:length(mytasks)
         if ~isempty(localtaskqueue.jobqueue), 
             localtaskqueue.runall(dontcloseexistingworkers, false); 
         end
-        if isfield(taskqueue,'killed') && taskqueue.killed, break; end
+        if isprop(taskqueue,'killed') && taskqueue.killed, break; end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
@@ -408,20 +408,22 @@ end
 % end
 % aas_log(aap,0,'Message deleted');
 
-if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
-
-if ~isempty(aap.options.email)
-    % In case the server is broken...
-    try
-        aas_finishedMail(aap.options.email, aap.acq_details.root)
-    catch
+if ~isprop(taskqueue,'killed') || ~taskqueue.killed
+    if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
+    
+    if ~isempty(aap.options.email)
+        % In case the server is broken...
+        try
+            aas_finishedMail(aap.options.email, aap.acq_details.root)
+        catch
+        end
+    end
+    
+    if isfield(aap.options,'garbagecollection') && aap.options.garbagecollection
+        aas_garbagecollection(aap,1)
     end
 end
 
-if isfield(aap.options,'garbagecollection') && aap.options.garbagecollection
-    aas_garbagecollection(aap,1)
-end
-    
 aa_close;
 
 end
