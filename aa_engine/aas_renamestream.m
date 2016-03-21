@@ -57,9 +57,11 @@ switch type
     case 'output'
         internalstore = 'outputstreamdestinations';
 end
-storedstreams = aap.internal.(internalstore){modulenumber}.stream;
-if isempty(storedstreams), streamindex = NaN;
-else streamindex = cell_index({storedstreams.name},origstreamname); end
+if isfield(aap,'internal')
+    storedstreams = aap.internal.(internalstore){modulenumber}.stream;
+    if isempty(storedstreams), streamindex = NaN;
+    else streamindex = cell_index({storedstreams.name},origstreamname); end
+end
         
 %% Check ORIGSTREAM
 if (~isstruct(stream) || ~isfield(stream.ATTRIBUTE,'isrenameable') || ~stream.ATTRIBUTE.isrenameable) && toRename % no attributes --> assume non-renameable --> allow specifying only
@@ -78,22 +80,26 @@ end
 if ~iscell(aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream)
     aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
     aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
-    aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
-    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+    if isfield(aap,'internal')
+        aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+    end
 else
     aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
     aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    if isfield(aap,'internal')
+        aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    end
 end
-if ~isnan(streamindex)
+if isfield(aap,'internal') && ~isnan(streamindex)
     aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
     aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
 end
 if ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream; end
 else % with attributes
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
-    aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
+    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream; end
 end
