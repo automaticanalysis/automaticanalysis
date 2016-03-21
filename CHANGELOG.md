@@ -22,6 +22,7 @@
   - Termination of the pipeline via [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) is correctly detected by [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsub.m) and [aa_doprocessing](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aa_doprocessing.m)
   - [aamod_fieldmapfromnifti](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_fieldmapfromnifti.xml) now correctly outputs TEs from specified header
   - Reporting includes distributions of (both the first- and second-level) contrasts
+  - `chsearch` option has been implemented in [aamod_waveletdespike](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_waveletdespike.xml)/`chainsearch`
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
   - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
   - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)

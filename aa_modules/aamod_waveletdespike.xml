@@ -10,6 +10,8 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
+			<chainsearch desc='Rules for identifying maxima and minima chains' options='conservative|moderate|harsh' ui='optionlist'>moderate</chainsearch>
+			
             <!-- Masking threshold. Options:
                 - 1: binary mask provided in brainmask stream
                 - 0-1: probability thteshold for spm brainmask 
