@@ -10,6 +10,8 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
+            <threshold desc='Threshold for maximal and minimal wavelet coefficients'>10</threshold>
+            
 			<chainsearch desc='Rules for identifying maxima and minima chains' options='conservative|moderate|harsh' ui='optionlist'>moderate</chainsearch>
 			
             <!-- Masking threshold. Options:

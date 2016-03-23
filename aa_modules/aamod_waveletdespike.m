@@ -48,16 +48,17 @@ switch task
         P = spm_file(P,'prefix','m');
         
         %% Despike
-        if isfield(aap.tasklist.currenttask.settings,'chainsearch')
-            chsearch = aap.tasklist.currenttask.settings.chainsearch;
-        else
-            chsearch = 'moderate';
-        end
         mem = meminfo;
+        args = {'LimitRAM', min([MAXMEM mem.MemFree*0.9])};
+        if ~isempty(aas_getsetting(aap,'chainsearch'))
+            args = horzcat({'chsearch' aas_getsetting(aap,'chainsearch')},args);
+        end
+        if ~isempty(aas_getsetting(aap,'threshold'))
+            args = horzcat({'threshold' aas_getsetting(aap,'threshold')},args);
+        end
+
         outfilepfx = horzcat(spm_file(P,'path'),repmat(filesep,[size(P,1) 1]),spm_file(P,'basename'));
-        WaveletDespike(P,outfilepfx, ...
-            'chsearch', chsearch,...
-            'LimitRAM', min([MAXMEM mem.MemFree*0.9]));
+        WaveletDespike(P,outfilepfx, args{:});
         outputfns = spm_file(outfilepfx,'suffix','_wds.nii');
         
         %% Describe outputs
