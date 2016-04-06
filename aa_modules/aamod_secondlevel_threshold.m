@@ -182,7 +182,8 @@ switch task
                 Yepi  = zeros(dim(1),dim(2),dim(3));
                 indx = sub2ind(dim,XYZ(1,:)',XYZ(2,:)',XYZ(3,:)');
                 Yepi(indx) = Z;
-                V.fname = strrep(V.fname,'spm','thr');
+                vname = spm_file(V.fname,'basename');
+                V.fname = spm_file(V.fname,'basename',strrep(vname,'spm','thr'));
                 V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
                 spm_write_vol(V,Yepi);
                 
