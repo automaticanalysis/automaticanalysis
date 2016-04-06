@@ -23,8 +23,8 @@
   - [aamod_fieldmapfromnifti](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_fieldmapfromnifti.xml) now correctly outputs TEs from specified header
   - Reporting includes distributions of (both the first- and second-level) contrasts
   - `chainsearch` and `threshold` options have been implemented in [aamod_waveletdespike](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_waveletdespike.xml)
-  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) now correctly outputs coronal sections
-  - [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs for each firstlevel contrasts
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs coronal sections
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) saves outputs correctly even if path contains "spm"
   - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)
   
 ## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
