@@ -37,6 +37,9 @@ if exist('k','var')
             case 'DWI'
                 aap.spm.defaults.modality = 'FMRI';
                 sessions = aap.acq_details.diffusion_sessions;
+            case 'MTI'
+                aap.spm.defaults.modality = 'FMRI';
+                sessions = aap.acq_details.special_sessions;
             case 'MEG'
                 aap.spm.defaults.modality = 'EEG';
                 sessions = aap.acq_details.meg_sessions;

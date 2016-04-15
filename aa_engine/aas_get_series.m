@@ -1,13 +1,13 @@
 function [d, seriesnum] = aas_get_series(aap,modality,subj,sess)
 
 switch modality
-    case 'functional'
+    case {'FMRI' 'functional'}
         seriesnumbers = aap.acq_details.subjects(subj).seriesnumbers;
-    case 'meg'
+    case {'MEG' 'EEG' 'meg'}
         seriesnumbers = aap.acq_details.subjects(subj).megseriesnumbers;
-    case 'diffusion'
+    case {'DWI' 'diffusion'}
         seriesnumbers = aap.acq_details.subjects(subj).diffusion_seriesnumbers;
-    case 'special'
+    case {'MTI' 'special'}
         seriesnumbers = aap.acq_details.subjects(subj).specialseries;
 end
 

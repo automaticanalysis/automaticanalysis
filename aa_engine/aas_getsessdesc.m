@@ -7,6 +7,8 @@ switch aas_getmodality(aap)
         sessions = aap.acq_details.diffusion_sessions;
     case {'MEG' 'EEG'}
         sessions = aap.acq_details.meg_sessions;
+    case {'MTI'}
+        sessions = aap.acq_details.special_sessions;
 end
 
 if ~isempty(sessions(j).name)

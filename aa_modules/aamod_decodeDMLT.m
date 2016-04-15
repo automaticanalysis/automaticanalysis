@@ -66,12 +66,12 @@ switch task
         for Sind=1:length(aap.tasklist.currenttask.inputstreams.stream)
             if ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'cons')) || ...
                     ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'betas')) || ...
-                    ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'epi')) || ...
-                    try
+                    ~isempty(strfind(aap.tasklist.currenttask.inputstreams.stream{Sind}, 'epi'))
+                try
                     Bimg = aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.inputstreams.stream{Sind});
                     break
-                    catch
-                    end
+                catch
+                end
             end
         end
         

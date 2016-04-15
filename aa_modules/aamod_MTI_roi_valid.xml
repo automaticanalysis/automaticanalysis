@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='study' mfile_alias='aamod_roi_valid_structural' desc='Find valid ROIs: MTI' modality='MRI'>
+        <currenttask domain='study' mfile_alias='aamod_roi_valid_structural' desc='Find valid ROIs: MTI' modality='MTI'>
             <AbsVoxThr>10</AbsVoxThr>
             <SubjRemoveStat>mode</SubjRemoveStat>
             <SubjRemoveThr></SubjRemoveThr>
