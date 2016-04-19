@@ -61,7 +61,9 @@ switch task
         if (isfield(aap.tasklist.currenttask.settings,'session'))
             sess = aap.tasklist.currenttask.settings.session;
         end        
-        voxelSize = aap.tasklist.currenttask.settings.vox; % in case we want something other than default voxel size
+        voxelSize = aas_getsetting(aap,'vox'); % in case we want something other than default voxel size
+        boundingBox = aas_getsetting(aap,'bb');
+        if ~isempty(boundingBox), boundingBox = reshape(boundingBox,2,3); end
         
         % get sn mat file from normalisation
         matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
@@ -96,6 +98,7 @@ switch task
             % set defaults
             flags = aap.spm.defaults.normalise.write;
             flags.vox = voxelSize;
+            if ~isempty(boundingBox), flags.bb = boundingBox; end
             
             % now write normalised
             if ~isempty(imgs)

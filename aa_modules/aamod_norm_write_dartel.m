@@ -90,6 +90,10 @@ switch task
         job.data.subj.flowfield{1} = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
         job.template{1} = template;
         job.bb = nan(2,3);
+        boundingBox = aas_getsetting(aap,'bb');
+        if ~isempty(boundingBox)
+            job.bb = reshape(boundingBox,2,3);
+        end
         job.vox = aap.tasklist.currenttask.settings.vox;    % voxel size
         job.fwhm = aap.tasklist.currenttask.settings.fwhm;              % smoothing
         job.preserve = aap.tasklist.currenttask.settings.preserve;      % modulation

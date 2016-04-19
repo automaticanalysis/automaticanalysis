@@ -11,6 +11,7 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <vox desc='voxel size of normalised images'>2 2 2</vox>
+            <bb desc='bounding box of normalised images (-X X -Y Y -Z Z)'></bb>
             
             <inputstreams>
                 <stream>normalisation_seg_sn</stream>                  

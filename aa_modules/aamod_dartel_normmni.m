@@ -68,6 +68,10 @@ switch task
         % set up job, and run
         job.template{1} = template;
         job.bb = nan(2,3);
+        boundingBox = aas_getsetting(aap,'bb');
+        if ~isempty(boundingBox)
+            job.bb = reshape(boundingBox,2,3);
+        end        
         job.vox = ones(1,3) * aap.tasklist.currenttask.settings.vox;    % voxel size
         job.fwhm = aap.tasklist.currenttask.settings.fwhm;              % smoothing
         job.preserve = aap.tasklist.currenttask.settings.preserve;      % modulation
