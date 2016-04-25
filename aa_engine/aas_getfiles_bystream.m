@@ -35,6 +35,8 @@ else
                         end
                     case 'DWI'
                         streamDomain = 'diffusion_session';
+                    case 'MTI'
+                        streamDomain = 'special_session';
                     case 'MEG'
                         streamDomain = 'meg_session';
                 end
@@ -82,8 +84,18 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     
     % to avoid conflict in case of parallel execution make a copy of the file in tmp
     tmpfname = tempname;
-    copyfile(inpstreamdesc, tmpfname);
-    
+    nTries = 1;
+    while nTries <= aap.options.maximumretry
+        try
+            copyfile(inpstreamdesc, tmpfname);
+            break;
+        catch
+            nTries = nTries + 1;
+        end
+    end
+    if ~exist(tmpfname,'file')
+        aas_log(aap,true,sprintf('ERROR: Error occurred while copying %s to %s',inpstreamdesc,tmpfname));
+    end
     fid=fopen(tmpfname,'r');
     
     ind=0;
