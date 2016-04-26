@@ -1,33 +1,52 @@
+## 5.2.0 ##
+
+#### New general features ####
+  - `aamod_get_dicom_*` modules can now also edit DICOM fields
+  - bounding box can be specified for "norm_write" modules
+  - subjects with different sessions can be analysed
+    - [aamod_firstlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_contrasts.xml) can automatically assign contrasts, unless `uniquebysession` is used. :warning: **Contrast names must be unique both within- and across-sessions!**
+
+#### Bugfixes ####
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with path with "spm" in it
+  - modality detection for MTI-related modules
+  - [aas_getfiles_bystream](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_getfiles_bystream.m) now also uses `aap.options.maximumretry` when copying streams potentially used jointly with other jobs
+  - reporting connected pipeline
+  - reporting branched pipeline with `selected_sessions`
+  - reporting `aamod_*dartel_denorm*`
+  - reporting MTI
+  - [aamod_bet](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_bet.xml) and derived modules
+  - [aamod_MTI_roi_valid](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_MTI_roi_valid.xml)
+  
 ## 5.1.0 ##
 
 #### New general features ####
-  - [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/aa_export_toBIDS.m) export raw data from aa pipeline in BIDS format (limited functionality)
+  - [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_export_toBIDS.m) export raw data from aa pipeline in BIDS format (limited functionality)
 
 #### New features for structural ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_structural
 
 #### New features for fMRI ####
   - automatic inputstream detection (and renaming) for aamod_roi_valid_epi
-- full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
+- full set of secondlevel modules: [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml), [aamod_secondlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_contrasts.xml), [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_threshold.xml), [aamod_secondlevel_threshold_register2FS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_threshold_register2FS.xml)
 
 #### New features for MEG ####
-  - downsampling added to [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_meg_maxfilt.xml)
+  - downsampling added to [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_maxfilt.xml)
 
 #### Bugfixes ####
-  - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_roi_valid_structural.xml)
+  - economise code: aamod_roi_extract and aamod_roi_valid have been replaced/expanded with [aamod_roi_extract_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_roi_extract_epi.xml), [aamod_roi_extract_structural](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_roi_extract_structural.xml), [aamod_roi_valid_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_roi_valid_epi.xml) and [aamod_roi_valid_structural](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_roi_valid_structural.xml)
   - aas_log works with empty `aap`
-  - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
-  - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
-  - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging
-  - Termination of the pipeline via [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsubVeiwerClass.m) is correctly detected by [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aaq/aaq_qsub.m) and [aa_doprocessing](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aa_doprocessing.m)
-  - [aamod_fieldmapfromnifti](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_fieldmapfromnifti.xml) now correctly outputs TEs from specified header
+  - [aas_runfslcommand](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_runfslcommand.m) and [aas_runFScommand](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_runFScommand.m) now pass run-time MATLAB path to in-shell MATLAB (if applicable)
+  - [aa_provenance](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/provenance/aa_provenance.m) now uses run-time dependency (see "New features ...")
+  - [QueueViewer](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/QueueViewerClass.m) will not delete jobs finished with errors --> job folder will be kept for debugging
+  - Termination of the pipeline via [aaq_qsubVeiwerClass](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsubVeiwerClass.m) is correctly detected by [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsub.m) and [aa_doprocessing](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aa_doprocessing.m)
+  - [aamod_fieldmapfromnifti](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_fieldmapfromnifti.xml) now correctly outputs TEs from specified header
   - Reporting includes distributions of (both the first- and second-level) contrasts
-  - `chainsearch` and `threshold` options have been implemented in [aamod_waveletdespike](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_waveletdespike.xml)
-  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) now correctly outputs coronal sections
-  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_modules/aamod_secondlevel_model.xml) saves outputs correctly even if path contains "spm"
-  - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/blob/v5/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)
+  - `chainsearch` and `threshold` options have been implemented in [aamod_waveletdespike](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_waveletdespike.xml)
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now correctly outputs coronal sections
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) saves outputs correctly even if path contains "spm"
+  - [aas_add_meg_session](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_add_meg_session.m) now prevents adding the same session multiple times (e.g. when the function is called per subject)
   
-## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5)) ##
+## 5.0.0 ([branch v5 initial](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel)) ##
 
 As the change in the major versioning implies, older user master scripts are not compatible with v5. Examples has been updated to demonstrate new syntax. In addition, pipelines processed with older versions cannot be re-processed with v5 (`aap` structure stored in _aap\_parameters.mat_ is not compatible). A script `aa_convert_subjects` is provided to convert `aap` structure stored in _aap\_parameters.mat_. When connecting to a remote pipeline processed with an older version of aa, `aa_convert_subjects` is automatically called; so no explicit conversion is required. 
 
@@ -63,14 +82,14 @@ As the change in the major versioning implies, older user master scripts are not
 ## 4.3.1 ##
 
 #### Bugfix ####
-  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.org/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_demo_v2.m))
+  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.org/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/tree/devel-share/examples/aa_user_demo_v2.m))
   - Compatibility with MATLAB r2015b
 
-## 4.3.0 ([branch devel-share](https://github.com/rhodricusack/automaticanalysis/tree/devel-share)) ##
+## 4.3.0 ([branch devel-share](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel)) ##
 
 #### Copyrights ####
   - Sorting _external_/_extrafunctions_
-  - Acknowledging externals in [README.json](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/external/README.json)
+  - Acknowledging externals in [README.json](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel/external/README.json)
 
 #### New general features ####
   - Dynamic modification of streams (`aas_renamestream`)
@@ -83,7 +102,7 @@ As the change in the major versioning implies, older user master scripts are not
     - `aamod_fsl_reorienttoMNI`
 	
 #### New features for fMRI ####
-  - New fMRI example to demonstrate some (new) features: ([aa\_user\_fmri\_advanced](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_fmri_advanced.m))
+  - New fMRI example to demonstrate some (new) features: ([aa\_user\_fmri\_advanced](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel/examples/aa_user_fmri_advanced.m))
     - Specifying structural series
     - Explaining Motion FingerPrint instead of simple mocoparameters in design
     - Automatic slicetiming with exact timing from DICOM header (`autodetectSO`)
@@ -99,7 +118,7 @@ As the change in the major versioning implies, older user master scripts are not
 
 #### New features for MEG ####
   - Diagnostics (courtesy to [Rik Henson](https://www.mrc-cbu.cam.ac.uk/people/rik.henson))
-  - Update examples: [aa\_user\_meg.m](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_meg.m), [aa\_user_meg\_connect](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_meg_connect.m)
+  - Update examples: [aa\_user\_meg.m](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel/examples/aa_user_meg.m), [aa\_user_meg\_connect](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel/examples/aa_user_meg_connect.m)
   - Maxfilter (`aamod_meg_maxfilt`) allows getting HPI from a session
   - Maxfilter (`aamod_meg_maxfilt`) accepts custom calibration files
   - Better delegeation of denoising tasks:
@@ -134,7 +153,7 @@ As the change in the major versioning implies, older user master scripts are not
 
 #### Convenience/Ease of access ####
   - Code development
-    - Example module template with session domain ([aamod_session](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aamod_session.m))
+    - Example module template with session domain ([aamod_session](https://github.com/rhodricusack/automaticanalysis/tree/v4-devel/examples/aamod_session.m))
 
   - Setting up
     - `aaClass` provides links to ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090), to ["the aa website"](http://automaticanalysis.org) and to examples
@@ -155,7 +174,7 @@ As the change in the major versioning implies, older user master scripts are not
     - More consistent (and nicer :sparkles:) graph of contrasts 
     - `aamod_firstlevel_threshold` creates overlays along all three axes
 
-## 4.2 ([branch devel-share initial](https://github.com/rhodricusack/automaticanalysis/tree/devel-share)) ##
+## 4.2 ([branch devel-share initial](https://github.com/rhodricusack/automaticanalysis/tree/v4-stable)) ##
 
 Described in ["the aa manuscript"](http://dx.doi.org/10.3389/fninf.2014.00090)
 
