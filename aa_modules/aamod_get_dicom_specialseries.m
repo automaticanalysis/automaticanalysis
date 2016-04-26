@@ -64,5 +64,39 @@ switch task
             out=[out outstream];
         end;
         
+        %% To Edit
+        % DICOM dictionary
+        dict = load(aas_getsetting(aap,'DICOMdictionary'));
+        
+        % Fields to edit
+        toEditsetting = aas_getsetting(aap,'toEdit');
+        toEditsubj = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
+        if strfind(aap.tasklist.currenttask.domain,'session')
+            for s = 1:numel(toEditsubj)
+                sessnames = regexp(toEditsubj(s).session,':','split');
+                if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
+                    toEdit = toEditsubj(s);
+                    break;
+                else
+                    toEdit = [];
+                end
+            end
+        else
+            toEdit = toEditsubj;
+        end
+        
+        % do it
+        if ~isempty(toEdit)
+            for f = {toEdit.DICOMfield}
+                group = dict.group(strcmp({dict.values.name}',f{1}.FieldName));
+                element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
+                
+                for imnum = 1:numel(out)
+                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                end
+            end
+        end
+        
+        %% Output
         aap=aas_desc_outputs(aap,subj,['dicom_' streamname],out);
 end;

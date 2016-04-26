@@ -17,6 +17,16 @@
             <!-- Only take this many files -->
             <ignoreafter>9999999</ignoreafter>
             
+			<DICOMdictionary>spm_dicom_dict.mat</DICOMdictionary>
+			
+            <toEdit>
+				<subject desc='Subject name'></subject>
+                <DICOMfield>
+					<FieldName></FieldName>
+					<Value></Value>
+				</DICOMfield>
+            </toEdit>
+            
             <inputstreams>
                 <stream ismodified='0'>autoidentifyseries</stream>
             </inputstreams>

@@ -9,6 +9,16 @@
             </qsub>
             
             <permanenceofoutput>1</permanenceofoutput>
+            
+			<DICOMdictionary>spm_dicom_dict.mat</DICOMdictionary>
+
+            <toEdit>
+				<subject desc='Subject name'></subject>
+                <DICOMfield>
+					<FieldName></FieldName>
+					<Value></Value>
+				</DICOMfield>
+            </toEdit>
                         
             <inputstreams>
                 <stream>autoidentifyseries</stream>
