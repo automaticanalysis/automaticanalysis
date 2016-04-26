@@ -305,8 +305,28 @@ for l=1:length(mytasks)
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
+            
+            % create subject-specific selected_sessions
+            selected_sessions = aap.acq_details.selected_sessions;
+            if (numel(indices) >= 1)
+                toskip = [];
+                for i = 1:numel(selected_sessions)
+                    try
+                        [junk, seriesnum] = aas_get_series(aap,aas_getmodality(aap),indices(1),selected_sessions(i));
+                    catch E
+                        if strcmp(E.identifier,'MATLAB:badsubscript')
+                            seriesnum = []; 
+                        else
+                            rethrow(E);
+                        end
+                    end
+                    if isempty(seriesnum) || (isnumeric(seriesnum) && all(seriesnum==0)), toskip(end+1) = i; end
+                end
+                selected_sessions(toskip) = [];
+            end
+            
             if (numel(indices) >= 2) && ... % if session domain
-                    ~any(aap.acq_details.selected_sessions==indices(2)) % session not selected
+                    ~any(selected_sessions==indices(2)) % session not selected
                 continue;
             end
             msg='';
@@ -340,8 +360,7 @@ for l=1:length(mytasks)
                         taskqueue.aap = aap;
                     case 'doit'
                         tic
-                        % before starting current stage, delete done_
-                        % flag for next one
+                        % before starting current stage, delete done_flag for next one
                         for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                             aas_delete_doneflag_bydomain(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,domain,indices);
                         end
@@ -355,7 +374,7 @@ for l=1:length(mytasks)
                                 tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices,'doneflaglocations');
                                 for tbcf_depsind=1:length(tbcf_deps)
                                     if strfind(completefirst(k0i).sourcedomain,'session') % skip session if not selected
-                                        if ~any(aap.acq_details.selected_sessions == tbcf_deps{tbcf_depsind}{2}(2)), continue; end
+                                        if ~any(selected_sessions == tbcf_deps{tbcf_depsind}{2}(2)), continue; end
                                     end
                                     tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
                                 end;
@@ -365,6 +384,11 @@ for l=1:length(mytasks)
                         
                         % now queue current stage
                         aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,doneflag));
+                        % update taskspecific aap
+                        taskmask.aap = aap;                        
+                        taskmask.aap.tasklist.main.module(k).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
+                        taskmask.aap.internal.aap_initial.tasklist.main.module(k).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
+
                         taskmask.indices=indices;
                         taskmask.doneflag=doneflag;
                         taskmask.description=sprintf('%s for %s',description,doneflag);
@@ -376,7 +400,7 @@ for l=1:length(mytasks)
                             taskqueue.addtask(taskmask);
                         end
                 end
-            end;
+            end
         end
         if (strcmp(task,'doit'))
             if (alldone)

@@ -11,30 +11,47 @@ resp='';
 
 switch task
     case 'report'
+        % Collect all contrast names and prepare summary
+        cons = [aap.tasksettings.aamod_firstlevel_contrasts(aap.tasklist.currenttask.index).contrasts(2:end).con];
+        conNames = {cons.name};
+        [junk, a] = unique(conNames,'first');
+        conNames = conNames(sort(a));
+        if subj == 1 % first
+            for C = 1:numel(conNames)
+                if  ~isfield(aap.report,sprintf('html_C%02d',C))
+                    aap.report.(sprintf('html_C%02d',C)).fname = fullfile(aap.report.condir,[aap.report.fbase sprintf('_C%02d.htm',C)]);
+                    aap = aas_report_add(aap,'C00',...
+                        sprintf('<a href="%s" target=_top>%s</a><br>',...
+                        aap.report.(sprintf('html_C%02d',C)).fname,...
+                        ['Contrast: ' conNames{C}]));
+                    aap = aas_report_add(aap,sprintf('C%02d',C),['HEAD=Contrast: ' conNames{C}]);
+                end
+                if ~isempty(aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix)
+                    aap = aas_report_add(aap,sprintf('C%02d',C),sprintf('<h2>Branch: %s</h2>',...
+                        aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix(2:end)));
+                end
+            end
+        end
+        
         % Now get contrasts...
         fSPM = aas_getfiles_bystream(aap, subj,'firstlevel_spm');
-        load(fSPM);
+        loaded = load(fSPM);
         
-        for C = 1:numel(SPM.xCon)
+        for C = 1:numel(loaded.SPM.xCon)
+            conName = strrep_multi(loaded.SPM.xCon(C).name,{' ' ':' '>'},{'' '_' '-'});
+            conInd = find(strcmp(conNames, loaded.SPM.xCon(C).name));
+            
             % Study summary
-            if ~isfield(aap.report,sprintf('html_C%02d',C)) % new contrast
-                aap.report.(sprintf('html_C%02d',C)).fname = fullfile(aap.report.condir,[aap.report.fbase sprintf('_C%02d.htm',C)]);
-                aap = aas_report_add(aap,'C00',...
-                    sprintf('<a href="%s" target=_top>%s</a><br>',...
-                    aap.report.(sprintf('html_C%02d',C)).fname,...
-                    ['Contrast: ' SPM.xCon(C).name]));
-                aap = aas_report_add(aap,sprintf('C%02d',C),['HEAD=Contrast: ' SPM.xCon(C).name]);                
-            end
-            aap = aas_report_add(aap,sprintf('C%02d',C),['Subject: ' basename(aas_getsubjpath(aap,subj)) '<br>']);
+            aap = aas_report_add(aap,sprintf('C%02d',conInd),['Subject: ' basename(aas_getsubjpath(aap,subj)) '<br>']);
             
             % Single subject
-            aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',C,SPM.xCon(C).name));
+            aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',conInd,conName));
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
-                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',C,SPM.xCon(C).name));
+                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',conInd,conName));
             if exist(f{1},'file')
                 tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
-                    sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',C,SPM.xCon(C).name));
+                    sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',conInd,conName));
                 
                 % Add images to Single subject report
                 aap = aas_report_add(aap,subj,'<table><tr>');
@@ -47,14 +64,14 @@ switch task
                 aap = aas_report_add(aap,subj,'</tr></table>');
                 
                 % Add images to Study summary
-                aap = aas_report_add(aap,sprintf('C%02d',C),'<table><tr>');
-                aap = aas_report_add(aap,sprintf('C%02d',C),sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
+                aap = aas_report_add(aap,sprintf('C%02d',conInd),'<table><tr>');
+                aap = aas_report_add(aap,sprintf('C%02d',conInd),sprintf('T = %2.2f - %2.2f</tr><tr>',tstat(1),tstat(2)));
                 for i = 1:2
-                    aap = aas_report_add(aap,sprintf('C%02d',C),'<td>');
-                    aap=aas_report_addimage(aap,sprintf('C%02d',C),f{i});
-                    aap = aas_report_add(aap,sprintf('C%02d',C),'</td>');
+                    aap = aas_report_add(aap,sprintf('C%02d',conInd),'<td>');
+                    aap=aas_report_addimage(aap,sprintf('C%02d',conInd),f{i});
+                    aap = aas_report_add(aap,sprintf('C%02d',conInd),'</td>');
                 end
-                aap = aas_report_add(aap,sprintf('C%02d',C),'</tr></table>');
+                aap = aas_report_add(aap,sprintf('C%02d',conInd),'</tr></table>');
                                 
             end
         end
@@ -106,6 +123,7 @@ switch task
         load(fSPM);
         
         for c = 1:numel(SPM.xCon)
+            conName = strrep_multi(SPM.xCon(c).name,{' ' ':' '>'},{'' '_' '-'});
             STAT = SPM.xCon(c).STAT;
             df = [SPM.xCon(c).eidf SPM.xX.erdf];
             XYZ  = SPM.xVol.XYZ;
@@ -213,7 +231,7 @@ switch task
                 mon = tr_3Dto2D(img_tr(img(:,:,:,1),a==2));
                 mon(:,:,2) = tr_3Dto2D(img_tr(img(:,:,:,2),a==2));
                 mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
-                fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,conName,a));
                 imwrite(mon,deblank(fnsl(a+1,:)));
             end
             dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
@@ -228,7 +246,7 @@ switch task
             dat.dim = dim;
             rendfile  = aap.directory_conventions.Render;
             if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-            fn3d = fullfile(localroot,sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
+            fn3d = fullfile(localroot,sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',c,conName));
             global prevrend
             prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
             out = spm_render(dat,0.5,rendfile); spm_figure('Close','Graphics');

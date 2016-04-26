@@ -60,15 +60,30 @@ BIDS = aap.directory_conventions.rawdatadir;
 % Look for subjects
 SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 
-% Add
-for subj = 1:size(SUBJ,1)
-    subjID = deblank(SUBJ(subj,:));
-    SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
-    if isempty(SESS)
-        aap = add_data(aap,subjID,fullfile(BIDS,subjID));
-    else
-        for sess = 1:size(SESS,1)
-            aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))));
+% 1st pass - Add sessions only
+% 2ns pass - Add data
+for p = [false true]
+    for subj = 1:size(SUBJ,1)
+        subjID = deblank(SUBJ(subj,:));
+        SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
+        if isempty(SESS)
+            aap = add_data(aap,subjID,fullfile(BIDS,subjID),p);
+        else
+            for sess = 1:size(SESS,1)
+                aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))),p);
+            end
+        end
+    end
+    if ~p && BIDSsettings.combinemultiple && (size(SESS,1) > 1)
+        % sort sessions
+        sessstr = regexp(cellstr(SESS),'-','split');
+        sessstr = vertcat(sessstr{:});
+        sessstr = sessstr(:,2);
+        if numel(aap.acq_details.sessions) > 1
+            aap.acq_details.sessions = aap.acq_details.sessions(sort_sessions(aap.acq_details.sessions,sessstr));
+        end
+        if numel(aap.acq_details.diffusion_sessions) > 1
+            aap.acq_details.diffusion_sessions = aap.acq_details.diffusion_sessions(sort_sessions(aap.acq_details.diffusion_sessions,sessstr));
         end
     end
 end
@@ -76,7 +91,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function aap = add_data(aap,mriname,sesspath)
+function aap = add_data(aap,mriname,sesspath,toAddData)
 
 global BIDSsettings;
 structDIR = BIDSsettings.directories.structDIR;
@@ -104,21 +119,44 @@ diffusionimages = {};
 for cf = cellstr(spm_select('List',sesspath,'dir'))'
     switch cf{1}
         case structDIR
+            if ~toAddData, continue; end
+            
             structuralimages = horzcat(structuralimages,cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_T1w.*.nii.gz'])));
         case diffusionDIR
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
                 sessfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '.nii'},{'',''});
-                sessname = sessfname;
-                bvalfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval']));
+                [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval']));
                 bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec']));
                 if ~isempty(bvalfname) && ~isempty(bvecfname)
+                    sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); sessname(1) = '';
+
+                    if ~isempty(strfind(basename(sesspath),'ses-'))
+                        sesstr = ['_' strrep(basename(sesspath),'ses-','')];
+                    end
+                    
+                    if BIDSsettings.combinemultiple
+                        sessname = [sessname,sesstr];
+                    end
+                    sessname = [sessname,runstr];
+                    
                     aap = aas_add_diffusion_session(aap,sessname);
-                    diffusionimages = horzcat(diffusionimages,struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname));
+                    
+                    if ~toAddData, continue; end
+                    
+                    aasessnames = {aap.acq_details.diffusion_sessions.name};
+                    if BIDSsettings.combinemultiple
+                        aasessnames = aasessnames(cell_index(aasessnames,sesstr));
+                    end
+                    if isempty(diffusionimages), diffusionimages = cell(1,numel(aasessnames)); end
+                    isess = strcmp(aasessnames,sessname);
+                    diffusionimages{isess} = struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname);
                 else
                     aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjname,sessfname))
                 end
             end
         case fieldmapDIR
+            if ~toAddData, continue; end
+            
             fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json']));
             skipnext = false;
             for f = fmaps'
@@ -147,7 +185,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
         case functionalDIR
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))'
                 taskfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '_bold.nii'},{'',''});
-                taskname = get_taskname(sesspath,subjname,cfname{1});
+                [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});
                                
                 % Header
                 info = []; TR = 0;
@@ -161,11 +199,19 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
                 aap = aas_addsession(aap,taskname);
                 
+                if ~toAddData, continue; end
+                
                 % Data
+                aasessnames = {aap.acq_details.sessions.name};
+                if BIDSsettings.combinemultiple
+                    aasessnames = aasessnames(cell_index(aasessnames,sesssfx));
+                end
+                if isempty(functionalimages), functionalimages = cell(1,numel(aasessnames)); end
+                isess = strcmp(aasessnames,taskname);
                 if isstruct(info)
-                    functionalimages = horzcat(functionalimages,struct('fname',cfname{1},'hdr',hdrfname));
+                    functionalimages{isess} = struct('fname',cfname{1},'hdr',hdrfname);
                 else
-                    functionalimages = horzcat(functionalimages,cfname{1});
+                    functionalimages{isess} = cfname{1};
                 end
                 
                 % Model
@@ -208,7 +254,13 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
             aas_log(aap,false,sprintf('NYI: Input %s is not supported',cf{1}));
     end
 end
-aap = aas_addsubject(aap,subjname,mriname,'structural',structuralimages,'functional',functionalimages,'fieldmaps',fieldmapimages,'diffusion',diffusionimages);
+if toAddData
+    aap = aas_addsubject(aap,subjname,mriname,...
+        'structural',structuralimages,...
+        'functional',functionalimages,...
+        'fieldmaps',fieldmapimages,...
+        'diffusion',diffusionimages); 
+end
 end
 
 function [fname, runstr] = retrieve_file(fname)
@@ -246,7 +298,7 @@ end
 if ~exist(fname,'file'), fname = ''; end
 end
 
-function taskname = get_taskname(sesspath,subjname,fname)
+function [taskname, sesstr] = get_taskname(sesspath,subjname,fname)
 global BIDSsettings;
 functionalDIR = BIDSsettings.directories.functionalDIR;
 taskfname = strrep_multi(basename(fname),{[subjname '_'] '_bold.nii'},{'',''});
@@ -260,15 +312,23 @@ if ~isempty(hdrfname)
         taskname = info.TaskName;
         taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
         taskname = strcat(taskname{:});
-        if BIDSsettings.combinemultiple
-            sesstr = '';
-            if ~isempty(strfind(basename(sesspath),'ses-'))
-                sesstr = ['_' strrep(basename(sesspath),'ses-','')];
-            end
+        if ~isempty(strfind(basename(sesspath),'ses-'))
+            sesstr = ['_' strrep(basename(sesspath),'ses-','')];
+        end
+        if BIDSsettings.combinemultiple            
             taskname = [taskname,sesstr];
         end
         taskname = [taskname,runstr];
     end
+end
+end
+
+function sessord = sort_sessions(sessions,sessstr)
+aasessnames = {sessions.name};
+sessstr = spm_file(sessstr,'prefix','_');
+sessord = [];
+for sess = sessstr
+    sessord = horzcat(sessord, cell_index(aasessnames,sess{1}));
 end
 end
 

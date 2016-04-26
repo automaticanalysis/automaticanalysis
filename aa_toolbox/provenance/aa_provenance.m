@@ -148,6 +148,10 @@ classdef aa_provenance < handle
                 index = sscanf(ind,'_%d');
                 loaded = load(stageindex.aapfilename); raap = loaded.aap;
                 
+                if raap.internal.aapversion(1) ~= '5' % older aa
+                    raap = aa_convert_subjects(raap);
+                end
+                
                 iname = cell_index({raap.tasklist.main.module.name},tag);
                 iindex = cell2mat({raap.tasklist.main.module(iname).index}) == index;
                 rstageindex = iname(iindex);
@@ -156,6 +160,9 @@ classdef aa_provenance < handle
                 curr_aap.options.verbose = -1;
                 loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,obj.indices),...
                     '^aap_parameters.*mat$'));
+                if loaded.aap.internal.aapversion(1) ~= '5' % older aa
+                    loaded.aap = aa_convert_subjects(loaded.aap);
+                end
                 
                 idname = ['idRemoteActivity_' tag];
                 idattr = {...
@@ -177,7 +184,11 @@ classdef aa_provenance < handle
                 
                 curr_aap = aas_setcurrenttask(obj.aap,stageindex);
                 curr_aap.options.verbose = -1;
-                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,obj.indices),...
+                indices = obj.indices;
+                if ~isempty(curr_aap.acq_details.selected_sessions)
+                    indices(2) = curr_aap.acq_details.selected_sessions(obj.indices(2));
+                end
+                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,indices),...
                     '^aap_parameters.*mat$'));
                 
                 idattr = {...
@@ -208,7 +219,6 @@ classdef aa_provenance < handle
                     inputstreamindex = strcmp({loaded.aap.internal.inputstreamsources{stageindex}.stream.name},inputs{i});
                     if any(inputstreamindex)
                         srcindex = loaded.aap.internal.inputstreamsources{stageindex}.stream(inputstreamindex).sourcenumber;
-                        src = sprintf('%s_%05d',loaded.aap.tasklist.main.module(srcindex).name,loaded.aap.tasklist.main.module(srcindex).index);
                     else
                         if isOptional
                             continue;
@@ -217,8 +227,8 @@ classdef aa_provenance < handle
                                 sprintf('Inputstream %s of module %s not listed in depenedency!',istream,sprintf('%s_%05d',name,index)));
                         end
                     end
-                    if ~isempty(strfind(src,'Remote')) % remote src --> add
-                        [junk,src] = strtok(src,':'); src = src(3:end);
+                    if srcindex == -1 % remote src --> add
+%                         [junk,src] = strtok(src,':'); src = src(3:end);
                         rstage = smod.remotestream(strcmp({smod.remotestream.stream},istream));
                         if isempty(rstage) % try specified steamname
                             [junk,rem] = strtok_ptrn({smod.remotestream.stream},istream);
@@ -226,6 +236,7 @@ classdef aa_provenance < handle
                         end
                         idsrc = obj.addModule(rstage);
                     else % local --> already added
+                        src = sprintf('%s_%05d',loaded.aap.tasklist.main.module(srcindex).name,loaded.aap.tasklist.main.module(srcindex).index);
                         [lname, ind] = strtok_ptrn(src,'_0');
                         lindex = sscanf(ind,'_%d');
                         idattr = {...
@@ -269,16 +280,17 @@ classdef aa_provenance < handle
         
         function [prid, id] = addStream(obj,idsrc,stream)
             obj.IDs{idsrc}.aap.options.maximumretry = 1;
+            obj.IDs{idsrc}.aap.options.verbose = -1;
             if ~isempty(obj.IDs{idsrc}.aap.acq_details.selected_sessions)
-                sess = obj.IDs{idsrc}.aap.acq_details.selected_sessions(1);
+                sess = obj.IDs{idsrc}.aap.acq_details.selected_sessions(obj.indices(2));
             else
                 sess = obj.indices(2);
             end
-            try                
-                [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
-                    obj.indices(1),sess,stream,'output'); % TODO: associate files
-            catch
-                aas_log(obj.aap,false,sprintf('Outputstream %s of module %s not found!',stream,obj.IDs{idsrc}.aap.tasklist.currenttask.name));
+            
+            [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
+                aas_getsesstype(obj.IDs{idsrc}.aap),...
+                [obj.indices(1),sess],stream,'output'); % TODO: associate files
+            if ~exist('files','var')
                 prid = ''; id = 0;
                 return
             end            

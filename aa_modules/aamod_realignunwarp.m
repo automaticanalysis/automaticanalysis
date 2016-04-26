@@ -19,6 +19,12 @@ switch task
     case 'summary'
         resp='Done SPM5 realign and unwarp\n';
     case 'report' % reformatted [TA]
+        if subj == 1 % init summary
+            aap.report.(mfilename).selected_sessions = [];
+            aap.report.(mfilename).mvmax = nan(aas_getN_bydomain(aap,'subject'),aas_getN_bydomain(aap,'session',1),6);
+        end
+        aap.report.(mfilename).selected_sessions = union(aap.report.(mfilename).selected_sessions,aap.acq_details.selected_sessions);
+        
         mvmean=[];
         mvmax=[];
         mvstd=[];
@@ -52,17 +58,17 @@ switch task
                 end
             end
             
-            aap.report.mvmax(subj,sess,:)=max(mv);
-            %             mvmean(sess,:)=mean(mv);
-            %             mvstd(sess,:)=std(mv);
-            %             mvall=[mvall;mv];
+            aap.report.(mfilename).mvmax(subj,sess,:)=max(mv);
+            % mvmean(sess,:)=mean(mv);
+            % mvstd(sess,:)=std(mv);
+            % mvall=[mvall;mv];
             aap=aas_report_addimage(aap,subj,fn);
             
             aap = aas_report_add(aap,subj,'<h4>Movement maximums</h4>');
             aap = aas_report_add(aap,subj,'<table cellspacing="10">');
             aap = aas_report_add(aap,subj,sprintf('<tr><td align="right">Sess</td><td align="right">x</td><td align="right">y</td><td align="right">z</td><td align="right">rotx</td><td align="right">roty</td><td align="right">rotz</td></tr>',sess));
             aap = aas_report_add(aap,subj,sprintf('<tr><td align="right">%d</td>',sess));
-            aap = aas_report_add(aap,subj,sprintf('<td align="right">%8.3f</td>',aap.report.mvmax(subj,sess,:)));
+            aap = aas_report_add(aap,subj,sprintf('<td align="right">%8.3f</td>',aap.report.(mfilename).mvmax(subj,sess,:)));
             aap = aas_report_add(aap,subj,sprintf('</tr>',sess));
             aap = aas_report_add(aap,subj,'</table>');
             
@@ -82,10 +88,10 @@ switch task
         % Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
-            for sess=aap.acq_details.selected_sessions
+            for sess=aap.report.(mfilename).selected_sessions
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
 
-                mvmax = squeeze(aap.report.mvmax(:,sess,:));
+                mvmax = squeeze(aap.report.(mfilename).mvmax(:,sess,:));
                 f = figure; boxplot(mvmax,'label',meas);
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 set(f,'Renderer','zbuffer');
@@ -109,8 +115,7 @@ switch task
             end
         elseif numel(aap.acq_details.subjects) == 1
             aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
-        end
-        
+        end        
     case 'doit'
         
         %% Set up a jobs file with some advisable defaults for realign/unwarp!

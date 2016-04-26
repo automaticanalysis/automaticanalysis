@@ -44,6 +44,11 @@ switch task
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
             % Study summary
+            if all(cell2mat(varargin) == 1) % first
+                stagename = regexp(aas_getstagetag(aap,aap.tasklist.currenttask.modulenumber),'_(?=0)','split'); stagename = stagename{1};
+                stagename = [stagename aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix];
+                aap = aas_report_add(aap,'reg',sprintf('<h2>Stage: %s</h2>',stagename));
+            end
             aap = aas_report_add(aap,'reg',...
                 ['Subject: ' basename(aas_getsubjpath(aap,subj)) '; Session: ' aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,varargin{end}) ]);
             aap=aas_report_addimage(aap,'reg',fullfile(localpath,fdiag(1).name));

@@ -86,15 +86,6 @@ for k=1:numel(stages)
     all_stage = cell_index(stages, stages{k});
     istage = cell_index({aap.tasklist.main.module.name}, stages{k});
     istage = istage(all_stage==k);
-    % - backup fields
-    aapreport = aap.report;
-    aapprov = aap.prov;
-    
-    aap = aas_setcurrenttask(aap,istage);
-    
-    % - restore fields
-    aap.report = aapreport;
-    aap.prov = aapprov;
     
     % add provenance
     if aap.prov.isvalid, aap.prov.addModule(istage); end
@@ -121,7 +112,7 @@ for k=1:numel(stages)
             try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
             
             if sess == 1, aap = aas_report_add(aap,subj,...
-                    ['<h2>Stage: ' stages{k} aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
+                    ['<h2>Stage: ' stages{k} aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
             end
             
             % evaluate with handling sessions
@@ -133,13 +124,24 @@ for k=1:numel(stages)
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
             else
-                [aap,resp]=aa_feval_withindices(mfile_alias,aap,'report',indices);
+                % load local aap
+                loaded = load(spm_select('FPList',aas_getpath_bydomain(aap,domain,indices,k),'^aap_parameters_.*mat'));
+                
+                % set fields
+                loaded.aap.report = aap.report;
+                loaded.aap.prov = aap.prov;
+         
+                [loaded.aap,resp]=aa_feval_withindices(mfile_alias,loaded.aap,'report',indices);
+                
+                % save report
+                aap.report = loaded.aap.report;
+                aap.prov = loaded.aap.prov;
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == numel(aap.acq_details.([domain 's'])), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if sess == aas_getN_bydomain(aap,domain,subj), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
-        end;
+        end
     end
 end
 

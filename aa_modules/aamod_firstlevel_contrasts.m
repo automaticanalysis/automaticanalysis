@@ -46,7 +46,7 @@ switch task
         if settings.useaasessions
             [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
             subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-            sessnames = {aap.acq_details.sessions(sessInds).name};
+            sessnames = {aap.acq_details.sessions(:).name};
             selected_sessions = subjSessionI;
             nsess = length(selected_sessions);
             nsess_all = length(sessnames);
@@ -167,9 +167,9 @@ switch task
                                         for e = 1:numel(cs{1})
                                             switch cs{3}(e)
                                                 case 'm' % main trail
-                                                    EVpttrn = sprintf('Sn(%d) %s*',sess,cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %s*',find(selected_sessions==sess),cs{2}{e});
                                                 case 'p' % parametric
-                                                    EVpttrn = sprintf('Sn(%d) %sx',sess,cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),cs{2}{e});
                                             end
                                             ind = cell_index(SPM.xX.name,EVpttrn);
                                             convec(cr,ind(cs{4}(e))) = cs{1}(e);
@@ -308,7 +308,7 @@ cons = SPM.xCon; cons = cons([cons.STAT]=='T');
 for c = cons
     h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
     print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
-        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep(c.name,' ','') '.jpg']));
+        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep_multi(c.name,{' ' ':' '>'},{'' '_' '-'}) '.jpg'])); % "unconventional" characters 
     close(h);
 end
 

@@ -50,7 +50,7 @@ classdef aaq_qsub<aaq
             while any(obj.jobnotrun) || waitforalljobs
                 
                 % Lets not overload the filesystem
-                pause(0.5);
+                pause(0.1);
                 
                 for i=1:njobs
                     if (obj.jobnotrun(i))
@@ -66,9 +66,7 @@ classdef aaq_qsub<aaq
                         if (readytorun)
                             % Add a job to the queue
                             job=obj.jobqueue(i);
-                            obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);
-                            % Assign an aap to the job!
-                            job.aap=obj.aap;
+                            job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
                             % Run the job
                             obj.qsub_q_job(job);
                             obj.jobnotrun(i)=false;
@@ -260,7 +258,7 @@ classdef aaq_qsub<aaq
                 J = createJob(obj.scheduler);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
-                inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
+                inparg = {job.aap,job.task,job.k,job.indices, aaworker};
                 
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update

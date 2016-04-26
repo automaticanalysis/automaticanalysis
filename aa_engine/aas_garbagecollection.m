@@ -190,7 +190,7 @@ function [streampths]=findstreamfiles(aap,streamfn)
 pthstocheck={aas_getstudypath(aap)};
 for subjind=1:length(aap.acq_details.subjects)
     pthstocheck=[pthstocheck aas_getsubjpath(aap,subjind)];
-    for sessind = 1:length(aap.acq_details.sessions)
+    for sessind = 1:numel(aap.acq_details.([aas_getsesstype(aap) 's']))
         pthstocheck=[pthstocheck aas_getsesspath(aap,subjind,sessind)];
     end
 end
