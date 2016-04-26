@@ -9,13 +9,4 @@
 
 function [sesspath]=aas_getsesspath(aap,i,j,varargin)
 
-switch aas_getmodality(aap)
-    case 'FMRI'
-        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.sessions(j).name);
-    case 'DWI'
-        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.diffusion_sessions(j).name);
-    case {'MEG' 'EEG'}
-        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.meg_sessions(j).name);
-    case {'MTI'}
-        sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.special_sessions(j).name);
-end
+sesspath=fullfile(aas_getsubjpath(aap,i,varargin{:}),aap.acq_details.([aas_getsesstype(aap) 's'])(j).name);
