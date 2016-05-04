@@ -12,6 +12,9 @@ if cell_index(tasks,'restorepath')
     if isstruct(aacache) && isfield(aacache,'bcp_path')
         path(aacache.bcp_path);
     end
+    if isstruct(aacache) && isfield(aacache,'bcp_shellpath')
+        setenv('PATH', aacache.bcp_shellpath);
+    end
 end
 
 % restore warnings

@@ -91,6 +91,9 @@ switch task
          %% To Edit
         % DICOM dictionary
         dict = load(aas_getsetting(aap,'DICOMdictionary'));
+        if isempty(getenv('DCMDICTPATH'))
+            setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
+        end
         
         % Fields to edit
         toEditsetting = aas_getsetting(aap,'toEdit');

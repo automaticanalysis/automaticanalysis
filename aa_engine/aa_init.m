@@ -26,6 +26,7 @@ end
 
 global aacache
 aacache.bcp_path = path;
+aacache.bcp_shellpath = getenv('PATH');
 
 %% Set Paths
 % Path for SPM
@@ -120,6 +121,11 @@ else
     if isempty(which('WaveletDespike'))
        aas_log(aap,false,sprintf('BrainWavelet not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.BrainWaveletdir'));
     end;
+end
+
+% Path to DCMTK
+if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
+    setenv('PATH',[aacache.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
 % Path to spm modifications to the top
