@@ -108,16 +108,22 @@ for k=1:numel(stages)
         for d = 1:numel(dep)
             indices = dep{d}{2};
             isdone = exist(aas_doneflag_getpath_bydomain(aap,domain,indices,k),'file');
-            try subj = dep{d}{2}(1); catch, subj = []; end % Subjects No
-            try sess = dep{d}{2}(2); catch, sess = 1; end % Session/Occurrance No
+            if numel(dep{d}{2}), subj = dep{d}{2}(1); else subj = []; end % Subjects No
+            if numel(dep{d}{2}) >= 2, sess = dep{d}{2}(2); end % Session/Occurrance No
             
-            if sess == 1, aap = aas_report_add(aap,subj,...
+            if inSession
+                [junk, iSess] = aas_getN_bydomain(aap,domain,subj);
+                firstSess = iSess(1);
+                lastSess = iSess(end);
+            end
+            
+            if ~inSession || (sess == firstSess), aap = aas_report_add(aap,subj,...
                     ['<h2>Stage: ' stages{k} aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
             end
             
             % evaluate with handling sessions
             if inSession
-                if sess == 1, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
+                if sess == firstSess, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td valign="top">');
                 aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
             end
@@ -139,7 +145,7 @@ for k=1:numel(stages)
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == aas_getN_bydomain(aap,domain,subj), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if sess == lastSess, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end
     end
