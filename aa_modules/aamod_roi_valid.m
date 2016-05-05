@@ -60,9 +60,9 @@ switch task
                     % Load ROI file for subject/session:
                     indices = [subjind procind];
                     ROIfname = aas_getfiles_bystream(aap,sourcedomain,indices(indind),instream);
-                    load(ROIfname);
+                    loaded = load(ROIfname); ROI = loaded.ROI;
                     % Get number of valid voxels in each ROI:
-                    Nv(subjind,:) = [ROI.Nvox_data];
+                    Nv(subjind,:) = [ROI.Nvox];
                     mROI = [ROI.mean];
                     if strcmp(sourcedomain,'session'), mROI = mean(mROI); end
                     Mm(subjind,:) = mROI;

@@ -4,21 +4,12 @@ function [aap,resp]=aamod_roi_extract(aap,task,varargin)
 % timecourses) or 4D (e.g., grey matter signal). Gets data from image files
 % themselves; does not require SPM.mat.
 %
-% INPUT options [defaults]:
-%  ROIfile     = path to image containing ROIs
-%  ROIvals     = vector of values in ROI image that define ROI [auto]
-%  output_raw  = flag to output raw voxel data [0]
-%  do_svd      = flag to do SVD calculation [1]
-%  NvoxThr     = N (or proportion if <1) non-zero necessary to keep ROI [.5]
-%  svd_tol     = tolerance threshold for SVD [1e-6]
-%  verbose     = verbose output? [0]
-%
 % OUTPUT: ROI struct with fields (when requested/apply to data type):
+%  ROIfile     = ROI file
 %  ROIval      = value of ROI in mask image
-%  XYZ_*       = ROI XYZ coordinates in (*=mask, data) image (mm)
-%  XYZcentre_* = centre of ROI XYZ coords in (*=mask, data) image (mm)
-%  Nvox_mask   = number of voxels in ROI in mask image
-%  Nvox_data   = number of voxels in ROI in data (w/non-zero variance if 4D)
+%  XYZ         = ROI XYZ coordinates in mm (mask or data depending on "mask_space")
+%  XYZcentre   = centre of ROI XYZ coords in mm (mask or data depending on "mask_space")
+%  Nvox        = number of voxels in ROI (in mask or data depending on "mask_space")
 %  rawdata     = raw voxel data (if requested)
 %  mean        = mean (timecourse if 4D) over voxels in ROI
 %  median      = median (timecourse if 4D) over voxels in ROI
@@ -50,63 +41,63 @@ switch task
         
     case 'doit'
       
-        %% ROIs
-        ROIfile    = aap.tasklist.currenttask.settings.ROIfile;
+        %% Settings
+        ROIfile    = aap.tasklist.currenttask.settings.ROIfile;        
+        ROIvals    = aap.tasklist.currenttask.settings.ROIvals;
         
-        try    ROIvals    = aap.tasklist.currenttask.settings.ROIvals;
-        catch, ROIvals = [];
-        end
-        try    output_raw = aap.tasklist.currenttask.settings.output_raw;
-        catch, output_raw = 0;
-        end
-        try    do_svd = aap.tasklist.currenttask.settings.do_svd;
-        catch, do_svd = 1;
-        end
-        try    NvoxThr = aap.tasklist.currenttask.settings.NvoxThr;
-        catch, NvoxThr = 0.5;
-        end
-        try    NvoxAbsThr = aap.tasklist.currenttask.settings.NvoxAbsThr;
-        catch, NvoxAbsThr = 20;
-        end
-        try    verbose = aap.tasklist.currenttask.settings.verbose;
-        catch, verbose = 0;
-        end
-        try    svd_tol = aap.tasklist.currenttask.settings.svd_tol;
-        catch, svd_tol = 1e-6;
-        end
+        mask_space = aap.tasklist.currenttask.settings.mask_space;
+        output_raw = aap.tasklist.currenttask.settings.output_raw;        
         
-        % Read ROI volume:
-        VV = spm_vol(ROIfile);
-        [Y,XYZm] = spm_read_vols(VV);
-        ROIfstem = spm_str_manip(ROIfile,'rt');
+        do_svd = aap.tasklist.currenttask.settings.do_svd;
+        NvoxThr = aap.tasklist.currenttask.settings.NvoxThr;
+        NvoxAbsThr = aap.tasklist.currenttask.settings.NvoxAbsThr;
+        svd_tol = aap.tasklist.currenttask.settings.svd_tol;
         
         %% Process
         for in =  aas_getstreams(aap,'input')
             instream = in{1};            
             
-            % Get files by stream:
+            % Get data (assumes all data files are aligned)
             Datafiles = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream);
-            % Read data:
-            VY = spm_vol(Datafiles);
-            %VY = [VY{:}];
-            
-            % Transform ROI XYZ to image space (assumes images coregistered):
-            Yinv  = inv(VY(1).mat);
-            XYZ   = Yinv(1:3,1:3)*XYZm + repmat(Yinv(1:3,4),1,size(XYZm,2));
             pth = fileparts(Datafiles);
+            VY = spm_vol(Datafiles);
+            Yinv  = inv(VY(1).mat);
+            [junk, yXYZmm] = spm_read_vols(VY(1));
+            
+            % Get ROI
+            ROIfstem = spm_str_manip(ROIfile,'rt');
+            VM = spm_vol(ROIfile);
+            Minv = inv(VM.mat);
+            [YM,mXYZmm] = spm_read_vols(VM);
+                        
+            % Transform ROI XYZ in mm to voxel indices in data:
+            yXYZind = Yinv(1:3,1:3)*mXYZmm + repmat(Yinv(1:3,4),1,size(mXYZmm,2));
+            % Transform data XYZ in mm to voxel indices in mask:
+            mXYZind = Minv(1:3,1:3)*yXYZmm + repmat(Minv(1:3,4),1,size(yXYZmm,2));
+            % Transform data XYZ in mm to voxel indices in data:
+            yyXYZind = Yinv(1:3,1:3)*yXYZmm + repmat(Yinv(1:3,4),1,size(yXYZmm,2));
+
+            yYM = spm_get_data(VM,mXYZind);
+            
+            if mask_space
+                % YM = YM;
+                XYZmm = mXYZmm;
+                XYZind = yXYZind;
+            else
+                YM = yYM;
+                XYZmm = yXYZmm;
+                XYZind = yyXYZind;
+            end
             
             if isempty(ROIvals)
-                ROIvals = setdiff(unique(Y(:)),0);
-                
+                ROIvals = setdiff(unique(YM(:)),0);
                 %else
                 %if strcmp(ROIvals,'>0');  % could add more special options here...
                 %f = find(Y>0);        % but for now, require user to create mask
                 %Y(f) = 1;
                 %ROIvals = [1];
                 %end
-                
-            end;
-            
+            end
             Nrois = length(ROIvals);
             
             % SPM progress bar:
@@ -114,32 +105,28 @@ switch task
             
             % Gather ROI data:
             ROI = struct();
-            for v=1:Nrois,
+            for nr=1:Nrois,
+                ROI(nr).ROIfile  = ROIfstem;
+                ROI(nr).ROIval   = ROIvals(nr);
                 
-                f = find(Y==ROIvals(v));
-                d = spm_get_data(VY,XYZ(:,f)); % Not 100% sure that XYZ is correct (Rik's note)
-                Nvox = size(d,2);
-                if verbose
-                    fprintf('Region %d (%s = %d): %d ',v,ROIfstem,ROIvals(v),length(f));
-                end
-                ROI(v).ROIval         = ROIvals(v);
-                ROI(v).XYZ_mask       = XYZm(:,f);
-                ROI(v).XYZcentre_mask = mean(XYZm(:,f),2);
-                ROI(v).XYZ_data       = XYZ(:,f);
-                ROI(v).XYZcentre_data = mean(XYZ(:,f),2);
-                ROI(v).Nvox_mask = Nvox;
+                f = find(YM==ROIvals(nr));
+                d = spm_get_data(VY,XYZind(:,f)); % Think this is correct!
+                ROI(nr).XYZ       = XYZmm(:,f);
+                ROI(nr).XYZcentre = mean(XYZmm(:,f),2);
+                
+                aas_log(aap,false,sprintf('INFO: Region %d (%s = %d): %d ',nr,ROIfstem,ROIvals(nr),length(f)));
                 
                 % Output raw data?:
                 if output_raw
-                    ROI(v).rawdata = d;
+                    ROI(nr).rawdata = d;
                 end
                 
                 % Multiple images (e.g., EPI data), extract timecourses:
                 % Check for zero-variance voxels:
-                
-                zero_vox = var(d)==0;
+                Nvox = size(d,2);                
+                zero_vox = (var(d)==0 | isnan(var(d)));
                 zero_count = sum(zero_vox);
-                ROI(v).Nvox_data = Nvox-zero_count;
+                ROI(nr).Nvox = Nvox-zero_count;
                 
                 % If too many zero-var vox, set ROI data to NaN:
                 
@@ -152,78 +139,62 @@ switch task
                 else
                     nvox_crit = 0;
                 end
-                ROI(v).NvoxThr   = NvoxThr;
-                ROI(v).Nvox_crit = nvox_crit;
+                ROI(nr).NvoxThr   = NvoxThr;
+                ROI(nr).Nvox_crit = nvox_crit;
                 
-                if (ROI(v).Nvox_data < nvox_crit) || (ROI(v).Nvox_data < NvoxAbsThr)
-                    if verbose
-                        fprintf('(%d nonzero) voxels -- FAILED (<%d)!\n',ROI(v).Nvox_data,nvox_crit);
-                    end
-                    ROI(v).mean     = NaN(size(d,1),1);
-                    ROI(v).median   = NaN(size(d,1),1);
-                    ROI(v).svd      = NaN(size(d,1),1);
-                    ROI(v).svd_vox  = NaN(size(d,2),1);
-                    ROI(v).svd_pvar = NaN;
-                    ROI(v).svd_tol  = svd_tol;
+                % Defaults
+                ROI(nr).mean     = NaN(size(d,1),1);
+                ROI(nr).median   = NaN(size(d,1),1);
+                ROI(nr).svd      = NaN(size(d,1),1);
+                ROI(nr).svd_vox  = NaN(size(d,2),1);
+                ROI(nr).svd_pvar = NaN;
+                ROI(nr).svd_tol  = NaN;
+                
+                if (ROI(nr).Nvox < nvox_crit) || (ROI(nr).Nvox < NvoxAbsThr)
+                    aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels -- FAILED (<%d)!\n',ROI(nr).Nvox_data,nvox_crit));                    
                 else
                     
                     % Remove zero-variance voxels:
                     f = setdiff(f,zero_vox);
-                    d = spm_get_data(VY,XYZ(:,f));
+                    d = spm_get_data(VY,XYZind(:,f));
                     
-                    if verbose
-                        fprintf('(%d nonzero) voxels\n',Nvox-zero_count);
-                    end
-                    
-                    % Remove voxel-wise mean:
-                    %dd = d-repmat(mean(d,1),size(d,1),1);
-                    % commented out, replaced dd with d below jt 25/Oct/2013
+                    aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels\n',Nvox-zero_count));
                     
                     % MEAN/MEDIAN:
-                    ROI(v).mean   = mean(d,2);
-                    ROI(v).median = median(d,2);
+                    ROI(nr).mean   = mean(d,2);
+                    ROI(nr).median = median(d,2);
                     
                     % SVD:
                     if do_svd
+                        ROI(nr).svd_tol  = svd_tol;
                         [U,S,V] = spm_svd(d,svd_tol);
                         
                         if isempty(S)
-                            if verbose
-                                fprintf('..SVD FAILED!\n');
-                            end
-                            ROI(v).svd      = NaN(size(d,1),1);
-                            ROI(v).svd_vox  = NaN(size(d,2),1); % per RH
-                            ROI(v).svd_pvar = NaN;
-                            ROI(v).svd_tol  = svd_tol;
+                            aas_log(aap,false,sprintf('WARNING: ..SVD FAILED!\n'));
                         else
                             % Get 1st temporal, spatial modes:
                             U = full(U(:,1));
                             V = full(V(:,1));
                             % Change sign to sign of corr w/data:
-                            cor = corr(U,ROI(v).mean);
+                            cor = corr(U,ROI(nr).mean);
                             U = sign(cor)*U;
                             V = sign(cor)*V;
                             % Store 'em:
-                            ROI(v).svd      = U;
-                            ROI(v).svd_vox  = V;
-                            ROI(v).svd_pvar = S(1)/sum(full(S(:)));
-                            ROI(v).svd_tol  = svd_tol;
+                            ROI(nr).svd      = U;
+                            ROI(nr).svd_vox  = V;
+                            ROI(nr).svd_pvar = S(1)/sum(full(S(:)));
+                            ROI(nr).svd_tol  = svd_tol;
                         end
                         %if isempty(S)
                         %    svd_tol = 1e-9; % could increase tolerance?
                         %    [U,S,V] = spm_svd(d,svd_tol);
                         %end
-                    else
-                        ROI(v).svd      = NaN(size(d,1),1);
-                        ROI(v).svd_vox  = NaN(size(d,2),1); % per RH
-                        ROI(v).svd_pvar = NaN;
-                        ROI(v).svd_tol  = NaN;
                     end
                 end
                 
                 % Update SPM progress bar (every 5%):
-                if mod(round(100*v/Nrois),5)==0
-                    spm_progress_bar('Set',v);
+                if mod(round(100*nr/Nrois),5)==0
+                    spm_progress_bar('Set',nr);
                 end
                 
                 
