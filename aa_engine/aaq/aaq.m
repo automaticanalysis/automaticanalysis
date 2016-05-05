@@ -10,6 +10,10 @@ classdef aaq < handle
             end
         end
         
+        function close(obj)
+            aas_log(obj.aap,false,'Tasqueue is closed!');
+        end
+        
         %%==============================
         % Save self to a file
         function save(obj,fn)

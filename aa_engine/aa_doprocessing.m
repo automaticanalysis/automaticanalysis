@@ -425,6 +425,8 @@ for l=1:length(mytasks)
     taskqueue.runall(dontcloseexistingworkers, true);
 end
 
+taskqueue.close;
+
 % Moved back to python as this thread doesn't have permissions to the queue
 % if (exist('receipthandle','var'))
 %     aas_log(aap,0,sprintf('Have run all jobs, now trying to delete message in queue %s with receipt handle %s.',aaworker.aapqname,receipthandle));
