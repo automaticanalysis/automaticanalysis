@@ -216,9 +216,9 @@ classdef aa_provenance < handle
                     isOptional = numel(inputattrs)>=i && isstruct(inputattrs{i}) && isfield(inputattrs{i},'isessential') && ~inputattrs{i}.isessential;
                     
                     % find source
-                    inputstreamindex = strcmp({loaded.aap.internal.inputstreamsources{stageindex}.stream.name},inputs{i});
+                    inputstreamindex = strcmp({curr_aap.internal.inputstreamsources{stageindex}.stream.name},inputs{i});
                     if any(inputstreamindex)
-                        srcindex = loaded.aap.internal.inputstreamsources{stageindex}.stream(inputstreamindex).sourcenumber;
+                        srcindex = curr_aap.internal.inputstreamsources{stageindex}.stream(inputstreamindex).sourcenumber;
                     else
                         if isOptional
                             continue;
@@ -236,7 +236,7 @@ classdef aa_provenance < handle
                         end
                         idsrc = obj.addModule(rstage);
                     else % local --> already added
-                        src = sprintf('%s_%05d',loaded.aap.tasklist.main.module(srcindex).name,loaded.aap.tasklist.main.module(srcindex).index);
+                        src = sprintf('%s_%05d',curr_aap.tasklist.main.module(srcindex).name,curr_aap.tasklist.main.module(srcindex).index);
                         [lname, ind] = strtok_ptrn(src,'_0');
                         lindex = sscanf(ind,'_%d');
                         idattr = {...
@@ -290,7 +290,7 @@ classdef aa_provenance < handle
             [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
                 aas_getsesstype(obj.IDs{idsrc}.aap),...
                 [obj.indices(1),sess],stream,'output'); % TODO: associate files
-            if ~exist('files','var')
+            if ~exist('files','var') || isempty(files)
                 prid = ''; id = 0;
                 return
             end            
