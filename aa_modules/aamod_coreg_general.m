@@ -43,8 +43,7 @@ switch task
     case 'doit'
         
         %% Init
-        global defaults
-        flags = defaults.coreg;
+        flags = aap.spm.defaults.coreg;
         % update flags
         flags.write.which = [1 0]; % do not (re)write target and mean
         if isfield(aap.tasklist.currenttask.settings,'eoptions')
@@ -80,6 +79,13 @@ switch task
         end
         fprintf('\nTarget stream: %s\n',inpstream{tInd});
         targetimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd});
+        if size(targetimfn,1) > 1 % multiple images (possibly after normalisation)
+            fns = spm_file(targetimfn,'basename');
+            targetimfn = targetimfn(fns(:,1)~='w',:); % omit normalised
+        end
+        if size(targetimfn,1) > 1 % multiple images --> ?
+            aas_log(aap,true,sprintf('ERROR: multiple target image found:%s',targetimfn'));
+        end
         
         % Get image to coregister ('source'):
         sourceimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd+1});
