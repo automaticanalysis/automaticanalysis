@@ -40,6 +40,7 @@ switch task
                 end
             case 't2'
                 series = ais.series_t2;
+                structural_choose = '';
         end
         
         switch numel(cell2mat(series))
