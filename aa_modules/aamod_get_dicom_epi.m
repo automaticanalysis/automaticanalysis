@@ -98,18 +98,13 @@ switch task
         % Fields to edit
         toEditsetting = aas_getsetting(aap,'toEdit');
         toEditsubj = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
-        if strfind(aap.tasklist.currenttask.domain,'session')
-            for s = 1:numel(toEditsubj)
-                sessnames = regexp(toEditsubj(s).session,':','split');
-                if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
-                    toEdit = toEditsubj(s);
-                    break;
-                else
-                    toEdit = [];
-                end
+        toEdit = [];
+        for s = 1:numel(toEditsubj)
+            sessnames = regexp(toEditsubj(s).session,':','split');
+            if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
+                toEdit = toEditsubj(s);
+                break;
             end
-        else
-            toEdit = toEditsubj;
         end
         
         % do it
