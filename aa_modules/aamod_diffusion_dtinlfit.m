@@ -28,7 +28,7 @@ switch task
         if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
             P = feval(aap.directory_conventions.poolprofile,size(data_mask,3));
             P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:01:00';
-            matlabpool(P);
+            aaq_matlabpool(P);
             try
                 parfor z = 1:size(data_in,3)
                     [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
@@ -36,7 +36,7 @@ switch task
             catch ME
                 fprintf('ERROR: %s\n', ME.message);
             end
-            matlabpool close;
+            aaq_matlabpool close;
         else % cluster computing parfor is nor working
             for z = 1:size(data_in,3)
                 [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);

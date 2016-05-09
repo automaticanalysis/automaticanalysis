@@ -20,7 +20,7 @@ switch task
         resp='Done SPM5 realign and unwarp\n';
     case 'report' % reformatted [TA]
         if subj == 1 % init summary
-            aap.report.(mfilename).selected_sessions = [];
+            aap.report.(mfilename).selected_sessions = zeros(1,0);
             aap.report.(mfilename).mvmax = nan(aas_getN_bydomain(aap,'subject'),aas_getN_bydomain(aap,'session',1),6);
         end
         aap.report.(mfilename).selected_sessions = union(aap.report.(mfilename).selected_sessions,aap.acq_details.selected_sessions);
