@@ -151,7 +151,7 @@ switch task
                 ROI(nr).svd_tol  = NaN;
                 
                 if (ROI(nr).Nvox < nvox_crit) || (ROI(nr).Nvox < NvoxAbsThr)
-                    aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels -- FAILED (<%d)!\n',ROI(nr).Nvox_data,nvox_crit));                    
+                    aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels -- FAILED (<%d)!\n',ROI(nr).Nvox,nvox_crit));                    
                 else
                     
                     % Remove zero-variance voxels:
