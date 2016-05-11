@@ -137,9 +137,15 @@ aap.internal.pwd=pwd;
 
 if isempty(aaparallel)
     aaparallel.workerlist=[];
-    aaparallel.numberofworkers=8;
-    aaparallel.memory = 4; % GB
-    aaparallel.walltime = 24; % hours
+    if isfield(aap.options,'aaparallel')
+        aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        aaparallel.memory = aap.options.aaparallel.memory;
+        aaparallel.walltime = aap.options.aaparallel.walltime;
+    else
+        aaparallel.numberofworkers = 8;
+        aaparallel.memory = 4; % GB
+        aaparallel.walltime = 24; % hours
+    end
     % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
     aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
     
@@ -230,11 +236,10 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
 end
 
 % Choose where to run all tasks
-try
-  taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
-catch
-  aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess, %s\n',aap.options.wheretoprocess));
+if ~exist(sprintf('aaq_%s', aap.options.wheretoprocess),'file'), 
+    aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess: %s\n',aap.options.wheretoprocess));
 end
+taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
 % Create a local taskqueue for localonly modules
 try
   localtaskqueue=aaq_localsingle(aap);
@@ -309,20 +314,8 @@ for l=1:length(mytasks)
             % create subject-specific selected_sessions
             selected_sessions = aap.acq_details.selected_sessions;
             if (numel(indices) >= 1)
-                toskip = [];
-                for i = 1:numel(selected_sessions)
-                    try
-                        [junk, seriesnum] = aas_get_series(aap,aas_getmodality(aap),indices(1),selected_sessions(i));
-                    catch E
-                        if strcmp(E.identifier,'MATLAB:badsubscript')
-                            seriesnum = []; 
-                        else
-                            rethrow(E);
-                        end
-                    end
-                    if isempty(seriesnum) || (isnumeric(seriesnum) && all(seriesnum==0)), toskip(end+1) = i; end
-                end
-                selected_sessions(toskip) = [];
+                [junk, subjSess] = aas_getN_bydomain(aap,aas_getsesstype(aap),indices(1));
+                selected_sessions = intersect(selected_sessions, subjSess);
             end
             
             if (numel(indices) >= 2) && ... % if session domain

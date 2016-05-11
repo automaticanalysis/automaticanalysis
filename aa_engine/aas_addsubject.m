@@ -20,6 +20,7 @@
 %           - string: full or realtive path (from rawdatadir - only one is supported) to wholebrain EPI (only after fMRI)
 %           - cell array (nested): full path to 3D NIfTI files of one fMRI session
 %         	all strings can be structures with fields 'fname' (path to image) and 'hdr' (path to header)
+%           missing series can be inicated either with "0" (for numerical array input) or with "[]" (for cell array input)
 %     For MEG, series is the filename of the *.fif file.
 %   'diffusion', diffusion-weighted MRI series (DICOM) or cell of structure(s) (NIfTI) with fields 'fname' (path to image), and 'bval', 'bvec' (path to bvals and bvecs)
 %   'structural', series (DICOM), cellstring of 3D NIfTI filename or cell of structure with fields 'fname' (path to image) and 'hdr' (path to header)

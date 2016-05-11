@@ -1,3 +1,4 @@
+
 % aa queue processor that uses Matlab's Parallel Computing Toolbox to run
 % tasks.
 %
@@ -14,43 +15,79 @@
 
 classdef aaq_matlab_pct<aaq
     properties
-        maxretries=5;
+        toHandlePool    = false; % aaq handles pools
         
+        jobstudypths    = {}; % actulaised studypath (for each job)
+        readytogo       = []; % green sign (for each job)
+        jobnotrun       = []; % job status (for each job)
+        benchmark       = struct('receiveWorkerMessages',0,...
+                            'submitJobs',0,...
+                            'waitForWorkers',0,...
+                            'labsend',0,...
+                            'jobreadystart',0);
+                
+        dep_names       = {}; % doneflag (for each job)
+        dep_done        = []; % is doneflag exists (for each job)
+        depon           = {}; % jobs the actual job depends on (for each job)
+        depof           = {}; % jobs depending on the actual job (for each job)
+        depon_num       = []; % # jobs the actual job depends on (for each job)
+
+        % real-time
+        realtime_deps   = [];
+
+        % low-level
+        workerstatus    = {}; % worker status (for each worker)
+        
+        % no effect
+        matlab_pct_path=[]; % to store benchmark file (<aaworker.parmpath>/matlab_pct)
+        fatalerrors=false; % flag to indicate fatal error --> stop pipeline
+        retrynum=[]; % counter for rertries (for each job)
+        jobcount=0; % # jobs in pipeline
+        stored_path=''; % MATLAB path
+        
+        % not in use
+        jobstatus=[];
+        compiledfile=[];                
+        maxretries=5; % maximum allowed rerties
         filestomonitor=[];
         filestomonitor_jobnum=[];
-        compiledfile=[];
-        matlab_pct_path=[];
-        retrynum=[];
-        jobnotrun=[];
-        fatalerrors=false;
-        jobcount=0;
-        jobstatus=[];
-        dep_names={};
-        dep_done=[];
-        depof={};
-        depon={};
-        depon_num=[];
-        workerstatus={};
-        stored_path='';
-        realtime_deps=[];
-        benchmark=struct('receiveWorkerMessages',0,'submitJobs',0,'waitForWorkers',0,'labsend',0,'jobreadystart',0);
-        jobstudypths={};
-        readytogo=[];
     end
     methods
         function [obj]=aaq_matlab_pct(aap)
+            global aaparallel
             global aaworker
             obj.aap=aap;
             
             obj.matlab_pct_path=fullfile(aaworker.parmpath,'matlab_pct');
-            if (exist(obj.matlab_pct_path,'dir')==0)
-                mkdir(obj.matlab_pct_path);
+            if ~exist(obj.matlab_pct_path,'dir')
+                aas_makedir(obj.aap,obj.matlab_pct_path);
             end;
             
             % Take snapshot of paths so the workers can get themselves up
             % to speed
             obj.stored_path=path;
+            
+            if ~aaq_matlabpool('isopen')
+                if ~isempty(aap.directory_conventions.poolprofile)
+                    P = feval(aap.directory_conventions.poolprofile,aaparallel.numberofworkers);
+                    switch class(P)
+                        case 'parallel.cluster.Torque'
+                            aas_log(aap,false,'INFO: Torque engine is detected');
+                            P.ResourceTemplate=sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00',aaparallel.memory,aaparallel.walltime);
+                    end
+                    aaq_matlabpool(P);
+                else
+                    aaq_matlabpool('local',aaparallel.numberofworkers);
+                end
+                obj.toHandlePool = true;
+            end
         end
+        
+        function close(obj)
+            if obj.toHandlePool, aaq_matlabpool('close'); end
+            close@aaq(obj);
+        end
+        
         %%==============================
         % Add a task to the task queue
         % This adds to the parent class's method, by scanning the dependencies

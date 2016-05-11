@@ -3,13 +3,19 @@
 #### New general features ####
   - `aamod_get_dicom_*` modules can now also edit DICOM fields
   - bounding box can be specified for "norm_write" modules
+  - `aamod_roi_extract_*` has option to use either the space of the data or the ROI
   - subjects with different sessions can be analysed
     - [aamod_firstlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_contrasts.xml) can automatically assign contrasts, unless `uniquebysession` is used. :warning: **Contrast names must be unique both within- and across-sessions!**
+  - aaparallel parameters
+  - aaq_matlab_pct accepts
+    - aaparallel parameters
+	- external poolprofile function specified in `aap.directory_conventions.poolprofile`
 
 #### Bugfixes ####
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with path with "spm" in it
   - modality detection for MTI-related modules
   - [aas_getfiles_bystream](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_getfiles_bystream.m) now also uses `aap.options.maximumretry` when copying streams potentially used jointly with other jobs
+  - coregister after `aamod_norm_noss*`
   - reporting connected pipeline
   - reporting branched pipeline with `selected_sessions`
   - reporting `aamod_*dartel_denorm*`

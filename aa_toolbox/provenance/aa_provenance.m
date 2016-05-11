@@ -156,17 +156,12 @@ classdef aa_provenance < handle
                 iindex = cell2mat({raap.tasklist.main.module(iname).index}) == index;
                 rstageindex = iname(iindex);
                 
-                curr_aap = aas_setcurrenttask(raap,rstageindex);
-                curr_aap.options.verbose = -1;
-                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,obj.indices),...
-                    '^aap_parameters.*mat$'));
-                if loaded.aap.internal.aapversion(1) ~= '5' % older aa
-                    loaded.aap = aa_convert_subjects(loaded.aap);
-                end
+                rsubj = find(strcmp({raap.acq_details.subjects.subjname},aas_getsubjname(obj.aap,obj.indices(1))));
+                curr_aap = aas_setcurrenttask(raap,rstageindex,'subject',rsubj);
                 
                 idname = ['idRemoteActivity_' tag];
                 idattr = {...
-                    'aap',loaded.aap,...
+                    'aap',curr_aap,...
                     'Location',[stageindex.host fullfile(fileparts(stageindex.aapfilename),stageindex.stagetag)],...
                     };
                 
@@ -182,17 +177,10 @@ classdef aa_provenance < handle
                 else sfx = ''; 
                 end
                 
-                curr_aap = aas_setcurrenttask(obj.aap,stageindex);
-                curr_aap.options.verbose = -1;
-                indices = obj.indices;
-                if ~isempty(curr_aap.acq_details.selected_sessions)
-                    indices(2) = curr_aap.acq_details.selected_sessions(obj.indices(2));
-                end
-                loaded = load(spm_select('FPList',aas_getpath_bydomain(curr_aap,curr_aap.tasklist.currenttask.domain,indices),...
-                    '^aap_parameters.*mat$'));
+                curr_aap = aas_setcurrenttask(obj.aap,stageindex,'subject',obj.indices(1));
                 
                 idattr = {...
-                    'aap',loaded.aap,...
+                    'aap',curr_aap,...
                     'Location',fullfile([obj.studypath sfx],sprintf('%s_%05d',name,index)),...
                     };
                 

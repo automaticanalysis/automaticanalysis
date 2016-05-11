@@ -130,18 +130,22 @@ for k=1:numel(stages)
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
             else
-                % load local aap
-                loaded = load(spm_select('FPList',aas_getpath_bydomain(aap,domain,indices,k),'^aap_parameters_.*mat'));
+                % set local aap
+                if ~isempty(subj)
+                    curr_aap = aas_setcurrenttask(aap,k,'subject',subj);
+                else
+                    curr_aap = aas_setcurrenttask(aap,k);
+                end
                 
                 % set fields
-                loaded.aap.report = aap.report;
-                loaded.aap.prov = aap.prov;
+                curr_aap.report = aap.report;
+                curr_aap.prov = aap.prov;
          
-                [loaded.aap,resp]=aa_feval_withindices(mfile_alias,loaded.aap,'report',indices);
+                [curr_aap,junk]=aa_feval_withindices(mfile_alias,curr_aap,'report',indices);
                 
                 % save report
-                aap.report = loaded.aap.report;
-                aap.prov = loaded.aap.prov;
+                aap.report = curr_aap.report;
+                aap.prov = curr_aap.prov;
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
