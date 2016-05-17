@@ -1,6 +1,6 @@
-classdef aaq_qsubVeiwerClass < QueueViewerClass
+classdef aas_qsubViewerClass < QueueViewerClass
     methods
-        function obj = aaq_qsubVeiwerClass(varargin)
+        function obj = aas_qsubViewerClass(varargin)
             if nargin
                 taskqueue = varargin{1};
             else

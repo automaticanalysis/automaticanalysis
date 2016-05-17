@@ -2,7 +2,6 @@ classdef aaq_qsub<aaq
     properties
         scheduler = []
         QV = []
-        killed = false
     end
     properties (Hidden)
         jobnotrun = []
@@ -31,6 +30,14 @@ classdef aaq_qsub<aaq
             end
             obj.aap=aap;
         end
+        
+        function close(obj)
+            for j = 1:numel(obj.scheduler.Jobs)
+                obj.scheduler.Jobs(1).delete;
+            end
+            close@aaq(obj);
+        end
+        
         %% Queue jobs on Qsub:
         %  Queue job
         %  Watch output files
@@ -80,7 +87,8 @@ classdef aaq_qsub<aaq
                     Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
                         if obj.QV.isvalid, obj.QV.Hold = false; end
-                        obj.killed = true;
+                        obj.fatalerrors = true; % abnormal terminations
+                        obj.close;
                         return;
                     end
                     Task = Jobs.Tasks;
@@ -102,7 +110,8 @@ classdef aaq_qsub<aaq
                     Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
                         if obj.QV.isvalid, obj.QV.Hold = false; end
-                        obj.killed = true;
+                        obj.fatalerrors = true; % abnormal terminations
+                        obj.close;
                         return;
                     end
                     Task = Jobs.Tasks;
@@ -155,6 +164,7 @@ classdef aaq_qsub<aaq
                                     Task.Error.stack(e).file, Task.Error.stack(e).line)];
                             end
                             % If there is an error, it is fatal...
+                            obj.fatalerrors = true;
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             
                             taskreported(end+1) = ftmind;
@@ -174,7 +184,7 @@ classdef aaq_qsub<aaq
 %                     return
 %                 end
                 if isempty(obj.QV) || ~obj.QV.OnScreen % closed
-                    obj.QV = aaq_qsubVeiwerClass(obj);
+                    obj.QV = aas_qsubViewerClass(obj);
                     obj.QV.Hold = true;
                     obj.QV.setAutoUpdate(false);
                 else
@@ -219,14 +229,6 @@ classdef aaq_qsub<aaq
             %                     sprintf(' -N Mod%02d_',job.k),...
             %                     sprintf('%03d',job.indices));
 
-        end
-
-        
-        function [obj]=killall(obj)
-            for j = 1:numel(obj.scheduler.Jobs)
-                obj.scheduler.Jobs(1).delete;
-            end
-            obj.killed = true;
         end
         
         function [obj]=qsub_q_job(obj,job)

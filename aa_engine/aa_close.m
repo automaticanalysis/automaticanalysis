@@ -27,12 +27,7 @@ end
 % kill running jobs
 if cell_index(tasks,'killjobs')
     global taskqueue
-    if isstruct(taskqueue) && isfield(taskqueue,'scheduler')
-        switch taskqueue.scheduler.Type
-            case 'Torque'
-                taskqueue.killall;
-        end
-    end
+    if isobject(taskqueue), taskqueue.close; end
 end
 
 % cleanup

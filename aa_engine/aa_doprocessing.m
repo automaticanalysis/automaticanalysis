@@ -412,13 +412,13 @@ for l=1:length(mytasks)
         if ~isempty(localtaskqueue.jobqueue), 
             localtaskqueue.runall(dontcloseexistingworkers, false); 
         end
-        if isprop(taskqueue,'killed') && taskqueue.killed, break; end
+        if ~taskqueue.isOpen, break; end
     end
     % Wait until all the jobs have finished
     taskqueue.runall(dontcloseexistingworkers, true);
 end
 
-taskqueue.close;
+if taskqueue.isOpen, taskqueue.close; end
 
 % Moved back to python as this thread doesn't have permissions to the queue
 % if (exist('receipthandle','var'))
@@ -427,7 +427,7 @@ taskqueue.close;
 % end
 % aas_log(aap,0,'Message deleted');
 
-if ~isprop(taskqueue,'killed') || ~taskqueue.killed
+if ~taskqueue.fatalerrors
     if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
     
     if ~isempty(aap.options.email)

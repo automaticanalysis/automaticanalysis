@@ -1,17 +1,21 @@
 classdef aaq < handle
     properties
-        aap;
-        jobqueue=[];
+        aap
+        isOpen      = false
+        fatalerrors = false % flag to indicate fatal error --> stop pipeline
+        jobqueue    = []
     end
     methods
         function obj=aaq(aap)
             if (exist('aap','var'))
                 obj.aap=aap;
             end
+            obj.isOpen = true;
         end
         
         function close(obj)
-            aas_log(obj.aap,false,'Tasqueue is closed!');
+            aas_log(obj.aap,false,'Taskqueue is closed!');
+            obj.isOpen = false;
         end
         
         %%==============================

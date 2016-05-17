@@ -12,13 +12,13 @@
 %
 % Updating the list of jobs:
 %   It does not automaticaly update the list of jobs after launching, but
-%   you can update the list manually by clicking on the "Update" button or 
-%   calling the Update method (e.g. QV.Update). It also means that the the 
+%   you can update the list manually by clicking on the "Update" button or
+%   calling the Update method (e.g. QV.Update). It also means that the the
 %   program does not hold the focus, so you can continue working with MATLAB!
 %
-%   You can also switch on auto update by clicking on the "Auto update" 
-%   checkbox. With auto update swicthed on, you can set the update rate 
-%   using the slider. Keep in mind however, that in auto update mode, the 
+%   You can also switch on auto update by clicking on the "Auto update"
+%   checkbox. With auto update swicthed on, you can set the update rate
+%   using the slider. Keep in mind however, that in auto update mode, the
 %   program holds the focus, so you cannot use MATLAB!
 %
 % Tibor Auer MRC CBU Cambridge 2012-2015
@@ -56,7 +56,7 @@ classdef QueueViewerClass < handle
             
             ncControls = 3; % #columns
             nrControls = 3; % #rows
-
+            
             q = obj.GetQueue;
             
             [H, W] = size(char(q));
@@ -117,14 +117,14 @@ classdef QueueViewerClass < handle
             obj.UIControls.autoupdate_chk = uicontrol('Style','checkbox',...
                 'Position',[ffs+fus+(pos(2)-1)*(fus+control_wid) ffs+(nrControls-pos(1)+1)*fus+(nrControls-pos(1))*uh control_wid uh],...
                 'Tag','autoupdate_chk',...
-                'Callback',{@chkAutoUpdate,obj}); 
+                'Callback',{@chkAutoUpdate,obj});
             
             pos = [2 1];
             obj.UIControls.autoupdate_lbl2 = uicontrol('Style','text','String','Update rate:',...
-                'Visible','off',...        
+                'Visible','off',...
                 'HorizontalAlignment','left',...
                 'Position',[ffs+fus+(pos(2)-1)*(fus+control_wid) ffs+(nrControls-pos(1)+1)*fus+(nrControls-pos(1))*uh control_wid uh]);
-
+            
             pos = [2 2];
             obj.UIControls.autoupdate_sld = uicontrol('Style','slider',...
                 'Visible','off',...
@@ -132,14 +132,14 @@ classdef QueueViewerClass < handle
                 'SliderStep',[10/(24*3600-10) 60/(24*3600-10)],...
                 'Position',[ffs+fus+(pos(2)-1)*(fus+control_wid) ffs+(nrControls-pos(1)+1)*fus+(nrControls-pos(1))*uh control_wid*2 uh],...
                 'Tag','autoupdate_sld',...
-                'Callback',{@sldAutoUpdate,obj}); 
+                'Callback',{@sldAutoUpdate,obj});
             
             pos = [1 3];
             obj.UIControls.update_btn = uicontrol('Style','pushbutton',...
                 'String','Update',...
                 'Position',[ffs+fus+(pos(2)-1)*(fus+control_wid) ffs+(nrControls-pos(1)+1)*fus+(nrControls-pos(1))*uh control_wid uh],...
                 'Tag','update_btn',...
-                'Callback',{@doUpdate,obj});            
+                'Callback',{@doUpdate,obj});
             
             pos = [3 1]; % row, column
             info_btn = uicontrol('Style','pushbutton',...
@@ -195,105 +195,8 @@ classdef QueueViewerClass < handle
         end
     end
     
-    methods (Hidden=true)        
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%% Callbacks %%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
-        function chkAutoUpdate(autoupdate_chk, evd, obj) %#ok
-            switch get(autoupdate_chk,'Value')
-                case 1 % auto
-                    set(obj.UIControls.update_btn,'Enable','off');
-                    set(obj.UIControls.autoupdate_lbl2,'Visible','on');
-                    set(obj.UIControls.autoupdate_sld,'Visible','on');
-                    set(obj.UIControls.fig, 'windowstyle','modal');
-                    set(autoupdate_chk,'String',obj.TimeStr(obj.UpdateRate));
-                    
-                    while get(autoupdate_chk,'Value')
-                        obj.UpdateAtRate;
-                        drawnow;
-                        if ~ishandle(obj.UIControls.fig), break; end
-                    end
-                case 0 % manual
-                    set(obj.UIControls.update_btn,'Enable','on')
-                    set(obj.UIControls.autoupdate_lbl2,'Visible','off');
-                    set(obj.UIControls.autoupdate_sld,'Visible','off');
-                    set(obj.UIControls.fig, 'windowstyle','normal');
-                    set(autoupdate_chk,'String','');
-            end
-        end
-        
-        function sldAutoUpdate(autoupdate_sld, evd, obj) %#ok
-            range = get(autoupdate_sld,'Max') - get(autoupdate_sld,'Min');
-
-            obj.SetUpdateRate(round(get(autoupdate_sld,'Value')/10)*10);
-            set(autoupdate_sld,'SliderStep',[10/range 60/range]);
-
-            if obj.UpdateRate > 60
-                obj.SetUpdateRate(round(obj.UpdateRate/60)*60);
-                set(autoupdate_sld,'SliderStep',[60/range 3600/range]); 
-            end
-        end
-        
-        function doUpdate(update_btn, evd, obj) %#ok
-            obj.Update;
-        end
-        
-        function doKillAll(killall_btn, evd, obj) %#ok
-            obj.KillAll;
-            obj.Close;
-            delete(obj);
-        end
-
-        function doClose(close_btn, evd, obj) %#ok
-            obj.Close;
-        end
-        
-        function doListboxClick(listbox, evd, obj) %#ok
-            % if this is a doubleclick, doOK
-            if strcmp(get(gcbf,'SelectionType'),'open')
-                jobs = get(listbox,'String');
-                sel = get(listbox,'Value');
-                ID = regexp(jobs{sel},'job[ ]*[0-9]*:','match');
-                ID = textscan(ID{1},'job %d:%*s'); ID = ID{1};
-                Task = obj.Scheduler.Jobs(ID).Tasks;
-                msgbox(obj.TaskInfo(Task),[Task.Parent.Name Task.Name],'help');
-            end
-        end
-        
-        function doInfo(info_btn, evd, obj) %#ok
-            queue = 'unknown/unspecified';
-            mem = 'unknown/unspecified';
-            walltime = 'unknown/unspecified time';
-            
-            if ~isempty(obj.Scheduler.SubmitArguments)
-                schedinfo = textscan(obj.Scheduler.SubmitArguments,'%s'); schedinfo = schedinfo{1};
-                if any(strcmp(schedinfo,'-q')), queue = schedinfo{circshift(strcmp(schedinfo,'-q'),1)}; end
-                if cell_index(schedinfo,'mem='), mem = strrep(schedinfo{cell_index(schedinfo,'mem=')},'mem=',''); end
-                if cell_index(schedinfo,'walltime='), walltime = obj.TimeStr(str2double(strrep(schedinfo{cell_index(schedinfo,'walltime=')},'walltime=',''))); end
-            end
-            msgbox(sprintf(['- Queuing %d jobs\n'...
-                '- Running %d jobs\n'...
-                '- Finished %d jobs\n'...
-                '\n'...
-                '- Submitted from %s\n'...
-                '- To %d core(s)/Jobs\n'...
-                '- In %s queue\n'...
-                '- With %s RAM\n'...
-                '- For maximum %s\n'...
-                '\n'...
-                '- Job Storage in %s'],...
-                sum(strcmp({obj.Scheduler.Jobs.State},'queued')),...
-                sum(strcmp({obj.Scheduler.Jobs.State},'running')),...
-                sum(strcmp({obj.Scheduler.Jobs.State},'finished')),...
-                obj.Scheduler.Host,...
-                obj.Scheduler.NumWorkers,...
-                queue,...
-                mem,...
-                walltime,...
-                obj.Scheduler.JobStorageLocation),['Scheduler: ' class(obj.Scheduler)],'help');
-        end
-   
-        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    methods (Hidden=true)
         function str = TaskInfo(obj,Task)
             elapsedtime = parallel.internal.display.DisplayHelper(class(Task)).getRunningDuration(Task.StartTime,Task.FinishTime);
             str = sprintf(['- Has been running on %s\n'...
@@ -360,4 +263,100 @@ classdef QueueViewerClass < handle
             set(obj.UIControls.autoupdate_chk,'String',obj.TimeStr(obj.UpdateRate));
         end
     end
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% Callbacks %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function chkAutoUpdate(autoupdate_chk, evd, obj) %#ok
+switch get(autoupdate_chk,'Value')
+    case 1 % auto
+        set(obj.UIControls.update_btn,'Enable','off');
+        set(obj.UIControls.autoupdate_lbl2,'Visible','on');
+        set(obj.UIControls.autoupdate_sld,'Visible','on');
+        set(obj.UIControls.fig, 'windowstyle','modal');
+        set(autoupdate_chk,'String',obj.TimeStr(obj.UpdateRate));
+        
+        while get(autoupdate_chk,'Value')
+            obj.UpdateAtRate;
+            drawnow;
+            if ~ishandle(obj.UIControls.fig), break; end
+        end
+    case 0 % manual
+        set(obj.UIControls.update_btn,'Enable','on')
+        set(obj.UIControls.autoupdate_lbl2,'Visible','off');
+        set(obj.UIControls.autoupdate_sld,'Visible','off');
+        set(obj.UIControls.fig, 'windowstyle','normal');
+        set(autoupdate_chk,'String','');
+end
+end
+
+function sldAutoUpdate(autoupdate_sld, evd, obj) %#ok
+range = get(autoupdate_sld,'Max') - get(autoupdate_sld,'Min');
+
+obj.SetUpdateRate(round(get(autoupdate_sld,'Value')/10)*10);
+set(autoupdate_sld,'SliderStep',[10/range 60/range]);
+
+if obj.UpdateRate > 60
+    obj.SetUpdateRate(round(obj.UpdateRate/60)*60);
+    set(autoupdate_sld,'SliderStep',[60/range 3600/range]);
+end
+end
+
+function doUpdate(update_btn, evd, obj) %#ok
+obj.Update;
+end
+
+function doKillAll(killall_btn, evd, obj) %#ok
+obj.KillAll;
+obj.Close;
+delete(obj);
+end
+
+function doClose(close_btn, evd, obj) %#ok
+obj.Close;
+end
+
+function doListboxClick(listbox, evd, obj) %#ok
+% if this is a doubleclick, doOK
+if strcmp(get(gcbf,'SelectionType'),'open')
+    jobs = get(listbox,'String');
+    sel = get(listbox,'Value');
+    ID = regexp(jobs{sel},'job[ ]*[0-9]*:','match');
+    ID = textscan(ID{1},'job %d:%*s'); ID = ID{1};
+    Task = obj.Scheduler.Jobs(ID).Tasks;
+    msgbox(obj.TaskInfo(Task),[Task.Parent.Name Task.Name],'help');
+end
+end
+
+function doInfo(info_btn, evd, obj) %#ok
+queue = 'unknown/unspecified';
+mem = 'unknown/unspecified';
+walltime = 'unknown/unspecified time';
+
+if ~isempty(obj.Scheduler.SubmitArguments)
+    schedinfo = textscan(obj.Scheduler.SubmitArguments,'%s'); schedinfo = schedinfo{1};
+    if any(strcmp(schedinfo,'-q')), queue = schedinfo{circshift(strcmp(schedinfo,'-q'),1)}; end
+    if cell_index(schedinfo,'mem='), mem = strrep(schedinfo{cell_index(schedinfo,'mem=')},'mem=',''); end
+    if cell_index(schedinfo,'walltime='), walltime = obj.TimeStr(str2double(strrep(schedinfo{cell_index(schedinfo,'walltime=')},'walltime=',''))); end
+end
+msgbox(sprintf(['- Queuing %d jobs\n'...
+    '- Running %d jobs\n'...
+    '- Finished %d jobs\n'...
+    '\n'...
+    '- Submitted from %s\n'...
+    '- To %d core(s)/Jobs\n'...
+    '- In %s queue\n'...
+    '- With %s RAM\n'...
+    '- For maximum %s\n'...
+    '\n'...
+    '- Job Storage in %s'],...
+    sum(strcmp({obj.Scheduler.Jobs.State},'queued')),...
+    sum(strcmp({obj.Scheduler.Jobs.State},'running')),...
+    sum(strcmp({obj.Scheduler.Jobs.State},'finished')),...
+    obj.Scheduler.Host,...
+    obj.Scheduler.NumWorkers,...
+    queue,...
+    mem,...
+    walltime,...
+    obj.Scheduler.JobStorageLocation),['Scheduler: ' class(obj.Scheduler)],'help');
 end
