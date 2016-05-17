@@ -86,9 +86,9 @@ switch task
         if size(targetimfn,1) > 1 % multiple images --> ?
             aas_log(aap,true,sprintf('ERROR: multiple target image found:%s',targetimfn'));
         end
-%         % get copy
-%         copyfile(targetimfn,spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin))));
-%         targetimfn = spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin)));
+        % get copy
+        copyfile(targetimfn,spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin))));
+        targetimfn = spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin)));
         
         % Get image to coregister ('source'):
         sourceimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd+1});
@@ -135,8 +135,8 @@ switch task
         end
         
         %% Describe the outputs and Diagnostics 
-%         % Cleanup
-%         delete(targetimfn);
+        % Cleanup
+        delete(targetimfn);
         
         % For source diag only
         if strcmp(aap.options.wheretoprocess,'localsingle')

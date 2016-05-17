@@ -32,5 +32,5 @@ switch task
         
         %% Describe outputs
         aap=aas_desc_outputs(aap,subj,sess,'meg',...
-            fullfile(sessdir,aap.acq_details.subjects(subj).megseriesnumbers{sess}));
+            fullfile(sessdir,megser));
 end
