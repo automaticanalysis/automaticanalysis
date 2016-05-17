@@ -25,7 +25,11 @@ if ~isfield(aaworker,'parmpath')
 end
 
 % any task specific settings
-aap=aas_setcurrenttask(aap,modulenum);
+if numel(indices) % subject-specific sessions
+    aap=aas_setcurrenttask(aap,modulenum,'subject',indices(1));
+else
+    aap=aas_setcurrenttask(aap,modulenum);
+end
 
 if (~strcmp(aap.directory_conventions.remotefilesystem,'none'))
     [pth nme ext]=fileparts(tempname);
