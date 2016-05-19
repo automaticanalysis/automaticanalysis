@@ -179,17 +179,19 @@ classdef aaq_qsub<aaq
                     end
                 end  
                 
-                % queue viewer
-%                 if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
-%                     return
-%                 end
-                if isempty(obj.QV) || ~obj.QV.OnScreen % closed
-                    obj.QV = aas_qsubViewerClass(obj);
-                    obj.QV.Hold = true;
-                    obj.QV.setAutoUpdate(false);
-                else
-                    obj.QV.UpdateAtRate;
-                    if waitforalljobs, obj.QV.Hold = false; end
+                if obj.aap.options.aaworkerGUI
+                    % queue viewer
+                    % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
+                    %     return
+                    % end
+                    if isempty(obj.QV) || ~obj.QV.OnScreen % closed
+                        obj.QV = aas_qsubViewerClass(obj);
+                        obj.QV.Hold = true;
+                        obj.QV.setAutoUpdate(false);
+                    else
+                        obj.QV.UpdateAtRate;
+                        if waitforalljobs, obj.QV.Hold = false; end
+                    end
                 end
             end
         end
