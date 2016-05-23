@@ -41,7 +41,7 @@ if iserr % errors
     global aaworker
     if (isfield(aaworker,'errorflagname'))
         fid=fopen(aaworker.errorflagname,'w');
-        fprintf(fid,'%d:%d:%d %d:%02d:%02d  ',round(clock));
+        fprintf(fid,'[%d.%02d.%02d %02d:%02d:%02d]  ',round(clock));
         fclose(fid);
     end
     if isfield(aap,'internal') && isfield(aap.internal,'pwd') && exist(aap.internal.pwd,'dir')
@@ -82,12 +82,12 @@ else
 end;
 % and to worker file?
 global aaworker
-if (isfield(aaworker,'logname'))
+if isfield(aaworker,'logname')
     fid=fopen(aaworker.logname,'a');
-    fprintf(fid,'%d:%d:%d %d:%02d:%02d  ',round(clock));
-    fprintf(fid,'%s',msg);
+    fprintf(fid,'[%d.%02d.%02d %02d:%02d:%02d]  ',round(clock));
+    fprintf(fid,msg);
     fclose(fid);
-    aas_propagateto(aaworker.master.hostname,aaworker.logname);
+    if isfield(aaworker,'master'), aas_propagateto(aaworker.master.hostname,aaworker.logname); end
 end;
 % and to sdb
 %   crypt=aaworker.aacc.crypt;
