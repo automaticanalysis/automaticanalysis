@@ -15,6 +15,10 @@
     - external poolprofile function specified in `aap.directory_conventions.poolprofile`
     - pass `aaworker`
 
+#### New features for fMRI ####
+  - new modules:
+    - [aamod_reorientto_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_epi.xml) and [aamod_reorientto_fieldmap](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_fieldmap.xml) for longitudinal studies 
+	
 #### New features for MEG ####
   - `transform` setting of [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_maxfilt.xml) can be negative to specify session based on `selected_session`
   - [aamod_meg_average_merged](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_average_merged.xml) can deal with merged data
