@@ -6,13 +6,24 @@
   - `aamod_roi_extract_*` has option to use either the space of the data or the ROI
   - subjects with different sessions can be analysed
     - [aamod_firstlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_contrasts.xml) can automatically assign contrasts, unless `uniquebysession` is used. :warning: **Contrast names must be unique both within- and across-sessions!**
-  - aaparallel parameters
+  - [aamod_coreg_general](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_general.m) is prepared for session domain and 4D NIfTI
+  - queue viewer is optional
+  - aaparallel parameters has been added
   - aaq_matlab_pct accepts
     - aaparallel parameters
-	- external poolprofile function specified in `aap.directory_conventions.poolprofile`
+    - external poolprofile function specified in `aap.directory_conventions.poolprofile`
+    - pass `aaworker`
+
+#### New features for MEG ####
+  - `transform` setting of [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_maxfilt.xml) can be negative to specify session based on `selected_session`
+  - [aamod_meg_average](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_average.xml) can deal with merged data
+  - new modules:
+    - [aamod_meg_merge](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_merge.xml): merging MEG sessions
+    - [aamod_meg_grandmean](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_grandmean.xml): estimating grabd mean across subjects
 
 #### Bugfixes ####
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with path with "spm" in it
+  - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with cases when reslicing activation maps "vanishes" activations
   - modality detection for MTI-related modules
   - [aas_getfiles_bystream](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_getfiles_bystream.m) now also uses `aap.options.maximumretry` when copying streams potentially used jointly with other jobs
   - coregister after `aamod_norm_noss*`
