@@ -14,6 +14,9 @@ cmap = vertcat(gray(128), create_grad([1 1 1],[0 0 1],64),...
 if nargin < 3, trans = 1; end
 
 if any(bg(:))
+    % Default
+    v = [-Inf Inf];
+    
     fa = stat.*(stat>0);
     fd = stat.*(stat<0);
     f = zeros(size(bg,1),size(bg,2),size(bg,3));

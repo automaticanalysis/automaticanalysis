@@ -216,6 +216,7 @@ switch task
             rYepi=reshape(rYepi,size(Ytemplate));
             
             % Overlay
+            fnsl = '';
             for a = 0:2 % in 3 axes
                 arYepi = shiftdim(rYepi,a);
                 aYtemplate = shiftdim(Ytemplate,a);
@@ -263,7 +264,6 @@ switch task
                 if exist(fnsl(f,:),'file'), Outputs.sl = strvcat(Outputs.sl, fnsl(f,:)); end
             end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
-            clear fnsl
         end
         cd (cwd);
         
