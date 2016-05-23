@@ -7,7 +7,7 @@ switch task
         
         aap = aas_report_add(aap,subj,'<table><tr>');
 
-        for sess = 1:numel(aap.acq_details.meg_sessions)
+        for sess = aap.acq_details.selected_sessions
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aas_getsessdesc(aap,subj,sess) '</h3>']);
 
@@ -97,10 +97,10 @@ switch task
         aap = aas_report_add(aap,subj,'</tr></table>');
     case 'doit'
         %% If session for HPI is specified, bring forward
-        meg_sessions = 1:numel(aap.acq_details.meg_sessions);
+        meg_sessions = aap.acq_details.selected_sessions;
         HPIsess = aas_getsetting(aap,'hpi.session');
         if ~isempty(HPIsess)
-            HPIsess = cell_index({aap.acq_details.meg_sessions.name},HPIsess);
+            HPIsess = cell_index({aap.acq_details.meg_sessions(aap.acq_details.selected_sessions).name},HPIsess);
             meg_sessions = unique([HPIsess meg_sessions],'stable');            
         end
         
@@ -225,7 +225,10 @@ switch task
                         ref_str = trans;
                         outtrpfx    = ['trans' basename(trans) '_' outtrpfx];
                     elseif isnumeric(trans)
-                        if trans % session number
+                        if trans
+                            if trans < 0 % selected_session number
+                                trans = aap.acq_details.selected_sessions(-trans);
+                            end
                             if trans == sess, continue; end % do not trans to itself
                             if isEmptyRoom && (trans == HPIsess), continue; end % do not trans empty_room to HPIsess
                             ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
