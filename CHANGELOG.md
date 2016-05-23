@@ -9,14 +9,15 @@
   - [aamod_coreg_general](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_general.m) is prepared for session domain and 4D NIfTI
   - queue viewer is optional
   - aaparallel parameters has been added
-  - aaq_matlab_pct accepts
+  - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) has been tested on MATLAB 2015a
+  - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) accepts
     - aaparallel parameters
     - external poolprofile function specified in `aap.directory_conventions.poolprofile`
     - pass `aaworker`
 
 #### New features for MEG ####
   - `transform` setting of [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_maxfilt.xml) can be negative to specify session based on `selected_session`
-  - [aamod_meg_average](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_average.xml) can deal with merged data
+  - [aamod_meg_average_merged](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_average_merged.xml) can deal with merged data
   - new modules:
     - [aamod_meg_merge](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_merge.xml): merging MEG sessions
     - [aamod_meg_grandmean](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_grandmean.xml): estimating grabd mean across subjects
