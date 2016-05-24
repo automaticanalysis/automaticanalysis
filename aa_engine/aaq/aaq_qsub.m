@@ -33,7 +33,7 @@ classdef aaq_qsub<aaq
         
         function close(obj)
             for j = 1:numel(obj.scheduler.Jobs)
-                obj.scheduler.Jobs(1).delete;
+                obj.scheduler.Jobs(1).cancel;
             end
             close@aaq(obj);
         end

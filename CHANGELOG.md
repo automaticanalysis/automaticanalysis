@@ -7,6 +7,7 @@
   - subjects with different sessions can be analysed
     - [aamod_firstlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_contrasts.xml) can automatically assign contrasts, unless `uniquebysession` is used. :warning: **Contrast names must be unique both within- and across-sessions!**
   - [aamod_coreg_general](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_general.m) is prepared for session domain and 4D NIfTI
+  - killed and finished jobs will not be deleted 
   - queue viewer is optional
   - aaparallel parameters has been added
   - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) has been tested on MATLAB 2015a
