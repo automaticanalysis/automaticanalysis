@@ -8,7 +8,20 @@ switch varargin{1}
     case 'isopen'
         try out = ~isempty(gcp('nocreate')); catch, out = matlabpool('size') > 0; end
     case 'close'
-        try delete(gcp('nocreate')); catch, matlabpool('close'); end
+        try 
+            p = gcp('nocreate');
+            if ~isempty(p), delete(p); end
+        catch
+            try
+                matlabpool('close'); 
+            catch E
+                if strcmp(E.identifier, 'parallel:convenience:InteractiveSessionNotRunning')
+                    warning('No open pool is found');
+                else
+                    rethrow(E);
+                end
+            end
+        end
     otherwise % start
         try out = parpool(varargin{:}); catch
             matlabpool(varargin{:}); 
