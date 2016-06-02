@@ -17,6 +17,7 @@
     - pass `aaworker`
 
 #### New features for fMRI ####
+  - examples [aa_user_branching_example1](https://github.com/rhodricusack/automaticanalysis/blob/v5-devel/examples/aa_user_branching_example1.m) and [aa_user_branching_example2](https://github.com/rhodricusack/automaticanalysis/blob/v5-devel/examples/aa_user_branching_example2.m) have been updated
   - new modules:
     - [aamod_reorientto_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_epi.xml) and [aamod_reorientto_fieldmap](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_fieldmap.xml) for longitudinal studies 
 	
