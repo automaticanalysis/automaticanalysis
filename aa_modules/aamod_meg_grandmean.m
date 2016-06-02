@@ -8,13 +8,15 @@ switch task
         switch aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream.sourcedomain
             case 'subject' % merged data
                 for subj = 1:numel(aap.acq_details.subjects)
-                    fname{end+1} = aas_getfiles_bystream(aap,'subject',subj,'meg');
+                    megdata = aas_getfiles_bystream(aap,'subject',subj,'meg');
+                    fname{end+1} = spm_file(megdata(1,:),'ext','mat');
                 end
             case 'meg_session' % non-merged data
                 for subj = 1:numel(aap.acq_details.subjects)
                     [junk, megsess] = aas_getN_bydomain(aap,'meg_session',subj);
                     for sess = megsess
-                        fname{end+1} = aas_getfiles_bystream(aap,'session',[subj sess],'meg');
+                        megdata = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');
+                        fname{end+1} = spm_file(megdata(1,:),'ext','mat');
                     end
                 end
         end
