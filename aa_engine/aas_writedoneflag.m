@@ -1,5 +1,6 @@
 
 function aas_writedoneflag(aap,fn)
+global aacache
 global aaworker
 global aaparallel
 
@@ -16,7 +17,7 @@ switch(aap.directory_conventions.remotefilesystem)
             attr.utctimelaunches=utctimelaunches;
         catch
         end;
-        attr.utctime=num2str(utc_time);
+        attr.utctime=num2str(aacache.utc_time()/1000); % second
         attr.studypath=aas_getstudypath(aap,aap.directory_conventions.remotefilesystem);
         attr.analysisid=aap.directory_conventions.analysisid;
         attr.jobid=aaworker.jobid;

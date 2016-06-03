@@ -25,10 +25,17 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
 end
 
 global aacache
-aacache.bcp_path = path;
-aacache.bcp_shellpath = getenv('PATH');
+% Set UTC time function
+if exist('utc_time','file')
+    aacache.utc_time = @utc_time;
+else
+    aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
+    aacache.utc_time = @java.lang.System.currentTimeMillis;
+end
 
 %% Set Paths
+aacache.bcp_path = path;
+aacache.bcp_shellpath = getenv('PATH');
 % Path for SPM
 if isempty(aap.directory_conventions.spmdir)
     if isempty(which('spm'))

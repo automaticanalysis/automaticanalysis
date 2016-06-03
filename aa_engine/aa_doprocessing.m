@@ -84,13 +84,6 @@ end
 % Defend against command insertion
 aap=aas_validatepaths(aap);
 
-% Check this is compiled
-try
-    utc_time();
-catch
-    fprintf('You must compile the utc_time library\n')
-end
-
 if (isstr(aap))
     tmp=load(aap);
     aap=tmp.aap;
