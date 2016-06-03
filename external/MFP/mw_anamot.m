@@ -1,4 +1,4 @@
-function mw_anamot(mydata, silent);
+function mw_anamot(mydata, silent)
 %
 % Little companion script that reads out result files from
 % mw_mfp (so run this first) and summarizes motion in the form of
@@ -56,11 +56,17 @@ function mw_anamot(mydata, silent);
 % ==========================================================================================================
 
 
-% File version: 1.3, 2014-11-13
+% File version: 1.3.1, 2015-03-09
 
 
 % get an nice working environment
   ori = pwd;
+
+
+% settings
+  thrs = [1 2 3 4 5];    % assess these values [in mm] as indicators for total discplacement
+  thrs_s = thrs./2;      % assess these values [in mm] as indicators for scan-to-scan discplacement
+  dvs = 3;               % if automatic detection did not work, assume voxel size to be this value
 
 
 % process inputs
@@ -72,127 +78,133 @@ function mw_anamot(mydata, silent);
 
 
 % say hello
-  if silent == 0,  clc;  disp(['... Welcome to ' mfilename]);  end;
+  if silent == 0,  clc;  disp(['Welcome to ' mfilename '...']);  end;
 
 
-% search this folder/file location
-  if ~isdir(mydata),  [mydata, ~,~,~] = spm_fileparts(mydata);  if isempty(mydata),  mydata = pwd;  end;  end;
-  cd(mydata);
-  myparams = subdir(['mw_motion.mat']);
-  if ~isempty(myparams)
+% search this folder/file location(s); beware if several are passed
+  oridata = mydata;
+  for j = 1:size(oridata,1)
 
-	  if silent == 0,  disp(['... found ' num2str(size(myparams,1)) ' sessions, please wait...']);  end;
-  else
-	  if silent == 0,  error(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);
-	  else,            disp(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);  return;
+	  mydata = deblank(oridata(j,:));
+	  if ~isdir(mydata),  mydata = spm_fileparts(mydata);  if isempty(mydata),  mydata = pwd;  end;  end;
+	  cd(mydata);
+	  myparams = subdir(['mw_motion.mat']);
+	  if ~isempty(myparams)
+
+		  if silent == 0,  disp(['... found ' num2str(size(myparams,1)) ' sessions, please wait...']);  end;
+	  else
+
+		  if silent == 0,  error(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);
+		  else,            disp(['... Sorry, no motion parameters (mw_motion.mat) were found, aborting!']);  return;
+		  end;
 	  end;
-  end;
 
 
-% settings
-  thrs = [1 2 3 4 5];    % assess these values [in mm] as indicators for total discplacement
-  thrs_s = thrs./2;      % assess these values [in mm] as indicators for scan-to-scan discplacement
-  dvs = 3;               % if automatic detection did not work, assume voxel size to be this value
+	% take a note
+	  outfile = [mydata filesep 'mw_anamot_results.txt'];
+	  if exist(outfile) ~= 2
 
+		% create new file
+		  if silent == 0,  disp(['... generating new mw_anamot results file, please wait...']);  end;
+		  fid = fopen(outfile,'At+');
+		  fprintf(fid, ['Source path' '\t' 'TD: mean' '\t' 'TD: STD' '\t' 'TD: median' '\t' 'TD: min' '\t' 'TD: max' '\t' ['TD:#>' num2str(thrs(1,1)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,2)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,3)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,4)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,5)) 'mm'] '\t' 'STS: mean' '\t' 'STS: STD' '\t' 'STS: median' '\t' 'STS: min' '\t' 'STS: max' '\t' ['STS:#>' num2str(thrs_s(1,1)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,2)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,3)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,4)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,5)) 'mm'] '\t' 'Mean Voxel size [mm]' '\n']);
 
-% take a note
-  outfile = [mydata filesep 'mw_anamot_results.txt'];
-  if exist(outfile) ~= 2
+	  else
 
-	% create new file
-	  if silent == 0,  disp(['... generating new mw_anamot results file, please wait...']);  end;
-	  fid = fopen(outfile,'At+');
-	  fprintf(fid, ['Source path' '\t' 'TD: mean' '\t' 'TD: STD' '\t' 'TD: median' '\t' 'TD: min' '\t' 'TD: max' '\t' ['TD:#>' num2str(thrs(1,1)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,2)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,3)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,4)) 'mm'] '\t' ['TD:#>' num2str(thrs(1,5)) 'mm'] '\t' 'STS: mean' '\t' 'STS: STD' '\t' 'STS: median' '\t' 'STS: min' '\t' 'STS: max' '\t' ['STS:#>' num2str(thrs_s(1,1)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,2)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,3)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,4)) 'mm'] '\t' ['STS:#>' num2str(thrs_s(1,5)) 'mm'] '\t' 'Mean Voxel size [mm]' '\n']);
-
-  else
-
-	% if file exists already, no need to include headers again
-	  if silent == 0,  disp(['... adding to existing  mw_anamot results file, please wait...']);  end;
-	  fid = fopen(outfile,'At+');
-
-  end;
-
-
-% ==========================================================================================================
-%                                          Get going...
-% ==========================================================================================================
-
-% loop over parameters
-  for i = 1:size(myparams,1)
-
-
-	% get, load data
-	  curr = myparams(i).name;
-	  load(curr);
-
-
-	% get fMRI data in order to get voxel sizes
-	  [p nm e v] = spm_fileparts(curr);
-	  try,
-
-		  currp = spm_select('list', p, 'rp_.*.txt');
-		  currp = spm_select('List', p, ['^' currp(4:end-4) '.(img|nii)']);
-		  V = spm_vol([p filesep currp]);
-		  vs = sqrt(sum(V.mat(1:3,1:3).^2));
-		  vs = [sprintf('%0.1f', vs(1)) ' * ' sprintf('%0.1f', vs(2)) ' * ' sprintf('%0.1f', vs(3))];
-
-	  catch,
-
-		  vs = 'N/A';
+		% if file exists already, no need to include headers again
+		  if silent == 0,  disp(['... adding to existing  mw_anamot results file, please wait...']);  end;
+		  fid = fopen(outfile,'At+');
 
 	  end;
 
 
-	% check if data is available
-	  try,  sum(td);   catch,  td  = NaN;  end;
-	  try,  sum(sts);  catch,  sts = NaN;  end;
+	% ==========================================================================================================
+	%                                          Get going...
+	% ==========================================================================================================
 
 
-	% simplified output to screen
+	% loop over parameters
+	  for i = 1:size(myparams,1)
+
+
+		% get, load data
+		  curr = myparams(i).name;
+		  load(curr);
+
+
+		% get fMRI data in order to get voxel sizes
+		  [p nm e v] = spm_fileparts(curr);
+		  try,
+
+			  currp = spm_select('list', p, 'rp_.*.txt');
+			  currp = spm_select('List', p, ['^' currp(4:end-4) '.(img|nii)']);
+			  V = spm_vol([p filesep currp]);
+			  vs = sqrt(sum(V.mat(1:3,1:3).^2));
+			  vs = [sprintf('%0.1f', vs(1)) '*' sprintf('%0.1f', vs(2)) '*' sprintf('%0.1f', vs(3))];
+
+		  catch,
+
+			  vs = 'N/A';
+
+		  end;
+
+
+		% check if data is available
+		  try,  sum(td);   catch,  td  = NaN;  end;
+		  try,  sum(sts);  catch,  sts = NaN;  end;
+
+
+		% simplified output to screen
+		  if silent == 0
+
+			  disp(['    ... session ' num2str(i) ' from ' p ' (with a voxel size of ' vs ' mm):']);
+
+			  if ~isnan(td)
+
+				disp(['       ... total displacement mean = ' sprintf('%0.2f', mean(td)) ' [' sprintf('%0.2f', std(td)) '], median = ' sprintf('%0.2f', median(td)) ' [' sprintf('%0.2f', min(td)) '-' sprintf('%0.2f', max(td)) ']']);
+
+			  else 
+
+				disp(['       ... total displacement data not available!']);
+
+			  end;
+			  if ~isnan(sts)
+
+				disp(['       ... scan-to-scan displacement mean = ' sprintf('%0.2f', mean(sts)) ' [' sprintf('%0.2f', std(sts)) '], median = ' sprintf('%0.2f', median(sts)) ' [' sprintf('%0.2f', min(sts)) '-' sprintf('%0.2f', max(sts)) ']']);
+
+			  else 
+
+				disp(['       ... scan-to-scan displacement data not available!']);
+
+			  end;
+
+		  end;
+
+
+		% more comprehensive output to file
+		  p = strrep(p,'\','/');
+		  fprintf(fid, [p '\t' sprintf('%0.2f', mean(td)) '\t' sprintf('%0.2f', std(td)) '\t' sprintf('%0.2f', median(td)) '\t' sprintf('%0.2f', min(td)) '\t' sprintf('%0.2f', max(td)) '\t' num2str(sum(td>thrs(1,1))) '\t' num2str(sum(td>thrs(1,2))) '\t' num2str(sum(td>thrs(1,3))) '\t' num2str(sum(td>thrs(1,4))) '\t' num2str(sum(td>thrs(1,5))) '\t' sprintf('%0.2f', mean(sts)) '\t' sprintf('%0.2f', std(sts)) '\t' sprintf('%0.2f', median(sts)) '\t' sprintf('%0.2f', min(sts)) '\t' sprintf('%0.2f', max(sts)) '\t'  num2str(sum(sts>thrs_s(1,1))) '\t'   num2str(sum(sts>thrs_s(1,2))) '\t' num2str(sum(sts>thrs_s(1,3))) '\t' num2str(sum(sts>thrs_s(1,4))) '\t' num2str(sum(sts>thrs_s(1,5)))  '\t'  vs '\n']);
+
+	  end;
+
+
+	% housekeeping
 	  if silent == 0
 
-		  disp(['   ... session ' num2str(i) ' from ' p ' (with a voxel size of ' vs ' mm):']);
-
-		  if ~isnan(td)
-
-			disp(['       ... total displacement mean = ' sprintf('%0.2f', mean(td)) ' [' sprintf('%0.2f', std(td)) '], median = ' sprintf('%0.2f', median(td)) ' [' sprintf('%0.2f', min(td)) '-' sprintf('%0.2f', max(td)) ']']);
-
-		  else 
-
-			disp(['       ... total displacement data not available!']);
-
-		  end;
-		  if ~isnan(sts)
-
-			disp(['       ... scan-to-scan displacement mean = ' sprintf('%0.2f', mean(sts)) ' [' sprintf('%0.2f', std(sts)) '], median = ' sprintf('%0.2f', median(sts)) ' [' sprintf('%0.2f', min(sts)) '-' sprintf('%0.2f', max(sts)) ']']);
-
-		  else 
-
-			disp(['       ... scan-to-scan displacement data not available!']);
-
-		  end;
+		  disp(['    ... done with analyzing ' num2str(size(myparams,1)) ' sessions;']);
+		  disp(['... results were stored in ' mydata]);
 
 	  end;
 
 
-	% more comprehensive output to file
-	  p = strrep(p,'\','/');
-	  fprintf(fid, [p '\t' sprintf('%0.2f', mean(td)) '\t' sprintf('%0.2f', std(td)) '\t' sprintf('%0.2f', median(td)) '\t' sprintf('%0.2f', min(td)) '\t' sprintf('%0.2f', max(td)) '\t' num2str(sum(td>thrs(1,1))) '\t' num2str(sum(td>thrs(1,2))) '\t' num2str(sum(td>thrs(1,3))) '\t' num2str(sum(td>thrs(1,4))) '\t' num2str(sum(td>thrs(1,5))) '\t' sprintf('%0.2f', mean(sts)) '\t' sprintf('%0.2f', std(sts)) '\t' sprintf('%0.2f', median(sts)) '\t' sprintf('%0.2f', min(sts)) '\t' sprintf('%0.2f', max(sts)) '\t'  num2str(sum(sts>thrs_s(1,1))) '\t'   num2str(sum(sts>thrs_s(1,2))) '\t' num2str(sum(sts>thrs_s(1,3))) '\t' num2str(sum(sts>thrs_s(1,4))) '\t' num2str(sum(sts>thrs_s(1,5)))  '\t'  vs '\n']);
+	% close output file, get back
+	  fclose(fid);
 
   end;
 
 
-% housekeeping
-  if silent == 0
-
-	  disp(['... done with analyzing ' num2str(size(myparams,1)) ' sessions;']);
-	  disp(['... results were stored in ' mydata]);
-
-  end;
-
-
-% close output file, get back
-  fclose(fid);
+% all done
+  disp(['... done with analyses, returning...']);
   cd(ori);
   return;
 

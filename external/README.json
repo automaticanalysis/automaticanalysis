@@ -33,8 +33,8 @@
 			},
 			{
 				"Name": "MFP",
-				"Version": "r1.3.6 (mod)",
-				"DateDownloaded": "22 August 2014",
+				"Version": "r1.5.2 (mod - compatibility with previous MATLABs)",
+				"DateDownloaded": "03 Jun 2016",
 				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software",
 				"aaMaintainer": "Tibor Auer"
 			},
