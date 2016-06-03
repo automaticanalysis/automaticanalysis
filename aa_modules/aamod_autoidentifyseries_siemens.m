@@ -54,7 +54,7 @@ switch task
                         if isempty(fn), continue; end
                         fprintf('Examining folder %s\n',thispth{1});
                         fullfn = spm_file(char({fn.name}'),'path',thispth{1});
-                        H=aas_dicom_headers_light(fullfn);
+                        H = spm_dicom_headers(fullfn);
                         for fnind=1:numel(H)
                             if (isfield(H{fnind},'SeriesNumber') && isfield(H{fnind},'AcquisitionNumber'))
                                 serieslist=[serieslist H{fnind}.SeriesNumber];
@@ -199,7 +199,7 @@ switch task
                     end
                     comment=[comment '\n'];
                     aap.acq_details.subjects(i).fieldmaps{d}=series_fieldmap{d};
-                elseif isempty(aap.acq_details.subjects(1).seriesnumbers{d})
+                elseif isempty(aap.acq_details.subjects(i).seriesnumbers{d}) || isempty(cell2mat(aap.acq_details.subjects(i).seriesnumbers{d}))
                     comment=[comment '  no fieldmap required\n'];
                 else
                     aas_log(aap,true,'ERROR: autoidentifyseries failed - one of the fieldmap acquisitions was not found.');
