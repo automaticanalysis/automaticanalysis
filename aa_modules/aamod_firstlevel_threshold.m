@@ -144,6 +144,7 @@ switch task
                     'n_perm',5000, ...
                     'vFWHM',0 ...
                     );
+                job.tbss = 0;
                 job.openmp = 1;
                 cg_tfce_estimate(job);
                 iSPM = SPM;

@@ -1,6 +1,6 @@
 % __________________________________________________________________________
-% TFCE Toolbox for SPM5/SPM8/SPM12
-% Version  67  (TFCE)  2014-04-15
+% TFCE Toolbox for SPM8/SPM12
+% Version  88  (TFCE)  2016-04-11
 %  http://dbm.neuro.uni-jena.de/tfce/
 % __________________________________________________________________________
 % Copyright (C) 2013 Christian Gaser christian.gaser@uni-jena.de

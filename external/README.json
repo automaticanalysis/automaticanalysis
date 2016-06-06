@@ -47,8 +47,8 @@
 			},
 			{
 				"Name": "TFCE",
-				"Version": "r67 (mod)",
-				"DateDownloaded": "28 July 2014",
+				"Version": "r88 (mod - cg_get_tfce_results accepts input)",
+				"DateDownloaded": "3 Jun 2016",
 				"URL": "http:\/\/dbm.neuro.uni-jena.de\/tfce\/",
 				"aaMaintainer": "Tibor Auer"
 			},
@@ -106,13 +106,6 @@
 				"Version": "2.1",
 				"DateDownloaded": "16 September 2015",
 				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20516-imagescnan-m-v2-1--aug-2009-",
-				"aaMaintainer": "Tibor Auer"
-			},
-			{
-				"Name": "panel.m",
-				"Version": "",
-				"DateDownloaded": "22 July 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{

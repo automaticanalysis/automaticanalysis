@@ -1,13 +1,12 @@
 function spm_TFCE
 % TFCE Toolbox wrapper to call TFCE functions
 %_______________________________________________________________________
-% $Id: spm_TFCE.m 64 2013-10-01 15:09:01Z gaser $
+% $Id: spm_TFCE.m 69 2014-11-12 14:08:52Z gaser $
 
-rev = '$Rev: 64 $';
+rev = '$Rev: 69 $';
 
 SPMid = spm('FnBanner',mfilename,rev);
 [Finter,Fgraph,CmdLine] = spm('FnUIsetup','TFCE Toolbox');
-spm_help('!ContextHelp',mfilename);
 spm_help('!Disp','TFCE.man','',Fgraph,'Threshold-Free Cluster Enhancement Toolbox');
 
 fig = spm_figure('GetWin','Interactive');
