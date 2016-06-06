@@ -61,7 +61,6 @@ switch task
             BETmask]; % mask
         
         [s w] = aas_shell(LoAd_command);
-        disp(w)
         
         %% Use seg_maths to extract the relevant
         outSeg = '';

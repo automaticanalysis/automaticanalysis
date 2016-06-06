@@ -1,4 +1,6 @@
-function [s w]=aas_runFScommand(aap,FScmd)
+function [s w]=aas_runFScommand(aap,FScmd,quiet)
+if nargin < 3, quiet = false; end
+
 % AVG
 
 % Check whether ${FSLDIR}/bin is already in there
@@ -58,11 +60,6 @@ switch aap.directory_conventions.freesurfershell
         cmd = [cmd FScmd '"'];
 end
 
-disp(cmd)
+aas_log(aap,false,cmd)
 
-[s, w]=aas_shell(cmd);
-
-% Display error if there was one
-if (s)
-    aas_log(aap,false,sprintf('Error running %s, which was %s',cmd,w));
-end;
+[s, w]=aas_shell(cmd,quiet);

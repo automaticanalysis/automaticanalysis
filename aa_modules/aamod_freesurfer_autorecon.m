@@ -20,17 +20,12 @@ switch task
         
         FScommand = ['recon-all -subjid ' subjname ' ' aap.tasklist.currenttask.settings.extraoptions];
         
-        disp(FScommand)
+        aas_log(aap,false,FScommand)
         
-        [s, w] = aas_runFScommand(aap,FScommand);
+        [s, w] = aas_runFScommand(aap,FScommand,~aap.tasklist.currenttask.settings.verbose);
                 
         if s==1 %|| ~isempty(strfind(w, 'ERROR'))
-            disp(w);
-            error('Some system ERROR');
-        end
-        
-        if aap.tasklist.currenttask.settings.verbose
-            disp(w);
+            aas_log(aap,true,w);
         end
         
         %%  make output stream

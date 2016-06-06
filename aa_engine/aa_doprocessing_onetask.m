@@ -65,12 +65,6 @@ domain=taskSchema.ATTRIBUTE.domain;
 %  If multiple repetitions of a module, add 02,03 etc to end of doneflag
 doneflagname=aas_doneflag_getname(aap,modulenum);
 
-
-% if (rand(1)<0.1)
-%     fprintf('On the way to pointless trouble\n');
-%     aas_log(aap,true,'Pointless trouble');
-% end;
-
 % Clear output stream list
 aaworker.outputstreams=[];
 

@@ -23,9 +23,6 @@ switch task
         dirn = aas_getsesspath(aap,subj,sess);
         
         % get files in this directory
-        % Old style, by prefix (still supported for now)
-        %imgs=aas_getimages(aap,subj,sess,aap.tasklist.currenttask.epiprefix,0,inf);
-        % New style, by stream
         imgs=aas_getimages_bystream(aap,subj,sess,'epi');
         
         % get information from first file

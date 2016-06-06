@@ -201,14 +201,14 @@ switch task
                 ' -cal ' fnamecal,...
                  ' ', skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -force -v | tee ' logfname
                 ];
-            disp(mfcmd_rest);
+            aas_log(aap,false,mfcmd_rest);
             
             % Executing MF
             [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
             if status
-                aas_log(aap,1,'MaxFilter failed!')
+                aas_log(aap,true,'ERROR: MaxFilter failed!')
             else
-                disp(maxres);
+                aas_log(aap,false,maxres);
             end
             
             %% Trans (so that origin not same as SSS expansion origin above)
@@ -251,14 +251,14 @@ switch task
                         mfcall ' -f ' intrfname ' -o ' outtrfname,...
                         trcmd_par ' -force -v | tee ' logtrfname
                         ];
-                    disp(mfcmd_rest);
+                    aas_log(aap,false,mfcmd_rest);
                     
                     % Executing MF
                     [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
                     if status ~= 0
-                        aas_log(aap,1,'Trans MaxFilter failed!')
+                        aas_log(aap,true,'ERROR: Trans MaxFilter failed!')
                     else
-                        disp(maxres);
+                        aas_log(aap,false,maxres);
                     end
                 end
             end
@@ -276,14 +276,14 @@ switch task
                         mfcall ' -f ' outs{i} ' -o ' outdsfname,...
                         ' -ds ' num2str(aas_getsetting(aap,'downsampling')) ' -force -v | tee --append ' logs{i}
                         ];
-                    disp(mfcmd_ds);
+                    aas_log(aap,false,mfcmd_ds);
                     
                     % Executing MF
                     [status, maxres] = unix(mfcmd_ds); % this stops screen-dumping?
                     if status ~= 0
-                        aas_log(aap,1,'Trans MaxFilter failed!')
+                        aas_log(aap,true,'ERROR: Trans MaxFilter failed!')
                     else
-                        disp(maxres);
+                        aas_log(aap,false,maxres);
                     end
                     outs{i} = outdsfname;
                 end

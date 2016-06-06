@@ -115,7 +115,6 @@ switch task
                 % If we get here, then we completed the task...
                 taskComplete = 1;
             catch tSNR_error
-                %disp(tSNR_error)
                 
                 if x > 1 || y > 1 || z > 1
                     aas_log(aap, true, 'The script broke between chunks, you should probably delete the subject folder for this module and try again...')

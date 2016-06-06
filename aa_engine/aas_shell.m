@@ -57,3 +57,5 @@ if ~isempty(w)
 end
 w = sprintf('%s\n%s',rw,lw);
 
+if ~quiet, aas_log([],false,w); end
+

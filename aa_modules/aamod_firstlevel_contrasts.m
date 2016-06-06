@@ -149,7 +149,7 @@ switch task
                             if (sessforcon(sess))
                                 if isnumeric(contrasts.con(conind).vector) % vcontrast vector
                                     if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
-                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); disp(contrasts.con(conind).vector);
+                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); 
                                     elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess) % padding if shorter
                                         convec = [convec contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
                                     else
@@ -193,7 +193,7 @@ switch task
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
                         
                         if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
-                            aas_log(aap,true,sprintf('Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); disp(contrasts.con(conind).vector);
+                            aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); 
                         elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
                             convec = contrasts.con(conind).vector;
                             if settings.automatic_movesandmeans

@@ -44,10 +44,7 @@ switch task
         % Run MRI_Watershed
         fprintf('MRI Watershed\n')
         cd(fileparts(bSimg));
-        [s w] = aas_shell(FScommand);
-        if aap.tasklist.currenttask.settings.verbose
-            disp(w);
-        end
+        [s, w] = aas_shell(FScommand,~aap.tasklist.currenttask.settings.verbose);
         
         if aap.tasklist.currenttask.settings.gcut
             % Gcut
@@ -57,10 +54,7 @@ switch task
             % Run MRI_Gcut
             fprintf('MRI Gcut\n')
             cd(fileparts(bSimg));
-            [s w] = aas_shell(FScommand);
-            if aap.tasklist.currenttask.settings.verbose
-                disp(w);
-            end
+            [s, w] = aas_shell(FScommand,~aap.tasklist.currenttask.settings.verbose);
         end
         
         %% Make the BET BRAIN MASK

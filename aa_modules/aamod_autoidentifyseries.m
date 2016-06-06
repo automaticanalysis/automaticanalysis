@@ -58,7 +58,7 @@ switch task
                     for fnind=1:length(fn)
                         if (~fn(fnind).isdir)
                             fullfn=fullfile(thispth,fn(fnind).name);
-                            H=spm_dicom_headers(fullfn); %aas_dicom_headers_light(fullfn);
+                            H=spm_dicom_headers(fullfn);
                             if (isfield(H{1},'SeriesNumber') && isfield(H{1},'AcquisitionNumber'))
                                 serieslist=[serieslist H{1}.SeriesNumber];
                                 switch(aap.tasklist.currenttask.settings.orderdicomsby)

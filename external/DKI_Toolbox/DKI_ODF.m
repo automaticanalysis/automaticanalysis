@@ -1,4 +1,4 @@
-function KODF=JHT(Dv,Kv,x,alfa,negate)
+function KODF=DKI_ODF(Dv,Kv,x,alfa,negate)
 
 az=x(1);
 el=x(2);
@@ -29,10 +29,6 @@ V33= Un(3)^2/(nUn);
 V12= Un(1)*Un(2)/(nUn);
 V13= Un(1)*Un(3)/(nUn);
 V23= Un(2)*Un(3)/(nUn);
-%V2=[V11 V12 V13; ...
-%    V12 V22 V23; ...
-%    V13 V23 V33];
-
 
 KODF=GODF*(1+1/24*(Kv(1)*(3*U(1,1)*U(1,1)-6*(alfa+1)*U(1,1)*V11+(alfa+1)*(alfa+3)*V11*V11)+...
     Kv(2)*(3*U(2,2)*U(2,2)-6*(alfa+1)*U(2,2)*V22+(alfa+1)*(alfa+3)*V22*V22)+...
@@ -53,19 +49,3 @@ KODF=GODF*(1+1/24*(Kv(1)*(3*U(1,1)*U(1,1)-6*(alfa+1)*U(1,1)*V11+(alfa+1)*(alfa+3
 if nargin == 5 && negate
 	KODF = -KODF;
 end
-%for i=1:3
-%    for j=1:3
-%        for k=1:3
-%            for l=1:3
-%                sum18=sum18+KT(i,j,k,l)*(3*U(i,j)*U(k,l)...
-%                    -6*(alfa+1)*U(i,j)*V2(k,l)...
-%                    +(alfa+1)*(alfa+3)*V2(i,j)*V2(k,l));
-%            end
-%        end
-%             end
-%         end
-%
-%         disp(toc)
-%
-%         KODF=GODF*(1+1/24*sum18);
-%

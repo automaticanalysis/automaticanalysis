@@ -21,11 +21,7 @@ if ~isnan(N)
         for Nind=1:N
             newdeps{Nind}={domaintree{1} [indices I(Nind)]};
         end;
-        try
         deps=[deps;newdeps];
-        catch
-            disp('asdf');
-        end
     end;
 end;
 end

@@ -26,9 +26,7 @@ try
 Yc = double(and((Y1>thresh(1)),(Y2>thresh(2))));
 
 spm_write_vol(Vc, Yc);
-if sum(Yc(:)>0) > 0
-    disp('');
-else
+if ~(sum(Yc(:)>0) > 0)
     fprintf('\nFailed not make conjunction: no overlap')
 end
 
