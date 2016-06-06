@@ -14,6 +14,7 @@ classdef aaClass
         ManuscriptRef
         ManuscriptURL
         aaURL = 'http://automaticanalysis.org'
+        aawiki = 'https://github.com/rhodricusack/automaticanalysis/wiki';
     end
     
     methods

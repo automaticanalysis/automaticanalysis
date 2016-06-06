@@ -4,6 +4,11 @@
 % function aas_log(aap,iserr,msg,style)
 
 function aas_log(aap,iserr,msg,style)
+global aa;
+if ~isobject(aa) % aa is not running
+    clear global aa;
+    aa = aaClass('nopath','nogreet');
+end
 
 % figure out whether the caller is an engine (aaq_*)
 ST = dbstack;
@@ -24,7 +29,7 @@ end;
 
 if iserr % errors
     if aap.options.verbose > 0
-        logitem(aap,'\n\n**** automatic analysis failed - see reason and line numbers below\n','red');
+        logitem('\n\n**** automatic analysis failed - see reason and line numbers below\n','red');
         
         % suppress e-mail from low level functions in case of cluster computing
         if ~isempty(aap.options.email) && (strcmp(aap.options.wheretoprocess,'localsingle') || isEngine)
@@ -34,8 +39,9 @@ if iserr % errors
             catch
             end
         end
-        logitem(aap,[msg '\n'],style);
-        disp('for help, see the <a href="https://github.com/rhodricusack/automaticanalysis/wiki">aa wiki</a>')
+        logitem([msg '\n'],style);
+        logitem('for help, see the ')
+        logitem(sprintf('<a href="%s">aa wiki</a>\n',aa.aawiki),[0 0 1])
     end
     
     global aaworker
@@ -50,16 +56,16 @@ if iserr % errors
     
     if aap.options.verbose ~= -1, error(sprintf(['aa error:\n' msg '\n'])); end % undocumented, for devel only
 else % warnings
-    if aap.options.verbose == 2, logitem(aap,[msg '\n'],style); end
+    if aap.options.verbose == 2, logitem([msg '\n'],style); end
 end
 
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function logitem(aap,msg,style)
+function logitem(msg,style)
 global aaparallel;
 
-if nargin < 3
+if nargin < 2
     style='text';
 end;
 
@@ -89,37 +95,4 @@ if isfield(aaworker,'logname')
     fclose(fid);
     if isfield(aaworker,'master'), aas_propagateto(aaworker.master.hostname,aaworker.logname); end
 end;
-% and to sdb
-%   crypt=aaworker.aacc.crypt;
-
-
-
-% No longer-this is now done in the python wrapper
-% if (strcmp(aap.options.wheretoprocess,'aws'))
-%     try
-%         timenow=now;
-%         randnum=round(rand()*1e6);
-%         timestr=datestr(timenow,30);
-%         itemname=sprintf('%s_%06d',timestr,randnum);
-%         li=[];
-%         try
-%             li.workerid=num2str(aaparallel.processkey);
-%             % This is time zone independent...
-%             li.utctime=sprintf('%12.3f',utc_time());
-%             li.analysisid=aap.directory_conventions.analysisid;
-%             if (isnumeric(style))
-%                 style=dec2hex(style*128);
-%                 style=['#' style(:)'];
-%             end;
-%             li.style=style;
-%             li.msg=crypt.tobase64(crypt.encrypt(int8(msg)));
-%             li.msg(li.msg==10)=[];
-%             li.source='matlab';
-%         catch
-%         end;
-%     catch
-%     end;
-%     sdb_put_attributes(aap,aaworker.logqname,itemname,li);
-%
-% end;
 end
