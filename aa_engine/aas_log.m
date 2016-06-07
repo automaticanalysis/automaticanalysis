@@ -23,9 +23,17 @@ end
 if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
 
 % don't attempt html tags if running outside of Matlab desktop
-if nargin < 4 || ~aap.gui_controls.usecolouroutput
+if nargin < 4
+    if ~isempty(strfind(msg,'ERROR')) && isfield(aap.gui_controls.colours,'error'), style = aap.gui_controls.colours.error;
+    elseif ~isempty(strfind(msg,'WARNING')) && isfield(aap.gui_controls.colours,'warning'), style = aap.gui_controls.colours.warning;
+    elseif ~isempty(strfind(msg,'INFO')) && isfield(aap.gui_controls.colours,'info'), style = aap.gui_controls.colours.info;
+    else style='text';
+    end
+end
+
+if ~aap.gui_controls.usecolouroutput
     style='text';
-end;
+end
 
 if iserr % errors
     if aap.options.verbose > 0

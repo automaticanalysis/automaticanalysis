@@ -145,12 +145,14 @@
         <usecolouroutput desc='use colour to organise text output written to display' ui='yesno'>1</usecolouroutput>
         <colours>
             <completedpreviously ui='rgb'>1 0 1</completedpreviously>
+            <executing ui='rgb'>0 0.5 0</executing>
             <running ui='rgb'>0.5 0 0.5</running>
             <completed ui='rgb'>0 1 0</completed>
-            <error ui='rgb'>1 0 0</error>
+            <error desc='Fontcolour for errors' ui='rgb'>1 0 0</error>
+            <warning desc='Fontcolour for warning' ui='rgb'>1 0.33 0</warning>
+            <info desc='Fontcolour for information' ui='rgb'>0 0.5 0</info>
             <inputstreams ui='rgb'>0.5 0.5 0.5</inputstreams>
-            <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>
-            <executing ui='rgb'>0 0.5 0</executing>
+            <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>            
         </colours>
     </gui_controls>
     
