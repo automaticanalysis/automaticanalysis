@@ -1,4 +1,4 @@
-function aas_rendersources(S)
+function aas_emeg_rendersources(S)
 %% render and print thresholded results
 % Input structure S with fields:
 % .condir - location of SPM.mat

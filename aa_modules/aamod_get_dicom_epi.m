@@ -33,10 +33,6 @@ switch task
             nfiles=min(nfiles,aap.tasklist.currenttask.settings.ignoreafter);
             dicom_files_src=dicom_files_src(1:nfiles);
             
-            %    Put this in to accelerate testing - but remove before use!!!
-            %        fprintf('Truncating to first 10 DICOMs\n');
-            %         dicom_files_src=dicom_files_src(1:10);
-            
             % Now copy files to this module's directory
             if (length(seriesnum)==1)
                 echopath=aas_getsesspath(aap,subj,sess);
