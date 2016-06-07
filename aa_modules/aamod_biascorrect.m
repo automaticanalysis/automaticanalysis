@@ -40,7 +40,7 @@ switch task
             % 2 stage process, as proposed by RH, to increased robustness [djm 13/03/06]
             
             %%%%%%%% 1st pass:
-            fprintf('Running first pass of norm_noss (get bias corrected structural)\n')
+            aas_log(aap,false,'Running first pass of norm_noss (get bias corrected structural)')
             estopts.regtype='';    % turn off affine:
             out = spm_preproc(Simg(d,:), estopts);
             [sn,isn]   = spm_prep2sn(out);

@@ -77,7 +77,7 @@ switch task
         while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
             tInd = tInd + 1;
         end
-        fprintf('\nTarget stream: %s\n',inpstream{tInd});
+        aas_log(aap,false,sprintf('Target stream: %s',inpstream{tInd}));
         targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd});
         if size(targetimfn,1) > 1 % multiple images (possibly after normalisation)
             fns = spm_file(targetimfn,'basename');
@@ -110,10 +110,10 @@ switch task
             spm_get_space(sprintf('%s,%d',sourceimfn,i), spm_matrix(x)\spm_get_space(sprintf('%s,%d',sourceimfn,i)));
         end
                 
-        fprintf(['\t%s to %s realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
+        aas_log(aap,false,sprintf(['\t%s to %s realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
             inpstream{2}, inpstream{1}, ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+            x(1), x(2), x(3), x(4), x(5), x(6)))
 
         %% Other
         if numel(inpstream) > (tInd+1)

@@ -127,7 +127,7 @@ switch task
         
         
         %% Save things
-        fprintf('Sess %d \t Spikes: %d; Moves: %d\n', sess, size(TSspikes,1), size(Mspikes,1))
+        aas_log(aap,false,sprintf('Sess %d \t Spikes: %d; Moves: %d', sess, size(TSspikes,1), size(Mspikes,1)))
         
         SPfn = fullfile(aas_getsesspath(aap,subj,sess),sprintf('spikesandMspikes.mat'));
         save(SPfn, 'TSspikes', 'Mspikes');

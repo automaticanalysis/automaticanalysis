@@ -140,7 +140,7 @@ switch task
         job.warp.mrf = cfg.mrf;
 
         if job.warp.samp < 2
-            fprintf('Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!\n');
+            aas_log(aap,false,'Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!');
         end
 
         spm_preproc_run(job);

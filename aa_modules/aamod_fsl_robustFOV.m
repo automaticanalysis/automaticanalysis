@@ -28,9 +28,9 @@ switch task
         cSimg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
         [Spth Sfn Sext] = fileparts(cSimg);
         if size(Simg,1) > 1
-            fprintf('WARNING: Several %s found, considering: \n', inputstream{:})
+            aas_log(aap,false,sprintf('WARNING: Several %s found, considering: ', inputstream{:}))
             for t = 1:length(aap.tasklist.currenttask.settings.structural)
-                fprintf('\t%s\n', Simg(t,:))
+                aas_log(aap,false,sprintf('\t%s', Simg(t,:)))
             end
         end        
         
@@ -39,7 +39,7 @@ switch task
         imSimg = fullfile(Spth, ['inv' Sfn '.mat']);
         
         % Run robustFOV...
-        fprintf('Running robustFOV\n')
+        aas_log(aap,false,'Running robustFOV')
         [junk, w]=aas_runfslcommand(aap, ...
             sprintf('robustfov -v -b %d -i %s -r %s -m %s', ...
             aap.tasklist.currenttask.settings.FOVsize, cSimg, cSimg, mSimg));

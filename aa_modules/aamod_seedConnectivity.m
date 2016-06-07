@@ -95,8 +95,6 @@ switch task
             %                 roi1F = fullfile(rDir, roi1F);
             %                 save_as_image(roi1, fullfile(roi1, 'RL.img'));
             %             end
-            
-%             fprintf('ROI1 is a sphere at [%d %d %d], r=%d\n', roiDesc(i,1), roiDesc(i,2), roiDesc(i,3), vargs.radius);
 
             roiXYZ = voxpts(seed, struct('mat', imgMat, 'dim', imgDim));
             roiXYZ = [roiXYZ; ones(1, size(roiXYZ,2))];

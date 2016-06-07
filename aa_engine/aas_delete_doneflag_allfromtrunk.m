@@ -23,10 +23,10 @@ if exist(pth,'dir')
             end;
         else
             nme=aas_doneflag_getname(aap,modulenum);
-            fprintf('Would remove %s\n',fullfile(pth,nme));
+            aas_log(aap,false,sprintf('Would remove %s',fullfile(pth,nme)));
         end;
     end;
 else
-    fprintf('No directory %s so quitting tree traverse\n',pth);
+    aas_log(aap,false,sprintf('No directory %s so quitting tree traverse',pth));
 end;
 end

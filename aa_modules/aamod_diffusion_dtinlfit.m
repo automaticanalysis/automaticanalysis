@@ -34,7 +34,7 @@ switch task
                     [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
                 end
             catch ME
-                fprintf('ERROR: %s\n', ME.message);
+                aas_log(aap,true,['ERROR: ', ME.message]);
             end
             aas_matlabpool close;
         else % cluster computing parfor is nor working

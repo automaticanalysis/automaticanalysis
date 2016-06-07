@@ -75,17 +75,16 @@ if isstruct(tree)
         else
             % otherwise, provide every branch
             [N, range]=aas_getN_bydomain(aap,fn{fnind},indices);
-%             range=1:N;
         end;
         for branchind=range
             traverse=true;
             if exist('modulenum','var') && ~isempty(modulenum)
                 pth=aas_getpath_bydomain(aap,fn{fnind},[indices branchind],aap.directory_conventions.remotefilesystem,modulenum);
                 if ~exist(pth,'dir')
-%                    fprintf('Quitting traverse as directory does not exist:\n %s\n',pth);
+                    aas_log(aap,false,sprintf('WARNING: Quitting traverse as directory does not exist:\n\t%s',pth));
                     traverse=false;
-                end;
-            end;
+                end
+            end
             if traverse
                 
                 % Have we reached the required ancestor? 

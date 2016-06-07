@@ -80,9 +80,9 @@ switch task
         connectivityMatrices = struct('seed', {}, 'seedVoxMm', {}, 'seedVoxInd', {}, 'seedSpace', {}, 'targetNames', {}, 'targetVoxInd', {}, 'targetSpace', {}, 'correlationMatrix', {});
             
         % Collect the connectivity matrices for each subject
-        fprintf('\nLoading Subjects ...\n');
+        aas_log(aap,false,'Loading Subjects ...');
         for subInd = subjectI
-            fprintf('\t%s\n', aap.acq_details.subjects(subInd).subjname);
+            aas_log(aap,false,sprintf('\t%s', aap.acq_details.subjects(subInd).subjname));
             matrixFile = aas_getfiles_bystream(aap, subInd, 'firstlevel_fConnMatrix_avg');
             load(matrixFile);
             
@@ -95,7 +95,7 @@ switch task
             % can just read this line if it crashes here.
             connectivityMatrices(end+1, :) = avgMatrices; 
         end
-        fprintf('\n');
+        aas_log(aap,false,'');
         
         numROIs = size(connectivityMatrices, 2);
         numSubs = size(connectivityMatrices, 1);
@@ -154,16 +154,16 @@ switch task
         nanCols = any(isnan(groupMatrix));
         groupMatrix(:, nanCols) = [];
         
-        fprintf('Performing Louvain Clustering!\n');
+        aas_log(aap,false,'Performing Louvain Clustering!');
         
         louvainResults = struct('Q', [], 'Modules', []);
         
         Qs = zeros(settings.numiterations, 1); % modularity scores for each iteration
         Ms = {};                               % module memberships for each iteration
-        fprintf('%70s', '');
+        aas_log(aap,false,sprintf('%70s', ''));
         for iter = 1 : settings.numiterations
             
-            fprintf('%s%-70s', repmat(sprintf('\b'),1,70), sprintf('Iteration %05d / %05d', iter, settings.numiterations));
+            aas_log(aap,false,sprintf('%s%-70s', repmat(sprintf('\b'),1,70), sprintf('Iteration %05d / %05d', iter, settings.numiterations)));
             
             % Save the group matrix, so  subsequent scripts and exe's can read it.
             fName = sprintf('%s_%05d_groupMatrix.mat', roiNames{1}, iter);
@@ -180,12 +180,10 @@ switch task
 %             aas_log(aap, 0, 'Converting group connectivity matrix to VTX');
             cmd = sprintf('python %s ./%s groupMatrix CORR', fullfile(pyPath, 'mat2eta.py'), fName);
             [s w] = aas_shell(cmd);
-%             fprintf(w);
             
 %             aas_log(aap, 0, 'Computing eta^2 matrix');
             cmd = sprintf('%s %s', fullfile(binPath, 'eta'), graphFile);
             [s w] = aas_shell(cmd);
-%             fprintf(w);
             
             % Evidently, we could run ML clustering, but Mark commented it
             % out.  Add it back in by buildign the correct system command
@@ -195,7 +193,6 @@ switch task
 %             aas_log(aap, 0, 'Converting eta^2 matrix to a graph');
             cmd = sprintf('python %s %s', fullfile(pyPath, 'eta2graph.py'), graphFile);
             [s w] = aas_shell(cmd);
-%             fprintf(w);
             
 %             aas_log(aap, 0, '\nPerforming Louvain Analysis');
             cmd = sprintf('%s -i %s -o %s', fullfile(binPath, 'convert'), edgeFile, binFile);
@@ -207,7 +204,6 @@ switch task
 %             aas_log(aap, 0, '\nCollecting Louvain results ...');
             cmd = sprintf('python %s %s', fullfile(pyPath, 'louvain2mat.py'), modListFile);
             [s w] = aas_shell(cmd);
-%             fprintf(w);
             
             delete(fName);
 
@@ -226,9 +222,9 @@ switch task
         save(resultsFile, 'louvainResults');
         aap = aas_desc_outputs(aap, indices, outputStreams{1}, resultsFile);
        
-        fprintf('\n');
+        aas_log(aap,false,'');
         [maxQ maxI] = max([louvainResults.Q]);
-        fprintf('Maximum modularity obtained = %.04f\n', maxQ);
+        aas_log(aap,false,sprintf('Maximum modularity obtained = %.04f\n', maxQ));
         modules = louvainResults(maxI).Modules;
         
         % Now we need info about seed voxel locations and their space, so 

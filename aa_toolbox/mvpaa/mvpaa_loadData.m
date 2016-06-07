@@ -3,7 +3,7 @@
 
 function [aap data] = mvpaa_loadData(aap, p)
 
-fprintf('Loading beta images \r')
+aas_log(aap,false,'Loading beta images \r')
 
 load(aas_getfiles_bystream(aap,p,'firstlevel_spm'));
 
@@ -105,10 +105,10 @@ end
 aap.tasklist.currenttask.settings.conditionNames = tempCond;
 
 %% PREPARATION BEFORE LOADING DATA
-fprintf('\nThis experiment contains \n\t%d sessions\n\t%d blocks\n\t%d conditions', ...
+aas_log(aap,false,sprintf('\nThis experiment contains \n\t%d sessions\n\t%d blocks\n\t%d conditions', ...
     aap.tasklist.currenttask.settings.sessions, ...
     aap.tasklist.currenttask.settings.blocks, ...
-    aap.tasklist.currenttask.settings.conditions)
+    aap.tasklist.currenttask.settings.conditions))
 
 % Define data structure
 data = cell(aap.tasklist.currenttask.settings.conditions, ...

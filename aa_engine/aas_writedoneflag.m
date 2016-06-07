@@ -52,16 +52,16 @@ switch(aap.directory_conventions.remotefilesystem)
         
         % For each pending job depedendent on this stage...
         sqlish=sprintf('select * from %s where analysisid=''%s'' and tobecompletedfirst=''%s''',aaworker.jobtablename,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix],fn);
-        fprintf('Getting dependencies with %s\n',sqlish);
+        aas_log(aap,false,sprintf('Getting dependencies with %s',sqlish));
         [aap depresp]=sdb_select(aap,sqlish);
         njobs=length(depresp.SelectResult.Item);
-        fprintf('Now adjusting %d dependencies\n',njobs);
+        aas_log(aap,false,sprintf('Now adjusting %d dependencies',njobs));
         for depjobind=1:njobs
             depjobname=depresp.SelectResult.Item(depjobind).Name;
             tmpattr=[];
             tmpattr.tobecompletedfirst=fn;
             
-            fprintf('Deleting dependencies of %s\n',fn);
+            aas_log(aap,false,sprintf('Deleting dependencies of %s',fn));
             % Make unique version of this job so SQS & SDB definitely match
             itemname=[depjobname '|' sprintf('%08d',round(rand(1)*1e8))];
             % Remove this dependency from this

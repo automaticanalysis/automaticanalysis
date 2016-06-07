@@ -121,7 +121,7 @@ end
 rend = export(gifti(cfg.rendfile),'patch');
 
 % note what image we're rendering
-fprintf('Rendering %s\n', img);
+aas_log(aap,false,sprintf('Rendering %s', img));
 
 % set the colormap
 if ischar(cmap)
@@ -136,7 +136,7 @@ V = spm_vol(img);
 [Y,XYZ] = spm_read_vols(V);
 XYZvox = round(V.mat\[XYZ; ones(1,size(XYZ,2))]);
 
-fprintf('Range of raw data between %g and %g.\n', min(min(min(Y))), max(max(max(Y))));
+aas_log(aap,false,sprintf('Range of raw data between %g and %g.', min(min(min(Y))), max(max(max(Y)))));
 
 % if [min max] colorscale specified, trim data to only display > min value
 if ~isempty(cfg.colorscale) && ~strcmp(cfg.colorscale, 'symmetrical')
@@ -155,7 +155,7 @@ dat(1) = struct( 'XYZ',  XYZvox,...
 
 
 
-fprintf('Range of rendered data between %g and %g.\n', min(min(min(Y))), max(max(max(Y))));
+aas_log(aap,false,sprintf('Range of rendered data between %g and %g.', min(min(min(Y))), max(max(max(Y)))));
 
 % create a blank window to put these brains in
 myfig = figure('color', 'w', 'position', [79 72 1034 850], 'name', cfg.figname);
@@ -194,7 +194,7 @@ end
 
 if cfg.inflate > 0
   
-  fprintf('Inflating...')
+  aas_log(aap,false,'Inflating...')
   
   % spm_mesh_inflate(handle_to_surface, how_many_steps, update_every_how_many)
   % (I like it about 5 steps inflated)
@@ -215,10 +215,10 @@ if cfg.inflate > 0
     spm_mesh_inflate(hp4,cfg.inflate,cfg.inflate);
   end
   
-  fprintf('done.\n\n')
+  aas_log(aap,false,'\bdone.')
 end
 
-fprintf('\n      ''\n     ''\n  ____''___\n  |      |_\n  |      |_|\n  |______|    All done!\n\n'); % coffee
+aas_log(aap,false,'\n      ''\n     ''\n  ____''___\n  |      |_\n  |      |_|\n  |______|    All done!\n\n'); % coffee
 
 
 
@@ -247,7 +247,6 @@ set(Fgraph,'Renderer','OpenGL');
 %   case 2
 %     % if only doing L and R hemisphere, space differently
 %     if length(cfg.plots)==2 && sum(cfg.plots==[1 2])==2
-%       fprintf('hiiii!!!!!!\n\n\n\n;');
 %       ax = axes('position', [.42 .4 .35 .3], 'visible', 'off');
 %     else
 %       ax = axes('position', [.6 .4 .35 .3], 'visible', 'off');
@@ -307,13 +306,13 @@ minv = -1 * maxv;
 if any(v(:))
   if strcmp(cfg.colorscale, 'symmetrical')
     cdat = squeeze(ind2rgb(floor( (v(:)-minv)/(2*maxv) * size(col,1)), col));
-    fprintf('Color scale from -%g to %g.\n', maxv, maxv);
+    aas_log(aap,false,sprintf('Color scale from -%g to %g.', maxv, maxv));
   elseif ~isempty(cfg.colorscale)
     cmin = cfg.colorscale(1);
     cmax = cfg.colorscale(2);
     
     cdat = squeeze(ind2rgb(floor( (v(:)-cmin)/(cmax) * size(col,1)), col));
-    fprintf('Color scale from %g to %g.\n', cmin, cmax);    
+    aas_log(aap,false,sprintf('Color scale from %g to %g.', cmin, cmax));    
   else
     if size(col,1)>3
       cdat = squeeze(ind2rgb(floor(v(:)/max(v(:))*size(col,1)),col));

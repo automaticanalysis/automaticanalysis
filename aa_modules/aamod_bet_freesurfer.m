@@ -21,7 +21,7 @@ switch task
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
             for t = 1:length(aap.tasklist.currenttask.settings.structural)
-                fprintf('\t%s\n', Simg(t,:))
+                aas_log(aap,false,sprintf('\t%s', Simg(t,:)))
             end
         end
         
@@ -42,7 +42,7 @@ switch task
         FScommand = [FSpath FSoptions ' ' cSimg ' ' bSimg];
         
         % Run MRI_Watershed
-        fprintf('MRI Watershed\n')
+        aas_log(aap,false,'Running MRI Watershed...')
         cd(fileparts(bSimg));
         [s, w] = aas_shell(FScommand,~aap.tasklist.currenttask.settings.verbose);
         
@@ -52,7 +52,7 @@ switch task
             FScommand = [FSpath ' ' cSimg ' ' fullfile(Spth, 'gcut.nii')];
             
             % Run MRI_Gcut
-            fprintf('MRI Gcut\n')
+            aas_log(aap,false,'Running MRI Graph Cut...')
             cd(fileparts(bSimg));
             [s, w] = aas_shell(FScommand,~aap.tasklist.currenttask.settings.verbose);
         end
@@ -62,7 +62,7 @@ switch task
         M = spm_read_vols(V);
         % Mask out non-brain
         M = M > 0;
-        fprintf('Watershed mask contains %d voxels\n', sum(M(:)))
+        aas_log(aap,false,sprintf('Watershed mask contains %d voxels', sum(M(:))))
         
         if aap.tasklist.currenttask.settings.gcut
             gV = spm_vol(fullfile(Spth, 'gcut.nii'));
@@ -71,18 +71,18 @@ switch task
             gM = gM > 0;
             cM = and(M, gM);
             delete(fullfile(Spth, 'gcut.nii'));
-            fprintf('Graph-cut mask contains %d voxels\n', sum(gM(:)))
-            fprintf('Combined mask contains %d voxels\n', sum(cM(:)))
+            aas_log(aap,false,sprintf('Graph-cut mask contains %d voxels', sum(gM(:))))
+            aas_log(aap,false,sprintf('Combined mask contains %d voxels', sum(cM(:))))
             
             % Test the overlap (Jaccart) between masks...
             if (sum(and(M(:), gM(:))) ./ sum(or(M(:),gM(:)))) > aap.tasklist.currenttask.settings.jaccart
                 M = cM;
             elseif aap.tasklist.currenttask.settings.dominant == 0
                 % Watershed is the more liberal mask...
-                fprintf('\tCombination fails, so we use only Watershed\n')
+                aas_log(aap,false,'\tCombination fails, so we use only Watershed')
             elseif aap.tasklist.currenttask.settings.dominant == 1
                 % But Graph cut seems to work better with MP2RAGE...
-                fprintf('\tCombination fails, so we use only Graph Cut\n')
+                aas_log(aap,false,'\tCombination fails, so we use only Graph Cut')
                 M = gM;
             end
         end
@@ -94,7 +94,7 @@ switch task
         outMask = V.fname;
         
         %% MASK the brain(s)
-        fprintf('Masking the brain(s) with Brain Mask \n')
+        aas_log(aap,false,'Masking the brain(s) with Brain Mask')
         outStruct = '';
         for t = 1:length(aap.tasklist.currenttask.settings.structural)
             % Mask structural

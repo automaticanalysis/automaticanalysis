@@ -38,21 +38,21 @@ switch task
         K.HParam = aap.tasklist.currenttask.settings.HParam; % cut-off period in seconds
         
         if K.RT * length(K.row) > K.HParam
-            fprintf('\nWill do high pass filtering of time series with a %d second cut-off', K.HParam)
+            aas_log(aap,false,sprintf('Will do high pass filtering of time series with a %d second cut-off', K.HParam))
         else
-            fprintf('\nWill do linear detrending across time series')
+            aas_log(aap,false,'Will do linear detrending across time series')
         end
         
         V = spm_vol(deblank(EPIimg(1,:))); % A typical volume...
         
         %% If the dataset is too large, we process it by chunks...
-        fprintf('\n\tProcessing data (%d scans)', size(EPIimg,1))
+        aas_log(aap,false,sprintf('\tProcessing data (%d scans)', size(EPIimg,1)))
         
         taskComplete = 0;
         chunkDim = 1;
         
         while taskComplete == 0
-            fprintf('\nTrying with %d chunks', chunkDim)
+            aas_log(aap,false,sprintf('Trying with %d chunks', chunkDim))
             
             try
                 chunkX = 0;
@@ -68,7 +68,7 @@ switch task
                 for x = 1:length(chunkX) - 1
                     for y = 1:length(chunkY) - 1
                         for z = 1:length(chunkZ) - 1
-                            fprintf('\n\t...chunk %d %d %d', x, y, z)
+                            aas_log(aap,false,sprintf('\t...chunk %d %d %d', x, y, z))
                             Xind = chunkX(x) + 1 : chunkX(x+1);
                             Yind = chunkY(y) + 1 : chunkY(y+1);
                             Zind = chunkZ(z) + 1 : chunkZ(z+1);

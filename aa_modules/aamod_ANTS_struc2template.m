@@ -93,8 +93,6 @@ switch task
         cd(Spth)
         
         % Run ANTS
-        fprintf('Running ANTS using command:\n')
-        fprintf([ANTS_command '\n'])
         [s w] = aas_shell(ANTS_command);
         
         warpANTS_command = [ warpANTSpath Ndim ... % dimension number

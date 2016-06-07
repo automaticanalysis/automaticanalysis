@@ -40,11 +40,11 @@ switch task
         outresid = '';
         
         for d = aap.tasklist.currenttask.settings.structurals
-            fprintf('Denoise structural image %s!\n', Sfn(d,:))
+            aas_log(aap,false,sprintf('Denoise structural image %s!', Sfn(d,:)))
             try
-                fprintf('\t structural type %s!\n', dcmhdr{d}.SeriesDescription)
+                aas_log(aap,false,sprintf('\t structural type %s!', dcmhdr{d}.SeriesDescription))
             catch
-                fprintf('\t structural type UNKNOWN!\n')
+                aas_log(aap,false,sprintf('\t structural type UNKNOWN!'))
             end
             
             V = spm_vol(Sfn(d,:));

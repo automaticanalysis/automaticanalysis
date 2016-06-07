@@ -137,7 +137,7 @@ switch task
         %% Get actual data!
         job.data = [];
         for sess = aap.acq_details.selected_sessions
-            fprintf('\nGetting EPI images for session %s', aap.acq_details.sessions(sess).name)
+            aas_log(aap,false,sprintf('Getting EPI images for session %s', aap.acq_details.sessions(sess).name))
             % Get EPIs
             EPIimg = aas_getfiles_bystream(aap,subj,sess,'epi');
             job.data(end+1).scans = cellstr(EPIimg);

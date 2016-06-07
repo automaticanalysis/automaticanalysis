@@ -64,25 +64,25 @@ if allowremotecache
     if exist(cachedir,'dir')
         docopy=true;
         if exist(cachefn,'file')
-            fprintf('Cache status check\n source: %s\n cache: %s\n dest: %s\n',src,cachefn,dest);
+            aas_log(aap,false,sprintf('Cache status check\n source: %s\n cache: %s\n dest: %s',src,cachefn,dest));
             % Check whether it is in the destination location already
             if exist(dest,'dir')
                 [junk, nme, ext]=fileparts(src);
                 dest=fullfile(dest,[nme ext]);
-                fprintf(' dest is directory, now:%s\n',dest);
+                aas_log(aap,false,sprintf(' dest is directory, now:%s',dest));
             end;
             if exist(dest,'file')
-                fprintf(' check whether recopy necessary\n');
+                aas_log(aap,false,sprintf(' check whether recopy necessary'));
                 stats_src=dir(cachefn);
                 stats_dest=dir(dest);
                 if (stats_src.bytes==stats_dest.bytes) && (stats_src.datenum==stats_dest.datenum)
-                    fprintf(' no copy necessary\n');
+                    aas_log(aap,false,sprintf(' no copy necessary'));
                     docopy=false;
                 end;
             end;
             % Do the copying if necessary
             if (docopy)
-                fprintf(' doing copy\n');
+                aas_log(aap,false,sprintf(' doing copy'));
                 copyfile(cachefn,dest);
             end;
             aas_log(aap,false,sprintf('Cache of remote file retrieve - got %s',cachefn));

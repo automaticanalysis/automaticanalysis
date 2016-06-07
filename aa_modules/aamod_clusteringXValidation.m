@@ -104,7 +104,7 @@ switch task
         
         for subjInd = 1 : numSubjs
             
-            fprintf('Working with LOO parcellations generated for %s\n', aap.acq_details.subjects(subjInd).subjname);
+            aas_log(aap,false,sprintf('Working with LOO parcellations generated for %s', aap.acq_details.subjects(subjInd).subjname));
             
             % Get the LOO generated modules
             looInfo = load(aas_getfiles_bystream(aap, subjInd, 'N-1_module_info'));
@@ -197,7 +197,7 @@ switch task
                     'n',     [1 1]);
         pMaps = [];
 
-        fprintf('Writing out probability maps...');
+        aas_log(aap,false,'Writing out probability maps...');
         for m = 1 : numModules
 
             % Probability of voxel belonging to this module, across
@@ -221,7 +221,7 @@ switch task
         pMaps(1,:) = [];
         aap = aas_desc_outputs(aap, [], 'XVal_mod_pmaps',pMaps);   
         
-        fprintf('done');
+        aas_log(aap,false,'\bdone');
         
         
     case 'checkrequirements'

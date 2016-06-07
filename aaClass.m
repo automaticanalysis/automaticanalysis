@@ -50,9 +50,8 @@ classdef aaClass
                 fprintf('\nPlease visit <a href = "%s">The aa website</a> for more information!\n',obj.aaURL);
                 fprintf('\nHere you can find example <a href = "matlab: cd %s">tasklists</a> and <a href = "matlab: cd %s">scripts</a>.\n',...
                     fullfile(obj.Path,'aa_recipes_and_parametersets'),fullfile(obj.Path,'examples'));
+                fprintf('Ready.\n');
             end
-            
-            fprintf('Ready.\n');
         end
     end
 end

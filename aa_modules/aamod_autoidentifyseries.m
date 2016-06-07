@@ -162,7 +162,7 @@ switch task
                     aas_log(aap,false,sprintf('Ignoring series %d',j));
                 else
                     aas_log(aap,false,sprintf('Protocol field is %s and got %s',aap.tasklist.currenttask.settings.dicom_protocol_field,hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field)));
-                    
+
                     if (aap.options.autoidentifyfieldmaps)
                         if (findstr(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_fieldmap))
                             if (length(series_newfieldmap)>2)
@@ -192,7 +192,6 @@ switch task
                             series_tmaps=[series_tmaps seriesnum];
                         end
                     end
-                    %                    fprintf('Protocol %s\n',hdr{1}.ProtocolName);
                 end
             end
             

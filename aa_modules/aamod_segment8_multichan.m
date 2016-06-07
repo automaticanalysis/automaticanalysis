@@ -219,13 +219,13 @@ switch task
         job.warp.Affine         = StartingAffine; % jt
         
         if job.warp.samp < 2
-            fprintf('Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!\n');
+            aas_log(aap,false,'Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!');
         end
         
         tic %(jt)
-        fprintf('Starting to run segment8 job (%s)...', datestr(now, 'yyyy-mm-dd HH:MM'));
+        aas_log(aap,false,sprintf('Starting to run segment8 job (%s)...', datestr(now, 'yyyy-mm-dd HH:MM')));
         spm_preproc_run(job);
-        fprintf('done in %.1f hours.\n', toc/60/60);
+        aas_log(aap,false,sprintf('\bDone in %.1f hours.', toc/60/60));
                 
 
         % Find filenames ('c' imgs, y_ params named after diff channels?):
@@ -244,7 +244,7 @@ switch task
         if aap.tasklist.currenttask.settings.writenormimg
             opts = aap.tasklist.currenttask.settings.writenorm;
             for c=1:length(channels)
-                fprintf(1,'Applying normalisation parameters to input image(s)...');
+                aas_log(aap,false,'Applying normalisation parameters to input image(s)...');
                 clear djob ojob
                 ojob.ofname = '';
                 ojob.fnames{1} = img{c};
@@ -269,7 +269,7 @@ switch task
                         aas_log(aap, 1, sprintf('%s requires SPM8 or later.', mfilename));
                 end
                 dout = spm_func_def(djob);
-                fprintf(1,' Done.\n');
+                aas_log(aap,false,'\b Done.');
             end
         end
 

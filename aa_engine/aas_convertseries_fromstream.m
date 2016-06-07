@@ -63,7 +63,7 @@ for fileind=1:size(dicomdata,1)
 end
 
 if isempty(dicomdata)
-    aas_log(aap,1,sprintf('Did not find a dicom series called %s',dicomdirsearchpth));
+    aas_log(aap,1,sprintf('ERROR: Did not find a dicom series called %s',dicomdirsearchpth));
 end
 
 out_allechoes=[];
@@ -83,7 +83,6 @@ for subdirind=1:length(subdirs)
     sliceInfo = zeros(0, 3);
     
     while (k<=size(dicomdata_subdir,1))
-        %    fprintf('***New chunk\n');
         oldAcquisitionNumber=-1;
         thispass_numvolumes=0;
         DICOMHEADERS=[];
@@ -137,15 +136,13 @@ for subdirind=1:length(subdirs)
                 % if we didn't find that private field, use standard fields.
                 if isempty(TR) && isfield(infoD, 'RepetitionTime')
                     TR = infoD.RepetitionTime;
-                    fprintf('Sequence has a TR of %.1f ms\n', TR);
                 else
-                    fprintf('TR not found!\n');
+                    aas_log(aap,false,'WARNING: TR not found');
                 end
                 if isempty(TE) && isfield(infoD, 'EchoTime')
                     TE = infoD.EchoTime;
-                    fprintf('Sequence has a TE of %.1f ms\n', TE);
                 else
-                    fprintf('TE not found!\n');
+                    aas_log(aap,false,'WARNING: TE not found');
                 end
                 if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
                     slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
@@ -184,7 +181,6 @@ for subdirind=1:length(subdirs)
                 end
             end
             oldAcquisitionNumber=DICOMHEADERS{end}.AcquisitionNumber;
-            %        fprintf('Acq %d slice %d\n',oldAcquisitionNumber,k);
             k=k+1;
         end
         
@@ -206,7 +202,7 @@ for subdirind=1:length(subdirs)
                 sliceorder = 'Unknown';
             end
             
-            fprintf('I have determined that your sliceorder is %s\n', sliceorder);
+            aas_log(aap,false,sprintf('Sliceorder %s have been detected', sliceorder));
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', 'Ascending')}, DICOMHEADERS); % Update the DICOMHEADERS
         end
         

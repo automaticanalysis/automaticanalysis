@@ -27,7 +27,7 @@ switch task
                         break
                     end
                 end
-                fprintf('\tSeveral structurals found, considering: %s\n', Simg)
+                aas_log(aap,false,sprintf('\tSeveral structurals found, considering: %s', Simg))
             end
             
             % Cheap and cheerful way of ensuring only warped segmentations are considered!

@@ -28,7 +28,7 @@ switch task
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
+            aas_log(aap,false,sprintf('\tWARNING: Several structurals found, considering: %s', Simg))
         end
         
         Sdir = fileparts(Simg);
@@ -41,7 +41,7 @@ switch task
         end
         
         %% 1) Structural to T1 template
-        fprintf('Coregistering the T1 template to structural\n')
+        aas_log(aap,false,'Coregistering the T1 template to structural')
         
         global defaults %#ok<TLEV>
         flags = defaults.coreg;
@@ -65,7 +65,7 @@ switch task
         
         %% 2) Then reslice the Template
         
-        fprintf('Reslicing T1 template to structural\n')
+        aas_log(aap,false,'Reslicing T1 template to structural')
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
         
@@ -83,7 +83,7 @@ switch task
         
         %% 3) Mask the Structural image using the T1 template
         
-        fprintf('Mask structural with resliced T1 template\n')
+        aas_log(aap,false,'Mask structural with resliced T1 template')
         
         M = spm_read_vols(spm_vol(fullfile(Sdir, 'rT1.nii')));
         M = M>0;

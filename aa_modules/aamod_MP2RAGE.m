@@ -53,7 +53,7 @@ switch task
                 end
             end
             mEPIimg = mEPIimg(1,:);
-            fprintf('\tSeveral mean EPIs found, considering: %s\n', mEPIimg)
+            aas_log(aap,false,sprintf('\tSeveral mean EPIs found, considering: %s', mEPIimg))
         end
         
         % Find the InvC2 and Flat images...
@@ -84,7 +84,7 @@ switch task
         end
         
         %% 1) Structural to T1 template
-        fprintf('Coregistering the T1 template to IC2 structural\n')
+        aas_log(aap,false,'Coregistering the T1 template to IC2 structural')
         
         global defaults %#ok<TLEV>
         flags = defaults.coreg;
@@ -102,7 +102,7 @@ switch task
         
         %% 2) Then reslice the Template
         
-        fprintf('Reslicing T1 template to IC2 structural\n')
+        aas_log(aap,false,'Reslicing T1 template to IC2 structural')
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
         
@@ -120,7 +120,7 @@ switch task
         
         %% 3) Mask the IC2 image using the T1 template
         
-        fprintf('Mask IC2 structural with resliced T1 template\n')
+        aas_log(aap,false,'Mask IC2 structural with resliced T1 template')
         
         M = spm_read_vols(spm_vol(fullfile(Sdir, 'rT1.nii')));
         M = M>0;
@@ -155,7 +155,7 @@ switch task
         estopts.regtype='';    % turn off affine:
         
         for n = 1:2
-            fprintf('Running pass number %d of bias correction\n', n)
+            aas_log(aap,false,sprintf('Running pass number %d of bias correction', n))
             
             out = spm_preproc(IC2_img,estopts);
             sn   = spm_prep2sn(out);
@@ -170,7 +170,7 @@ switch task
         
         outStruct=fullfile(pth,['bet_' nme ext]);
         % Run BET [-R Using robust setting to avoid neck!]
-        fprintf('1st BET pass (recursive) to find optimal centre of gravity\n')
+        aas_log(aap,false,'1st BET pass (recursive) to find optimal centre of gravity')
         [junk, w]=aas_runfslcommand(aap, ...
             sprintf('bet %s %s -f %f -v -R',IC2_img,outStruct, ...
             aap.tasklist.currenttask.settings.bet_f_parameter));
@@ -190,10 +190,10 @@ switch task
         [subY_x subY_y subY_z] = ind2sub(size(Y), indY);
         COG = [mean(subY_x), mean(subY_y), mean(subY_z)];
         
-        fprintf('\t...calculated c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s\n', ...
-            COG(1), COG(2), COG(3), SRad)
+        aas_log(aap,false,sprintf('\t...calculated c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s', ...
+            COG(1), COG(2), COG(3), SRad))
         
-        fprintf('2nd BET pass extracting brain masks in InvCon2 \n')
+        aas_log(aap,false,'2nd BET pass extracting brain masks in InvCon2')
         % Run BET [-A Now let's get the brain masks and meshes!!]
         [junk, w]=aas_runfslcommand(aap, ...
             sprintf('bet %s %s -f %f -c %0.4f %0.4f %0.4f -r %s -v -A',IC2_img,outStruct, ...
@@ -215,8 +215,8 @@ switch task
         [subY_x subY_y subY_z] = ind2sub(size(Y), indY);
         COG = [mean(subY_x), mean(subY_y), mean(subY_z)];
         
-        fprintf('\t...final c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s\n', ...
-            COG(1), COG(2), COG(3), SRad)
+        aas_log(aap,false,sprintf('\t...final c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s', ...
+            COG(1), COG(2), COG(3), SRad))
         
         %% DIAGNOSTIC IMAGE
         % Get the meshes

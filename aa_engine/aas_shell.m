@@ -29,6 +29,7 @@ if ~hit
 end
 
 %% Run
+if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
 [s,w]=system([prefix cmd]);
 
 %% Process error

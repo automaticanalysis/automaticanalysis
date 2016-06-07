@@ -230,9 +230,9 @@ switch task
                 cons{ccount}(inds) = 0;
                 
                 % DIAGNOSTIC
-                fprintf('\n%s\n', contrasts.con(conind).name)
+                aas_log(aap,false,contrasts.con(conind).name)
                 for conind  =  1:max(size(convec_names))
-                    fprintf('\t%s: %d\n', convec_names{conind}, convec(SPM.xX.iC(conind)))
+                    aas_log(aap,false,sprintf('\t%s: %d', convec_names{conind}, convec(SPM.xX.iC(conind))))
                 end
             end
         end

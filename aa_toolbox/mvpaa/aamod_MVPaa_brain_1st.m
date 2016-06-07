@@ -12,7 +12,7 @@ switch task
         %% PREPARATIONS...
         
         subjname = aap.acq_details.subjects(p).subjname;
-        fprintf('Working with data from participant %s. \n', subjname)
+        aas_log(aap,false,sprintf('Working with data from participant %s.', subjname))
         
         % Get the contrasts for this subject...
         aap.tasklist.currenttask.settings.contrasts = mvpaa_loadContrasts(aap,p);
@@ -54,7 +54,7 @@ switch task
         for r = 1:ROInum %#ok<BDSCI>
             % We get the time that has ellapsed every 25000 voxels
             if rem(r, ROIcheck) == 0
-                fprintf('Working with data from roi %d / %d.', r, ROInum)
+                aas_log(aap,false,sprintf('Working with data from roi %d / %d.', r, ROInum))
             end            
             
             [x y z] = ind2sub(brainSize, r);            

@@ -145,7 +145,7 @@ switch task
             wImgFile = aas_getfiles_bystream(aap,subj,'weightingImage');
             wVol = spm_vol(wImgFile);
 
-            fprintf('Realignment is going to be weighted with: %s\n', wVol.fname);
+            aas_log(aap,false,sprintf('Realignment is going to be weighted with: %s', wVol.fname));
             
             % Use the first EPI as a space reference 
             rVol = spm_vol(imgs{1}(1,:));

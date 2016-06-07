@@ -52,7 +52,7 @@ switch(dicomHdr.sliceorder)
         end
 end
 
-fprintf('\n Your sequence has %d slices in %s order\n', V.dim(3), dicomHdr.sliceorder);
+aas_log(aap,false,sprintf('INFO: Your sequence has %d slices in %s order', V.dim(3), dicomHdr.sliceorder));
 
 if isfield(aap.tasklist.currenttask.settings, 'slicetime') && isempty(aap.tasklist.currenttask.settings.slicetime)
     if ~isfield(aap.tasklist.currenttask.settings, 'TRs') || ...

@@ -58,11 +58,11 @@ switch task
         
         outImgs = [];
         
-        fprintf('%60s', '');
+        aas_log(aap,false,sprintf('%60s', ''));
         
         for f = 1 : numImgs
             
-            fprintf('%s%-60s', repmat(sprintf('\b'),1,60), sprintf('Trimming Image %d/%d', f, size(fileNames,1)));
+            aas_log(aap,false,sprintf('%s%-60s', repmat(sprintf('\b'),1,60), sprintf('Trimming Image %d/%d', f, size(fileNames,1))));
             
             if ~(volumeI(f))
                 
@@ -79,7 +79,7 @@ switch task
             
         end
         
-        fprintf('\nDropped %d images.\n', sum(volumeI));
+        aas_log(aap,false,sprintf('Dropped %d images.', sum(volumeI)));
         
         aap = aas_desc_outputs(aap, subj, sess,'epi', outImgs);
              

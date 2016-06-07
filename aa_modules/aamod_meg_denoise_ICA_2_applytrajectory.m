@@ -175,13 +175,13 @@ switch task
             
             %% Filtering (if any) (and transposition for speed)
             if length(FiltPars) == 3
-                fprintf('Bandpass filtering from %d to %d Hz (warning - can fail)\n',FiltPars(1), FiltPars(2));
+                aas_log(aap,false,sprintf('Bandpass filtering from %d to %d Hz (warning - can fail)',FiltPars(1), FiltPars(2)));
                 for r=1:length(refs.tem)
                     refs.tem{r} = ft_preproc_bandpassfilter(refs.tem{r}, FiltPars(3), FiltPars(1:2),  [], 'but','twopass','reduce');
                 end
                 ICs  = ft_preproc_bandpassfilter(ICs,  FiltPars(3), FiltPars(1:2),  [], 'but','twopass','reduce')';
             elseif length(FiltPars) == 2
-                fprintf('Lowpass filtering to %d Hz\n',FiltPars(1));
+                aas_log(aap,false,sprintf('Lowpass filtering to %d Hz',FiltPars(1)));
                 for r=1:length(refs.tem)
                     refs.tem{r} = ft_preproc_lowpassfilter(refs.tem{r}, FiltPars(2), FiltPars(1),  5, 'but','twopass','reduce');
                 end
@@ -218,6 +218,7 @@ switch task
                         hf = floor((length(ff)-1)/2);
                         rf = mf;
                         
+                        aas_log(aap,false,'Running permutations');
                         for l = 1:Nperm % could parfor...
                             rf(2:hf+1)=mf(2:hf+1).*exp((0+1i)*wf(randperm(hf)));    % randomising phases (preserve mean, ie rf(1))
                             rf((hf+2):length(ff))=conj(rf((hf+1):-1:2));            % taking complex conjugate
@@ -227,9 +228,8 @@ switch task
                                 permcor(k) = corr(btdata,ICs(:,k));
                             end
                             maxcor(l) = max(abs(permcor));
-                            fprintf('.');
+                            aas_log(aap,false,'\b.');
                         end
-                        fprintf('\n')
                         %         figure,hist(maxcor)
                         
                         temprem{4,r} = find(abs(tempcor{m}(r,:)) > prctile(maxcor,100*(1-PermPval)));

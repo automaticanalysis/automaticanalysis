@@ -12,7 +12,7 @@ switch task
         %% PREPARATIONS
         
         subjname = strtok(aap.acq_details.subjects(p).subjname, '/');
-        fprintf('Working with data from participant %s. \n', subjname)
+        aas_log(aap,false,sprintf('Working with data from participant %s.', subjname))
         
         % Get the contrasts for this subject...
         aap.tasklist.currenttask.settings.contrasts = mvpaa_loadContrasts(aap,p);
@@ -67,7 +67,7 @@ switch task
             
             Betas = mvpaa_extraction(aap, data, ROI, voxels);
             
-            fprintf('\t ROI = %s; vox. = %d (%d)\n',Rfn, sum(~isnan(data{1,1,1}(ROI))), voxels)
+            aas_log(aap,false,sprintf('\t ROI = %s; vox. = %d (%d)',Rfn, sum(~isnan(data{1,1,1}(ROI))), voxels))
             
             if isempty(Betas)
                 aas_log(aap, false, sprintf('Not enough voxels in ROI, minimum is %i, you have %i', ...

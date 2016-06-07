@@ -108,24 +108,24 @@ switch task
         nC = sum(mCSF(:)>0);
 %         nO = sum(mOOH(:)>0);
         
-        fprintf('\nRemoving White Matter voxels near Gray Matter')
+        aas_log(aap,false,'Removing White Matter voxels near Gray Matter')
         mWM = rmNearVox(mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
         
         % MASKS ALREADY STRICT ENOUGH TYPICALLY (TAKES OUT TOO MUCH CSF)
-        %fprintf('\nRemoving CerebroSpinalFluid voxels near Gray Matter')
+        %aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Gray Matter')
         %mCSF = rmNearVox(mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
         
-%         fprintf('\nRemoving CerebroSpinalFluid voxels near Skull')
+%         aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Skull')
 %         mCSF = rmNearVox(mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
         
-%         fprintf('\nRemoving CerebroSpinalFluid voxels near OOH')
+%         aas_log(aap,false,'Removing CerebroSpinalFluid voxels near OOH')
 %         mCSF = rmNearVox(mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
        
         %% Print the number of voxels in each compartment
-        fprintf('\nGrey Matter mask comprises %d (%d) voxels', sum(mGM(:)>0), nG)
-        fprintf('\nWhite Matter mask comprises %d (%d) voxels', sum(mWM(:)>0), nW)
-        fprintf('\nCereberoSpinal Fluid mask comprises %d (%d) voxels', sum(mCSF(:)>0), nC)
-%         fprintf('\nOut of Head mask comprises %d (%d) voxels', sum(mOOH(:)>0), nO)
+        aas_log(aap,false,sprintf('Grey Matter mask comprises %d (%d) voxels', sum(mGM(:)>0), nG))
+        aas_log(aap,false,sprintf('White Matter mask comprises %d (%d) voxels', sum(mWM(:)>0), nW))
+        aas_log(aap,false,sprintf('CereberoSpinal Fluid mask comprises %d (%d) voxels', sum(mCSF(:)>0), nC))
+%         aas_log(aap,false,sprintf('Out of Head mask comprises %d (%d) voxels', sum(mOOH(:)>0), nO))
         
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             V = spm_vol(EPIimg);

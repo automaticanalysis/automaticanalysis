@@ -138,7 +138,7 @@ switch task
         
         % Saving Residuals
         if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
-            fprintf('Writing residuals...');
+            aas_log(aap,false,'Writing residuals...');
             VRes = spm_write_residuals(SPMest,aap.tasklist.currenttask.settings.writeresiduals);
             for s = 1:numel(SPM.nscan)
                 sesspath = aas_getsesspath(aap,subj,subjSessionI(s));
@@ -154,7 +154,7 @@ switch task
                     delete(fres{:});
                 end                
             end
-            fprintf('Done.\n');
+            aas_log(aap,false,'\bDone.');
         end        
         
         %% Describe outputs

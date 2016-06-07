@@ -48,7 +48,6 @@ if ~isfield(aap,'tasksettings'); aap.tasksettings=struct([]); end
 
 if (isfield(aap.tasksettings,taskname))
     index=length(aap.tasksettings.(taskname))+1;
-    %    fprintf('Task %s index %d\n',taskname,index);
     if ~isfield(tasksettings_schema.ATTRIBUTE,'startempty')
         tmp=tasksettings;
         tmp.timeadded=clock;
@@ -65,7 +64,6 @@ else
         aap.tasksettings(1).(taskname).desc=tasksettings_schema.ATTRIBUTE.desc;
     end
     index=1;
-    %    fprintf('Task %s index %d [start]\n',taskname,index);
 end;
 
 

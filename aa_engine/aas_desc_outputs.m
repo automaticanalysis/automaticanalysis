@@ -132,7 +132,7 @@ switch(aap.directory_conventions.remotefilesystem)
         streamentry=[aaworker.bucket '|' s3root '/' streamnme];
         sdb_put_attributes(aap,aaworker.streamtablename,streamentry,attr);
         
-        fprintf('Written sdb to %s called %s\n',aaworker.streamtablename,streamentry);
+        aas_log(aap,false,sprintf('Written sdb to %s called %s',aaworker.streamtablename,streamentry));
 
         osd.s3root=s3root;
         aaworker.outputstreams=[aaworker.outputstreams osd];

@@ -41,7 +41,7 @@ switch task
         out = spm_preproc(V,estopts);                            
         [sn,isn]   = spm_prep2sn(out);
                         
-        fprintf('Writing out the segmented images\n')
+        aas_log(aap,false,'Writing out the segmented images')
         % write out GM , WM, CSF native + unmod normalised
         writeopts.biascor = 1;
         writeopts.GM  = [1 1 1];

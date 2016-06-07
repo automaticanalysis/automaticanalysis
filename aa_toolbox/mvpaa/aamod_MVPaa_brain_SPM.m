@@ -13,7 +13,7 @@ resp='';
 switch task
     case 'doit'
         
-        fprintf('Working with data from participant %s. \n',aap.acq_details.subjects(p).subjname)
+        aas_log(aap,false,sprintf('Working with data from participant %s.',aap.acq_details.subjects(p).subjname))
         
         Stats = []; EP = [];
         load(aas_getfiles_bystream(aap,p,'MVPaa'));
@@ -55,7 +55,7 @@ switch task
         Flist = V.fname;
         V.dt(1) = 16; % Save in a format that accepts NaNs and negative values...
         
-        fprintf('Saving images... \n')
+        aas_log(aap,false,'Saving images...')
         for c = 1:length(EP.contrasts)
             % Mean, median or beta
             V.fname = fullfile(aas_getsubjpath(aap,p), sprintf('con_%04d.img', c));
@@ -71,7 +71,7 @@ switch task
         %% NORMALISE
         if aap.tasklist.currenttask.settings.normalise == 1
             
-            fprintf('Normalising images... \n')
+            aas_log(aap,false,'Normalising images...')
             
             normPars = aap.spm.defaults.normalise.write;
             normPars.prefix = ''; % We want to keep no prefix...
@@ -83,7 +83,7 @@ switch task
         %% SMOOTH IMAGES
         if FWHMmm > 0
             
-            fprintf('Smoothing images... \n')
+            aas_log(aap,false,'Smoothing images...')
             for f = 2:size(Flist,1);
                 Q = Flist(f,:);
                 U = Flist(f,:); % No prefixes!
@@ -93,7 +93,7 @@ switch task
         
         %% MASK SMOOTHED IMAGES!
         % Included mask to mask out untested data
-        fprintf('NaNing untested voxels... \n')
+        aas_log(aap,false,'NaNing untested voxels...')
         
         mask = spm_read_vols(spm_vol(Flist(1,:)));
         mask = mask > 0;

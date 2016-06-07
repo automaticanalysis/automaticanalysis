@@ -37,9 +37,9 @@ switch task
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('WARNING: Several %s found, considering: \n', inputstream{:})
+            aas_log(aap,false,sprintf('WARNING: Several %s found, considering: ', inputstream{:}))
             for t = 1:length(aap.tasklist.currenttask.settings.structural)
-                fprintf('\t%s\n', Simg(t,:))
+                aas_log(aap,false,sprintf('\t%s', Simg(t,:)))
             end
         end
         
@@ -56,7 +56,7 @@ switch task
         
         if strcmp(aap.tasklist.currenttask.settings.mode, 'normal')
             %% Run FIRST
-            fprintf('Running FSL FIRST\n')
+            aas_log(aap,false,'Running FSL FIRST')
             [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('run_first_all -v%s -i %s -o %s', ...
                 betOption, ...

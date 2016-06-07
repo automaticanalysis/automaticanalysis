@@ -75,7 +75,7 @@ switch task
                 end
             end
         else  % Template
-            fprintf('Structural cannot be loaded! Template will be used...');
+            aas_log(aap,false,'WARNING: Structural cannot be loaded! Template will be used...');
             tmpfile = aap.directory_conventions.T1template;
             if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
         end
@@ -134,8 +134,7 @@ switch task
                     Z = xSPM.Z;
                     XYZ = xSPM.XYZ;
                     if isempty(Z)
-                        fprintf('\n');
-                        warning('No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k));
                         continue;
                     end
                 else
@@ -155,8 +154,7 @@ switch task
                     Z      = Z(:,Q);
                     XYZ    = XYZ(:,Q);
                     if isempty(Q)
-                        fprintf('\n');
-                        warning('No voxels survive height threshold u=%0.2g',u);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive height threshold u=%0.2g',u));
                         continue;
                     end
                     
@@ -172,8 +170,7 @@ switch task
                     Z     = Z(:,Q);
                     XYZ   = XYZ(:,Q);
                     if isempty(Q)
-                        fprintf('\n');
-                        warning('No voxels survive extent threshold k=%0.2g',k);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive extent threshold k=%0.2g',k));
                         continue;
                     end
                 end
