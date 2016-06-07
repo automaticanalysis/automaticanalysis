@@ -52,7 +52,7 @@ switch task
                         fn=dir(fullfile(thispth{1},aap.directory_conventions.dicomfilter));
                         fn = fn(~[fn.isdir]);
                         if isempty(fn), continue; end
-                        fprintf('Examining folder %s\n',thispth{1});
+                        aas_log(aap,false,sprintf('Examining folder %s',thispth{1}));
                         fullfn = spm_file(char({fn.name}'),'path',thispth{1});
                         H = spm_dicom_headers(fullfn);
                         for fnind=1:numel(H)
@@ -78,7 +78,7 @@ switch task
                     
                     for j=1:length(rawdata_allseries{d});
                         hdr=spm_dicom_headers(alldicomfiles{d}{rawdata_allseries{d}(j)}{1});
-                        aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.ProtocolName, length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
+                        aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field), length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
                     end
                 case 's3'
                     % Use delimiter to get series names as CommonPrefixes
@@ -98,7 +98,7 @@ switch task
         %% Go through each series, and examine type
         for d = 1:numel(aap.acq_details.subjects(i).mriname)
             
-            fprintf('Examining mridata %s\n',aap.acq_details.subjects(i).mriname{d});
+            aas_log(aap,false,sprintf('Examining mridata %s',aap.acq_details.subjects(i).mriname{d}));
             for j=1:length(rawdata_allseries{d})
                 % Get the path to a single dicom file from series "j", downloading from S3 first if necessary
                 switch aap.directory_conventions.remotefilesystem
@@ -133,7 +133,6 @@ switch task
                 % For this series, find type from a single DICOM file
                 if ~isempty(dicomfilepath)
                     hdr=spm_dicom_headers(dicomfilepath);
-%                     fprintf('Protocol %s\n',hdr{1}.ProtocolName);
 
                     % Decide whether to ignore this series [djm 20/3/06]
                     % absolute number rather than index (jc)
@@ -141,7 +140,7 @@ switch task
                             rawdata_allseries{d}(j))
                         
                         if (aap.options.autoidentifyfieldmaps)
-                            if (strfind(hdr{1}.ProtocolName,aap.directory_conventions.protocol_fieldmap))
+                            if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_fieldmap))
                                 if numel(series_fieldmap{d})>aap.options.autoidentifyfieldmaps_number
                                     aas_log(aap,true,['ERROR: autoidentifyseries failed - more than a pair of Siemens fieldmap acquisition were found:' sprintf(' %d',series_fieldmap{d})]);
                                 end
@@ -150,13 +149,13 @@ switch task
                         end
                         
                         if (aap.options.autoidentifystructural)
-                            if (strfind(hdr{1}.ProtocolName,aap.directory_conventions.protocol_structural))
+                            if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_structural))
                                 series_spgr{d}=[series_spgr{d} seriesnum];
                             end
                         end
                         
                         if (aap.options.autoidentifyt2)
-                            if (strfind(hdr{1}.ProtocolName,aap.directory_conventions.protocol_t2))
+                            if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_t2))
                                 series_t2{d}=[series_t2{d} seriesnum];
                             end
                         end
@@ -164,7 +163,7 @@ switch task
                         if (aap.options.autoidentifytmaps)
                             % Use directory name rather than protocol to
                             % recognise t maps
-                            if (strfind(hdr{1}.ProtocolName,'EvaSeries_tTest'))
+                            if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),'EvaSeries_tTest'))
                                 series_tmaps{d}=[series_tmaps{d} seriesnum];
                             end
                         end
