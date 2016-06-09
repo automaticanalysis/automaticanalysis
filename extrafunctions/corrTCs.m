@@ -9,7 +9,7 @@
 function [sharedVar, h] = corrTCs(aggrVars, TCnames, NaNnonsig, plotTCs)
 
 if nargin < 2
-    error('Not enough input variables')
+    aas_log([],true,'Not enough input variables')
 end
 if nargin < 3
     NaNnonsig = 1;

@@ -15,25 +15,32 @@ end
 % Check wheter it is an aa joblist
 isaa = isstruct(varargin{2}{1}) && isfield(varargin{2}{1},'options') && ...
     isstruct(varargin{2}{1}.options) && isfield(varargin{2}{1}.options,'aa_minver');
-if isaa, aap = varargin{2}{1}; end
+if isaa, aap = varargin{2}{1};
+else
+    par_xml = spm_select(1,'xml','Select your local parameters and defaults xml...',...
+        {fullfile(fileparts(mfilename('fullpath')),'..','aa_recipes_and_parametersets','aap_parameters_defaults_CBSU.xml')},...
+        fullfile(fileparts(mfilename('fullpath')),'..','aa_recipes_and_parametersets'));
+    aap = aarecipe(par_xml,'aap_tasklist_fmri.xml');
+end
 
 %% Initialise engine
-nWorkers = 1;
 if isaa
     qsubscheduler = aap.directory_conventions.qsubscheduler;
     qsubpath = fullfile(getenv('HOME'),'aaworker');
 else
-    xml = xml_read('aap_parameters_defaults_CBSU.xml');
-    qsubscheduler = xml.directory_conventions.qsubscheduler.CONTENT;
+    if isempty(aap.directory_conventions.qsubscheduler)
+        aas_log(aap,true,sprintf('qsubscheduler is not specified in %s',par_xml))
+    end
+    qsubscheduler = aap.directory_conventions.qsubscheduler;
     qsubpath = pwd;
 end
 qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 
 try
-    scheduler=feval(qsubscheduler,'custom',{'compute',nWorkers,4,24*3600,qsubpath});
+    scheduler=feval(qsubscheduler,'custom',{'compute',aap.options.aaparallel.numberofworkers,aap.options.aaparallel.memory,aap.options.aaparallel.walltime*3600,qsubpath});
 catch ME
     warning('Cluster computing is not supported!\n');
-    error('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
+    aas_log(aap,true,'\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
 end
 
 %% Make workers self-sufficient by passing them the paths.

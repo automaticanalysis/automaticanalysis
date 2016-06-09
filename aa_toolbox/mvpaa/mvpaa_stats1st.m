@@ -199,5 +199,5 @@ elseif strcmp(EP.statsType, 'all-ttest') ...
         end
     end
 else
-    error('No EP.statsType chosen!')
+    aas_log(aap,true,'No EP.statsType chosen!')
 end

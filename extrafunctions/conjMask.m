@@ -10,7 +10,7 @@ if nargin < 3 || isempty(thresh)
 end
 if nargin < 4 || isempty(prefix)
     prefix = 'c';
-    fprintf('\nUsing default prefix ''c''')
+    aas_log([],false,'Using default prefix ''c''')
 end
 
 V1 = spm_vol(Img1);
@@ -27,17 +27,17 @@ Yc = double(and((Y1>thresh(1)),(Y2>thresh(2))));
 
 spm_write_vol(Vc, Yc);
 if ~(sum(Yc(:)>0) > 0)
-    fprintf('\nFailed not make conjunction: no overlap')
+    aas_log([],false,'Failed not make conjunction: no overlap')
 end
 
 [junk, nImg1] = fileparts(Img1);
 [junk, nImg2] = fileparts(Img2);
-fprintf('\nVoxel count: \n\t%s: %.0f\n\t%s: %.0f\n\tConjunction: %.0f', ...
-    nImg1, sum(Y1(:)>thresh(1)), nImg2, sum(Y2(:)>thresh(2)), sum(Yc(:)>0))
+aas_log([],false,sprintf('Voxel count: \n\t%s: %.0f\n\t%s: %.0f\n\tConjunction: %.0f', ...
+    nImg1, sum(Y1(:)>thresh(1)), nImg2, sum(Y2(:)>thresh(2)), sum(Yc(:)>0)))
 catch
     if ~all(size(Y1) == size(Y2));
-        error('\nFailed to make conjunction: different sized files')
+        aas_log([],true,'Failed to make conjunction: different sized files')
     else
-        error('\nFailed to make conjunction: UNKNOWN REASON!')
+        aas_log([],true,'Failed to make conjunction: UNKNOWN REASON!')
     end
 end

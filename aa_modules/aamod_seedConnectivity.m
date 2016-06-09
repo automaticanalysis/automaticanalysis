@@ -81,7 +81,7 @@ switch task
                 end
             end
             
-            if isempty(subjI), error('No ROI description found for this subject!'); end
+            if isempty(subjI), aas_log(aap,true,'No ROI description found for this subject!'); end
             
             roiDesc = roiDesc(subjI).roi;
 

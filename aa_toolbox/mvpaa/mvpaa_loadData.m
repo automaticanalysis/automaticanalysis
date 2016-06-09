@@ -48,13 +48,13 @@ for s = 1:length(SPM.Sess)
         % If each block contains a different number of conditions...
         if sum(blockNum{s} == blocks(b)) ~= ...
                 sum(blockNum{s} == blocks(b-1))
-            error('You have a different number of conditions per block')
+            aas_log(aap,true,'You have a different number of conditions per block')
         end
     end
     blockNum{s} = length(blocks);
     if s > 1
         if blockNum{s} ~= blockNum{s-1}
-            error('Unequal number of blocks across the two sessions')
+            aas_log(aap,true,'Unequal number of blocks across the two sessions')
         end
     end
     
@@ -62,7 +62,7 @@ for s = 1:length(SPM.Sess)
     nuisanceNum{s} = sum(nuisanceNum{s});
     if s > 1
         if nuisanceNum{s} ~= nuisanceNum{s-1}
-            error('Unequal number of nuisance regressors across the two sessions')
+            aas_log(aap,true,'Unequal number of nuisance regressors across the two sessions')
         end
     end
     
@@ -73,14 +73,14 @@ for s = 1:length(SPM.Sess)
     if all(factorNum{s} == factorNum{s}(1))
         % If number of conditions is constant...
     else
-        error('There is something wrong with your regressors...')
+        aas_log(aap,true,'There is something wrong with your regressors...')
     end
     % Now factorNum becomes the number of real different cells
     % Not anymore the number of factors...
     factorNum{s} = sum(factorNum{s}>0)/blockNum{s};
     if s > 1
         if factorNum{s} ~= factorNum{s-1}
-            error('Unequal number of factors across the two sessions')
+            aas_log([],true,'Unequal number of factors across the two sessions')
         end
     end
 end
@@ -211,7 +211,7 @@ if strcmp(dataType, 'betas')
                 
                 % Sanity check to see if conditions have been correctly labelled, etc.
                 if isempty(strfind(SPM.Vbeta(imageNum).descrip, condStr))
-                    error(['Something went wrong with the condition labelling' ...
+                    aas_log(aap,true,['Something went wrong with the condition labelling' ...
                         '\This is probably not your fault! Contact the developer!'])
                 end
                 

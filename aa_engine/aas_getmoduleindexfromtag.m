@@ -17,7 +17,7 @@ function [index, name, id] = aas_getmoduleindexfromtag(aap, stagetag)
 %  will be identified
 
 m = regexp(stagetag, '_\d{5,5}');
-if isempty(m), error('Invalid stage tag: %s', stagetag); end
+if isempty(m), aas_log(aap,true,sprintf('Invalid stage tag: %s', stagetag)); end
     
 name = stagetag(1:m-1);
 [path name] = fileparts(name); % allow fully qualified name, trim the path 
@@ -25,24 +25,24 @@ name = stagetag(1:m-1);
 try
     id = str2num(stagetag(m+1:end));
 catch
-    error('Invalid stage tag: %s', stagetag);
+    aas_log(aap,true,sprintf('Invalid stage tag: %s', stagetag));
 end
 
 nameMatch = find(strcmp(name, {aap.tasklist.main.module.name}));
 if isempty(nameMatch)
-    error('%s not found in aap.tasklist.main', name);
+    aas_log(aap,true,sprintf('%s not found in aap.tasklist.main', name));
 end
 
 idMatch = find(id == [aap.tasklist.main.module(nameMatch).index] );
 if isempty(idMatch)
-    error('%s with index=%d not found aap.tasklist.main', name, id);
+    aas_log(aap,true,sprintf('%s with index=%d not found aap.tasklist.main', name, id));
 elseif (length(idMatch)>1)
-    error('Somehow we have multiple %s with index=%d. That shouldn''t happen, so something is probably wrong with aarecipe.', name, id);
+    aas_log(aap,true,sprintf('Somehow we have multiple %s with index=%d. That shouldn''t happen, so something is probably wrong with aarecipe.', name, id));
 end
 
 index = nameMatch(idMatch);
 if index > length(aap.tasklist.main.module)
-    error('Somehow we have a module index that is greater than the number of modules in aap.tasklist.main');
+    aas_log(aap,true,sprintf('Somehow we have a module index that is greater than the number of modules in aap.tasklist.main'));
 end
 
 

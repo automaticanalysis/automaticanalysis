@@ -65,8 +65,8 @@ switch task
                 origConFileName = SPM(sub).SPM.xCon(conI).Vcon.fname;
                 matchingFile = regexp(cellstr(conFiles{sub}), origConFileName);
                 matchingFile = ~cellfun(@(x) isempty(x), matchingFile);
-                if ~any(matchingFile), error('Can''t find matching contrast file... more info added here eventuall'); end
-                if sum(matchingFile)>1, error('More than one matching contrast image for this subject'); end
+                if ~any(matchingFile), aas_log(aap,true,'Can''t find matching contrast file... more info added here eventuall'); end
+                if sum(matchingFile)>1, aas_log(aap,true,'More than one matching contrast image for this subject'); end
                 allCellImgs = char(allCellImgs, conFiles{sub}(matchingFile,:));
             end
 

@@ -28,7 +28,7 @@ function vargs = vargParser(vargsin, vdefaults, valid)
 %   Tibor Auer MRC-CBSU 03/12/2015
 
     if mod(length(vargsin),2)
-        error('Incorrect number of fields in user supplied arguments, must be a multiple of 2 (Specifier + Value). See ''help'' for details.');
+        aas_log([],true,'Incorrect number of fields in user supplied arguments, must be a multiple of 2 (Specifier + Value). See ''help'' for details.');
     end
     if nargin == 1
         vdefaults = reshape(vargsin,2,[]);
@@ -37,7 +37,7 @@ function vargs = vargParser(vargsin, vdefaults, valid)
     end
 
     if mod(length(vdefaults),3)
-        error('Incorrect number of fields in defaults, must be a multiple of 3 (Specifier + Value + Valid Values). See ''help'' for details.');
+        aas_log([],true,'Incorrect number of fields in defaults, must be a multiple of 3 (Specifier + Value + Valid Values). See ''help'' for details.');
     end
     
     vargs = struct;   %returning structure
@@ -50,11 +50,11 @@ function vargs = vargParser(vargsin, vdefaults, valid)
         dVal = vdefaults{3*i-1};
         dValid = vdefaults{3*i};
         if ~ischar(dName)
-            error(sprintf('Defaults: Name of argument #%d should be a string', i));
+            aas_log([],true,sprintf('Defaults: Name of argument #%d should be a string', i));
         elseif isa(dVal, 'char') && ~isa(dValid, 'char') && ~isa(dValid, 'cell')
-            error(sprintf('Defaults: Argument #%d ''%s'' appears to be a string argument, and valid values should be specified as string or as a cell array of strings', i, dName));
+            aas_log([],true,sprintf('Defaults: Argument #%d ''%s'' appears to be a string argument, and valid values should be specified as string or as a cell array of strings', i, dName));
         elseif isa(dVal, 'double') && ~isa(dValid, 'double')
-            error(sprintf('Defaults: Argument #%d ''%s'' appears to be a numeric argument, and valid values should be specified as a 1xn matrix of numbers', i, dName));
+            aas_log([],true,sprintf('Defaults: Argument #%d ''%s'' appears to be a numeric argument, and valid values should be specified as a 1xn matrix of numbers', i, dName));
         end
         vargs.(dName) = dVal;
         vdefs.(dName) = dValid;
@@ -68,11 +68,11 @@ function vargs = vargParser(vargsin, vdefaults, valid)
         
         % Is this argument specified correctly?
         if ~ischar(argName)
-            error('User argument name (cell array element %d) should be a string', i);
+            aas_log([],true,'User argument name (cell array element %d) should be a string', i);
             
         % Does the specified argument exist in the defaults?    
         elseif ~ismember(argName, defaultArgNames)
-            error('Invalid argument, ''%s''', argName);     
+            aas_log([],true,sprintf('Invalid argument, ''%s''', argName));
         end
         vargs.(argName) = argVal;
     end
@@ -88,7 +88,7 @@ function vargs = vargParser(vargsin, vdefaults, valid)
                         validVals = [validVals ',' vdefs.(argName){j}];
                     end
                     validVals = substr(validVals, 1);
-                    error(sprintf('Invalid value ''%s'' supplied for ''%s''.\n Valid values are: <%s>', vargs.(argName), argName, validVals));
+                    aas_log([],true,sprintf('Invalid value ''%s'' supplied for ''%s''.\n Valid values are: <%s>', vargs.(argName), argName, validVals));
                 end
             elseif isa(vargs.(argName), 'double')
                 if ~ismember(vargs.(argName), vdefs.(argName))
@@ -97,7 +97,7 @@ function vargs = vargParser(vargsin, vdefaults, valid)
                         validVals = [validVals ',' num2str(vdefs.(argName)(j))];
                     end
                     validVals = substr(validVals, 1);
-                    error(sprintf('Invalid value ''%d'' supplied for ''%s''.\n Valid values are: <%s>', vargs.(argName), argName, validVals));
+                    aas_log([],true,sprintf('Invalid value ''%d'' supplied for ''%s''.\n Valid values are: <%s>', vargs.(argName), argName, validVals));
                 end
             end
         end

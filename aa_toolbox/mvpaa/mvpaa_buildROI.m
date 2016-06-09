@@ -6,7 +6,7 @@ function [ indROI voxels ] = mvpaa_buildROI( centreROI, subROI, brainSize)
 % - The brainSize is by default a vector with the values for hte 3 dims
 
 if length(centreROI) ~= 3
-    error('Your ROI centre are not correctly specified')
+    aas_log([],true,'Your ROI centre are not correctly specified')
 end
 
 include = 0;

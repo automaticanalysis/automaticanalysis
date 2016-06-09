@@ -19,7 +19,7 @@ if any(con(:) < 0) && any(con(:) > 0)
     elseif mode == 1 % default!
         con = con - nanmean(con(:));
     else
-        error('There is no such option!')
+        aas_log([],true,'There is no such option!')
     end
     con = con./(nansum(abs(con(:)))/2);
 end

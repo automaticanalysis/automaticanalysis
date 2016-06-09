@@ -35,11 +35,11 @@ for r = 1:length(ROIimg)
         ROIvol{r} = ROIvol{r} > threshROI;
     end
     if length(unique(ROIvol{r})) > 2
-        error(['Your ROI is not binary, set a threshold!'])
+        aas_log([],true,'Your ROI is not binary, set a threshold!')
     end
     
     if any(size(ROIvol{r})~=size(Y))
-        error('The dimensions of the data and the ROI do not match')
+        aas_log([],true,'The dimensions of the data and the ROI do not match')
     end
 end
 

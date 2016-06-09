@@ -39,7 +39,7 @@ switch task
             dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
             tes = sort(unique([dcmhdrs.volumeTE]),'ascend')*1000; % in ms
             if numel(tes) ~= 2, tes = sort(unique([dcmhdrs.EchoTime]),'ascend'); end % try original (backward compatibility)
-            if numel(tes) ~= 2, error('Inappropriate fieldmap header!'); end
+            if numel(tes) ~= 2, aas_log(aap,true,'Inappropriate fieldmap header!'); end
             job.defaults.defaultsval.et = tes;
         catch E
             job.defaults.defaultsval.et = [aas_getsetting(aap,'te1') aas_getsetting(aap,'te2')];

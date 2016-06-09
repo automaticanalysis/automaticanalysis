@@ -1,11 +1,11 @@
 function aap = aas_getSliceOrder(aap,V, dicomHdr)
 
 if nargin<1
-    error('We need an aap structure')
+    aas_log(aap,true,'We need an aap structure')
 elseif nargin<2
-    error('We need a sample volume, as we don''t know the slice number')
+    aas_log(aap,true,'We need a sample volume, as we don''t know the slice number')
 elseif nargin<3
-    error('We need a dicom header, as we don''t know the slice ordering')
+    aas_log(aap,true,'We need a dicom header, as we don''t know the slice ordering')
 end
 
 
@@ -48,7 +48,7 @@ switch(dicomHdr.sliceorder)
             [junk, aap.tasklist.currenttask.settings.sliceorder] = sort(dicomHdr.Private_0019_1029);
             dicomHdr.sliceorder = 'custom (determined from field Private_0019_1029)';
         else
-            error('BAD ORDER! Check your slice order, and/or set it manually!');
+            aas_log(aap,true,'BAD ORDER! Check your slice order, and/or set it manually!');
         end
 end
 

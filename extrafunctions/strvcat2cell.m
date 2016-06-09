@@ -4,7 +4,7 @@ function strCell = strvcat2cell(vCatStr, strtokSwitch)
     end
     
     if ~ischar(vCatStr)
-        error('Input is not a character array')
+        aas_log([],true,'Input is not a character array')
     end
     if size(vCatStr,1)==1
         if strtokSwitch == 1
