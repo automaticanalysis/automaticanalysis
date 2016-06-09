@@ -364,7 +364,7 @@ for depind=1:length(deps)
                                     if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                         reloadfiles=false;
                                     end;
-                                    aas_log(aap,false,sprintf('Loaded datecheck was %s and calc %s',datecheck,datecheck_md5_recalc);
+                                    aas_log(aap,false,sprintf('Loaded datecheck was %s and calc %s',datecheck,datecheck_md5_recalc));
                                 end;
                             end;
                         end;
