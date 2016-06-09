@@ -77,11 +77,11 @@ switch task
         nC = sum(mCSF(:)>0);
         
         aas_log(aap,false,'Removing White Matter voxels near Gray Matter')
-        mWM = rmNearVox(mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
+        mWM = rmNearVox(aap, mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
         
         % MASKS ALREADY STRICT ENOUGH TYPICALLY (TAKES OUT TOO MUCH CSF)
         %aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Gray Matter')
-        %mCSF = rmNearVox(mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
+        %mCSF = rmNearVox(aap, mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
         
         if hasBET
             % Try to load the BET masks
@@ -97,10 +97,10 @@ switch task
             nO = sum(mOOH(:)>0);
             
             aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Skull')
-            mCSF = rmNearVox(mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
+            mCSF = rmNearVox(aap, mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
             
             aas_log(aap,false,'Removing CerebroSpinalFluid voxels near OOH')
-            mCSF = rmNearVox(mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
+            mCSF = rmNearVox(aap, mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
         end
         
         %% Print the number of voxels in each compartment
@@ -190,5 +190,21 @@ switch task
             end
             try close(2); catch; end
         end
+end
+end
+
+% This function erodes an image using another:
+% The eroded image (mask2erode) is checked against another (erodingMask)
+% so that any voxels in "mask2erode" at a certain radius from voxels in
+% "erodingMask" are removed.
+function mask2erode = rmNearVox(aap, mask2erode, erodingMask, minDist)
+
+% Checks if our minDist is an integer (necessary for smoothing function!)
+if mod(minDist,1)==0
+    % Then try the blunt approach
+    erodingMask = smooth3(erodingMask, 'box', [minDist*2+1 minDist*2+1 minDist*2+1]);
+    mask2erode(logical(erodingMask)) = 0;
+else
+    aas_log(aap,true,'minDist must be an odd integer, as smoothing function will not accep otherwise')
 end
 end
