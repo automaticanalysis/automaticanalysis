@@ -295,16 +295,11 @@ end
 end
 %------------------------------------------------------------------------
 function savefields(fnam,p)
-if length(p)>1, error('Can''t save fields.'); end
-fn = fieldnames(p);
-if numel(fn)==0, return; end
-for subj=1:length(fn),
-    feval(@()assignin('caller',fn{subj}, p.(fn{subj})));
-end
+if length(p)>1, aas_log([],true,'Can''t save fields.'); end
 if str2double(version('-release'))>=14,
-    save(fnam,'-V6',fn{:});
+    save(fnam,'-V6','-struct','p');
 else
-    save(fnam,fn{:});
+    save(fnam,'-struct','p');
 end
 end
 %------------------------------------------------------------------------
