@@ -46,6 +46,13 @@
 				"aaMaintainer": "Alejandro Vicente Grabovetsky"
 			},
 			{
+				"Name": "surfacerender",
+				"Version": "",
+				"DateDownloaded": "",
+				"URL": "http:\/\/jonathanpeelle.net",
+				"aaMaintainer": "Jonathan Peele"
+			},
+			{
 				"Name": "TFCE",
 				"Version": "r88 (mod - cg_get_tfce_results accepts input)",
 				"DateDownloaded": "3 Jun 2016",

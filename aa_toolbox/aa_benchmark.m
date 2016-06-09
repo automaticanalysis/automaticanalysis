@@ -55,11 +55,11 @@ if (fid==-1)
     benchmark.stagesnotdone=benchmark.stagesnotdone+1;
     fprintf('Stage %s not completed?\n',doneflag);
 else
-    ln=fgetl(fid);
+    ln=fgetl(fid); % execution time
     tme=str2num(ln);
     try
-        ln=fgetl(fid);
-        ln=fgetl(fid);
+        ln=fgetl(fid); % IP
+        ln=fgetl(fid); % internal benchmarking time
         tme2=str2double(ln);
         tme2str=sprintf('%f',tme2);
         benchmark.max=max(benchmark.max,tme2);
