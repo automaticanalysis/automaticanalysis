@@ -164,7 +164,7 @@ switch task
         %{
         aap=aas_desc_outputs(aap,subj,'structural', wSimg);
         %}
-        warning('NOT DESCRIBING OUTPUTS...')
+        aas_log(aap,false,'WARNING: NOT DESCRIBING OUTPUTS...')
         
         outANTS = strvcat( ...
             fullfile(Spth,'antsWarp.nii'), ...

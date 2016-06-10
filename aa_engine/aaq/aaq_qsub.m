@@ -24,8 +24,8 @@ classdef aaq_qsub<aaq
                     aaworker.parmpath});
                 obj.scheduler.SubmitArguments = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
             catch ME
-                warning('Cluster computing is not supported!\n');
-                warning('\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
+                aas_log(aap,false,'WARNING: Cluster computing is not supported!');
+                aas_log(aap,false,sprintf('\tERROR in %s:\n  line %d: %s',ME.stack.file, ME.stack.line, ME.message),aap.gui_controls.colours.warning);
                 obj.scheduler=[];
             end
             obj.aap=aap;

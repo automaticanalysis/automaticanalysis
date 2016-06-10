@@ -39,8 +39,8 @@ qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 try
     scheduler=feval(qsubscheduler,'custom',{'compute',aap.options.aaparallel.numberofworkers,aap.options.aaparallel.memory,aap.options.aaparallel.walltime*3600,qsubpath});
 catch ME
-    warning('Cluster computing is not supported!\n');
-    aas_log(aap,true,'\nERROR in %s:\n  line %d: %s\n',ME.stack.file, ME.stack.line, ME.message);
+    aas_log(aap,false,'ERROR: Cluster computing is not supported!');
+    aas_log(aap,true,'ERROR in %s:\n  line %d: %s',ME.stack.file, ME.stack.line, ME.message);
 end
 
 %% Make workers self-sufficient by passing them the paths.

@@ -198,3 +198,4 @@ if exc, reqpath(exc) = []; end
 aacache.reqpath = reqpath;
 % switch off warnings
 aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
+aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');

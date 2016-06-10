@@ -51,7 +51,7 @@ switch task
             V = spm_vol(Rcurr);
             Y = spm_read_vols(V);
             if nansum(Y(:)>0) == 0
-                warning('This ROI contains no voxels')
+                aas_log(aap,false,'WARNING: This ROI contains no voxels')
             end
             
             outstream = [outstream, Rcurr];

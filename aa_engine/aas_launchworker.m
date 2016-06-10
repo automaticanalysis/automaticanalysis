@@ -27,5 +27,5 @@ cmd=sprintf('p=linemanagerpaths; path(p); aaworker_prepare(%d,[%s])',workernumbe
 cmdall=['cd  ' parmpath '; spm title:aaworker' num2str(workernumber) specialreqstr ' workerdesktop fmri "' cmd '"'];
 [s w]=aas_shell(cmdall);
 if (s)
-    aas_log(aap,false,sprintf('AAPARALLEL warning: worker %d said:\n%s',workernumber,w));
+    aas_log(aap,false,sprintf('AAPARALLEL WARNING: worker %d said:\n%s',workernumber,w));
 end;

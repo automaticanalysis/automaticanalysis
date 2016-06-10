@@ -41,7 +41,7 @@ switch(dicomHdr.sliceorder)
         else
             [aap.tasklist.currenttask.settings.sliceorder] = [2:2:V.dim(3) 1:2:V.dim(3)];
         end
-        warning('CAREFUL! Ensure your interleaved order is correct!')
+        aas_log(aap,false,'WARNING: Ensure your interleaved order is correct!');
     otherwise
         
         if isfield(dicomHdr, 'Private_0019_1029')
