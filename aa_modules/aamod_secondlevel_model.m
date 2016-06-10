@@ -5,7 +5,7 @@
 % Modified for aa by Rhodri Cusack May 2006
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_secondlevel_model(aap,task,i)
+function [aap,resp]=aamod_secondlevel_model(aap,task)
 
 resp='';
 

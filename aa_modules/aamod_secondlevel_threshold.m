@@ -5,7 +5,7 @@
 % **********************************************************************
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_secondlevel_threshold(aap,task,subj)
+function [aap,resp]=aamod_secondlevel_threshold(aap,task)
 
 resp='';
 
