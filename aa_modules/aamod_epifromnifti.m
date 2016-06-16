@@ -17,8 +17,11 @@ switch task
         
         %% Select
         series = horzcat(aap.acq_details.subjects(subj).seriesnumbers{:});
-        if ~iscell(series) || ~isstruct(series{1})
-            aas_log(aap,true,'ERROR: Was expecting list of struct(s) of fname+hdr in cell array');
+        if ~iscell(series) ... 
+                || (~isstruct(series{1}) ... % hdr+fname
+                && ~ischar(series{1}) ... % fname
+                && ~iscell(series{1})) % fname (4D)
+            aas_log(aap,true,['ERROR: Was expecting list of struct(s) of fname+hdr or fname in cell array\n' help('aas_addsubject')]);            
         end
         series = series{sess};
         
@@ -58,14 +61,14 @@ switch task
                 case 'json'
                     DICOMHEADERS{1} = header_json(headerfile); % BIDS
             end
+            DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
+            DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
+            DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
+            [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
+            DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
         else
-            aas_log(aap,true,'ERROR: No header provided!');
-        end
-        DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
-        DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
-        DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
-        [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
-        DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
+            aas_log(aap,false,'WARNING: No header provided!');
+        end        
         
         % Image
         finalepis={};
@@ -87,7 +90,7 @@ switch task
             finalepis = [finalepis fn];
         end;
         
-        if ~isempty(DICOMHEADERS{1}.PhaseEncodingDirection)
+        if isfield(DICOMHEADERS{1},'PhaseEncodingDirection') && ~isempty(DICOMHEADERS{1}.PhaseEncodingDirection)
             DICOMHEADERS{1}.NumberOfPhaseEncodingSteps = V(1).dim(cell_index(sliceaxes, DICOMHEADERS{1}.PhaseEncodingDirection(1)));
         end
         
