@@ -16,7 +16,7 @@
 % containing all the subsessions in the order as given in the 
 % special_sessions.name.
 
-function [aap resp]=aamod_get_dicom_specialseries(aap,task,subj)
+function [aap resp]=aamod_get_dicom_specialseries(aap,task,subj,sess)
 global aaworker
 
 resp='';
@@ -24,25 +24,14 @@ resp='';
 switch task
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,subj);
-        streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
-        sesspath=fullfile(subjpath,streamname);
-        
-        % Obtain sereies index from the special_session names
-        sessind = cell_index({aap.acq_details.special_sessions.name},streamname);
-        if ~sessind, aas_log(aap,true,sprintf('Special session not found: %s\n',streamname)); end
-        for f = 1:numel(sessind)
-            sessfolds{f} = list_index(aap.acq_details.special_sessions(sessind(f)).name,1,2);
-        end
-        
         % Go through each subsessions
         out=[];
-        for seriesind=1:numel(sessind)
-            [d, mriser] = aas_get_series(aap,'special',subj,seriesind);
-            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],mriser);
+        [d, mriser] = aas_get_series(aap,'special',subj,sess);
+        for seriesind=1:numel(mriser)            
+            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],mriser(seriesind));
             
             % Now copy files to this module's directory
-            foldpath = fullfile(sesspath, sessfolds{seriesind});
+            foldpath = fullfile(aas_getsesspath(aap,subj,sess), sprintf('serie%02d',seriesind));
             aas_makedir(aap,foldpath);
             outstream={};
             switch(aap.directory_conventions.remotefilesystem)
@@ -62,7 +51,7 @@ switch task
                     s3_copyfrom_filelist(aap,foldpath,s3fles,aaworker.bucketfordicom,pth);
             end;
             out=[out outstream];
-        end;
+        end
         
         %% To Edit
         % DICOM dictionary
@@ -73,7 +62,15 @@ switch task
         
         % Fields to edit
         toEditsetting = aas_getsetting(aap,'toEdit');
-        toEdit = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
+        toEditsubj = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
+        toEdit = [];
+        for s = 1:numel(toEditsubj)
+            sessnames = regexp(toEditsubj(s).session,':','split');
+            if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
+                toEdit = toEditsubj(s);
+                break;
+            end
+        end
         
         % do it
         if ~isempty(toEdit)
@@ -88,5 +85,5 @@ switch task
         end
         
         %% Output
-        aap=aas_desc_outputs(aap,subj,['dicom_' streamname],out);
+        aap=aas_desc_outputs(aap,'special_session',[subj,sess],char(aas_getstreams(aap,'output')),out);
 end;

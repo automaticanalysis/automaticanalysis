@@ -44,13 +44,12 @@ switch task
             ROIval   = [];
             
             sourcedomain = aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(i).sourcedomain;
-            switch sourcedomain
-                case 'subject'
-                    procind = 1;
-                    indind = 1;
-                case 'session'
-                    procind = aap.acq_details.selected_sessions;
-                    indind = 1:2;
+            if strcmp(sourcedomain,'subject')
+                procind = 1;
+                indind = 1;
+            elseif ~isempty(strfind(sourcedomain,'session'))
+                procind = aap.acq_details.selected_sessions;
+                indind = 1:2;
             end
             
             for p = procind

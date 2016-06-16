@@ -1,18 +1,17 @@
 % AA module - Converts special series to NIFTI format
 % Rhodri Cusack MRC CBU Cambridge Nov 2005
 
-function [aap,resp]=aamod_convert_specialseries(aap,task,subj)
+function [aap,resp]=aamod_convert_specialseries(aap,task,subj,sess)
 
 resp='';
 
 switch task
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,subj);
 
         streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
 
-        [aap, convertedfns, dcmhdr] = aas_convertseries_fromstream(aap, subj, ['dicom_' streamname]); 
+        [aap, convertedfns, dcmhdr] = aas_convertseries_fromstream(aap, subj, sess, ['dicom_' streamname]); 
         
         outstream = {};
         % Restructure outputs!
@@ -20,16 +19,10 @@ switch task
             outstream = [outstream; convertedfns{c}];
         end
         
-        % reorder if there is a baseline session and it is not the first (for coregistration)
-        ind = cell_index(outstream,'baseline'); ind = ind(1);
-        if ind && (ind ~=1)
-            outstream = outstream([ind 1:ind-1 ind+1:end]);
-        end
-        
-        aap = aas_desc_outputs(aap, 'subject', subj, streamname, outstream);
-        dcmhdrfn = fullfile(subjpath,'dicom_headers.mat');
+        aap = aas_desc_outputs(aap, 'special_session', [subj, sess], streamname, outstream);
+        dcmhdrfn = fullfile(aas_getsesspath(aap,subj,sess),'dicom_headers.mat');
         save(dcmhdrfn,'dcmhdr');
-        aap = aas_desc_outputs(aap, 'subject', subj, [streamname '_dicom_header'], dcmhdrfn);
+        aap = aas_desc_outputs(aap, 'special_session', [subj, sess], [streamname '_dicom_header'], dcmhdrfn);
         
     case 'checkrequirements'
 

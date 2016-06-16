@@ -12,27 +12,26 @@ resp='';
 switch task
     case 'report' % [TA]
         domain = aap.tasklist.currenttask.domain;
-        localpath = aas_getpath_bydomain(aap,domain,varargin{:});
+        localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         
         % Process streams
         [diagstream, mainstream] = process_streams(aap);
         d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
-            aas_checkreg(aap,domain,varargin{:},diagstream,'structural');
-            aas_checkreg(aap,domain,varargin{:},mainstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
         end
-        if strcmp(domain,'subject')
-            subj = varargin{1};
-            fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
-            for d = 1:numel(fdiag)
-                aap = aas_report_add(aap,subj,'<table><tr><td>');
-                imgpath = fullfile(localpath,fdiag(d).name);
-                aap=aas_report_addimage(aap,subj,imgpath);
-                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
-                if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
-                aap = aas_report_add(aap,subj,'</td></tr></table>');
-            end
+        subj = varargin{1};
+        fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
+        for d = 1:numel(fdiag)
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            imgpath = fullfile(localpath,fdiag(d).name);
+            aap=aas_report_addimage(aap,subj,imgpath);
+            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
         end
+        
     case 'doit'
         
         global defaults
@@ -67,7 +66,7 @@ switch task
         end
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,domain,varargin{:},diagstream);
+        mEPIimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),diagstream);
         if size(mEPIimg,1) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
             mEPIimg = deblank(mEPIimg(1,:));
@@ -75,8 +74,8 @@ switch task
         
         % Check local wholebrain EPI
         WBimg = '';
-        if ~isempty(wbstream) && aas_stream_has_contents(aap,domain,varargin{:},wbstream)
-            WBimg = aas_getfiles_bystream(aap,domain,varargin{:},wbstream);
+        if ~isempty(wbstream) && aas_stream_has_contents(aap,domain,cell2mat(varargin),wbstream)
+            WBimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),wbstream);
             if size(WBimg,1) > 1
                 aas_log(aap, false, sprintf('Found more than 1 wholebrain images, using %s %d', wbstream,...
                     aap.tasklist.currenttask.settings.structural));
@@ -134,7 +133,7 @@ switch task
         MM = spm_get_space(mEPIimg(1,:));
         
         % Locate all the EPIs we want to coregister
-        EPIimg = aas_getfiles_bystream(aap,domain,varargin{:},mainstream);
+        EPIimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream);
         for e = 1:size(EPIimg,1)
             % Apply the space of the coregistered mean EPI to the
             % remaining EPIs (safest solution!)
@@ -143,13 +142,13 @@ switch task
         
         %% Describe the outputs and Diagnostics
         
-        aap = aas_desc_outputs(aap,domain,varargin{:},diagstream,mEPIimg);
+        aap = aas_desc_outputs(aap,domain,cell2mat(varargin),diagstream,mEPIimg);
         if strcmp(aap.options.wheretoprocess,'localsingle')
-            aas_checkreg(aap,domain,varargin{:},diagstream,'structural');
-            aas_checkreg(aap,domain,varargin{:},mainstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
         end
         
-        aap = aas_desc_outputs(aap,domain,varargin{:},mainstream,EPIimg);
+        aap = aas_desc_outputs(aap,domain,cell2mat(varargin),mainstream,EPIimg);
         
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );
@@ -162,8 +161,8 @@ outpstreams = aas_getstreams(aap,'output');
 if cell_index(inpstreams,'meanepi') % fMRI
     diagstream = 'meanepi';
 end
-if cell_index(inpstreams,'MTI') % MTI
-    diagstream = 'MTI';
+if cell_index(inpstreams,'MTI_baseline') % MTI
+    diagstream = 'MTI_baseline';
 end
 if cell_index(inpstreams,'wholebrain') % partial volume acquisition
     wbstream = inpstreams{cell_index(inpstreams,'wholebrain')};

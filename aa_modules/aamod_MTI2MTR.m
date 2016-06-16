@@ -1,4 +1,4 @@
-function [aap,resp]=aamod_MTI2MTR(aap,task,subj)
+function [aap,resp]=aamod_MTI2MTR(aap,task,subj,sess)
 
 resp='';
 
@@ -14,11 +14,14 @@ switch task
         
         %% Data
         % MTI path
-        mtidir = fullfile(aas_getsubjpath(aap, subj), 'MTI');
+        mtifn = aas_getfiles_bystream(aap,'special_session',[subj,sess],'MTI');
+        mtihdr = load(aas_getfiles_bystream(aap,'special_session',[subj,sess],'MTI_dicom_header'));
         
-        mtifn = aas_getfiles_bystream(aap,subj,'MTI');
-        mtibaseline = deblank(mtifn(1,:)); % baseline is the first (see aamod_convert_specialseries lines 23-27)
-        mtiMT = deblank(mtifn(2,:));
+        % 2 series expected: baseline and MT
+        mtihdr = {mtihdr.dcmhdr{1}{1}.SeriesDescription mtihdr.dcmhdr{2}{1}.SeriesDescription};
+        baseindex = cell_index(mtihdr,'baseline');
+        mtibaseline = deblank(mtifn(baseindex,:));
+        mtiMT = deblank(mtifn(~(baseindex-1)+1,:));
         
         %% Coregister
         % Coregister MT to baseline
@@ -50,7 +53,8 @@ switch task
         MTR(isnan(MTR)) = 0;
 
         V = spm_vol(bmtiMT);
-        mtrfn = fullfile(mtidir,'mti_MTR.nii');
+        mtrfn = fullfile(aas_getsesspath(aap,subj,sess),'mti_MTR.nii');
         nifti_write(mtrfn,MTR,'MTR',V);        
-        aap=aas_desc_outputs(aap,subj,'MTR',mtrfn);        
+        aap=aas_desc_outputs(aap,'special_session',[subj,sess],'MTR',mtrfn);
+        aap=aas_desc_outputs(aap,'special_session',[subj,sess],'MTI_baseline',mtibaseline);
 end

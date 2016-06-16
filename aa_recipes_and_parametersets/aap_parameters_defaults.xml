@@ -69,7 +69,8 @@
                     <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
                         <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
                         </diffusion_session_probtrackx>
-                    </diffusion_session_bedpostx>                        
+                    </diffusion_session_bedpostx>
+                    <special_session desc='Special/Undefined acquisition' ui='custom'></special_session>                        
                 </subject>
                 <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
                     <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
