@@ -21,6 +21,8 @@
             <!-- run-specific contrasts -->
             <oneconperrun>0</oneconperrun>
 
+            <scalebynumberofsessions desc='normalize the contrast by the number of sesisons'>1</scalebynumberofsessions>
+            
             <estimateefficiency>1</estimateefficiency>
             
             <!--

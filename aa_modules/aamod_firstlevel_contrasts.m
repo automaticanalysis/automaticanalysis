@@ -158,18 +158,18 @@ switch task
                                 elseif ischar(contrasts.con(conind).vector) % contrast string
                                     convec = [convec zeros(size(contrasts.con(conind).vector,1), numcolsinthissess)];
                                     for cr = 1:size(contrasts.con(conind).vector,1)
-                                        cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%[^mp]%c%d','Delimiter','|');
+                                        cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%[^mp]%c%d','Delimiter','|');
                                         if isempty(cs{3}) % simple format
-                                            cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%s','Delimiter','|');
+                                            cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%s','Delimiter','|');
                                             cs{3}(1:numel(cs{1}),1) = 'm';
                                             cs{4}(1:numel(cs{1}),1) = int32(1);
                                         end
                                         for e = 1:numel(cs{1})
                                             switch cs{3}(e)
                                                 case 'm' % main trail
-                                                    EVpttrn = sprintf('Sn(%d) %s*',find(selected_sessions==sess),cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %s*',find(selected_sessions==sess),deblank(cs{2}{e}));
                                                 case 'p' % parametric
-                                                    EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),deblank(cs{2}{e}));
                                             end
                                             ind = cell_index(SPM.xX.name,EVpttrn);
                                             convec(cr,ind(cs{4}(e))) = cs{1}(e);
@@ -186,8 +186,10 @@ switch task
                         % If subjects have different # of sessions, then
                         % they will be weighted differently in 2nd level
                         % model. So, normalize the contrast by the number
-                        % of sesisons that contribute to it [CW]
-                        convec = convec ./ nnz(sessforcon); 
+                        % of sesisons that contribute to it [default]
+                        if isempty(aas_getsetting(aap,'scalebynumberofsessions')) || aas_getsetting(aap,'scalebynumberofsessions')
+                            convec = convec ./ nnz(sessforcon); 
+                        end
                         
                     case 'uniquebysession'
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
