@@ -107,9 +107,18 @@ switch task
             aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end
     case 'doit'
-        % Get realignment defaults
-        defs = aap.spm.defaults.realign;
-             
+        % Get realignment defaults from the XML!
+        reaFlags = aap.tasklist.currenttask.settings.eoptions;
+        if strcmp(reaFlags.weight,'''''') % empty
+            reaFlags.weight = {};
+        else
+            reaFlags.weight = {reaFlags.weight};
+        end        
+        
+        resFlags = aap.tasklist.currenttask.settings.roptions;
+        resFlags.which = [aap.tasklist.currenttask.settings.reslicewhich ...
+            aap.tasklist.currenttask.settings.writemean];     
+        
         % Note starting directory so we can get back here in the end
         startingDir = pwd;
         
@@ -118,26 +127,6 @@ switch task
             % get files from stream
             imgs{end+1} = aas_getfiles_bystream(aap, subj, sess, 'epi');
         end
-        
-        % Flags to pass to routine to calculate realignment parameters
-        % (spm_realign)
-        reaFlags = struct(...
-            'quality', defs.estimate.quality,...  % estimation quality
-            'fwhm', defs.estimate.fwhm,...        % smooth before calculation
-            'rtm', defs.estimate.rtm,...          % whether to realign to mean
-            'interp', defs.estimate.interp,...    % interpolation type
-            'wrap', defs.estimate.wrap,...        % wrap in (x) y (z)
-            'sep', defs.estimate.sep...          % interpolation size (separation)
-            );
-        
-        % Flags to pass to routine to create resliced images
-        % (spm_reslice)
-        resFlags = struct(...
-            'interp', defs.write.interp,...       % interpolation type
-            'wrap', defs.write.wrap,...           % wrapping info (ignore...)
-            'mask', defs.write.mask,...           % masking (see spm_reslice)
-            'which', aap.tasklist.currenttask.settings.reslicewhich,...     % what images to reslice
-            'mean', aap.tasklist.currenttask.settings.writemean);           % write mean image
         
         % Check if we are using a weighting image
         if any(strcmp(aap.tasklist.currenttask.inputstreams.stream, 'weightingImage'))
