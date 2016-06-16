@@ -25,7 +25,7 @@ classdef aaq_qsub<aaq
                 obj.scheduler.SubmitArguments = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
             catch ME
                 aas_log(aap,false,'WARNING: Cluster computing is not supported!');
-                aas_log(aap,false,sprintf('\tERROR in %s:\n  line %d: %s',ME.stack.file, ME.stack.line, ME.message),aap.gui_controls.colours.warning);
+                aas_log(aap,false,sprintf('\tERROR in %s:\n\tline %d: %s',ME.stack(1).file, ME.stack(1).line, ME.message),aap.gui_controls.colours.warning);
                 obj.scheduler=[];
             end
             obj.aap=aap;
@@ -184,7 +184,7 @@ classdef aaq_qsub<aaq
                     % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
                     %     return
                     % end
-                    if isempty(obj.QV) || ~obj.QV.OnScreen % closed
+                    if ~isempty(obj.scheduler) && (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
                         obj.QV = aas_qsubViewerClass(obj);
                         obj.QV.Hold = true;
                         obj.QV.setAutoUpdate(false);

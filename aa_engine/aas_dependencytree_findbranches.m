@@ -81,7 +81,7 @@ if isstruct(tree)
             if exist('modulenum','var') && ~isempty(modulenum)
                 pth=aas_getpath_bydomain(aap,fn{fnind},[indices branchind],aap.directory_conventions.remotefilesystem,modulenum);
                 if ~exist(pth,'dir')
-                    aas_log(aap,false,sprintf('WARNING: Quitting traverse as directory does not exist:\n\t%s',pth));
+                    % aas_log(aap,false,sprintf('INFO: Quitting traverse as directory does not exist:\n\t%s',pth));
                     traverse=false;
                 end
             end
