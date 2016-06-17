@@ -61,69 +61,72 @@ switch task
         if (isfield(aap.tasklist.currenttask.settings,'session'))
             sess = aap.tasklist.currenttask.settings.session;
         end        
-        voxelSize = aas_getsetting(aap,'vox'); % in case we want something other than default voxel size
-        boundingBox = aas_getsetting(aap,'bb');
-        if ~isempty(boundingBox), boundingBox = reshape(boundingBox,2,3); end
         
-        % get sn mat file from normalisation
-        matname = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
+        if aas_stream_has_contents(aap,'normalisation_seg_sn')
+            try flags = aap.spm.defaults.old.normalise.write; catch, flags = aap.spm.defaults.normalise.write; end
+            % get sn mat file from normalisation
+            trans = aas_getfiles_bystream(aap,subj,'normalisation_seg_sn');
+        elseif aas_stream_has_contents(aap,'forward_deformation_field')
+            flags = aap.spm.defaults.normalise.write;
+            trans = aas_getfiles_bystream(aap,subj,'forward_deformation_field');
+        else
+            aas_log(aap,true,'ERROR: No transformation specified!')
+        end
+        
+        flags.vox = aas_getsetting(aap,'vox');
+        boundingBox = aas_getsetting(aap,'bb');
+        if ~isempty(boundingBox), flags.bb = reshape(boundingBox,2,3); end
+        interp = aas_getsetting(aap,'interp');
+        if ~isempty(interp), flags.interp = interp; end
         
 		% find out what streams we should normalise
         streams=aap.tasklist.currenttask.outputstreams.stream;
-        
         for streamind=1:length(streams)
-            imgs = [];
             % Image to reslice
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
-            if exist('sess','var')
-                P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind});
-            else
-                P = aas_getfiles_bystream(aap,subj,streams{streamind});
-            end
+            P = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind});
             
-            % exclude image already normalised
-            f = basename(P);
-            P = P(f(:,1) ~= aap.spm.defaults.normalise.write.prefix,:);
-            
-            imgs = strvcat(imgs, P);
+            % Ignore .hdr files from this list...
+            ishdr = cell_index(cellstr(P),'.hdr');
+            if any(ishdr), P(ishdr,:) = []; end
             
             % delete previous because otherwise nifti write routine doesn't
             % save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
-                [pth fle ext]=fileparts(P(c,:));
-                [s w] = aas_shell(['rm ' fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext])],true); % quietly
-            end;
-            
-            
-            % set defaults
-            flags = aap.spm.defaults.normalise.write;
-            flags.vox = voxelSize;
-            if ~isempty(boundingBox), flags.bb = boundingBox; end
-            
-            % now write normalised
-            if ~isempty(imgs)
-                % Ignore .hdr files from this list...
-                imgsGood = imgs;
-                for n = size(imgsGood,1):-1:1
-                    if ~isempty(strfind(imgsGood(n,:), '.hdr'))
-                        imgsGood(n,:) = [];
-                    end
-                end
-                spm_write_sn(imgsGood,matname,flags);
+                aas_shell(['rm ' spm_file(P(c,:),'prefix',flags.prefix)],true); % quietly
             end
             
-            wimgs=[];
+            if aas_stream_has_contents(aap,'normalisation_seg_sn')
+                spm_write_sn(imgsGood,trans,flags);
+            elseif aas_stream_has_contents(aap,'forward_deformation_field')
+                switch spm('ver')
+                    case 'SPM8'
+                        job.ofname = '';
+                        job.fnames = cellstr(P);
+                        job.savedir.saveusr{1} = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin));
+                        job.interp = flags.interp;
+                        job.comp{1}.def = cellstr(trans);
+                        spm_defs(job);
+                    case {'SPM12b' 'SPM12'}
+                        job.subj.def = cellstr(trans);
+                        job.subj.resample = cellstr(P);
+                        job.woptions = flags; 
+                        spm_run_norm(job);
+                    otherwise
+                        aas_log(aap, true, sprintf('%s requires SPM8 or later.', mfilename));
+                end
+            end
             
-            % describe outputs
-            for fileind=1:size(imgs,1)
-                [pth, nme, ext] = fileparts(imgs(fileind,:));
+            % outputs
+            wimgs=[];
+            for fileind=1:size(P,1)
                 % overwrite input with output if specified (e.g. for contrasts)
                 if isfield(aap.tasklist.currenttask.settings.outputstreams,'preservefilename') && ...
                         aap.tasklist.currenttask.settings.outputstreams.preservefilename
-                    movefile(fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]),imgs(fileind,:));
-                    wimgs = strvcat(wimgs,imgs(fileind,:));
+                    movefile(spm_file(P(fileind,:),'prefix',flags.prefix),P(fileind,:));
+                    wimgs = strvcat(wimgs,P(fileind,:));
                 else
-                    wimgs = strvcat(wimgs,fullfile(pth,[aap.spm.defaults.normalise.write.prefix nme ext]));
+                    wimgs = strvcat(wimgs,spm_file(P(fileind,:),'prefix',flags.prefix));
                 end
             end
             
@@ -142,16 +145,9 @@ switch task
             struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
             sname = basename(struct);
             struct = struct((sname(:,1)=='w'),:);
-            if (exist('sess','var'))
-                aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
-                    aas_checkreg(aap,aap.tasklist.currenttask.domain,[subj,sess],streams{streamind},struct);
-                end
-            else
-                aap=aas_desc_outputs(aap,subj,streams{streamind},wimgs);
-                if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
-                    aas_checkreg(aap,subj,streams{streamind},struct);
-                end
+            aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},wimgs);
+            if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
             end
         end
         

@@ -1,4 +1,4 @@
-function [aap,resp] = aamod_segment8_multichan(aap, task, subjind)
+function [aap,resp] = aamod_segment8(aap, task, subjind)
 % AAMOD_SEGMENT8_MULTICHAN Perform SPM8's segment8 segmentation (multichannel).
 %
 % [aap,resp] = AAMOD_SEGMENT8(aap, task, subjind)
@@ -8,6 +8,8 @@ function [aap,resp] = aamod_segment8_multichan(aap, task, subjind)
 %
 % input stream:     structural (may add others)
 % output streams:   seg8
+%                   forward_deformation
+%                   inverse_deformation
 %                   native_grey
 %                   native_white
 %                   native_csf
@@ -63,6 +65,7 @@ switch task
         cfg.reg = aap.tasklist.currenttask.settings.reg;           % .001;
         cfg.vox = aap.tasklist.currenttask.settings.vox;           % voxel size things get resampled to
         cfg.mrf = aap.tasklist.currenttask.settings.mrf;           % markov random field cleanup
+        cfg.cleanup = aas_getsetting(aap,'cleanup'); if isempty(cfg.cleanup), cfg.cleanup = 0; end
         cfg.samp = aap.tasklist.currenttask.settings.samp;         % sampling distance
 
         cfg.lkp = [1,1,2,2,3,3,4,4,4,5,5,5,5,6,6];
@@ -81,11 +84,11 @@ switch task
         cfg.writedeffields = aap.tasklist.currenttask.settings.writedeffields;         % [1 1] would write them out
 
 	    % If no full path to TPM specified, try to use the standard SPM one
-	    if isempty(aap.tasklist.currenttask.settings.tpm)
-			cfg.tpm = fullfile(spm('dir'), 'toolbox', 'Seg', 'TPM.nii');
-		else
-			cfg.tpm = aap.tasklist.currenttask.settings.tpm;
-		end
+        if isempty(aap.tasklist.currenttask.settings.tpm)
+            cfg.tpm = fullfile(spm('dir'), 'toolbox', 'Seg', 'TPM.nii');
+        else
+            cfg.tpm = aap.tasklist.currenttask.settings.tpm;
+        end
 
         if ~exist(cfg.tpm, 'file')
             aas_log(aap, true, sprintf('Specified TPM %s not found.', cfg.tpm));
@@ -216,6 +219,7 @@ switch task
         job.warp.bb             = cfg.bb;
         job.warp.vox            = cfg.vox;
         job.warp.mrf            = cfg.mrf;
+        job.warp.cleanup        = cfg.cleanup;
         job.warp.Affine         = StartingAffine; % jt
         
         if job.warp.samp < 2
@@ -252,7 +256,7 @@ switch task
                 ojob.interp = 1;
                 switch spm('ver')
                     case 'SPM8'
-                        spm_func_def = @spm_def;
+                        spm_func_def = @spm_defs;
                         djob = ojob;
                         djob.comp{1}.def{1} = normparamfn;
                     case {'SPM12b' 'SPM12'}
@@ -283,17 +287,18 @@ switch task
         for tissind=1:3
             aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{tissind}), fullfile(pth, sprintf('c%d%s', tissind, [nm ext])));
             aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{tissind}), fullfile(pth, sprintf('rc%d%s', tissind, [nm ext])));
-            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{tissind}), fullfile(pth, sprintf('wc%d%s', tissind, [nm ext])));
-            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{tissind}), fullfile(pth, sprintf('mwc%d%s', tissind, [nm ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{tissind}), fullfile(pth, sprintf('%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{tissind}), fullfile(pth, sprintf('m%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));
         end
         
         % If user chose to write out normalised input image(s) (jt 05/Jul/2012)
         if aap.tasklist.currenttask.settings.writenormimg 
-            pfx = 'w';
+            pfx = aap.spm.defaults.normalise.write.prefix;
             if strcmp(opts.method,'push') && opts.preserve, pfx = ['m' pfx]; end
             if sum(opts.fwhm.^2)~=0, pfx = ['s' pfx]; end
+            outstreams = aas_getstreams(aap,'output');
             for c=1:length(channels)
-                aap = aas_desc_outputs(aap, subjind, sprintf('normalised_%s', channels{c}), fullfile(pth, sprintf('%s%s', pfx,[nm ext])));
+                aap = aas_desc_outputs(aap, subjind, outstreams{c}, fullfile(pth, sprintf('%s%s', pfx,[nm ext])));
             end
         end
         

@@ -11,10 +11,12 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <vox desc='voxel size of normalised images'>2 2 2</vox>
-            <bb desc='bounding box of normalised images (-X X -Y Y -Z Z)'></bb>
+            <bb desc='bounding box of normalised images (-X X -Y Y -Z Z)'>-78 78 -112 76 -70 85</bb>
+            <interp>4</interp>
             
             <inputstreams>
-                <stream>normalisation_seg_sn</stream>  
+                <stream isessential="0">forward_deformation_field</stream> 
+                <stream isessential="0">normalisation_seg_sn</stream> 
                 <stream diagnostic="1">structural</stream> 
                 <stream>tSNR</stream>
             </inputstreams>
