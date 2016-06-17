@@ -1,9 +1,11 @@
 ## 5.2.0 ##
 
 #### New general features ####
+  - MTI and sepcial_sessions) has benn moved to session domain and thus can be missing
   - `aamod_get_dicom_*` modules can now also edit DICOM fields
-  - bounding box can be specified for "norm_write" modules
-  - `aamod_roi_extract_*` has option to use either the space of the data or the ROI
+  - bounding box can be specified for `aamod_norm_write*` modules
+  - `aamod_norm_write*` modules can process deformations
+  - `aamod_roi_extract*` has option to use either the space of the data or the ROI
   - subjects with different sessions can be analysed
     - [aamod_firstlevel_contrasts](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_contrasts.xml) can automatically assign contrasts, unless `uniquebysession` is used. :warning: **Contrast names must be unique both within- and across-sessions!**
   - [aamod_coreg_general](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_general.m) is prepared for session domain and 4D NIfTI
@@ -15,11 +17,16 @@
     - aaparallel parameters
     - external poolprofile function specified in `aap.directory_conventions.poolprofile`
     - pass `aaworker`
+  - TFCE ([external](http://dbm.neuro.uni-jena.de/tfce/)) has been updated
 
 #### New features for fMRI ####
+  - NIfTI input without header is now allowed
   - examples [aa_user_branching_example1](https://github.com/rhodricusack/automaticanalysis/blob/v5-devel/examples/aa_user_branching_example1.m) and [aa_user_branching_example2](https://github.com/rhodricusack/automaticanalysis/blob/v5-devel/examples/aa_user_branching_example2.m) have been updated
+  - estimate and reslice flags has been added to [aamod_realign](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_realign.xml)
   - new modules:
     - [aamod_reorientto_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_epi.xml) and [aamod_reorientto_fieldmap](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_reorientto_fieldmap.xml) for longitudinal studies 
+  - tsdiffana ([external](https://sourceforge.net/p/spmtools/tsdiffana/code/ci/master/tree)) has been updated
+  - Motion FingerPrint ([external](https://www.medizin.uni-tuebingen.de/kinder/en/research/neuroimaging/software/)) has been updated
 	
 #### New features for MEG ####
   - `transform` setting of [aamod_meg_maxfilt](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_meg_maxfilt.xml) can be negative to specify session based on `selected_session`
@@ -32,6 +39,8 @@
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with path with "spm" in it
   - [aamod_firstlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_firstlevel_threshold.xml) and [aamod_secondlevel_model](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_model.xml) now can deal with cases when reslicing activation maps "vanishes" activations
   - modality detection for MTI-related modules
+  - [aamod_autoidentifyseries_siemens](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_autoidentifyseries_siemens.m) with missing series
+  - [aamod_autoidentifyseries_siemens](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_autoidentifyseries_siemens.m) with custom `dicom_protocol_field`
   - [aas_getfiles_bystream](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_getfiles_bystream.m) now also uses `aap.options.maximumretry` when copying streams potentially used jointly with other jobs
   - coregister after `aamod_norm_noss*`
   - reporting connected pipeline
