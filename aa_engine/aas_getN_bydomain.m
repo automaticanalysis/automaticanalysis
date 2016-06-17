@@ -45,7 +45,7 @@ switch (domain)
             I = 1 : N;
         else
             if iscell(seriesnumbers)
-                N = cellfun(@(x) ~isempty(x) && (isstruct(x) || any(x)), seriesnumbers);
+                N = cellfun(@(x) ~isempty(x) && (isstruct(x) || iscell(x) || any(x)), seriesnumbers);
                 I = find(N);
                 N = sum(N);
             else
