@@ -22,7 +22,7 @@ switch task
         aas_makedir(aap,sesspath);
         
         % get files in this directory
-        job.imgs{1}{1} = aas_getimages_bystream(aap,subjInd,sessInd,'epi');
+        job.imgs{1}{1} = aas_getfiles_bystream(aap,subjInd,sessInd,'epi');
         job.vf = 0;
         run_tsdiffana('run','timediff',job);
         
