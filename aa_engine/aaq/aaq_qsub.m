@@ -18,10 +18,21 @@ classdef aaq_qsub<aaq
             aaparallel.numberofworkers=1;
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
-                    obj.pool = feval(aap.directory_conventions.poolprofile,aaparallel.numberofworkers);
+                    profiles = parallel.clusterProfiles;
+                    if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
+                        ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+                        if isempty(ppfname)
+                            aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+                        else                            
+                            obj.pool=parcluster(parallel.importProfile(ppfname));
+                        end
+                    else
+                        aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
+                        obj.pool=parcluster(aap.directory_conventions.poolprofile);
+                    end
                     switch class(obj.pool)
                         case 'parallel.cluster.Torque'
-                            aas_log(aap,false,'INFO: Torque engine is detected');
+                            aas_log(aap,false,'INFO: pool Torque is detected');
                             obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified

@@ -38,7 +38,18 @@ qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
 aas_makedir(aap,qsubpath);
 
 try
-    pool = feval(poolprofile,aap.options.aaparallel.numberofworkers);
+    profiles = parallel.clusterProfiles;
+    if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
+        ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+        if isempty(ppfname)
+            aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+        else
+            pool=parcluster(parallel.importProfile(ppfname));
+        end
+    else
+        aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
+        pool=parcluster(aap.directory_conventions.poolprofile);
+    end
     switch class(pool)
         case 'parallel.cluster.Torque'
             aas_log(aap,false,'INFO: Torque engine is detected');

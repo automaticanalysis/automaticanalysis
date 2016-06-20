@@ -78,7 +78,18 @@ classdef aaq_matlab_pct<aaq
             
             if ~aas_matlabpool('isopen')
                 if ~isempty(aap.directory_conventions.poolprofile)
-                    P = feval(aap.directory_conventions.poolprofile,obj.aaparallel.numberofworkers);
+                    profiles = parallel.clusterProfiles;
+                    if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
+                        ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+                        if isempty(ppfname)
+                            aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+                        else                            
+                            P=parcluster(parallel.importProfile(ppfname));
+                        end
+                    else
+                        aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
+                        P=parcluster(aap.directory_conventions.poolprofile);
+                    end
                     switch class(P)
                         case 'parallel.cluster.Torque'
                             aas_log(aap,false,'INFO: Torque engine is detected');
