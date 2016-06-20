@@ -665,7 +665,9 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 			  disp(['   ... found few slices (' num2str(min(dims_m)) ') with much higher in-plane resolution (' num2str(max(dims_m)) '), adapting steps...']);
 		  end;
 
-
+          % [TA] set ROI diameter accordingly
+          r = floor(min(dims_m)/2);
+          
 		% prepare storage, folder, files
 		  mfps = zeros(size(steps,1),size(pr,1));
 		  img = [p filesep spm_select('List', p, ['^' nm(4:end) '.(img|nii)'])];
