@@ -1,6 +1,6 @@
 classdef aaq_qsub<aaq
     properties
-        scheduler = []
+        pool = []
         QV = []
     end
     properties (Hidden)
@@ -9,7 +9,7 @@ classdef aaq_qsub<aaq
         taskstomonitor = []
 
         % ensure MAXFILTER license
-        SubmitArguments0 = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+        initialSubmitArguments = '';
     end
     methods
         function [obj]=aaq_qsub(aap)
@@ -17,23 +17,34 @@ classdef aaq_qsub<aaq
             global aaparallel;
             aaparallel.numberofworkers=1;
             try
-                obj.scheduler=feval(aap.directory_conventions.qsubscheduler,'custom',{'compute',...
-                    aaparallel.numberofworkers,...
-                    aaparallel.memory,...
-                    aaparallel.walltime*3600,...
-                    aaworker.parmpath});
-                obj.scheduler.SubmitArguments = strcat(obj.scheduler.SubmitArguments,obj.SubmitArguments0);
+                if ~isempty(aap.directory_conventions.poolprofile)
+                    obj.pool = feval(aap.directory_conventions.poolprofile,aaparallel.numberofworkers);
+                    switch class(obj.pool)
+                        case 'parallel.cluster.Torque'
+                            aas_log(aap,false,'INFO: Torque engine is detected');
+                            obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
+                            if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
+                                    ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
+                                obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+                            end
+                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                    end
+                else
+                    obj.pool = parcluster('local');
+                end
+                obj.pool.NumWorkers = aaparallel.numberofworkers;
+                obj.pool.JobStorageLocation = aaworker.parmpath;
             catch ME
                 aas_log(aap,false,'WARNING: Cluster computing is not supported!');
                 aas_log(aap,false,sprintf('\tERROR in %s:\n\tline %d: %s',ME.stack(1).file, ME.stack(1).line, ME.message),aap.gui_controls.colours.warning);
-                obj.scheduler=[];
+                obj.pool=[];
             end
             obj.aap=aap;
         end
         
         function close(obj)
-            for j = 1:numel(obj.scheduler.Jobs)
-                obj.scheduler.Jobs(1).cancel;
+            for j = 1:numel(obj.pool.Jobs)
+                obj.pool.Jobs(1).cancel;
             end
             close@aaq(obj);
         end
@@ -84,7 +95,7 @@ classdef aaq_qsub<aaq
                 taskstarted = [];
                 for ftmind=1:numel(obj.taskinqueue)
                     JobID = obj.taskinqueue(ftmind);
-                    Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
+                    Jobs = obj.pool.Jobs([obj.pool.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
                         if obj.QV.isvalid, obj.QV.Hold = false; end
                         obj.fatalerrors = true; % abnormal terminations
@@ -107,7 +118,7 @@ classdef aaq_qsub<aaq
                 taskreported = [];
                 for ftmind=1:numel(obj.taskstomonitor)
                     JobID = obj.taskstomonitor(ftmind);
-                    Jobs = obj.scheduler.Jobs([obj.scheduler.Jobs.ID] == JobID);
+                    Jobs = obj.pool.Jobs([obj.pool.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
                         if obj.QV.isvalid, obj.QV.Hold = false; end
                         obj.fatalerrors = true; % abnormal terminations
@@ -134,7 +145,7 @@ classdef aaq_qsub<aaq
                     switch state
                         case 'failed' % failed to launch
                             msg = sprintf('Job%d had failed to launch (Licence?)!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JobID,...
-                                fullfile(obj.scheduler.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
+                                fullfile(obj.pool.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
                             % If there is an error, it is fatal...
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             
@@ -184,7 +195,7 @@ classdef aaq_qsub<aaq
                     % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
                     %     return
                     % end
-                    if ~isempty(obj.scheduler) && (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
+                    if ~isempty(obj.pool) && (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
                         obj.QV = aas_qsubViewerClass(obj);
                         obj.QV.Hold = true;
                         obj.QV.setAutoUpdate(false);
@@ -204,7 +215,7 @@ classdef aaq_qsub<aaq
             end
         end
         
-        function obj = scheduler_args(obj,varargin)
+        function obj = pool_args(obj,varargin)
             global aaparallel;
             memory = aaparallel.memory;
             walltime = aaparallel.walltime;
@@ -225,9 +236,9 @@ classdef aaq_qsub<aaq
                 memory = sprintf('%dmb',memory*1000);
             end
             
-            obj.scheduler.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.SubmitArguments0);
+            obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
             
-            %                 obj.scheduler.SubmitArguments = strcat(obj.SubmitArguments0,...
+            %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
             %                     sprintf(' -N Mod%02d_',job.k),...
             %                     sprintf('%03d',job.indices));
 
@@ -242,7 +253,7 @@ classdef aaq_qsub<aaq
             cd(qsubpath);
             
             % Submit the job
-            if ~isempty(obj.scheduler)
+            if ~isempty(obj.pool)
                 % Check how much memory and time we should assign to the job
                 qsubsettings = {'mem',[],'walltime',[]};
 %                 if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
@@ -257,9 +268,9 @@ classdef aaq_qsub<aaq
 %                     end
 %                 end
            
-                obj = obj.scheduler_args(qsubsettings{:});
+                obj = obj.pool_args(qsubsettings{:});
                 
-                J = createJob(obj.scheduler);
+                J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {job.aap,job.task,job.k,job.indices, aaworker};

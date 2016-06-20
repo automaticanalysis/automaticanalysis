@@ -6,7 +6,7 @@ classdef aas_qsubViewerClass < QueueViewerClass
             else
                 global taskqueue
             end
-            obj = obj@QueueViewerClass(taskqueue.scheduler);
+            obj = obj@QueueViewerClass(taskqueue.pool);
         end
     end
     

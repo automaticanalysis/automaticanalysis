@@ -44,7 +44,6 @@
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <qsubscheduler desc='MATLAB function to set up qsub scheduler (should be in your MATLAB path)' ui='dir'>cbu_scheduler</qsubscheduler>
             <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>cbupool</poolprofile>
         </directory_conventions>
         <options>

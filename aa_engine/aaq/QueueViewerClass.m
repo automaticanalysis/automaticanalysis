@@ -29,7 +29,7 @@ classdef QueueViewerClass < handle
         Hold = true
     end
     properties (Access = protected)
-        Scheduler
+        Pool
         
         UIControls
         
@@ -41,13 +41,13 @@ classdef QueueViewerClass < handle
     end
     
     methods
-        function obj = QueueViewerClass(scheduler)
-            obj.Scheduler = scheduler;
+        function obj = QueueViewerClass(pool)
+            obj.Pool = pool;
             obj.Open;
         end
         
         function delete(obj)
-            obj.Scheduler = [];
+            obj.Pool = [];
         end
         
         function Open(obj)
@@ -210,7 +210,7 @@ classdef QueueViewerClass < handle
         end
         
         function q = GetQueue(obj)
-            Jobs = [obj.Scheduler.Jobs];
+            Jobs = [obj.Pool.Jobs];
             q = {};
             for j = 1:numel(Jobs)
                 if any(obj.JobsToIgnore == Jobs(j).ID), continue; end
@@ -239,8 +239,8 @@ classdef QueueViewerClass < handle
         end
         
         function KillAll(obj)
-            for j = 1:numel(obj.Scheduler.Jobs)
-                obj.Scheduler.Jobs(1).delete;
+            for j = 1:numel(obj.Pool.Jobs)
+                obj.Pool.Jobs(1).delete;
             end
         end
         
@@ -323,7 +323,7 @@ if strcmp(get(gcbf,'SelectionType'),'open')
     sel = get(listbox,'Value');
     ID = regexp(jobs{sel},'job[ ]*[0-9]*:','match');
     ID = textscan(ID{1},'job %d:%*s'); ID = ID{1};
-    Task = obj.Scheduler.Jobs(ID).Tasks;
+    Task = obj.Pool.Jobs(ID).Tasks;
     msgbox(obj.TaskInfo(Task),[Task.Parent.Name Task.Name],'help');
 end
 end
@@ -333,8 +333,8 @@ queue = 'unknown/unspecified';
 mem = 'unknown/unspecified';
 walltime = 'unknown/unspecified time';
 
-if ~isempty(obj.Scheduler.SubmitArguments)
-    schedinfo = textscan(obj.Scheduler.SubmitArguments,'%s'); schedinfo = schedinfo{1};
+if ~isempty(obj.Pool.SubmitArguments)
+    schedinfo = textscan(obj.Pool.SubmitArguments,'%s'); schedinfo = schedinfo{1};
     if any(strcmp(schedinfo,'-q')), queue = schedinfo{circshift(strcmp(schedinfo,'-q'),1)}; end
     if cell_index(schedinfo,'mem='), mem = strrep(schedinfo{cell_index(schedinfo,'mem=')},'mem=',''); end
     if cell_index(schedinfo,'walltime='), walltime = obj.TimeStr(str2double(strrep(schedinfo{cell_index(schedinfo,'walltime=')},'walltime=',''))); end
@@ -350,13 +350,13 @@ msgbox(sprintf(['- Queuing %d jobs\n'...
     '- For maximum %s\n'...
     '\n'...
     '- Job Storage in %s'],...
-    sum(strcmp({obj.Scheduler.Jobs.State},'queued')),...
-    sum(strcmp({obj.Scheduler.Jobs.State},'running')),...
-    sum(strcmp({obj.Scheduler.Jobs.State},'finished')),...
-    obj.Scheduler.Host,...
-    obj.Scheduler.NumWorkers,...
+    sum(strcmp({obj.Pool.Jobs.State},'queued')),...
+    sum(strcmp({obj.Pool.Jobs.State},'running')),...
+    sum(strcmp({obj.Pool.Jobs.State},'finished')),...
+    obj.Pool.Host,...
+    obj.Pool.NumWorkers,...
     queue,...
     mem,...
     walltime,...
-    obj.Scheduler.JobStorageLocation),['Scheduler: ' class(obj.Scheduler)],'help');
+    obj.Pool.JobStorageLocation),['Pool: ' class(obj.Pool)],'help');
 end

@@ -82,7 +82,7 @@ classdef aaq_matlab_pct<aaq
                     switch class(P)
                         case 'parallel.cluster.Torque'
                             aas_log(aap,false,'INFO: Torque engine is detected');
-                            P.ResourceTemplate = sprintf('-l nodes=%d,mem=%dGB,walltime=%d:00:00',obj.aaparallel.numberofworkers, obj.aaparallel.memory,obj.aaparallel.walltime);
+                            P.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', obj.aaparallel.memory,obj.aaparallel.walltime);
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';

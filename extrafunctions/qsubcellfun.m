@@ -1,4 +1,4 @@
-function scheduler = qsubcellfun(varargin)
+function pool = qsubcellfun(varargin)
 %% Parse input
 func = varargin{1};
 varargin{1} = func2str(func);
@@ -25,22 +25,30 @@ end
 
 %% Initialise engine
 if isaa
-    qsubscheduler = aap.directory_conventions.qsubscheduler;
+    poolprofile = aap.directory_conventions.poolprofile;
     qsubpath = fullfile(getenv('HOME'),'aaworker');
 else
-    if isempty(aap.directory_conventions.qsubscheduler)
-        aas_log(aap,true,sprintf('qsubscheduler is not specified in %s',par_xml))
+    if isempty(aap.directory_conventions.poolprofile)
+        aas_log(aap,true,sprintf('poolprofile is not specified in %s',par_xml))
     end
-    qsubscheduler = aap.directory_conventions.qsubscheduler;
+    poolprofile = aap.directory_conventions.poolprofile;
     qsubpath = pwd;
 end
 qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
+aas_makedir(aap,qsubpath);
 
 try
-    scheduler=feval(qsubscheduler,'custom',{'compute',aap.options.aaparallel.numberofworkers,aap.options.aaparallel.memory,aap.options.aaparallel.walltime*3600,qsubpath});
+    pool = feval(poolprofile,aap.options.aaparallel.numberofworkers);
+    switch class(pool)
+        case 'parallel.cluster.Torque'
+            aas_log(aap,false,'INFO: Torque engine is detected');
+            pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aap.options.aaparallel.memory,aap.options.aaparallel.walltime);
+    end
+    pool.NumWorkers = aap.options.aaparallel.numberofworkers;
+    pool.JobStorageLocation = qsubpath;
 catch ME
     aas_log(aap,false,'ERROR: Cluster computing is not supported!');
-    aas_log(aap,true,'ERROR in %s:\n  line %d: %s',ME.stack.file, ME.stack.line, ME.message);
+    aas_log(aap,true,sprintf('ERROR in %s:\n  line %d: %s',ME.stack.file, ME.stack.line, ME.message));
 end
 
 %% Make workers self-sufficient by passing them the paths.
@@ -82,7 +90,7 @@ for iJob = 1:numel(varargin{2})
     
     pause(0.5); % do not overload
     
-    J = createJob(scheduler);
+    J = createJob(pool);
     inparg = {};
     nArg = 0;
     for iArg = ind_args

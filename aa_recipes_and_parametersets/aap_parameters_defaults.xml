@@ -53,7 +53,6 @@
         <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'></BrainWaveletdir>
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-        <qsubscheduler desc='MATLAB function to set up qsub scheduler (should be in your MATLAB path)' ui='dir'></qsubscheduler>
         <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'></poolprofile>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>
