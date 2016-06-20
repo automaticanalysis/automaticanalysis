@@ -1,3 +1,8 @@
+## 5.3.0 ##
+
+#### New general features ####
+  - [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsub.m) and [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) are based on the same setting `aap.directory_conventions.poolprofile`
+
 ## 5.2.0 ##
 
 #### New general features ####
