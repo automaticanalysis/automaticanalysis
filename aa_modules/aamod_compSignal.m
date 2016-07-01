@@ -64,12 +64,16 @@ switch task
         MOlist = MOlist{1}';
         
         % Load the segmented masks!
-        mGM = []; mWM = []; mCSF = [];
-        for m = 1:size(SMimg,1)
-            [junk,fn] = fileparts(SMimg(m,:));
-            indx = find(fn=='c',1,'first');
-            feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 1))}],spm_read_vols(spm_vol(SMimg(m,:)))));
-        end
+        mGM = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'GM'),:)));
+        mWM = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'WM'),:)));
+        mCSF = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'CSF'),:)));
+%         % Dynamic - may not work standalone
+%         mGM = []; mWM = []; mCSF = [];
+%         for m = 1:size(SMimg,1)
+%             [junk,fn] = fileparts(SMimg(m,:));
+%             indx = find(fn=='c',1,'first');
+%             feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 1))}],spm_read_vols(spm_vol(SMimg(m,:)))));
+%         end
         
         % Record the number of voxels in each compartment
         nG = sum(mGM(:)>0);
