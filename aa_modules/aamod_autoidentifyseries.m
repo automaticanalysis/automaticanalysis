@@ -143,15 +143,15 @@ switch task
                     if (aap.directory_conventions.rawseries_usefileorder)
                         seriesnum=j;
                     else
-                        [aap seriesnum]=aas_getseriesnumber(aap,dicomseriesname);
+                        seriesnum=aas_getseriesnumber(aap,dicomseriesname);
                     end
                 case 'none'
                     seriesnum=rawdata_allseries(j);
                     dicomfilepath=alldicomfiles{seriesnum}{1};
             end
             
-            
-            
+            % ignoreseries
+            if any(aap.acq_details.subjects(i).ignoreseries{d} == seriesnum), continue; end
             
             % For this series, find type from a single DICOM file
             if (~isempty(dicomfilepath))
@@ -165,9 +165,6 @@ switch task
 
                     if (aap.options.autoidentifyfieldmaps)
                         if (findstr(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_fieldmap))
-                            if (length(series_newfieldmap)>2)
-                                aas_log(aap,1,['Automatic series id failed - more than a pair of Siemens fieldmap acquisition were found.' sprintf('%d\t',series_newfieldmap)]);
-                            end
                             series_newfieldmap=[series_newfieldmap seriesnum];
                         end
                     end
@@ -210,7 +207,7 @@ switch task
         comment=[];
         if (aap.options.autoidentifyfieldmaps)
             aap.acq_details.subjects(i).siemensfieldmap={};
-            if (length(series_newfieldmap)==aap.options.autoidentifyfieldmaps_number)
+            if (length(series_newfieldmap)>=aap.options.autoidentifyfieldmaps_number)
                 comment=[comment ' ' sprintf('gre_fieldmapping found %d',series_newfieldmap(1))];
                 % Generalisation of fieldmap number...
                 for n = 2:aap.options.autoidentifyfieldmaps_number

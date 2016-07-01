@@ -1,4 +1,4 @@
-function [aap seriesnum]=aas_getseriesnumber(aap,fn)
+function seriesnum=aas_getseriesnumber(aap,fn)
 
 format = strrep(regexprep(aap.directory_conventions.seriesoutputformat,'%.*d','[0-9]*'),'**','*');
 
