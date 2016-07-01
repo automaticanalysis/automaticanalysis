@@ -1,4 +1,4 @@
-function jp_spm8_surfacerender(img, cmap, cfg)
+function surfacerender(img, cmap, cfg)
 %JP_SPM8_SURFACERENDER render some data on cortical surfaces.
 %
 % JP_SPM8_SURFACERENDER(IMG) renders the data from IMG onto surfaces. If

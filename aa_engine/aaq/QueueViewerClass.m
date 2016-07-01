@@ -240,7 +240,7 @@ classdef QueueViewerClass < handle
         
         function KillAll(obj)
             for j = 1:numel(obj.Pool.Jobs)
-                obj.Pool.Jobs(1).delete;
+                obj.Pool.Jobs(j).cancel;
             end
         end
         
