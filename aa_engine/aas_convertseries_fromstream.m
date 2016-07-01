@@ -90,6 +90,7 @@ for subdirind=1:length(subdirs)
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
             infoD = tmp{1};
+            headerFields = fieldnames(infoD);
                 
             if k == 1
                 chunksize_volumes=memLimit*1024/(infoD.StartOfPixelData+infoD.SizeOfPixelData)/4;
@@ -150,7 +151,7 @@ for subdirind=1:length(subdirs)
                 end
                 if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'BandwidthPerPixelPhaseEncode')
                     pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
-                    echospacing = 1/(pBWpe * infoD.NumberOfPhaseEncodingSteps); % in s
+                    echospacing = 1/(pBWpe * infoD.(headerFields{strcmpi(headerFields,'NumberOfPhaseEncodingSteps')})); % in s
                 end
                 
                 % Try to get sliceorder from other fields...
