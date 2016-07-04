@@ -235,9 +235,16 @@ switch task
             end
             dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
             % Render
-            if numel(Z)  < 2 % Render fails with only one active voxel
+            if numel(Z)  < 2 % render fails with only one active voxel
                 Z = horzcat(Z,Z);
                 XYZ = horzcat(XYZ,XYZ);
+            end
+            % render fails with single first slice 
+            for a = 1:3
+                if all(XYZ(a,:)==1)
+                    Z = horzcat(Z,Z(end));
+                    XYZ = horzcat(XYZ,XYZ(:,end)+circshift([1;0;0],a-1));
+                end
             end
             dat.XYZ = XYZ;
             dat.t = Z';

@@ -1,10 +1,11 @@
 % FORMAT aa_export_toBIDS([aap,] dest)
 % TODO: 
 %   - diffusion
-%   - multisession
-%   - multirun
+%   - multi-session
+%   - multi-run
 %   - covariates
 %   - parametric
+%   - multi-model
 
 function aa_export_toBIDS(varargin)
 
@@ -87,7 +88,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             end
             
             % events
-            models = aap.tasksettings.aamod_firstlevel_model.model(2:end);
+            models = aap.tasksettings.aamod_firstlevel_model(1).model(2:end);
             events = models((strcmp({models.subject},aas_getsubjname(aap,subj)) | strcmp({models.subject},'*')) & ...
                 (strcmp({models.session},aap.acq_details.sessions(sess).name) | strcmp({models.session},'*'))).event;
             ord = zeros(2,0);
