@@ -37,7 +37,8 @@ end
 
 % get module name for first-level analysis
 modulenames = fieldnames(aap.tasksettings);
-firstlevel = modulenames{cell_index(modulenames,'firstlevel_model')};
+stagenumModel = cell_index(modulenames,'firstlevel_model');
+if any(stagenumModel), firstlevel = modulenames{stagenumModel}; end
 
 % Correct EV onstets for number of dummies?
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies; 
@@ -79,7 +80,7 @@ for v = 2:size(LIST,1)
         
         session = list_index(LIST{1},head.FMRI1,i+1);
         aap = aas_addsession(aap,session);
-        if exist('refDir','var')
+        if any(stagenumModel) && exist('refDir','var')
 			clear names durations onsets tmod pmod;
             load(fullfile(refDir,['condition_vol_' ID '-' session '.mat']));
             % [MDV] initialise pmod and tmod if they don't exist
