@@ -38,7 +38,7 @@ end
 % get module name for first-level analysis
 modulenames = fieldnames(aap.tasksettings);
 stagenumModel = cell_index(modulenames,'firstlevel_model');
-if any(stagenumModel), firstlevel = modulenames{stagenumModel}; end
+if any(stagenumModel), firstlevel = [modulenames{stagenumModel} '_*']; end
 
 % Correct EV onstets for number of dummies?
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies; 

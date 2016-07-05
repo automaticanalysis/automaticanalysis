@@ -10,7 +10,7 @@
     - [aa_build_standalone](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_build_standalone.m) to generate new functions with actualised pragmas
 
   #### New features for fMRI ####
-  - [aas_processinput](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processinput.m) can process pipeline without modelling
+  - [aas_processinput](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processinput.m) can process pipeline without modelling and pipeline with multiple models
   - new modules:
     - [aamod_split_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_split_epi.xml) for splitting (subset of) a 4D volume (into 3D)
   
