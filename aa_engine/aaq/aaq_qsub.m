@@ -151,7 +151,14 @@ classdef aaq_qsub<aaq
                     end
                     
                     state = Task.State;
-                    if ~isempty(Task.Error), state = 'error'; end
+                    if ~isempty(Task.Error)
+                        switch Task.Error.identifier
+                            case 'parallel:job:UserCancellation'
+                                state = 'cancelled';
+                            otherwise
+                                state = 'error';
+                        end
+                    end
                     
                     switch state
                         case 'failed' % failed to launch
@@ -162,7 +169,15 @@ classdef aaq_qsub<aaq
                             
                             taskreported(end+1) = ftmind;
 
-						case 'finished' % without error
+                        case 'cancelled' % cancelled
+                            msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JobID,...
+                                fullfile(obj.pool.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
+                            % If there is an error, it is fatal...
+                            aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.warning)
+                            
+                            taskreported(end+1) = ftmind;
+                        
+                        case 'finished' % without error
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
                             dtvf = dts2dtv(Task.FinishTime);
@@ -176,6 +191,7 @@ classdef aaq_qsub<aaq
                             fclose(fid);
                             
                             taskreported(end+1) = ftmind;
+                            
                         case 'error' % running error
                             msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JobID,datpath,datname,Task.ErrorMessage);
                             for e = 1:numel(Task.Error.stack)
