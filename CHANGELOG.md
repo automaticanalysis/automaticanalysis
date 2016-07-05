@@ -1,6 +1,7 @@
 ## 5.3.0 ##
 
 #### New general features ####
+  - [aas_processBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processBIDS.m) generates subject names without "subj-"
   - [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsub.m) and [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) are based on the same setting `aap.directory_conventions.poolprofile` which refers to a more standard profile rather than to a custom function
   - `ignoreseries` is implemented
   - improved compatibility with SPM8

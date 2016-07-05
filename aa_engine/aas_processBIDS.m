@@ -111,6 +111,7 @@ if BIDSsettings.combinemultiple
 else
     subjname = strrep(mriname,'/','_');
 end
+aasubjname = strrep(subjname,'sub-','');
 
 structuralimages = {};
 functionalimages = {};
@@ -151,7 +152,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     isess = strcmp(aasessnames,sessname);
                     diffusionimages{isess} = struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname);
                 else
-                    aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjname,sessfname))
+                    aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',aasubjname,sessfname))
                 end
             end
         case fieldmapDIR
@@ -223,14 +224,14 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     end
                     
                     if ~TR
-                        aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjname,taskname))
+                        aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',aasubjname,taskname))
                         aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
                     end
                     
                     % Search for event file
                     eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); % default: next to the image
                     if isempty(eventfname)
-                        aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
+                        aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',aasubjname,taskname));
                     else
                         EVENTS = tsvread(eventfname);
                         iName = cell_index(EVENTS(1,:),'trial_type');
@@ -244,7 +245,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                         end
                         for m = iModel
                             for e = 1:numel(names)
-                                aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                                aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),aasubjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
                             end
                         end
                     end
@@ -255,7 +256,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
     end
 end
 if toAddData
-    aap = aas_addsubject(aap,subjname,mriname,...
+    aap = aas_addsubject(aap,aasubjname,mriname,...
         'structural',structuralimages,...
         'functional',functionalimages,...
         'fieldmaps',fieldmapimages,...
@@ -314,6 +315,8 @@ if ~isempty(hdrfname)
         taskname = strcat(taskname{:});
         if ~isempty(strfind(basename(sesspath),'ses-'))
             sesstr = ['_' strrep(basename(sesspath),'ses-','')];
+        else
+            sesstr = '';
         end
         if BIDSsettings.combinemultiple            
             taskname = [taskname,sesstr];
