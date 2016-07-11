@@ -7,6 +7,8 @@
 %       - "sameforallsessions" -> vector contains contrast to be applied to all sessions (within-subject contrast)
 %       - "singlesession:<session name>" -> vector contains contrast for just one session
 %       - "sessions:<session name>[+<session name>[...]]" -> vector contains contrast for some sessions
+%       - "sessions:<weight>x<session name>[|<weight>x<session name>[...]]" -> vector contains contrast for some (differently) weighted sessions
+%           N.B.: You have to use session names with UPPERCASE letters only!
 %       - "uniquebysession" -> within-subject contrast that separately specifies contrast for every session
 %   - vector: contrast
 %       - vector containing the weights for each regressor (of interest)
@@ -69,15 +71,27 @@ end;
 [format, rem]=strtok(format,':');
 switch format
     case {'singlesession','sessions'}
-        session = textscan(strtok(rem,':'),'%s','delimiter','+'); session = session{1};
+        sessstr = strtok(rem,':');
+        if any(sessstr == '|') % weighted
+            aas_log(aap,false,'WARNING: You specified weights for sessions.');
+            aas_log(aap,false,'    Make sure that you use session names with UPPERCASE letters only!',aap.gui_controls.colours.warning);
+            cs = textscan(sessstr,'%fx%s','Delimiter','|');
+            session.names = cs{2};
+            session.weights = cs{1};
+        else % simple
+            cs = textscan(strtok(rem,':'),'%s','delimiter','+'); 
+            session.names = cs{1};
+            session.weights = ones(1,numel(session.names));
+        end
     otherwise
-        session=[];
+        session.names=[];
+        session.weights = [];
 end
 
 % warning
 if ischar(vector)
     aas_log(aap,false,'WARNING: You specified the contrast with regressor names.');
-    aas_log(aap,false,'    Make sure that you use regressor names with UPPERCASE letters only!');
+    aas_log(aap,false,'    Make sure that you use regressor names with UPPERCASE letters only!',aap.gui_controls.colours.warning);
 end
 
 if ~iscell(subjname), subjname = {subjname}; end
@@ -88,7 +102,7 @@ end
 for subj = 1:numel(subjname)
     % check if (any of) the session(s) of the subject exist
     if ~strcmp(format,'uniquebysession')
-        sessnames = session;
+        sessnames = session.names;
         if isempty(sessnames), sessnames = {aap.acq_details.sessions.name}; end % sameforallsessions
         havesess = true(1,numel(sessnames));
         for s = 1:numel(sessnames)

@@ -137,8 +137,15 @@ switch task
                             % [AVG] To make the selected sessions work...
                             sessforcon(selected_sessions) = 1;
                         else
-                            [junk, indsess] = intersect(sessnames,contrasts.con(conind).session);
-                            sessforcon(indsess) = 1;
+                            sessions = contrasts.con(conind).session;
+                            if isstruct(sessions)
+                                sessweights = sessions.weights;
+                                sessions = sessions.names;                                
+                            else
+                                sessweights = ones(1,numel(sessions));
+                            end
+                            [junk, indsess] = intersect(sessnames,sessions);
+                            sessforcon(indsess) = sessweights;
                         end
                         
                         convec=[];
@@ -151,9 +158,9 @@ switch task
                                     if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
                                         aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); 
                                     elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess) % padding if shorter
-                                        convec = [convec contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
+                                        convec = [convec sessforcon(sess)*contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
                                     else
-                                        convec = [convec contrasts.con(conind).vector];
+                                        convec = [convec sessforcon(sess)*contrasts.con(conind).vector];
                                     end
                                 elseif ischar(contrasts.con(conind).vector) % contrast string
                                     convec = [convec zeros(size(contrasts.con(conind).vector,1), numcolsinthissess)];
@@ -172,7 +179,7 @@ switch task
                                                     EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),deblank(cs{2}{e}));
                                             end
                                             ind = cell_index(SPM.xX.name,EVpttrn);
-                                            convec(cr,ind(cs{4}(e))) = cs{1}(e);
+                                            convec(cr,ind(cs{4}(e))) = sessforcon(sess)*cs{1}(e);
                                         end
                                     end
                                 else
