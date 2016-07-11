@@ -1,20 +1,20 @@
 % This module finds all of the DICOM files associated with the given 
 % specialsession using aas_listdicomfiles and the name of the special
 % session, and copies them into the special session directory of this
-% module, either across the local filesystem or from s3. Suffixes (i.e. 
-% substring after "_") will be treated as subsessions (similarly to the two
-% subsessions of the fieldmap) and copied into subfolders. E.g.:
+% module, either across the local filesystem or from s3. In case of 
+% multiple series specified for the same sessions, subfolders 'serie01',
+% 'serie02', etc. will be created and images will be copied in the order
+% as they were specified. E.g.:
 %
-%   aap.tasklist.currenttask.outputstreams.stream = {'MT'}
-%   aap.acq_details.special_sessions.name = {'MT_baseline' 'MT_MT'}
-%   aap.acq_details.subjects.specialseries = [14 15]
+%   aap.tasklist.currenttask.outputstreams.stream = {'dicom_MTI'}
+%   aap.acq_details.special_sessions(1).name = 'MTI';
+%   aap.acq_details.subjects(1).specialseries{1}{1} = [14 15]
 %
-%   Series 14 and 15 will go to subjpath/MT/baseline and subjpath/MT/MT,
-%   respectively.
+%   Series 14 and 15 will go to subjpath/MTI/serie01 and 
+%   subjpath/MTI/serie02, respectively.
 %
-% It then creates the output stream based on the name of the outputstream
-% containing all the subsessions in the order as given in the 
-% special_sessions.name.
+% It then creates the output stream 'dicom_MTI' containing all the 
+% subsessions in the order as given in the specialseries.
 
 function [aap resp]=aamod_get_dicom_specialseries(aap,task,subj,sess)
 global aaworker

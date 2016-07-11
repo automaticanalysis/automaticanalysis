@@ -17,15 +17,16 @@ switch task
             fnSPM = deblank(fnSPMs(flc,:));
             loaded=load(fnSPM);
             SPM=loaded.SPM;
+            flcname = spm_file(spm_file(fnSPM,'path'),'basename');
             
             for C = 1:numel(SPM.xCon)
-                aap = aas_report_add(aap,[],sprintf('<h4>%02d. %s</h4>',C,SPM.xCon(C).name));
+                aap = aas_report_add(aap,[],sprintf('<h4>%s: %02d. %s</h4>',flcname,C,SPM.xCon(C).name));
                 f{1} = fullfile(aas_getstudypath(aap),...
-                    sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_overlay_0.jpg',C,SPM.xCon(C).name));
+                    sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_overlay_0.jpg',flcname,C,SPM.xCon(C).name));
                 if exist(f{1},'file')
                     tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                     f{2} = fullfile(aas_getstudypath(aap),...
-                        sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_render.jpg',C,SPM.xCon(C).name));
+                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcnameC,SPM.xCon(C).name));
                     
                     % Add images to study report
                     aap = aas_report_add(aap,[],'<table><tr>');
@@ -206,7 +207,7 @@ switch task
                     mon = tr_3Dto2D(img_tr(img(:,:,:,1),a==2));
                     mon(:,:,2) = tr_3Dto2D(img_tr(img(:,:,:,2),a==2));
                     mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
-                    fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                    fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_overlay_%d.jpg',spm_file(anadir,'basename'),c,SPM.xCon(c).name,a));
                     imwrite(mon,deblank(fnsl(a+1,:)));
                 end
                 dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
@@ -221,7 +222,7 @@ switch task
                 dat.dim = dim;
                 rendfile  = aap.directory_conventions.Render;
                 if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-                fn3d = fullfile(localroot,sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
+                fn3d = fullfile(localroot,sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',spm_file(anadir,'basename'),c,SPM.xCon(c).name));
                 global prevrend
                 prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
                 out = spm_render(dat,0.5,rendfile); spm_figure('Close','Graphics');

@@ -105,7 +105,7 @@ classdef aaq_matlab_pct<aaq
                 end
                 P.NumWorkers = obj.aaparallel.numberofworkers;
                 P.JobStorageLocation = obj.aaworker.parmpath;
-                C = aas_matlabpool(P);
+                C = aas_matlabpool(P,P.NumWorkers);
                 if ~isempty(C), C.IdleTimeout = obj.aaparallel.walltime*60; end
                 obj.toHandlePool = true;                
             end
