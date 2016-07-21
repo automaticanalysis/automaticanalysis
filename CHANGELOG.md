@@ -2,6 +2,7 @@
 
 #### New general features ####
   - [aas_processBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processBIDS.m) generates subject names without "subj-"
+  - [aas_processBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processBIDS.m) and [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_export_toBIDS.m) supports T2-weighted and diffusion data
   - [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsub.m) and [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) are based on the same setting `aap.directory_conventions.poolprofile` which refers to a more standard profile rather than to a custom function
   - module domain and modality is changed dynamically according to the input
   - processing ASL data
@@ -13,6 +14,13 @@
   - [aamod_math](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_math.xml) supports
     - series of operations
     - arithmetic operations (+,-,*,/)
+  
+  #### New features for structural ####
+  - [aamod_convert_structural](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_convert_structural.xml) supports averaging
+  - [aamod_structuralfromnifti](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_structuralfromnifti.xml)
+    - handles multiple images (+averaging)
+	- handles multiple modalities (T1, T2)
+	- saves header (BIDS)
   
   #### New features for Diffusion ####
   - [aamod_convert_diffusion](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_convert_diffusion.xml) outputs DICOM header
