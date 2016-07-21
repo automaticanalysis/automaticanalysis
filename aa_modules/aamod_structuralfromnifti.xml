@@ -11,12 +11,16 @@
             <permanenceofoutput>1</permanenceofoutput>
             
             <rejectimages></rejectimages>
+            <sfxformodality desc='Colon separated substrings to look for in the filename. The order of the substrings corresponds to the order of streams'>T1w:T2w</sfxformodality>
             
             <inputstreams>
             </inputstreams>
             
             <outputstreams>
-                <stream>structural</stream>
+                <stream isessential='0'>structural</stream>
+                <stream isessential='0'>structural_dicom_header</stream>
+                <stream isessential='0'>t2</stream>
+                <stream isessential='0'>t2_dicom_header</stream>
             </outputstreams>
             
         </currenttask>
