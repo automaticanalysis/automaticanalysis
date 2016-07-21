@@ -25,23 +25,19 @@ else
         case 1
             streamDomain = 'subject';
         case 2
-            if isfield(aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE,'modality')
-                switch aap.schema.tasksettings.(strtok_ptrn(aap.tasklist.currenttask.name,'_0'))(aap.tasklist.currenttask.index).ATTRIBUTE.modality
-                    case 'MRI'
-                        streamDomain = 'session';
-                        % for backwad compatibilty
-                        if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
-                            streamDomain = 'diffusion_session';
-                        end
-                    case 'DWI'
+            switch aas_getmodality(aap)
+                case 'FMRI'
+                    streamDomain = 'session';
+                    % for backwad compatibilty
+                    if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
                         streamDomain = 'diffusion_session';
-                    case 'MTI'
-                        streamDomain = 'special_session';
-                    case 'MEG'
-                        streamDomain = 'meg_session';
-                end
-            else
-                streamDomain = 'session';
+                    end
+                case 'DWI'
+                    streamDomain = 'diffusion_session';
+                case {'MTI' 'ASL'}
+                    streamDomain = 'special_session';
+                case 'MEG'
+                    streamDomain = 'meg_session';
             end
             varargin = {streamDomain reqestedIndices varargin{cellfun(@(x) ischar(x), varargin)}};
         otherwise

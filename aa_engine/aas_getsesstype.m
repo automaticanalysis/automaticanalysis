@@ -7,7 +7,7 @@ switch aas_getmodality(aap)
         session = 'diffusion_session';
     case {'MEG' 'EEG'}
         session = 'meg_session';
-    case {'MTI'}
+    case {'MTI' 'ASL'}
         session = 'special_session';
 end
 end

@@ -11,6 +11,7 @@ if isempty(modality)
     if strfind(aap.tasklist.currenttask.name,'_epi'), modality = 'FMRI'; end
     if strfind(aap.tasklist.currenttask.name,'_diffusion'), modality = 'DWI'; end
     if strfind(aap.tasklist.currenttask.name,'_MTI'), modality = 'MTI'; end
+    if strfind(aap.tasklist.currenttask.name,'_ASL'), modality = 'ASL'; end
     if strfind(aap.tasklist.currenttask.name,'_meg'), modality = 'MEG'; end
 end
 

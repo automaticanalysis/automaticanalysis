@@ -35,7 +35,7 @@ if ~isempty(varargin) && isnumeric(varargin{1})
             case 'DWI'
                 aap.spm.defaults.modality = 'FMRI';
                 sessions = aap.acq_details.diffusion_sessions;
-            case 'MTI'
+            case {'MTI' 'ASL'}
                 aap.spm.defaults.modality = 'FMRI';
                 sessions = aap.acq_details.special_sessions;
             case 'MEG'
