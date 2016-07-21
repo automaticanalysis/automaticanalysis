@@ -63,7 +63,7 @@ SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 % 1st pass - Add sessions only
 % 2ns pass - Add data
 for p = [false true]
-    for subj = 1:size(SUBJ,1)
+    for subj = 1%:size(SUBJ,1)
         subjID = deblank(SUBJ(subj,:));
         SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
         if isempty(SESS)
@@ -117,19 +117,26 @@ structuralimages = {};
 functionalimages = {};
 fieldmapimages = {};
 diffusionimages = {};
+specialimages = {};
 for cf = cellstr(spm_select('List',sesspath,'dir'))'
     switch cf{1}
         case structDIR
             if ~toAddData, continue; end
-            
-            structuralimages = horzcat(structuralimages,cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_T1w.*.nii.gz'])));
+            for sfx = {'T1w','T2w'};
+                for image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))'
+                    if isempty(image{1}), continue; end
+                    hdrfname = retrieve_file(fullfile(sesspath,structDIR,[subjname '_' sfx{1},'.json']));
+                    structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',hdrfname));
+                end
+            end
         case diffusionDIR
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
                 sessfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '.nii'},{'',''});
                 [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval']));
                 bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec']));
                 if ~isempty(bvalfname) && ~isempty(bvecfname)
-                    sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); sessname(1) = '';
+                    sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); 
+                    if sessname(1) == '_', sessname(1) = ''; end
 
                     if ~isempty(strfind(basename(sesspath),'ses-'))
                         sesstr = ['_' strrep(basename(sesspath),'ses-','')];
@@ -260,7 +267,8 @@ if toAddData
         'structural',structuralimages,...
         'functional',functionalimages,...
         'fieldmaps',fieldmapimages,...
-        'diffusion',diffusionimages); 
+        'diffusion',diffusionimages,...
+        'specialseries',specialimages); 
 end
 end
 

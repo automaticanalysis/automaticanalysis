@@ -1,6 +1,5 @@
-% FORMAT aa_export_toBIDS([aap,] dest)
+% FORMAT aa_export_toBIDS([aap,] dest[, 'anatt1', <anatstage>][, 'anatt2', <anatstage>])
 % TODO: 
-%   - diffusion
 %   - multi-session
 %   - multi-run
 %   - covariates
@@ -12,34 +11,83 @@ function aa_export_toBIDS(varargin)
 if isstruct(varargin{1})
     aap = varargin{1};
     destpath = varargin{2};
+    varargin(1:2) = [];
 else
     loaded = load('aap_parameters');
     aap = loaded.aap;
     destpath = varargin{1};
+    varargin(1) = [];
 end
+args = vargParser(varargin);
 
 % source stages
 stages = {aap.tasklist.main.module.name};
-stage_anat = cell_index(stages,'convert_structural') + cell_index(stages,'structuralfromnifti');
+stage_anatt1 = cell_index(stages,'convert_structural') + cell_index(stages,'structuralfromnifti');
+stage_anatt2 = cell_index(stages,'convert_t2');% + cell_index(stages,'t2fromnifti');
 stage_func = cell_index(stages,'convert_epi') + cell_index(stages,'epifromnifti');
 stage_fmap = cell_index(stages,'convert_fieldmap') + cell_index(stages,'fieldmapfromnifti');
 stage_dwi = cell_index(stages,'convert_diffusion') + cell_index(stages,'diffusionfromnifti');
 
-% data
+% folder
 aas_makedir(aap,destpath);
+
+% participant key file
+fid_part = fopen(fullfile(destpath,'participants.tsv'),'w');
+fprintf(fid_part,'participant_id'); % minimal
+header_part = false; % header completed
+
+% data
 for subj = 1:numel(aap.acq_details.subjects)
+    aas_log(aap,false,['INFO: Exporting subject: ' aas_getsubjname(aap,subj)])
     subjpath = fullfile(destpath,['sub-' aas_getsubjname(aap,subj)]);
     aas_makedir(aap,subjpath);
-    if stage_anat
-        aas_makedir(aap,fullfile(subjpath,'anat')); 
-        aap = aas_setcurrenttask(aap,stage_anat);
-        src = aas_getfiles_bystream(aap,'subject',subj,'structural','output');
+    if stage_anatt1
+        aas_log(aap,false,'\tINFO: Exporting T1 anatomy')
+        aap = aas_setcurrenttask(aap,stage_anatt1);
         aap.options.verbose = -1;
         fhdr = aas_getfiles_bystream(aap,'subject',subj,'structural_dicom_header','output');
         aap.options.verbose = 2;
+        if isfield(args,'anatt1'), aap = aas_setcurrenttask(cell_index(stages,args.anat)); end
+        src = aas_getfiles_bystream(aap,'subject',subj,'structural','output');
         
         % image
+        if isempty(src)
+            aas_log(aap,false,'WARNING: No image is available!')
+            continue;
+        end
+        aas_makedir(aap,fullfile(subjpath,'anat')); 
         dest = fullfile(subjpath,'anat',sprintf('sub-%s_T1w.nii',aas_getsubjname(aap,subj)));
+        copyfile(src,dest); gzip(dest); delete(dest);
+        
+        % header
+        if isempty(fhdr)
+            aas_log(aap,false,'WARNING: No header is available!')
+        else
+            loaded = load(fhdr); hdr = loaded.dcmhdr;
+            json = struct(...
+                'RepetitionTime',hdr.volumeTR,...
+                'EchoTime',hdr.volumeTE,...
+                'FlipAngle',hdr.FlipAngle...
+                );
+            savejson('',json,spm_file(dest,'ext','json'));
+        end
+    end
+    if stage_anatt2
+        aas_log(aap,false,'\tINFO: Exporting T2 anatomy')
+        aap = aas_setcurrenttask(aap,stage_anatt2);
+        aap.options.verbose = -1;
+        fhdr = aas_getfiles_bystream(aap,'subject',subj,'t2_dicom_header','output');
+        aap.options.verbose = 2;
+        if isfield(args,'anatt2'), aap = aas_setcurrenttask(cell_index(stages,args.anat)); end
+        src = aas_getfiles_bystream(aap,'subject',subj,'t2','output');
+        
+        % image
+        if isempty(src)
+            aas_log(aap,false,'WARNING: No image is available!')
+            continue;
+        end
+        aas_makedir(aap,fullfile(subjpath,'anat')); 
+        dest = fullfile(subjpath,'anat',sprintf('sub-%s_T2w.nii',aas_getsubjname(aap,subj)));
         copyfile(src,dest); gzip(dest); delete(dest);
         
         % header
@@ -58,13 +106,18 @@ for subj = 1:numel(aap.acq_details.subjects)
     if stage_func
         sliceaxes = {'ROW',{'x+' 'x-'}; 'COL',{'y+' 'y-'}};
         
-        aas_makedir(aap,fullfile(subjpath,'func')); 
         aap = aas_setcurrenttask(aap,stage_func);
         for sess = 1:numel(aap.acq_details.sessions)
+            aas_log(aap,false,['\tINFO: Exporting fMRI session: ' aas_getsessname(aap,sess)])
             src = aas_getfiles_bystream(aap,'session',[subj sess],'epi','output');
             fhdr = aas_getfiles_bystream(aap,'session',[subj sess],'epi_dicom_header','output');
             
             % image
+            if isempty(src)
+                aas_log(aap,false,'WARNING: No image is available!')
+                continue;
+            end
+            aas_makedir(aap,fullfile(subjpath,'func')); 
             dest = fullfile(subjpath,'func',sprintf('sub-%s_task-%s_bold.nii',aas_getsubjname(aap,subj),aap.acq_details.sessions(sess).name));
             copyfile(src,dest); gzip(dest); delete(dest);
             
@@ -110,15 +163,20 @@ for subj = 1:numel(aap.acq_details.subjects)
     if stage_fmap
         fmsuffix = {'magnitude1' 'magnitude2' 'phasediff' };
         
-        aas_makedir(aap,fullfile(subjpath,'fmap')); 
         aap = aas_setcurrenttask(aap,stage_fmap);
         for sess = 1:numel(aap.acq_details.sessions)
+            aas_log(aap,false,['\tINFO: Exporting fieldmap for fMRI session: ' aas_getsessname(aap,sess)])
             fsrc = aas_getfiles_bystream(aap,'session',[subj sess],'fieldmap','output');
             aap.options.verbose = -1;
             fhdr = aas_getfiles_bystream(aap,'session',[subj sess],'fieldmap_dicom_header','output');
             aap.options.verbose = 2;
             
             % image
+            if isempty(fsrc)
+                aas_log(aap,false,'WARNING: No image is available!')
+                continue;
+            end
+            aas_makedir(aap,fullfile(subjpath,'fmap')); 
             for f = 1:size(fsrc,1)
                 src = deblank(fsrc(f,:));
                 dest = fullfile(subjpath,'fmap',sprintf('sub-%s_task-%s_%s.nii',aas_getsubjname(aap,subj),aap.acq_details.sessions(sess).name,fmsuffix{f}));
@@ -143,6 +201,68 @@ for subj = 1:numel(aap.acq_details.subjects)
             end
         end
     end
+    if stage_dwi
+        sliceaxes = {'ROW',{'x+' 'x-'}; 'COL',{'y+' 'y-'}};
+        
+        aap = aas_setcurrenttask(aap,stage_dwi);
+        for sess = 1:numel(aap.acq_details.diffusion_sessions)
+            aas_log(aap,false,['\tINFO: Exporting DWI session: ' aas_getsessname(aap,sess)])
+            src = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_data','output');
+            fhdr = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_dicom_header','output');
+            
+            % image
+            if isempty(src)
+                aas_log(aap,false,'WARNING: No image is available!')
+                continue;
+            end
+            aas_makedir(aap,fullfile(subjpath,'dwi'));
+            dest = fullfile(subjpath,'dwi',sprintf('sub-%s_dwi.nii',aas_getsubjname(aap,subj)));
+            copyfile(src,dest); gzip(dest); delete(dest);
+            
+            % header
+            loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
+            if isempty(fieldnames(hdr))
+                aas_log(aap,false,'WARNING: No header information is available!')
+            else
+                json = struct(...
+                    'RepetitionTime',hdr.volumeTR,...
+                    'EchoTime',hdr.volumeTE,...
+                    'FlipAngle',hdr.FlipAngle,...
+                    'SliceTiming',hdr.slicetimes,...
+                    'EffectiveEchoSpacing',hdr.echospacing,...
+                    'PhaseEncodingDirection',[...
+                    sliceaxes{cell_index(sliceaxes(:,1),deblank(hdr.InPlanePhaseEncodingDirection)),2}{aas_get_numaris4_numval(hdr.CSAImageHeaderInfo,'PhaseEncodingDirectionPositive')+1}...
+                    ]...
+                    );
+                savejson('',json,spm_file(dest,'ext','json'));
+            end
+            
+            % b
+            copyfile(aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'bvals','output'),...
+                spm_file(dest,'ext','bval'));
+            copyfile(aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'bvecs','output'),...
+                spm_file(dest,'ext','bvec'));
+        end        
+    end
+    
+    % participant key file
+    hdr = hdr(1);
+    entry = aas_getsubjname(aap,subj);
+    
+    if isfield(hdr,'PatientAge')
+        if ~header_part, fprintf(fid_part,'\tage'); end
+        out = textscan(hdr.PatientAge,'%03d%c'); [age, age_measure] = out{:};
+        entry = sprintf('%s\t%d',entry,age);
+    end
+    if isfield(hdr,'PatientSex')
+        if ~header_part, fprintf(fid_part,'\tsex'); end
+        entry = sprintf('%s\t%c',entry,hdr.PatientSex);
+    end
+    
+    if ~header_part, fprintf(fid_part,'\n'); header_part = true; end
+    fprintf(fid_part,'%s\n',entry);
 end
+
+fclose(fid_part);
 
 end
