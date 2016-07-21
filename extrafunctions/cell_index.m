@@ -6,43 +6,15 @@
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
 function r = cell_index(varargin)
-i = sub(varargin{:});
-r = [];
-while true
-    r(end+1) = i;
-    if i == numel(varargin{1}), break, end
-    varargin{3} = i + 1;
-    i = sub(varargin{:});    
-    if ~i, break, end
-end
-end
-    
-function i = sub(varargin)
-lines = varargin{1};
-str = varargin{2};
-if (nargin < 3) || isempty(varargin{3})
-    nl = 1;
+nl = 1;
+varargin{1}(cellfun(@(x) ~ischar(x), varargin{1})) = {''}; % ingore nonchar elements
+
+if (nargin >= 3) && ~isempty(varargin{3}), nl = varargin{3}; end
+if (nargin >= 4)
+    r = find(cellfun(@(x) ~isempty(x) && (x == varargin{4}),strfind(varargin{1}(nl:end),varargin{2})));
 else
-    nl = varargin{3};
+    r = find(cellfun(@(x) ~isempty(x),strfind(varargin{1}(nl:end),varargin{2})));
 end
-
-sample = [];
-
-for i = nl:numel(lines)
-    sample = lines{i};
-    if iscell(sample) || (size(sample,1) > 1)
-        sample = [];
-        continue; 
-    end
-    if size(sample,1) > size(sample,2), sample = sample';  end
-    if ~ischar(sample), sample = num2str(sample); end
-
-    sample = strfind(sample,str);
-    if ~isempty(sample) && ((nargin < 4) || ((nargin > 3) && any(sample == varargin{4})))
-        break;
-    end
-end
-if isempty(sample)
-    i = 0;
-end
+if ~isempty(r), r = r(1);
+else r = 0; end
 end

@@ -87,7 +87,8 @@ fields(strcmp(fields,'subjname')) = [];
 
 % search for existing subject
 if isfield(args,'name'), name = args.name; end
-if ~isempty(name) % name specified --> check whether subject already exists
+if ~isempty(name) && ~isempty(aap.acq_details.subjects(1).subjname)
+% name specified --> check whether subject already exists (only if there is at least one already)    
     subjserach = cell_index({aap.acq_details.subjects.subjname},name);
     if subjserach
         subjind = subjserach; 
