@@ -3,16 +3,32 @@
 #### New general features ####
   - [aas_processBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processBIDS.m) generates subject names without "subj-"
   - [aaq_qsub](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_qsub.m) and [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) are based on the same setting `aap.directory_conventions.poolprofile` which refers to a more standard profile rather than to a custom function
+  - module domain and modality is changed dynamically according to the input
+  - processing ASL data
   - `ignoreseries` is implemented
   - improved compatibility with SPM8
   - stand-alone:
     - pragmas added to support building stand-alone version
     - [aa_build_standalone](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_build_standalone.m) to generate new functions with actualised pragmas
-
+  - [aamod_math](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_math.xml) supports
+    - series of operations
+    - arithmetic operations (+,-,*,/)
+  
+  #### New features for Diffusion ####
+  - [aamod_convert_diffusion](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_convert_diffusion.xml) outputs DICOM header
+  
   #### New features for fMRI ####
   - [aas_processinput](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processinput.m) can process pipeline without modelling and pipeline with multiple models
+  - sessions can be contrasted on first-level
   - new modules:
     - [aamod_split_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_split_epi.xml) for splitting (subset of) a 4D volume (into 3D)
+
+  #### Bugfixes ####
+  - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) can launch arbitrary number of workers 
+  - handling multiple structurals (e.g. ME-FLASH)
+  - [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_threshold.xml):
+	- default threshold is set to p = 0.05 FWE-corrected
+    - output for each first-level contrasts
   
 ## 5.2.0 ##
 
