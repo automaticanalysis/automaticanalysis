@@ -25,9 +25,17 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
 end
 
 global aacache
-aacache.bcp_path = path;
+% Set UTC time function
+if exist('utc_time','file')
+    aacache.utc_time = @utc_time;
+else
+    aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
+    aacache.utc_time = @java.lang.System.currentTimeMillis;
+end
 
 %% Set Paths
+aacache.bcp_path = path;
+aacache.bcp_shellpath = getenv('PATH');
 % Path for SPM
 if isempty(aap.directory_conventions.spmdir)
     if isempty(which('spm'))
@@ -122,6 +130,11 @@ else
     end;
 end
 
+% Path to DCMTK
+if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
+    setenv('PATH',[aacache.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+end
+
 % Path to spm modifications to the top
 addpath(fullfile(aa.Path,'extrafunctions','spm_mods'),'-begin');
 
@@ -185,3 +198,4 @@ if exc, reqpath(exc) = []; end
 aacache.reqpath = reqpath;
 % switch off warnings
 aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
+aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');

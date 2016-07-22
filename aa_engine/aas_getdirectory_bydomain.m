@@ -18,21 +18,15 @@ switch (domain)
     case 'diffusion_session_probtrackx'
         directory=sprintf('probtrackx_%d',index);
 
-    case 'session'
-        directory=aap.acq_details.sessions(index).name;
+    case {'session' 'diffusion_session' 'special_session' 'meg_session'}
+        directory=aap.acq_details.([domain 's'])(index).name;
         
     case 'isc_session'
         directory = ['isc_' aap.acq_details.sessions(index).name];
 
     case 'scan'
         directory=sprintf('scan_%d',index);
-    
-    case 'meg_session'
-        directory=aap.acq_details.meg_sessions(index).name;
-        
-    case 'diffusion_session'
-        directory=aap.acq_details.diffusion_sessions(index).name;
-
+   
     case 'diffusion_session_bedpostx'
         directory=[aap.acq_details.diffusion_sessions(index).name '.bedpostX'];
         

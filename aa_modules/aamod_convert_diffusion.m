@@ -15,7 +15,7 @@ switch task
         
         % Get DICOM filenames from stream and bvals and bvecs from the
         % header
-        [aap niifiles dicomheader subdirs]=aas_convertseries_fromstream(aap,domain,indices,'dicom_diffusion');
+        [aap niifiles DICOMHEADERS subdirs]=aas_convertseries_fromstream(aap,domain,indices,'dicom_diffusion');
         
         % Now move dummy scans to dummy_scans directory
         
@@ -42,7 +42,7 @@ switch task
             end
         end
         niifiles = {niifiles{ndummies+1:end}};
-        dicomheader = {dicomheader{ndummies+1:end}};
+        DICOMHEADERS = {DICOMHEADERS{ndummies+1:end}};
         % 4D conversion [TA]
         for fileind=1:numel(niifiles)
             V(fileind)=spm_vol(niifiles{fileind});
@@ -59,19 +59,19 @@ switch task
         y_flipper = diag([1 -1 1]);
         
         % Get voxel to dicom rotation matrix
-        orient           = reshape(dicomheader{1}.ImageOrientationPatient,[3 2]);
+        orient           = reshape(DICOMHEADERS{1}.ImageOrientationPatient,[3 2]);
         orient(:,3)      = null(orient');
         if det(orient)<0, orient(:,3) = -orient(:,3); end;
         vox_to_dicom = orient;
         vox_to_dicom = vox_to_dicom * y_flipper;
         
-        n_hdrs = numel(dicomheader);
+        n_hdrs = numel(DICOMHEADERS);
         bvals = zeros(n_hdrs, 1);
         bvecs = zeros(n_hdrs, 3);
 
         for h = 1:n_hdrs
             % Read B_matrix info
-            bm = aas_get_numaris4_numval(dicomheader{h}.CSAImageHeaderInfo,'B_matrix')';
+            bm = aas_get_numaris4_numval(DICOMHEADERS{h}.CSAImageHeaderInfo,'B_matrix')';
             % If no B_matrix, this is 0 B value
             if isempty(bm)
                 continue
@@ -119,6 +119,9 @@ switch task
         % Describe outputs
         aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         aap=aas_desc_outputs(aap,domain,indices,'diffusion_data',niifiles);
+        dcmhdrfn = fullfile(domainpath,'dicom_headers.mat');
+        save(dcmhdrfn,'DICOMHEADERS');
+        aap=aas_desc_outputs(aap,domain,indices,'diffusion_dicom_header',dcmhdrfn);
         aap=aas_desc_outputs(aap,domain,indices,'bvals',bvals_fn);
         aap=aas_desc_outputs(aap,domain,indices,'bvecs',bvecs_fn);    
        

@@ -18,6 +18,7 @@
             
             <outputstreams>
                 <stream>diffusion_data</stream>
+                <stream>diffusion_dicom_header</stream>
                 <stream>bvals</stream>
                 <stream>bvecs</stream>
             </outputstreams>

@@ -25,7 +25,7 @@ switch task
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('\tWARNING: Several structurals found, considering: %s\n', Simg)
+            aas_log(aap,false,sprintf('\tWARNING: Several structurals found, considering: %s', Simg))
         end
         
         [pth nme ext]=fileparts(Simg);
@@ -34,18 +34,18 @@ switch task
         
         if aap.tasklist.currenttask.settings.robust
             % Run BET [-R Using robust setting to improve performance!]
-            fprintf('1st BET pass (recursive) to find optimal centre of gravity and radius\n')
+            aas_log(aap,false,'1st BET pass (recursive) to find optimal centre of gravity and radius')
             [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('bet %s %s -f %f -v -R',Simg,outStruct, ...
                 aap.tasklist.currenttask.settings.bet_f_parameter));
         else
-            fprintf('1st BET pass\n')
+            aas_log(aap,false,'1st BET pass')
             [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('bet %s %s -f %f -v ',Simg,outStruct, ...
                 aap.tasklist.currenttask.settings.bet_f_parameter));
         end
         
-        fprintf('Bet output: %s\n',w);
+        aas_log(aap,false,sprintf('Bet output: %s',w));
         
         % This outputs last radius from recursive command...
         indxS = strfind(w, 'radius');
@@ -62,11 +62,11 @@ switch task
         [subY_x subY_y subY_z] = ind2sub(size(Y), indY);
         COG = [mean(subY_x), mean(subY_y), mean(subY_z)];
         
-        fprintf('\t...calculated c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s\n', ...
-            COG(1), COG(2), COG(3), SRad)
+        aas_log(aap,false,sprintf('\t...calculated c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s', ...
+            COG(1), COG(2), COG(3), SRad))
         
         if aap.tasklist.currenttask.settings.masks
-            fprintf('2nd BET pass extracting brain masks \n')
+            aas_log(aap,false,'2nd BET pass extracting brain masks')
             % Run BET [-A Now let's get the brain masks and meshes!!]
             [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('bet %s %s -f %f -c %0.4f %0.4f %0.4f -r %s -v -A',Simg,outStruct, ...
@@ -88,8 +88,8 @@ switch task
             [subY_x subY_y subY_z] = ind2sub(size(Y), indY);
             COG = [mean(subY_x), mean(subY_y), mean(subY_z)];
             
-            fprintf('\t...final c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s\n', ...
-                COG(1), COG(2), COG(3), SRad)
+            aas_log(aap,false,sprintf('\t...final c-o-g (vox): %0.4f %0.4f %0.4f  and radius (mm): %s', ...
+                COG(1), COG(2), COG(3), SRad))
         end
         
         % BRAIN MASK (slightly different from inskull)

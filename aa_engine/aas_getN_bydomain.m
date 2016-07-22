@@ -23,12 +23,18 @@ switch (domain)
         N=aap.options.searchlight.Npackage;
         I=1:N;
         
-    case {'session','meg_session','isc_session'}
+    case {'session','meg_session','isc_session','diffusion_session','diffusion_session_bedpostx','special_session'}
         
         switch domain
             case {'session','isc_session'}
                 sessions = aap.acq_details.sessions;
                 if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).seriesnumbers{:}); end
+            case {'diffusion_session', 'diffusion_session_bedpostx'}
+                sessions = aap.acq_details.diffusion_sessions;
+                if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).diffusion_seriesnumbers{:}); end
+            case 'special_session'
+                sessions = aap.acq_details.special_sessions;
+                if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).specialseries{:}); end
             case 'meg_session'
                 sessions = aap.acq_details.meg_sessions;
                 if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).megseriesnumbers{:}); end
@@ -39,7 +45,7 @@ switch (domain)
             I = 1 : N;
         else
             if iscell(seriesnumbers)
-                N = cellfun(@(x) ~isempty(x), seriesnumbers);
+                N = cellfun(@(x) ~isempty(x) && (isstruct(x) || iscell(x) || any(x)), seriesnumbers);
                 I = find(N);
                 N = sum(N);
             else
@@ -58,13 +64,6 @@ switch (domain)
         
     case 'study'
         N=1;
-        I=1:N;
-        
-    case {'diffusion_session', 'diffusion_session_bedpostx'}
-        N=length(aap.acq_details.diffusion_sessions);
-        if isempty(aap.acq_details.diffusion_sessions(1).name)
-            N=N-1;
-        end
         I=1:N;
         
     case 'diffusion_session_probtrackx'

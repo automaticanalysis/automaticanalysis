@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Estimate grand mean across subjects' modality='MEG'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>2</memoryBase>
+            </qsub>
+            
+            <weighted desc='Average weighted by number of replications in inputs' ui='yesno'>0</weighted>
+            
+            <outfile>grand_mean</outfile>
+            
+            <inputstreams>
+                <stream>meg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>meg_grandmean</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

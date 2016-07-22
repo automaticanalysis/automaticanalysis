@@ -51,8 +51,8 @@ switch task
                     outstream = strvcat(outstream, V{a}.fname); % Save to stream...
                     spm_write_vol(V{a}, Y{a});
                     
-                    fprintf('Zero thresholded image %s sums up to %d vox\n', ...
-                        V{a}.fname, sum(Y{a}(:)))
+                    aas_log(aap,false,sprintf('Zero thresholded image %s sums up to %d vox', ...
+                        V{a}.fname, sum(Y{a}(:))))
                 end                
             case 'exclusive'
                 %% C) Exclusive thresholding of masks:
@@ -68,8 +68,8 @@ switch task
                     outstream = strvcat(outstream, V{a}.fname); % Save to stream...
                     spm_write_vol(V{a}, Y{a});
                     
-                    fprintf('Exclusive thresholded image %s sums up to %d vox\n', ...
-                        V{a}.fname, sum(Y{a}(:)))
+                    aas_log(aap,false,sprintf('Exclusive thresholded image %s sums up to %d vox', ...
+                        V{a}.fname, sum(Y{a}(:))))
                 end
             otherwise
                 %% B) Specific thresholding of each mask
@@ -82,11 +82,10 @@ switch task
                     outstream = strvcat(outstream, V{a}.fname); % Save to stream...
                     spm_write_vol(V{a}, Y{a});
                     
-                    fprintf('Strict thresholded image %s sums up to %d vox\n', ...
-                        V{a}.fname, sum(Y{a}(:)))
+                    aas_log(aap,false,sprintf('Strict thresholded image %s sums up to %d vox', ...
+                        V{a}.fname, sum(Y{a}(:))))
                 end                       
         end
-        fprintf('\n') 
         
         %% DIFFERENT STREAMS FOR DIFFERENT
         aap = aas_desc_outputs(aap,subj,'segmasks',outstream);

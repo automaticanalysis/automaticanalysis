@@ -42,9 +42,9 @@
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
             <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <qsubscheduler desc='MATLAB function to set up qsub scheduler (should be in your MATLAB path)' ui='dir'>cbu_scheduler</qsubscheduler>
-            <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>cbupool</poolprofile>
+            <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>CBU_Cluster</poolprofile>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            

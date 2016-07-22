@@ -96,7 +96,7 @@ switch task
                     
                 case 'onsets'
                     
-                    warning('GDmode ''onsets'' has not yet been tested extensively.  You might be better off trying GDmode = SPMdesign');
+                    aas_log(aap,false,'WARNING: GDmode ''onsets'' has not yet been tested extensively.  You might be better off trying GDmode = SPMdesign');
                     
                     hrfmodel = 'assume';
                     hrfknobs = [];

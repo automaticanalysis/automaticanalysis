@@ -8,8 +8,7 @@
 % This differs from the behaviour of aas_getstudypath and derivations,
 %  which default to local filesystem
 
-function [doneflag doneflagpath stagetag]=aas_doneflag_getpath(aap,varargin)
-global aaworker
+function [doneflag, doneflagpath, stagetag]=aas_doneflag_getpath(aap,varargin)
 
 % last parameter is always the stage number
 stage=varargin{end};
@@ -38,5 +37,3 @@ switch (length(v))
 end;
 
 doneflag=fullfile(doneflagpath,doneflagname);
-
-% fprintf('Done flag %s\n',doneflag);

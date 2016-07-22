@@ -145,7 +145,7 @@ void mexFunction(int nlhs, mxArray *plhs[], int nrhs, const mxArray *prhs[])
   if (n!=1)
   {
     free_maps(map_mask, n);
-    mexErrMsgTxt("Only single file as mask allowed.");
+    mexErrMsgTxt("Only one single file as mask allowed.");
   }
 
   maps = get_maps(prhs[0], &n);

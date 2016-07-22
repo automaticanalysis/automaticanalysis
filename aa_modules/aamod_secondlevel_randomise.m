@@ -46,7 +46,7 @@ switch task
             end
         end
         
-        fprintf('Merge data for all subjects\n')
+        aas_log(aap,false,'Merge data for all subjects')
         aapCell = cell(1, size(conFn{1}, 1));
         FSLrandomiseCell = cell(1, size(conFn{1}, 1));
         mergedData = cell(1, size(conFn{1}, 1));
@@ -55,7 +55,7 @@ switch task
         pth = aas_getstudypath(aap);
         
         for n = 1:size(conFn{1}, 1)
-            fprintf('Merging data for contrast %d\n', n)
+            aas_log(aap,false,sprintf('Merging data for contrast %d', n))
             
             mergedData{n} = fullfile(pth, sprintf('dataMerged_%04d.nii', n));
             unmergedData = '';
@@ -84,7 +84,7 @@ switch task
         switch aap.tasklist.currenttask.settings.parallel
             case {'none', 'serial'}
                 for n = 1:length(conFn{1})
-                    fprintf('Running randomise on contrast %d\n', n)
+                    aas_log(aap,false,sprintf('Running randomise on contrast %d', n))
                     
                     [s, w] = aas_runfslcommand(aap, FSLrandomise{n});
                 end
@@ -102,7 +102,7 @@ switch task
                     );
         end
         
-        fprintf('Clean up merged data\n')
+        aas_log(aap,false,'Clean up merged data')
         for n = 1:size(conFn{1}, 1)
             delete(mergedData{n});
             delete(maskData{n});

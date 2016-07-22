@@ -43,9 +43,9 @@ SPMnuisance = SPM.xX.name(SPM.xX.iG);
 errorCols = [];
 
 % Detect common errors...
-fprintf('Columns of interest  \n');
+aas_log([],false,'Columns of interest');
 for n = 1:length(SPMinterest)
-    fprintf([SPMinterest{n}  '\n'])
+    aas_log([],false,SPMinterest{n})
     tmp = SPMinterest{n}(7:end);
     if ~isempty(strfind(tmp, 'Spike')) || ... % Spikes
             ~isempty(strfind('xyzrpj', tmp)) || ... % Movement pars
@@ -53,21 +53,19 @@ for n = 1:length(SPMinterest)
         errorCols = [errorCols SPM.xX.iC(n)];
     end
 end
-fprintf('\n');
-fprintf('Columns of nuisance \n');
+aas_log([],false,'Columns of nuisance');
 for n = 1:length(SPMnuisance)
-    fprintf(['\t' SPMnuisance{n} '\n'])
+    aas_log([],false,['\t' SPMnuisance{n}])
 end
 
 if ~isempty(errorCols)
-   fprintf('\n')
-   fprintf('Problems with columns... \n')
+   aas_log([],false,'Problems with columns...')
    for n = 1:length(errorCols)
-       fprintf(['\t' SPMnames{errorCols(n)}  '\n'])
+       aas_log([],false,['\t' SPMnames{errorCols(n)}])
    end
 end
 if ~isempty(errorCols)
-    error('Error in your model!')
+    aas_log([],true,'Error in your model!')
 end
 
 %% CORRELATION BETWEEN REGRESSORS...
@@ -75,7 +73,7 @@ SPMmodel = SPM.xX.X(:, SPM.xX.iC);
 [sharedVar, h.regs] = corrTCs(SPMmodel, SPMnames(SPM.xX.iC), 1, 0);
 
 %% CORRELATIONS BETWEEN BETAS...
-fprintf('Loading beta images into data structure\n')
+aas_log([],false,'Loading beta images into data structure')
 for d = 1:length(SPMcols)
     V = spm_vol(fullfile(pth, D(SPMcols(d)).name));
     Y = spm_read_vols(V);
@@ -92,5 +90,5 @@ for d = 1:length(SPMcols)
     data(:,d) = Y;
 end
 
-fprintf('Correlating voxel-wise betas across regressors\n')
+aas_log([],false,'Correlating voxel-wise betas across regressors')
 [sharedVar, h.betas] = corrTCs(data, SPMnames(SPMcols), 1, 0);

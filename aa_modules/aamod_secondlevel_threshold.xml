@@ -11,8 +11,8 @@
             <permanenceofoutput>3</permanenceofoutput>
 			
 			<threshold>
-				<correction>none</correction> <!-- FWE/FDR/iTT/none -->
-				<p>0.001</p>
+				<correction>FWE</correction> <!-- FWE/FDR/iTT/none -->
+				<p>0.05</p>
 				<extent>0</extent>
 			</threshold>
 			

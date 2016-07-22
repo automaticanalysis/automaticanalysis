@@ -41,7 +41,7 @@ for i = 1:numel(SEARCHPATH)
 end
 
 if ~isFound
-    fprintf('Subject %s* not found',subjpath);
+    aas_log(aap,false,sprintf('Subject %s* not found',subjpath));
     strSubj = '';
     return;
 end
@@ -59,7 +59,7 @@ else % select match
     dind = cell_index(ds,fdate);
     if any(dind), dmatch = ds{dind(1)}; % first match
     else
-        fprintf('Subject %s* not found',subjpath);
+        aas_log(aap,false,sprintf('Subject %s* not found',subjpath));
         strSubj = '';
         return;
     end

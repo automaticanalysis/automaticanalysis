@@ -51,8 +51,8 @@
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
         <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
         <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'></BrainWaveletdir>
+        <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-        <qsubscheduler desc='MATLAB function to set up qsub scheduler (should be in your MATLAB path)' ui='dir'></qsubscheduler>
         <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'></poolprofile>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>
@@ -68,7 +68,8 @@
                     <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
                         <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
                         </diffusion_session_probtrackx>
-                    </diffusion_session_bedpostx>                        
+                    </diffusion_session_bedpostx>
+                    <special_session desc='Special/Undefined acquisition' ui='custom'></special_session>                        
                 </subject>
                 <hyperalignment_searchlight_package desc='A searchlight containing multiple subjects' ui='custom'>
                     <hyperalignment_subject desc='One subject of one searchlight' ui='custom'>                        
@@ -111,7 +112,13 @@
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
 		<garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
+        <aaworkerGUI desc='Show GUI to monitor parallel workers?' ui='yesno'>1</aaworkerGUI>
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
+        <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
+            <numberofworkers desc='Requested number of workers' ui='double'>8</numberofworkers>
+            <memory desc='Requested amount of memory in GB' ui='double'>4</memory>
+            <walltime desc='Maximum amount of time (in hours) to run a job' ui='double'>24</walltime>
+        </aaparallel>
         <qsub desc='Qsub options' ui='none'>
             <memoryMult desc='Memory multiplier for qsub' ui='double'>1</memoryMult>
             <timeMult desc='Time multiplier for qsub' ui='double'>1</timeMult>
@@ -138,12 +145,14 @@
         <usecolouroutput desc='use colour to organise text output written to display' ui='yesno'>1</usecolouroutput>
         <colours>
             <completedpreviously ui='rgb'>1 0 1</completedpreviously>
+            <executing ui='rgb'>0 0.5 0</executing>
             <running ui='rgb'>0.5 0 0.5</running>
             <completed ui='rgb'>0 1 0</completed>
-            <error ui='rgb'>1 0 0</error>
+            <error desc='Fontcolour for errors' ui='rgb'>1 0 0</error>
+            <warning desc='Fontcolour for warning' ui='rgb'>1 0.33 0</warning>
+            <info desc='Fontcolour for information' ui='rgb'>0 0.5 0</info>
             <inputstreams ui='rgb'>0.5 0.5 0.5</inputstreams>
-            <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>
-            <executing ui='rgb'>0 0.5 0</executing>
+            <outputstreams ui='rgb'>0.5 0.5 0.5</outputstreams>            
         </colours>
     </gui_controls>
     

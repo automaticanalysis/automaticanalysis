@@ -5,7 +5,7 @@ function aas_delete_doneflag_bypath(aap,doneflag)
 global aaworker
 switch(aap.directory_conventions.remotefilesystem)
     case 's3'
-        fprintf('Deleting done flag %s\n',doneflag);
+        aas_log(aap,false,sprintf('Deleting done flag %s',doneflag));
         attr=sdb_delete_attributes(aap,aaworker.doneflagtablename,doneflag);
         
     otherwise

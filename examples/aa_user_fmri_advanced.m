@@ -44,8 +44,8 @@ aap.directory_conventions.subject_directory_format = 3;
 
 % Add data
 aap = aas_addsession(aap,'Loc');
-aap = aas_addsubject(aap,'S1',90973,'structural',2,'functional',{7});
-aap = aas_addsubject(aap,'S2',90979,'structural',2,'functional',{7});
+aap = aas_addsubject(aap,'S1',90973,'structural',2,'functional',7);
+aap = aas_addsubject(aap,'S2',90979,'structural',2,'functional',7);
 
 % Add model
 % Obtain TR from the first session

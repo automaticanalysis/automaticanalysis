@@ -44,13 +44,12 @@ switch task
             ROIval   = [];
             
             sourcedomain = aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(i).sourcedomain;
-            switch sourcedomain
-                case 'subject'
-                    procind = 1;
-                    indind = 1;
-                case 'session'
-                    procind = aap.acq_details.selected_sessions;
-                    indind = 1:2;
+            if strcmp(sourcedomain,'subject')
+                procind = 1;
+                indind = 1;
+            elseif ~isempty(strfind(sourcedomain,'session'))
+                procind = aap.acq_details.selected_sessions;
+                indind = 1:2;
             end
             
             for p = procind
@@ -60,9 +59,9 @@ switch task
                     % Load ROI file for subject/session:
                     indices = [subjind procind];
                     ROIfname = aas_getfiles_bystream(aap,sourcedomain,indices(indind),instream);
-                    load(ROIfname);
+                    loaded = load(ROIfname); ROI = loaded.ROI;
                     % Get number of valid voxels in each ROI:
-                    Nv(subjind,:) = [ROI.Nvox_data];
+                    Nv(subjind,:) = [ROI.Nvox];
                     mROI = [ROI.mean];
                     if strcmp(sourcedomain,'session'), mROI = mean(mROI); end
                     Mm(subjind,:) = mROI;

@@ -14,7 +14,9 @@
                 <cost_fun>ecc</cost_fun>
             </eoptions>
             
-            <PVE>0.5</PVE> <!-- binarize controling Partial Volume Effect -->
+            <doReslice>1</doReslice>
+            
+            <PVE desc='Binarization threshold = 0-1' ui='double'>0.5</PVE>
             
             <inputstreams>
                 <stream isessential="0">aamod_realignunwarp_00001.meanepi</stream>  

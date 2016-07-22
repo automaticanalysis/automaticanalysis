@@ -7,6 +7,8 @@
 %       - "sameforallsessions" -> vector contains contrast to be applied to all sessions (within-subject contrast)
 %       - "singlesession:<session name>" -> vector contains contrast for just one session
 %       - "sessions:<session name>[+<session name>[...]]" -> vector contains contrast for some sessions
+%       - "sessions:<weight>x<session name>[|<weight>x<session name>[...]]" -> vector contains contrast for some (differently) weighted sessions
+%           N.B.: You have to use session names with UPPERCASE letters only!
 %       - "uniquebysession" -> within-subject contrast that separately specifies contrast for every session
 %   - vector: contrast
 %       - vector containing the weights for each regressor (of interest)
@@ -22,7 +24,9 @@
 %                     - 1st order polynomial expansion of the second parametric modulator
 %                     - 2nd order polynomial expansion of the second parametric modulator
 %                     - 1st order polynomial expansion of the third parametric modulator
-%   - conname: string label for contrast (if empty, then aamod_firstlevel_contrasts will create one)
+%   - conname: string label for contrast 
+%       Must be unique within- and across-sessions!
+%       If empty, then aamod_firstlevel_contrasts will create one.
 %   - contype="T" or "F" (defaults to "T")
 %   - automatic_movesandmeans=1 or 0, add means & moves to contrast automatically?
 %
@@ -48,7 +52,7 @@ if ~isempty(m1)
 elseif ~isempty(m2)
     modulename = modulename(1:m2-1);
     moduleindex = 1:length(find(strcmp({aap.tasklist.main.module.name}, modulename)));
-  
+    
 elseif ~isempty(m3)
     modulename = modulename(1:find(modulename=='_',1,'last')-1);
     moduleindex = cellfun(@str2num, [m3{:}]);
@@ -67,39 +71,70 @@ end;
 [format, rem]=strtok(format,':');
 switch format
     case {'singlesession','sessions'}
-        session = textscan(strtok(rem,':'),'%s','delimiter','+'); session = session{1};
+        sessstr = strtok(rem,':');
+        if any(sessstr == '|') % weighted
+            aas_log(aap,false,'WARNING: You specified weights for sessions.');
+            aas_log(aap,false,'    Make sure that you use session names with UPPERCASE letters only!',aap.gui_controls.colours.warning);
+            cs = textscan(sessstr,'%fx%s','Delimiter','|');
+            session.names = cs{2};
+            session.weights = cs{1};
+        else % simple
+            cs = textscan(strtok(rem,':'),'%s','delimiter','+'); 
+            session.names = cs{1};
+            session.weights = ones(1,numel(session.names));
+        end
     otherwise
-        session=[];
+        session.names=[];
+        session.weights = [];
 end
 
 % warning
 if ischar(vector)
-    aas_log(aap,false,'WARNING: You specified the contrast with regressor names.'); 
-    aas_log(aap,false,'    Make sure that you use regressor names with UPPERCASE letters only!'); 
+    aas_log(aap,false,'WARNING: You specified the contrast with regressor names.');
+    aas_log(aap,false,'    Make sure that you use regressor names with UPPERCASE letters only!',aap.gui_controls.colours.warning);
 end
 
-% find model that corresponds and add contrast to this if it exists
-for m = 1 : length(moduleindex)
+if ~iscell(subjname), subjname = {subjname}; end
+if subjname{1} == '*'
+    subjname = {aap.acq_details.subjects.subjname};
+end
+
+for subj = 1:numel(subjname)
+    % check if (any of) the session(s) of the subject exist
+    if ~strcmp(format,'uniquebysession')
+        sessnames = session.names;
+        if isempty(sessnames), sessnames = {aap.acq_details.sessions.name}; end % sameforallsessions
+        havesess = true(1,numel(sessnames));
+        for s = 1:numel(sessnames)
+            sess = find(strcmp({aap.acq_details.sessions.name},sessnames{s}));
+            [junk, mriser] = aas_get_series(aap,'functional',subj,sess);
+            if isempty(mriser) || (isnumeric(mriser) && ~mriser), havesess(s) = false; end
+        end
+        if ~any(havesess), continue; end
+    end
     
-    mInd = moduleindex(m);
-    
-    whichcontrast=strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subjname);
-    if (~any(whichcontrast))
-        emptycon=aap.tasksettings.(modulename)(mInd).contrasts(1); % The first one is usually empty, makes for a good template in case the structure changes
-        emptycon.subject=subjname;
-        emptycon.con.format=format;
-        emptycon.con.vector=vector;
-        emptycon.con.session=session;
-        emptycon.con.type=contype;
-        emptycon.con.name=conname;
-        aap.tasksettings.(modulename)(mInd).contrasts(end+1)=emptycon;
-    else
+    % find model that corresponds and add contrast to this if it exists
+    for m = 1 : length(moduleindex)
         
-        aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end+1).format=format;
-        aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).vector=vector;
-        aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).session=session;
-        aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).type=contype;
-        aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).name=conname;
+        mInd = moduleindex(m);
+        
+        whichcontrast=strcmp({aap.tasksettings.(modulename)(mInd).contrasts.subject},subjname{subj});
+        if (~any(whichcontrast))
+            emptycon=aap.tasksettings.(modulename)(mInd).contrasts(1); % The first one is usually empty, makes for a good template in case the structure changes
+            emptycon.subject=subjname{subj};
+            emptycon.con.format=format;
+            emptycon.con.vector=vector;
+            emptycon.con.session=session;
+            emptycon.con.type=contype;
+            emptycon.con.name=conname;
+            aap.tasksettings.(modulename)(mInd).contrasts(end+1)=emptycon;
+        else
+            
+            aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end+1).format=format;
+            aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).vector=vector;
+            aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).session=session;
+            aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).type=contype;
+            aap.tasksettings.(modulename)(mInd).contrasts(whichcontrast).con(end).name=conname;
+        end
     end
 end
-

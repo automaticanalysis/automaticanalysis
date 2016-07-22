@@ -54,7 +54,7 @@ switch task
             [roiPath, roiImg, roiExt] = fileparts(roiImgs{r});
             
             if settings.binarizeROIs
-                fprintf('Binarizing ROI %s\n', roiImg);
+                aas_log(aap,false,sprintf('Binarizing ROI %s', roiImg));
                 v = spm_vol(roiImgs{r});
                 y = spm_read_vols(v);
                 y(y~=0) = 1;
@@ -66,13 +66,14 @@ switch task
             % Convert image to MarsBar type ROI
             mars_img2rois(roiImgs{r}, mbDir, roiImg, settings.roidef);
             roiFiles = dir(fullfile(mbDir, sprintf('%s*.mat', roiImg)));
-            fprintf('\nMarsBaR created %d ROIs from %s.\n\n', numel(roiFiles), roiImg);   
+            aas_log(aap,false,sprintf('MarsBaR created %d ROIs from %s.', numel(roiFiles), roiImg));   
             roiFiles = fullfile(mbDir, {roiFiles.name});
             allROIs = [allROIs roiFiles];
             rois = maroi(roiFiles);
             
             % Extract the data from the ROI
-            Y = aa_get_marsy(rois, mbSPM, settings.summaryfn);
+            Y = get_marsy(rois{:}, mbSPM, settings.summaryfn);
+%             Y = aa_get_marsy(rois, mbSPM, settings.summaryfn);
             
             % MarsBaR estimation
             mbSPM = estimate(mbSPM, Y);
@@ -179,14 +180,5 @@ switch numel(rois)
         aas_log(aap, 1, 'Unsupported number of ROIs, try adding a new case to this function');
 end
 end
-
-% % Use this to generate all the switch cases:
-% s1 = 'rois{%d}, ';
-% for i = 1 : 20
-%     fprintf('case %d\n', i);
-%     fprintf('    Y = get_marsy(');
-%     fprintf(s1, [1:i]);
-%     fprintf('SPM, summaryfn);\n');
-% end
 
 

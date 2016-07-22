@@ -36,8 +36,7 @@ switch task
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('WARNING: Several structurals found, considering: \n')
-            fprintf('\t%s\n', Simg(1,:))
+            aas_log(aap,false,sprintf('WARNING: Several structurals found, considering:\n\t%s', Simg(1,:)))
         end
         [Spth, Sfn, Sext] = fileparts(Simg);
         
@@ -54,14 +53,13 @@ switch task
         % Let us loop the load algorhythm several times, so as to obtain
         % a single WM and GM mass...
         
-        fprintf('Runing LoAd...\n')
+        aas_log(aap,false,'Runing LoAd...')
         %% Use LoAd to segment the structural!
         LoAd_command = ['sh LoAd_brainonly.sh ' ... % Run LoAd command
             Simg ' ' ... % structural
             BETmask]; % mask
         
         [s w] = aas_shell(LoAd_command);
-        disp(w)
         
         %% Use seg_maths to extract the relevant
         outSeg = '';
@@ -105,7 +103,7 @@ switch task
             Simg, ... % Get structural
             BETmask)); % Get BET mask
         spm_orthviews('reposition', [0 0 0])
-        fprintf('\n')
+        aas_log(aap,false,'');
         
         % Mask current structural with the more accurate mask, to improve
         % future normalisation

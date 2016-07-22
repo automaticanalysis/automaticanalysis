@@ -38,7 +38,7 @@ for i=1:length(lineends)
         for j=1:length(delims)
             ind=findstr(delims(j),rem);
             if (length(ind)<1) 
-                ass_log(aap,1,sprintf('Error parsing pvshow.pl output. Has a new version been installed? If so, I dont understand it!'));
+                aas_log(aap,1,sprintf('Error parsing pvshow.pl output. Has a new version been installed? If so, I dont understand it!'));
             end;
             myfield=rem(1:(ind(1)-1));
             rem=rem((ind(1)+1):length(rem));

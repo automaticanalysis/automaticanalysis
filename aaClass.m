@@ -1,4 +1,4 @@
-% aa version 5.1.0 Mar 2016
+% aa version 5.3.0 Jun 2016
 % Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.
 % http://dx.doi.org/10.3389/fninf.2014.00090
 
@@ -14,6 +14,7 @@ classdef aaClass
         ManuscriptRef
         ManuscriptURL
         aaURL = 'http://automaticanalysis.org'
+        aawiki = 'https://github.com/rhodricusack/automaticanalysis/wiki';
     end
     
     methods
@@ -49,9 +50,8 @@ classdef aaClass
                 fprintf('\nPlease visit <a href = "%s">The aa website</a> for more information!\n',obj.aaURL);
                 fprintf('\nHere you can find example <a href = "matlab: cd %s">tasklists</a> and <a href = "matlab: cd %s">scripts</a>.\n',...
                     fullfile(obj.Path,'aa_recipes_and_parametersets'),fullfile(obj.Path,'examples'));
+                fprintf('Ready.\n');
             end
-            
-            fprintf('Ready.\n');
         end
     end
 end

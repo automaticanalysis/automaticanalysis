@@ -60,9 +60,9 @@ switch task
             spm_get_space(deblank(Simg(d,:)), Ms*MM);
         end
         
-        fprintf(['\tstructural to template realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+        aas_log(aap,false,sprintf(['\tstructural to template realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            x(1), x(2), x(3), x(4), x(5), x(6)))
         
         %% 2) Mean Functional to EPI template
         
@@ -82,9 +82,9 @@ switch task
         MM = spm_get_space(mEPIimg(1,:));
         spm_get_space(mEPIimg, Me*MM);
         
-        fprintf(['\tmean EPI to template realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+        aas_log(aap,false,sprintf(['\tmean EPI to template realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            x(1), x(2), x(3), x(4), x(5), x(6)))
         
         %% 3) Mean Functional to Structural
             
@@ -98,9 +98,9 @@ switch task
         MM = spm_get_space(mEPIimg);
         spm_get_space(mEPIimg, Mf*MM);
         
-        fprintf(['\tmean EPI to structural realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+        aas_log(aap,false,sprintf(['\tmean EPI to structural realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            x(1), x(2), x(3), x(4), x(5), x(6)))
         
         %% 4) Now apply this transformation to all the EPI images
         % The mean EPI will already be in the space required for the
@@ -115,7 +115,7 @@ switch task
             EPIimg{sess} = aas_getfiles_bystream(aap,subj,sess,'epi');
             
             % For each image, apply the space of the mean EPI image
-            fprintf('\nCoregistering images for session: %s\n', aas_getsessdesc(aap,subj,sess))
+            aas_log(aap,false,sprintf('Coregistering images for session: %s', aas_getsessdesc(aap,subj,sess)))
             for e = 1:size(EPIimg{sess},1)
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)

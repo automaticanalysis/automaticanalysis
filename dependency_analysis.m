@@ -1,7 +1,7 @@
-clc % Clear the screen before proceeding
+clear; clc; % Clear the screen before proceeding
 
 % We need to be inside the toolbox to work on it
-cd(fileparts(mfilename('fullpath')))
+cd(fileparts(which('aa_ver5')))
 
 toolboxPath = pwd;
 
@@ -14,6 +14,7 @@ Dependencies = [];
 Dependencies.name = [];
 Dependencies.deps = [];
 Dependencies.depsI = [];
+Dependencies.depsT = [];
 Dependencies.number = [];
 
 % Then recurse inside each directory until you run out of paths
@@ -33,7 +34,27 @@ while ~isempty(strtok(fldrDir, ':'))
     end
 end
 
-% Find out dependency!
+%% Find out MATLAB Toolbox dependecies
+h = waitbar(0,'Cheked for MATLAB Toolbox dependecies');
+for ind = 1:numel(Dependencies)    
+    clear deps
+    try
+        deps = dependencies.toolboxDependencyAnalysis({Dependencies(ind).name});
+    catch
+        deps = 'failed';
+    end
+    
+    deps(strcmp(deps,'MATLAB')) = [];
+    deps(strcmp(deps,'Statistical Parametric Mapping')) = [];
+    deps(strcmp(deps,'TFCE Toolbox')) = [];    
+    
+    Dependencies(ind).depsT = deps;
+    waitbar(ind/numel(Dependencies),h);
+end
+close(h);
+
+%% Find out dependency!
+h = waitbar(0,'Cheked for file dependecies');
 for ind = 1:length(Dependencies)    
     fprintf('\nWorking %d/%d: %s', ind, length(Dependencies), Dependencies(ind).name)
     
@@ -50,9 +71,12 @@ for ind = 1:length(Dependencies)
         end
     end
     Dependencies(ind).deps = deps;
+    waitbar(ind/numel(Dependencies),h);
 end
+close(h);
 
-% Find out inverse dependency!
+%% Find out inverse dependency!
+h = waitbar(0,'Cheked for inverse dependecies');
 for ind = 1:length(Dependencies)
     Dependencies(ind).number = 0;
     Dependencies(ind).depsI = {};
@@ -67,12 +91,15 @@ for ind = 1:length(Dependencies)
             end
         end
     end
+    waitbar(ind/numel(Dependencies),h);
 end
+close(h);
 
 unused_deps = {};
 fprintf('\n')
 
-% Find out any functions that are not used by anything!
+%% Find out any functions that are not used by anything!
+h = waitbar(0,'Cheked for orphan functions');
 for ind = 1:length(Dependencies)
     [path name] = fileparts(Dependencies(ind).name);
     if Dependencies(ind).number == 0 && ... % The number of uses of this function must be 0 in total...
@@ -82,7 +109,8 @@ for ind = 1:length(Dependencies)
         
         fprintf([Dependencies(ind).name '\n']);
     end         
+    waitbar(ind/numel(Dependencies),h);
 end
-
-% Now find how many dependencies each file has...
+close(h);
+%% Now find how many dependencies each file has...
 save('Dependencies.mat', 'Dependencies', 'unused_deps');

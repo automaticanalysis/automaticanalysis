@@ -26,17 +26,33 @@ switch task
         bvec = importdata(bvecs);
     
         if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
-            P = feval(aap.directory_conventions.poolprofile,size(data_mask,3));
-            P.ResourceTemplate='-l nodes=^N^,mem=100MB,walltime=00:01:00';
-            matlabpool(P);
+            profiles = parallel.clusterProfiles;
+            if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
+                ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+                if isempty(ppfname)
+                    aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+                else
+                    P=parcluster(parallel.importProfile(ppfname));
+                end
+            else
+                aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
+                P=parcluster(aap.directory_conventions.poolprofile);
+            end
+            switch class(P)
+                case 'parallel.cluster.Torque'
+                    aas_log(aap,false,'INFO: Torque engine is detected');
+                    P.ResourceTemplate = '-l nodes=^N^,mem=100MB,walltime=00:05:00';
+            end
+            P.NumWorkers = size(data_mask,3);
+            aas_matlabpool(P);
             try
                 parfor z = 1:size(data_in,3)
                     [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
                 end
             catch ME
-                fprintf('ERROR: %s\n', ME.message);
+                aas_log(aap,true,['ERROR: ', ME.message]);
             end
-            matlabpool close;
+            aas_matlabpool close;
         else % cluster computing parfor is nor working
             for z = 1:size(data_in,3)
                 [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);

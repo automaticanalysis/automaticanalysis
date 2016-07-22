@@ -58,7 +58,6 @@ if (~isempty(v))
     
     % Add suffixes
     root=fullfile(root,[analysisid analysisid_suffix]);
-    %     fprintf('Root %s\n',root);
     % Add split by module layer
     
     outputformat=aap.directory_conventions.outputformat;
@@ -70,7 +69,6 @@ if (~isempty(v))
             suffix='';
     end;
     root=fullfile(root,suffix);
-    %     aas_log(aap,false,sprintf('Just made path %s',root));
 else
     % otherwise, just use the root we've been given - will already have
     % been adorned approriately for the current module
@@ -80,6 +78,5 @@ else
         otherwise
             root=aap.acq_details.(remotefilesystem).root;
     end;
-    %     aas_log(aap,false,sprintf('Using pre-calc path %s',root));
 end;
 

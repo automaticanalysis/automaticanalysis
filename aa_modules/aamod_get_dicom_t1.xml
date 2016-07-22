@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
-    <tasksettings>
-        <aamod_get_dicom_t1 domain='subject' desc='Get DICOM files for T1 structural' modality='MRI'>
+    <tasklist>
+        <currenttask mfile_alias='aamod_get_dicom_structural' domain='subject' desc='Get DICOM files for T1 structural' modality='MRI'>
             
             <qsub>
                 <timeBase>0.05</timeBase>
@@ -9,6 +9,14 @@
             </qsub>
             
             <permanenceofoutput>1</permanenceofoutput>
+            
+            <toEdit>
+				<subject desc='Subject name'></subject>
+                <DICOMfield>
+					<FieldName></FieldName>
+					<Value></Value>
+				</DICOMfield>
+            </toEdit>
             
             <inputstreams>
                 <stream>autoidentifyseries</stream>
@@ -18,6 +26,6 @@
                 <stream>dicom_t1</stream>
             </outputstreams>
             
-        </aamod_get_dicom_t1>
-    </tasksettings>
+        </currenttask>
+    </tasklist>
 </aap>

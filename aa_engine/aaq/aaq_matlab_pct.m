@@ -1,3 +1,4 @@
+
 % aa queue processor that uses Matlab's Parallel Computing Toolbox to run
 % tasks.
 %
@@ -14,43 +15,107 @@
 
 classdef aaq_matlab_pct<aaq
     properties
-        maxretries=5;
+        toHandlePool    = false; % aaq handles pools
         
+        benchmark       = struct('receiveWorkerMessages',0,...
+                            'submitJobs',0,...
+                            'waitForWorkers',0,...
+                            'labsend',0,...
+                            'jobreadystart',0);
+        
+        % no effect
+        matlab_pct_path=[]; % to store benchmark file (<aaworker.parmpath>/matlab_pct)
+        retrynum=[]; % counter for rertries (for each job)
+        jobcount=0; % # jobs in pipeline
+        stored_path=''; % MATLAB path
+        
+        % not in use
+        jobstatus=[];
+        compiledfile=[];                
+        maxretries=5; % maximum allowed rerties
         filestomonitor=[];
         filestomonitor_jobnum=[];
-        compiledfile=[];
-        matlab_pct_path=[];
-        retrynum=[];
-        jobnotrun=[];
-        fatalerrors=false;
-        jobcount=0;
-        jobstatus=[];
-        dep_names={};
-        dep_done=[];
-        depof={};
-        depon={};
-        depon_num=[];
-        workerstatus={};
-        stored_path='';
-        realtime_deps=[];
-        benchmark=struct('receiveWorkerMessages',0,'submitJobs',0,'waitForWorkers',0,'labsend',0,'jobreadystart',0);
-        jobstudypths={};
-        readytogo=[];
+    end
+    properties (Hidden)
+        jobstudypths            = {} % actulaised studypath (for each job)
+        readytogo               = [] % green sign (for each job)
+        jobnotrun               = [] % job status (for each job)
+
+        dep_names               = {} % doneflag (for each job)
+        dep_done                = [] % is doneflag exists (for each job)
+        depon                   = {} % jobs the actual job depends on (for each job)
+        depof                   = {} % jobs depending on the actual job (for each job)
+        depon_num               = [] % # jobs the actual job depends on (for each job)
+
+        % real-time
+        realtime_deps           = []
+
+        % low-level
+        aaworker                = [] % aaworker struct
+        aaparallel              = [] % aaparallel struct
+        workerstatus            = {} % worker status (for each worker)
+        
+        % Torque-only
+        initialSubmitArguments  = '' % additional arguments to use when submitting jobs
     end
     methods
+        %% Constructor: setting up engine
         function [obj]=aaq_matlab_pct(aap)
+            global aaparallel
             global aaworker
             obj.aap=aap;
+            obj.aaworker = aaworker;
+            obj.aaparallel = aaparallel;
             
-            obj.matlab_pct_path=fullfile(aaworker.parmpath,'matlab_pct');
-            if (exist(obj.matlab_pct_path,'dir')==0)
-                mkdir(obj.matlab_pct_path);
+            obj.matlab_pct_path=fullfile(obj.aaworker.parmpath,'matlab_pct');
+            if ~exist(obj.matlab_pct_path,'dir')
+                aas_makedir(obj.aap,obj.matlab_pct_path);
             end;
             
             % Take snapshot of paths so the workers can get themselves up
             % to speed
             obj.stored_path=path;
+            
+            if ~aas_matlabpool('isopen')
+                if ~isempty(aap.directory_conventions.poolprofile)
+                    profiles = parallel.clusterProfiles;
+                    if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
+                        ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+                        if isempty(ppfname)
+                            aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+                        else                            
+                            P=parcluster(parallel.importProfile(ppfname));
+                        end
+                    else
+                        aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
+                        P=parcluster(aap.directory_conventions.poolprofile);
+                    end
+                    switch class(P)
+                        case 'parallel.cluster.Torque'
+                            aas_log(aap,false,'INFO: Torque engine is detected');
+                            P.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', obj.aaparallel.memory,obj.aaparallel.walltime);
+                            if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
+                                    ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
+                                obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+                            end
+                            P.SubmitArguments = strcat(P.SubmitArguments,obj.initialSubmitArguments);
+                    end
+                else
+                    P = parcluster('local');
+                end
+                P.NumWorkers = obj.aaparallel.numberofworkers;
+                P.JobStorageLocation = obj.aaworker.parmpath;
+                C = aas_matlabpool(P,P.NumWorkers);
+                if ~isempty(C), C.IdleTimeout = obj.aaparallel.walltime*60; end
+                obj.toHandlePool = true;                
+            end
         end
+        
+        function close(obj)
+            if obj.toHandlePool, aas_matlabpool('close'); end
+            close@aaq(obj);
+        end
+        
         %%==============================
         % Add a task to the task queue
         % This adds to the parent class's method, by scanning the dependencies
@@ -79,7 +144,7 @@ classdef aaq_matlab_pct<aaq
             
             % Does this stage need realtime input?
             if isfield(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE,'waitforrealtime_singlefile') && ~isempty(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE.waitforrealtime_singlefile)
-                [dcmfield dcmfilter]=strtok(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE.waitforrealtime_singlefile,'=');
+                [dcmfield, dcmfilter]=strtok(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE.waitforrealtime_singlefile,'=');
                 newrtd=struct('dcmfield',dcmfield,'dcmfilter',strtrim(dcmfilter(2:end)),'njob',njob,'eventtype','singlefile','satisfied',false);
                 if isempty(obj.realtime_deps)
                     obj.realtime_deps=newrtd;
@@ -144,7 +209,7 @@ classdef aaq_matlab_pct<aaq
             tic
             messagesreceived=false;
             while(labProbe)
-                [data source tag]=labReceive;
+                [data, source, tag]=labReceive;
                 obj.processWorkerMessage(data,source);
                 messagesreceived=true;
             end;
@@ -302,8 +367,7 @@ classdef aaq_matlab_pct<aaq
                 % Wait to be told what that is
                 while(~labProbe)
                     pause(0.01);
-                end;
-                
+                end;                
                 
                 [data source tag]=labReceive;
                 switch(data{1})
@@ -313,12 +377,14 @@ classdef aaq_matlab_pct<aaq
                         job=data{3};
                         jobind=data{4};
                         aap=obj.aap;
+                        aaworker = obj.aaworker;
+                        aaworker.logname = fullfile(obj.matlab_pct_path,sprintf('Job%05d_diary.txt',jobind));
                         if ~isfield(aap.internal,'streamcache')
                             nstreamcache=0;
                         else
                             nstreamcache=length(aap.internal.streamcache);
                         end;
-                        aap=aa_doprocessing_onetask(aap,job.task,job.k,job.indices);
+                        aap=aa_doprocessing_onetask(aap,job.task,job.k,job.indices,aaworker);
                         % Only return new streams...
                         if isfield(aap.internal,'streamcache') && length(aap.internal.streamcache)>nstreamcache
                             streamcache_toreturn=aap.internal.streamcache(nstreamcache+1:end);
@@ -517,8 +583,6 @@ classdef aaq_matlab_pct<aaq
                 
             end;
         end;
-        
-        
     end;
     
 end

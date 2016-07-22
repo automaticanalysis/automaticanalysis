@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Get DICOM files for special series' modality='MRI'>
+        <currenttask domain='special_session' desc='Get DICOM files for special series' modality='MRI'>
             
             <qsub>
                 <timeBase>0.05</timeBase>
@@ -9,6 +9,17 @@
             </qsub>
             
             <permanenceofoutput>1</permanenceofoutput>
+            
+			<DICOMdictionary>spm_dicom_dict.mat</DICOMdictionary>
+			
+            <toEdit>
+				<subject desc='Subject name'></subject>
+                <session desc='Session name'></session>
+                <DICOMfield>
+					<FieldName></FieldName>
+					<Value></Value>
+				</DICOMfield>
+            </toEdit>
             
             <inputstreams>
                 <stream>autoidentifyseries</stream>

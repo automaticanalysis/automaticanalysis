@@ -5,7 +5,7 @@
 % **********************************************************************
 % Tibor Auer MRC CBU Cambridge 2012-2013
 
-function [aap,resp]=aamod_secondlevel_threshold(aap,task,subj)
+function [aap,resp]=aamod_secondlevel_threshold(aap,task)
 
 resp='';
 
@@ -17,15 +17,16 @@ switch task
             fnSPM = deblank(fnSPMs(flc,:));
             loaded=load(fnSPM);
             SPM=loaded.SPM;
+            flcname = spm_file(spm_file(fnSPM,'path'),'basename');
             
             for C = 1:numel(SPM.xCon)
-                aap = aas_report_add(aap,[],sprintf('<h4>%02d. %s</h4>',C,SPM.xCon(C).name));
+                aap = aas_report_add(aap,[],sprintf('<h4>%s: %02d. %s</h4>',flcname,C,SPM.xCon(C).name));
                 f{1} = fullfile(aas_getstudypath(aap),...
-                    sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_overlay_0.jpg',C,SPM.xCon(C).name));
+                    sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_overlay_0.jpg',flcname,C,SPM.xCon(C).name));
                 if exist(f{1},'file')
                     tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                     f{2} = fullfile(aas_getstudypath(aap),...
-                        sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_render.jpg',C,SPM.xCon(C).name));
+                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcnameC,SPM.xCon(C).name));
                     
                     % Add images to study report
                     aap = aas_report_add(aap,[],'<table><tr>');
@@ -75,7 +76,7 @@ switch task
                 end
             end
         else  % Template
-            fprintf('Structural cannot be loaded! Template will be used...');
+            aas_log(aap,false,'WARNING: Structural cannot be loaded! Template will be used...');
             tmpfile = aap.directory_conventions.T1template;
             if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
         end
@@ -134,8 +135,7 @@ switch task
                     Z = xSPM.Z;
                     XYZ = xSPM.XYZ;
                     if isempty(Z)
-                        fprintf('\n');
-                        warning('No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive TFCE(%s)=%1.4f, k=%0.2g',corr, u0, k));
                         continue;
                     end
                 else
@@ -155,8 +155,7 @@ switch task
                     Z      = Z(:,Q);
                     XYZ    = XYZ(:,Q);
                     if isempty(Q)
-                        fprintf('\n');
-                        warning('No voxels survive height threshold u=%0.2g',u);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive height threshold u=%0.2g',u));
                         continue;
                     end
                     
@@ -172,8 +171,7 @@ switch task
                     Z     = Z(:,Q);
                     XYZ   = XYZ(:,Q);
                     if isempty(Q)
-                        fprintf('\n');
-                        warning('No voxels survive extent threshold k=%0.2g',k);
+                        aas_log(aap,false,sprintf('WARNING: No voxels survive extent threshold k=%0.2g',k));
                         continue;
                     end
                 end
@@ -182,7 +180,8 @@ switch task
                 Yepi  = zeros(dim(1),dim(2),dim(3));
                 indx = sub2ind(dim,XYZ(1,:)',XYZ(2,:)',XYZ(3,:)');
                 Yepi(indx) = Z;
-                V.fname = strrep(V.fname,'spm','thr');
+                vname = spm_file(V.fname,'basename');
+                V.fname = spm_file(V.fname,'basename',strrep(vname,'spm','thr'));
                 V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
                 spm_write_vol(V,Yepi);
                 
@@ -192,6 +191,7 @@ switch task
                 rYepi=reshape(rYepi,size(Ytemplate));
                 
                 % Overlay
+                fnsl = '';
                 for a = 0:2 % in 3 axes
                     arYepi = shiftdim(rYepi,a);
                     aYtemplate = shiftdim(Ytemplate,a);
@@ -207,7 +207,7 @@ switch task
                     mon = tr_3Dto2D(img_tr(img(:,:,:,1),a==2));
                     mon(:,:,2) = tr_3Dto2D(img_tr(img(:,:,:,2),a==2));
                     mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
-                    fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_overlay_%d.jpg',c,SPM.xCon(c).name,a));
+                    fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_overlay_%d.jpg',spm_file(anadir,'basename'),c,SPM.xCon(c).name,a));
                     imwrite(mon,deblank(fnsl(a+1,:)));
                 end
                 dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
@@ -222,7 +222,7 @@ switch task
                 dat.dim = dim;
                 rendfile  = aap.directory_conventions.Render;
                 if ~exist(rendfile,'file') && (rendfile(1) ~= '/'), rendfile = fullfile(fileparts(which('spm')),rendfile); end
-                fn3d = fullfile(localroot,sprintf('diagnostic_aamod_secondlevel_threshold_C%02d_%s_render.jpg',c,SPM.xCon(c).name));
+                fn3d = fullfile(localroot,sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',spm_file(anadir,'basename'),c,SPM.xCon(c).name));
                 global prevrend
                 prevrend = struct('rendfile',rendfile, 'brt',0.5, 'col',eye(3));
                 out = spm_render(dat,0.5,rendfile); spm_figure('Close','Graphics');
@@ -239,7 +239,6 @@ switch task
                     if exist(fnsl(f,:),'file'), Outputs.sl = strvcat(Outputs.sl, fnsl(f,:)); end
                 end
                 if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
-                clear fnsl
             end
         end
         

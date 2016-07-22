@@ -3,16 +3,13 @@
 % module-specific parameters (e.g., for branched pipelines) by applying the
 % values in extraparameters.aap to the aap structure after setting it up
 %
-% function [aap]=aas_setcurrenttask(aap,k)
-%  Sets aap structure (e.g., root path) to correspond to module k
-%   e.g., aap=aas_setcurrenttask(aap,2);
-%
-%  If called with just one parameter, resets aap to initial state as
-%  created by user script
-%   e.g., aap=aas_setcurrenttask(aap);
-%
+% function [aap]=aas_setcurrenttask(aap,varargin)
+%  1. aap=aas_setcurrenttask(aap) - resets aap to initial state as created by user script
+%  2. aap=aas_setcurrenttask(aap,k) - sets aap structure (e.g., root path) to correspond to module k
+%  3. aap=aas_setcurrenttask(aap,k,'nodefault') - #2 + keeps global SPM defaults
+%  4. aap=aas_setcurrenttask(aap,k,'subject',subj) - #2 + sets subject specific selected session
 
-function [aap]=aas_setcurrenttask(aap,k,varargin)
+function [aap]=aas_setcurrenttask(aap,varargin)
 
 
 % Start with the initial pure aap
@@ -21,7 +18,8 @@ initaap=aap.internal.aap_initial;
 aap=initaap;
 aap.internal=initinternal;
 
-if exist('k','var')    
+if ~isempty(varargin) && isnumeric(varargin{1})
+    k = varargin{1};
     % Set SPM defaults appropriately    
     
     if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(k).name)(aap.tasklist.main.module(k).index).ATTRIBUTE,'modality')
@@ -37,6 +35,9 @@ if exist('k','var')
             case 'DWI'
                 aap.spm.defaults.modality = 'FMRI';
                 sessions = aap.acq_details.diffusion_sessions;
+            case {'MTI' 'ASL'}
+                aap.spm.defaults.modality = 'FMRI';
+                sessions = aap.acq_details.special_sessions;
             case 'MEG'
                 aap.spm.defaults.modality = 'EEG';
                 sessions = aap.acq_details.meg_sessions;
@@ -74,7 +75,7 @@ if exist('k','var')
     % top of aap if provided
     if (isfield(aap.tasklist.main.module(k).extraparameters,'aap'))
         aap=aas_copyparameters(aap.tasklist.main.module(k).extraparameters.aap,aap,'aap');
-    end;
+    end
         
     % Check the apparent study root is set appropriately
     aap.acq_details.root=aas_getstudypath(aap,k);
@@ -84,7 +85,7 @@ if exist('k','var')
         aap.acq_details.(remotefilesystem).root=aas_getstudypath(aap,remotefilesystem,k);
     else
         aap.acq_details.root=aas_getstudypath(aap,k);
-    end;
+    end
     
     % Check subselected sessions
     selected_sessions=aap.acq_details.selected_sessions;
@@ -103,9 +104,16 @@ if exist('k','var')
                 end;
                 selected_sessions=[selected_sessions sessionind];
             end
-        end;
+        end
         
-    end;
+    end
+    
+    if cell_index(varargin,'subject')
+        subj = varargin(cell_index(varargin,'subject')+1);
+        [junk, subjSess] = aas_getN_bydomain(aap,aas_getsesstype(aap),subj{1});
+        selected_sessions = intersect(selected_sessions,subjSess);
+    end
+    
     aap.acq_details.selected_sessions=selected_sessions;
 end
 

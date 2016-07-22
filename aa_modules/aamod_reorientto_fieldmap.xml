@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_reorientto' domain='session' desc='SPM Reorient fieldmap to reference' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.05</timeBase>
+                <memoryBase desc='Required memory in GB'>0.05</memoryBase>
+            </qsub>
+            
+            <inputstreams>
+                <stream isrenameable='1'>reference</stream>
+                <stream>fieldmap</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>fieldmap</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

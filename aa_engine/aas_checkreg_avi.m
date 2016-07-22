@@ -24,8 +24,6 @@ else
     slicesDx{3} = max(bb(1,3,:)):1:min(bb(2,3,:)); % axial
     slicesInd = [];
     
-    warning('OFF', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
-    
     if nargin < 3
         axisDim = 2;
     end
@@ -128,7 +126,6 @@ else
     else
         junk = close(aviObject);
     end
-    warning('ON', 'MATLAB:getframe:RequestedRectangleExceedsFigureBounds')
     
     % ~FSL
     if exist('slicesImg','var')

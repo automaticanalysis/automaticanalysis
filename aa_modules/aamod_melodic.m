@@ -24,7 +24,7 @@ switch task
         end
         
         %% CONCATENATE THE DATA...
-        fprintf('\nConcatenating the data')
+        aas_log(aap,false,'Concatenating the data')
         
         data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', aap.acq_details.subjects(subj).subjname));
         
@@ -34,7 +34,7 @@ switch task
             spaced_EPIimg));
         
         %% RUN MELODIC
-        fprintf('\nRunning MELODIC')
+        aas_log(aap,false,'Running MELODIC')
         
         outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
         if ~exist(outDir, 'dir')

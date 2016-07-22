@@ -33,9 +33,9 @@
 			},
 			{
 				"Name": "MFP",
-				"Version": "r1.3.6 (mod)",
-				"DateDownloaded": "22 August 2014",
-				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software",
+				"Version": "r1.5.2 (mod - compatibility with previous MATLABs)",
+				"DateDownloaded": "03 Jun 2016",
+				"URL": "http:\/\/www.medizin.uni-tuebingen.de\/kinder\/en\/research\/neuroimaging\/software\/",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
@@ -46,9 +46,23 @@
 				"aaMaintainer": "Alejandro Vicente Grabovetsky"
 			},
 			{
+				"Name": "surfacerender",
+				"Version": "",
+				"DateDownloaded": "",
+				"URL": "http:\/\/jonathanpeelle.net",
+				"aaMaintainer": "Jonathan Peele"
+			},
+			{
+				"Name": "tsdiffana",
+				"Version": "",
+				"DateDownloaded": "09 Jun 2016",
+				"URL": "https:\/\/sourceforge.net\/p\/spmtools\/tsdiffana\/code\/ci\/master\/tree",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
 				"Name": "TFCE",
-				"Version": "r67 (mod)",
-				"DateDownloaded": "28 July 2014",
+				"Version": "r88 (mod - cg_get_tfce_results accepts input)",
+				"DateDownloaded": "3 Jun 2016",
 				"URL": "http:\/\/dbm.neuro.uni-jena.de\/tfce\/",
 				"aaMaintainer": "Tibor Auer"
 			},
@@ -81,6 +95,12 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "cor2mni.m",
+				"Version": "",
+				"DateDownloaded": "09 Jun 2016",
+				"URL": "http:\/\/www.alivelearn.net\/?m=201006",
+				"aaMaintainer": "Tibor Auer"
+			},			{
 				"Name": "cprintf.m",
 				"Version": "",
 				"DateDownloaded": "22 July 2015",
@@ -106,13 +126,6 @@
 				"Version": "2.1",
 				"DateDownloaded": "16 September 2015",
 				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20516-imagescnan-m-v2-1--aug-2009-",
-				"aaMaintainer": "Tibor Auer"
-			},
-			{
-				"Name": "panel.m",
-				"Version": "",
-				"DateDownloaded": "22 July 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/20003-panel",
 				"aaMaintainer": "Tibor Auer"
 			},
 			{

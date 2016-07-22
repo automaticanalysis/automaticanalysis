@@ -80,11 +80,7 @@ switch task
         cd(Tpth)
         
         % Run ANTS
-        fprintf('Running ANTS using command:\n')
-        fprintf([ANTS_command '\n'])
-        
-        [s w] = aas_shell(ANTS_command);
-        disp(w)
+        [s, w] = aas_shell(ANTS_command);
         
         %% Describe the outputs
         outTemp = '';

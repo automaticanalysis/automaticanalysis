@@ -22,7 +22,7 @@ for f = 1:length(fns)
         % Mask image
         Y(~M) = maskVal;
     elseif any(size(M) ~= size(Y))
-        error('Mask and image to be masked are not of the same size!')
+        aas_log([],true,'Mask and image to be masked are not of the same size!')
     end
     
     % Write image back...

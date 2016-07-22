@@ -35,7 +35,7 @@ elseif strcmp('Mahalanobis', EP.corrType);
     dbstop if warning % If matrix is close to singular or badly scaled, we may see NaNs...
     Simil = squareform(pdist_complex(sResid', 'mahalanobis'));
 else
-    error('Incorrect metric of (dis)similarity between patterns');
+    aas_log(aap,true,'Incorrect metric of (dis)similarity between patterns');
 end
 
 if EP.triangulation ~= 2

@@ -1,4 +1,4 @@
-function [aap, resp] = aamod_meg_average(aap,task,subj,sess)
+function [aap, resp] = aamod_meg_average(aap,task,varargin)
 
 resp='';
 
@@ -7,8 +7,13 @@ switch task
         
     case 'doit'
         %% Initialise
-        sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = infname(1,:);
+        switch aap.tasklist.currenttask.domain
+            case 'subject'
+                localroot = aas_getsubjpath(aap,varargin{1});
+            case 'meg_session'
+                localroot = aas_getsesspath(aap,varargin{:});
+        end
+        infname = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meg'); infname = infname(1,:);        
         D = spm_eeg_load(infname);
         
         % Reorder conditions
@@ -24,13 +29,13 @@ switch task
        
         %% Run
         S.D = D;
-        S.robust = aap.tasklist.currenttask.settings.robust;
+        S.robust = aas_getsetting(aap,'robust');
         S.prefix = 'm';
         D = spm_eeg_average(S);
 
         %% Outputs
-        outfname = fullfile(sessdir,[S.prefix basename(infname)]); % specifying output filestem
+        outfname = fullfile(localroot,[S.prefix basename(infname)]); % specifying output filestem
         fname(D,[outfname '.mat']);
         D.save;
-        aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        
+        aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meg',char([outfname '.dat'],[outfname '.mat']));        
 end

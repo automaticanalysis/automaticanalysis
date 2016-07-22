@@ -36,7 +36,7 @@ switch task
             % djm: files were not writing consistently; hoping this might
             % help...
             V=rmfield(V,{'private','pinfo'});
-            fprintf('\n%g of %g',i,size(imgs,1))
+            aas_log(aap,false,sprintf('%g of %g',i,size(imgs,1)))
             
             spm_write_vol(V,Y);
         end;

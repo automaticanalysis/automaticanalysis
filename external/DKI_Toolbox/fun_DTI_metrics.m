@@ -40,7 +40,6 @@ for k=1:N3
             end
         end
     end
-    %disp(k)
 end
 end
 

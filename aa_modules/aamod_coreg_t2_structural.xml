@@ -2,13 +2,24 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' mfile_alias='aamod_coreg_general' desc='SPM coregistration and reslicing of images (general)' modality='MRI'>
+            
+            <eoptions>
+                <cost_fun>nmi</cost_fun>
+            </eoptions>
+            
+            <doReslice>1</doReslice>
+            
+            <PVE desc='Binarization threshold = 0-1' ui='double'></PVE>
+            
             <inputstreams>
                 <stream diagnostic="1">structural</stream>
                 <stream>t2</stream> <!-- this one coreg'ed to previous -->
             </inputstreams>
+            
             <outputstreams>
                 <stream>t2</stream>
             </outputstreams>
+            
         </currenttask>
     </tasklist>
 </aap>

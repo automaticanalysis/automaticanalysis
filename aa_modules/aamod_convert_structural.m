@@ -25,13 +25,14 @@ switch task
         outStreamDicom = aap.tasklist.currenttask.outputstreams.stream{2};
               
         % Convert the image and describe the output
-        [aap convertedfns dcmhdr] = aas_convertseries_fromstream(aap, subjInd, inStream); 
+        [aap, convertedfns, dcmhdr] = aas_convertseries_fromstream(aap, subjInd, inStream); 
+        if ~iscell(convertedfns), convertedfns = cellstr(convertedfns); end
         
         % It's possible that the sructural series contains more than one
         % volume, e.g., multiphase acquisition.  Maybe we only want to
         % carry a subset, or a single volume, forward.
         
-        structVols = 1 : size(convertedfns, 2); % default to all volumes
+        structVols = 1 : max(size(convertedfns)); % default to all volumes
         if isfield(aap.tasklist.currenttask.settings, 'struct_vols') && ~isempty(aap.tasklist.currenttask.settings.struct_vols)
 
             % Could be specified as a string, e.g., [1:4]
@@ -43,12 +44,25 @@ switch task
             
             % If any of the specififed structural volumes don't exist in
             % the converted files, ignore this field.
-            if any(~ismember(structVols, 1:size(convertedfns, 2)))
-                structVols =  1:size(convertedfns, 2);
+            if any(~ismember(structVols, 1:max(size(convertedfns))))
+                structVols =  1:max(size(convertedfns));
             end  
         end
+        convertedfns = convertedfns(structVols);
+        dcmhdr = dcmhdr(structVols);
         
-        aap = aas_desc_outputs(aap, subjInd, outStreamImg, convertedfns(structVols, :));
+        if aap.options.(['autoidentify' outStreamImg '_average'])
+            V = cell2mat(spm_vol(convertedfns));
+            Y = spm_read_vols(V);
+            
+            convertedfns = spm_file(V.fname,'prefix','a');
+            V = V(1); V.fname = convertedfns;
+            Y = mean(Y,4);
+            spm_write_vol(V,Y);
+            dcmhdr = dcmhdr(1);
+        end
+        
+        aap = aas_desc_outputs(aap, subjInd, outStreamImg, convertedfns);
         
         % save DICOM headers and describe the output
         subjpath = aas_getsubjpath(aap, subjInd);

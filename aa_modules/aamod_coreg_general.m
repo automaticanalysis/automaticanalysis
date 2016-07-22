@@ -10,24 +10,24 @@ resp='';
 switch task
     case 'report'
         domain = aap.tasklist.currenttask.domain;
-        localpath = aas_getpath_bydomain(aap,domain,varargin{:});
+        localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         
         % Process streams
         inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
         outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
         if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,varargin{:},inpstream{tInd})
+        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
             tInd = tInd + 1;
         end
-        targetimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
+        targetimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
         
         d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_*']));
         if isempty(d)
-            aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},targetimfn);
+            aas_checkreg(aap,domain,cell2mat(varargin),inpstream{tInd+1},targetimfn);
             if numel(inpstream) > (tInd+1)
                 for s = 1:numel(inpstream)-(tInd+1)
-                    aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1+s},targetimfn);
+                    aas_checkreg(aap,domain,cell2mat(varargin),inpstream{tInd+1+s},targetimfn);
                 end
             end
         end
@@ -43,8 +43,7 @@ switch task
     case 'doit'
         
         %% Init
-        global defaults
-        flags = defaults.coreg;
+        flags = aap.spm.defaults.coreg;
         % update flags
         flags.write.which = [1 0]; % do not (re)write target and mean
         if isfield(aap.tasklist.currenttask.settings,'eoptions')
@@ -75,33 +74,46 @@ switch task
         
         % Get target image:        
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,varargin{:},inpstream{tInd})
+        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
             tInd = tInd + 1;
         end
-        fprintf('\nTarget stream: %s\n',inpstream{tInd});
-        targetimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd});
+        aas_log(aap,false,sprintf('Target stream: %s',inpstream{tInd}));
+        targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd});
+        if size(targetimfn,1) > 1 % multiple images (possibly after normalisation)
+            fns = spm_file(targetimfn,'basename');
+            targetimfn = targetimfn(fns(:,1)~='w',:); % omit normalised
+        end
+        if size(targetimfn,1) > 1 % multiple images --> ?
+            aas_log(aap,true,sprintf('ERROR: multiple target image found:%s',targetimfn'));
+        end
+        % get copy
+        copyfile(targetimfn,spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin))));
+        targetimfn = spm_file(targetimfn,'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin)));
         
         % Get image to coregister ('source'):
-        sourceimfn = aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd+1});
+        sourceimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd+1});
+        sV = spm_vol(sourceimfn);
         
         % Other?
         otherimfn = '';
         if numel(inpstream) > (tInd+1)
             for s = 1:numel(inpstream)-(tInd+1)
-                otherimfn = strvcat(otherimfn, aas_getfiles_bystream(aap,domain,varargin{:},inpstream{tInd+1+s}));
+                otherimfn = strvcat(otherimfn, aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd+1+s}));
             end
         end
         
         %% Coregister
         % Coregister source to target
-        x = spm_coreg(spm_vol(deblank(targetimfn)), spm_vol(sourceimfn), flags.estimate);
+        x = spm_coreg(spm_vol(deblank(targetimfn)), sV(1), flags.estimate);
         % Set the new space for the mean EPI
-        spm_get_space(sourceimfn, spm_matrix(x)\spm_get_space(sourceimfn));
+        for i = 1:numel(sV)
+            spm_get_space(sprintf('%s,%d',sourceimfn,i), spm_matrix(x)\spm_get_space(sprintf('%s,%d',sourceimfn,i)));
+        end
                 
-        fprintf(['\t%s to %s realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
+        aas_log(aap,false,sprintf(['\t%s to %s realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
             inpstream{2}, inpstream{1}, ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+            x(1), x(2), x(3), x(4), x(5), x(6)))
 
         %% Other
         if numel(inpstream) > (tInd+1)
@@ -116,21 +128,27 @@ switch task
         end
         
         %% Reslice:
-        spm_reslice(strvcat(targetimfn,sourceimfn,otherimfn),flags.write);
+        if aas_getsetting(aap,'doReslice')
+            spm_reslice(strvcat(targetimfn,sourceimfn,otherimfn),flags.write);
+        else
+            flags.write.prefix = ''; % same file
+        end
         
         %% Describe the outputs and Diagnostics 
+        % Cleanup
+        delete(targetimfn);
+        
         % For source diag only
         if strcmp(aap.options.wheretoprocess,'localsingle')
-           aas_checkreg(aap,domain,varargin{:},inpstream{tInd+1},inpstream{tInd});
+           aas_checkreg(aap,domain,cell2mat(varargin),inpstream{tInd+1},inpstream{tInd});
         end
         
         % For outputs
         for s = 1:numel(outpstream)
-            otherimfn = aas_getfiles_bystream(aap,domain,varargin{:},outpstream{s});
+            otherimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),outpstream{s});
             otherimfn2 = '';
             for e = 1:size(otherimfn,1)
-                [pth, fname, ext] = fileparts(deblank(otherimfn(e,:)));
-                fpath = fullfile(pth, [flags.write.prefix fname ext]);
+                fpath = spm_file(otherimfn(e,:),'prefix',flags.write.prefix);
 
                 % binarise if specified
                 if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
@@ -143,9 +161,9 @@ switch task
                 otherimfn2 = strvcat(otherimfn2, fpath);
             end
             
-            aap = aas_desc_outputs(aap,domain,varargin{:},outpstream{s},otherimfn2);
+            aap = aas_desc_outputs(aap,domain,cell2mat(varargin),outpstream{s},otherimfn2);
             if strcmp(aap.options.wheretoprocess,'localsingle')
-                aas_checkreg(aap,domain,varargin{:},outpstream{s},inpstream{tInd});
+                aas_checkreg(aap,domain,cell2mat(varargin),outpstream{s},inpstream{tInd});
             end
         end
         

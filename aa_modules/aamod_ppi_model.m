@@ -168,7 +168,7 @@ switch task
             % Get VOI data...
             voinum=find(strcmp(voinames,aap.spmanalysis.ppis{p}.voiname));
             if (isempty(voinum))
-                aas_log(aap,true,fprintf('Cannot find VOI %s as specified in PPI %s\n',aap.spmanalysis.ppis{p}.voiname,aap.spmanalysis.ppis{p}.ppiname));
+                aas_log(aap,true,sprintf('Cannot find VOI %s as specified in PPI %s\n',aap.spmanalysis.ppis{p}.voiname,aap.spmanalysis.ppis{p}.ppiname));
             end;
 
             % Now generate PPI column for each session...

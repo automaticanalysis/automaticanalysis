@@ -8,14 +8,11 @@ if nargin == 0, Action='SetUp'; else Action=varargin{1}; end
 %==========================================================================
 switch lower(Action), case 'setup'                         %-Set up results
 %==========================================================================
-    
-    spm('defaults','FMRI');
-    
+        
     %-Initialise
     %----------------------------------------------------------------------
     SPMid      = spm('FnBanner',mfilename);
     [Finter,Fgraph,CmdLine] = spm('FnUIsetup','Stats: Results');
-    FS         = spm('FontSizes');
  
     % clear satfig if it exists
     %----------------------------------------------------------------------
@@ -31,6 +28,18 @@ switch lower(Action), case 'setup'                         %-Set up results
         return;
     end
  
+    %-Check whether mesh are detected if we use spm12
+    %--------------------------------------------------------------------------
+    if strcmp(spm('ver'),'SPM12')
+        if spm_mesh_detect(SPM.xY.VY)
+            mesh_detected = 1;
+        else
+            mesh_detected = 0;
+        end
+    else
+          mesh_detected = 0;
+    end
+
     %-Ensure pwd = swd so that relative filenames are valid
     %----------------------------------------------------------------------
     cd(SPM.swd)
@@ -42,7 +51,57 @@ switch lower(Action), case 'setup'                         %-Set up results
 
     %-Space units
     %----------------------------------------------------------------------
-    units    = {'mm' 'mm' 'mm'};
+    try
+        try
+            units = SPM.xVol.units;
+        catch
+            units = xSPM.units;
+        end
+    catch
+        try
+            Modality = spm('CheckModality');
+        catch
+            Modality = {'PET','FMRI','EEG'};
+            selected = spm_input('Modality: ','+1','m',Modality);
+            Modality = Modality{selected};
+            spm('ChMod',Modality);
+        end
+        if strcmp(Modality,'EEG')
+            datatype = {...
+                'Volumetric (2D/3D)',...
+                'Scalp-Time',...
+                'Scalp-Frequency',...
+                'Time-Frequency',...
+                'Frequency-Frequency'};
+            selected = spm_input('Data Type: ','+1','m',datatype);
+            datatype = datatype{selected};
+        else
+            datatype = 'Volumetric (2D/3D)';
+        end
+        
+        switch datatype
+            case 'Volumetric (2D/3D)'
+                units    = {'mm' 'mm' 'mm'};
+            case 'Scalp-Time'
+                units    = {'mm' 'mm' 'ms'};
+            case 'Scalp-Frequency'
+                units    = {'mm' 'mm' 'Hz'};
+            case 'Time-Frequency'
+                units    = {'Hz' 'ms' ''};
+            case 'Frequency-Frequency'
+                units    = {'Hz' 'Hz' ''};
+            otherwise
+                error('Unknown data type.');
+        end
+    end
+    if mesh_detected
+        DIM(3) = Inf; % force 3D coordinates
+    elseif DIM(3) == 1
+        units{3} = '';
+        if DIM(2) == 1
+            units{2} = '';
+        end
+    end
     xSPM.units      = units;
     SPM.xVol.units  = units;
     
@@ -63,10 +122,32 @@ switch lower(Action), case 'setup'                         %-Set up results
  
     %-Setup Maximum intensity projection (MIP) & register
     %----------------------------------------------------------------------
+    FS     = spm('FontSizes');
     hMIPax = axes('Parent',Fgraph,'Position',[0.05 0.60 0.55 0.36],'Visible','off');
-    hMIPax = spm_mip_ui(xSPM.Z,xSPM.XYZmm,M,DIM,hMIPax,units);
- 
-    spm_XYZreg('XReg',hReg,hMIPax,'spm_mip_ui');
+    if mesh_detected
+        hMax = spm_mesh_render('Disp',SPM.xVol.G,'Parent',hMIPax);
+        tmp = zeros(1,prod(xSPM.DIM));
+        tmp(xSPM.XYZ(1,:)) = xSPM.Z;
+        hMax = spm_mesh_render('Overlay',hMax,tmp);
+        hMax = spm_mesh_render('Register',hMax,hReg);
+    elseif isequal(units(2:3),{'' ''})
+        set(hMIPax, 'Position',[0.05 0.65 0.55 0.25]);
+        [allS,allXYZmm] = spm_read_vols(xSPM.Vspm);
+        plot(hMIPax,allXYZmm(1,:),allS,'Color',[0.6 0.6 0.6]);
+        set(hMIPax,'NextPlot','add');
+        MIP = NaN(1,xSPM.DIM(1));
+        MIP(xSPM.XYZ(1,:)) = xSPM.Z;
+        XYZmm = xSPM.M(1,:)*[1:xSPM.DIM(1);zeros(2,xSPM.DIM(1));ones(1,xSPM.DIM(1))];
+        plot(hMIPax,XYZmm,MIP,'b-+','LineWidth',2);
+        plot(hMIPax,[XYZmm(1) XYZmm(end)],[xSPM.u xSPM.u],'r');
+        clim = get(hMIPax,'YLim');
+        axis(hMIPax,[sort([XYZmm(1) XYZmm(end)]) 0 clim(2)]);
+        %set(hMIPax,'XTick',[],'YTick',[]);
+    else
+        hMIPax = spm_mip_ui(xSPM.Z,xSPM.XYZmm,M,DIM,hMIPax,units);
+        spm_XYZreg('XReg',hReg,hMIPax,'spm_mip_ui');
+    end
+    
     if xSPM.STAT == 'P'
         str = xSPM.STATstr;
     else
@@ -81,12 +162,12 @@ switch lower(Action), case 'setup'                         %-Set up results
     %-Print comparison title
     %----------------------------------------------------------------------
     hTitAx = axes('Parent',Fgraph,...
-        'Position',[0.02 0.95 0.96 0.02],...
+        'Position',[0.02 0.96 0.96 0.04],...
         'Visible','off');
  
-    text(0.5,0,xSPM.title,'Parent',hTitAx,...
+    text(0.5,0.5,xSPM.title,'Parent',hTitAx,...
         'HorizontalAlignment','center',...
-        'VerticalAlignment','baseline',...
+        'VerticalAlignment','top',...
         'FontWeight','Bold','FontSize',FS(14))
  
  
@@ -109,14 +190,15 @@ switch lower(Action), case 'setup'                         %-Set up results
     catch
         text(0,12,sprintf('Height threshold %c = %0.6f',xSPM.STAT,xSPM.u),'Parent',hResAx)
     end
-    text(0,00,sprintf('Extent threshold k = %0.0f voxels',xSPM.k), 'Parent',hResAx)
+    if mesh_detected, str = 'vertices'; else str = 'voxels'; end
+    if xSPM.STAT == 'T', text(0,00,sprintf('Extent threshold k = %0.0f %s',xSPM.k,str), 'Parent',hResAx); end
  
  
     %-Plot design matrix
     %----------------------------------------------------------------------
     hDesMtx   = axes('Parent',Fgraph,'Position',[0.65 0.55 0.25 0.25]);
-    hDesMtxIm = image((SPM.xX.nKX + 1)*32);
-    xlabel('Design matrix')
+    hDesMtxIm = image((SPM.xX.nKX + 1)*32,'Parent',hDesMtx);
+    xlabel(hDesMtx,'Design matrix','FontSize',FS(10))
     set(hDesMtxIm,'ButtonDownFcn','spm_DesRep(''SurfDesMtx_CB'')',...
         'UserData',struct(...
         'X',        SPM.xX.xKXs.X,...
@@ -131,22 +213,24 @@ switch lower(Action), case 'setup'                         %-Set up results
     xCon   = SPM.xCon;
     if nCon
         dy     = 0.15/max(nCon,2);
-        hConAx = axes('Position',[0.65 (0.80 + dy*.1) 0.25 dy*(nCon-.1)],...
+        hConAx = axes('Parent',Fgraph, 'Position',[0.65 (0.80 + dy*.1) 0.25 dy*(nCon-.1)],...
             'Tag','ConGrphAx','Visible','off');
-        title('contrast(s)')
+        str    = 'contrast';
+        if nCon > 1, str = [str 's']; end
+        title(hConAx,str)
         htxt   = get(hConAx,'title');
-        set(htxt,'Visible','on','HandleVisibility','on')
+        set(htxt,'FontSize',FS(10),'FontWeight','normal','Visible','on','HandleVisibility','on')
     end
  
     for ii = nCon:-1:1
-        axes('Position',[0.65 (0.80 + dy*(nCon - ii +.1)) 0.25 dy*.9])
+        hCon = axes('Parent',Fgraph, 'Position',[0.65 (0.80 + dy*(nCon - ii +.1)) 0.25 dy*.9]);
         if xCon(xSPM.Ic(ii)).STAT == 'T' && size(xCon(xSPM.Ic(ii)).c,2) == 1
  
             %-Single vector contrast for SPM{t} - bar
             %--------------------------------------------------------------
             yy = [zeros(1,nPar);repmat(xCon(xSPM.Ic(ii)).c',2,1);zeros(1,nPar)];
-            h  = patch(xx,yy,[1,1,1]*.5);
-            set(gca,'Tag','ConGrphAx',...
+            h  = patch(xx,yy,[1,1,1]*.5,'Parent',hCon);
+            set(hCon,'Tag','ConGrphAx',...
                 'Box','off','TickDir','out',...
                 'XTick',spm_DesRep('ScanTick',nPar,10) - 0.5,'XTickLabel','',...
                 'XLim', [0,nPar],...
@@ -158,21 +242,22 @@ switch lower(Action), case 'setup'                         %-Set up results
  
             %-F-contrast - image
             %--------------------------------------------------------------
-            h = image((xCon(xSPM.Ic(ii)).c'/max(abs(xCon(xSPM.Ic(ii)).c(:)))+1)*32);
-            set(gca,'Tag','ConGrphAx',...
+            h = image((xCon(xSPM.Ic(ii)).c'/max(abs(xCon(xSPM.Ic(ii)).c(:)))+1)*32,...
+                'Parent',hCon);
+            set(hCon,'Tag','ConGrphAx',...
                 'Box','on','TickDir','out',...
                 'XTick',spm_DesRep('ScanTick',nPar,10),'XTickLabel','',...
                 'XLim', [0,nPar]+0.5,...
-                'YTick',[0:size(SPM.xCon(xSPM.Ic(ii)).c,2)]+0.5,....
+                'YTick',[0:size(SPM.xCon(xSPM.Ic(ii)).c,2)]+0.5,...
                 'YTickLabel','',...
                 'YLim', [0,size(xCon(xSPM.Ic(ii)).c,2)]+0.5 )
  
         end
-        ylabel(num2str(xSPM.Ic(ii)))
+        ylabel(hCon,num2str(xSPM.Ic(ii)),'FontSize',FS(10),'FontWeight','normal')
         set(h,'ButtonDownFcn','spm_DesRep(''SurfCon_CB'')',...
-            'UserData', struct( 'i',        xSPM.Ic(ii),...
-            'h',        htxt,...
-            'xCon',     xCon(xSPM.Ic(ii))))
+            'UserData', struct( 'i',    xSPM.Ic(ii),...
+                                'h',    htxt,...
+                                'xCon', xCon(xSPM.Ic(ii))))
     end
  
  
@@ -287,12 +372,21 @@ switch lower(Action), case 'setup'                         %-Set up results
             'FontSize',FS(10),...
             'HorizontalAlignment','Left',...
             'ForegroundColor','w')
-        uicontrol(Finter,'Style','PushButton','String','plot','FontSize',FS(10),...
+        if strcmp(spm('ver'),'SPM12')
+          uicontrol(Finter,'Style','PushButton','String','plot','FontSize',FS(10),...
+            'ToolTipString','plot data & contrasts at current voxel',...
+            'Callback','[Y,y,beta,Bcov] = spm_graph_ui(xSPM,SPM,hReg);',...
+            'Interruptible','on','Enable','on',...
+            'Position',[285 145 100 020].*WS,...
+            'Tag','plotButton')
+        else
+          uicontrol(Finter,'Style','PushButton','String','plot','FontSize',FS(10),...
             'ToolTipString','plot data & contrasts at current voxel',...
             'Callback','[Y,y,beta,Bcov] = spm_graph(xSPM,SPM,hReg);',...
             'Interruptible','on','Enable','on',...
             'Position',[285 145 100 020].*WS,...
             'Tag','plotButton')
+        end
  
         str  = { 'overlays...','slices','sections','render','previous sections','previous render'};
         tstr = { 'overlay filtered SPM on another image: ',...
@@ -321,9 +415,7 @@ switch lower(Action), case 'setup'                         %-Set up results
  
         uicontrol(Finter,'Style','PushButton','String','save','FontSize',FS(10),...
             'ToolTipString','save thresholded SPM as image',...
-            'Callback',['spm_write_filtered(xSPM.Z,xSPM.XYZ,xSPM.DIM,xSPM.M,',...
-            'sprintf(''SPM{%c}-filtered: u = %5.3f, k = %d'',',...
-            'xSPM.STAT,xSPM.u,xSPM.k));'],...
+            'Callback','cg_tfce_results(''Save'',xSPM);',...
             'Interruptible','on','Enable','on',...
             'Position',[285 095 100 020].*WS)
  
@@ -798,6 +890,30 @@ switch lower(Action), case 'setup'                         %-Set up results
         varargout = {hMP};
  
  
+    %======================================================================
+    case 'save'                            %-Save thresholded results
+    %======================================================================
+    xSPM =varargin{2};
+    
+    if isfield(xSPM,'G')
+        F     = spm_input('Output filename',1,'s');
+        if isempty(spm_file(F,'ext'))
+            F = spm_file(F,'ext','.gii');
+        end
+        F     = spm_file(F,'CPath');
+        M     = gifti(xSPM.G);
+        C     = zeros(1,size(xSPM.G.vertices,1));
+        C(xSPM.XYZ(1,:)) = xSPM.Z;
+        M.cdata = C;
+        save(M,F);
+        cmd   = 'spm_mesh_render(''Disp'',''%s'')';
+    else
+        V   = spm_write_filtered(xSPM.Z, xSPM.XYZ, xSPM.DIM, xSPM.M,...
+        sprintf('SPM{%c}-filtered: u = %5.3f, k = %d',xSPM.STAT,xSPM.u,xSPM.k));
+        cmd = 'spm_image(''display'',''%s'')';
+        F   = V.fname;
+    end
+
  
     %======================================================================
     case 'delete'                           %-Delete HandleGraphics objects

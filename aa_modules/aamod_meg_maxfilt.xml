@@ -29,7 +29,7 @@
             
             <calibrationdirectory desc='Directory containing one or more custom calibration files ct_sparse.fif and sss_cal.dat' ui='dir'></calibrationdirectory>
             
-            <transform desc='empty: no transform; 0: default; 1-: session number to take as reference' ui='double'>1 0</transform>
+            <transform desc='empty: no transform; 0: default; -0: (overall) session number take as reference; +0: (selected) session number to take as reference' ui='double'>1 0</transform>
                         
             <inputstreams>
                 <stream isrenameable='1'>meg</stream>

@@ -15,7 +15,7 @@ while (~feof(fid))
     firstind=1;
     for curlyind=1:length(pos_start)
         parmname=strtrim(lne((pos_start(curlyind)+2):(pos_end(curlyind)-2)));
-        fprintf('parmname %s value %f\n',parmname, parameters.(parmname));
+        aas_log(aap,false,sprintf('parmname %s value %f',parmname, parameters.(parmname)));
         if (pos_start(curlyind)>1)
             outlne=[outlne lne(firstind:(pos_start(curlyind)-1))];
         end;

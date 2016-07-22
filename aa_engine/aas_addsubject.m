@@ -11,21 +11,22 @@
 %   - data: subject foldername within database (may include UNIX wildcards, e.g., CBU060500*/*)
 %
 %   'name', subjname: manual entry of subject name (overwrites aap.directory_conventions.subject_directory_format)
-%   'functional', seriesnum: functional MRI or MEG series
-%     For fMRI, seriesnum can be:
-%         DICOM source: series numbers of EPIs for this subject
-%         NIFTI source: cell array containing (one or more)
+%   'functional'
+%     For fMRI, series can be:
+%         DICOM source: array with series numbers of EPIs for this subject. E.g.: single-echo EPI: [5 10 15]; multi-echo EPI: {5 10 15:19}
+%         NIfTI source: cell array containing (one or more)
 %           - string: full or realtive path (from rawdatadir - only one is supported) to structural
-%           - string: full or realtive path (from rawdatadir - only one is supported) to 4D NIFTI of one fMRI session
+%           - string: full or realtive path (from rawdatadir - only one is supported) to 4D NIfTI of one fMRI session
 %           - string: full or realtive path (from rawdatadir - only one is supported) to wholebrain EPI (only after fMRI)
-%           - cell array (nested): full path to 3D NIFTI files of one fMRI session
-%         all strings can be structures with fields 'fname' (path to image), and 'hdr', 'bval', 'bvec' (path to header, bvals and bvecs)
-%     For MEG, seriesnum is the filename of the *.fif file.
-%   'diffusion', seriesnum: diffusion-weighted MRI series
-%   'structural', serienum or cellstr of 3D NIFTI filename: specifying structural
-%   'fieldmaps', serienums or cell of structure with fields 'fname' (3 (2x mag + 1x phase)x 3D NIFTI filenames) and 'hdr' (path to header): specifying fieldmap
-%   'specialseries', seriesnum: special series to be converted
-%   'ignoreseries', seriesnum: series to be ignored in the analysis (e.g. a repeated structural) [added by djm 20/3/06]
+%           - cell array (nested): full path to 3D NIfTI files of one fMRI session
+%         	all strings can be structures with fields 'fname' (path to image) and 'hdr' (path to header)
+%           missing series can be inicated either with "0" (for numerical array input) or with "[]" (for cell array input)
+%     For MEG, series is the filename of the *.fif file.
+%   'diffusion', diffusion-weighted MRI series (DICOM) or cell of structure(s) (NIfTI) with fields 'fname' (path to image), and 'bval', 'bvec' (path to bvals and bvecs)
+%   'structural', series (DICOM), cellstring of 3D NIfTI filename or cell of structure with fields 'fname' (path to image) and 'hdr' (path to header)
+%   'fieldmaps', series (DICOM) or cell of structure(s) with fields 'fname' (3 (2x mag + 1x phase)x 3D NIfTI filenames) and 'hdr' (path to header)
+%   'specialseries', series
+%   'ignoreseries', series (DICOM) to be ignored in the analysis (e.g. a repeated structural) [added by djm 20/3/06]
 
 function aap = aas_addsubject(aap, varargin)
 
@@ -86,7 +87,8 @@ fields(strcmp(fields,'subjname')) = [];
 
 % search for existing subject
 if isfield(args,'name'), name = args.name; end
-if ~isempty(name) % name specified --> check whether subject already exists
+if ~isempty(name) && ~isempty(aap.acq_details.subjects(1).subjname)
+% name specified --> check whether subject already exists (only if there is at least one already)    
     subjserach = cell_index({aap.acq_details.subjects.subjname},name);
     if subjserach
         subjind = subjserach; 
@@ -104,7 +106,7 @@ try
     if iscell(data) && numel(data) == 2 % MEG
         thissubj.megname{iMEGData}=data{1};
         thissubj.mriname{iMRIData}=data{2};
-        if isempty(name), name = aas_megname2subjname(aap,sprintf(aap.directory_conventions.megsubjectoutputformat,thissubj.megname)); end
+        if isempty(name), name = aas_megname2subjname(aap,sprintf(aap.directory_conventions.megsubjectoutputformat,thissubj.megname{1})); end
     else % MRI
         thissubj.mriname{iMRIData}=data;
         if isempty(name), name = aas_mriname2subjname(aap,sprintf(aap.directory_conventions.subjectoutputformat,thissubj.mriname{1})); end
@@ -125,8 +127,10 @@ if isfield(args,'functional')
         for s = 1:numel(args.functional)
             if iscell(args.functional{s}) % multiple 3D files
                 fMRI{end+1} = args.functional{s};
-            elseif ischar(args.functional{s}) || isstruct(args.functional{s}) % single NIFTI file or hdr+fname
+            elseif ischar(args.functional{s}) ||... % NIfTI file
+                    isstruct(args.functional{s})    % hdr+fname
                 % Get filename
+                
                 if isstruct(args.functional{s})
                     if numel(args.functional{s}.fname) > 1 % multiple 3D files
                         fMRI{end+1} = args.functional{s};
@@ -166,7 +170,9 @@ if isfield(args,'functional')
                         thissubj.structural{iMRIData}=args.functional(s);
                     end
                 end
-            else isnumeric(args.functional{s}) % mixed: DICOM series number for fMRI
+            elseif isempty(args.functional{s}) % missing series
+                fMRI{end+1} = [];
+            else % mixed: DICOM series number for fMRI
                 thissubj.seriesnumbers{iMRIData}=args.functional{s};
             end
         end

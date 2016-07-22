@@ -58,7 +58,7 @@ switch task
                     for fnind=1:length(fn)
                         if (~fn(fnind).isdir)
                             fullfn=fullfile(thispth,fn(fnind).name);
-                            H=spm_dicom_headers(fullfn); %aas_dicom_headers_light(fullfn);
+                            H=spm_dicom_headers(fullfn);
                             if (isfield(H{1},'SeriesNumber') && isfield(H{1},'AcquisitionNumber'))
                                 serieslist=[serieslist H{1}.SeriesNumber];
                                 switch(aap.tasklist.currenttask.settings.orderdicomsby)
@@ -143,15 +143,15 @@ switch task
                     if (aap.directory_conventions.rawseries_usefileorder)
                         seriesnum=j;
                     else
-                        [aap seriesnum]=aas_getseriesnumber(aap,dicomseriesname);
+                        seriesnum=aas_getseriesnumber(aap,dicomseriesname);
                     end
                 case 'none'
                     seriesnum=rawdata_allseries(j);
                     dicomfilepath=alldicomfiles{seriesnum}{1};
             end
             
-            
-            
+            % ignoreseries
+            if any(aap.acq_details.subjects(i).ignoreseries{d} == seriesnum), continue; end
             
             % For this series, find type from a single DICOM file
             if (~isempty(dicomfilepath))
@@ -162,12 +162,9 @@ switch task
                     aas_log(aap,false,sprintf('Ignoring series %d',j));
                 else
                     aas_log(aap,false,sprintf('Protocol field is %s and got %s',aap.tasklist.currenttask.settings.dicom_protocol_field,hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field)));
-                    
+
                     if (aap.options.autoidentifyfieldmaps)
                         if (findstr(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_fieldmap))
-                            if (length(series_newfieldmap)>2)
-                                aas_log(aap,1,['Automatic series id failed - more than a pair of Siemens fieldmap acquisition were found.' sprintf('%d\t',series_newfieldmap)]);
-                            end
                             series_newfieldmap=[series_newfieldmap seriesnum];
                         end
                     end
@@ -192,7 +189,6 @@ switch task
                             series_tmaps=[series_tmaps seriesnum];
                         end
                     end
-                    %                    fprintf('Protocol %s\n',hdr{1}.ProtocolName);
                 end
             end
             
@@ -211,7 +207,7 @@ switch task
         comment=[];
         if (aap.options.autoidentifyfieldmaps)
             aap.acq_details.subjects(i).siemensfieldmap={};
-            if (length(series_newfieldmap)==aap.options.autoidentifyfieldmaps_number)
+            if (length(series_newfieldmap)>=aap.options.autoidentifyfieldmaps_number)
                 comment=[comment ' ' sprintf('gre_fieldmapping found %d',series_newfieldmap(1))];
                 % Generalisation of fieldmap number...
                 for n = 2:aap.options.autoidentifyfieldmaps_number

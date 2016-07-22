@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_coreg_general' domain='session' desc='SPM coregistration and reslicing of images (general)' modality='MRI'>
+            
+            <eoptions>
+                <cost_fun>nmi</cost_fun>
+            </eoptions>
+            
+            <doReslice>1</doReslice>
+            
+            <PVE desc='Binarization threshold = 0-1' ui='double'></PVE>
+            
+            <inputstreams>
+                <stream isrenameable='1'>reference</stream>
+                <stream isrenameable='1'>input</stream> <!-- this one coreg'ed to previous -->
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>output</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

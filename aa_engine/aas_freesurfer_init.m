@@ -56,9 +56,9 @@ if ~SkipAnatConvert
         end
     end
 else
-    fprintf('Conversion of anatomicals from NIFTI to MGH was skipped, existing MGHs will be used. \n');
+    aas_log(aap,false,'Conversion of anatomicals from NIFTI to MGH was skipped, existing MGHs will be used.');
 end
 
-fprintf(['Initialization freesurfer for subject ', subj_id, ' ran succesfully! \n']);
+aas_log(aap,false,['Initialization freesurfer for subject ', subj_id, ' ran succesfully!']);
 
 end

@@ -46,7 +46,7 @@ switch task
         if settings.useaasessions
             [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
             subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-            sessnames = {aap.acq_details.sessions(sessInds).name};
+            sessnames = {aap.acq_details.sessions(:).name};
             selected_sessions = subjSessionI;
             nsess = length(selected_sessions);
             nsess_all = length(sessnames);
@@ -137,8 +137,15 @@ switch task
                             % [AVG] To make the selected sessions work...
                             sessforcon(selected_sessions) = 1;
                         else
-                            [junk, indsess] = intersect(sessnames,contrasts.con(conind).session);
-                            sessforcon(indsess) = 1;
+                            sessions = contrasts.con(conind).session;
+                            if isstruct(sessions)
+                                sessweights = sessions.weights;
+                                sessions = sessions.names;                                
+                            else
+                                sessweights = ones(1,numel(sessions));
+                            end
+                            [junk, indsess] = intersect(sessnames,sessions);
+                            sessforcon(indsess) = sessweights;
                         end
                         
                         convec=[];
@@ -149,30 +156,30 @@ switch task
                             if (sessforcon(sess))
                                 if isnumeric(contrasts.con(conind).vector) % vcontrast vector
                                     if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
-                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); disp(contrasts.con(conind).vector);
+                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); 
                                     elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess) % padding if shorter
-                                        convec = [convec contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
+                                        convec = [convec sessforcon(sess)*contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
                                     else
-                                        convec = [convec contrasts.con(conind).vector];
+                                        convec = [convec sessforcon(sess)*contrasts.con(conind).vector];
                                     end
                                 elseif ischar(contrasts.con(conind).vector) % contrast string
                                     convec = [convec zeros(size(contrasts.con(conind).vector,1), numcolsinthissess)];
                                     for cr = 1:size(contrasts.con(conind).vector,1)
-                                        cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%[^mp]%c%d','Delimiter','|');
+                                        cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%[^mp]%c%d','Delimiter','|');
                                         if isempty(cs{3}) % simple format
-                                            cs = textscan(contrasts.con(conind).vector(cr,:),'%dx%s','Delimiter','|');
+                                            cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%s','Delimiter','|');
                                             cs{3}(1:numel(cs{1}),1) = 'm';
                                             cs{4}(1:numel(cs{1}),1) = int32(1);
                                         end
                                         for e = 1:numel(cs{1})
                                             switch cs{3}(e)
                                                 case 'm' % main trail
-                                                    EVpttrn = sprintf('Sn(%d) %s*',sess,cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %s*',find(selected_sessions==sess),deblank(cs{2}{e}));
                                                 case 'p' % parametric
-                                                    EVpttrn = sprintf('Sn(%d) %sx',sess,cs{2}{e});
+                                                    EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),deblank(cs{2}{e}));
                                             end
                                             ind = cell_index(SPM.xX.name,EVpttrn);
-                                            convec(cr,ind(cs{4}(e))) = cs{1}(e);
+                                            convec(cr,ind(cs{4}(e))) = sessforcon(sess)*cs{1}(e);
                                         end
                                     end
                                 else
@@ -186,14 +193,16 @@ switch task
                         % If subjects have different # of sessions, then
                         % they will be weighted differently in 2nd level
                         % model. So, normalize the contrast by the number
-                        % of sesisons that contribute to it [CW]
-                        convec = convec ./ nnz(sessforcon); 
+                        % of sesisons that contribute to it [default]
+                        if isempty(aas_getsetting(aap,'scalebynumberofsessions')) || aas_getsetting(aap,'scalebynumberofsessions')
+                            convec = convec ./ nnz(sessforcon); 
+                        end
                         
                     case 'uniquebysession'
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
                         
                         if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
-                            aas_log(aap,true,sprintf('Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); disp(contrasts.con(conind).vector);
+                            aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); 
                         elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
                             convec = contrasts.con(conind).vector;
                             if settings.automatic_movesandmeans
@@ -230,9 +239,9 @@ switch task
                 cons{ccount}(inds) = 0;
                 
                 % DIAGNOSTIC
-                fprintf('\n%s\n', contrasts.con(conind).name)
+                aas_log(aap,false,contrasts.con(conind).name)
                 for conind  =  1:max(size(convec_names))
-                    fprintf('\t%s: %d\n', convec_names{conind}, convec(SPM.xX.iC(conind)))
+                    aas_log(aap,false,sprintf('\t%s: %d', convec_names{conind}, convec(SPM.xX.iC(conind))))
                 end
             end
         end
@@ -308,7 +317,7 @@ cons = SPM.xCon; cons = cons([cons.STAT]=='T');
 for c = cons
     h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
     print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
-        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep(c.name,' ','') '.jpg']));
+        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep_multi(c.name,{' ' ':' '>'},{'' '_' '-'}) '.jpg'])); % "unconventional" characters 
     close(h);
 end
 

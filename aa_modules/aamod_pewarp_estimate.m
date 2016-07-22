@@ -99,7 +99,7 @@ switch task
         
         %% Let's remove bias from the image...
         if aap.tasklist.currenttask.settings.bias
-            fprintf('\nRemoving bias from the mean EPI')
+            aas_log(aap,false,'Removing bias from the mean EPI')
             
             % Defaults for normalisation
             defs =aap.spm.defaults.normalise;

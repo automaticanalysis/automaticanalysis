@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Convert subject special series' modality='MRI'>
+        <currenttask domain='special_session' desc='Convert subject special series' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
@@ -16,6 +16,7 @@
             
              <outputstreams>
                 <stream>specialseries</stream>
+                <stream>specialseries_dicom_header</stream>
             </outputstreams>
             
         </currenttask>

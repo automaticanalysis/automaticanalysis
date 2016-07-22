@@ -15,7 +15,7 @@
 
             <dimest desc='Estimate dimensionality'>1</dimest>
             <subject_to_dimest desc='subject index for dimensionality estimation'></subject_to_dimest>
-            <numICs>mean</numICs>
+            <numICs ui='optionlist' options='mean|min|max'>mean</numICs>
             <PCA1></PCA1>
             <PCA2></PCA2>
             

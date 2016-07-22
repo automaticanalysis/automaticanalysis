@@ -75,9 +75,9 @@ switch task
             ROIvol = cell(size(ROIimg,1),1);
         end
         
-        fprintf('\nWorking on session %s', aap.acq_details.sessions(sess).name)
+        aas_log(aap,false,sprintf('Working on session %s', aap.acq_details.sessions(sess).name))
         
-        fprintf('\n\tLoading ROIs')
+        aas_log(aap,false,'\tLoading ROIs')
         for r = 1:size(ROIimg,1)
             % Now load each of the ROIs we wish to examine (usually using the grey matter)
             rV = spm_vol(ROIimg(r,:));
@@ -93,13 +93,13 @@ switch task
         end
         
         %% If the dataset is too large, we process it by chunks...
-        fprintf('\n\tProcessing data (%d scans)', size(EPIimg,1))
+        aas_log(aap,false,sprintf('\tProcessing data (%d scans)', size(EPIimg,1)))
         
         taskComplete = 0;
         chunkDim = 1;
         
         while taskComplete == 0
-            fprintf('\nTrying with %d chunks', chunkDim)
+            aas_log(aap,false,sprintf('Trying with %d chunks', chunkDim))
             
             try
                 chunkX = 0;
@@ -115,7 +115,7 @@ switch task
                 for x = 1:length(chunkX) - 1
                     for y = 1:length(chunkY) - 1
                         for z = 1:length(chunkZ) - 1
-                            fprintf('\n\t...chunk %d %d %d', x, y, z)
+                            aas_log(aap,false,sprintf('\t...chunk %d %d %d', x, y, z))
                             Xind = chunkX(x) + 1 : chunkX(x+1);
                             Yind = chunkY(y) + 1 : chunkY(y+1);
                             Zind = chunkZ(z) + 1 : chunkZ(z+1);
@@ -196,7 +196,7 @@ switch task
             end
         end
         
-        fprintf('\n\tCalculating & saving the tSNR image')
+        aas_log(aap,false,'\tCalculating & saving the tSNR image')
         % Calculate SNR as ratio of the two...
         EPIsnr = EPIsignal ./ EPInoise;
         EPIsnr(isnan(EPIsnr)|isinf(EPIsnr)) = 0;
@@ -211,7 +211,7 @@ switch task
             ['tSNR_' aap.acq_details.sessions(sess).name '.nii']);
         spm_write_vol(sV, EPIsnr);
         
-        fprintf('\n\tFinalising ROI data')
+        aas_log(aap,false,'\tFinalising ROI data')
         
         for r = 1:size(ROIimg,1)
             % Now get the voxels specific to each ROI
@@ -271,7 +271,7 @@ switch task
         
         %% tSNR results figure!
         if ~isempty(ROIimg)
-            fprintf('\nDisplaying the results of the tSNR analysis')
+            aas_log(aap,false,'Displaying the results of the tSNR analysis')
             colorsB = {'r' 'g' 'b' 'c' 'm' 'y' 'w'};
             
             % We need to make a string for legend...
@@ -332,7 +332,7 @@ switch task
             
             %% Time-course results figure!
             
-            fprintf('\nDisplaying the results of the timecourse analysis')
+            aas_log(aap,false,'Displaying the results of the timecourse analysis')
             
             try close(2); catch; end
             

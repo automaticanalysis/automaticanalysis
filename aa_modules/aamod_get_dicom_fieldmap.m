@@ -56,7 +56,6 @@ switch task
             
             % Now copy files to this module's directory
             aas_makedir(aap,newpath);
-            outstream={};
             switch(aap.directory_conventions.remotefilesystem)
                 case 'none'
                     for ind=1:length(dicom_files_src)
@@ -69,5 +68,37 @@ switch task
             out=[out spm_file(dicom_files_src,'path',newpath)];
         end
         
+        %% To Edit
+        % DICOM dictionary
+        dict = load(aas_getsetting(aap,'DICOMdictionary'));
+        if isempty(getenv('DCMDICTPATH'))
+            setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
+        end
+        
+        % Fields to edit
+        toEditsetting = aas_getsetting(aap,'toEdit');
+        toEditsubj = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
+        toEdit = [];
+        for s = 1:numel(toEditsubj)
+            sessnames = regexp(toEditsubj(s).session,':','split');
+            if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
+                toEdit = toEditsubj(s);
+                break;
+            end
+        end
+        
+        % do it
+        if ~isempty(toEdit)
+            for f = {toEdit.DICOMfield}
+                group = dict.group(strcmp({dict.values.name}',f{1}.FieldName));
+                element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
+                
+                for imnum = 1:numel(out)
+                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                end
+            end
+        end
+        
+        %% Output
         aap=aas_desc_outputs(aap,subj,sess,'dicom_fieldmap',out);
 end

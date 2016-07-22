@@ -28,7 +28,9 @@ switch task
         
         % EPI TotalEPIReadoutTime (based on the first EPI)
         EPI_DICOMHEADERS = load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header')); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
-        if isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing')
+        if isfield(EPI_DICOMHEADERS,'NumberofPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing') % <=SPM8
+            job.defaults.defaultsval.tert = EPI_DICOMHEADERS.NumberofPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
+        elseif isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing') % >=SPM12
             job.defaults.defaultsval.tert = EPI_DICOMHEADERS.NumberOfPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
         else
             aas_log(aap,true,'ERROR:Field for number of phase encoding steps and/or echospacing not found!\nERROR:You may need to rerun aamod_convert_epis.');
@@ -39,7 +41,7 @@ switch task
             dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
             tes = sort(unique([dcmhdrs.volumeTE]),'ascend')*1000; % in ms
             if numel(tes) ~= 2, tes = sort(unique([dcmhdrs.EchoTime]),'ascend'); end % try original (backward compatibility)
-            if numel(tes) ~= 2, error('Inappropriate fieldmap header!'); end
+            if numel(tes) ~= 2, aas_log(aap,true,'Inappropriate fieldmap header!'); end
             job.defaults.defaultsval.et = tes;
         catch E
             job.defaults.defaultsval.et = [aas_getsetting(aap,'te1') aas_getsetting(aap,'te2')];

@@ -11,7 +11,6 @@ if (isfield(mystruct,'ATTRIBUTE'))
         aas_log(aap,true,sprintf('Definition of parameter %s in XML does not contain ui type\n',nme));
     end;
     ui=mystruct.('ATTRIBUTE').ui;
-    %     fprintf('Found %s leaf type %s\n',nme,ui);
     switch(ui)
         case {'dir','filename','dir_part','dir_list'}
             % allow colons in dir_list type

@@ -266,14 +266,14 @@ switch task
             
             % Include a CSF signal?
             if settings.includeCSF
-                fprintf('Adding CSF signal as covariate.\n');
+                aas_log(aap,false,'Adding CSF signal as covariate.');
                 C = [C compSignals.compTC(:,3)];
                 Cnames = [Cnames 'CSF'];
             end
             
             % Include a WM signal?
             if settings.includeCSF
-                fprintf('Adding WM signal as covariate.\n');
+                aas_log(aap,false,'Adding WM signal as covariate.');
                 C = [C compSignals.compTC(:,2)];
                 Cnames = [Cnames 'WM'];
             end
@@ -341,7 +341,7 @@ switch task
             
             % Remove scans if needed
             if ~isempty(settings.numDummies) && settings.numDummies > 0
-                fprintf('Removing 1st %d scans.\n', settings.numDummies);
+                aas_log(aap,false,sprintf('Removing 1st %d scans.', settings.numDummies));
                 C = C(settings.numDummies+1:end, :);
                 thisSessFiles = thisSessFiles(settings.numDummies+1:end, :);
                 nScans = size(thisSessFiles, 1);

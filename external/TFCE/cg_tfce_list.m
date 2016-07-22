@@ -1,5 +1,5 @@
 function varargout = cg_tfce_list(varargin)
-% Display and analysis of SPM{.}
+% Display an analysis of SPM{.}
 % FORMAT TabDat = cg_tfce_list('List',SPM,hReg,[Num,Dis,Str])
 % Summary list of local maxima for entire volume of interest
 % FORMAT TabDat = cg_tfce_list('ListCluster',SPM,hReg,[Num,Dis,Str])
@@ -15,13 +15,14 @@ function varargout = cg_tfce_list(varargin)
 % .u     - height threshold
 % .k     - extent threshold {voxels}
 % .XYZ   - location of voxels {voxel coords}
-% .XYZmm - location of voxels {mm}
 % .S     - search Volume {voxels}
 % .R     - search Volume {resels}
 % .FWHM  - smoothness {voxels}
 % .M     - voxels - > mm matrix
 % .VOX   - voxel dimensions {mm}
-% .Vspm  - mapped statistic image(s)
+% .DIM   - image dimensions {voxels}
+% .units - space units
+% .VRpv  - filehandle - Resels per voxel
 % .Ps    - uncorrected P values in searched volume (for voxel FDR)
 % .Pp    - uncorrected P values of peaks (for peak FDR)
 % .Pc    - uncorrected P values of cluster extents (for cluster FDR)
@@ -115,7 +116,7 @@ function varargout = cg_tfce_list(varargin)
 % Copyright (C) 2008 Wellcome Trust Centre for Neuroimaging
 
 % Karl Friston & Andrew Holmes
-% $Id: cg_tfce_list.m 50 2011-06-21 15:01:54Z gaser $
+% $Id: cg_tfce_list.m 85 2015-12-01 10:55:55Z gaser $
 
 % always voxel-wise FDR
 topoFDR = false;
@@ -133,7 +134,8 @@ switch lower(varargin{1}), case 'list'                            %-List
     %----------------------------------------------------------------------
     if nargin < 2,  error('insufficient arguments'),     end
     if nargin < 3,  hReg = []; else  hReg = varargin{3}; end
-
+    xSPM = varargin{2};
+    if isempty(xSPM), varargout = {{}}; return;          end
 
     %-Get current location (to highlight selected voxel in table)
     %----------------------------------------------------------------------
@@ -145,6 +147,8 @@ switch lower(varargin{1}), case 'list'                            %-List
     VOX    = varargin{2}.VOX;
     DIM    = varargin{2}.DIM;
     n      = varargin{2}.n;
+    XYZ    = varargin{2}.XYZ;
+    XYZmm  = varargin{2}.XYZmm;
     STAT   = varargin{2}.STAT;
     df     = varargin{2}.df;
     u      = varargin{2}.u;
@@ -172,16 +176,21 @@ switch lower(varargin{1}), case 'list'                            %-List
     units{1}  = [units{1} ' '];
     units{2}  = [units{2} ' '];
 
-    DIM       = DIM > 1;              % dimensions
-    D         = sum(DIM);             % highest dimension
+    DIM   = DIM > 1;                  % non-empty dimensions
+    if strcmp(spm('ver'),'SPM12')
+        if spm_mesh_detect(xSPM.Vspm)
+            DIM   = true(1,3);        % non-empty dimensions
+        end
+    end
     VOX       = VOX(DIM);             % scaling
 
     if STAT~='P'
+        R     = full(xSPM.R);         % Resel counts
         FWHM  = FWHM(DIM);            % Full width at max/2
         FWmm  = FWHM.*VOX;            % FWHM {units}
         V2R   = 1/prod(FWHM);         % voxels to resels
         k     = k*V2R;                % extent threshold in resels
-        R     = R(1:(D + 1));         % eliminate null resel counts
+        R     = R(1:find(R~=0,1,'last')); % eliminate null resel counts
         try, QPs = sort(QPs(:)); end  % Needed for voxel   FDR
         try, QPp = sort(QPp(:)); end  % Needed for peak    FDR
         try, QPc = sort(QPc(:)); end  % Needed for cluster FDR
@@ -206,7 +215,7 @@ switch lower(varargin{1}), case 'list'                            %-List
     %----------------------------------------------------------------------
     spm('Pointer','Watch')
     Fgraph = spm_figure('FindWin','Satellite');
-    if Fgraph
+    if ~isempty(Fgraph)
         figure(Fgraph);
         ht = 0.85; bot = 0.14;
     else
@@ -242,7 +251,7 @@ switch lower(varargin{1}), case 'list'                            %-List
 
     text(0,y,['Statistics:  \it\fontsize{',num2str(FS(9)),'}',Title],...
               'FontSize',FS(11),'FontWeight','Bold');   y = y - dy/2;
-    line([0 1],[y y],'LineWidth',3,'Color','r'),        y = y - 9*dy/8;
+    line([0 1],[y y],'LineWidth',3,'Color','b'),        y = y - 9*dy/8;
 
     %-Construct table header
     %----------------------------------------------------------------------
@@ -251,15 +260,15 @@ switch lower(varargin{1}), case 'list'                            %-List
     Hc = [];
     Hp = [];
     text(0.22,y,        'cluster-level','FontSize',FS(9));
-    line([0.14,0.44],[1,1]*(y-dy/4),'LineWidth',0.5,'Color','r');
+    line([0.14,0.44],[1,1]*(y-dy/4),'LineWidth',0.5,'Color','b');
     h  = text(0.34,y-9*dy/8,    '\itk\rm_E');
     
     if STAT=='TFCE'
-        text(0.64,y,        'combined peak-cluster-level','FontSize',FS(9));
+        text(0.55,y,        'combined peak-cluster-level','FontSize',FS(9));
     else
-        text(0.64,y,        'peak-level','FontSize',FS(9));
+        text(0.55,y,        'peak-level','FontSize',FS(9));
     end
-    line([0.48,0.88],[1,1]*(y-dy/4),'LineWidth',0.5,'Color','r');
+    line([0.48,0.88],[1,1]*(y-dy/4),'LineWidth',0.5,'Color','b');
     h  = text(0.49,y-9*dy/8,    '\itp\rm_{FWE-corr}');     Hp = [Hp,h];
     h  = text(0.58,y-9*dy/8,        '\itq\rm_{FDR-corr}'); Hp = [Hp,h];
     h  = text(0.82,y-9*dy/8,    '\itp\rm_{uncorr}');       Hp = [Hp,h];
@@ -286,6 +295,33 @@ switch lower(varargin{1}), case 'list'                            %-List
         'peak',     'p(unc)';...
         '',         'x,y,z {mm}'}';...
 
+    %-Coordinate Precisions
+    %----------------------------------------------------------------------
+    if isempty(XYZmm) % empty results
+        xyzfmt = '%3.0f %3.0f %3.0f';
+        voxfmt = repmat('%0.1f ',1,nnz(DIM));
+    elseif ~any(strcmp(units{3},{'mm',''})) % 2D data
+        xyzfmt = '%3.0f %3.0f %3.0f';
+        voxfmt = repmat('%0.1f ',1,nnz(DIM));
+    else % 3D data, work out best precision based on voxel sizes and FOV
+        xyzsgn = min(XYZmm(DIM,:),[],2) < 0;
+        xyzexp = max(floor(log10(max(abs(XYZmm(DIM,:)),[],2)))+(max(abs(XYZmm(DIM,:)),[],2) >= 1),0);
+        voxexp = floor(log10(abs(VOX')))+(abs(VOX') >= 1);
+        xyzdec = max(-voxexp,0);
+        voxdec = max(-voxexp,1);
+        xyzwdt = xyzsgn+xyzexp+(xyzdec>0)+xyzdec;
+        voxwdt = max(voxexp,0)+(voxdec>0)+voxdec;
+        tmpfmt = cell(size(xyzwdt));
+        for i = 1:numel(xyzwdt)
+            tmpfmt{i} = sprintf('%%%d.%df ', xyzwdt(i), xyzdec(i));
+        end
+        xyzfmt = [tmpfmt{:}];
+        tmpfmt = cell(size(voxwdt));
+        for i = 1:numel(voxwdt)
+            tmpfmt{i} = sprintf('%%%d.%df ', voxwdt(i), voxdec(i));
+        end
+        voxfmt = [tmpfmt{:}];
+    end
     TabDat.fmt = {  '%-0.3f','%g',...                          %-Set
         '%0.3f', '%0.3f','%0.0f', '%0.3f',...                  %-Cluster
         '%0.3f', '%0.3f', '%6.2f', '%5.2f', '%0.3f',...        %-Peak
@@ -301,7 +337,7 @@ switch lower(varargin{1}), case 'list'                            %-List
     %-Move to next vertical position marker
     %----------------------------------------------------------------------
     y     = y - 7*dy/4;
-    line([0 1],[y y],'LineWidth',1,'Color','r')
+    line([0 1],[y y],'LineWidth',1,'Color','b')
     y     = y - 5*dy/4;
     y0    = y;
 
@@ -320,44 +356,60 @@ switch lower(varargin{1}), case 'list'                            %-List
 
     %-Volume, resels and smoothness (if classical inference)
     %----------------------------------------------------------------------
-    line([0 1],[0 0],'LineWidth',1,'Color','r')
+    line([0 1],[0 0],'LineWidth',1,'Color','b')
         
     %-Volume, resels and smoothness (if classical inference)
     %----------------------------------------------------------------------
-    line([0 1],[0 0],'LineWidth',1,'Color','r')
+    line([0 1],[0 0],'LineWidth',1,'Color','b')
     if STAT ~= 'P'
         %-Footnote with SPM parameters
         %------------------------------------------------------------------
         set(gca,'DefaultTextFontName',PF.helvetica,...
             'DefaultTextInterpreter','None','DefaultTextFontSize',FS(8))
+        vx = 'voxels';
+        if strcmp(spm('ver'),'SPM12')
+            if spm_mesh_detect(xSPM.Vspm)
+                vx = 'vertices'; 
+            end
+        end
         TabDat.ftr    = cell(5,2);
         TabDat.ftr{1} = ...
             sprintf('Degrees of freedom = [%0.1f, %0.1f]',df);
-        TabDat.ftr{2} = ...
-            ['FWHM = ' sprintf('%0.1f ', FWmm) units{:} '; ' ...
-            sprintf('%0.1f ', FWHM) '{voxels}'];
-        TabDat.ftr{3} = ...
-            sprintf('Volume: %0.0f = %0.0f voxels = %0.1f resels', ...
-            S*prod(VOX),S,R(end));
-        TabDat.ftr{4} = ...
-            ['Voxel size: ' sprintf('%0.1f ',VOX) units{:} '; ' ...
-            sprintf('(resel = %0.2f voxels)',prod(FWHM))];
+
+        TabDat.ftr{2,1} = ...
+            ['FWHM = ' voxfmt units{:} '; ' voxfmt '{' vx '}'];
+        TabDat.ftr{2,2} = [FWmm FWHM];
+        TabDat.ftr{3,1} = ...
+            ['Volume: %0.0f = %0.0f ' vx ' = %0.1f resels'];
+        TabDat.ftr{3,2} = [S*prod(VOX),S,R(end)];
+        TabDat.ftr{4,1} = ...
+            ['Voxel size: ' voxfmt units{:} '; (resel = %0.2f ' vx ')'];
+        TabDat.ftr{4,2} = [VOX,prod(FWHM)];
+
+        if strcmp(spm('ver'),'SPM12')
+            if spm_mesh_detect(xSPM.Vspm)
+                TabDat.ftr{2,1} = ...
+                    ['FWHM = ' voxfmt '{' vx '}'];
+                TabDat.ftr{2,2} = FWHM;
+                TabDat.ftr{3,1} = ['Volume: %0.0f ' vx ' = %0.1f resels'];
+                TabDat.ftr{3,2} = [S,R(end)];
+                TabDat.ftr{4,1} = ['(resel = %0.2f ' vx ')'];
+                TabDat.ftr{4,2} = prod(FWHM);
+            end
+        end
+
         TabDat.ftr{5} = ...
             sprintf('Permutations = %d',n_perm);
 
-        text(0.5,-1*dy,TabDat.ftr{1},...
-            'UserData',df,'ButtonDownFcn','get(gcbo,''UserData'')')
-        text(0.5,-2*dy,TabDat.ftr{2},...
-            'UserData',FWmm,'ButtonDownFcn','get(gcbo,''UserData'')')
-        text(0.5,-3*dy,TabDat.ftr{3},...
-            'UserData',[S*prod(VOX),S,R(end)],...
-            'ButtonDownFcn','get(gcbo,''UserData'')')
-        text(0.5,-4*dy,TabDat.ftr{4},...
-            'UserData',[VOX,prod(FWHM)],...
-            'ButtonDownFcn','get(gcbo,''UserData'')')
-        if n_perm > 0
-            text(0.5,-5*dy,TabDat.ftr{5},...
-                'UserData',n_perm,'ButtonDownFcn','get(gcbo,''UserData'')')
+        set(gca,'DefaultTextFontName',PF.helvetica,...
+            'DefaultTextInterpreter','None','DefaultTextFontSize',FS(8));
+        fx = repmat([0 0.5],ceil(size(TabDat.ftr,1)/2),1);
+        fy = repmat((1:ceil(size(TabDat.ftr,1)/2))',1,2);
+        for i=1:size(TabDat.ftr,1)
+            text(fx(i),-fy(i)*dy,sprintf(TabDat.ftr{i,1},TabDat.ftr{i,2}),...
+                'UserData',TabDat.ftr{i,2},...
+                'ButtonDownFcn','get(gcbo,''UserData'')',...
+                'FontName',PF.helvetica,'FontSize',FS(8));
         end
     else
         TabDat.ftr = {};
@@ -381,15 +433,29 @@ switch lower(varargin{1}), case 'list'                            %-List
     %-Workaround in spm_max for conjunctions with negative thresholds
     %----------------------------------------------------------------------
     minz          = abs(min(min(varargin{2}.Z)));
-    zscores       = 1 + minz + varargin{2}.Z;
-    [N Z XYZ A] = spm_max(zscores,varargin{2}.XYZ);
+    Z       = 1 + minz + varargin{2}.Z;
+    if strcmp(spm('ver'),'SPM12')
+        if ~spm_mesh_detect(xSPM.Vspm)
+            [N,Z,XYZ,A]  = spm_max(Z,XYZ);
+        else
+            [N,Z,XYZ,A]  = spm_mesh_max(Z,varargin{2}.XYZ,xSPM.G);
+        end
+    else 
+        [N,Z,XYZ,A]  = spm_max(Z,XYZ);
+    end
     
     Z             = Z - minz - 1;
 
     % find corresponding p-values for Z
-    Qu  = spm_get_data(varargin{2}.VQu,XYZ);
-    Pz  = spm_get_data(varargin{2}.VPz,XYZ);
-    Pu  = spm_get_data(varargin{2}.VPu,XYZ);
+    if strcmp(spm('ver'),'SPM12')
+        Qu  = spm_data_read(varargin{2}.VQu,'xyz',XYZ);
+        Pz  = spm_data_read(varargin{2}.VPz,'xyz',XYZ);
+        Pu  = spm_data_read(varargin{2}.VPu,'xyz',XYZ);
+    else
+        Qu  = spm_get_data(varargin{2}.VQu,XYZ);
+        Pz  = spm_get_data(varargin{2}.VPz,XYZ);
+        Pu  = spm_get_data(varargin{2}.VPu,XYZ);
+    end
     Qu(find(Qu<0)) = 0;
     Pz(find(Pz<0)) = 0;
     Pu(find(Pu<0)) = 0;
@@ -399,45 +465,14 @@ switch lower(varargin{1}), case 'list'                            %-List
     Pu = 10.^-Pu;
     Pz = 10.^-Pz;
 
-    %-Convert cluster sizes from voxels (N) to resels (K)
-    %----------------------------------------------------------------------
-    c       = max(A);                                  %-Number of clusters
-
-    NONSTAT = 0;
-    if STAT ~= 'P'
-        if NONSTAT
-            K     = zeros(c,1);
-            for i = 1:c
-                
-                %-Get LKC for voxels in i-th region
-                %----------------------------------------------------------
-                LKC  = spm_get_data(varargin{2}.VRpv,L{i});
-                
-                %-Compute average of valid LKC measures for i-th region
-                %----------------------------------------------------------
-                valid = ~isnan(LKC);
-                if any(valid)
-                    LKC = sum(LKC(valid)) / sum(valid);
-                else
-                    LKC = V2R; % fall back to whole-brain resel density
-                end
-                
-                %-Intrinsic volume (with surface correction)
-                %----------------------------------------------------------
-                IV   = spm_resels([1 1 1],L{i},'V');
-                IV   = IV*[1/2 2/3 2/3 1]';
-                K(i) = IV*LKC;
-                
-            end
-            K   = K(A);
-        else
-            K   = N*V2R;
-        end
-    end
-
     %-Convert maxima locations from voxels to mm
     %----------------------------------------------------------------------
     XYZmm = M(1:3,:)*[XYZ; ones(1,size(XYZ,2))];
+    if strcmp(spm('ver'),'SPM12')
+        if spm_mesh_detect(xSPM.Vspm)
+            XYZmm = xSPM.G.vertices(XYZ(1,:),:)';
+        end
+    end
 
 
 
@@ -564,9 +599,9 @@ switch lower(varargin{1}), case 'list'                            %-List
         y      = y - dy;
 
         if topoFDR
-        [TabDat.dat{TabLin,3:12}] = deal(Pk,Qc,N(i),Pn,Pu(i),Qp,U,Ze,Pz(i),XYZmm(:,i));
+            [TabDat.dat{TabLin,3:12}] = deal(Pk,Qc,N(i),Pn,Pu(i),Qp,U,Ze,Pz(i),XYZmm(:,i));
         else
-        [TabDat.dat{TabLin,3:12}] = deal(Pk,Qc,N(i),Pn,Pu(i),Qu,U,Ze,Pz(i),XYZmm(:,i));
+            [TabDat.dat{TabLin,3:12}] = deal(Pk,Qc,N(i),Pn,Pu(i),Qu,U,Ze,Pz(i),XYZmm(:,i));
         end
         TabLin = TabLin + 1;
 
@@ -810,7 +845,9 @@ switch lower(varargin{1}), case 'list'                            %-List
 
         %-Table footer
         %------------------------------------------------------------------
-        fprintf('%s\n',TabDat.ftr{:})
+        for i=1:size(TabDat.ftr,1)
+            fprintf([TabDat.ftr{i,1} '\n'],TabDat.ftr{i,2});
+        end
         fprintf('%c',repmat('=',1,80)), fprintf('\n\n')
 
 

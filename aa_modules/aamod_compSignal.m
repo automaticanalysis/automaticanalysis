@@ -64,24 +64,28 @@ switch task
         MOlist = MOlist{1}';
         
         % Load the segmented masks!
-        mGM = []; mWM = []; mCSF = [];
-        for m = 1:size(SMimg,1)
-            [junk,fn] = fileparts(SMimg(m,:));
-            indx = find(fn=='c',1,'first');
-            feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 1))}],spm_read_vols(spm_vol(SMimg(m,:)))));
-        end
+        mGM = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'GM'),:)));
+        mWM = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'WM'),:)));
+        mCSF = spm_read_vols(spm_vol(SMimg(strcmp(MOlist,'CSF'),:)));
+%         % Dynamic - may not work standalone
+%         mGM = []; mWM = []; mCSF = [];
+%         for m = 1:size(SMimg,1)
+%             [junk,fn] = fileparts(SMimg(m,:));
+%             indx = find(fn=='c',1,'first');
+%             feval(@()assignin('caller',['m' MOlist{str2num(fn(indx + 1))}],spm_read_vols(spm_vol(SMimg(m,:)))));
+%         end
         
         % Record the number of voxels in each compartment
         nG = sum(mGM(:)>0);
         nW = sum(mWM(:)>0);
         nC = sum(mCSF(:)>0);
         
-        fprintf('\nRemoving White Matter voxels near Gray Matter\n')
-        mWM = rmNearVox(mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
+        aas_log(aap,false,'Removing White Matter voxels near Gray Matter')
+        mWM = rmNearVox(aap, mWM, mGM, aap.tasklist.currenttask.settings.W2Gdist);
         
         % MASKS ALREADY STRICT ENOUGH TYPICALLY (TAKES OUT TOO MUCH CSF)
-        %fprintf('\nRemoving CerebroSpinalFluid voxels near Gray Matter')
-        %mCSF = rmNearVox(mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
+        %aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Gray Matter')
+        %mCSF = rmNearVox(aap, mCSF, mGM, aap.tasklist.currenttask.settings.C2Gdist);
         
         if hasBET
             % Try to load the BET masks
@@ -96,18 +100,18 @@ switch task
             end
             nO = sum(mOOH(:)>0);
             
-            fprintf('Removing CerebroSpinalFluid voxels near Skull\n')
-            mCSF = rmNearVox(mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
+            aas_log(aap,false,'Removing CerebroSpinalFluid voxels near Skull')
+            mCSF = rmNearVox(aap, mCSF, mSkull, aap.tasklist.currenttask.settings.C2Sdist);
             
-            fprintf('Removing CerebroSpinalFluid voxels near OOH\n')
-            mCSF = rmNearVox(mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
+            aas_log(aap,false,'Removing CerebroSpinalFluid voxels near OOH')
+            mCSF = rmNearVox(aap, mCSF, mOOH, aap.tasklist.currenttask.settings.C2Odist);
         end
         
         %% Print the number of voxels in each compartment
-        fprintf('Grey Matter mask comprises %d (%d) voxels\n', sum(mGM(:)>0), nG)
-        fprintf('White Matter mask comprises %d (%d) voxels\n', sum(mWM(:)>0), nW)
-        fprintf('CereberoSpinal Fluid mask comprises %d (%d) voxels\n', sum(mCSF(:)>0), nC)
-        if hasBET, fprintf('Out of Head mask comprises %d (%d) voxels\n', sum(mOOH(:)>0), nO); end
+        aas_log(aap,false,sprintf('Grey Matter mask comprises %d (%d) voxels', sum(mGM(:)>0), nG))
+        aas_log(aap,false,sprintf('White Matter mask comprises %d (%d) voxels', sum(mWM(:)>0), nW))
+        aas_log(aap,false,sprintf('CereberoSpinal Fluid mask comprises %d (%d) voxels', sum(mCSF(:)>0), nC))
+        if hasBET, aas_log(aap,false,sprintf('Out of Head mask comprises %d (%d) voxels', sum(mOOH(:)>0), nO)); end
         
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             V = spm_vol(EPIimg);
@@ -190,5 +194,21 @@ switch task
             end
             try close(2); catch; end
         end
+end
+end
+
+% This function erodes an image using another:
+% The eroded image (mask2erode) is checked against another (erodingMask)
+% so that any voxels in "mask2erode" at a certain radius from voxels in
+% "erodingMask" are removed.
+function mask2erode = rmNearVox(aap, mask2erode, erodingMask, minDist)
+
+% Checks if our minDist is an integer (necessary for smoothing function!)
+if mod(minDist,1)==0
+    % Then try the blunt approach
+    erodingMask = smooth3(erodingMask, 'box', [minDist*2+1 minDist*2+1 minDist*2+1]);
+    mask2erode(logical(erodingMask)) = 0;
+else
+    aas_log(aap,true,'minDist must be an odd integer, as smoothing function will not accep otherwise')
 end
 end

@@ -8,7 +8,6 @@ classdef aaq_condor<aaq
         condorpath=[];
         retrynum=[];
         jobnotrun=[];
-        fatalerrors=false;
         jobcount=0;
         jobstatus=[];
         

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias='aamod_segment8_multichan' domain='subject' desc='SPM8 segment8' modality='MRI'>
-       
+        <currenttask mfile_alias='aamod_segment8' domain='subject' desc='SPM "New Segment and Normalise"' modality='MRI'>
+        
             <permanenceofoutput>2</permanenceofoutput>
             
             <samp desc='Sampling distance (mm)'>1</samp>
@@ -13,9 +13,10 @@
             <biasreg desc='regularization for the bias field'>.001</biasreg>
             <reg desc='regularization'>.001</reg>
             <mrf desc='Markov Random Field argument'>1</mrf>
+            <cleanup desc='Extracting the brain from segmented images'>0</cleanup>
 			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
 			<writebiascorrected desc='write out bias field or corrected image?'>0 0</writebiascorrected>
-			<writedeffields desc='write out deformation fields?'>0 0</writedeffields>
+			<writedeffields desc='write out deformation fields [forward inverse]?'>1 1</writedeffields>
 
             <writenormimg desc='apply normalisation parameters to input image(s)?'>1</writenormimg>
             <writenorm>
@@ -33,7 +34,12 @@
             </inputstreams>
             
             <outputstreams>
+				<stream>normalised_t1</stream>
+				<stream>normalised_t2</stream>
+			
                 <stream>seg8</stream>
+                <stream>forward_deformation_field</stream>
+                <stream>inverse_deformation_field</stream>
 
                 <stream>native_grey</stream>
                 <stream>native_white</stream>

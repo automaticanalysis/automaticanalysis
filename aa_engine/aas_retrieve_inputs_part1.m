@@ -204,7 +204,7 @@ for depind=1:length(deps)
                                 if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                     reloadfiles=false;
                                 end;
-                                %                    fprintf('Loaded datecheck was %s and calc %s\n',datecheck,datecheck_md5_recalc);
+                                aas_log(aap,false,sprintf('Loaded datecheck was %s and calc %s',datecheck,datecheck_md5_recalc));
                             end;
                         end;
                     end;
@@ -364,7 +364,7 @@ for depind=1:length(deps)
                                     if (strcmp(md5_inp,md5) && strcmp(datecheck,datecheck_md5_recalc))
                                         reloadfiles=false;
                                     end;
-                                    %                    fprintf('Loaded datecheck was %s and calc %s\n',datecheck,datecheck_md5_recalc);
+                                    aas_log(aap,false,sprintf('Loaded datecheck was %s and calc %s',datecheck,datecheck_md5_recalc));
                                 end;
                             end;
                         end;
@@ -408,19 +408,19 @@ for depind=1:length(deps)
                 tmp=fullfile(dest,descriptor);
                 
                 streamentry=[aaworker.bucket '|' src '/' descriptor];
-                fprintf('Trying for %s\n',streamentry);
+                aas_log(aap,false,sprintf('Trying for %s',streamentry));
                 [aap resp]=sdb_get_attributes(aap,aaworker.streamtablename,streamentry);
                 
                 if (~isempty(resp))
-                    fprintf('Found SDB\n');
+                    aas_log(aap,false,'Found SDB');
                     s3_copyfrom_filelist(aap,dest,descriptor,aaworker.bucket,src);
                 else
-                    fprintf('No SDB entry found\n');
+                    aas_log(aap,false,'No SDB entry found');
                 end;
                 if (exist(tmp,'file'))
-                    fprintf('Found file %s\n',tmp);
+                    aas_log(aap,false,sprintf('Found file %s',tmp));
                 else
-                    fprintf('Trying for %s\n',tmp);
+                    aas_log(aap,false,sprintf('Trying for %s',tmp));
                 end;
                 % change the name as it is now an input...
                 descriptor=sprintf('stream_%s_inputto_%s.txt',streamname,aap.tasklist.currenttask.name);
@@ -461,7 +461,6 @@ for depind=1:length(deps)
                     forgz=find([forgz{:}]);
                     for gzitem=forgz
                         cmd=['gunzip ' fns{gzitem}];
-                        fprintf(cmd);
                         aas_shell(cmd);
                         fns{gzitem}=fns{gzitem}(1:end-3);
                     end;

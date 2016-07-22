@@ -33,7 +33,7 @@ switch task
                     break
                 end
             end
-            fprintf('\tSeveral structurals found, considering: %s\n', Simg)
+            aas_log(aap,false,sprintf('\tSeveral structurals found, considering: %s', Simg))
         end
         if size(mEPIimg,1) > 1
             % Not warped!
@@ -44,7 +44,7 @@ switch task
                 end
             end
             mEPIimg = mEPIimg(1,:);
-            fprintf('\tSeveral mean EPIs found, considering: %s\n', mEPIimg)
+            aas_log(aap,false,sprintf('\tSeveral mean EPIs found, considering: %s', mEPIimg))
         end
         
         %% 1) RESLICE
@@ -99,10 +99,9 @@ switch task
             Zoutstream = strvcat(Zoutstream, V{a}.fname); % Save to stream...
             spm_write_vol(V{a}, zY);
             
-            fprintf('Zero thresholded image %s sums up to %d vox\n', ...
-                fn, sum(zY(:)))
+            aas_log(aap,false,sprintf('Zero thresholded image %s sums up to %d vox', ...
+                fn, sum(zY(:))))
         end
-        fprintf('\n')
         
         %% B) Specific thresholding of each mask
         for a = 1:size(SEGimg,1)
@@ -119,8 +118,8 @@ switch task
             Soutstream = strvcat(Soutstream, V{a}.fname); % Save to stream...
             spm_write_vol(V{a}, sY);
             
-            fprintf('Strict thresholded image %s sums up to %d vox\n', ...
-                fn, sum(sY(:)))
+            aas_log(aap,false,sprintf('Strict thresholded image %s sums up to %d vox', ...
+                fn, sum(sY(:))))
             
             %% C) Exclusive thresholding of masks:
             % Any particular voxel has greatest chance of being...
@@ -143,7 +142,6 @@ switch task
                 maxNeY = max(Y{a}, maxNeY);
             end
         end
-        fprintf('\n')
         
         % Last stage of exclusive thresholding
         for a = 1:size(SEGimg,1)
@@ -160,8 +158,8 @@ switch task
             Eoutstream = strvcat(Eoutstream, V{a}.fname); % Save to stream...
             spm_write_vol(V{a}, eY);
             
-            fprintf('Exclusive thresholded image %s sums up to %d vox\n', ...
-                fn, sum(eY(:)))
+            aas_log(aap,false,sprintf('Exclusive thresholded image %s sums up to %d vox', ...
+                fn, sum(eY(:))))
         end
         
         % DIFFERENT STREAMS FOR DIFFERENT

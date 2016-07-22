@@ -7,7 +7,7 @@ switch task
         
         aap = aas_report_add(aap,subj,'<table><tr>');
 
-        for sess = 1:numel(aap.acq_details.meg_sessions)
+        for sess = aap.acq_details.selected_sessions
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aas_getsessdesc(aap,subj,sess) '</h3>']);
 
@@ -97,10 +97,10 @@ switch task
         aap = aas_report_add(aap,subj,'</tr></table>');
     case 'doit'
         %% If session for HPI is specified, bring forward
-        meg_sessions = 1:numel(aap.acq_details.meg_sessions);
+        meg_sessions = aap.acq_details.selected_sessions;
         HPIsess = aas_getsetting(aap,'hpi.session');
         if ~isempty(HPIsess)
-            HPIsess = cell_index({aap.acq_details.meg_sessions.name},HPIsess);
+            HPIsess = cell_index({aap.acq_details.meg_sessions(aap.acq_details.selected_sessions).name},HPIsess);
             meg_sessions = unique([HPIsess meg_sessions],'stable');            
         end
         
@@ -201,14 +201,14 @@ switch task
                 ' -cal ' fnamecal,...
                  ' ', skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -force -v | tee ' logfname
                 ];
-            disp(mfcmd_rest);
+            aas_log(aap,false,mfcmd_rest);
             
             % Executing MF
             [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
             if status
-                aas_log(aap,1,'MaxFilter failed!')
+                aas_log(aap,true,'ERROR: MaxFilter failed!')
             else
-                disp(maxres);
+                aas_log(aap,false,maxres);
             end
             
             %% Trans (so that origin not same as SSS expansion origin above)
@@ -225,7 +225,10 @@ switch task
                         ref_str = trans;
                         outtrpfx    = ['trans' basename(trans) '_' outtrpfx];
                     elseif isnumeric(trans)
-                        if trans % session number
+                        if trans
+                            if trans < 0 % selected_session number
+                                trans = aap.acq_details.selected_sessions(-trans);
+                            end
                             if trans == sess, continue; end % do not trans to itself
                             if isEmptyRoom && (trans == HPIsess), continue; end % do not trans empty_room to HPIsess
                             ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
@@ -248,14 +251,14 @@ switch task
                         mfcall ' -f ' intrfname ' -o ' outtrfname,...
                         trcmd_par ' -force -v | tee ' logtrfname
                         ];
-                    disp(mfcmd_rest);
+                    aas_log(aap,false,mfcmd_rest);
                     
                     % Executing MF
                     [status, maxres] = unix(mfcmd_rest); % this stops screen-dumping?
                     if status ~= 0
-                        aas_log(aap,1,'Trans MaxFilter failed!')
+                        aas_log(aap,true,'ERROR: Trans MaxFilter failed!')
                     else
-                        disp(maxres);
+                        aas_log(aap,false,maxres);
                     end
                 end
             end
@@ -273,14 +276,14 @@ switch task
                         mfcall ' -f ' outs{i} ' -o ' outdsfname,...
                         ' -ds ' num2str(aas_getsetting(aap,'downsampling')) ' -force -v | tee --append ' logs{i}
                         ];
-                    disp(mfcmd_ds);
+                    aas_log(aap,false,mfcmd_ds);
                     
                     % Executing MF
                     [status, maxres] = unix(mfcmd_ds); % this stops screen-dumping?
                     if status ~= 0
-                        aas_log(aap,1,'Trans MaxFilter failed!')
+                        aas_log(aap,true,'ERROR: Trans MaxFilter failed!')
                     else
-                        disp(maxres);
+                        aas_log(aap,false,maxres);
                     end
                     outs{i} = outdsfname;
                 end

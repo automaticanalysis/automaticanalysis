@@ -82,7 +82,7 @@ switch task
             
             for s = 1:nSourceVoxels
                 
-                fprintf('Source voxel %d/%d...', s, nSourceVoxels);
+                aas_log(aap,false,sprintf('Source voxel %d/%d...', s, nSourceVoxels));
                 
                 [si, sj, sk, sz] = ind2sub(size(sourceMask), sourceInd(s));
                 sourceData = Y(si,sj,sk,:);
@@ -105,7 +105,7 @@ switch task
                 end % checking for source NaN
                 
                 hElapsed = toc/60/60;
-                fprintf('done. %.2f%% done in %.2f hours (estimate %.2f h remaining).\n', 100*s/nSourceVoxels, hElapsed, (hElapsed/s)*(nSourceVoxels-s));
+                aas_log(aap,false,sprintf('\bdone. %.2f%% done in %.2f hours (estimate %.2f h remaining).', 100*s/nSourceVoxels, hElapsed, (hElapsed/s)*(nSourceVoxels-s)));
                 
             end % source            
         else            

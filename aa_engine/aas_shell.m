@@ -29,6 +29,7 @@ if ~hit
 end
 
 %% Run
+if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
 [s,w]=system([prefix cmd]);
 
 %% Process error
@@ -49,9 +50,13 @@ if ~isempty(w)
     toRem = cell_index(l,'mathworks'); if any(toRem), l(toRem) = []; end
     % select the last shell error
     toShow = find(cell_index(l,'tcsh:') | cell_index(l,'/bin/sh:') | cell_index(l,'/bin/bash:'),1,'last');
-    l = l(toShow:end);
-    if numel(l) > 1, rw = l{2}; end
-    if ~isempty(l), lw = l{1}; end
+    if ~isempty(toShow)
+        l = l(toShow:end);
+        lw = l{1}; l(1) = [];
+    end
+    rw = sprintf('%s\n',l{:});
 end
 w = sprintf('%s\n%s',rw,lw);
+
+if ~quiet, aas_log([],false,w); end
 

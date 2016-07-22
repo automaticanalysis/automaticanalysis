@@ -1,22 +1,22 @@
 % This module finds all of the DICOM files associated with the given 
 % specialsession using aas_listdicomfiles and the name of the special
 % session, and copies them into the special session directory of this
-% module, either across the local filesystem or from s3. Suffixes (i.e. 
-% substring after "_") will be treated as subsessions (similarly to the two
-% subsessions of the fieldmap) and copied into subfolders. E.g.:
+% module, either across the local filesystem or from s3. In case of 
+% multiple series specified for the same sessions, subfolders 'serie01',
+% 'serie02', etc. will be created and images will be copied in the order
+% as they were specified. E.g.:
 %
-%   aap.tasklist.currenttask.outputstreams.stream = {'MT'}
-%   aap.acq_details.special_sessions.name = {'MT_baseline' 'MT_MT'}
-%   aap.acq_details.subjects.specialseries = [14 15]
+%   aap.tasklist.currenttask.outputstreams.stream = {'dicom_MTI'}
+%   aap.acq_details.special_sessions(1).name = 'MTI';
+%   aap.acq_details.subjects(1).specialseries{1}{1} = [14 15]
 %
-%   Series 14 and 15 will go to subjpath/MT/baseline and subjpath/MT/MT,
-%   respectively.
+%   Series 14 and 15 will go to subjpath/MTI/serie01 and 
+%   subjpath/MTI/serie02, respectively.
 %
-% It then creates the output stream based on the name of the outputstream
-% containing all the subsessions in the order as given in the 
-% special_sessions.name.
+% It then creates the output stream 'dicom_MTI' containing all the 
+% subsessions in the order as given in the specialseries.
 
-function [aap resp]=aamod_get_dicom_specialseries(aap,task,subj)
+function [aap resp]=aamod_get_dicom_specialseries(aap,task,subj,sess)
 global aaworker
 
 resp='';
@@ -24,25 +24,14 @@ resp='';
 switch task
     case 'report'
     case 'doit'
-        subjpath=aas_getsubjpath(aap,subj);
-        streamname = strrep(aas_getstreams(aap,'output'),'dicom_',''); streamname = streamname{1};
-        sesspath=fullfile(subjpath,streamname);
-        
-        % Obtain sereies index from the special_session names
-        sessind = cell_index({aap.acq_details.special_sessions.name},streamname);
-        if ~sessind, aas_log(aap,true,sprintf('Special session not found: %s\n',streamname)); end
-        for f = 1:numel(sessind)
-            sessfolds{f} = list_index(aap.acq_details.special_sessions(sessind(f)).name,1,2);
-        end
-        
         % Go through each subsessions
         out=[];
-        for seriesind=1:numel(sessind)
-            [d, mriser] = aas_get_series(aap,'special',subj,seriesind);
-            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],mriser);
+        [d, mriser] = aas_get_series(aap,'special',subj,sess);
+        for seriesind=1:numel(mriser)            
+            [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],mriser(seriesind));
             
             % Now copy files to this module's directory
-            foldpath = fullfile(sesspath, sessfolds{seriesind});
+            foldpath = fullfile(aas_getsesspath(aap,subj,sess), sprintf('serie%02d',seriesind));
             aas_makedir(aap,foldpath);
             outstream={};
             switch(aap.directory_conventions.remotefilesystem)
@@ -62,7 +51,39 @@ switch task
                     s3_copyfrom_filelist(aap,foldpath,s3fles,aaworker.bucketfordicom,pth);
             end;
             out=[out outstream];
-        end;
+        end
         
-        aap=aas_desc_outputs(aap,subj,['dicom_' streamname],out);
+        %% To Edit
+        % DICOM dictionary
+        dict = load(aas_getsetting(aap,'DICOMdictionary'));
+        if isempty(getenv('DCMDICTPATH'))
+            setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
+        end
+        
+        % Fields to edit
+        toEditsetting = aas_getsetting(aap,'toEdit');
+        toEditsubj = toEditsetting(strcmp({toEditsetting.subject},aas_getsubjname(aap,subj)));
+        toEdit = [];
+        for s = 1:numel(toEditsubj)
+            sessnames = regexp(toEditsubj(s).session,':','split');
+            if any(strcmp(sessnames,aap.acq_details.sessions(sess).name)),
+                toEdit = toEditsubj(s);
+                break;
+            end
+        end
+        
+        % do it
+        if ~isempty(toEdit)
+            for f = {toEdit.DICOMfield}
+                group = dict.group(strcmp({dict.values.name}',f{1}.FieldName));
+                element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
+                
+                for imnum = 1:numel(out)
+                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                end
+            end
+        end
+        
+        %% Output
+        aap=aas_desc_outputs(aap,'special_session',[subj,sess],char(aas_getstreams(aap,'output')),out);
 end;

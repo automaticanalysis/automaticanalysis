@@ -23,10 +23,10 @@ switch task
         % With the mean EPI, we just use the first one (there really should be only one)
         if size(EPIimg,1) > 1
             EPIimg = deblank(EPIimg(1,:));
-            fprintf('\tWARNING: Several mean EPIs found, considering: %s\n', EPIimg)
+            aas_log(aap,false,sprintf('\tWARNING: Several mean EPIs found, considering: %s', EPIimg))
         end
         
-        fprintf('Reslicing brain masks to mean EPI\n')
+        aas_log(aap,false,'Reslicing brain masks to mean EPI')
         % Get realignment defaults
         defs = aap.spm.defaults.realign;
 

@@ -71,9 +71,11 @@ function [SPM,xSPM] = cg_get_tfce_results(varargin)
 % .swd      - SPM working directory - directory containing current SPM.mat
 % .title    - title for comparison (string)
 % .Ic       - indices of contrasts (in SPM.xCon)
+% .Im       - indices of masking contrasts (in xCon)
+% .pm       - p-value for masking (uncorrected)
+% .Ex       - flag for exclusive or inclusive masking
 % .u        - height threshold
 % .k        - extent threshold {voxels}
-% .stattype - type of statistics (string)
 % .thresDesc - description of height threshold (string)
 %
 % In addition, the xCon structure is updated. For newly evaluated
@@ -181,12 +183,8 @@ function [SPM,xSPM] = cg_get_tfce_results(varargin)
 % Andrew Holmes, Karl Friston & Jean-Baptiste Poline
 %
 % based on
-% $Id: cg_get_tfce_results.m 64 2013-10-01 15:09:01Z gaser $
+% $Id: cg_get_tfce_results.m 70 2014-11-13 10:44:52Z gaser $
 
-
-%-GUI setup
-%--------------------------------------------------------------------------
-spm_help('!ContextHelp',mfilename)
 
 %-Select SPM.mat & note SPM results directory
 %--------------------------------------------------------------------------
@@ -198,7 +196,11 @@ try
    sts = 1;
 catch
     [spmmatfile, sts] = spm_select(1,'^SPM\.mat$','Select SPM.mat');
-    swd = spm_str_manip(spmmatfile,'H');
+    if strcmp(spm('ver'),'SPM12')
+        swd = spm_file(spmmatfile,'fpath');
+    else
+        swd = spm_str_manip(spmmatfile,'H');
+    end
 end;
 if ~sts, SPM = []; xSPM = []; return; end
 
@@ -244,6 +246,14 @@ R    = SPM.xVol.R;                  %-search Volume {resels}
 M    = SPM.xVol.M(1:3,1:3);         %-voxels to mm matrix
 VOX  = sqrt(diag(M'*M))';           %-voxel dimensions
 
+% check the data and other files have valid filenames
+%-----------------------------------------------------------------------
+try, SPM.xY.VY     = spm_check_filename(SPM.xY.VY);     end
+try, SPM.xVol.VRpv = spm_check_filename(SPM.xVol.VRpv); end
+try, SPM.Vbeta     = spm_check_filename(SPM.Vbeta);     end
+try, SPM.VResMS    = spm_check_filename(SPM.VResMS);    end
+try, SPM.VM        = spm_check_filename(SPM.VM);        end
+
 %-Contrast definitions
 %==========================================================================
 
@@ -253,6 +263,29 @@ try
     xCon = SPM.xCon;
 catch
     xCon = {};
+end
+
+%-Check whether mesh are detected if we use spm12
+%--------------------------------------------------------------------------
+
+if exist(fullfile(swd, 'mask.img'))
+    file_ext = '.img';
+elseif exist(fullfile(swd, 'mask.nii'))
+    file_ext = '.nii';
+elseif exist(fullfile(swd, 'mask.gii'))
+    file_ext = '.gii';
+else
+    error('No mask file found.');
+end
+
+if strcmp(spm('ver'),'SPM12')
+    if spm_mesh_detect(SPM.xY.VY)
+        mesh_detected = 1;
+    else
+        mesh_detected = 0;
+    end
+else
+      mesh_detected = 0;
 end
 
 
@@ -331,11 +364,23 @@ xCon     = SPM.xCon;
 STAT     = xCon(Ic(1)).STAT;
 VspmSv   = cat(1,xCon(Ic).Vspm);
 
+% check that statistic for this contrast was estimated
+%--------------------------------------------------------------------------
+if ~exist(fullfile(swd, sprintf('T_log_p_%04d%s',Ic,file_ext)))
+  strtmp = { 'No TFCE calculation for this contrast found.';...
+      'Would you like to estimate it now?'};
+  if spm_input(strtmp,1,'bd','yes|no',[1,0],1)
+    spm_jobman('interactive','','spm.tools.tfce_estimate');
+  end
+
+  SPM = [];
+  xSPM = [];
+  return
+end
 
 %-Degrees of Freedom and STAT string describing marginal distribution
 %--------------------------------------------------------------------------
 df          = [xCon(Ic(1)).eidf xX.erdf];
-
 try
     stattype = xSPM.stattype;
 catch
@@ -374,35 +419,36 @@ catch
   n_perm = 0;
 end
 
-z_name  = fullfile(swd, sprintf('%s_%04d.img',stattype,Ic));
-Pz_name = fullfile(swd, sprintf('%s_log_p_%04d.img',stattype,Ic));
-Pu_name = fullfile(swd, sprintf('%s_log_pFWE_%04d.img',stattype,Ic));
-Qu_name = fullfile(swd, sprintf('%s_log_pFDR_%04d.img',stattype,Ic));
+z_name  = fullfile(swd, sprintf('%s_%04d%s',stattype,Ic,file_ext));
+Pz_name = fullfile(swd, sprintf('%s_log_p_%04d%s',stattype,Ic,file_ext));
+Pu_name = fullfile(swd, sprintf('%s_log_pFWE_%04d%s',stattype,Ic,file_ext));
+Qu_name = fullfile(swd, sprintf('%s_log_pFDR_%04d%s',stattype,Ic,file_ext));
 
-% check that statistic for this contrast was estimated
-if ~exist(Pz_name)
-  strtmp = { 'No TFCE calculation for this contrast found.';...
-      'Would you like to estimate it now?'};
-  if spm_input(strtmp,1,'bd','yes|no',[1,0],1)
-    spm_jobman('interactive','','spm.tools.tfce_estimate');
-  else
-    SPM = [];
-    xSPM = [];
-    return
-  end
+if mesh_detected
+    VQu = spm_data_hdr_read(Qu_name);
+    VPu = spm_data_hdr_read(Pu_name);
+    VPz = spm_data_hdr_read(Pz_name);
+    Vz  = spm_data_hdr_read(z_name);
+else
+    VQu = spm_vol(Qu_name);
+    VPu = spm_vol(Pu_name);
+    VPz = spm_vol(Pz_name);
+    Vz  = spm_vol(z_name);
 end
-
-VQu = spm_vol(Qu_name);
-VPu = spm_vol(Pu_name);
-VPz = spm_vol(Pz_name);
-Vz  = spm_vol(z_name);
 
 %-Compute SPM
 %--------------------------------------------------------------------------
-Z   = spm_get_data(Vz,XYZ);
-Qu  = spm_get_data(VQu,XYZ);
-Pz  = spm_get_data(VPz,XYZ);
-Pu  = spm_get_data(VPu,XYZ);
+if strcmp(spm('ver'),'SPM12')
+    Z   = spm_data_read(Vz,'xyz',XYZ);
+    Qu  = spm_data_read(VQu,'xyz',XYZ);
+    Pz  = spm_data_read(VPz,'xyz',XYZ);
+    Pu  = spm_data_read(VPu,'xyz',XYZ);
+else
+    Z   = spm_get_data(Vz,XYZ);
+    Qu  = spm_get_data(VQu,XYZ);
+    Pz  = spm_get_data(VPz,XYZ);
+    Pu  = spm_get_data(VPu,XYZ);
+end
 
 % convert from -log10
 Qu = 1-(10.^-Qu);
@@ -423,12 +469,16 @@ end
 %==========================================================================
 
 try u = xSPM.u; catch, u = -Inf; end       % height threshold
-k = 0;          % extent threshold {voxels}
+k   = 0;           % extent threshold {voxels}
 
 %-Use standard FDR 
 %--------------------------------------------------------------------------
 topoFDR = false;
     
+if  mesh_detected
+    G = export(gifti(SPM.xVol.G),'patch');
+end
+
 %-Height threshold - classical inference
 %--------------------------------------------------------------------------
 if STAT ~= 'P'
@@ -466,6 +516,7 @@ end % (if STAT)
 %-Calculate height threshold filtering
 %--------------------------------------------------------------------------
 Q      = find(Zp > u);
+if mesh_detected, str = 'vertices'; else str = 'voxels'; end
 
 %-Apply height threshold
 %--------------------------------------------------------------------------
@@ -474,9 +525,12 @@ Qu     = Qu(:,Q);
 Pz     = Pz(:,Q);
 Pu     = Pu(:,Q);
 XYZ    = XYZ(:,Q);
+
 if isempty(Q)
     fprintf('\n');                                                      %-#
-    warning(sprintf('No voxels survive height threshold u=%0.2g',u))
+    sw = warning('off','backtrace');
+    warning('SPM:NoVoxels','No %s survive height threshold at u=%0.2g',str,u);
+    warning(sw);
 end
 
 %-Extent threshold (disallowed for conjunctions)
@@ -491,7 +545,7 @@ if ~isempty(XYZ) && nc == 1
         try
             k = xSPM.k;
         catch
-            k = spm_input('& extent threshold {voxels}','+1','r',0,1,[0,Inf]);
+            k = spm_input(['& extent threshold {' str '}'],'+1','r',0,1,[0,Inf]);
         end
     else
         k = 0;
@@ -499,11 +553,18 @@ if ~isempty(XYZ) && nc == 1
     
     %-Calculate extent threshold filtering
     %----------------------------------------------------------------------
-    A     = spm_clusters(XYZ);
+    if  mesh_detected
+        T = false(SPM.xVol.DIM');
+        T(XYZ(1,:)) = true;
+        A = spm_mesh_clusters(G,T)';
+        A = A(XYZ(1,:));
+    else
+        A = spm_clusters(XYZ);
+    end
     Q     = [];
     for i = 1:max(A)
         j = find(A == i);
-        if length(j) >= k; Q = [Q j]; end
+        if length(j) >= k, Q = [Q j]; end
     end
 
     % ...eliminate voxels
@@ -515,7 +576,9 @@ if ~isempty(XYZ) && nc == 1
     XYZ   = XYZ(:,Q);
     if isempty(Q)
         fprintf('\n');                                                  %-#
-        warning(sprintf('No voxels survive extent threshold k=%0.2g',k))
+        sw = warning('off','backtrace');
+        warning('SPM:NoVoxels','No %s survive extent threshold at k=%0.2g',str,k);
+        warning(sw);
     end
 
 else
@@ -572,4 +635,12 @@ try
 catch
     try, xSPM.units = varargin{1}.units; end
 end
+
+%-Topology for surface-based inference
+%--------------------------------------------------------------------------
+if mesh_detected
+    xSPM.G     = G;
+    xSPM.XYZmm = xSPM.G.vertices(xSPM.XYZ(1,:),:)';
+end
+
 

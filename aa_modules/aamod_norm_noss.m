@@ -94,7 +94,7 @@ switch task
             % 2 stage process, as proposed by RH, to increased robustness [djm 13/03/06]
             
             %%%%%%%% 1st pass:
-            fprintf('Running first pass of norm_noss (get bias corrected structural)\n')
+            aas_log(aap,false,'Running first pass of norm_noss (get bias corrected structural)')
             estopts.regtype='';    % turn off affine:
             if ~isfield(estopts,'fudge'), estopts.fudge = 5; end % compatiblity
             out = spm_preproc(Simg, estopts);
@@ -109,7 +109,7 @@ switch task
             spm_preproc_write(sn, writeopts);
             
             %%%%%%%% 2nd pass using attenuation corrected image
-            fprintf('Running second pass of norm_noss (estimate normalisation)\n')
+            aas_log(aap,false,'Running second pass of norm_noss (estimate normalisation)')
             % mstruc should be the attenuation corrected image
             % look for m prefixed filename
             mSimg = fullfile(Spth,['m' Sfn Sext]);
@@ -195,17 +195,17 @@ switch task
             % We could print out the Affines in an orderly way, so that
             % the experimenter can see what is being printed out...
             %{
-            fprintf('\nInitial structural Affine\n')
-            disp(oldMAT)
-            fprintf('Initial Affine transform\n')
-            disp(StartingAffine)
-            fprintf('Out image Affine\n')
-            disp(out.Affine)
-            fprintf('Spatial Normalisation Affine\n')
-            disp(sn.Affine)
+            matstr = strrep_multi(mat2str(oldMAT,2),{';', ' '},{'\n' '\t'}); matstr = matstr(2:end-1);
+            aas_log(aap,false,sprintf('Initial structural Affine\n%s',matstr))
+            matstr = strrep_multi(mat2str(StartingAffine,2),{';', ' '},{'\n' '\t'}); matstr = matstr(2:end-1);
+            aas_log(aap,false,sprintf('Initial Affine transform\n%s',matstr))
+            matstr = strrep_multi(mat2str(out.Affine,2),{';', ' '},{'\n' '\t'}); matstr = matstr(2:end-1);
+            aas_log(aap,false,sprintf('Out image Affine\n%s',matstr))
+            matstr = strrep_multi(mat2str(sn.Affine,2),{';', ' '},{'\n' '\t'}); matstr = matstr(2:end-1);
+            aas_log(aap,false,sprintf('Spatial Normalisation Affine\n%s',matstr))
             %}
             
-            fprintf('Writing out the segmented images\n')
+            aas_log(aap,false,'Writing out the segmented images')
             % write out GM , WM, CSF native + unmod normalised
             writeopts.biascor = 1;
             writeopts.GM  = [0 1 1];
@@ -295,16 +295,11 @@ end
 end
 %------------------------------------------------------------------------
 function savefields(fnam,p)
-if length(p)>1, error('Can''t save fields.'); end
-fn = fieldnames(p);
-if numel(fn)==0, return; end
-for subj=1:length(fn),
-    feval(@()assignin('caller',fn{subj}, p.(fn{subj})));
-end
+if length(p)>1, aas_log([],true,'Can''t save fields.'); end
 if str2double(version('-release'))>=14,
-    save(fnam,'-V6',fn{:});
+    save(fnam,'-V6','-struct','p');
 else
-    save(fnam,fn{:});
+    save(fnam,'-struct','p');
 end
 end
 %------------------------------------------------------------------------

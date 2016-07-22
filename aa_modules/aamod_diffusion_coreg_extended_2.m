@@ -90,9 +90,9 @@ switch task
         
            spm_get_space(mEPIimg, Me*spm_get_space(mEPIimg));
           
-            fprintf(['\tBase to template realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
-            xfm(1), xfm(2), xfm(3), xfm(4), xfm(5), xfm(6))
+            aas_log(aap,false,sprintf(['\tBase to template realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            xfm(1), xfm(2), xfm(3), xfm(4), xfm(5), xfm(6)))
         
         %% 2) Base to Structural (coregister)
             
@@ -106,9 +106,9 @@ switch task
         MM = spm_get_space(mEPIimg);
         spm_get_space(mEPIimg, Mf*MM);
         
-        fprintf(['\tmean EPI to structural realignment parameters:\n' ...
-            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f\n'], ...
-            x(1), x(2), x(3), x(4), x(5), x(6))
+        aas_log(aap,false,sprintf(['\tBase to structural realignment parameters:\n' ...
+            '\tx: %0.4f   y: %0.4f   z: %0.4f   p: %0.4f   r: %0.4f   j: %0.4f'], ...
+            x(1), x(2), x(3), x(4), x(5), x(6)))
             
         %% 3) Now apply this transformation to all the input images
         % The base will already be in the space required for the
@@ -121,7 +121,7 @@ switch task
         % Locate all the inputs we want to coregister
         for i = 1:numel(inputs)
             EPIimg{i} = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],inputs{i});
-            fprintf('\nCoregistering %s image(s) for session: %s\n', inputs{i}, aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,sess))
+            aas_log(aap,false,sprintf('Coregistering %s image(s) for session: %s', inputs{i}, aas_getdirectory_bydomain(aap,aap.tasklist.currenttask.domain,sess)))
             % For each image, apply the space of the base image
             for e = 1:size(EPIimg{i},1)
                 % Apply the space of the coregistered base to the

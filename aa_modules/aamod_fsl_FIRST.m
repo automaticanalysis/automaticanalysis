@@ -37,9 +37,9 @@ switch task
         % Which file is considered, as determined by the structural parameter!
         if size(Simg,1) > 1
             Simg = deblank(Simg(aap.tasklist.currenttask.settings.structural, :));
-            fprintf('WARNING: Several %s found, considering: \n', inputstream{:})
+            aas_log(aap,false,sprintf('WARNING: Several %s found, considering: ', inputstream{:}))
             for t = 1:length(aap.tasklist.currenttask.settings.structural)
-                fprintf('\t%s\n', Simg(t,:))
+                aas_log(aap,false,sprintf('\t%s', Simg(t,:)))
             end
         end
         
@@ -56,12 +56,11 @@ switch task
         
         if strcmp(aap.tasklist.currenttask.settings.mode, 'normal')
             %% Run FIRST
-            fprintf('Running FSL FIRST\n')
+            aas_log(aap,false,'Running FSL FIRST')
             [junk, w]=aas_runfslcommand(aap, ...
                 sprintf('run_first_all -v%s -i %s -o %s', ...
                 betOption, ...
                 Simg, Simg));
-            disp(w);
             
             V = spm_vol(fullfile(Spth, [Sfn '_all_fast_firstseg.nii']));
             Y = spm_read_vols(V);
@@ -94,7 +93,7 @@ switch task
                 fullfile(Spth, ['w' Sfn]), ...
                 mSimg, ...
                 betOption);
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -124,7 +123,7 @@ switch task
                     fullfile(Spth, [Sfn '_' firstROIs{r, 2} Sext]), ...
                     firstROIs{r,3}, ...
                     ModelBMV);
-                disp(FSLcommand);
+                aas_log(aap,false,FSLcommand);
                 
                 outSeg = [outSeg, fullfile(Spth, [Sfn '_' firstROIs{r, 2} Sext])];
                 
@@ -174,7 +173,7 @@ switch task
                 ... %mSimg, ...
                 fullfile(Spth, [Tfn, '_1.mat']), ...
                 aap.tasklist.currenttask.settings.cost);
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -190,7 +189,7 @@ switch task
                 Simg, ...
                 fullfile(Spth, ['w', Mfn Mext]), ... % mask typically in nii.gz format...
                 fullfile(Spth, [Tfn, '_1.mat']));
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -203,7 +202,7 @@ switch task
                 fullfile(Spth, [Tfn, '_2.mat']), ...
                 fullfile(Spth, ['w', Mfn Mext]), ...
                 aap.tasklist.currenttask.settings.cost);
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -217,7 +216,7 @@ switch task
             FSLcommand = sprintf('convert_xfm -omat %s -inverse %s', ...
                 fullfile(Spth, ['inv' Tfn, '_1.mat']), ...
                 fullfile(Spth, [Tfn, '_1.mat']));
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -225,7 +224,7 @@ switch task
             FSLcommand = sprintf('convert_xfm -omat %s -inverse %s', ...
                 fullfile(Spth, ['inv' Tfn, '_2.mat']), ...
                 fullfile(Spth, [Tfn, '_2.mat']));
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -234,7 +233,7 @@ switch task
                 fullfile(Spth, ['inv' Tfn, '.mat']), ...
                 fullfile(Spth, ['inv' Tfn, '_1.mat']), ...
                 fullfile(Spth, ['inv' Tfn, '_2.mat']));
-            disp(FSLcommand);
+            aas_log(aap,false,FSLcommand);
             
             % Run command
             [junk, w] = aas_runfslcommand(aap, FSLcommand);
@@ -258,7 +257,7 @@ switch task
                     fullfile(Spth, [Sfn '_' firstROIs{r, 2} Sext]), ...
                     firstROIs{r,3}, ...
                     ModelBMV);
-                disp(FSLcommand);
+                aas_log(aap,false,FSLcommand);
                 
                 outSeg = [outSeg, fullfile(Spth, [Sfn '_' firstROIs{r, 2} Sext])];
                 

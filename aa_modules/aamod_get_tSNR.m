@@ -59,13 +59,12 @@ switch task
         [N, X]=hist(dat,[1:4:max(dat)+50]);
         [maxN, indN]=max(N);
         
-        fprintf('mode of tSNR is %d\n',X(indN)); 
+        aas_log(aap,false,sprintf('mode of tSNR is %d',X(indN)));
         
         h=figure(12);
         plot(X,N);
         xlabel('tSNR');
         ylabel('number of voxels');
-        fprintf('\n');
              
         save(fullfile(sesspath,'tSNR_hist.mat'),'dat','N','X','maxN','indN');  
         saveas(h,fullfile(sesspath,'tSNR_dist'),'png'); 

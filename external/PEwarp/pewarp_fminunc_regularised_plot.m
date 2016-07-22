@@ -10,8 +10,6 @@ if ~ishandle(h)
 end
 set(0, 'currentFigure', h);
 
-disp('Drawing...');
-
 colormap('gray');
 
 subplot(2, 3, 1);

@@ -10,9 +10,28 @@
             
             <permanenceofoutput>-1</permanenceofoutput>
             
-            <writemean>1</writemean>
-            <reslicewhich>2</reslicewhich>
+            <!--Realignment parameters-->
+            <eoptions>
+                <quality>0.9</quality>
+                <sep desc='seperation between sampled points'>4</sep>
+                <fwhm desc='FWHM of smooting kernel'>5</fwhm>
+                <rtm desc='registered to the mean'>0</rtm>
+                <interp desc='interpolation method'>2</interp>
+                <wrap desc='wrapping'>[0 0 0]</wrap>
+                <weight desc='weighting image'>''</weight>
+            </eoptions>      
             
+            <!--Reslicing parameters-->            
+            <roptions>
+                <which desc='images to reslice [input mean]'>[2 1]</which>
+                <interp desc='interpolation method'>4</interp>
+                <wrap desc='wrapping'>[0 0 0]</wrap>
+                <mask>1</mask>
+                <prefix>r</prefix>
+            </roptions>
+            
+            <reslicewhich>2</reslicewhich>            
+            <writemean>1</writemean>            
 
             <specialrequirements>
                 <jobtype>fMRI</jobtype>
