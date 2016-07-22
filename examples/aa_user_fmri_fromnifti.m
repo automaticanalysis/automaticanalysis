@@ -20,8 +20,9 @@ aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value localsin
 aap.options.autoidentifyfieldmaps=0;  							% typical value 1
 aap.options.NIFTI4D = 1;										% typical value 0
 aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
-aap.tasksettings.aamod_firstlevel_model.TR = 2; % second
-aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';        	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
+aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
+aap.tasksettings.aamod_slicetiming.refslice = 17;
+aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';     % OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model.includemovementpars = 1;% Include/exclude Moco params in/from DM, typical value 1
 
 %% STUDY
@@ -52,10 +53,14 @@ for s = 1:numel(d)
         'structural',fullfile(subjstr,[subj '_T1.nii']),...
         'functional', ...
             struct('fname',fullfile(subjstr,[subj '_fMRI.nii']), ...
-                    'hdr','manualdicomhdr.json'));
-                % 'manualdicomhdr.json' is a file that stores various acquisition parameters, which are usually extracted from the DICOM.
-                % You need to set this file up - perhaps by copying, editing and running makedicomhdr.m. 
-                % In this example, one file is used for all subjects. It could be customized to include subject path and have multiple files if necessary.
+                    'hdr',fullfile(subjstr,[subj '_fMRI.json'])));
+    % '_fMRI.json' is a file that stores various acquisition parameters, which are usually extracted from the DICOM.
+    % In this example, the same parameters are specified for all measurements.
+    % Once the files are created, you can comment out these lines.
+    hdr.RepetitionTime =    2;      % TR in s
+    hdr.EchoTime =          0.027;  % TE in s
+    hdr.SliceTiming =       1:32;   % slice order (you can also specify slice acquisition times, which is more accurate)
+    makedicomhdr(hdr,fullfile(subjstr,[subj '_fMRI.json']));
  
     aap = aas_addsession(aap,'run1');
     ev = importdata(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev1.txt']));
