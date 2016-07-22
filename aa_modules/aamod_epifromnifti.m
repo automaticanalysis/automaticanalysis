@@ -36,9 +36,9 @@ switch task
         if ~exist(niftifile{1},'file') % assume path realtive to (first) rawdatadir
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
-                niftifile = spm_file(imageFn,'path',niftisearchpth);
+                niftifile = aas_fullfile(niftisearchpth,niftifile);
                 if ~isempty(headerFn)
-                    headerfile = spm_file(headerFn,'path',niftisearchpth);
+                    headerfile = fullfile(niftisearchpth,headerFn);
                 end
             end
         end
@@ -69,7 +69,8 @@ switch task
         
         % Image
         finalepis={};
-        V = spm_vol(niftifile); V = cell2mat(V);
+        V = spm_vol(niftifile); 
+        if iscell(V) V = cell2mat(V); end;
         sesspth=aas_getsesspath(aap,subj,sess);
         aas_makedir(aap,sesspth);
         fle = spm_file(niftifile,'basename');
