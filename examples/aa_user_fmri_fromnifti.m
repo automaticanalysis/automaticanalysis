@@ -50,7 +50,13 @@ for s = 1:numel(d)
     subj = d(s).name(5:end);
     aap = aas_addsubject(aap,subj,...
         'structural',fullfile(subjstr,[subj '_T1.nii']),...
-        'functional',fullfile(subjstr,[subj '_fMRI.nii']));    
+        'functional', ...
+            struct('fname',fullfile(subjstr,[subj '_fMRI.nii']), ...
+                    'hdr','manualdicomhdr.json'));
+                % 'manualdicomhdr.json' is a file that stores various acquisition parameters, which are usually extracted from the DICOM.
+                % You need to set this file up - perhaps by copying, editing and running makedicomhdr.m. 
+                % In this example, one file is used for all subjects. It could be customized to include subject path and have multiple files if necessary.
+ 
     aap = aas_addsession(aap,'run1');
     ev = importdata(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev1.txt']));
     aap = aas_addevent(aap,'aamod_firstlevel_model',subjstr,'run1','task',ev(:,1)',ev(:,2)');
