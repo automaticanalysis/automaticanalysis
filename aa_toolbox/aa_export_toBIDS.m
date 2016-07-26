@@ -95,6 +95,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_log(aap,false,'WARNING: No header is available!')
         else
             loaded = load(fhdr); hdr = loaded.dcmhdr;
+            if iscell(hdr), hdr = hdr{1}; end; hdr = hdr(1);
             json = struct(...
                 'RepetitionTime',hdr.volumeTR,...
                 'EchoTime',hdr.volumeTE,...
@@ -142,13 +143,18 @@ for subj = 1:numel(aap.acq_details.subjects)
             
             % events
             models = aap.tasksettings.aamod_firstlevel_model(1).model(2:end);
-            events = models((strcmp({models.subject},aas_getsubjname(aap,subj)) | strcmp({models.subject},'*')) & ...
-                (strcmp({models.session},aap.acq_details.sessions(sess).name) | strcmp({models.session},'*'))).event;
+            selected_model = (strcmp({models.subject},aas_getsubjname(aap,subj)) | strcmp({models.subject},'*')) & ...
+                (strcmp({models.session},aap.acq_details.sessions(sess).name) | strcmp({models.session},'*'));
+            if ~any(selected_model)
+                aas_log(aap,false,'WARNING: No model information is available!')
+                continue
+            end
+            events = models(selected_model).event;
             ord = zeros(2,0);
             for e = 1:numel(events)
                 ord = [ord vertcat(e*ones(1,numel(events(e).ons)),1:numel(events(e).ons))];
             end
-            [ons,inde] = sort([events.ons]);
+            [ons,inde] = sort(vertcat(events.ons));
             ord = ord(:,inde);
             lines = sprintf('onset\tduration\tweight\ttrial_type\n');
             for l = 1:size(ord,2)
@@ -208,7 +214,9 @@ for subj = 1:numel(aap.acq_details.subjects)
         for sess = 1:numel(aap.acq_details.diffusion_sessions)
             aas_log(aap,false,['\tINFO: Exporting DWI session: ' aas_getsessname(aap,sess)])
             src = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_data','output');
+            aap.options.verbose = -1;
             fhdr = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_dicom_header','output');
+            aap.options.verbose = 2;
             
             % image
             if isempty(src)
@@ -220,10 +228,10 @@ for subj = 1:numel(aap.acq_details.subjects)
             copyfile(src,dest); gzip(dest); delete(dest);
             
             % header
-            loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
-            if isempty(fieldnames(hdr))
+            if isempty(fhdr)
                 aas_log(aap,false,'WARNING: No header information is available!')
             else
+                loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
                 json = struct(...
                     'RepetitionTime',hdr.volumeTR,...
                     'EchoTime',hdr.volumeTE,...
@@ -236,7 +244,6 @@ for subj = 1:numel(aap.acq_details.subjects)
                     );
                 savejson('',json,spm_file(dest,'ext','json'));
             end
-            
             % b
             copyfile(aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'bvals','output'),...
                 spm_file(dest,'ext','bval'));
