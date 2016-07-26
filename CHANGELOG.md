@@ -34,9 +34,16 @@
   #### Bugfixes ####
   - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) can launch arbitrary number of workers 
   - handling multiple structurals (e.g. ME-FLASH)
+  - [aamod_epifromnifti](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_epifromnifti.xml) handles
+    - 3D NIfTI source
+	- path relative to `rawdatadir`
+	- manual header
   - [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_threshold.xml):
 	- default threshold is set to p = 0.05 FWE-corrected
     - output for each first-level contrasts
+  - [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_export_toBIDS.m) handles
+    - Diffusion data without DICOM header
+	- fMRI data without events
   
 ## 5.2.0 ##
 
