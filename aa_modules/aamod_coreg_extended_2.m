@@ -67,9 +67,9 @@ switch task
         
         % Look for mean functional
         mEPIimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),diagstream);
-        if size(mEPIimg,1) > 1
+        if numel(spm_vol(mEPIimg)) > 1
             aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
-            mEPIimg = deblank(mEPIimg(1,:));
+            mEPIimg = [deblank(mEPIimg(1,:)),',1'];
         end
         
         % Check local wholebrain EPI
@@ -142,7 +142,6 @@ switch task
         
         %% Describe the outputs and Diagnostics
         
-        aap = aas_desc_outputs(aap,domain,cell2mat(varargin),diagstream,mEPIimg);
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
             aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
@@ -156,14 +155,22 @@ end
 end
 
 function [diagstream, mainstream, wbstream] = process_streams(aap)
-inpstreams = aas_getstreams(aap,'input');
+[inpstreams, inpattr] = aas_getstreams(aap,'input');
 outpstreams = aas_getstreams(aap,'output');
-if cell_index(inpstreams,'meanepi') % fMRI
-    diagstream = 'meanepi';
+
+% select non-structural diagnostic stream
+diagind = cellfun(@(x) isfield(x,'diagnostic') && x.diagnostic, inpattr); diagind(cell_index(inpstreams,'structural')) = false;
+if any(diagind)
+    diagstream = inpstreams{diagind};
+else  % auto failed --> manual  
+    if cell_index(inpstreams,'meanepi') % fMRI
+        diagstream = 'meanepi';
+    end
+    if cell_index(inpstreams,'MTI_baseline') % MTI
+        diagstream = 'MTI_baseline';
+    end
 end
-if cell_index(inpstreams,'MTI_baseline') % MTI
-    diagstream = 'MTI_baseline';
-end
+
 if cell_index(inpstreams,'wholebrain') % partial volume acquisition
     wbstream = inpstreams{cell_index(inpstreams,'wholebrain')};
 else
