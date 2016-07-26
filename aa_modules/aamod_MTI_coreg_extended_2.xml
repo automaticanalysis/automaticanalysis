@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='special_session' mfile_alias='aamod_coreg_extended_2' desc='SPM coregistration extended a la DCCN (stream rois)' modality='MTI'>
+        <currenttask domain='special_session' mfile_alias='aamod_coreg_extended_2' desc='SPM coregistration extended a la DCCN (stream MTR)' modality='MTI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
