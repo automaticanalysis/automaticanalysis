@@ -34,6 +34,9 @@ for d = 1 : length(domains)
         case {'diffusion_session', 'diffusion_session_bedpostx'}
             names{d} = {aap.acq_details.diffusion_sessions.name};
             
+        case 'special_session'
+            names{d} = {aap.acq_details.special_sessions.name};
+
         case 'scan'
             names{d} = {};
             

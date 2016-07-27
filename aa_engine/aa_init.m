@@ -145,7 +145,7 @@ reqpath=textscan(genpath(aa.Path),'%s','delimiter',':'); reqpath = reqpath{1};
 p = textscan(path,'%s','delimiter',':'); p = p{1};
 
 % spm
-p_ind = cell_index(p,aap.directory_conventions.spmdir); % SPM-related dir
+p_ind = find(cellfun(@(x) ~isempty(strfind(x,aap.directory_conventions.spmdir)),p))'; % SPM-related dir
 for ip = p_ind
     reqpath{end+1} = p{ip};
 end

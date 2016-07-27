@@ -207,7 +207,7 @@ for modI = 1 : length(aap.tasklist.main.module)
         inputStreams = aap.tasksettings.(mod.name)(mod.index).inputstreams.stream;
         if ~iscell(inputStreams), inputStreams = {inputStreams}; end
         
-        remoteStreams = struct('stream', {}, 'stagetag', {}, 'sourcedomain', {}, 'host', {}, 'aapfilename', {}, 'allowcache', {});
+        remoteStreams = struct('stream', {}, 'stagetag', {}, 'sourcedomain', {}, 'sourcemodality', {}, 'host', {}, 'aapfilename', {}, 'allowcache', {});
         
         for iI = 1 : length(inputStreams)
 
@@ -430,24 +430,4 @@ for modI = 1 : length(aap.tasklist.main.module)
 end
 
 
-end
-
-function map = mapIndices(curDomain, localTree, localAA, remoteAA, map)
-
-localDomainNames = aas_getNames_bydomain(localAA, curDomain);
-remoteDomainNames = aas_getNames_bydomain(remoteAA, curDomain);
-
-if ~strcmp(curDomain, 'study')
-    [junk,  map.(curDomain)] = ismember(localDomainNames{1}, remoteDomainNames{1});
-    
-else
-    map.(curDomain) = 1;
-end
-
-if isstruct(localTree.(curDomain))
-    subTrees = fieldnames(localTree.(curDomain));
-    for tI = 1 : numel(subTrees)
-        map = mapIndices(subTrees{tI}, localTree.(curDomain), localAA, remoteAA, map);
-    end
-end
 end
