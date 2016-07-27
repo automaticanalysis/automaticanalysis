@@ -24,11 +24,14 @@
   
   #### New features for Diffusion ####
   - [aamod_convert_diffusion](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_convert_diffusion.xml) outputs DICOM header
+  - [aamod_diffusion_coreg_extended_2DKI](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_diffusion_coreg_extended_2DKI.xml) and [aamod_diffusion_coreg_extended_2DTI](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_diffusion_coreg_extended_2DTI.xml) are parallelised across sessions.
   
   #### New features for fMRI ####
   - [aas_processinput](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processinput.m) can process pipeline without modelling and pipeline with multiple models
   - sessions can be contrasted on first-level
+  - [aamod_coreg_extended_2epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_extended_2epi.xml) is parallelised across sessions. N.B.: It will not output meanepi (see new module `aamod_coreg_extended_2meanepi`)
   - new modules:
+    - [aamod_coreg_extended_2meanepi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_extended_2meanepi.xml)
     - [aamod_split_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_split_epi.xml) for splitting (subset of) a 4D volume (into 3D)
 
   #### Bugfixes ####
