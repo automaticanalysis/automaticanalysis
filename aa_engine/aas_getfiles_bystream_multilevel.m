@@ -1,4 +1,4 @@
-function [img, md5, inpstreamdesc] = aas_getfiles_bystream_multilevel(aap,varargin)
+function [img, md5, streamdesc, domain] = aas_getfiles_bystream_multilevel(aap,varargin)
 % Multilevel streamlocator: session/specified --> subject --> study
 % Inputs:
 %   aap
@@ -14,18 +14,19 @@ if strcmp(varargin{end},'input') || strcmp(varargin{end},'output')
 end
 streamname = varargin{end};
 index = varargin(1:end-1);
-    
-img = '';
+
+domains = unique({index{1}, aas_getsesstype(aap), 'subject', 'study'},'stable');
+
+img = ''; d = 0;
 verbose0 = aap.options.verbose; aap.options.verbose = -1; % ignore error
-[img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,index{:},streamname,source);
-if isempty(img)
-    [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'subject',index{2}(1),streamname,source);
-end
-if isempty(img)
-    [img, md5, inpstreamdesc] = aas_getfiles_bystream(aap,'study',[],streamname,source);
+while isempty(img) && (d < numel(domains))
+    d = d + 1;
+    domain = domains{d};
+    [img, md5, streamdesc] = aas_getfiles_bystream(aap,domain,index{2}(1:end-d+1),streamname,source);
 end
 aap.options.verbose = verbose0;
+
 if isempty(img)
-    aas_log(aap,1,sprintf('%s stream %s not found',source,streamname));
+    aas_log(aap,true,sprintf('%s stream %s not found',source,streamname));
 end
 end

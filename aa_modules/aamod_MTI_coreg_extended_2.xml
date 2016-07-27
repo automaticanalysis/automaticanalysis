@@ -10,8 +10,6 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <structural>1</structural>
-             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
                 <stream>MTR</stream>
