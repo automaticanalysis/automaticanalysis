@@ -31,8 +31,7 @@ for depind=1:length(deps)
         dest=aas_getpath_bydomain(aap,deps{depind}{1},deps{depind}{2});
         
         % Make sure it exists
-        [s m mid]=mkdir(dest);
-        
+        [junk,isCreated] = aas_makedir(aap,dest);        
         
         % First we need to get the previous aap file
         remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
@@ -239,6 +238,9 @@ for depind=1:length(deps)
                 end
                 
                 gotinputs=[gotinputs;fns_dest_full];
+            else % cleanup
+                delete(remote_aap_fn);
+                if isCreated, rmdir(dest); end
             end;
             
         end;
@@ -278,7 +280,7 @@ for depind=1:length(deps)
                     aas_archive_register_access(aap,outputstreamdesc);
                     
                     % Make sure output directory exists
-                    [s m mid]=mkdir(dest);
+                    aas_makedir(aap,dest);
                     
                     reloadfiles=true;
                     fid=fopen(outputstreamdesc,'r');

@@ -9,4 +9,7 @@ if ~exist(dirname,'dir')
     catch
         aas_log(aap,true,sprintf('ERROR: Problem making directory %s',dirname));
     end
+    resp = true; % created
+else
+    resp = false; % not created
 end
