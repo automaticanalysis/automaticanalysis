@@ -15,7 +15,11 @@ end
 streamname = varargin{end};
 index = varargin(1:end-1);
 
-domains = unique({index{1}, aas_getsesstype(aap), 'subject', 'study'},'stable');
+domains = {index{1}, aas_getsesstype(aap), 'subject', 'study'};
+[junk, ind] = unique(domains);
+domains = domains(sort(ind));
+ind0 = cell_index(domains,index{1}); ind0 = min(ind0);
+if ind0, domains = domains(ind0:end); end
 
 img = ''; d = 0;
 verbose0 = aap.options.verbose; aap.options.verbose = -1; % ignore error
