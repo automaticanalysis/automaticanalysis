@@ -202,7 +202,7 @@ switch task
                         [tempcor{m}(r,k),tempval(r,k)] = corr(refs.tem{r}',ICs(:,k));
                     end
                     
-                    [~,temprem{1,r}] = max(abs(tempcor{m}(r,:)));
+                    [junk,temprem{1,r}] = max(abs(tempcor{m}(r,:)));
                     
                     temprem{2,r} = find(tempval(r,:) < TemAbsPval);
                     
@@ -248,7 +248,7 @@ switch task
                         [spatcor{m}(r,k),spatval(r,k)] = corr(refs.spa{m}{r}',iweights(:,k));
                     end
                     
-                    [~,spatrem{1,r}] = max(abs(spatcor{m}(r,:)));
+                    [junk,spatrem{1,r}] = max(abs(spatcor{m}(r,:)));
                     
                     spatrem{2,r} = find(spatval(r,:) < SpaAbsPval);
                     

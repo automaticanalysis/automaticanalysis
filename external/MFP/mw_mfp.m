@@ -667,8 +667,8 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 			  disp(['   ... found few slices (' num2str(min(dims_m)) ') with much higher in-plane resolution (' num2str(max(dims_m)) '), adapting steps...']);
 		  end;
 
-          % [TA] set ROI diameter accordingly
-          r = floor(min(dims_m)/2);
+          % [TA] set ROI diameter accordingly if needed
+          r = min([r floor(min(dims_m)/2)]);
           
 		% prepare storage, folder, files
 		  mfps = zeros(size(steps,1),size(pr,1));
@@ -794,7 +794,10 @@ function [td, sts, mfpfile] = mw_mfp(rps, do_td, do_mm, do_mfp, keep, shifted, s
 			  coord = oris(ii,:);
 			  try
 
-				  while round(m(coord(1),coord(2),coord(3))) == 0
+                  % [TA] ensure the any voxel in the roi
+				  while (round(m(coord(1),coord(2),coord(3))) == 0) ||...
+                          any(coord-floor(r/2) <= 0) || ...
+                          any(size(m)-(coord+ceil(r/2)) <= 0)
 
 					coord = coord - steps(ii,:);
 

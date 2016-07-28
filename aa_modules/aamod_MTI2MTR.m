@@ -18,7 +18,7 @@ switch task
         mtihdr = load(aas_getfiles_bystream(aap,'special_session',[subj,sess],'MTI_dicom_header'));
         
         % 2 series expected: baseline and MT
-        mtihdr = {mtihdr.dcmhdr{1}{1}.SeriesDescription mtihdr.dcmhdr{2}{1}.SeriesDescription};
+        mtihdr = {mtihdr.dcmhdr{1}.SeriesDescription mtihdr.dcmhdr{2}.SeriesDescription};
         baseindex = cell_index(mtihdr,'baseline');
         mtibaseline = deblank(mtifn(baseindex,:));
         mtiMT = deblank(mtifn(~(baseindex-1)+1,:));

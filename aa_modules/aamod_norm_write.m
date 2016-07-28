@@ -29,7 +29,7 @@ switch task
         % determine normalised struct
         struct = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
         sname = basename(struct);
-        struct = struct((sname(:,1)=='w'),:);
+        struct = struct((sname(:,1)=='w') | (sname(:,2)=='w'),:);
         for streamind = inds
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
             streamfn = streamfn(1,:);
@@ -97,7 +97,7 @@ switch task
             end
             
             if aas_stream_has_contents(aap,'normalisation_seg_sn')
-                spm_write_sn(imgsGood,trans,flags);
+                spm_write_sn(P,trans,flags);
             elseif aas_stream_has_contents(aap,'forward_deformation_field')
                 switch spm('ver')
                     case 'SPM8'

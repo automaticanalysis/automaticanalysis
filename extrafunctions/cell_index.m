@@ -15,6 +15,6 @@ if (nargin >= 4)
 else
     r = find(cellfun(@(x) ~isempty(x),strfind(varargin{1}(nl:end),varargin{2})));
 end
-if ~isempty(r), r = r(1);
-else r = 0; end
+if isempty(r), r = 0; end
+r = r';
 end

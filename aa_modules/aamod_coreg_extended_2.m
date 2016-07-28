@@ -18,8 +18,9 @@ switch task
         [diagstream, mainstream] = process_streams(aap);
         d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
+            if numel(varargin) > 1, diagstream = fullfile(aas_getsesspath(aap,varargin{1}, varargin{2}),'sessref.nii'); end
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
-            aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),mainstream{1},'structural');
         end
         subj = varargin{1};
         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));

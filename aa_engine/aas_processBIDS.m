@@ -63,7 +63,7 @@ SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 % 1st pass - Add sessions only
 % 2ns pass - Add data
 for p = [false true]
-    for subj = 1%:size(SUBJ,1)
+    for subj = 1:size(SUBJ,1)
         subjID = deblank(SUBJ(subj,:));
         SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
         if isempty(SESS)
