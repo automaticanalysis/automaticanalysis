@@ -338,8 +338,8 @@ function sessord = sort_sessions(sessions,sessstr)
 aasessnames = {sessions.name};
 sessstr = spm_file(sessstr,'prefix','_');
 sessord = [];
-for sess = sessstr
-    sessord = horzcat(sessord, cell_index(aasessnames,sess{1}));
+for sess = sessstr'
+    sessord = horzcat(sessord, cell_index(aasessnames,sess{1})');
 end
 end
 
