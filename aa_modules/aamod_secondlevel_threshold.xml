@@ -22,7 +22,7 @@
 			</overlay>
             
             <inputstreams>
-                <stream>secondlevel_spm</stream>
+                <stream diagnostic='1'>secondlevel_spm</stream>
                 <stream isessential='0'>secondlevel_spmts</stream>
                 <stream isessential='0'>secondlevel_spmfs</stream>
 				<stream isessential='0'>structural</stream>
