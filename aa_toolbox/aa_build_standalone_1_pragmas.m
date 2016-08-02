@@ -4,7 +4,7 @@
 %   Parallel_Computing_Toolbox
 %   Image_Processing_Toolbox
 
-function aa_build_standalone
+function aa_build_standalone_1_pragmas
 % engine
 feval_pragma('aa_doprocessing.m','aaq_.*.m')
 feval_pragma('aa_feval.m','aamod_.*.m')
