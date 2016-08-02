@@ -1,12 +1,12 @@
-*Automated Analysis Software
+*Automatic Analysis Software
 *Licence Agreement
 
-Automated Analysis software was initially developed by Dr Rhodri Cusack for supporting research at the MRC Cognition and Brain Science Unit. It is made available to the academic community in the hope that it may prove useful.  
+Automatic Analysis software was initially developed by Dr Rhodri Cusack for supporting research at the MRC Cognition and Brain Science Unit. It is made available to the academic community in the hope that it may prove useful.  
 
 Definitions:
 
-AA means the Automated Analysis software package and any associated documentation whether electronic or printed.
-USER means any person or organisation that uses AA.
+aa means the Automatic Analysis software package and any associated documentation whether electronic or printed.
+USER means any person or organisation that uses aa.
 ACADEMIC means not-for-profit.
 
 Contact details:
@@ -14,12 +14,12 @@ Rhodri Cusack
 rhodri@cusacklab.org
 www.cusacklab.org
 
-The USER will not pass the AA to any other party unless it is accompanied by this Licence Agreement.
+The USER will not pass the aa to any other party unless it is accompanied by this Licence Agreement.
 
 Disclaimer:
 
-The authors make no representation or warranty with respect to AA and specifically disclaims any implied warranties of merchantability and fitness for a particular purpose or that use of AA will not infringe any third party rights.
+The authors make no representation or warranty with respect to aa and specifically disclaims any implied warranties of merchantability and fitness for a particular purpose or that use of aa will not infringe any third party rights.
 
-The authors reserve the right to revise AA and to make changes therein from time to time without obligation to notify any person or organisation of such revision or changes.
+The authors reserve the right to revise aa and to make changes therein from time to time without obligation to notify any person or organisation of such revision or changes.
 
-While the authors will make every effort to ensure the accuracy of AA, neither the authors, the MRC nor its employees or agents may be held responsible for errors, omissions or other inaccuracies or any consequences thereof.  The MRC will not be liable in any way for any losses howsoever caused by the use of AA, such losses to include but not be limited to loss of profit, business interruption, loss of business information, or other pecuniary loss, including but not limited to special incidental consequential or other damages.
+While the authors will make every effort to ensure the accuracy of aa, neither the authors, the MRC nor its employees or agents may be held responsible for errors, omissions or other inaccuracies or any consequences thereof.  The MRC will not be liable in any way for any losses howsoever caused by the use of aa, such losses to include but not be limited to loss of profit, business interruption, loss of business information, or other pecuniary loss, including but not limited to special incidental consequential or other damages.
