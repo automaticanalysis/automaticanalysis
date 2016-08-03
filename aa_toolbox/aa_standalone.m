@@ -31,7 +31,7 @@ if isfield(args,'subj'), aap.acq_details.subjects = aap.acq_details.subjects(arg
 
 if isfield(args,'connection') % connecting
 	con = textscan(args.connection,'%s','delimiter',':'); con = con{1};
-	if numel(con) == 1, con{2} = ''; % no maxstage specified
+	if numel(con) == 1, con{2} = ''; end % no maxstage specified
     
 	aap=aas_doprocessing_initialisationmodules(aap);
     aap.directory_conventions.allowremotecache = 0;

@@ -1,9 +1,3 @@
-% TBX: 
-%   Statistics_Toolbox
-%   Robust_Control_Toolbox
-%   Parallel_Computing_Toolbox
-%   Image_Processing_Toolbox
-
 function aa_build_standalone_1_pragmas
 % engine
 feval_pragma('aa_doprocessing.m','aaq_.*.m')
@@ -48,7 +42,7 @@ for p = 1:numel(pttrn)
         case 'nonaa'
             modules = [modules ' ' p2(2:end)];
         otherwise
-            incl = spm_file(spm_file(cellstr(spm_select('FPListRec',aaroot,['^' p1 '$'])),'filename'),'prefix',' ');
+            incl = spm_file(spm_file(cellstr(spm_select('FPListRec',aaroot,['^' p1 '$'])),'basename'),'prefix',' ');
             modules = [modules cat(2,incl{:})];
     end
 end
