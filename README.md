@@ -41,7 +41,6 @@ http://www.automaticanalysis.org
    - [Automatic Defacing Tools templates (*.gca)](https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface)
    - [Group ICA Of fMRI Toolbox](http://mialab.mrn.org/software/gift/index.html)
    - [EEGLab](http://sccn.ucsd.edu/eeglab)
-   - [Advanced Normalization Tools](http://picsl.upenn.edu/software/ants)
    - [BrainWavelet Toolbox](http://www.brainwavelet.org)
    - [Motion FingerPrint](https://www.medizin.uni-tuebingen.de/kinder/en/research/neuroimaging/software)
  
