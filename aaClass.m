@@ -1,4 +1,4 @@
-% aa version 5.3.0 Jun 2016
+% automaticanalysis version 5.3.0 Jun 2016
 % Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.
 % http://dx.doi.org/10.3389/fninf.2014.00090
 
@@ -19,13 +19,13 @@ classdef aaClass
     
     methods
         function obj = aaClass(varargin)
-            obj.Name = 'aa';
+            obj.Name = 'automaticanalysis';
             aafile = [mfilename('fullpath') '.m'];
             fid = fopen(aafile,'rt');
             if fid == -1, error('Can''t open %s.',aafile); end
             l1 = fgetl(fid); l2 = fgetl(fid); l3 = fgetl(fid);
             fclose(fid);
-            d = textscan(l1,'%% aa version %s %s %d');
+            d = textscan(l1,'%% automaticanalysis version %s %s %d');
             obj.Version = d{1}{1};
             obj.Date = sprintf('%s %d',d{2}{1},d{3});
             obj.ManuscriptRef = l2(3:end);
