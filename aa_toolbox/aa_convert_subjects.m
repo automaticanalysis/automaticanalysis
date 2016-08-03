@@ -1,6 +1,6 @@
 function aap = aa_convert_subjects(aap)
-aap0 = aarecipe('aap_parameters_defaults.xml','aap_tasklist_fmri.xml');
-fields=fieldnames(aap0.schema.acq_details.subjects);
+aap0 = xml_read('aap_parameters_defaults.xml',struct('ReadAttr',0));
+fields=fieldnames(aap0.acq_details.subjects);
 fields(strcmp(fields,'ATTRIBUTE')) = [];
 for field=fields'
     newsubj.(field{1})={[]};

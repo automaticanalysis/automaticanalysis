@@ -20,18 +20,16 @@ else
     par_xml = spm_select(1,'xml','Select your local parameters and defaults xml...',...
         {fullfile(fileparts(mfilename('fullpath')),'..','aa_recipes_and_parametersets','aap_parameters_defaults_CBSU.xml')},...
         fullfile(fileparts(mfilename('fullpath')),'..','aa_recipes_and_parametersets'));
-    aap = aarecipe(par_xml,'aap_tasklist_fmri.xml');
+    aap = xml_read(par_xml,struct('ReadAttr',0));
 end
 
 %% Initialise engine
 if isaa
-    poolprofile = aap.directory_conventions.poolprofile;
     qsubpath = fullfile(getenv('HOME'),'aaworker');
 else
     if isempty(aap.directory_conventions.poolprofile)
         aas_log(aap,true,sprintf('poolprofile is not specified in %s',par_xml))
     end
-    poolprofile = aap.directory_conventions.poolprofile;
     qsubpath = pwd;
 end
 qsubpath = [qsubpath filesep func2str(func) '_' datestr(now,30)];
