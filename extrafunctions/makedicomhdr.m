@@ -22,4 +22,4 @@ function makedicomhdr(hdr,fname)
 if max(hdr.SliceTiming) > hdr.RepetitionTime % sliceorder is specified
     hdr.SliceTiming = (hdr.SliceTiming-1)*hdr.RepetitionTime/numel(hdr.SliceTiming);
 end
-savejson('hdr',hdr,fname);
+savejson([],hdr,fname);
