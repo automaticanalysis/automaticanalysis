@@ -73,8 +73,10 @@ switch task
             mEPIimg = [deblank(mEPIimg(1,:)),',1'];
         end
         if numel(varargin) > 1
-            copyfile(mEPIimg,spm_file(mEPIimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','sessref'));
-            mEPIimg = spm_file(mEPIimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','sessref');
+            V = spm_vol(mEPIimg); Y = spm_read_vols(V);
+            V.fname = strtok(spm_file(mEPIimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','sessref'),',');
+            spm_write_vol(V,Y);
+            mEPIimg = V.fname;
         end
         
         % Check local wholebrain EPI
