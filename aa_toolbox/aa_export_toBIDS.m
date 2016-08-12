@@ -1,4 +1,4 @@
-% FORMAT aa_export_toBIDS([aap,] dest[, 'anatt1', <anatstage>][, 'anatt2', <anatstage>])
+% FORMAT aa_export_toBIDS([aap,] dest[, 'anatt1', <stagetag[|streamname]>][, 'anatt2', <stagetag[|streamname]>])
 % TODO: 
 %   - multi-session
 %   - multi-run
@@ -47,8 +47,14 @@ for subj = 1:numel(aap.acq_details.subjects)
         aap.options.verbose = -1;
         fhdr = aas_getfiles_bystream(aap,'subject',subj,'structural_dicom_header','output');
         aap.options.verbose = 2;
-        if isfield(args,'anatt1'), aap = aas_setcurrenttask(cell_index(stages,args.anat)); end
-        src = aas_getfiles_bystream(aap,'subject',subj,'structural','output');
+        streamname = 'structural';
+        if isfield(args,'anatt1'),
+            out = textscan(args.anatt1,'%s','delimiter','|');
+            currstage = out{1}{1};
+            if numel(out{1}) > 1, streamname = out{1}{2}; end
+            aap = aas_setcurrenttask(aap,aas_getmoduleindexfromtag(aap,currstage));
+        end
+        src = aas_getfiles_bystream(aap,'subject',subj,streamname,'output');
         
         % image
         if isempty(src)
@@ -78,8 +84,14 @@ for subj = 1:numel(aap.acq_details.subjects)
         aap.options.verbose = -1;
         fhdr = aas_getfiles_bystream(aap,'subject',subj,'t2_dicom_header','output');
         aap.options.verbose = 2;
-        if isfield(args,'anatt2'), aap = aas_setcurrenttask(cell_index(stages,args.anat)); end
-        src = aas_getfiles_bystream(aap,'subject',subj,'t2','output');
+        streamname = 't2';
+        if isfield(args,'anatt2'),
+            out = textscan(args.anatt2,'%s','delimiter','|');
+            currstage = out{1}{1};
+            if numel(out{1}) > 1, streamname = out{1}{2}; end
+            aap = aas_setcurrenttask(aap,aas_getmoduleindexfromtag(aap,currstage));
+        end        
+        src = aas_getfiles_bystream(aap,'subject',subj,streamname,'output');
         
         % image
         if isempty(src)

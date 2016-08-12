@@ -140,6 +140,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
 
                     if ~isempty(strfind(basename(sesspath),'ses-'))
                         sesstr = ['_' strrep(basename(sesspath),'ses-','')];
+                    else
+                        sesstr = '';
                     end
                     
                     if BIDSsettings.combinemultiple
@@ -152,7 +154,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     if ~toAddData, continue; end
                     
                     aasessnames = {aap.acq_details.diffusion_sessions.name};
-                    if BIDSsettings.combinemultiple
+                    if BIDSsettings.combinemultiple && ~ isempty(sesstr)
                         aasessnames = aasessnames(cell_index(aasessnames,sesstr));
                     end
                     if isempty(diffusionimages), diffusionimages = cell(1,numel(aasessnames)); end
@@ -211,7 +213,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 
                 % Data
                 aasessnames = {aap.acq_details.sessions.name};
-                if BIDSsettings.combinemultiple
+                if BIDSsettings.combinemultiple && ~isempty(sesssfx)
                     aasessnames = aasessnames(cell_index(aasessnames,sesssfx));
                 end
                 if isempty(functionalimages), functionalimages = cell(1,numel(aasessnames)); end
