@@ -33,7 +33,7 @@ if ~iscell(streams), streams = {streams}; end
 schemas = aap.schema.tasksettings.(stagename)(index).([streamtype 'streams']).stream;
 
 % Remove/save attributes
-attributes = {};
+attributes = cell(size(streams));
 for s = 1:1:numel(streams)
     if isstruct(streams{s}), streams{s} = streams{s}.CONTENT; end
     if isstruct(schemas{s}), attributes{s} = schemas{s}.ATTRIBUTE; end % assume same order

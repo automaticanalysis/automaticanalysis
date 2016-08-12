@@ -39,7 +39,7 @@ switch task
         if ~exist(niftifile{1},'file') % assume path realtive to (first) rawdatadir
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
-                niftifile = aas_fullfile(niftisearchpth,niftifile);
+                niftifile = cell_fullfile(niftisearchpth,niftifile);
                 if ~isempty(headerFn)
                     headerfile = fullfile(niftisearchpth,headerFn);
                 end
@@ -191,4 +191,13 @@ end
 hdr.RepetitionTime = hdr.RepetitionTime*1000;
 hdr.EchoTime = hdr.EchoTime*1000;
 hdr.SliceTiming = hdr.SliceTiming*1000;
+end
+
+function fullfilepaths=cell_fullfile(basepath,filepaths)
+% Like full file, except that input filepaths is a cell array. basepath is
+% prepended (using fullfile) to every item in filepaths. Result is a cell
+% array
+for fileind=1:length(filepaths)
+    fullfilepaths{fileind}=fullfile(basepath,filepaths{fileind});
+end;
 end

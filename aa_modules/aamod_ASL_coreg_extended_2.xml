@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' mfile_alias='aamod_coreg_extended_2' desc='SPM coregistration extended a la DCCN (stream firstlevel_cons)' modality='MRI'>
+        <currenttask domain='special_session' mfile_alias='aamod_coreg_extended_2' desc='SPM coregistration extended a la DCCN (ASL)' modality='ASL'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -14,15 +14,13 @@
              
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>firstlevel_cons</stream>
-                <stream isessential='0'>wholebrain_epi</stream>
-                <stream diagnostic="1" isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
-				<stream diagnostic="1" isessential="0">aamod_realign_00001.meanepi</stream>  
+                <stream>ASL_CBF</stream>
+                <stream diagnostic="1">ASL_raw</stream>
                 <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
             </inputstreams>
             
             <outputstreams>
-                <stream>firstlevel_cons</stream>
+                <stream>ASL_CBF</stream>
             </outputstreams>
             
         </currenttask>

@@ -146,15 +146,17 @@ for k1=1:length(aap.tasklist.main.module)
                     end;
                 end;
             end;
-            % change domain and modality if needed (due to input)
-            currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
-            currstream = aap.internal.inputstreamsources{k1}.stream(end);
-            if (strcmp(currstage.domain,'session') && strcmp(currstage.modality,'MRI')) && ... % default
-                    (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
-                aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
-                aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
-                aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
-                aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
+            if ~isempty(findremote) || ~isempty(stagethatoutputs)
+                % change domain and modality if needed (due to input)
+                currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
+                currstream = aap.internal.inputstreamsources{k1}.stream(end);
+                if (strcmp(currstage.domain,'session') && strcmp(currstage.modality,'MRI')) && ... % default
+                        (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
+                    aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
+                    aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
+                    aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
+                    aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
+                end
             end
         end;
     end;

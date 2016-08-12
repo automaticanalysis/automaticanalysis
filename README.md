@@ -1,9 +1,9 @@
-Automated Analysis software was originally developed by Dr Rhodri Cusack
+Automatic Analysis software was originally developed by Dr Rhodri Cusack
 for supporting research at the MRC Cognition and Brain Science Unit. It
 is made available to the academic community in the hope that it may
 prove useful.
 
-Definitions: aa means the Automated Analysis software package and any
+Definitions: aa means the Automatic Analysis software package and any
 associated documentation whether electronic or printed.
 
 # License
@@ -38,10 +38,9 @@ http://www.automaticanalysis.org
    - [VBM8](http://www.neuro.uni-jena.de/vbm)
    - [FMRIB Software Library](http://fsl.fmrib.ox.ac.uk/fsl/fslwiki)
    - [FreeSurfer](https://surfer.nmr.mgh.harvard.edu/fswiki)
-   - [Automated Defacing Tools templates (*.gca)](https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface)
+   - [Automatic Defacing Tools templates (*.gca)](https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface)
    - [Group ICA Of fMRI Toolbox](http://mialab.mrn.org/software/gift/index.html)
    - [EEGLab](http://sccn.ucsd.edu/eeglab)
-   - [Advanced Normalization Tools](http://picsl.upenn.edu/software/ants)
    - [BrainWavelet Toolbox](http://www.brainwavelet.org)
    - [Motion FingerPrint](https://www.medizin.uni-tuebingen.de/kinder/en/research/neuroimaging/software)
  

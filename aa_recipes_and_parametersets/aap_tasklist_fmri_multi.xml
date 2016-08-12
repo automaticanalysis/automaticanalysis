@@ -39,7 +39,8 @@
             <module>
                 <branch>
                     <analysisid_suffix>_normalised</analysisid_suffix>
-                    <module><name>aamod_coreg_extended_2epi</name></module>                    
+                    <module><name>aamod_coreg_extended_2epi</name></module> 
+                    <module><name>aamod_coreg_extended_2meanepi</name></module>								
                     <module><name>aamod_norm_write_dartel</name></module> 
                     <module><name>aamod_norm_write_meanepi_dartel</name></module> 
                     <module><name>aamod_smooth</name></module>

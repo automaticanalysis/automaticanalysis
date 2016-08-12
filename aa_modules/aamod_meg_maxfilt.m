@@ -101,7 +101,9 @@ switch task
         HPIsess = aas_getsetting(aap,'hpi.session');
         if ~isempty(HPIsess)
             HPIsess = cell_index({aap.acq_details.meg_sessions(aap.acq_details.selected_sessions).name},HPIsess);
-            meg_sessions = unique([HPIsess meg_sessions],'stable');            
+            meg_sessions = [HPIsess meg_sessions];
+            [junk, ind] = unique(meg_sessions);
+            meg_sessions = meg_sessions(sort(ind));
         end
         
         for sess = meg_sessions

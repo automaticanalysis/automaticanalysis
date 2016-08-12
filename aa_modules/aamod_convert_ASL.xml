@@ -10,6 +10,8 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <numdummies>0</numdummies>
+            
             <inputstreams>
                 <stream>dicom_ASL_raw</stream>
                 <stream>dicom_ASL_PWI</stream>

@@ -144,7 +144,10 @@ switch task
 		% check for empty streams
 		ind = [];
 		for c=1:length(channels)
-			if aas_stream_has_contents(aap,channels{c}), ind = [ind c]; end
+            chaap = aap; chaap.options.verbose = -1;
+            if aas_stream_has_contents(chaap,channels{c}) && ~isempty(aas_getfiles_bystream(chaap, subjind, channels{c}))
+                ind = [ind c];
+            end
 		end
 		channels = channels(ind);
 		

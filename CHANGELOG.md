@@ -24,19 +24,29 @@
   
   #### New features for Diffusion ####
   - [aamod_convert_diffusion](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_convert_diffusion.xml) outputs DICOM header
+  - [aamod_diffusion_coreg_extended_2DKI](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_diffusion_coreg_extended_2DKI.xml) and [aamod_diffusion_coreg_extended_2DTI](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_diffusion_coreg_extended_2DTI.xml) are parallelised across sessions.
   
   #### New features for fMRI ####
   - [aas_processinput](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aas_processinput.m) can process pipeline without modelling and pipeline with multiple models
   - sessions can be contrasted on first-level
+  - [aamod_coreg_extended_2epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_extended_2epi.xml) is parallelised across sessions. N.B.: It will not output meanepi (see new module `aamod_coreg_extended_2meanepi`)
   - new modules:
+    - [aamod_coreg_extended_2meanepi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_coreg_extended_2meanepi.xml)
     - [aamod_split_epi](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_split_epi.xml) for splitting (subset of) a 4D volume (into 3D)
 
   #### Bugfixes ####
   - [aaq_matlab_pct](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_engine/aaq/aaq_matlab_pct.m) can launch arbitrary number of workers 
   - handling multiple structurals (e.g. ME-FLASH)
+  - [aamod_epifromnifti](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_epifromnifti.xml) handles
+    - 3D NIfTI source
+	- path relative to `rawdatadir`
+	- manual header
   - [aamod_secondlevel_threshold](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_modules/aamod_secondlevel_threshold.xml):
 	- default threshold is set to p = 0.05 FWE-corrected
     - output for each first-level contrasts
+  - [aa_export_toBIDS](https://github.com/rhodricusack/automaticanalysis/tree/v5-devel/aa_toolbox/aa_export_toBIDS.m) handles
+    - Diffusion data without DICOM header
+	- fMRI data without events
   
 ## 5.2.0 ##
 

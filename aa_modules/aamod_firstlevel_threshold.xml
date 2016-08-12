@@ -22,7 +22,7 @@
 			</overlay>
             
             <inputstreams>
-                <stream>firstlevel_spm</stream>
+                <stream diagnostic='1'>firstlevel_spm</stream>
                 <stream isessential='0'>firstlevel_spmts</stream>
                 <stream isessential='0'>firstlevel_spmfs</stream>
 				<stream>structural</stream>

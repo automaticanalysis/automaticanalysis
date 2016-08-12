@@ -7,7 +7,7 @@
             <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-            <rawdatadir desc='Subdirectories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
             <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu:/megdata/camcan/camcan/</rawmegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
@@ -24,7 +24,7 @@
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
             <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r6685</spmdir>
-			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/spm/common:/imaging/local/spm/common_spm5andabove:/imaging/local/software/spm_toolbox/vbm8</spmtoolsdir>
+			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/software/spm_toolbox/vbm8</spmtoolsdir>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>source /imaging/local/linux/config/fsl_csh</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>

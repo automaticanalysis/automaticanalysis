@@ -18,8 +18,11 @@ switch task
         [diagstream, mainstream] = process_streams(aap);
         d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
+            if numel(varargin) > 1, diagstream = fullfile(aas_getsesspath(aap,varargin{1}, varargin{2}),'sessref.nii'); end
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
-            aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
+            for m = 1:numel(mainstream)
+                aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
+            end
         end
         subj = varargin{1};
         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
@@ -33,9 +36,7 @@ switch task
         end
         
     case 'doit'
-        
-        global defaults
-        flags = defaults.coreg;
+        flags = aap.spm.defaults.coreg;
         if isfield(aap.tasklist.currenttask.settings,'eoptions')
             fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
             for f = 1:numel(fields)
@@ -61,24 +62,34 @@ switch task
         % Check local structural
         Simg = aas_getfiles_bystream(aap,subj,'structural');
         if size(Simg,1) > 1
-            aas_log(aap, false, sprintf('Found more than 1 structural images, using structural %d', ...
-                aap.tasklist.currenttask.settings.structural));
+            aas_log(aap, false, 'WARNING: Found more than 1 structural images, using first.');
+            Simg = [deblank(Simg(1,:)),',1'];
         end
         
         % Look for mean functional
-        mEPIimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),diagstream);
-        if size(mEPIimg,1) > 1
-            aas_log(aap, false, 'Found more than 1 mean functional images, using first.');
-            mEPIimg = deblank(mEPIimg(1,:));
+        mEPIimg = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),diagstream);
+        if numel(spm_vol(mEPIimg)) > 1
+            aas_log(aap, false, 'WARNING: Found more than 1 mean functional images, using first.');
+            mEPIimg = [deblank(mEPIimg(1,:)),',1'];
+        end
+        if numel(varargin) > 1
+            V = spm_vol(mEPIimg); Y = spm_read_vols(V);
+            V.fname = strtok(spm_file(mEPIimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','sessref'),',');
+            spm_write_vol(V,Y);
+            mEPIimg = V.fname;
         end
         
         % Check local wholebrain EPI
         WBimg = '';
         if ~isempty(wbstream) && aas_stream_has_contents(aap,domain,cell2mat(varargin),wbstream)
-            WBimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),wbstream);
+            WBimg = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),wbstream);
             if size(WBimg,1) > 1
-                aas_log(aap, false, sprintf('Found more than 1 wholebrain images, using %s %d', wbstream,...
-                    aap.tasklist.currenttask.settings.structural));
+                aas_log(aap, false, 'WARNING: Found more than 1 wholebrain images, using first.');
+                WBimg = [deblank(WBimg(1,:)),',1'];
+            end
+            if numel(varargin) > 1
+                copyfile(WBimg,spm_file(WBimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','wholebrain'));
+                WBimg = spm_file(WBimg,'path',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'basename','wholebrain');
             end
         end
         
@@ -100,7 +111,7 @@ switch task
 
         if ~isempty(WBimg) % two-step coreg
             % Coregister wholebrain EPI to structural
-            x1 = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
+            x1 = spm_coreg(spm_vol(Simg), ...
                 spm_vol(WBimg), ...
                 flags.estimate);
             % Set the new space for the wholebrain EPI
@@ -114,7 +125,7 @@ switch task
             x = x1 + x2;
         else
             % Coregister mean EPI to structural
-            x = spm_coreg(spm_vol(deblank(Simg(aap.tasklist.currenttask.settings.structural,:))), ...
+            x = spm_coreg(spm_vol(Simg), ...
                 spm_vol(mEPIimg), ...
                 flags.estimate);
             % Set the new space for the mean EPI
@@ -130,25 +141,31 @@ switch task
         % individual EPIs. Hence, we can...
         
         % Again, get space of mean functional
-        MM = spm_get_space(mEPIimg(1,:));
+        MM = spm_get_space(mEPIimg);
         
         % Locate all the EPIs we want to coregister
-        EPIimg = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream);
-        for e = 1:size(EPIimg,1)
-            % Apply the space of the coregistered mean EPI to the
-            % remaining EPIs (safest solution!)
-            spm_get_space(deblank(EPIimg(e,:)), MM);
+        for m = 1:numel(mainstream)
+            EPIimg{m} = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream{m});
+            for e = 1:size(EPIimg{m},1)
+                % Apply the space of the coregistered mean EPI to the
+                % remaining EPIs (safest solution!)
+                spm_get_space(deblank(EPIimg{m}(e,:)), MM);
+            end
         end
         
         %% Describe the outputs and Diagnostics
         
-        aap = aas_desc_outputs(aap,domain,cell2mat(varargin),diagstream,mEPIimg);
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
-            aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural');
+            if ~isempty(mainstream), aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural'); end
         end
         
-        aap = aas_desc_outputs(aap,domain,cell2mat(varargin),mainstream,EPIimg);
+        for m = 1:numel(mainstream)
+            aap = aas_desc_outputs(aap,domain,cell2mat(varargin),mainstream{m},EPIimg{m});
+        end
+        if any(strcmp(aas_getstreams(aap,'output'),diagstream))
+            aap = aas_desc_outputs(aap,domain,cell2mat(varargin),diagstream,mEPIimg);
+        end
         
     case 'checkrequirements'
         aas_log(aap,0,'No need to trim or skull strip structural\n' );
@@ -156,18 +173,39 @@ end
 end
 
 function [diagstream, mainstream, wbstream] = process_streams(aap)
-inpstreams = aas_getstreams(aap,'input');
+[inpstreams, inpattr] = aas_getstreams(aap,'input');
 outpstreams = aas_getstreams(aap,'output');
-if cell_index(inpstreams,'meanepi') % fMRI
-    diagstream = 'meanepi';
+
+% select non-structural diagnostic stream
+diagind = cellfun(@(x) isfield(x,'diagnostic') && x.diagnostic, inpattr); diagind(cell_index(inpstreams,'structural')) = false;
+if any(diagind)
+    diagstream = inpstreams{diagind};
+else  % auto failed --> manual  
+    if cell_index(inpstreams,'meanepi') % fMRI
+        diagstream = 'meanepi';
+    end
+    if cell_index(inpstreams,'MTI_baseline') % MTI
+        diagstream = 'MTI_baseline';
+    end
 end
-if cell_index(inpstreams,'MTI_baseline') % MTI
-    diagstream = 'MTI_baseline';
-end
+diagstream = textscan(diagstream,'%s','delimiter','.'); diagstream = diagstream{1}{end};
+diagind(cell_index(inpstreams,diagstream)) = true;
+
 if cell_index(inpstreams,'wholebrain') % partial volume acquisition
     wbstream = inpstreams{cell_index(inpstreams,'wholebrain')};
+    wbstream = textscan(wbstream,'%s','delimiter','.'); wbstream = wbstream{1}{end};
 else
     wbstream = '';
 end
-mainstream = outpstreams{1};
+
+% main: = out + ~diag
+mainind = ~diagind;
+[junk,ia] = intersect(inpstreams,outpstreams);
+outind = false(size(mainind)); outind(ia) = true;
+mainind = mainind & outind;
+if any(mainind)
+    mainstream = inpstreams(mainind);
+else
+    mainstream = {};
+end
 end
