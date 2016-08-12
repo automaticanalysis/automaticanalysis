@@ -239,7 +239,6 @@ for depind=1:length(deps)
                 
                 gotinputs=[gotinputs;fns_dest_full];
             else % cleanup
-                delete(remote_aap_fn);
                 if isCreated, rmdir(dest); end
             end;
             
