@@ -14,10 +14,19 @@ switch task
         sesspath=aas_getsesspath(aap,i,j);
         imgs=aas_getfiles_bystream(aap,i,j,'epi');
         nitem=0;
-        nimg=size(imgs,1);
-        for imgind=1:nimg
-            V(imgind)=spm_vol(imgs(imgind,:));
-            Y(imgind,:,:,:)=spm_read_vols(V(imgind));
+        if size(imgs,1)==1
+            % Either single image, or 4D file
+            V=spm_vol(imgs);
+            Y=spm_read_vols(V);
+            Y=permute(Y,[4 1 2 3]);
+            nimg=length(V);
+        else
+            % Multiple images, will crash if they're not 3D
+            nimg=size(imgs,1);
+            for imgind=1:nimg
+                V(imgind)=spm_vol(imgs(imgind,:));
+                Y(imgind,:,:,:)=spm_read_vols(V(imgind));
+            end;
         end;
         
         
