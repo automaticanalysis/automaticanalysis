@@ -1,8 +1,8 @@
 % Modify the values in this script for your sequence
-hdr.RepetitionTime = 2000; % TR, units are ms
-hdr.EchoTime = 27;         % TE, units are ms  
-hdr.EchoSpacing = 0;       % needed if doing field map undistortion, units are ms   
-hdr.SliceTiming = 1:32;    % slice order. 1:numslices for ascending sequential; numslices:-1:1 for descending sequential. For interleaved, be careful - need [1:2:numslices 2:2:numslices] when odd number of slices otherwise [2:2:numslices 1:2:numslices] when even numslices
-hdr.PhaseEncodingDirection = '';  % not essential
+hdr.RepetitionTime = 2; % TR, units are s
+hdr.EchoTime = 0.027;         % TE, units are s  
+hdr.EchoSpacing = 0;       % needed if doing field map undistortion, units are s   
+hdr.SliceTiming = 1:32;    % Time of each of the slices, in ms. Not needed if slice time correction is not included, or if slice order is specified manually
+hdr.PhaseEncodingDirection = '';  % not essential if fieldmap undistortion is 
 fname='demodicomhdr.json';
 savejson('hdr',hdr,fname);
