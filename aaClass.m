@@ -1,7 +1,3 @@
-% automaticanalysis version 5.3.0 Jun 2016
-% Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.
-% http://dx.doi.org/10.3389/fninf.2014.00090
-
 classdef aaClass
     properties
         Path
@@ -13,31 +9,29 @@ classdef aaClass
         Date
         ManuscriptRef
         ManuscriptURL
-        aaURL = 'http://automaticanalysis.org'
-        aawiki = 'https://github.com/rhodricusack/automaticanalysis/wiki';
+        aaURL
+        aawiki
     end
     
     methods
         function obj = aaClass(varargin)
-            obj.Name = 'automaticanalysis';
-            aafile = [mfilename('fullpath') '.m'];
-            fid = fopen(aafile,'rt');
-            if fid == -1, error('Can''t open %s.',aafile); end
-            l1 = fgetl(fid); l2 = fgetl(fid); l3 = fgetl(fid);
-            fclose(fid);
-            d = textscan(l1,'%% automaticanalysis version %s %s %d');
-            obj.Version = d{1}{1};
-            obj.Date = sprintf('%s %d',d{2}{1},d{3});
-            obj.ManuscriptRef = l2(3:end);
-            obj.ManuscriptURL = l3(3:end);
-            obj.Path = fileparts(aafile);
-            
             % Path
+            aafile = [mfilename('fullpath') '.m'];
+            obj.Path = fileparts(aafile);
             if ~any(strcmp(varargin,'nopath'))
                 fprintf('\nPlease wait a moment, adding <a href = "matlab: cd %s">%s</a> to the path\n',obj.Path,obj.Name);
                 addpath(genpath(obj.Path)); % recursively add AA subfolders
                 rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
             end
+            
+            obj.Name = 'automaticanalysis';            
+            info = loadjson(strrep(aafile,'Class.m','.json'));
+            obj.Version = info.Version;
+            obj.Date = info.Date;
+            obj.ManuscriptRef = info.ManuscriptRef;
+            obj.ManuscriptURL = info.ManuscriptURL;
+            obj.aaURL = info.URL;
+            obj.aawiki = info.wiki;            
             
             % Greet
             if ~any(strcmp(varargin,'nogreet'))
