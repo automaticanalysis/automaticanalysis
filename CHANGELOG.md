@@ -7,6 +7,7 @@
   - module domain and modality is changed dynamically according to the input
   - processing ASL data
   - `ignoreseries` is implemented
+  - improved compatibility with MATLAB R2015a
   - improved compatibility with SPM8
   - stand-alone:
     - pragmas added to support building stand-alone version

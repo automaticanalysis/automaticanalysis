@@ -22,8 +22,8 @@ switch task
         %% Apply dtinlfit
         data_in = spm_read_vols(spm_vol(diffinput));
         data_mask = spm_read_vols(spm_vol(betmask));
-        bval = importdata(bvals);
-        bvec = importdata(bvecs);
+        bval = dlmread(bvals);
+        bvec = dlmread(bvecs);
     
         if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
             profiles = parallel.clusterProfiles;

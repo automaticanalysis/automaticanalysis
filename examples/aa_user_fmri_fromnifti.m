@@ -63,9 +63,9 @@ for s = 1:numel(d)
     makedicomhdr(hdr,fullfile(subjstr,[subj '_fMRI.json']));
  
     aap = aas_addsession(aap,'run1');
-    ev = importdata(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev1.txt']));
+    ev = dlmread(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev1.txt']));
     aap = aas_addevent(aap,'aamod_firstlevel_model',subjstr,'run1','task',ev(:,1)',ev(:,2)');
-    ev = importdata(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev2.txt']));
+    ev = dlmread(fullfile(aap.directory_conventions.rawdatadir,subjstr,[subj '_ev2.txt']));
     aap = aas_addevent(aap,'aamod_firstlevel_model',subjstr,'run1','rest',ev(:,1)',ev(:,2)');
 end
 aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:run1',[1 -1],'task-rest','T');

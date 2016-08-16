@@ -75,7 +75,7 @@ for v = 1:nVisit
         sessind = (v-1)*nRun+r;
         for ev = {'Up','Down','FB','NE','Rate','Omit'}
             EVfile= spm_select('FPList',EVFolder,sprintf('Visit%d_Run%d_%s.*txt$',v,r,ev{1}));
-            EVs = importdata(EVfile);
+            EVs = dlmread(EVfile);
             if isempty(EVs), aas_log(aap,true,sprintf('ERROR: Empty EV: %s',EVfile)); end
             aap = aas_addevent(aap,'aamod_firstlevel_model_*',subj,...
                 aap.acq_details.sessions(sessind).name,... % run
