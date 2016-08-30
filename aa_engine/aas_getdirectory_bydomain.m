@@ -30,6 +30,6 @@ switch (domain)
     case 'diffusion_session_bedpostx'
         directory=[aap.acq_details.diffusion_sessions(index).name '.bedpostX'];
         
-    case {'subject','hyperalignment_subject'}
+    case {'subject','hyperalignment_subject','isc_subject'}
         directory=aap.acq_details.subjects(index).subjname;  
 end
