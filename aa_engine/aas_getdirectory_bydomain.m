@@ -32,4 +32,7 @@ switch (domain)
         
     case {'subject','hyperalignment_subject','isc_subject'}
         directory=aap.acq_details.subjects(index).subjname;  
+        
+    case 'diffusion_session_phaseencode_direction'
+        directory=sprintf('phaseencode_direction_%d',index);
 end
