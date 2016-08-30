@@ -23,6 +23,10 @@ switch (domain)
         N=aap.options.searchlight.Npackage;
         I=1:N;
         
+    case 'diffusion_session_phaseencode_direction'
+        N=2;
+        I=1:2;
+        
     case {'session','meg_session','isc_session','diffusion_session','diffusion_session_bedpostx','special_session'}
         
         switch domain
@@ -53,12 +57,22 @@ switch (domain)
                 I=find(seriesnumbers > 0);
             end
         end
+
+        % Apply selection of sessions if necessary
+        switch domain
+            case 'session'
+                % Parse selected_sessions into indices if necessary
+                aap=parse_selected_sessions(aap);
+                I=intersect(aap.acq_details.selected_sessions,I);
+                N=length(I);
+            otherwise
+        end;
         
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
         N=aap.options.splitsession_cv.N;
         I=1:N;
                
-    case {'subject','hyperalignment_subject'}
+    case {'subject','hyperalignment_subject','isc_subject'}
         N=length(aap.acq_details.subjects);
         I=1:N;
         
@@ -74,3 +88,9 @@ switch (domain)
         N=aap.options.realtime.nscans;
         I=1:N;
 end;    
+
+% Weirdly, a 0x1 matrix behaves differently from a 0x0 matrix in a for loop
+if isempty(I)
+    I=[];
+end;
+end
