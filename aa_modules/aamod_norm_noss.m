@@ -11,26 +11,35 @@
 % Rhodri Cusack & Daniel Mitchell MRC CBU 2006
 % based on originals by Rik Henson, Matthew Brett
 
-function [aap,resp]=aamod_norm_noss(aap,task,subj)
+function [aap,resp]=aamod_norm_noss(aap,task,subj,sess)
 resp='';
 
 switch task
     case 'report' % [TA]
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         if isempty(fdiag)
-            diag(aap,subj);
+            domain=aap.tasklist.currenttask.domain;
+            switch domain
+                case 'subject'
+                    indices=subj;
+                case 'diffusion_session'
+                    indices=[subj sess];
+            end;
+            diag(aap,domain,indices);
             fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         end
-        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
-        for d = 1:numel(fdiag)
-            aap = aas_report_add(aap,subj,'<table><tr><td>');
-            imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
-            aap=aas_report_addimage(aap,subj,imgpath);
-            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
-            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
-            aap = aas_report_add(aap,subj,'</td></tr></table>');
-        end
-    case 'doit'
+        if strcmp(domain,'subject')
+            fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
+            for d = 1:numel(fdiag)
+                aap = aas_report_add(aap,subj,'<table><tr><td>');
+                imgpath = fullfile(aas_getsubjpath(aap,subj),fdiag(d).name);
+                aap=aas_report_addimage(aap,subj,imgpath);
+                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+                aap = aas_report_add(aap,subj,'</td></tr></table>');
+            end
+        end;
+        case 'doit'
         
         
         settings = aap.tasklist.currenttask.settings;
@@ -55,10 +64,21 @@ switch task
         % [AVG] Modified the way we get the structural, to be more aa4-like
         inStream = aap.tasklist.currenttask.inputstreams(1).stream{1};
 
+        domain=aap.tasklist.currenttask.domain;
+        
+        if strcmp(domain,'diffusion_session')
+            indices=[subj sess];
+            Simg = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],inStream);
+        end;
+        
         try 
             Simg = aas_getfiles_bystream(aap,subj,inStream);
+            domain='subject';
+            indices=[subj];
         catch
             Simg = aas_getfiles_bystream(aap,subj,1,inStream);
+            domain='session';
+            indices=[subj 1];
         end
         
         % Cheap and cheerful way of ensuring only one file is considered!
@@ -244,7 +264,7 @@ switch task
                     d = NaN;
                 end
             end
-            aap=aas_desc_outputs(aap,subj,'segmentation',outSeg);
+            aap=aas_desc_outputs(aap,domain,indices,'segmentation',outSeg);
             
             % [TA] replace the structural with the bias-corrected one
             Simg = fullfile(Spth,['mm' Sfn Sext]);
@@ -276,10 +296,10 @@ switch task
         V.dt = [spm_type('int16') spm_platform('bigend')];
         spm_write_vol(V,Y);
         
-        aap=aas_desc_outputs(aap,subj,'structural', strvcat(Simg, Sout));
+        aap=aas_desc_outputs(aap,domain,indices,'structural', strvcat(Simg, Sout));
 
         if settings.diagnostic && strcmp(aap.options.wheretoprocess,'localsingle')
-            diag(aap,subj);
+            diag(aap,domain,indices);
         end
         
     case 'checkrequirements'
@@ -303,11 +323,11 @@ else
 end
 end
 %------------------------------------------------------------------------
-function diag(aap,subj) % [TA]
+function diag(aap,domain,indices) % [TA]
 % SPM, AA
-Simg = aas_getfiles_bystream(aap,subj,'structural','output'); Simg = Simg(1,:);
-localpath = aas_getsubjpath(aap,subj);
-outSegAll = aas_getfiles_bystream(aap,subj,'segmentation','output');
+Simg = aas_getfiles_bystream(aap,domain,indices,'structural','output'); Simg = Simg(1,:);
+localpath = aas_getpath_bydomain(aap,domain,indices);
+outSegAll = aas_getfiles_bystream(aap,domain,indices,'segmentation','output');
 
 outSeg = outSegAll([1 3 5],:);
 outNSeg = outSegAll([2 4 6],:);
@@ -361,8 +381,8 @@ print(2,'-djpeg','-r150',...
 try close(2); catch; end
 
 %% Contours VIDEO of segmentations
-aas_checkreg(aap,subj,outSeg(1,:),Simg)
-aas_checkreg(aap,subj,outNSeg(1,:),tmpfile)
+aas_checkreg(aap,domain,indices,outSeg(1,:),Simg)
+aas_checkreg(aap,domain,indices,outNSeg(1,:),tmpfile)
 
 delete(tmpfile);
 end

@@ -36,7 +36,7 @@
                 <stream ismodified="0">mean_d_stdsamples</stream>
                 <stream ismodified="0">mean_f1samples</stream>
                 <stream ismodified="0">mean_f2samples</stream>
-                <stream ismodified="0">mean_fsamples</stream>
+                <stream ismodified="0" isessential="0">mean_fsamples</stream>
                 <stream ismodified="0">mean_ph1samples</stream>
                 <stream ismodified="0">mean_ph2samples</stream>
                 <stream ismodified="0">merged_ph2samples</stream>

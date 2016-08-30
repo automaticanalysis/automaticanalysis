@@ -13,11 +13,18 @@ switch task
         flags = defaults.coreg;
         % check local structural directory exists
         structfn=aas_getfiles_bystream(aap,'subject',subjInd,'structural');
+        
+        dsesspath=aas_getpath_bydomain(aap,'diffusion_session',[subjInd diffsess]);
+        
+        [pth nme ext]=fileparts(structfn);
+        diffsess_structfn=fullfile(dsesspath,[nme ext]);
+        copyfile(structfn,diffsess_structfn);
+        
         fafn=aas_getfiles_bystream(aap,'diffusion_session',[subjInd diffsess],'dti_FA');
 
         % Register...
         VG = aas_spm_vol(fafn,true); % ...this
-        VF = aas_spm_vol(structfn,true); % ...to this
+        VF = aas_spm_vol(diffsess_structfn,true); % ...to this
         
         % Replace with unpacked name
         structfn=VF.fname;
@@ -27,9 +34,9 @@ switch task
         
         M  = inv(spm_matrix(x));
           
-        spm_get_space(structfn, M*spm_get_space(structfn));
+        spm_get_space(diffsess_structfn, M*spm_get_space(diffsess_structfn));
        
-        aap = aas_desc_outputs(aap,'subject',subjInd,'structural', structfn);
+        aap = aas_desc_outputs(aap,'diffusion_session',[subjInd diffsess],'structural', diffsess_structfn);
 
         % Save graphical output - this will now be done by report task
         try

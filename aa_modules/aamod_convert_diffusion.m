@@ -2,15 +2,20 @@
 % Converting Data to Analyze format and extracting the Gradient Directions
 % extract the gradient direction and b-values as a text file
 
-function [aap resp]=aamod_convert_diffusion(aap,task,subjind,diffsessind)
+function [aap resp]=aamod_convert_diffusion(aap,task,subjind,diffsessind,phaseencodeind)
 resp='';
 
 switch task
     case 'report'
     case 'doit'
         
-        domain = 'diffusion_session';
-        indices = [subjind diffsessind];
+        if exist('phaseencodeind','var')
+            indices = [subjind diffsessind phaseencodeind];
+            domain = 'diffusion_session_phaseencode_direction';
+        else
+            indices = [subjind diffsessind];
+            domain = 'diffusion_session';
+        end;
         domainpath=aas_getpath_bydomain(aap,domain,indices);
         
         % Get DICOM filenames from stream and bvals and bvecs from the
