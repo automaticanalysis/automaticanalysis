@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session_phaseencode_direction' mfile_alias='aamod_convert_diffusion' desc='Convert diffusion image from DICOMs by phase encode direction' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <numdummies>0</numdummies>
+            
+            <inputstreams>
+                <stream>dicom_diffusion</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>diffusion_data</stream>
+                <stream>diffusion_dicom_header</stream>
+                <stream>bvals</stream>
+                <stream>bvecs</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

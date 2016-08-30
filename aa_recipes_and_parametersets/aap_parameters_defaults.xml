@@ -64,7 +64,9 @@
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
                     <meg_session desc='MEG acquisition' ui='custom'></meg_session>                        
-                    <diffusion_session desc='Diffusion acquisition' ui='custom'></diffusion_session>                        
+                    <diffusion_session desc='Diffusion acquisition' ui='custom'>
+                        <diffusion_session_phaseencode_direction desc='Diffusion phase encoding direction' ui='custom'></diffusion_session_phaseencode_direction>
+                    </diffusion_session>                        
                     <diffusion_session_bedpostx desc='Diffusion bedpostx' ui='custom'>
                         <diffusion_session_probtrackx desc='Probablistic tractography' ui='custom'>
                         </diffusion_session_probtrackx>

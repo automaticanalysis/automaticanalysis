@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='diffusion_session' desc='Run topup to correct for distortions using two phase encode directions' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <!-- This is the table as described in 
+            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/TopupUsersGuide
+            The first three values in each row describe the phase encoding directions of your first and second acquisitions.
+            The fourth value in each row is described here
+            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/Faq
+            This was also helpful to me
+            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/Faq
+            -->
+            
+            <topuptable>
+                <topuprow></topuprow>
+                <topuprow></topuprow>
+            </topuptable>
+            
+            <inputstreams>
+                <stream>nodif</stream>
+                <stream>diffusion_dicom_header</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>topup_acquisition_parameters</stream>
+                <stream>topup_output_movpar</stream>
+                <stream>topup_output_fieldcoef</stream>
+                <stream>nodif</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

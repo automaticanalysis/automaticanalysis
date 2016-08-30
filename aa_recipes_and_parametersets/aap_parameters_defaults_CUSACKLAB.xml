@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="aap_parameters_defaults.xml" parse="xml"/>
+    <local>
+        <directory_conventions>
+            <subjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>%s</subjectoutputformat>
+            <fslshell desc='Shell used to run FSL' ui='text'>tcsh</fslshell>
+    </directory_conventions>
+        <options>
+			<NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
+        </options>
+    </local>
+</aap>
