@@ -1,7 +1,8 @@
 % Automatic analysis - Entry point for standalone version. 
 %
-% FORMAT function aa_standalone(fname_tasklist, fname_aa [, 'mridatadir', <dir>][, 'megdatadir', <dir>][, 'connection', <dir>][, 'anadir', <dir>][, 'subj', <subject indices>])
+% FORMAT function aa_standalone(fname_config, fname_tasklist, fname_aa [, 'mridatadir', <dir>][, 'megdatadir', <dir>][, 'connection', <dir>][, 'anadir', <dir>][, 'subj', <subject indices>])
 %   Compulsory arguments:
+%       - fname_config: aa parameters (XML file)
 %       - fname_tasklist: aa tasklist (XML file)
 %       - fname_aa: pipeline customisation (MATLAB script file editing aap structure)
 %   Optional arguments:
@@ -11,23 +12,29 @@
 %            first element is the directory of the the pipeline to connect to
 %            second elements is the name of the latest stage to connect to
 %       - 'anadir', <dir>: Directory to put analysis to
-%       - 'subj', <subject indices>: Index / indices of subject(s) to be included (N.B.: in the order they have been added)
+%       - 'subj', <subject name>: subjname(s) of subject(s) to be included
 
-function aa_standalone(fname_tasklist, fname_aa, varargin)
+function aa_standalone(fname_config, fname_tasklist, fname_aa, varargin)
 
 % Load tasklist and customisation
-aap=aarecipe('aap_parameters_defaults_CBSU.xml',fname_tasklist);
-run(fname_aa)
+aap=aarecipe(fname_config,fname_tasklist);
 
 % Optiona arguments
 args = vargParser(varargin);
 if isfield(args,'mridatadir'), aap.directory_conventions.rawdatadir = args.mridatadir; end % data
 if isfield(args,'megdatadir'), aap.directory_conventions.rawmegdatadir = args.megdatadir; end % data
 if isfield(args,'anadir') % output
-    aap.acq_details.root = spm_file(args.anadir,'path'); 
-    aap.directory_conventions.analysisid = spm_file(args.anadir,'basename'); 
+    aap.acq_details.root = args.anadir; 
+    aap.directory_conventions.analysisid = 'automaticanalysis'; 
 end
-if isfield(args,'subj'), aap.acq_details.subjects = aap.acq_details.subjects(args.subj); end % subject selection
+
+run(fname_aa)
+
+if isfield(args,'subj') % subject selection
+    subjind = any(cell2mat(cellfun(@(x) strcmp({aap.acq_details.subjects.subjname},x)',cellstr(args.subj),'UniformOutput',false)),2);
+    if ~any(subjind), aas_log(aap,false,'No subject found!'); end
+    aap.acq_details.subjects = aap.acq_details.subjects(subjind);
+end 
 
 if isfield(args,'connection') % connecting
 	con = textscan(args.connection,'%s','delimiter',':'); con = con{1};

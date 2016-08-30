@@ -22,8 +22,8 @@ switch task
         %% Apply dkifit
         data_in = spm_read_vols(spm_vol(diffinput));
         data_mask = spm_read_vols(spm_vol(betmask));
-        bval = importdata(bvals);
-        bvec = importdata(bvecs);
+        bval = dlmread(bvals);
+        bvec = dlmread(bvecs);
         [dki.S0, dki.DT, dki.KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
         [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
         

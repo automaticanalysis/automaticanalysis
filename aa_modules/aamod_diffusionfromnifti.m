@@ -45,8 +45,8 @@ switch task
         end
         
         % BVals/BVecs
-        bvals = importdata(bvalfile); if size(bvals,2) > size(bvals,1), bvals = bvals'; end
-        bvecs = importdata(bvecfile); if size(bvecs,2) > size(bvecs,1), bvecs = bvecs'; end
+        bvals = dlmread(bvalfile); if size(bvals,2) > size(bvals,1), bvals = bvals'; end
+        bvecs = dlmread(bvecfile); if size(bvecs,2) > size(bvecs,1), bvecs = bvecs'; end
         
         bvals_fn=fullfile(sesspth,'bvals');
         fid=fopen(bvals_fn,'w');
