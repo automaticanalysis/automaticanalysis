@@ -5,7 +5,7 @@
 % timecourse across all of the other subjects
 %
 
-function [aap,resp]=aamod_moviecorr_meantimecourse(aap,task,subj,sess)
+function [aap,resp]=aamod_moviecorr_meantimecourse(aap,task,sess,subj)
 
 resp='';
 
@@ -17,8 +17,7 @@ switch task
         subj_imgs=aas_getimages_bystream(aap,subj,sess,'epi');
         % This is a subject-level thing
         mean_imgs=aas_getfiles_bystream(aap,'isc_session',sess,'meanepitimecourse');
-        % A bit messy - now filter for the session files in the study directory we care about
-        % mean_imgs=mean_imgs(strmatch(fullfile(aas_getstudypath(aap),aap.acq_details.sessions(j).name),mean_imgs),:);
+        % Truncate
         if (~aap.tasklist.currenttask.settings.truncatevolumes && size(subj_imgs,1)~=size(mean_imgs,1))
             aas_log(aap,true,sprintf('Expected same number of images in epi and meanepitimecourse\n'));
             Vfirstmean=spm_vol(mean_imgs(1,:));
@@ -27,14 +26,17 @@ switch task
                 aas_log(aap,true,sprintf('Need same image dimensions and space for mean and individual subject.'));
             end;
         end;
-        nimg=size(mean_imgs,1);
-        nsubj=length(aap.acq_details.subjects);
         
+        % This will return a structure  from 4D or 3D inputs
+        V1 =aas_spm_vol(subj_imgs);
+        V2 =aas_spm_vol(mean_imgs);
+
+        nimg=length(V1);
+        nsubj=length(aap.acq_details.subjects);
+
         for imgind=1:nimg
-            V1=spm_vol(subj_imgs(imgind,:));
-            Y1=spm_read_vols(V1);
-            V2=spm_vol(mean_imgs(imgind,:));
-            Y2=spm_read_vols(V2);
+            Y1=spm_read_vols(V1(imgind));
+            Y2=spm_read_vols(V2(imgind));
             
             % Subtract this subject's contribution, if the mean includes
             % them
@@ -61,10 +63,11 @@ switch task
         % Any correlations outside -1 to 1 must be division errors
         corr(corr<-1)=-1;
         corr(corr>1)=1;
-        V1.fname=fullfile(aas_getsesspath(aap,subj,sess),'moviecorr_meantimecourse.nii');
-        V1.dt(1)=spm_type('float32');
-        spm_write_vol(V1,corr(:,:,:));
-        aap = aas_desc_outputs(aap,subj,sess,'moviecorr_meantimecourse','moviecorr_meantimecourse.nii');
+        Vout=V1(1);
+        Vout.fname=fullfile(aas_getpath_bydomain(aap,'isc_subject',[sess subj]),'moviecorr_loo.nii');
+        Vout.dt(1)=spm_type('float32');
+        spm_write_vol(Vout,corr(:,:,:));
+        aap = aas_desc_outputs(aap,'isc_subject',[sess subj],'moviecorr_loo',Vout.fname);
     case 'checkrequirements'
         
     otherwise

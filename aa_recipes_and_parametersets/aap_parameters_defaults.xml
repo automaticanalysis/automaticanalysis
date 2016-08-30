@@ -44,7 +44,7 @@
         <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
         <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
         <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
-		<GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
+        <GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
@@ -76,6 +76,8 @@
                     </hyperalignment_subject>
                 </hyperalignment_searchlight_package>
                 <isc_session desc='inter-subject correlation for a session' ui='custom'>
+                    <isc_subject desc='inter-subject correlation, single subject within a session' ui='custom'>
+                    </isc_subject>
                 </isc_session>
                 
                 <splitsession_cv_fold_hyper desc='Hyperalignment of an ROI' ui='custom'>
@@ -111,7 +113,7 @@
         <aa_maxver desc='Maximum allowed aa version' ui='double'>99.99.99</aa_maxver>
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
-		<garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
+        <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
         <aaworkerGUI desc='Show GUI to monitor parallel workers?' ui='yesno'>1</aaworkerGUI>
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
         <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>

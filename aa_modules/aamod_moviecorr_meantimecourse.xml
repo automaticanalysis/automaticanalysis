@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='Correlate each subjects timecourse with mean timecourse' modality='MRI'>
+        <currenttask domain='isc_subject' desc='Correlate each subjects timecourse with mean timecourse' modality='MRI'>
             
             <permanenceofoutput>2</permanenceofoutput>
             
@@ -15,7 +15,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>moviecorr_meantimecourse</stream>  
+                <stream>moviecorr_loo</stream>  
             </outputstreams>
             
         </currenttask>

@@ -14,20 +14,9 @@ switch task
         sesspath=aas_getsesspath(aap,i,j);
         imgs=aas_getfiles_bystream(aap,i,j,'epi');
         nitem=0;
-        if size(imgs,1)==1
-            % Either single image, or 4D file
-            V=spm_vol(imgs);
-            Y=spm_read_vols(V);
-            Y=permute(Y,[4 1 2 3]);
-            nimg=length(V);
-        else
-            % Multiple images, will crash if they're not 3D
-            nimg=size(imgs,1);
-            for imgind=1:nimg
-                V(imgind)=spm_vol(imgs(imgind,:));
-                Y(imgind,:,:,:)=spm_read_vols(V(imgind));
-            end;
-        end;
+        
+        % Read in data, may be 4D or compressed 
+        [V, Y , ~, nimg]=aas_spm_vol(imgs);
         
         
         % Get TR from DICOM header
@@ -35,8 +24,10 @@ switch task
             DICOMHEADERS=load(aas_getfiles_bystream(aap,i,j,'epi_dicom_header'));
             aap.tasklist.currenttask.settings.TRs=DICOMHEADERS.DICOMHEADERS{1}.RepetitionTime/1000;
         end;
-
+        
         % Regress out discrete cosine components to do filtering
+        
+        Y=permute(Y,[4 1 2 3]);  % Time becomes first dimension, temporarily
         szY=size(Y);
         Y=reshape(Y,[nimg prod(szY(2:4))]);
         X0=spm_dctmtx(nimg,fix(2*(nimg*aap.tasklist.currenttask.settings.TRs)/aap.tasklist.currenttask.settings.HParam + 1));
@@ -44,20 +35,26 @@ switch task
         beta=X0\Y;
         Y=Y-X0*beta;
         Y=reshape(Y,szY);
+     
+        Y=permute(Y,[2 3 4 1]);   % Put time back at end
         
-        % Write the data
+        % Write the data, now as 4D
         aas_makedir(aap,sesspath);
         allimgs=[];
-        for imgind=1:nimg
-            [pth nme ext]=fileparts(V(imgind).fname);
-            imgfn=fullfile(pth,['f' nme ext]);
-            allimgs{imgind}=imgfn;
-            V(imgind).fname=imgfn;
-            spm_write_vol(V(imgind),squeeze(Y(imgind,:,:,:)));
+        
+        outfn=V(1).fname;
+        [pth nme ext]=fileparts(outfn);
+        if ~strcmp(nme(end-2:end),'_4D')
+            nme=[nme '_4D'];
         end;
+        outfn=fullfile(pth,['f' nme ext]);
+        
+        
+        % Write file out a single 4D nii
+        aas_spm_write_vol(V(1),Y,outfn);
         
         % Create the output stream
-        aap = aas_desc_outputs(aap,i,j,'epi',allimgs);
+        aap = aas_desc_outputs(aap,i,j,'epi',outfn);
         
         
     case 'checkrequirements'

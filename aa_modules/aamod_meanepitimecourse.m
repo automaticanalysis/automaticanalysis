@@ -16,36 +16,50 @@ switch task
         outdir=aas_getpath_bydomain(aap,'isc_session',sess);
         aap=aas_makedir(aap,outdir);
         
-        % Load up list of images for each subject in this session
-        for i=1:length(aap.acq_details.subjects)
-            fn{i}=aas_getimages_bystream(aap,i,sess,'epi');
-            if aap.tasklist.currenttask.settings.truncatevolumes
-                nimgs=min(nimgs,size(fn{i},1));
-            else
-                if (i>1 && nimgs~=size(fn{i},1))
-                    aas_log(aap,true,sprintf('Corresponding sessions of each subject must have the same number of EPI sessions - not true for session %s of subject %s as got %d not %d scans.',aap.acq_details.sessions(i).name,aap.acq_details.subjects(i).subjname,size(fn{i},1),nimgs));
-                end;
-                nimgs=size(fn{i},1);
-            end;
-        end;
-        % Take average of each timepoint across subjects
-        for k=1:nimgs
-            for i=1:length(aap.acq_details.subjects)
-                V=spm_vol(fn{i}(k,:));
-                if (i==1)
-                    Ytot=spm_read_vols(V);
-                else
-                    Ytot=Ytot+spm_read_vols(V);
-                end;
-            end;
+        % Load up list of images and headers for each subject in this session
+        V={};
+        for subj=1:length(aap.acq_details.subjects)
+            fn{subj}=aas_getimages_bystream(aap,subj,sess,'epi');
+            % Load up headers and truncate if necessary
+            [V{subj},~,~,thissubj_nimgs]=aas_spm_vol(fn{subj});             
+
             
-            Ytot=Ytot/length(aap.acq_details.subjects);
-            V.fname=fullfile(outdir,sprintf('meanepiacrosssubjects_%05d.nii',k));
-            V.dt(1)=spm_type('float32');
-            spm_write_vol(V,Ytot);
-            outputs=[outputs V.fname];
+            if aap.tasklist.currenttask.settings.truncatevolumes
+                nimgs=min(nimgs,thissubj_nimgs);
+            else
+                if (subj>1 && nimgs~=thissubj_nimgs)
+                    aas_log(aap,true,sprintf('Corresponding sessions of each subject must have the same number of EPI sessions - not true for session %s of subject %s as got %d not %d scans.',aap.acq_details.sessions(subj).name,aap.acq_details.subjects(subj).subjname,size(fn{subj},1),nimgs));
+                end;                
+            end;
         end;
-        aap=aas_desc_outputs(aap,'isc_session',sess,'meanepitimecourse',outputs);
+        
+        % Truncate headers if necessary
+        for subj=1:length(aap.acq_details.subjects)
+            V{subj}=V{subj}(1:nimgs);
+        end;
+        
+        % Take average of each timepoint across subjects
+        Ytot=[];
+        Vout=V{1}(1);
+        Vout.dt(1)=spm_type('float32');
+        Vout.fname=fullfile(outdir,'meanepiacrosssubjects_4D.nii');  % Write file out a single 4D nii
+
+        for k=1:nimgs
+            for subj=1:length(aap.acq_details.subjects)
+                if (subj==1)
+                    Ytot=spm_read_vols(V{subj}(k));
+                else
+                    Ytot=Ytot+spm_read_vols(V{subj}(k));
+                end;
+            end;
+            Ytot=Ytot/length(aap.acq_details.subjects);
+            % k th image of 4D series
+            Vout.n=[k 1];
+            spm_write_vol(Vout,Ytot);
+        end;
+        
+
+        aap=aas_desc_outputs(aap,'isc_session',sess,'meanepitimecourse',Vout.fname);
         
     otherwise
 end;
