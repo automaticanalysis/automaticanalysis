@@ -146,19 +146,18 @@ for k1=1:length(aap.tasklist.main.module)
                     end;
                 end;
             end;
-            % This code doesn't work as intended, for some reason it changes domain of final module in my pipeline for no good reason - RC 2016-08-30
-%             if ~isempty(findremote) || ~isempty(stagethatoutputs)
-%                 % change domain and modality if needed (due to input)
-%                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
-%                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
-%                 if (strcmp(currstage.domain,'session') && strcmp(currstage.modality,'MRI')) && ... % default
-%                         (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
-%                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
-%                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
-%                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
-%                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
-%                 end
-%             end
+            if ~isempty(findremote) || ~isempty(stagethatoutputs)
+                % change domain and modality if needed (due to input)
+                currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
+                currstream = aap.internal.inputstreamsources{k1}.stream(end);
+                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI')) && ... % general-purpose module
+                        (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
+                    aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
+                    aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
+                    aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
+                    aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
+                end
+            end
         end;
     end;
 end;

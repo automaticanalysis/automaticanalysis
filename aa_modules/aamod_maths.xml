@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='Performing mathematical operations' modality='MRI'>
+        <currenttask domain='*' desc='Performing mathematical operations' modality='MRI'>
             
             <qsub>
                 <timeBase desc='Required time in hours'>0.5</timeBase>
