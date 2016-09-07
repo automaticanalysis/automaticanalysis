@@ -145,6 +145,7 @@ switch task
         
         % Locate all the EPIs we want to coregister
         for m = 1:numel(mainstream)
+            if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
             EPIimg{m} = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream{m});
             for e = 1:size(EPIimg{m},1)
                 % Apply the space of the coregistered mean EPI to the
@@ -161,6 +162,7 @@ switch task
         end
         
         for m = 1:numel(mainstream)
+            if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
             aap = aas_desc_outputs(aap,domain,cell2mat(varargin),mainstream{m},EPIimg{m});
         end
         if any(strcmp(aas_getstreams(aap,'output'),diagstream))
