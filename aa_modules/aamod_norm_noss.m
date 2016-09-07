@@ -16,17 +16,15 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
-        if isempty(fdiag)
-            domain=aap.tasklist.currenttask.domain;
-            switch domain
-                case 'subject'
-                    indices=subj;
-                case 'diffusion_session'
-                    indices=[subj sess];
-            end;
+        domain=aap.tasklist.currenttask.domain;
+        switch domain
+            case 'subject'
+                indices=subj;
+            case 'diffusion_session'
+                indices=[subj sess];
+        end;
+        if isempty(dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg')))
             diag(aap,domain,indices);
-            fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
         end
         if strcmp(domain,'subject')
             fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
@@ -39,7 +37,7 @@ switch task
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
         end;
-        case 'doit'
+    case 'doit'
         
         
         settings = aap.tasklist.currenttask.settings;

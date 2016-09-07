@@ -72,6 +72,10 @@ inSession = false;
 for k=1:numel(stages)
     fprintf('Fetching report for %s...\n',stages{k});
     % domain
+    curr_aap = aas_setcurrenttask(aap,k);
+    domain = curr_aap.tasklist.currenttask.domain;
+    
+    % mfile_alias
     if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
         xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
     else
@@ -80,8 +84,7 @@ for k=1:numel(stages)
     mfile_alias = stages{k};
     if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
-    domain = xml.tasklist.currenttask.ATTRIBUTE.domain;
-    
+        
     % Switch for stage
     all_stage = cell_index(stages, stages{k});
     istage = cell_index({aap.tasklist.main.module.name}, stages{k});
@@ -92,9 +95,13 @@ for k=1:numel(stages)
     
     % Skip stages of unknown domain - most like aamod_importfilesasstream
     if ~strcmp(domain,'[unknown]')
+        stagerepname = stages{k};
+        if ~isempty(aap.tasklist.main.module(k).extraparameters)
+            stagerepname = [stagerepname ' ' aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix];
+        end
         
         % build dependency
-        dep = aas_dependencytree_allfromtrunk(aap,domain);
+        dep = aas_dependencytree_allfromtrunk(curr_aap,domain);
         
         % Set inSession flag
         if ~isempty(strfind(domain,'session')) && ~inSession
@@ -112,13 +119,13 @@ for k=1:numel(stages)
             if numel(dep{d}{2}) >= 2, sess = dep{d}{2}(2); end % Session/Occurrance No
             
             if inSession
-                [junk, iSess] = aas_getN_bydomain(aap,domain,subj);
+                [junk, iSess] = aas_getN_bydomain(curr_aap,domain,subj);
                 firstSess = iSess(1);
                 lastSess = iSess(end);
             end
             
             if ~inSession || (sess == firstSess), aap = aas_report_add(aap,subj,...
-                    ['<h2>Stage: ' stages{k} aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix '</h2>']); 
+                    ['<h2>Stage: ' stagerepname '</h2>']); 
             end
             
             % evaluate with handling sessions
@@ -133,8 +140,6 @@ for k=1:numel(stages)
                 % set local aap
                 if ~isempty(subj)
                     curr_aap = aas_setcurrenttask(aap,k,'subject',subj);
-                else
-                    curr_aap = aas_setcurrenttask(aap,k);
                 end
                 
                 % set fields

@@ -88,7 +88,7 @@ if ~isempty(varargin) && isnumeric(varargin{1})
     end
     
     % Parse selected_sessions into indices if necessary
-    aap=parse_selected_sessions(aap,varargin);
+    aap=parse_selected_sessions(aap,varargin{:});
 end
 
 end

@@ -69,12 +69,14 @@ for depind=1:length(deps)
         % Map the local indices to remote indices
         indexMap = aas_mapindices_betweenAAPs(aap, aap_remote);
         localTree = aas_dependencytree_finddomain(domain, aap.directory_conventions.parallel_dependencies, {});
-        remoteindices = arrayfun(@(x,y) indexMap.(x{1})(y), localTree, [1 indices]);
+        remotespecified = arrayfun(@(x,y) ~isempty(indexMap.(x{1})), localTree); % backward compatibility for pipelines with earlier aa version
+        remoteindices = arrayfun(@(x,y) indexMap.(x{1})(y), localTree(remotespecified), [1 indices(remotespecified(2:end))]);
         remoteindices(1) = []; % pop the study index, we never seem to use that.
+        remoteindices(~remotespecified(2:end)) = 0;
         
         if any(remoteindices == 0)
             badIndex = find(remoteindices==0,1,'first');
-            domainItems = aas_getNames_bydomain(aap, domain);
+            domainItems = aas_getNames_bydomain(aap, localTree{badIndex+1});
             aas_log(aap, false, sprintf('WARNING: Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
         end
                 

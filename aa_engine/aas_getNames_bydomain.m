@@ -18,12 +18,17 @@ for d = 1 : length(domains)
             names{d} = {aap.acq_details.sessions.name};
 
         case 'isc_session'
-            for sessind=1:length(aap.acq_details.sessions)
-                names{d}{sessind} = ['isc_' aap.acq_details.sessions(sessind).name];
-            end;
+            if ~isempty(aap.acq_details.sessions(1).name)
+                names{d} = spm_file({aap.acq_details.sessions.name},'prefix','isc_');
+            else
+                names{d} = {};
+            end
             
         case 'subject'
             names{d} = {aap.acq_details.subjects.subjname};
+
+        case 'isc_subject'
+            names{d} = spm_file({aap.acq_details.subjects.subjname},'prefix','isc_');
             
         case 'study'
             names{d} = {aap.directory_conventions.analysisid};
@@ -47,6 +52,9 @@ for d = 1 : length(domains)
             names{d} = {};
             
         case 'diffusion_session_probtrackx'
+            names{d} = {};     
+        
+        case 'diffusion_session_phaseencode_direction'
             names{d} = {};      
 
         case 'hyperalignment_searchlight_package'

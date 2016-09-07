@@ -9,16 +9,18 @@ switch task
     case 'doit'
         
        
-        if aas_stream_has_contents(aap,'diffusion_session',[subjind diffsessind])
+        if aas_isfile_bystream(aap,'diffusion_session',[subjind diffsessind],'diffusion_data')
             % Just a single phase encode direction
             difffn_list={aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'diffusion_data')};
             bvalfn_list={aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvals')};
-        else
+        elseif aas_isfile_bystream(aap,'diffusion_session_phaseencode_direction',[subjind diffsessind 1],'diffusion_data')
             % Top-up style, multiple phase encode directions
             for peind=1:2
                 difffn_list{peind}=aas_getfiles_bystream(aap,'diffusion_session_phaseencode_direction',[subjind diffsessind peind],'diffusion_data');
                 bvalfn_list{peind}=aas_getfiles_bystream(aap,'diffusion_session_phaseencode_direction',[subjind diffsessind peind],'bvals');
             end;
+        else
+            aas_log(aap,true,'No diffusion data found!');
         end;
         
         % Load up one or more phase encoding directions
