@@ -139,18 +139,20 @@ for k=1:numel(stages)
             else
                 % set local aap
                 if ~isempty(subj)
-                    curr_aap = aas_setcurrenttask(aap,k,'subject',subj);
+                    run_aap = aas_setcurrenttask(aap,k,'subject',subj);
+                else
+                    run_aap = curr_aap;
                 end
                 
                 % set fields
-                curr_aap.report = aap.report;
-                curr_aap.prov = aap.prov;
+                run_aap.report = aap.report;
+                run_aap.prov = aap.prov;
          
-                [curr_aap,junk]=aa_feval_withindices(mfile_alias,curr_aap,'report',indices);
+                [run_aap,junk]=aa_feval_withindices(mfile_alias,run_aap,'report',indices);
                 
                 % save report
-                aap.report = curr_aap.report;
-                aap.prov = curr_aap.prov;
+                aap.report = run_aap.report;
+                aap.prov = run_aap.prov;
             end;
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
