@@ -35,6 +35,7 @@ switch task
         global aaworker
 
         aisfn=fullfile(aas_getsubjpath(aap,i),'autoidentifyseries_saved.mat');
+        dicom_protocol_fields = textscan(aap.tasklist.currenttask.settings.dicom_protocol_field,'%s','delimiter',':');
         
         %% Get a listing of all of the series for this subject
         alldicomfiles = cell(1,numel(aap.acq_details.subjects(i).mriname));
@@ -78,7 +79,15 @@ switch task
                     
                     for j=1:length(rawdata_allseries{d});
                         hdr=spm_dicom_headers(alldicomfiles{d}{rawdata_allseries{d}(j)}{1});
-                        aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field), length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
+                        for dpf = dicom_protocol_fields{1}'
+                            if isfield(hdr{1},dpf{1}), break; end
+                        end
+                        if isfield(hdr{1},dpf{1})
+                            curr_dicom_protocol_field{d}{j} = dpf{1};
+                        else
+                            aas_log(aap,true,sprintf('Series %d: protocol fields %s not foound in DICOM header!',rawdata_allseries{d}(j),sprintf(' %s',dicom_protocol_fields{1}{:})));
+                        end
+                        aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.(curr_dicom_protocol_field{d}{j}), length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
                     end
                 case 's3'
                     % Use delimiter to get series names as CommonPrefixes
@@ -141,19 +150,19 @@ switch task
                     hdr=spm_dicom_headers(dicomfilepath);
 
                     if (aap.options.autoidentifyfieldmaps)
-                        if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_fieldmap))
+                        if (strfind(hdr{1}.(curr_dicom_protocol_field{d}{j}),aap.directory_conventions.protocol_fieldmap))
                             series_fieldmap{d}=[series_fieldmap{d} seriesnum];
                         end
                     end
                     
                     if (aap.options.autoidentifystructural)
-                        if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_structural))
+                        if (strfind(hdr{1}.(curr_dicom_protocol_field{d}{j}),aap.directory_conventions.protocol_structural))
                             series_spgr{d}=[series_spgr{d} seriesnum];
                         end
                     end
                     
                     if (aap.options.autoidentifyt2)
-                        if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),aap.directory_conventions.protocol_t2))
+                        if (strfind(hdr{1}.(curr_dicom_protocol_field{d}{j}),aap.directory_conventions.protocol_t2))
                             series_t2{d}=[series_t2{d} seriesnum];
                         end
                     end
@@ -161,7 +170,7 @@ switch task
                     if (aap.options.autoidentifytmaps)
                         % Use directory name rather than protocol to
                         % recognise t maps
-                        if (strfind(hdr{1}.(aap.tasklist.currenttask.settings.dicom_protocol_field),'EvaSeries_tTest'))
+                        if (strfind(hdr{1}.(curr_dicom_protocol_field{d}{j}),'EvaSeries_tTest'))
                             series_tmaps{d}=[series_tmaps{d} seriesnum];
                         end
                     end

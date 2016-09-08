@@ -10,8 +10,10 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            <!-- This is typically SeriesDescription for GE, and ProtocolName for Siemens -->
-            
+            <!-- This is a string of a single entry or a colon separated list
+            identifying the possible DICOM field(s) for scanning protocol.
+            E.g.: typically SeriesDescription for GE, and ProtocolName for Siemens
+            or SeriesDescription:ProtocolName -->            
             <dicom_protocol_field>ProtocolName</dicom_protocol_field>
             <orderdicomsby>AcquisitionNumber</orderdicomsby>
             
