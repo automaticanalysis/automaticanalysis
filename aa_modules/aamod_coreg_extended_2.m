@@ -21,6 +21,7 @@ switch task
             if numel(varargin) > 1, diagstream = fullfile(aas_getsesspath(aap,varargin{1}, varargin{2}),'sessref.nii'); end
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
             for m = 1:numel(mainstream)
+                if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
             end
         end
