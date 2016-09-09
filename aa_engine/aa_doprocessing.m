@@ -438,7 +438,7 @@ if ~taskqueue.fatalerrors
     end
 end
 
-aa_close;
+aa_close(aap);
 
 end
 

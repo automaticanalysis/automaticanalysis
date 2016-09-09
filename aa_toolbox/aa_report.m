@@ -175,6 +175,6 @@ web(['file://' aap.report.html_main.fname]);
 % Last, save AAP structure
 save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
 
-aa_close;
+aa_close(aap);
 
 end

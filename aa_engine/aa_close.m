@@ -1,26 +1,30 @@
 function aa_close(varargin)
 
-if nargin
-    tasks = varargin;
-else
-    tasks = {'restorepath' 'restorewarnings' 'killjobs' 'clear'};
+switch nargin
+    case 0
+        aap.options.restorepath = 0;
+        tasks = {'restorepath' 'restorewarnings' 'killjobs' 'clear'};
+    case 1
+        aap = varargin{1};
+        tasks = {'restorepath' 'restorewarnings' 'killjobs' 'clear'};
+    otherwise
+        aap = varargin{1};
+        tasks = varargin(2:end);
 end
 
-% restore path
+global aacache;
+
 if cell_index(tasks,'restorepath') && ...
         (~isfield(aap.options,'restorepath') ||... % not specified
         aap.options.restorepath) % specified and enabled
-    global aacache;
-    if isstruct(aacache) && isfield(aacache,'bcp_path')
-        path(aacache.bcp_path);
-    end
-    if isstruct(aacache) && isfield(aacache,'bcp_shellpath')
-        setenv('PATH', aacache.bcp_shellpath);
+    if isstruct(aacache) && isfield(aacache,'path')
+        if isfield(aacache.path,'bcp_path'), path(aacache.path.bcp_path); end
+        if isfield(aacache.path,'bcp_shellpath'), setenv('PATH', aacache.path.bcp_shellpath); end
     end
 end
 
 % restore warnings
-if cell_index(tasks,'restorewarnings') && isfield(aacache,'warnings')
+if cell_index(tasks,'restorewarnings') && isstruct(aacache) && isfield(aacache,'warnings')
     for w = aacache.warnings
         warning(w);
     end

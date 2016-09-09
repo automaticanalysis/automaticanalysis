@@ -307,9 +307,9 @@ classdef aaq_qsub<aaq
                 % their own default paths (e.g. for a new aa version)
                 global aacache;
                 if isprop(J,'AdditionalPaths')
-                    J.AdditionalPaths = aacache.reqpath;
+                    J.AdditionalPaths = aacache.path.reqpath;
                 elseif isprop(J,'PathDependencies')
-                    J.PathDependencies = aacache.reqpath;
+                    J.PathDependencies = aacache.path.reqpath;
                 end
                 
                 createTask(J,cj,nrtn,inparg);

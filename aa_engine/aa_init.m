@@ -6,9 +6,11 @@ global aa
 
 % detect running aa
 if isobject(aa)
-    aas_log(aap,false,'WARNING: Previous execution of aa was detected! Closing...')
-    aa_close('restorepath','restorewarnings','killjobs');
-    aas_log(aap,false,'WARNING: Done!')
+    aas_log(aap,false,'WARNING: Previous execution of aa was not closed! Killing jobs...\n')
+    aas_log(aap,false,'WARNING: The path settings for both linux and MATLAB may have been modified! You may need to revise them.')
+    aas_log(aap,false,'WARNING: Please, make sure that you use aa_close(aap) next time before you start a new analysis!')
+    aa_close(aap,'restorewarnings','killjobs');
+    aas_log(aap,false,'\nWARNING: Done!')
 else
     aa = aaClass('nopath','nogreet');
 end
@@ -34,8 +36,8 @@ else
 end
 
 %% Set Paths
-aacache.bcp_path = path;
-aacache.bcp_shellpath = getenv('PATH');
+aacache.path.bcp_path = path;
+aacache.path.bcp_shellpath = getenv('PATH');
 % Path for SPM
 if isempty(aap.directory_conventions.spmdir)
     if isempty(which('spm'))
@@ -132,7 +134,7 @@ end
 
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
-    setenv('PATH',[aacache.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+    setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
 % Path to spm modifications to the top
@@ -195,7 +197,7 @@ reqpath=reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
 if exc, reqpath(exc) = []; end
 
-aacache.reqpath = reqpath;
+aacache.path.reqpath = reqpath;
 % switch off warnings
 aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
 aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');

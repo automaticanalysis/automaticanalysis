@@ -116,7 +116,7 @@
         <userinterface desc='User interface for checking and specifying task parameters' ui='yesno'>0</userinterface>
         <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
         <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
-        <restorepath desc='Restore MATLAB path upon closing' ui='yesno'>1</restorepath>
+        <restorepath desc='Restore linux and MATLAB path upon closing' ui='yesno'>0</restorepath>
         <aaworkerGUI desc='Show GUI to monitor parallel workers?' ui='yesno'>1</aaworkerGUI>
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
         <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
