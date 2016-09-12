@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This is a parameters and settings customising file to process BIDS multimodal test dataset ds114_test1 (https://googledrive.com/host/0B2JWN60ZLkgkMEw4bW5VUUpSdFU/ds114_test1.tar) -->
+<aap>
+    <options>
+        <wheretoprocess>matlab_pct</wheretoprocess>
+        <aaparallel>
+            <numberofworkers>4</numberofworkers>
+        </aaparallel>
+        <NIFTI4D>1</NIFTI4D>
+        <email>tibor.auer@rhul.ac.uk</email>
+        
+        <autoidentifystructural_choosefirst>1</autoidentifystructural_choosefirst>
+    </options>
+
+    <acq_details>
+        <numdummies>0</numdummies>
+        <input>
+            <isBIDS>1</isBIDS>
+            <combinemultiple>1</combinemultiple>
+        </input>
+    </acq_details>
+        
+    <tasksettings>
+        <aamod_dartel_norm_write>
+            <vox>1</vox>
+        </aamod_dartel_norm_write>
+        <aamod_diffusion_bet>
+            <bet_f_parameter>0.4</bet_f_parameter>
+        </aamod_diffusion_bet>
+        <aamod_slicetiming>
+            <autodetectSO>1</autodetectSO>
+            <refslice>16</refslice>
+        </aamod_slicetiming>
+        <aamod_norm_write_dartel>
+            <vox>3 3 3</vox>
+        </aamod_norm_write_dartel>
+        <aamod_smooth>
+            <FWHM>5</FWHM>
+        </aamod_smooth>
+        <aamod_firstlevel_model>
+            <includemovementpars>1</includemovementpars>
+        </aamod_firstlevel_model>
+        <aamod_firstlevel_threshold>
+            <overlay><nth_slice>9</nth_slice></overlay>
+        </aamod_firstlevel_threshold>
+    </tasksettings>
+    
+    <firstlevel_contrasts>
+        <!-- Contrast for test1 -->
+        <con1>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips</format>
+            <vector>1 0 0</vector>
+            <name>Loc_Finger</name>
+            <type>T</type>
+        </con1>
+        <con2>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips</format>
+            <vector>0 1 0</vector>
+            <name>Loc_Foot</name>
+            <type>T</type>
+        </con2>
+        <con3>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips</format>
+            <vector>0 0 1</vector>
+            <name>Loc_Lips</name>
+            <type>T</type>
+        </con3>			
+        <con4>
+            <subject>*</subject>
+            <format>singlesession:linebisection</format>
+            <vector>1 0 0 -1 0</vector>
+            <name>LB_Task_Resp-NoResp</name>
+            <type>T</type>
+        </con4>
+        <con5>
+            <subject>*</subject>
+            <format>singlesession:linebisection</format>
+            <vector>-1 0 0 1 0</vector>
+            <name>LB_Task_NoResp-Resp</name>
+            <type>T</type>
+        </con5>
+        <con6>
+            <subject>*</subject>
+            <format>singlesession:linebisection</format>
+            <vector>0 0 -1 0 1</vector>
+            <name>LB_Controls_Resp-NoResp</name>
+            <type>T</type>
+        </con6>
+        <con7>
+            <subject>*</subject>
+            <format>singlesession:linebisection</format>
+            <vector>0 0 1 0 -1</vector>
+            <name>LB_Controls_NoResp-Resp</name>
+            <type>T</type>
+        </con7>
+        <!-- Contrast for test2
+        <con1>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips_test</format>
+            <vector>1 0 0</vector>
+            <name>Loc_Finger</name>
+            <type>T</type>
+        </con1>
+        <con2>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips_test</format>
+            <vector>		
+                
+            0 1 0</vector>
+            <name>Loc_Foot</name>
+            <type>T</type>
+        </con2>		
+        
+        
+        <con3>
+            <subject>*</subject>
+            <format>		
+                
+            singlesession:fingerfootlips_test</format>
+            <vector>0 0 1</vector>
+            <name>Loc_Lips</name>
+            <type>T</type>
+        </con3>			
+        <con4>
+            <subject>*</subject>
+            <format>singlesession:linebisection_test</format>
+            <vector>1 0 0 -1 0</vector>
+            <name>LB_Task_Resp-NoResp</name>
+            <type>T</type>
+        </con4>
+        <con5>
+            <subject>*</subject>
+            <format>singlesession:linebisection_test</format>
+            <vector>-1 0 0 1 0</vector>
+            <name>LB_Task_NoResp-Resp</name>
+            <type>T</type>
+        </con5>
+        <con6>
+            <subject>*</subject>
+            <format>singlesession:linebisection_test</format>
+            <vector>0 0 -1 0 1</vector>
+            <name>LB_Controls_Resp-NoResp</name>
+            <type>T</type>
+        </con6>
+        <con7>
+            <subject>*</subject>
+            <format>singlesession:linebisection_test</format>
+            <vector>0 0 1 0 -1</vector>
+            <name>LB_Controls_NoResp-Resp</name>
+            <type>T</type>
+        </con7>
+        <con8>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips_retest</format>
+            <vector>1 0 0</vector>
+            <name>Loc_Finger</name>
+            <type>T</type>
+        </con8>
+        <con9>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips_retest</format>
+            <vector>0 1 0</vector>
+            <name>Loc_Foot</name>
+            <type>T</type>
+        </con9>
+        <con10>
+            <subject>*</subject>
+            <format>singlesession:fingerfootlips_retest</format>
+            <vector>0 0 1</vector>
+            <name>Loc_Lips</name>
+            <type>T</type>
+        </con10>			
+        <con11>
+            <subject>*</subject>
+            <format>singlesession:linebisection_retest</format>
+            <vector>1 0 0 -1 0</vector>
+            <name>LB_Task_Resp-NoResp</name>
+            <type>T</type>
+        </con11>
+        <con12>
+            <subject>*</subject>
+            <format>singlesession:linebisection_retest</format>
+            <vector>-1 0 0 1 0</vector>
+            <name>LB_Task_NoResp-Resp</name>
+            <type>T</type>
+        </con12>
+        <con13>
+            <subject>*</subject>
+            <format>singlesession:linebisection_retest</format>
+            <vector>0 0 -1 0 1</vector>
+            <name>LB_Controls_Resp-NoResp</name>
+            <type>T</type>
+        </con13>
+        <con14>
+            <subject>*</subject>
+            <format>singlesession:linebisection_retest</format>
+            <vector>0 0 1 0 -1</vector>
+            <name>LB_Controls_NoResp-Resp</name>
+            <type>T</type>
+        </con14-->
+    </firstlevel_contrasts>
+    
+</aap>

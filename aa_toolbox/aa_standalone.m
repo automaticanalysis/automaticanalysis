@@ -4,7 +4,12 @@
 %   Compulsory arguments:
 %       - fname_config: aa parameters (XML file)
 %       - fname_tasklist: aa tasklist (XML file)
-%       - fname_aa: pipeline customisation (MATLAB script file editing aap structure)
+%       - fname_aa: pipeline customisation (XML file for editing aap structure)
+%           - Its structure must correspond to that of the aap apart from special cases (see later).
+%           - Index in lists of structures (e.g. aamod_smooth(1)) can be indicated following to aa practice: e.g. aamod_smooth_00001. Default is 1
+%           - Special cases
+%               - firstlevel_contrasts
+%               - input.isBIDS
 %   Optional arguments:
 %       - 'mridatadir', <dir>: Directory to find raw MRI data (<dir> can be a colon separated list)
 %       - 'megdatadir', <dir>: Directory to find raw MEG data
@@ -16,10 +21,10 @@
 
 function aa_standalone(fname_config, fname_tasklist, fname_aa, varargin)
 
-% Load tasklist and customisation
+%% Load tasklist and customisation
 aap=aarecipe(fname_config,fname_tasklist);
 
-% Optiona arguments
+%% Optiona arguments
 args = vargParser(varargin);
 if isfield(args,'mridatadir'), aap.directory_conventions.rawdatadir = args.mridatadir; end % data
 if isfield(args,'megdatadir'), aap.directory_conventions.rawmegdatadir = args.megdatadir; end % data
@@ -28,15 +33,39 @@ if isfield(args,'anadir') % output
     aap.directory_conventions.analysisid = 'automaticanalysis'; 
 end
 
-run(fname_aa)
+%% User customisation
+xml_aa = xml_read(fname_aa,struct('ReadAttr',0));
+aap = recursive_set(aap,xml_aa);
 
-if isfield(args,'subj') % subject selection
+% autodetect use cases (experimental!)
+if strcmp(spm('Ver'),'SPM12'), aap = aas_configforSPM12(aap); end % probably not needed
+if xml_aa.acq_details.input.isBIDS
+    aap = aas_processBIDS(aap); 
+end
+
+% constrast
+fc = cellfun(@(x) regexp(x,'^firstlevel_contrasts.*','match'), fieldnames(xml_aa)','UniformOutput',false);
+for mod = horzcat(fc{:})
+    for con = fieldnames(xml_aa.(mod{1}))'
+        if strcmp(con{1},'COMMENT'), continue; end
+        aap = aas_addcontrast(aap,['aamod_' mod{1}],...
+            xml_aa.(mod{1}).(con{1}).subject,...
+            xml_aa.(mod{1}).(con{1}).format,...
+            xml_aa.(mod{1}).(con{1}).vector,...
+            xml_aa.(mod{1}).(con{1}).name,...
+            xml_aa.(mod{1}).(con{1}).type);
+    end
+end
+
+%% Subject selection
+if isfield(args,'subj') 
     subjind = any(cell2mat(cellfun(@(x) strcmp({aap.acq_details.subjects.subjname},x)',cellstr(args.subj),'UniformOutput',false)),2);
     if ~any(subjind), aas_log(aap,false,'No subject found!'); end
     aap.acq_details.subjects = aap.acq_details.subjects(subjind);
 end 
 
-if isfield(args,'connection') % connecting
+%% Connecting
+if isfield(args,'connection') 
 	con = textscan(args.connection,'%s','delimiter',':'); con = con{1};
 	if numel(con) == 1, con{2} = ''; end % no maxstage specified
     
@@ -52,4 +81,16 @@ end
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
-% aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+end
+
+function aap = recursive_set(aap,xml)
+for f = fieldnames(xml)'
+    if any(strcmp(f{1},{'firstlevel_contrasts','isBIDS'})), continue; end % special entries
+    index = str2double(regexp(f{1},'[0-9]{5}','match')); if isempty(index), index = 1; end
+    if isstruct(xml.(f{1})), aap.(f{1})(index) = recursive_set(aap.(f{1})(index),xml.(f{1})); 
+    else
+        aap.(f{1}) = xml.(f{1});
+    end
+end
+end
