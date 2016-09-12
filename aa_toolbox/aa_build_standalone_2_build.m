@@ -1,6 +1,10 @@
 function aa_build_standalone_2_build(config, outdir)
 aa = aaClass('nopath','nogreet');
-aap=xml_read(config,struct('ReadAttr',0));
+if isstruc(config) % aap (run-time compile)
+    aap = config;
+elseif ischar(config) % aap_parameters_defaults file (offline standalone)
+    aap=xml_read(config,struct('ReadAttr',0));
+end
 
 % TBX: 
 %   Statistics_Toolbox
