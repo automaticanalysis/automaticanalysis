@@ -86,7 +86,7 @@ end
 
 function aap = recursive_set(aap,xml)
 for f = fieldnames(xml)'
-    if any(strcmp(f{1},{'firstlevel_contrasts','isBIDS'})), continue; end % special entries
+    if any(strcmp(f{1},{'firstlevel_contrasts','isBIDS','COMMENT'})), continue; end % special entries
     index = str2double(regexp(f{1},'[0-9]{5}','match')); if isempty(index), index = 1; end
     if isstruct(xml.(f{1})), aap.(f{1})(index) = recursive_set(aap.(f{1})(index),xml.(f{1})); 
     else
