@@ -30,11 +30,8 @@ ENV = {...
 FSsetup='';
 for setupscript = {deblank(aap.directory_conventions.freesurfersetup) deblank(aap.directory_conventions.freesurferenvironment)}
     if ~isempty(setupscript{1})
-        if setupscript{1}(end)~=';'
-            FSsetup=[FSsetup 'source ' setupscript{1} ';'];
-        else
-            FSsetup=[FSsetup setupscript{1} ];
-        end
+        if setupscript{1}(end)~=';', setupscript{1}=[setupscript{1} ';']; end
+        FSsetup=[FSsetup 'source ' setupscript{1}];
     end
 end
 
@@ -49,15 +46,13 @@ switch aap.directory_conventions.freesurfershell
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd '. ' FSsetup];
-        cmd = [cmd FScmd '"'];
+        cmd = [cmd FSsetup FScmd '"'];
     case {'csh', 'tcsh'}
         cmd=[aap.directory_conventions.freesurfershell ' -c "'];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd FSsetup];
-        cmd = [cmd FScmd '"'];
+        cmd = [cmd FSsetup FScmd '"'];
 end
 
 aas_log(aap,false,cmd)

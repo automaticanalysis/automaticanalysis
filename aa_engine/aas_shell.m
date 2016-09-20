@@ -38,8 +38,10 @@ if ~quiet
         aas_log([],false,sprintf('Likely Linux error %s\n',w));
     end
     if s
-        [s,wenv]=system('/usr/bin/env');
-        aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s\n***WITH ENVIRONMENT VARIABLES\n%s\nEND, CONTINUING\n',w,[prefix cmd],wenv));
+        [junk,wenv]=system('/usr/bin/env');
+        aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
+        aas_log([],false,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
+        aas_log([],false,'***END, CONTINUING');
     end
 end
 
