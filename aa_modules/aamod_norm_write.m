@@ -146,7 +146,7 @@ switch task
             sname = basename(struct);
             struct = struct((sname(:,1)=='w'),:);
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},wimgs);
-            if strcmp(aap.options.wheretoprocess,'localsingle') && ismember(streams, 'structural')
+            if strcmp(aap.options.wheretoprocess,'localsingle') && any(strcmp(streams, 'structural'))
                 aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
             end
         end

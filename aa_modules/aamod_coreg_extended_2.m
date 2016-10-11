@@ -159,7 +159,9 @@ switch task
         
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
-            if ~isempty(mainstream), aas_checkreg(aap,domain,cell2mat(varargin),mainstream,'structural'); end
+            for m = 1:numel(mainstream)
+                aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
+            end
         end
         
         for m = 1:numel(mainstream)
