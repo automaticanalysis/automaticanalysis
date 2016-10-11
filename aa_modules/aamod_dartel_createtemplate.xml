@@ -19,6 +19,9 @@
             <outputstreams>
             	<stream>dartel_template</stream>
             	<stream>dartel_flowfield</stream>
+                <stream>normalised_dartel_template_grey</stream>
+                <stream>normalised_dartel_template_white</stream>        
+                <stream>dartel_templatetomni_xfm</stream>
             </outputstreams>
 			            
         </currenttask>

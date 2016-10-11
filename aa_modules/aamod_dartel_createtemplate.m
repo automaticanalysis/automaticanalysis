@@ -99,23 +99,36 @@ switch task
             end
         end
 
-        % describe outputs
+        % template
         aap = aas_desc_outputs(aap, 'dartel_template', template(6,:));
 
+        % normalisation XFM
+        fname_template = aas_getfiles_bystream(aap,'study',[],'dartel_template');
+        stages = fieldnames(aap.tasksettings);
+        tpm = aap.tasksettings.(stages{find(cellfun(@(x) ~isempty(regexp(x,'^aamod_segment.*','match')), stages),1,'first')}).tpm;
+        affine = spm_get_space(tpm)/spm_klaff(nifti(fname_template),tpm);
+        xfm = affine/spm_get_space(fname_template);
+        fname_xfm = fullfile(aas_getstudypath(aap),'dartel_templatetomni_xfm');
+        save(fname_xfm,'xfm')
+        aap = aas_desc_outputs(aap, 'dartel_templatetomni_xfm', fname_xfm);
+        
+        % normalised template
+        Vt = spm_file_split(spm_vol(fname_template),aas_getstudypath(aap)); % --> Template_6-0_00001.nii (GM) and Template_6-0_00002.nii (WM)
+        
+        spm_get_space(Vt(1).fname,xfm*spm_get_space(Vt(1).fname));
+        fname_ngrey = spm_file(Vt(1).fname,'prefix',aap.spm.defaults.normalise.write.prefix);
+        spm_smooth(Vt(1).fname,fname_ngrey,[0 0 0]);
+        aap = aas_desc_outputs(aap, 'normalised_dartel_template_grey', fname_ngrey);
+
+        spm_get_space(Vt(2).fname,xfm*spm_get_space(Vt(2).fname));
+        fname_nwhite = spm_file(Vt(2).fname,'prefix',aap.spm.defaults.normalise.write.prefix);
+        spm_smooth(Vt(2).fname,fname_nwhite,[0 0 0]);
+        aap = aas_desc_outputs(aap, 'normalised_dartel_template_white', fname_nwhite);
+        
         % flow fields
         for subjind = 1:length(aap.acq_details.subjects)
             pth = fileparts(img{1}{subjind});
             flowimg = spm_select('fplist', pth, '^u_');
             aap = aas_desc_outputs(aap, subjind, 'dartel_flowfield', flowimg);
         end
-
 end
-
-
-
-
-
-
-
-
-
