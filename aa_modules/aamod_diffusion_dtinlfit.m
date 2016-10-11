@@ -42,8 +42,13 @@ switch task
                 case 'parallel.cluster.Torque'
                     aas_log(aap,false,'INFO: Torque engine is detected');
                     P.ResourceTemplate = '-l nodes=^N^,mem=100MB,walltime=00:05:00';
+                case 'parallel.cluster.Local'
+                    aap.options.aaparallel.numberofworkers = min([12 feature('numCores')]);
             end
-            P.NumWorkers = size(data_mask,3);
+            P.NumWorkers = min([...
+                size(data_mask,3) ... % for each slice
+                aap.options.aaparallel.numberofworkers
+                ]);
             aas_matlabpool(P);
             try
                 parfor z = 1:size(data_in,3)
