@@ -37,8 +37,18 @@ end
 xml_aa = xml_read(fname_aa,struct('ReadAttr',0));
 aap = recursive_set(aap,xml_aa);
 
-% autodetect use cases (experimental!)
-if strcmp(spm('Ver'),'SPM12'), aap = aas_configforSPM12(aap); end % probably not needed
+% templates
+aap.directory_conventions.spmdir = spm('Dir');
+if strcmp(spm('Ver'),'SPM12'), aap = aas_configforSPM12(aap); end
+% check path to T1 template --> the rest should work, too
+if exist(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template),'file')
+    aas_log(aap,false,['INFO: T1 template located in ' fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template)]);
+else
+    aas_log(aap,true,['T1 template cannot be found in ' fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template)]);
+end
+aap.directory_conventions.templatedir = fullfile(ctfroot,aap.directory_conventions.templatedir);
+    
+% BIDS
 if xml_aa.acq_details.input.isBIDS
     aap = aas_processBIDS(aap); 
 end
