@@ -96,7 +96,7 @@ else
         spm_orthviews('reposition', pos);
         
         % Capture frame and store in aviObject
-        F = getframe(1,windowSize);
+        F = getframe(1);
         if checkmatlabreq([7;11]) % From Matlab 7.11 use VideoWriter
             writeVideo(aviObject,F);
         else
