@@ -46,7 +46,7 @@ if exist(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1t
 else
     aas_log(aap,true,['T1 template cannot be found in ' fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template)]);
 end
-aap.directory_conventions.templatedir = fullfile(ctfroot,aap.directory_conventions.templatedir);
+if isdeployed, aap.directory_conventions.templatedir = fullfile(ctfroot,aap.directory_conventions.templatedir); end
     
 % BIDS
 if xml_aa.acq_details.input.isBIDS
