@@ -27,7 +27,8 @@ end;
 
 
 [hit resp]=aas_cache_get(aap,mfilename,sourcedomain,targetdomain,indices,whattoreturn,modulenum);
-hit=false;
+% disable non-exact in/outputs
+% hit=false;
 
 if (~hit)
     % Cache miss, but actually only indices in domain tree relevant to the
@@ -47,13 +48,13 @@ if (~hit)
     end;
     
     
-    
-    if (commonind<length(targetdomaintree))
-        cacheindices=indices(1:(commonind)); % CW hacky fix - indices(1:(commonind-1));
-        [hit resp]=aas_cache_get(aap,mfilename,sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
-    else
-        cacheindices=indices;
-    end;
+% disable non-exact in/outputs
+%     if (commonind<length(targetdomaintree))
+%         cacheindices=indices(1:(commonind)); % CW hacky fix - indices(1:(commonind-1));
+%         [hit resp]=aas_cache_get(aap,mfilename,sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
+%     else
+%         cacheindices=indices;
+%     end;
 end;
 
 if (hit)
@@ -126,8 +127,8 @@ else
     end;
     
     aas_cache_put(aap,mfilename,{deps commonind},sourcedomain,targetdomain,indices,whattoreturn,modulenum);
-    % also store in the cache indexed by the truncated portion
-    aas_cache_put(aap,mfilename,{deps commonind},sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum);
+% disable non-exact in/outputs
+%     aas_cache_put(aap,mfilename,{deps commonind},sourcedomain,targetdomaintree{commonind},cacheindices,whattoreturn,modulenum); % also store in the cache indexed by the truncated portion
     
 end;
 
