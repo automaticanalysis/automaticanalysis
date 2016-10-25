@@ -108,7 +108,7 @@ switch task
         tpm = aap.tasksettings.(stages{find(cellfun(@(x) ~isempty(regexp(x,'^aamod_segment.*','match')), stages),1,'first')}).tpm;
         affine = spm_get_space(tpm)/spm_klaff(nifti(fname_template),tpm);
         xfm = affine/spm_get_space(fname_template);
-        fname_xfm = fullfile(aas_getstudypath(aap),'dartel_templatetomni_xfm');
+        fname_xfm = fullfile(aas_getstudypath(aap),'dartel_templatetomni_xfm.mat');
         save(fname_xfm,'xfm')
         aap = aas_desc_outputs(aap, 'dartel_templatetomni_xfm', fname_xfm);
         
