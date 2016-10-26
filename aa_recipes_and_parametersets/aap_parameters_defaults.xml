@@ -118,6 +118,7 @@
         <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>0</garbagecollection>
         <restorepath desc='Restore linux and MATLAB path upon closing' ui='yesno'>0</restorepath>
         <aaworkerGUI desc='Show GUI to monitor parallel workers?' ui='yesno'>1</aaworkerGUI>
+        <aaworkerroot desc='Path to folder where folder .aa for execution reports is created' ui='dir'></aaworkerroot>
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
         <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
             <numberofworkers desc='Requested number of workers' ui='double'>8</numberofworkers>

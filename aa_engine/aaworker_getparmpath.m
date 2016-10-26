@@ -3,6 +3,8 @@
 function [pth]=aaworker_getparmpath(aap,aaworkerid,dontmakedir)
 if strcmp(aap.options.wheretoprocess,'aws')
     aapth=aas_gettempfilename();
+elseif ~isempty(aap.options.aaworkerroot)
+    aapth = aap.options.aaworkerroot;
 else
     username=spm('GetUser');
     if strcmp(username,'anonymous')
