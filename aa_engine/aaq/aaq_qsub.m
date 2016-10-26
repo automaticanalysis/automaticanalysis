@@ -294,8 +294,8 @@ classdef aaq_qsub<aaq
 %                         end
 %                     end
 %                 end
-           
-                obj = obj.pool_args(qsubsettings{:});
+
+                if isa(obj.pool,'parallel.cluster.Torque'), obj = obj.pool_args(qsubsettings{:}); end
                 
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
