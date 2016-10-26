@@ -36,7 +36,7 @@ switch task
         streams=aas_getstreams(aap,'input');
         xfmi = cell_index(streams,'dartel_templatetomni_xfm');
         if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
-            xfm = load(aas_getfiles_bystream(aap,subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
+            xfm = load(aas_getfiles_bystream_multilevel(aap,'subject',subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
             MMt = spm_get_space(template);
             mni.code = 'MNI152';
             mni.affine = xfm*MMt;
