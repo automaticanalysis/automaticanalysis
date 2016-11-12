@@ -90,7 +90,7 @@ if c == 1;
       x = tcdf(tb,df);
       fprintf('Power is: %2.4f\n\n', x)
    end
-else c == 2;
+elseif c == 2;
    disp('It is a two-tailed hypothesis test.');
    a = alpha/2;
    P = 1-tcdf(t,df);
@@ -112,5 +112,3 @@ else c == 2;
       fprintf('Power is: %2.4f\n\n', x)
    end
 end
-
-return,
