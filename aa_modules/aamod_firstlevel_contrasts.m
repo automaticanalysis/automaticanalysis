@@ -204,7 +204,9 @@ switch task
                         if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
                             aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); 
                         elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
-                            convec = contrasts.con(conind).vector;
+                            convec = [];
+                            convec(SPM.xX.iC) = 0;
+                            convec(1:numel(contrasts.con(conind).vector)) = contrasts.con(conind).vector;
                             if settings.automatic_movesandmeans
                                 % [AVG] *better* way of specifying the correct columns...
                                 convec_out = zeros(1,totnumcolsbarconstants);
