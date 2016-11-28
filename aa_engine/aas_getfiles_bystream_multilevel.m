@@ -16,7 +16,7 @@ streamname = varargin{end};
 index = varargin(1:end-1);
 
 domains = {index{1}, aas_getsesstype(aap), 'subject', 'study'};
-[junk, ind] = unique(domains);
+[junk, ind] = unique(domains,'legacy');
 domains = domains(sort(ind));
 ind0 = cell_index(domains,index{1}); ind0 = min(ind0);
 if ind0, domains = domains(ind0:end); end
