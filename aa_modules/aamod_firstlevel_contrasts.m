@@ -202,7 +202,7 @@ switch task
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
                         
                         if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
-                            aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model (bar constants) - wanted %d columns, got ',totnumcolsbarconstants)); 
+                            aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix is more than number of columns in model - wanted %d columns, got %d',totnumcolsbarconstants, size(contrasts.con(conind).vector,2)));
                         elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
                             convec = [];
                             convec(SPM.xX.iC) = 0;
