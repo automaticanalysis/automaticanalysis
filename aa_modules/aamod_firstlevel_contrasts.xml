@@ -106,8 +106,8 @@ You must specify one or more contrasts here using one of the following formats
             </contrasts>
             
             <inputstreams>
-                <stream>firstlevel_spm</stream>
-                <stream ismodified='0'>firstlevel_betas</stream>
+                <stream diagnostic='1'>firstlevel_spm</stream>
+                <stream diagnostic='1' ismodified='0'>firstlevel_betas</stream>
             </inputstreams>
             <outputstreams>
                 <stream>firstlevel_spm</stream>

@@ -27,8 +27,8 @@
             </contrasts>
             
             <inputstreams>
-                <stream>secondlevel_spm</stream>
-                <stream ismodified='0'>secondlevel_betas</stream>
+                <stream diagnostic='1'>secondlevel_spm</stream>
+                <stream diagnostic='1' ismodified='0'>secondlevel_betas</stream>
             </inputstreams>
             <outputstreams>
                 <stream>secondlevel_spm</stream>
