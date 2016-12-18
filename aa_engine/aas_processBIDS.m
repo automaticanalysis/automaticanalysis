@@ -321,8 +321,8 @@ if ~isempty(hdrfname)
     info = loadjson(hdrfname);
     if isfield(info,'TaskName')
         taskname = info.TaskName;
-        taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
-        taskname = strcat(taskname{:});
+%         taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
+%         taskname = strcat(taskname{:});
         if ~isempty(strfind(basename(sesspath),'ses-'))
             sesstr = ['_' strrep(basename(sesspath),'ses-','')];
         else

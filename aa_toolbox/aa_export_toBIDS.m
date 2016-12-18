@@ -131,7 +131,7 @@ for subj = 1:numel(aap.acq_details.subjects)
                 continue;
             end
             aas_makedir(aap,fullfile(subjpath,'func')); 
-            dest = fullfile(subjpath,'func',sprintf('sub-%s_task-%s_bold.nii',aas_getsubjname(aap,subj),aap.acq_details.sessions(sess).name));
+            dest = fullfile(subjpath,'func',sprintf('sub-%s_task-%s_bold.nii',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name)));
             copyfile(src,dest); gzip(dest); delete(dest);
             
             % header
@@ -166,7 +166,11 @@ for subj = 1:numel(aap.acq_details.subjects)
             for e = 1:numel(events)
                 ord = [ord vertcat(e*ones(1,numel(events(e).ons)),1:numel(events(e).ons))];
             end
-            [ons,inde] = sort(vertcat(events.ons));
+            if size(events(1).ons,1) > size(events(1).ons,2) % column
+                [ons,inde] = sort(vertcat(events.ons));
+            else
+                [ons,inde] = sort(horzcat(events.ons)');
+            end
             ord = ord(:,inde);
             lines = sprintf('onset\tduration\tweight\ttrial_type\n');
             for l = 1:size(ord,2)
@@ -197,7 +201,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'fmap')); 
             for f = 1:size(fsrc,1)
                 src = deblank(fsrc(f,:));
-                dest = fullfile(subjpath,'fmap',sprintf('sub-%s_task-%s_%s.nii',aas_getsubjname(aap,subj),aap.acq_details.sessions(sess).name,fmsuffix{f}));
+                dest = fullfile(subjpath,'fmap',sprintf('sub-%s_task-%s_%s.nii',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name),fmsuffix{f}));
                 copyfile(src,dest); gzip(dest); delete(dest);
             end
             
@@ -213,7 +217,7 @@ for subj = 1:numel(aap.acq_details.subjects)
                     'EchoTime1',TEs(1),...
                     'EchoTime2',TEs(2),...
                     'FlipAngle',hdr(1).FlipAngle,...
-                    'IntendedFor',fullfile('func',sprintf('sub-%s_task-%s_bold.nii.gz',aas_getsubjname(aap,subj),aap.acq_details.sessions(sess).name)) ...
+                    'IntendedFor',fullfile('func',sprintf('sub-%s_task-%s_bold.nii.gz',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name))) ...
                     );
                 savejson('',json,spm_file(dest,'ext','json'));
             end
@@ -284,4 +288,12 @@ end
 
 fclose(fid_part);
 
+end
+
+function out = valueValidate(in)
+RULES = {...
+    '-' '';
+    '_' ''...
+    };
+out = strrep_multi(in,RULES(:,1),RULES(:,2));
 end
