@@ -99,6 +99,10 @@ classdef aaq_matlab_pct<aaq
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
                             P.SubmitArguments = strcat(P.SubmitArguments,obj.initialSubmitArguments);
+                        case 'parallel.cluster.Generic'
+                            aas_log(aap,false,'INFO: Generic engine is detected');
+                            P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'walltime',obj.aaparallel.walltime);
+                            P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'memory',obj.aaparallel.memory);                            
                     end
                 else
                     P = parcluster('local');
@@ -585,4 +589,15 @@ classdef aaq_matlab_pct<aaq
         end;
     end;
     
+    %% Utils
+    
+    methods (Hidden, Access = private)
+        function argout = SetArg(obj,argin,key,value)
+            argout = argin;
+            if ~iscell(argout), argout = {argout}; end
+            ind = find(cellfun(@(x) strcmp(x,key),argout));
+            if ind, argout(ind:ind+1) = []; end
+            argout(end+1:end+2) = {key value};
+        end
+    end
 end
