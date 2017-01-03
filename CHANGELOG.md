@@ -63,7 +63,7 @@ As the change in the major versioning implies, older user master scripts are not
 ## 4.3.1 ##
 
 #### Bugfix ####
-  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.org/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_demo_v2.m))
+  - Exmaple user master script and tasklist are provided for [demo dataset](http://cusacklab.s3.amazonaws.com/html/downloads/aa_demo_v1.tar.gz):  ([aa\_user\_demo\_v2](https://github.com/rhodricusack/automaticanalysis/blob/devel-share/examples/aa_user_demo_v2.m))
   - Compatibility with MATLAB r2015b
 
 ## 4.3.0 ([branch devel-share](https://github.com/rhodricusack/automaticanalysis/tree/devel-share)) ##
