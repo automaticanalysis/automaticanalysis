@@ -279,7 +279,7 @@ for subj = 1:numel(aap.acq_details.subjects)
     end
     if isfield(hdr,'PatientSex')
         if ~header_part, fprintf(fid_part,'\tsex'); end
-        entry = sprintf('%s\t%c',entry,hdr.PatientSex);
+        entry = sprintf('%s\t%c',entry,deblank(hdr.PatientSex));
     end
     
     if ~header_part, fprintf(fid_part,'\n'); header_part = true; end
