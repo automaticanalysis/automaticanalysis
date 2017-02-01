@@ -118,7 +118,7 @@ end
 thissubj.subjname = name;
 
 %% Series
-if isfield(args,'functional')
+if isfield(args,'functional') && ~isempty(args.functional) 
     if isnumeric(args.functional) || isnumeric(args.functional{1}) % DICOM series number --> MRI
         thissubj.seriesnumbers{iMRIData}=args.functional;
     else
