@@ -117,7 +117,7 @@ for subj = 1:numel(aap.acq_details.subjects)
         end
     end
     if stage_func
-        sliceaxes = {'ROW',{'x+' 'x-'}; 'COL',{'y+' 'y-'}};
+        sliceaxes = {'ROW',{'i+' 'i-'}; 'COL',{'j+' 'j-'}};
         
         aap = aas_setcurrenttask(aap,stage_func);
         for sess = 1:numel(aap.acq_details.sessions)
@@ -201,7 +201,10 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'fmap')); 
             for f = 1:size(fsrc,1)
                 src = deblank(fsrc(f,:));
-                dest = fullfile(subjpath,'fmap',sprintf('sub-%s_task-%s_%s.nii',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name),fmsuffix{f}));
+                dest_format = fullfile(subjpath,'fmap',sprintf('sub-%s_run-%%d_%s.nii',aas_getsubjname(aap,subj),fmsuffix{f}));
+                ind = 1;
+                while exist(sprintf([dest_format '.gz'],ind),'file'), ind = ind + 1; end
+                dest = sprintf(dest_format,ind);
                 copyfile(src,dest); gzip(dest); delete(dest);
             end
             
@@ -224,7 +227,7 @@ for subj = 1:numel(aap.acq_details.subjects)
         end
     end
     if stage_dwi
-        sliceaxes = {'ROW',{'x+' 'x-'}; 'COL',{'y+' 'y-'}};
+        sliceaxes = {'ROW',{'i+' 'i-'}; 'COL',{'j+' 'j-'}};
         
         aap = aas_setcurrenttask(aap,stage_dwi);
         for sess = 1:numel(aap.acq_details.diffusion_sessions)
