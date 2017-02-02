@@ -201,7 +201,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'fmap')); 
             for f = 1:size(fsrc,1)
                 src = deblank(fsrc(f,:));
-                dest_format = fullfile(subjpath,'fmap',sprintf('sub-%s_run-%%d_%s.nii',aas_getsubjname(aap,subj),fmsuffix{f}));
+                dest_format = fullfile(subjpath,'fmap',sprintf('sub-%s_run-%%02d_%s.nii',aas_getsubjname(aap,subj),fmsuffix{f}));
                 ind = 1;
                 while exist(sprintf([dest_format '.gz'],ind),'file'), ind = ind + 1; end
                 dest = sprintf(dest_format,ind);
