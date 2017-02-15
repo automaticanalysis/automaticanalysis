@@ -62,9 +62,6 @@ description=taskSchema.ATTRIBUTE.desc;
 % find out whether this module needs to be executed once per study, subject or session
 domain=taskSchema.ATTRIBUTE.domain;
 
-%  If multiple repetitions of a module, add 02,03 etc to end of doneflag
-doneflagname=aas_doneflag_getname(aap,modulenum);
-
 % Clear output stream list
 aaworker.outputstreams=[];
 
@@ -141,14 +138,11 @@ else
                     end
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
-%                     % subselect dependency
-%                     toSelect = logical([]);
-%                     for d = 1:numel(deps)
-%                         toSelect(d) = isempty(strfind(deps{d}{1},'session')) ||...      % not a session
-%                             (numel(deps{d}{2}) < 2) ||...                               % not applicable (e.g. isc_session)
-%                             any(deps{d}{2}(2) == aap.acq_details.selected_sessions);    % selected session
-%                     end
-%                     deps = deps(toSelect);
+                    if isempty(deps)
+                        aas_log(aap,false,sprintf('WARNING: No inputs selected for stream %s. --> MODULE %s will be SKIPPED',inp.name, stagename));
+                        close_task(aap,tempdirtodelete);
+                        return
+                    end
                     
                     [gotinputs, streamfiles{inpind}]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
                     if isempty(gotinputs)
@@ -173,6 +167,10 @@ else
             aas_log(aap,0,sprintf('MODULE %s COMPLETED',stagename),aap.gui_controls.colours.completed);            
     end;
 end;
+close_task(aap,tempdirtodelete);
+end
+
+function close_task(aap,tempdirtodelete)
 % Tidy up by deleting temporary directory created locally
 % This could be shifted to a cache manager
 if (tempdirtodelete)
@@ -188,4 +186,4 @@ end;
 if aap.options.timelog
     aas_time_elapsed
 end
-
+end

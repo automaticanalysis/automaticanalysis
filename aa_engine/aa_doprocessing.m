@@ -280,8 +280,6 @@ for l=1:length(mytasks)
         % find out whether this module needs to be executed once per study, subject or session
         domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
         
-        %  If multiple repetitions of a module, add 02,03 etc to end of doneflag
-        doneflagname=aas_doneflag_getname(aap,k);
         % Start setting up the descriptor for the parallel queue
         clear taskmask
         taskmask.domain=domain;
