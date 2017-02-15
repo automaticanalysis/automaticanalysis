@@ -3,11 +3,17 @@
   <tasklist>
    <currenttask domain='diffusion_session' mfile_alias='aamod_roi_extract' desc='Extract data in ROIs' modality='MRI'>
         <ROIfile>/imaging/camcan/templates/JHU-WhiteMatter-labels-2mm.nii</ROIfile>
-        <output_raw>0</output_raw>
-        <do_svd>1</do_svd>
-        <NvoxThr>0.5</NvoxThr>
         <ROIvals></ROIvals>
-        <verbose>0</verbose>
+        
+        <mask_space desc='Voxels from which space to use: 0 - data; 1 - mask'>1</mask_space>
+        <output_raw>0</output_raw>
+        
+        <NvoxThr>0.5</NvoxThr>
+        <NvoxAbsThr>20</NvoxAbsThr>
+        
+        <do_svd>1</do_svd>
+        <svd_tol>1e-6</svd_tol>
+        
         <inputstreams>
             <stream>dti_FA</stream>
             <stream>dti_AD</stream>
