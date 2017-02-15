@@ -103,7 +103,7 @@ switch task
         aap = aas_desc_outputs(aap, 'dartel_template', template(6,:));
 
         % normalisation XFM
-        fname_template = aas_getfiles_bystream(aap,'study',[],'dartel_template');
+        fname_template = aas_getfiles_bystream(aap,'study',[],'dartel_template','output');
         stages = fieldnames(aap.tasksettings);
         tpm = aap.tasksettings.(stages{find(cellfun(@(x) ~isempty(regexp(x,'^aamod_segment.*','match')), stages),1,'first')}).tpm;
         affine = spm_get_space(tpm)/spm_klaff(nifti(fname_template),tpm);
