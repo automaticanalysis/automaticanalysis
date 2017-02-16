@@ -426,7 +426,7 @@ if ~taskqueue.fatalerrors
     if ~isempty(aap.options.email)
         % In case the server is broken...
         try
-            aas_finishedMail(aap.options.email, aap.acq_details.root)
+            aas_finishedMail(aap)
         catch
         end
     end

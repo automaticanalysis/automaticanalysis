@@ -54,6 +54,7 @@
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
         <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'></poolprofile>
+        <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>mvpaamailer@gmail.com:mvpaamailer</mailerserver>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>
                 <subject desc='A subject' ui='custom'>

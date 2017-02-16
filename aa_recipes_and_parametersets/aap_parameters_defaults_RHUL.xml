@@ -21,20 +21,21 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/spm/spm12-r6685</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/psycapps/spm/spm12-r6906</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'></spmtoolsdir>
-            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/fsl/fsl-5.0.9</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/MRIWork/MRIWork09/ta/tibor_auer/programs/bin/fsl_csh</fslsetup>
-            <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
+            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-5.0.9</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash</fslsetup>
+            <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/usr/local/apps/freesurfer/freesurfer-5.3.0</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/usr/local/apps/psycapps/freesurfer/freesurfer-6.0.0</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/usr/local/apps/freesurfer/freesurfer-5.3.0/FreeSurferEnv.sh;</freesurferenvironment>
-            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/MRIWork/MRIWork09/ta/tibor_auer/templates</templatedir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/MRIWork/MRIWork09/ta/tibor_auer/programs/dcmtk-3.6.0</DCMTKdir>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/usr/local/apps/psycapps/freesurfer/freesurfer-6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
+            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/usr/local/apps/psycapps/templates</templatedir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/usr/local/apps/psycapps/dcmtk-3.6.0</DCMTKdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
             <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>PsychoSGE</poolprofile>
+            <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.rhul@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            
