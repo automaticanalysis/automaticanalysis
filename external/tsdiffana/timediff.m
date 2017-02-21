@@ -32,7 +32,7 @@ if any(flags == 'm') % mean /max variance
     xVr = makevol(V1,'vsmax',16);
 end
 
-[xydim zno] = deal(V1.dim(1:2),V1.dim(3));
+[xydim, zno] = deal(V1.dim(1:2),V1.dim(3));
 
 p1 = spm_read_vols(V1);
 slicediff = zeros(ndimgs,zno);
@@ -79,19 +79,13 @@ end
 
 g = [mean(p1(:)); g/zno];
 imdiff = mean(slicediff,2);
-
-return
+end
 
 function Vo = makevol(Vi, prefix, datatype)
 Vo = Vi;
 fn = Vi.fname;
-[p f e] = fileparts(fn);
+[p, f, e] = fileparts(fn);
 Vo.fname = fullfile(p, [prefix f e]);
-switch lower(spm('ver'))
-    case {'spm5','spm8','spm8b','spm12','spm12b'}
-        Vo.dt = [datatype 0];
-        Vo = spm_create_vol(Vo);
-    otherwise
-        error('What ees thees version "%s"', spm('ver'));
+Vo.dt = [datatype 0];
+Vo = spm_create_vol(Vo);
 end
-return
