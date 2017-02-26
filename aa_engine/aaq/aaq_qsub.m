@@ -39,6 +39,10 @@ classdef aaq_qsub<aaq
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
                             obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                        case 'parallel.cluster.Generic'
+                            aas_log(aap,false,'INFO: Generic engine is detected');
+                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
+                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);        
                     end
                 else
                     obj.pool = parcluster('local');
@@ -54,8 +58,10 @@ classdef aaq_qsub<aaq
         end
         
         function close(obj)
-            for j = 1:numel(obj.pool.Jobs)
-                obj.pool.Jobs(j).cancel;
+            if ~isempty(obj.pool)
+                for j = 1:numel(obj.pool.Jobs)
+                    obj.pool.Jobs(j).cancel;
+                end
             end
             close@aaq(obj);
         end
@@ -181,8 +187,8 @@ classdef aaq_qsub<aaq
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
                             dtvf = dts2dtv(Task.FinishTime);
-                            msg = sprintf('MODULE %s on %s FINISHED: Job%d used %s.',...
-                                moduleName,datname,JobID,sec2dts(etime(dtvf,dtvs)));
+                            msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
+                                JobID,moduleName,datname,Task.CreateTime,Task.FinishTime,sec2dts(etime(dtvf,dtvs)));
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!
@@ -222,13 +228,15 @@ classdef aaq_qsub<aaq
                     % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
                     %     return
                     % end
-                    if ~isempty(obj.pool) && (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
-                        obj.QV = aas_qsubViewerClass(obj);
-                        obj.QV.Hold = true;
-                        obj.QV.setAutoUpdate(false);
-                    else
-                        obj.QV.UpdateAtRate;
-                        if waitforalljobs, obj.QV.Hold = false; end
+                    if ~isempty(obj.pool)
+                        if (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
+                            obj.QV = aas_qsubViewerClass(obj);
+                            obj.QV.Hold = true;
+                            obj.QV.setAutoUpdate(false);
+                        else
+                            obj.QV.UpdateAtRate;
+                            if waitforalljobs, obj.QV.Hold = false; end
+                        end
                     end
                 end
             end
@@ -256,19 +264,17 @@ classdef aaq_qsub<aaq
                         if ~isempty(varargin{iarg+1}), walltime = varargin{iarg+1}; end
                 end
             end
-            
-            if round(memory) == memory % round
-                memory = sprintf('%dgb',memory);
-            else % non-round --> MB
-                memory = sprintf('%dmb',memory*1000);
-            end
-            
-            obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
-            
+            switch class(obj.pool)
+                case 'parallel.cluster.Torque'
+                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%1.1fGB -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
             %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
             %                     sprintf(' -N Mod%02d_',job.k),...
             %                     sprintf('%03d',job.indices));
-
+                case 'parallel.cluster.Generic'
+                    aas_log(aap,false,'INFO: Generic engine is detected');
+                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
+                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
+            end
         end
         
         function [obj]=qsub_q_job(obj,job)
@@ -305,6 +311,7 @@ classdef aaq_qsub<aaq
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
+                J.AutoAttachFiles = false;
                 global aacache;
                 if isprop(J,'AdditionalPaths')
                     J.AdditionalPaths = aacache.path.reqpath;
@@ -312,13 +319,13 @@ classdef aaq_qsub<aaq
                     J.PathDependencies = aacache.path.reqpath;
                 end
                 
-                createTask(J,cj,nrtn,inparg);
+                createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
                 J.submit;
                 %                 % State what the assigned number of hours and GB is...
-                % Not in use [TA]
+                % Naas_movParsot in use [TA]
                 %                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
                 %                     job.stagename, timReq./(60*60), memReq./(1024^3))
-                
+
                 % And monitor for files with the job output
 				obj.taskinqueue(end+1) = J.ID;
             else

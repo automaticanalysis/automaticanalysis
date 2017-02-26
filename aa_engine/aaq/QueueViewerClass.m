@@ -30,9 +30,10 @@ classdef QueueViewerClass < handle
     end
     properties (Access = protected)
         Pool
+        DisplayHelper
         
         UIControls
-        
+                
         UpdateRate = 10
         Clock = []
     end
@@ -43,6 +44,12 @@ classdef QueueViewerClass < handle
     methods
         function obj = QueueViewerClass(pool)
             obj.Pool = pool;
+            try
+                obj.DisplayHelper = parallel.internal.display.DisplayHelper('Task');
+            catch E
+                if strcmp(E.identifier,'MATLAB:invalidType'), obj.DisplayHelper = parallel.internal.display.DisplayHelper(4);
+                else rethrow(E); end
+            end
             obj.Open;
         end
         
@@ -198,7 +205,7 @@ classdef QueueViewerClass < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Hidden=true)
         function str = TaskInfo(obj,Task)
-            elapsedtime = parallel.internal.display.DisplayHelper(class(Task)).getRunningDuration(Task.StartTime,Task.FinishTime);
+            elapsedtime = obj.DisplayHelper.getRunningDuration(Task.StartTime,Task.FinishTime);
             str = sprintf(['- Has been running on %s\n'...
                 '- For %s'],...
                 Task.Worker.Host,...
@@ -333,12 +340,19 @@ queue = 'unknown/unspecified';
 mem = 'unknown/unspecified';
 walltime = 'unknown/unspecified time';
 
-if ~isempty(obj.Pool.SubmitArguments)
-    schedinfo = textscan(obj.Pool.SubmitArguments,'%s'); schedinfo = schedinfo{1};
-    if any(strcmp(schedinfo,'-q')), queue = schedinfo{circshift(strcmp(schedinfo,'-q'),1)}; end
-    if cell_index(schedinfo,'mem='), mem = strrep(schedinfo{cell_index(schedinfo,'mem=')},'mem=',''); end
-    if cell_index(schedinfo,'walltime='), walltime = obj.TimeStr(str2double(strrep(schedinfo{cell_index(schedinfo,'walltime=')},'walltime=',''))); end
+switch class(obj.Pool)
+    case 'parallel.cluster.Torque'
+        if ~isempty(obj.Pool.SubmitArguments)
+            schedinfo = textscan(obj.Pool.SubmitArguments,'%s'); schedinfo = schedinfo{1};
+            if any(strcmp(schedinfo,'-q')), queue = schedinfo{circshift(strcmp(schedinfo,'-q'),1)}; end
+            if cell_index(schedinfo,'mem='), mem = strrep(schedinfo{cell_index(schedinfo,'mem=')},'mem=',''); end
+            if cell_index(schedinfo,'walltime='), walltime = obj.TimeStr(str2double(strrep(schedinfo{cell_index(schedinfo,'walltime=')},'walltime=',''))); end
+        end
+    case 'parallel.cluster.Generic'
+        if any(strcmp(obj.Pool.IndependentSubmitFcn,'memory')), mem = sprintf('%d GB',obj.Pool.IndependentSubmitFcn{find(strcmp(obj.Pool.IndependentSubmitFcn,'memory'))+1}); end
+        if any(strcmp(obj.Pool.IndependentSubmitFcn,'walltime')), walltime = sprintf('%d h',obj.Pool.IndependentSubmitFcn{find(strcmp(obj.Pool.IndependentSubmitFcn,'walltime'))+1}); end
 end
+
 msgbox(sprintf(['- Queuing %d jobs\n'...
     '- Running %d jobs\n'...
     '- Finished %d jobs\n'...

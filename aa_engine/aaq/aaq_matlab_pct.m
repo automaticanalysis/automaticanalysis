@@ -569,35 +569,23 @@ classdef aaq_matlab_pct<aaq
                                                     break;
                                                 else
                                                     fprintf('It is %s and doesn''t match %s\n',strtrim(H{1}.(rdtarget.dcmfield)),strtrim(rdtarget.dcmfilter));
-                                                end;
-                                            end;
-                                        end;
-                                    end;
+                                                end
+                                            end
+                                        end
+                                    end
                                 otherwise
                                     aas_log(obj.aap,true,sprintf('Unknown realtime incoming datatype %s in %s\n',datatype,allseries(filenumber).name));
-                            end;
-                        end;
+                            end
+                        end
                     end
                     if ~isempty(imfid)
                         fclose(imfid);
-                    end;
+                    end
                 
-                end;
+                end
                 
                 
-            end;
-        end;
-    end;
-    
-    %% Utils
-    
-    methods (Hidden, Access = private)
-        function argout = SetArg(obj,argin,key,value)
-            argout = argin;
-            if ~iscell(argout), argout = {argout}; end
-            ind = find(cellfun(@(x) strcmp(x,key),argout));
-            if ind, argout(ind:ind+1) = []; end
-            argout(end+1:end+2) = {key value};
+            end
         end
     end
 end
