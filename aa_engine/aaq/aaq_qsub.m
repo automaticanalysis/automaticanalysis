@@ -308,10 +308,11 @@ classdef aaq_qsub<aaq
                 nrtn = 0;
                 inparg = {job.aap,job.task,job.k,job.indices, aaworker};
                 
+                if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
+
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
-                J.AutoAttachFiles = false;
                 global aacache;
                 if isprop(J,'AdditionalPaths')
                     J.AdditionalPaths = aacache.path.reqpath;
