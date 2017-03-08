@@ -266,7 +266,12 @@ classdef aaq_qsub<aaq
             end
             switch class(obj.pool)
                 case 'parallel.cluster.Torque'
-                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%1.1fGB -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
+                    if round(memory) == memory % round
+                        memory = sprintf('%dGB',memory);
+                    else % non-round --> MB
+                        memory = sprintf('%dMB',memory*1000);
+                    end
+                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
             %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
             %                     sprintf(' -N Mod%02d_',job.k),...
             %                     sprintf('%03d',job.indices));
