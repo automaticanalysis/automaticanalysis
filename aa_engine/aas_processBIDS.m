@@ -126,14 +126,15 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 for image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))'
                     if isempty(image{1}), continue; end
                     hdrfname = retrieve_file(fullfile(sesspath,structDIR,[subjname '_' sfx{1},'.json']));
-                    structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',hdrfname));
+                    info = ''; if ~isempty(hdrfname{1}), info = loadjson_multi(hdrfname); end
+                    structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',info));
                 end
             end
         case diffusionDIR
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
                 sessfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '.nii'},{'',''});
-                [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval']));
-                bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec']));
+                [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval'])); bvalfname = bvalfname{1}; % ASSUME only one instance
+                bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec'])); bvecfname = bvecfname{1}; % ASSUME only one instance
                 if ~isempty(bvalfname) && ~isempty(bvecfname)
                     sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); 
                     if sessname(1) == '_', sessname(1) = ''; end
@@ -167,7 +168,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
         case fieldmapDIR
             if ~toAddData, continue; end
             
-            fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json']));
+            fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json'])); % ASSUME next to the image
             skipnext = false;
             for f = fmaps'
                 if skipnext
@@ -200,8 +201,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 % Header
                 info = []; TR = 0;
                 hdrfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
-                if ~isempty(hdrfname)
-                    info = loadjson(hdrfname);
+                if ~isempty(hdrfname{1})
+                    info = loadjson_multi(hdrfname);
                     if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
                 end
                 
@@ -238,7 +239,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     end
                     
                     % Search for event file
-                    eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); % default: next to the image
+                    eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); eventfname = eventfname{1}; % ASSUME only one instance
                     if isempty(eventfname)
                         aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',aasubjname,taskname));
                     else
@@ -274,9 +275,10 @@ if toAddData
 end
 end
 
-function [fname, runstr] = retrieve_file(fname)
+function [outfname, runstr] = retrieve_file(fname)
 
 % fully specified fname with fullpath
+outfname = {''};
 
 % pre-process fname
 [p, f, e] = fileparts(fname);
@@ -298,15 +300,25 @@ end
 % search
 itags = [cell_index(tags,'ses'), cell_index(tags,'sub')]; itags(~itags) = [];
 itagrun = cell_index(tags,'run');
-if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
+
+if exist(fname,'file'), outfname(end+1) = {fname}; end
+if itagrun
+    fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); % try without runnumber
+    if exist(fname,'file'), outfname(end+1) = {fname}; end
+end
+
 p = fileparts(p);
 for t = itags
     % one level up
     p = fileparts(p); ntags(t) = [];
-    if ~exist(fname,'file'), fname = fullfile(fullfile(p,[list_index(f,1,ntags,0) e])); end
-    if ~exist(fname,'file') && itagrun, fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); end % try without runnumber
+    fname = fullfile(fullfile(p,[list_index(f,1,ntags,0) e]));
+    if exist(fname,'file'), outfname(end+1) = {fname}; end
+    if itagrun
+        fname = fullfile(fullfile(p,[list_index(f,1,ntags(ntags~=itagrun),0) e])); % try without runnumber
+        if exist(fname,'file'), outfname(end+1) = {fname}; end
+    end
 end
-if ~exist(fname,'file'), fname = ''; end
+if exist(outfname{end},'file'), outfname(1) = []; end
 end
 
 function [taskname, sesstr] = get_taskname(sesspath,subjname,fname)
@@ -317,8 +329,8 @@ taskname = strrep(taskfname,'task-','');
 
 % Header
 [hdrfname, runstr] = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
-if ~isempty(hdrfname)
-    info = loadjson(hdrfname);
+if ~isempty(hdrfname{1})
+    info = loadjson_multi(hdrfname);
     if isfield(info,'TaskName')
         taskname = info.TaskName;
 %         taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
@@ -342,6 +354,15 @@ sessstr = spm_file(sessstr,'prefix','_');
 sessord = [];
 for sess = sessstr'
     sessord = horzcat(sessord, cell_index(aasessnames,sess{1})');
+end
+end
+
+function info = loadjson_multi(fnamecell)
+for f = numel(fnamecell):-1:1
+   dat = loadjson(fnamecell{f}); 
+   for field = fieldnames(dat)'
+       info.(field{1}) = dat.(field{1});
+   end
 end
 end
 
