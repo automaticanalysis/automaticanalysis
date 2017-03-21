@@ -21,18 +21,18 @@ switch (aap.directory_conventions.fslshell)
         end
         [s w]=aas_shell(fslcmd);
     case {'csh' 'tcsh'}
-        cmd=[aap.directory_conventions.fslshell ' -c "' fslsetup];
+        cmd=[aap.directory_conventions.fslshell ' -c ''' fslsetup];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd fslcmd '"'];
+        cmd = [cmd fslcmd ''''];
         [s w]=aas_shell(cmd);
     case 'bash'
-        cmd=[aap.directory_conventions.fslshell ' -c "' fslsetup];
+        cmd=[aap.directory_conventions.fslshell ' -c ''' fslsetup];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd fslcmd '"'];
+        cmd = [cmd fslcmd ''''];
         [s w]=aas_shell(cmd);
 end;
 
