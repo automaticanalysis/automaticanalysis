@@ -116,4 +116,16 @@ classdef aaq < handle
         end
        
     end
+    
+    %% Utils
+    
+    methods (Hidden, Access = protected)
+        function argout = SetArg(obj,argin,key,value)
+            argout = argin;
+            if ~iscell(argout), argout = {argout}; end
+            ind = find(cellfun(@(x) strcmp(x,key),argout));
+            if ind, argout(ind:ind+1) = []; end
+            argout(end+1:end+2) = {key value};
+        end
+    end
 end

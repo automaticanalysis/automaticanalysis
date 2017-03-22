@@ -4,8 +4,11 @@
 function [aap]=aas_findinputstreamsources(aap)
 
 % save provenance
-provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.trp');
+provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.dot');
 pfid = fopen(provfn,'w');
+fprintf(pfid,'digraph {\n\trankdir = LR;\n\tcharset="utf-8";\n\n');
+dotR = {};
+
 cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
 cfid = fopen(cmapfn,'w');
 
@@ -97,7 +100,9 @@ for k1=1:length(aap.tasklist.main.module)
                 end;
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
                 % write provenance
-                fprintf(pfid,'<%s> <%s> <%s_%05d> .\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
+                fprintf(pfid,'"R%s" -> "R%s_%05d" [ label="%s" ];',['Remote ' stream.host ': ' stream.sourcestagename],stagename,index,stream.name);
+                dotR(end+1) = cellstr(['Remote ' stream.host ': ' stream.sourcestagename]);
+                dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
 				fprintf(cfid,'%s\t%s\t%s_%05d\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
             else
                 
@@ -111,7 +116,9 @@ for k1=1:length(aap.tasklist.main.module)
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     % write provenance
-                    fprintf(pfid,'<%s_%05d> <%s> <%s_%05d> .\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
+                    fprintf(pfid,'"R%s_%05d" -> "R%s_%05d" [ label="%s" ];',sourcestagename,sourceindex,stagename,index,inputstreamname);
+                    dotR(end+1) = cellstr(sprintf('%s_%05d',sourcestagename,sourceindex));
+                    dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
 					fprintf(cfid,'%s_%05d\t%s\t%s_%05d\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
                     stream=[];
                     stream.name=inputstreamname;
@@ -161,10 +168,16 @@ for k1=1:length(aap.tasklist.main.module)
         end;
     end;
 end;
+fprintf(pfid,'\n\t// Resources\n');
+dotR = unique(dotR,'stable');
+for r = dotR
+    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ]; \n',r{1},r{1});
+end
+fprintf(pfid,'\n\t// Anonymous nodes\n\n\t// Literals\n\n\tlabel="\\n\\nModel:\\n(Unknown)";\n}\n');
 fclose(pfid);
 % create provenance map
 if ~unix('which dot')
-    unix(sprintf('rapper -o dot -i ntriples %s | dot -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'trp','png')));
+    unix(sprintf('dot %s -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'dot','png')));
 end
 fclose(cfid);
 

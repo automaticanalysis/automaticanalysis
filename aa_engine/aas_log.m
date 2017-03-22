@@ -41,7 +41,7 @@ if iserr % errors
         if ~isempty(aap.options.email) && (strcmp(aap.options.wheretoprocess,'localsingle') || isEngine)
             % In case the server is broken...
             try
-                aas_finishedMail(aap.options.email, aap.acq_details.root, msg)
+                aas_finishedMail(aap, msg)
             catch
             end
         end

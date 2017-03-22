@@ -42,17 +42,17 @@ switch aap.directory_conventions.freesurfershell
         end
         cmd = [FSsetup FScmd];
     case 'bash'
-        cmd=[aap.directory_conventions.freesurfershell ' -c "'];
+        cmd=[aap.directory_conventions.freesurfershell ' -c '''];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('export %s=%s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd FSsetup FScmd '"'];
+        cmd = [cmd FSsetup FScmd ''''];
     case {'csh', 'tcsh'}
-        cmd=[aap.directory_conventions.freesurfershell ' -c "'];
+        cmd=[aap.directory_conventions.freesurfershell ' -c '''];
         for e = 1:size(ENV,1)
             cmd = [cmd sprintf('setenv %s %s;',ENV{e,1},ENV{e,2})];
         end
-        cmd = [cmd FSsetup FScmd '"'];
+        cmd = [cmd FSsetup FScmd ''''];
 end
 
 aas_log(aap,false,cmd)

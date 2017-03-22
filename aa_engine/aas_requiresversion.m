@@ -6,7 +6,7 @@
 function aas_requiresversion(aap)
 
 global aa
-currver = sscanf(aa.Version,'%d.%d.%d')'*[100^2 100 1]';
+currver = sscanf(aa.Version,'%d.%d.%d%*s')'*[100^2 100 1]';
 minver  = sscanf(aap.options.aa_minver,'%d.%d.%d')'*[100^2 100 1]';
 maxver  = sscanf(aap.options.aa_maxver,'%d.%d.%d')'*[100^2 100 1]';
 

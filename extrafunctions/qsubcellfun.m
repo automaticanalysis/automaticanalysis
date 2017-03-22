@@ -52,6 +52,10 @@ try
         case 'parallel.cluster.Torque'
             aas_log(aap,false,'INFO: Torque engine is detected');
             pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aap.options.aaparallel.memory,aap.options.aaparallel.walltime);
+        case 'parallel.cluster.Generic'
+            aas_log(aap,false,'INFO: Generic engine is detected');
+            pool.IndependentSubmitFcn = SetArg(pool.IndependentSubmitFcn,'walltime',aap.options.aaparallel.walltime);
+            pool.IndependentSubmitFcn = SetArg(pool.IndependentSubmitFcn,'memory',aap.options.aaparallel.memory);
     end
     pool.NumWorkers = aap.options.aaparallel.numberofworkers;
     pool.JobStorageLocation = qsubpath;
@@ -119,4 +123,12 @@ for iJob = 1:numel(varargin{2})
     J.submit;
 end
 
+end
+
+function argout = SetArg(argin,key,value)
+argout = argin;
+if ~iscell(argout), argout = {argout}; end
+ind = find(cellfun(@(x) strcmp(x,key),argout));
+if ind, argout(ind:ind+1) = []; end
+argout(end+1:end+2) = {key value};
 end

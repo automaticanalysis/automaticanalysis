@@ -136,6 +136,13 @@
 				"aaMaintainer": "Tibor Auer"
 			}
 			{
+				"Name": "resize_img.m",
+				"Version": "",
+				"DateDownloaded": "21 March 2017",
+				"URL": "http:\/\/www0.cs.ucl.ac.uk\/staff\/gridgway\/vbm",
+				"aaMaintainer": "Tibor Auer"
+			},
+{
 				"Name": "rotateticklabel.m",
 				"Version": "(mod)",
 				"DateDownloaded": "",
