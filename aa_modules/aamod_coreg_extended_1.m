@@ -9,8 +9,7 @@ resp='';
 switch task
     case 'doit'
 
-        global defaults
-        flags = defaults.coreg;
+        flags = aap.spm.defaults.coreg;
         
         %% 0) Check that the templates we need exist!
         % Get the T1 template
