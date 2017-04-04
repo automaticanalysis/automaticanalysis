@@ -8,6 +8,10 @@
                 <memoryBase>0.2</memoryBase>
             </qsub>
             
+            <eoptions>
+                <cost_fun>nmi</cost_fun>
+            </eoptions>
+            
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>
