@@ -105,25 +105,36 @@ clear C T m
 fprintf('Median of differences (binomial estimator): %0.4f\n',pem)
 fprintf('95%% Confidence interval: %0.4f  %0.4f\n',cintpem(1),cintpem(2))
 disp('')
-try
-    [I J]=ndgrid(dff,dff); d=triu(I+J)./2; %Walsh averages triangular matrix
-    ld=sort(d(d~=0)); %linearization of Walsh averages matrix
-    clear I J
-    HLe=median(ld); %Hodges-Lehmann estimator
-    if n>15
-        A=n*(n+1)/4; B=realsqrt(n*(n+1)*(2*n+1)/24);
-        Za=-realsqrt(2).*erfcinv(2.*0.975);
-        T=fix(A-Za.*B);
-    else
-        TC=[0 0 0 0 0 0 2 3 5 8 10 13 17 21 25];
-        T=TC(n); clear TC
+
+doHLE = true;
+if exist('meminfo','file')
+    m = meminfo;
+    if m.VirtLimit-(0.028*numel(dff)^2+m.VirtUsedBy) < 0 % not enough vmem (0.028 comes from simulations)
+        fprintf('Not enough memory (soft-test) to Hodges-Lehmann estimate median of differences\n')
+        doHLE = false;
     end
-    cintpem=ld([T+1 end-T]);
-    clear dff d ld T%clear unnecessary variable
-    fprintf('Median of differences (Hodges-Lehmann estimator): %0.4f\n',HLe)
-    fprintf('95%% Confidence interval: %0.4f  %0.4f\n',cintpem(1),cintpem(2))
-catch
-    fprintf('Not enough memory to Hodges-Lehmann estimate median of differences\n')
+end
+if doHLE
+    try
+        [I J]=ndgrid(dff,dff); d=triu(I+J)./2; %Walsh averages triangular matrix
+        ld=sort(d(d~=0)); %linearization of Walsh averages matrix
+        clear I J d
+        HLe=median(ld); %Hodges-Lehmann estimator
+        if n>15
+            A=n*(n+1)/4; B=realsqrt(n*(n+1)*(2*n+1)/24);
+            Za=-realsqrt(2).*erfcinv(2.*0.975);
+            T=fix(A-Za.*B);
+        else
+            TC=[0 0 0 0 0 0 2 3 5 8 10 13 17 21 25];
+            T=TC(n); clear TC
+        end
+        cintpem=ld([T+1 end-T]);
+        clear dff ld T%clear unnecessary variable
+        fprintf('Median of differences (Hodges-Lehmann estimator): %0.4f\n',HLe)
+        fprintf('95%% Confidence interval: %0.4f  %0.4f\n',cintpem(1),cintpem(2))
+    catch
+        fprintf('Not enough memory (hard-test) to Hodges-Lehmann estimate median of differences\n')
+    end
 end
 
 %If the number of elements N<15 calculate the exact distribution of the
