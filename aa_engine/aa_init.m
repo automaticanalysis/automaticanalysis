@@ -132,6 +132,16 @@ else
     end;
 end
 
+% Path to FaceMasking
+if ~isempty(aap.directory_conventions.FaceMaskingdir)
+    addpath(genpath(fullfile(aap.directory_conventions.FaceMaskingdir,'matlab')));
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('mask_surf_auto'))
+       aas_log(aap,false,sprintf('FaceMasking not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.FaceMaskingdir'));
+    end;
+end;
+
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
     setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
@@ -187,6 +197,14 @@ end
 % BrainWavelet
 if ~isempty(aap.directory_conventions.BrainWaveletdir)
     p_ind = cell_index(p,aap.directory_conventions.BrainWaveletdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
+
+% FaceMasking
+if ~isempty(aap.directory_conventions.FaceMaskingdir)
+    p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
     end

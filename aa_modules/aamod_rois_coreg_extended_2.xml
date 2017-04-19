@@ -10,6 +10,10 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
+            <eoptions>
+                <cost_fun>nmi</cost_fun>
+            </eoptions>
+            
             <structural>1</structural>
              
             <inputstreams>

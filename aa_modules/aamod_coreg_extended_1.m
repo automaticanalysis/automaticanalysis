@@ -9,8 +9,15 @@ resp='';
 switch task
     case 'doit'
 
-        global defaults
-        flags = defaults.coreg;
+        flags = aap.spm.defaults.coreg;
+        if isfield(aap.tasklist.currenttask.settings,'eoptions')
+            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            for f = 1:numel(fields)
+                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
+                    flags.estimate.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                end
+            end
+        end
         
         %% 0) Check that the templates we need exist!
         % Get the T1 template

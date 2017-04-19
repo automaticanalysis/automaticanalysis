@@ -1,4 +1,4 @@
-function [s w]=aas_runfslcommand(aap,fslcmd)
+function [s w]=aas_runfslcommand(aap,fslcmd,ENV)
 
 % Setup
 fslsetup=deblank(aap.directory_conventions.fslsetup);
@@ -7,11 +7,12 @@ if not(isempty(fslsetup))
     fslsetup = ['source ' fslsetup];
 end
 
+if nargin < 3, ENV = {}; end
 
-ENV = {...
+ENV = vertcat(ENV,{...
     'MATLABPATH', path;...
     'FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype ...
-    };
+    });
 
 switch (aap.directory_conventions.fslshell)
     case 'none'
