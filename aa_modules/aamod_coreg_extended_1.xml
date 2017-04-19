@@ -11,7 +11,7 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <eoptions>
-                <cost_fun>nmi</cost_fun>
+                <cost_fun>ncc</cost_fun>
             </eoptions>
             
             <inputstreams>
