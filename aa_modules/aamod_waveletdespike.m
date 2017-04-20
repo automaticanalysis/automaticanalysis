@@ -49,7 +49,7 @@ switch task
         
         %% Despike
         mem = meminfo;
-        args = {'LimitRAM', min([MAXMEM mem.MemFree*0.9])};
+        args = {'LimitRAM', min([MAXMEM mem.ResFree*0.9])};
         if ~isempty(aas_getsetting(aap,'chainsearch'))
             args = horzcat({'chsearch' aas_getsetting(aap,'chainsearch')},args);
         end
