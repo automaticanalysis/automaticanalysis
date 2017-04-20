@@ -77,7 +77,7 @@ for subdirind=1:length(subdirs)
     cd(outputpath_withsuffix);
     dicomdata_subdir=dicomdata(subdir_index==subdirind,:);
     % Limit number of volumes read in at a time
-    memLimit = meminfo; memLimit = memLimit.MemFree;
+    memLimit = meminfo; memLimit = memLimit.ResFree;
     k=1;
     
     % This array is used to collect sliceing timing info so we can
