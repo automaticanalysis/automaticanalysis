@@ -45,20 +45,29 @@ switch task
                 case 'parallel.cluster.Local'
                     aap.options.aaparallel.numberofworkers = min([12 feature('numCores')]);
             end
+            aas_makedir(aap, fullfile(aas_getsesspath(aap,subjind,diffsessind),'cluster'));
+            P.JobStorageLocation = fullfile(aas_getsesspath(aap,subjind,diffsessind),'cluster');
             P.NumWorkers = min([...
                 size(data_mask,3) ... % for each slice
                 aap.options.aaparallel.numberofworkers
                 ]);
-            aas_matlabpool(P);
-            try
-                parfor z = 1:size(data_in,3)
-                    [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
-                end
-            catch ME
-                aas_log(aap,true,['ERROR: ', ME.message]);
+
+            % submit
+            for z = 1:size(data_in,3)
+                job(z) = createJob(P);
+                if isprop(job(z),'AutoAttachFiles'), job(z).AutoAttachFiles = false; end
+                createTask(job(z), @dti_slice, 7,{squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec});
+                submit(job(z));
             end
-            aas_matlabpool close;
-        else % cluster computing parfor is nor working
+            % monitor
+            while ~all(strcmp({job.State},'finished') | strcmp({job.State},'failed')), pause(1); end
+            if any(strcmp({job.State},'failed')), aas_log(aap,true,['Slice(s) ' num2str(find(strcmp({job.State},'failed'))) ' failed']); end
+            %retrieve
+            for z = 1:size(data_in,3)
+                out = fetchOutputs(job(z));
+                [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = out{:};
+            end
+        else % within-module cluster computing is not available
             for z = 1:size(data_in,3)
                 [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
             end
