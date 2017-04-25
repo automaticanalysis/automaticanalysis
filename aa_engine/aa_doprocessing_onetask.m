@@ -1,11 +1,3 @@
-% rc: 15/12/2009
-%  substantial changes to add retrieval of data during multi-stage
-%  analysis
-% rc: 3 June 2012
-%  changed dependency calculation code to allow for other kinds of parallel
-% ta: 13 Nov 2015
-%  accept aaworker (qsub)
-
 function aap=aa_doprocessing_onetask(aap,task,modulenum,indices,gaaworker)
 
 global aaworker
@@ -138,9 +130,19 @@ else
                     end
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
-                    if isempty(deps)
+                    % check whether the input module(s) has/have been skipped
+                    skipped = true(1,numel(deps));
+                    for d = 1:numel(deps)
+                        if ~strcmp(deps{d}{1},inp.sourcedomain), continue; end % only relevant modules
+                        fid = fopen(aas_doneflag_getpath_bydomain(aap,inp.sourcedomain,deps{d}{2},inp.sourcenumber),'r');
+                        lines = textscan(fid,'%s\n');
+                        fclose(fid);
+                        skipped(d) = strcmp(lines{1}{1},'skipped');
+                    end
+                    if all(skipped)
                         aas_log(aap,false,sprintf('WARNING: No inputs selected for stream %s. --> MODULE %s will be SKIPPED',inp.name, stagename));
                         close_task(aap,tempdirtodelete);
+                        aas_writedoneflag(aap,doneflag,'skipped');
                         return
                     end
                     
