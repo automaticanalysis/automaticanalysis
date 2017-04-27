@@ -170,8 +170,8 @@ for k1=1:length(aap.tasklist.main.module)
 end;
 fprintf(pfid,'\n\t// Resources\n');
 dotR = unique(dotR,'stable');
-for r = dotR
-    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ]; \n',r{1},r{1});
+for r = 1:numel(dotR)
+    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ]; \n',dotR{r},dotR{r});
 end
 fprintf(pfid,'\n\t// Anonymous nodes\n\n\t// Literals\n\n\tlabel="\\n\\nModel:\\n(Unknown)";\n}\n');
 fclose(pfid);
