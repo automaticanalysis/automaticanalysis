@@ -197,6 +197,7 @@ classdef aaq_qsub<aaq
                             fclose(fid);
                             
                             taskreported(end+1) = ftmind;
+                            Jobs.delete;
                             
                         case 'error' % running error
                             msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JobID,datpath,datname,Task.ErrorMessage);
