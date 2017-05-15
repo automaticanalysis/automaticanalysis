@@ -132,9 +132,24 @@ else
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
                     % check whether the input module(s) has/have been skipped
                     skipped = true(1,numel(deps));
+                    sourceaap = aap;
+                    sourcenumber = inp.sourcenumber;
+                    if sourcenumber == -1 % remote source
+                        sourceaap=load(inp.aapfilename);
+                        sourceaap=sourceaap.aap;
+                        % Store these initial settings before any module specific customisation
+                        sourceaap.internal.aap_initial=sourceaap;
+                        sourceaap.internal.aap_initial.aap_remote.internal.aap_initial=[]; % Prevent recursively expanding storage
+                        if ~isfield(sourceaap.acq_details.subjects(1),'subjname'), sourceaap = aa_convert_subjects(sourceaap); end % aa v < 4.5
+                        try
+                            sourcenumber = aas_getmoduleindexfromtag(sourceaap, inp.sourcestagename);
+                        catch
+                            aas_log(aap,true,sprintf('Could not find module in remote aap file with stage tag %s',inp.sourcestagename));
+                        end
+                    end
                     for d = 1:numel(deps)
                         if ~strcmp(deps{d}{1},inp.sourcedomain), continue; end % only relevant modules
-                        fid = fopen(aas_doneflag_getpath_bydomain(aap,inp.sourcedomain,deps{d}{2},inp.sourcenumber),'r');
+                        fid = fopen(aas_doneflag_getpath_bydomain(sourceaap,inp.sourcedomain,deps{d}{2},sourcenumber),'r');
                         lines = textscan(fid,'%s\n');
                         fclose(fid);
                         skipped(d) = strcmp(lines{1}{1},'skipped');
