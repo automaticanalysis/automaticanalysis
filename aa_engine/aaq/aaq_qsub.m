@@ -119,9 +119,9 @@ classdef aaq_qsub<aaq
                         obj.close;
                         return;
                     end
-                    Task = Jobs.Tasks;
-                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
-                    state = Task.State;
+                    InputArguments = Jobs.Tasks.InputArguments;
+                    moduleName = InputArguments{1}.tasklist.main.module(InputArguments{3}).name;
+                    state = Jobs.Tasks.State;
                     
                     if ~strcmp(state,'pending')
                         msg = sprintf('MODULE %s RUNNING: Job%d.', moduleName,JobID);
@@ -143,9 +143,10 @@ classdef aaq_qsub<aaq
                         return;
                     end
                     Task = Jobs.Tasks;
-                    aap = aas_setcurrenttask(obj.aap,Task.InputArguments{3});
-                    moduleName = obj.aap.tasklist.main.module(Task.InputArguments{3}).name;
-                    indices = Task.InputArguments{4};
+                    InputArguments = Task.InputArguments;
+                    aap = aas_setcurrenttask(obj.aap,InputArguments{3});
+                    moduleName = obj.aap.tasklist.main.module(InputArguments{3}).name;
+                    indices = InputArguments{4};
                     datname = ''; datpath = '';
                     if numel(indices) > 0 % subject specified
                         datname = aas_getsubjdesc(aap,indices(1));  
