@@ -59,14 +59,10 @@ switch (domain)
         end
 
         % Apply selection of sessions if necessary
-        switch domain
-            case 'session'
-                % Parse selected_sessions into indices if necessary
-                aap=parse_selected_sessions(aap);
-                I=intersect(aap.acq_details.selected_sessions,I);
-                N=length(I);
-            otherwise
-        end;
+        % Parse selected_sessions into indices if necessary
+        aap=parse_selected_sessions(aap,sessions);
+        I=intersect(aap.acq_details.selected_sessions,I);
+        N=length(I);
         
     case {'splitsession_cv_fold','splitsession_cv_fold_hyper'}
         N=aap.options.splitsession_cv.N;
