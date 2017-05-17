@@ -28,7 +28,7 @@ switch task
                         subplot(Nr,2,(r-1)*2+2),hist(spatcor{m}(r,:)'); title(sprintf('Modality %s, Reference %s: Histogram of Spatial Correlations',in.type,ref_type{r}));
                     end
                 end
-                print('-djpeg',sprintf('-f%d',f),'-r150',fname)
+                print('-djpeg',figure(f),'-r150',fname)
                 close(f)
             end
             aap = aas_report_addimage(aap,subj,fname);
@@ -57,7 +57,7 @@ switch task
                     if ~isempty(refs.tem{mr}), plot(zscore(refs.tem{mr}(1:MaxT)),'Color','b'); end %[0 0 0]+0.5/Nr)
                     %                end
                     title(sprintf('Modality %s, IC %d timecourse (and maximally correlated reference %s)',in.type,ii,ref_type{mr}));
-                    print('-djpeg',sprintf('-f%d',f),'-r150',fname_tc)
+                    print('-djpeg',figure(f),'-r150',fname_tc)
                     close(f)
                 
                     % Don't bother with power spectrum at moment
@@ -67,7 +67,7 @@ switch task
                     in.ParentAxes = axes('parent',f); in.f = f;
                     spm_eeg_plotScalpData(iw(:,ii),D.coor2D(chans{m}),D.chanlabels(chans{m}),in);
                     title(sprintf('Modality %s, IC %d topography (maximally correlated reference %s)',in.type,ii,ref_type{mr}));
-                    print('-djpeg',sprintf('-f%d',f),'-r150',fname_top)
+                    print('-djpeg',figure(f),'-r150',fname_top)
                     set(f,'DeleteFcn',[]);
                     close(f)
                 end

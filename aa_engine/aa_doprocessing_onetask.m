@@ -1,11 +1,3 @@
-% rc: 15/12/2009
-%  substantial changes to add retrieval of data during multi-stage
-%  analysis
-% rc: 3 June 2012
-%  changed dependency calculation code to allow for other kinds of parallel
-% ta: 13 Nov 2015
-%  accept aaworker (qsub)
-
 function aap=aa_doprocessing_onetask(aap,task,modulenum,indices,gaaworker)
 
 global aaworker
@@ -138,9 +130,34 @@ else
                     end
                     
                     deps=aas_getdependencies_bydomain(aap,inp.sourcedomain,searchDomain,searchIndices);
-                    if isempty(deps)
+                    % check whether the input module(s) has/have been skipped
+                    skipped = true(1,numel(deps));
+                    sourceaap = aap;
+                    sourcenumber = inp.sourcenumber;
+                    if sourcenumber == -1 % remote source
+                        sourceaap=load(inp.aapfilename);
+                        sourceaap=sourceaap.aap;
+                        % Store these initial settings before any module specific customisation
+                        sourceaap.internal.aap_initial=sourceaap;
+                        sourceaap.internal.aap_initial.aap_remote.internal.aap_initial=[]; % Prevent recursively expanding storage
+                        if ~isfield(sourceaap.acq_details.subjects(1),'subjname'), sourceaap = aa_convert_subjects(sourceaap); end % aa v < 4.5
+                        try
+                            sourcenumber = aas_getmoduleindexfromtag(sourceaap, inp.sourcestagename);
+                        catch
+                            aas_log(aap,true,sprintf('Could not find module in remote aap file with stage tag %s',inp.sourcestagename));
+                        end
+                    end
+                    for d = 1:numel(deps)
+                        if ~strcmp(deps{d}{1},inp.sourcedomain), continue; end % only relevant modules
+                        fid = fopen(aas_doneflag_getpath_bydomain(sourceaap,inp.sourcedomain,deps{d}{2},sourcenumber),'r');
+                        lines = textscan(fid,'%s\n');
+                        fclose(fid);
+                        skipped(d) = strcmp(lines{1}{1},'skipped');
+                    end
+                    if all(skipped)
                         aas_log(aap,false,sprintf('WARNING: No inputs selected for stream %s. --> MODULE %s will be SKIPPED',inp.name, stagename));
                         close_task(aap,tempdirtodelete);
+                        aas_writedoneflag(aap,doneflag,'skipped');
                         return
                     end
                     

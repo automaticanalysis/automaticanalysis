@@ -3,9 +3,8 @@
 %  of aap.acq_details.sessions
 % Rhodri Cusack BMI Western 2016-08-18
 
-function aap=parse_selected_sessions(aap,varargin)
+function aap=parse_selected_sessions(aap,sessions,varargin)
 % Check subselected sessions
-sessions=aap.acq_details.sessions;
 selected_sessions=aap.acq_details.selected_sessions;
 if ischar(selected_sessions)
     if strcmp(selected_sessions,'*')
