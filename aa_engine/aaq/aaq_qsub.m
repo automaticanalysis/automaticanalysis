@@ -2,7 +2,7 @@ classdef aaq_qsub<aaq
     properties
         pool = []
         QV = []
-    end
+    end 
     properties (Hidden)
         jobnotrun = []
 		taskinqueue = []
