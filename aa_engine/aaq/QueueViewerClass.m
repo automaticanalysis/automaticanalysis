@@ -330,7 +330,7 @@ if strcmp(get(gcbf,'SelectionType'),'open')
     sel = get(listbox,'Value');
     ID = regexp(jobs{sel},'job[ ]*[0-9]*:','match');
     ID = textscan(ID{1},'job %d:%*s'); ID = ID{1};
-    Task = obj.Pool.Jobs([obj.Pool.Jobs.ID] == ID).Tasks;
+    Task = obj.Pool.Jobs(ID).Tasks;
     msgbox(obj.TaskInfo(Task),[Task.Parent.Name Task.Name],'help');
 end
 end
