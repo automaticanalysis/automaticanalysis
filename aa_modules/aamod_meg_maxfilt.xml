@@ -25,6 +25,8 @@
                 <corr>0.980</corr>
             </sss>
             
+            <mvcomp>1</mvcomp>
+            
             <downsampling desc='Downsampling (with low-pass FIR filtering) factor'></downsampling>
             
             <calibrationdirectory desc='Directory containing one or more custom calibration files ct_sparse.fif and sss_cal.dat' ui='dir'></calibrationdirectory>

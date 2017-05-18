@@ -165,9 +165,16 @@ switch task
                 stcmd = ''; % To avoid jumps between end of 10s buffer, as warned in manual
             end
             
+            % Do movecomp?
+            if aap.tasklist.currenttask.settings.sss.mvcomp
+                mvcmd = ' -movecomp inter';
+            else
+                mvcmd = '';
+            end
+            
             % HPI estimation and movement compensation
             if ~isEmptyRoom
-                hpicmd = sprintf(' -linefreq 50 -hpistep %d -hpisubt %s -hpicons -movecomp inter -hp %s',...
+                hpicmd = sprintf(' -linefreq 50 -hpistep %d -hpisubt %s -hpicons -hp %s',...
                     aas_getsetting(aap,'hpi.step',sess),...
                     aas_getsetting(aap,'hpi.subt',sess),...
                     fullfile(sesspath,[fstem '_headposition.pos']));
@@ -201,7 +208,7 @@ switch task
                 mfcall ' -f ' infname ' -o ' outfname,...
                 ' -ctc ' fnamectc,...
                 ' -cal ' fnamecal,...
-                 ' ', skipstr, badstr, orgcmd, stcmd, hpicmd, trcmd_par ' -force -v | tee ' logfname
+                 ' ', skipstr, badstr, orgcmd, stcmd, hpicmd, mvcmd, trcmd_par ' -force -v | tee ' logfname
                 ];
             aas_log(aap,false,mfcmd_rest);
             
