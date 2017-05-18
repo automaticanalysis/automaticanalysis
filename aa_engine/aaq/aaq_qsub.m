@@ -2,13 +2,13 @@ classdef aaq_qsub<aaq
     properties
         pool = []
         QV = []
-    end 
+    end
     properties (Hidden)
         jobnotrun = []
-		taskinqueue = []
+        taskinqueue = []
         taskstomonitor = []
         jobinfo = []
-
+        
         % ensure MAXFILTER license
         initialSubmitArguments = '';
     end
@@ -24,7 +24,7 @@ classdef aaq_qsub<aaq
                         ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
                         if isempty(ppfname)
                             aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
-                        else                            
+                        else
                             obj.pool=parcluster(parallel.importProfile(ppfname));
                         end
                     else
@@ -43,7 +43,7 @@ classdef aaq_qsub<aaq
                         case 'parallel.cluster.Generic'
                             aas_log(aap,false,'INFO: Generic engine is detected');
                             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
-                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);        
+                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
                     end
                 else
                     obj.pool = parcluster('local');
@@ -93,16 +93,16 @@ classdef aaq_qsub<aaq
                 % Lets not overload the filesystem
                 pause(0.1);
                 
-                % Find how many free workers available, then allocate next
-                % batch. Skip section if there are no jobs to run.
-                if any(obj.jobnotrun)
-                    disp(sprintf('Jobs in AA queue: %d', sum(obj.jobnotrun)))
-                    
-                    pool_length = length(obj.pool.Jobs);
-                    nfreeworkers = jobqueuelimit - pool_length;
+                pool_length = length(obj.pool.Jobs);
+                nfreeworkers = jobqueuelimit - pool_length;
                 
-                    % Only run if there are free workers.
-                    if nfreeworkers > 0
+                % Only run if there are free workers, otherwise display
+                % message that no workers are available
+                if nfreeworkers > 0
+                    % Find how many free workers available, then allocate next
+                    % batch. Skip section if there are no jobs to run.
+                    if any(obj.jobnotrun)
+                        disp(sprintf('Jobs in AA queue: %d', sum(obj.jobnotrun)))
                         runjobs = shiftdim(find(obj.jobnotrun))';
                         nfreeworkers = min([nfreeworkers, length(runjobs)]);
                         runjobs = runjobs(1:nfreeworkers);
@@ -133,9 +133,9 @@ classdef aaq_qsub<aaq
                                 end
                             end
                         end
-                    else
-                        disp('No free workers available')
                     end
+                else
+                    disp('No free workers available')
                 end
                 
                 if isempty(obj.taskinqueue) && ~isempty(obj.jobnotrun)
@@ -143,16 +143,16 @@ classdef aaq_qsub<aaq
                     disp('No jobs ready to run. Waiting 60 seconds...')
                     pause(60)
                 end
-
+                
                 taskstarted = [];
                 % get k from obj.jobqueue
-
+                
                 for ftmind=1:numel(obj.taskinqueue)
                     JobID = obj.taskinqueue(ftmind);
                     Jobs = obj.pool.Jobs([obj.pool.Jobs.ID] == JobID);
                     if isempty(Jobs) % cleared by the GUI
                         if obj.QV.isvalid
-                            obj.QV.Hold = false; 
+                            obj.QV.Hold = false;
                         end
                         obj.fatalerrors = true; % abnormal terminations
                         obj.close;
@@ -191,12 +191,12 @@ classdef aaq_qsub<aaq
                     indices = obj.jobinfo(jobind).InputArguments{4};
                     datname = ''; datpath = '';
                     if numel(indices) > 0 % subject specified
-                        datname = aas_getsubjdesc(aap,indices(1));  
-                        datpath = aas_getsubjpath(aap,indices(1)); 
+                        datname = aas_getsubjdesc(aap,indices(1));
+                        datpath = aas_getsubjpath(aap,indices(1));
                     end
                     if numel(indices) > 1 % session specified
-                        datname = aas_getsessdesc(aap,indices(1),indices(2));  
-                        datpath = aas_getsesspath(aap,indices(1),indices(2)); 
+                        datname = aas_getsessdesc(aap,indices(1),indices(2));
+                        datpath = aas_getsesspath(aap,indices(1),indices(2));
                     end
                     
                     Task = Jobs.Tasks;
@@ -218,14 +218,14 @@ classdef aaq_qsub<aaq
                             % If there is an error, it is fatal...
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
                             taskreported(end+1) = ftmind;
-
+                            
                         case 'cancelled' % cancelled
                             msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JobID,...
                                 fullfile(obj.pool.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
                             % If there is an error, it is fatal...
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.warning)
                             taskreported(end+1) = ftmind;
-
+                            
                         case 'finished' % without error
                             if isempty(Task.FinishTime), continue; end
                             dtvs = dts2dtv(Task.CreateTime);
@@ -250,11 +250,11 @@ classdef aaq_qsub<aaq
                             % folder is only partially written upon job execution.
                             checkerrors = {'No such file or directory','character','Argument must contain a string','File name is empty','does not exist','not found'};
                             retryerror = true;
-%                             for ci = 1:length(checkerrors)
-%                                 if strfind(Task.ErrorMessage, checkerrors{ci})
-%                                     retryerror = true;
-%                                 end
-%                             end
+                            %                             for ci = 1:length(checkerrors)
+                            %                                 if strfind(Task.ErrorMessage, checkerrors{ci})
+                            %                                     retryerror = true;
+                            %                                 end
+                            %                             end
                             
                             if retryerror
                                 disp('"File not found" type error detected, waiting then trying again. Press Cntl+C now to quit')
@@ -277,7 +277,7 @@ classdef aaq_qsub<aaq
                                 taskreported(end+1) = ftmind;
                             end
                     end
-                end				
+                end
                 obj.taskstomonitor(taskreported) = [];
                 
                 % Loop if we are still waiting for jobs to finish...
@@ -285,7 +285,7 @@ classdef aaq_qsub<aaq
                     if isempty(obj.taskinqueue) && isempty(obj.taskstomonitor)
                         waitforalljobs = false;
                     end
-                end  
+                end
                 
                 if obj.aap.options.aaworkerGUI
                     % queue viewer
@@ -336,9 +336,9 @@ classdef aaq_qsub<aaq
                         memory = sprintf('%dMB',memory*1000);
                     end
                     obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
-            %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
-            %                     sprintf(' -N Mod%02d_',job.k),...
-            %                     sprintf('%03d',job.indices));
+                    %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
+                    %                     sprintf(' -N Mod%02d_',job.k),...
+                    %                     sprintf('%03d',job.indices));
                 case 'parallel.cluster.Generic'
                     aas_log(aap,false,'INFO: Generic engine is detected');
                     obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
@@ -358,18 +358,18 @@ classdef aaq_qsub<aaq
             if ~isempty(obj.pool)
                 % Check how much memory and time we should assign to the job
                 qsubsettings = {'mem',[],'walltime',[]};
-%                 if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
-%                     qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
-%                     for f = fieldnames(qsub)'
-%                         switch f{1}
-%                             case 'memoryBase'
-%                                 qsubsettings{2} = qsub.memoryBase;
-%                             case 'timeBase'
-%                                 qsubsettings{4} = qsub.timeBase;
-%                         end
-%                     end
-%                 end
-
+                %                 if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
+                %                     qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
+                %                     for f = fieldnames(qsub)'
+                %                         switch f{1}
+                %                             case 'memoryBase'
+                %                                 qsubsettings{2} = qsub.memoryBase;
+                %                             case 'timeBase'
+                %                                 qsubsettings{4} = qsub.timeBase;
+                %                         end
+                %                     end
+                %                 end
+                
                 if isa(obj.pool,'parallel.cluster.Torque'), obj = obj.pool_args(qsubsettings{:}); end
                 
                 J = createJob(obj.pool);
@@ -378,7 +378,7 @@ classdef aaq_qsub<aaq
                 inparg = {job.aap,job.task,job.k,job.indices, aaworker};
                 
                 if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
-
+                
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
@@ -413,9 +413,9 @@ classdef aaq_qsub<aaq
                 % Naas_movParsot in use [TA]
                 %                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
                 %                     job.stagename, timReq./(60*60), memReq./(1024^3))
-
+                
                 % And monitor for files with the job output
-				obj.taskinqueue(end+1) = J.ID;
+                obj.taskinqueue(end+1) = J.ID;
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
@@ -445,7 +445,7 @@ classdef aaq_qsub<aaq
             obj.jobnotrun(i)=false;
             fprintf('Added job with ID: %d \n',latestjobid)
         end
-
+        
         function obj = remove_from_jobqueue(obj, i)
             % exact opposite of method add_from_jobqueue
             % Sometimes necessary if the job has failed to reach pending
@@ -475,7 +475,7 @@ end
 
 function dts = sec2dts(dt)
 dt_str = {'s','m','h'};
-dt_div = [60 60 24]; 
+dt_div = [60 60 24];
 
 dts = '';
 for i = 1:numel(dt_str)
@@ -483,7 +483,7 @@ for i = 1:numel(dt_str)
     if ~dt, break, end
 end
 if dt
-    dts = [num2str(dt) 'd' dts]; 
+    dts = [num2str(dt) 'd' dts];
 else
     dts = dts(2:end);
 end
