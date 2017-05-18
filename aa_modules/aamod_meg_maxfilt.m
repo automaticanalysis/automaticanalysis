@@ -166,10 +166,12 @@ switch task
             end
             
             % Do movecomp?
-            if aap.tasklist.currenttask.settings.sss.mvcomp
+            if strcmp(aap.tasklist.currenttask.settings.sss.mvcomp, 'on') || isempty(aap.tasklist.currenttask.settings.sss.mvcomp)
                 mvcmd = ' -movecomp inter';
-            else
+            elseif strcmp(aap.tasklist.currenttask.settings.sss.mvcomp, 'off')
                 mvcmd = '';
+            else
+                aas_log(aap,true,sprintf('ERROR: invalid option for sss.movecomp valid inputs = on|off'));
             end
             
             % HPI estimation and movement compensation
