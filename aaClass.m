@@ -36,7 +36,7 @@ classdef aaClass
                 fclose(fid);
                 dat = textscan(line,'%s','delimiter','\t '); dat = dat{1};
                 obj.Version = [obj.Version ' (' dat{2} ')'];
-                obj.Date = datestr(str2double(dat{5})/86400 + datenum(1970,1,1),'mmm yyyy');
+%                 obj.Date = datestr(str2double(dat{5})/86400 + datenum(1970,1,1),'mmm yyyy');
             end
             
             obj.ManuscriptRef = info.ManuscriptRef;
