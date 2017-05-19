@@ -153,7 +153,12 @@ if isfield(args,'functional') && ~isempty(args.functional)
                             continue;
                         end
                     end
+                else
+                    [~, fn, ext] = fileparts(fname);
+                    MEG{end+1} = [fn,ext];
+                    continue
                 end
+                
                 % - try to find in rawdatadir
                 if ~exist(fname,'file'), fname = fullfile(aas_findvol(aap,''),fname); end
                 if ~exist(fname,'file'), aas_log(aap,1,sprintf('ERROR: File %s does not exist!',fname)); end
