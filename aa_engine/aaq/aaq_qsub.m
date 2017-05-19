@@ -82,10 +82,9 @@ classdef aaq_qsub<aaq
             submittedJobs = 1:length(obj.jobnotrun);
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
-            displaymess = true;
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
-            
-            readytorunall = true;
+            printswitches.jobsinq = true; % a set of switches for turning on and off messages
+            printswitches.nofreeworkers = true;
             whileind = 0;
             
             while any(obj.jobnotrun) || waitforalljobs
@@ -99,10 +98,14 @@ classdef aaq_qsub<aaq
                 % Only run if there are free workers, otherwise display
                 % message that no workers are available
                 if nfreeworkers > 0
+                    printswitches.nofreeworkers = true; % reset the display command
                     % Find how many free workers available, then allocate next
                     % batch. Skip section if there are no jobs to run.
                     if any(obj.jobnotrun)
-                        disp(sprintf('Jobs in AA queue: %d', sum(obj.jobnotrun)))
+                        if printswitches.jobsinq; 
+                            fprintf('Jobs in AA queue: %d\n', sum(obj.jobnotrun))
+                            printswitches.jobsinq = false; % Don't display again unless queue length changes
+                        end
                         runjobs = shiftdim(find(obj.jobnotrun))';
                         nfreeworkers = min([nfreeworkers, length(runjobs)]);
                         runjobs = runjobs(1:nfreeworkers);
@@ -123,19 +126,23 @@ classdef aaq_qsub<aaq
                                     % the job info in obj.jobinfo
                                     try
                                         obj.add_from_jobqueue(i);
+                                        printswitches.jobsinq = true;
                                     catch ME
                                         if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
                                             % If the fails due to "job pending error", then
                                             % remove this job. It will be automatically added again on the next iteration
                                             obj.remove_from_jobqueue(i);
+                                            printswitches.jobsinq = true;
                                         end
                                     end
                                 end
                             end
                         end
                     end
-                else
+                elseif printswitches.nofreeworkers
+                    obj.display_qsub_monitor()
                     disp('No free workers available')
+                    printswitches.nofreeworkers = false; % don't display again until situation changes
                 end
                 
                 if isempty(obj.taskinqueue) && ~isempty(obj.jobnotrun)
