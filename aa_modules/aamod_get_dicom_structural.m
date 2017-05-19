@@ -136,7 +136,11 @@ switch task
                 element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
                 
                 for imnum = 1:numel(out)
-                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                    
+                    u = aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                    if u ~= 0
+                        aas_log(aap, true, 'ERROR: dcmodify command returned an error')
+                    end
                 end
             end
         end
