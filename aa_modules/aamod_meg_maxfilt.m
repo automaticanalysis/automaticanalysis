@@ -167,9 +167,12 @@ switch task
             
             % Do movecomp?
             if strcmp(aap.tasklist.currenttask.settings.sss.mvcomp, 'on') || isempty(aap.tasklist.currenttask.settings.sss.mvcomp)
-                mvcmd = ' -movecomp inter';
+                mvcmd = ' -movecomp inter'; % areguments added to the maxfilter unix command
+                mvcomp_out = char(fullfile(sesspath,[fstem '_headpoints.txt']),...
+                    fullfile(sesspath,[fstem '_headposition.pos'])); % used later when checking md5 checksums
             elseif strcmp(aap.tasklist.currenttask.settings.sss.mvcomp, 'off')
                 mvcmd = '';
+                mvcomp_out = char(fullfile(sesspath,[fstem '_headpoints.txt'])); % used later when checking md5 checksums (no headpos in this case)
             else
                 aas_log(aap,true,sprintf('ERROR: invalid option for sss.movecomp valid inputs = on|off'));
             end
@@ -302,11 +305,9 @@ switch task
             
             %% Outputs
             aap=aas_desc_outputs(aap,subj,sess,instream,outs{1});
-            
+                        
             if ~isEmptyRoom
-                aap=aas_desc_outputs(aap,subj,sess,[instream '_head'],...
-                    char(fullfile(sesspath,[fstem '_headpoints.txt']),...
-                    fullfile(sesspath,[fstem '_headposition.pos'])));
+                aap=aas_desc_outputs(aap,subj,sess,[instream '_head'],mvcomp_out);
             end
             
             if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
