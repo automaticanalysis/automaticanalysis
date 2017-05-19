@@ -37,9 +37,9 @@ classdef aaClass
                 % Split the line at tab (after tab = repo
                 % location info)
                 dat = textscan(line,'%s','delimiter','\t'); dat = dat{1};
-                obj.Version = [obj.Version ' (' dat{2} ')'];
                 % Split at spaces (second to last var = date)
                 dat = textscan(dat{1}, '%s','delimiter',' '); dat = dat{1};
+                obj.Version = [obj.Version ' (' dat{2} ')'];
                 obj.Date = datestr(str2double(dat{end-1})/86400 + datenum(1970,1,1),'mmm yyyy');
             end
             
