@@ -59,10 +59,6 @@ switch task
         if isempty(getenv('DCMDICTPATH'))
             setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
         end
-        % Add the dcmodify path if it does not exist (necessary to edit dicom headers)
-        if ~isempty(strfind(getenv('PATH'), fullfile(aap.directory_conventions.DCMTKdir,'bin')))
-            setenv('PATH', [getenv('PATH') ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
-        end
         
         % Fields to edit
         toEditsetting = aas_getsetting(aap,'toEdit');
@@ -83,7 +79,7 @@ switch task
                 element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
                 
                 for imnum = 1:numel(out)
-                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                    aas_shell(sprintf('%s/dcmodify -m "(%04x,%04x)=%s" %s',fullfile(aap.directory_conventions.DCMTKdir,'bin'),group,element,f{1}.Value,out{imnum}));
                 end
             end
         end
