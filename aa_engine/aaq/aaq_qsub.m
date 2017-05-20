@@ -142,7 +142,10 @@ classdef aaq_qsub<aaq
                     end
                 elseif printswitches.nofreeworkers
                     disp('No free workers available')
-                    aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,6)
+                    fin = 0;
+                    while fin == 0
+                        fin = aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,1);
+                    end
                     printswitches.nofreeworkers = false; % don't display again until situation changes
                 end
                 
