@@ -4,7 +4,7 @@
 function [s,w]=aas_shell(cmd,quiet,stopforerrors)
 
 if nargin < 2, quiet=false; end
-if nargin < 3, stepforerrors=true; end
+if nargin < 3, stopforerrors=true; end
 
 %% Prepare
 % Cache this as it is remarkably slow
@@ -40,8 +40,8 @@ if ~quiet
     end
     if s
         [junk, wenv]=system('/usr/bin/env');
-        aas_log([],stopforerrors,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
-        aas_log([],false,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
+        aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
+        aas_log([],stopforerrors,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
         aas_log([],false,'***END, CONTINUING');
     end
 end
