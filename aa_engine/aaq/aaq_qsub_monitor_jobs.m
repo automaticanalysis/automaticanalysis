@@ -1,4 +1,4 @@
-function [] = dp_qsub_monitor(job_location, intervaltime, clearscreen, nloops)
+function Nfinished = aaq_qsub_monitor_jobs(job_location, intervaltime, clearscreen, nloops)
 
 if nargin == 0
     job_location = '/home/dp01/matlab/jobs/';
@@ -102,10 +102,11 @@ while ind < nloops
 %     end
     
     Nrunning = sum(strcmp(C(:,2),'running'));
+    Nfinished = sum(strcmp(C(:,2),'finished'));
     Nerror = sum(strcmp(C(:,2),'error'));
     Npending = sum(strcmp(C(:,2),'pending'));
     disp('-----------------------------------------------')
-    fprintf('Running: %d | Pending: %d | Error: %d', Nrunning, Npending, Nerror)
+    fprintf('Running: %d | Pending: %d | Finished: %d | Error: %d \n', Nrunning, Npending, Nfinished, Nerror)
     pause(intervaltime)
 end
 
