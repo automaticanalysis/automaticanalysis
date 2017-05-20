@@ -24,7 +24,7 @@ switch task
         out=[];
         for seriesind=1:length(seriesnum)
             [aap dicom_files_src]=aas_listdicomfiles(aap,[subj d],seriesnum(seriesind));
-
+            
             % trim number of files to a multiple of "multipleof"
             multipleof=aap.tasklist.currenttask.settings.multipleof;
             nfiles=floor(length(dicom_files_src)/multipleof)*multipleof;
@@ -84,11 +84,15 @@ switch task
             out=[out outstream];
         end
         
-         %% To Edit
+        %% To Edit
         % DICOM dictionary
         dict = load(aas_getsetting(aap,'DICOMdictionary'));
         if isempty(getenv('DCMDICTPATH'))
             setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
+        end
+        % Add the dcmodify path if it does not exist (necessary to edit dicom headers)
+        if ~isempty(strfind(getenv('PATH'), fullfile(aap.directory_conventions.DCMTKdir,'bin')))
+            setenv('PATH', [getenv('PATH') ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
         end
         
         % Fields to edit
@@ -115,6 +119,6 @@ switch task
             end
         end
         
-        %% Output        
+        %% Output
         aap=aas_desc_outputs(aap,subj,sess,'dicom_epi',out);
 end

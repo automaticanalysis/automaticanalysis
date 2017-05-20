@@ -59,6 +59,10 @@ switch task
         if isempty(getenv('DCMDICTPATH'))
             setenv('DCMDICTPATH',fullfile(aap.directory_conventions.DCMTKdir,'share','dcmtk','dicom.dic'));
         end
+        % Add the dcmodify path if it does not exist (necessary to edit dicom headers)
+        if ~isempty(strfind(getenv('PATH'), fullfile(aap.directory_conventions.DCMTKdir,'bin')))
+            setenv('PATH', [getenv('PATH') ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+        end
         
         % Fields to edit
         toEditsetting = aas_getsetting(aap,'toEdit');
