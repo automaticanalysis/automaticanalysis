@@ -141,19 +141,17 @@ classdef aaq_qsub<aaq
                         end
                     end
                 elseif printswitches.nofreeworkers
-                    obj.display_qsub_monitor()
                     disp('No free workers available')
+                    aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,6)
                     printswitches.nofreeworkers = false; % don't display again until situation changes
                 end
                 
                 if isempty(obj.taskinqueue) && ~isempty(obj.jobnotrun)
-                    obj.display_qsub_monitor()
                     disp('No jobs ready to run. Waiting 60 seconds...')
-                    pause(60)
+                    aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,6)
                 end
                 
                 taskstarted = [];
-                % get k from obj.jobqueue
                 
                 for ftmind=1:numel(obj.taskinqueue)
                     JobID = obj.taskinqueue(ftmind);
@@ -467,9 +465,6 @@ classdef aaq_qsub<aaq
             fprintf('Removed job with ID: %d \n',latestjobid)
         end
         
-        function display_qsub_monitor(obj)
-%             dp_qsub_monitor([obj.pool.JobStorageLocation,'/'],5,false,1)
-        end
     end
 end
 
