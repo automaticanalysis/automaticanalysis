@@ -8,6 +8,7 @@ classdef aaq_qsub<aaq
         taskinqueue = []
         taskstomonitor = []
         jobinfo = []
+        jobretries = []
         
         % ensure MAXFILTER license
         initialSubmitArguments = '';
@@ -72,7 +73,7 @@ classdef aaq_qsub<aaq
         %  Watch output files
         
         % Run all tasks on the queue
-        function [obj]=runall(obj, dontcloseexistingworkers, waitforalljobs)
+        function [obj]=runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
             global aaworker
             
             % Check number of jobs & monitored files
@@ -83,7 +84,7 @@ classdef aaq_qsub<aaq
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
-            printswitches.jobsinq = true; % a set of switches for turning on and off messages
+            printswitches.jobsinq = true; % switches for turning on and off messages
             printswitches.nofreeworkers = true;
             whileind = 0;
             
@@ -102,7 +103,7 @@ classdef aaq_qsub<aaq
                     % Find how many free workers available, then allocate next
                     % batch. Skip section if there are no jobs to run.
                     if any(obj.jobnotrun)
-                        if printswitches.jobsinq; 
+                        if printswitches.jobsinq;
                             fprintf('Jobs in AA queue: %d\n', sum(obj.jobnotrun))
                             printswitches.jobsinq = false; % Don't display again unless queue length changes
                         end
@@ -192,7 +193,7 @@ classdef aaq_qsub<aaq
                         return;
                     end
                     jobind = [obj.jobinfo.ID] == JobID;
-                    moduleName = obj.jobinfo(jobind).InputArguments{1}.tasklist.main.module(obj.jobinfo(jobind).InputArguments{3}).name;
+%                     moduleName = obj.jobinfo(jobind).InputArguments{1}.tasklist.main.module(obj.jobinfo(jobind).InputArguments{3}).name;
                     aap = aas_setcurrenttask(obj.aap,obj.jobinfo(jobind).InputArguments{3});
                     moduleName = obj.aap.tasklist.main.module(obj.jobinfo(jobind).InputArguments{3}).name;
                     indices = obj.jobinfo(jobind).InputArguments{4};
@@ -224,7 +225,7 @@ classdef aaq_qsub<aaq
                                 fullfile(obj.pool.JobStorageLocation,Task.Parent.Name,[Task.Name '.log']));
                             % If there is an error, it is fatal...
                             aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
-                            taskreported(end+1) = ftmind;
+                            taskreported(end+1) = ftmind; %#ok<*AGROW>
                             
                         case 'cancelled' % cancelled
                             msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JobID,...
@@ -255,19 +256,19 @@ classdef aaq_qsub<aaq
                             % Check whether the error was a "file does not
                             % exist" type. This can happen when a dependent
                             % folder is only partially written upon job execution.
-                            checkerrors = {'No such file or directory','character','Argument must contain a string','File name is empty','does not exist','not found'};
-                            retryerror = true;
-                            %                             for ci = 1:length(checkerrors)
-                            %                                 if strfind(Task.ErrorMessage, checkerrors{ci})
-                            %                                     retryerror = true;
-                            %                                 end
-                            %                             end
-                            
-                            if retryerror
-                                disp('"File not found" type error detected, waiting then trying again. Press Cntl+C now to quit')
-                                pause(120)
-                                obj.jobnotrun(obj.jobinfo(jobind).i) = true; % will cause the job to restart on next loop
+                            % jobinfo etc is indexed by the job ID so get i from jobinfo.
+                            i = obj.jobinfo(jobind).i;
+                            if obj.jobretries(i).n < 5
+                                obj.jobretries(i).n = obj.jobretries(i).n + 1;
+                                obj.jobnotrun(i) = true; % will cause the job to restart on next loop
                                 taskreported(end+1) = ftmind; % remove the job from taskreported
+                                fprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
+                                    ' \n\n Waiting 60 seconds then trying again',...
+                                    ' (%d tries remaining for this job)\n'...
+                                    'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
+                                    ' to run the job locally in debug mode.'],...
+                                    Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(i).n)
+                                pause(60)
                                 Jobs.delete; % delete this job from the cluster
                             else
                                 msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JobID,datpath,datname,Task.ErrorMessage);
@@ -355,7 +356,8 @@ classdef aaq_qsub<aaq
         
         function [obj]=qsub_q_job(obj,job)
             global aaworker
-            
+            global aacache
+             
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
@@ -389,7 +391,7 @@ classdef aaq_qsub<aaq
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
-                global aacache;
+               
                 if isprop(J,'AdditionalPaths')
                     J.AdditionalPaths = aacache.path.reqpath;
                 elseif isprop(J,'PathDependencies')
@@ -400,8 +402,7 @@ classdef aaq_qsub<aaq
                 success = false;
                 retries = 0;
                 
-                % Had problems with connections to master01, so added a
-                % retry (DP).
+                % Job submission can sometimes fail (server fault) (DP). Added rety to cope this this.
                 while success == false
                     try
                         J.submit;
@@ -449,7 +450,8 @@ classdef aaq_qsub<aaq
             ji.i = i;
             obj.jobinfo = [obj.jobinfo, ji];
             
-            obj.jobnotrun(i)=false;
+            obj.jobnotrun(i) = false;
+            obj.jobretries(i).n = 0; % keep track of retries independetly
             fprintf('Added job with ID: %d \n',latestjobid)
         end
         
@@ -466,7 +468,7 @@ classdef aaq_qsub<aaq
         end
         
         function display_qsub_monitor(obj)
-            dp_qsub_monitor([obj.pool.JobStorageLocation,'/'],5,false,1)
+%             dp_qsub_monitor([obj.pool.JobStorageLocation,'/'],5,false,1)
         end
     end
 end
