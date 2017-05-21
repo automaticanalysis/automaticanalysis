@@ -16,11 +16,11 @@ end
 fclose('all');
 
 status_complete = false;
-ind = 0;
+mainloopind = 0;
 
-while ind < nloops
+while mainloopind < nloops
     C = {'' '' ''};
-    ind = ind + 1;
+    mainloopind = mainloopind + 1;
     fclose('all');
     fid = 0;
     
