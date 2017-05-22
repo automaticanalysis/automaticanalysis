@@ -83,7 +83,7 @@ classdef aaq_qsub<aaq
             submittedJobs = 1:length(obj.jobnotrun);
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
-            obj.jobretries = nans(njobs,1);
+            obj.jobretries = nan(njobs,1);
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
             printswitches.nofreeworkers = true;
