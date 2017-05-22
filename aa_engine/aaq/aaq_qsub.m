@@ -83,6 +83,7 @@ classdef aaq_qsub<aaq
             submittedJobs = 1:length(obj.jobnotrun);
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
+            obj.jobretries = nans(njobs,1);
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
             printswitches.nofreeworkers = true;
@@ -250,16 +251,15 @@ classdef aaq_qsub<aaq
                             % folder is only partially written upon job execution.
                             % jobinfo etc is indexed by the job ID so get i from jobinfo.
                             i = obj.jobinfo(jobind).i;
-                            if obj.jobretries(i).n < 5
-                                obj.jobretries(i).n = obj.jobretries(i).n + 1;
+                            if obj.jobretries(i) <= 5
                                 obj.jobnotrun(i) = true; % will cause the job to restart on next loop
                                 taskreported(end+1) = ftmind; % remove the job from taskreported
                                 fprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                     ' \n\n Waiting 60 seconds then trying again',...
                                     ' (%d tries remaining for this job)\n'...
                                     'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
-                                    ' to run the job locally in debug mode.'],...
-                                    Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(i).n)
+                                    ' to run the job locally in debug mode.\n'],...
+                                    Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(i))
                                 pause(60)
                                 Jobs.delete; % delete this job from the cluster
                             else
@@ -444,7 +444,11 @@ classdef aaq_qsub<aaq
                 obj.jobinfo = [obj.jobinfo, ji];
                 
                 obj.jobnotrun(i) = false;
-                obj.jobretries(i).n = 0; % keep track of retries independetly
+                if isnan(obj.jobretries(i))
+                    obj.jobretries(i) = 0; % keep track of retries independetly
+                else
+                    obj.jobretries(i) = obj.jobretries(i) + 1;
+                end
                 fprintf('Added job with ID: %d \n',latestjobid)
             catch ME
                 if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
