@@ -125,17 +125,8 @@ classdef aaq_qsub<aaq
                                 if readytorunall(rtrind)
                                     % Add the job to the queue, and create
                                     % the job info in obj.jobinfo
-                                    try
-                                        obj.add_from_jobqueue(i);
-                                        printswitches.jobsinq = true;
-                                    catch ME
-                                        if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
-                                            % If the fails due to "job pending error", then
-                                            % remove this job. It will be automatically added again on the next iteration
-                                            obj.remove_from_jobqueue(i);
-                                            printswitches.jobsinq = true;
-                                        end
-                                    end
+                                    obj.add_from_jobqueue(i);
+                                    printswitches.jobsinq = true;
                                 end
                             end
                         end
@@ -151,7 +142,7 @@ classdef aaq_qsub<aaq
                 
                 if isempty(obj.taskinqueue) && ~isempty(obj.jobnotrun)
                     disp('No jobs ready to run. Waiting 60 seconds...')
-                    aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,6)
+                    aaq_qsub_monitor_jobs([obj.pool.JobStorageLocation,'/'],10,false,6);
                 end
                 
                 taskstarted = [];
@@ -433,27 +424,36 @@ classdef aaq_qsub<aaq
         
         function obj = add_from_jobqueue(obj, i)
             global aaworker
-            fprintf('Jobs running: %d \n', length(obj.pool.Jobs))
-            % Add a job to the queue
-            job=obj.jobqueue(i);
-            job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
-            % Run the job
-            obj.qsub_q_job(job);
-            % Create job info for referencing later
-            % (also clean up done jobs to prevent IDs occuring twice)
-            latestjobid = max([obj.pool.Jobs.ID]);
-            if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
-                obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
+            try
+                fprintf('Jobs running: %d \n', length(obj.pool.Jobs))
+                % Add a job to the queue
+                job=obj.jobqueue(i);
+                job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
+                % Run the job
+                obj.qsub_q_job(job);
+                % Create job info for referencing later
+                % (also clean up done jobs to prevent IDs occuring twice)
+                latestjobid = max([obj.pool.Jobs.ID]);
+                if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
+                    obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
+                end
+                
+                ji.InputArguments = {job.aap,job.task,job.k,job.indices, aaworker};
+                ji.ID = latestjobid;
+                ji.i = i;
+                obj.jobinfo = [obj.jobinfo, ji];
+                
+                obj.jobnotrun(i) = false;
+                obj.jobretries(i).n = 0; % keep track of retries independetly
+                fprintf('Added job with ID: %d \n',latestjobid)
+            catch ME
+                if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
+                    % If the job fails due to "job pending error", then
+                    % remove this job. It will be automatically added again on the next iteration
+                    obj.remove_from_jobqueue(i);
+                    fprintf('Job error. Resubmitting: %d \n',latestjobid)
+                end
             end
-            
-            ji.InputArguments = {job.aap,job.task,job.k,job.indices, aaworker};
-            ji.ID = latestjobid;
-            ji.i = i;
-            obj.jobinfo = [obj.jobinfo, ji];
-            
-            obj.jobnotrun(i) = false;
-            obj.jobretries(i).n = 0; % keep track of retries independetly
-            fprintf('Added job with ID: %d \n',latestjobid)
         end
         
         function obj = remove_from_jobqueue(obj, i)
