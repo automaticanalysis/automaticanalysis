@@ -281,8 +281,6 @@ classdef aaq_matlab_pct<aaq
                     % Job has no dependencies - good to go...
                     obj.jobcount=obj.jobcount+1;
                     job=obj.jobqueue(jobind);
-                    job.aap=obj.aap;
-                    job.aap.acq_details.root=obj.jobstudypths{jobind};
                     
                     % Find out who can run it, wait if no-one free
                     waittime=tic;
