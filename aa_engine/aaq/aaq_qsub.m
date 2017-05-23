@@ -129,6 +129,7 @@ classdef aaq_qsub<aaq
                                     obj.add_from_jobqueue(i);
                                     printswitches.jobsinq = true;
                                 end
+                                
                             end
                         end
                     end
@@ -166,7 +167,7 @@ classdef aaq_qsub<aaq
                     moduleName = obj.jobinfo(jobind).InputArguments{1}.tasklist.main.module(obj.jobinfo(jobind).InputArguments{3}).name;
                     state = Jobs.Tasks.State;
                     
-                    if ~strcmp(state,'pending')
+                    if ~strcmp(state,'pending') % this is not always true. Some jobs might be failed by this point which would make the next commands incorrect
                         msg = sprintf('MODULE %s RUNNING: Job%d.', moduleName,JobID);
                         aas_log(obj.aap,false,msg);
                         taskstarted(end+1) = ftmind;
@@ -425,7 +426,7 @@ classdef aaq_qsub<aaq
         function obj = add_from_jobqueue(obj, i)
             global aaworker
             try
-                fprintf('Jobs running: %d \n', length(obj.pool.Jobs))
+                fprintf('Jobs submitted: %d | ', length(obj.pool.Jobs))
                 % Add a job to the queue
                 job=obj.jobqueue(i);
                 job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
