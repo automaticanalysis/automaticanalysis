@@ -15,7 +15,7 @@ end
 global aacache;
 
 if cell_index(tasks,'restorepath') && ...
-        (~isfield(aap.options,'restorepath') ||... % not specified
+        (~isstruct(aap) || ~isfield(aap.options,'restorepath') ||... % not specified
         aap.options.restorepath) % specified and enabled
     if isstruct(aacache) && isfield(aacache,'path')
         if isfield(aacache.path,'bcp_path'), path(aacache.path.bcp_path); end
