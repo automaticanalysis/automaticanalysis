@@ -4,6 +4,7 @@ function aa_ver5
 global aa
 
 if isobject(aa)
+    aap = evalin('base','aap');
     aas_log(aap,false,'WARNING: Previous execution of aa was not closed!')
     aas_log(aap,false,'WARNING:  Killing jobs and restoring path settings for both linux and MATLAB...!')
     aa_close(aap,'restorepath','restorewarnings','killjobs');
