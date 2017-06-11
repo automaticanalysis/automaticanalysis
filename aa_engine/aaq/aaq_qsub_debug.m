@@ -5,6 +5,10 @@ if ~exist('obj', 'var')
     obj = taskqueue;
 end
 
+if isempty(obj)
+    error('No task queue found')
+end
+
 L = length([obj.pool.Jobs.ID]);
 
 errors = false(1,L);
@@ -15,6 +19,7 @@ for ii = 1:L
 end
 
 ei = find(errors);
+
 %%
 
 if ei
@@ -22,6 +27,6 @@ if ei
         aa_doprocessing_onetask(obj.pool.Jobs(eii).Tasks.InputArguments{:})
     end
 else
-    disp('No error found')
+    disp('No error found. If you are sure there was an error, then try running in localsingle instead of qsub. There may be some problems getting the job to start remotely.')
 end
 
