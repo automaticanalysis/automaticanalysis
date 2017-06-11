@@ -72,7 +72,7 @@ if isempty(varargin)
     aas_log(aap,false,'WARNING: No series has been specified!\n')
 else
     if ~isa(varargin{1},'char')
-        aas_log(aap,true,sprintf('ERROR: Arguments are  different from what expected!\n %s',help('aas_addsubject')))
+        aas_log(aap,true,sprintf('ERROR: Arguments are  different from what expected!\n %s', help('aas_addsubject')))
     end
 end
 
