@@ -86,13 +86,11 @@ classdef aaq_qsub<aaq
             obj.jobretries = nan(njobs,1);
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
-            whileind = 0;
-            
+
             while any(obj.jobnotrun) || (waitforalljobs && ~isempty(obj.jobinfo))
                 % Lets not overload the filesystem
                 pause(0.1);
                 
-                monitorjobs = false;
                 pool_length = length(obj.pool.Jobs);
                 nfreeworkers = jobqueuelimit - pool_length;
                 
