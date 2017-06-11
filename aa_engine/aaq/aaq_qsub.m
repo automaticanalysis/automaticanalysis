@@ -86,13 +86,12 @@ classdef aaq_qsub<aaq
             obj.jobretries = nan(njobs,1);
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
-            whileind = 0;
+            
             
             while any(obj.jobnotrun) || (waitforalljobs && ~isempty(obj.jobinfo))
                 % Lets not overload the filesystem
                 pause(0.1);
                 
-                monitorjobs = false;
                 pool_length = length(obj.pool.Jobs);
                 nfreeworkers = jobqueuelimit - pool_length;
                 
@@ -128,7 +127,6 @@ classdef aaq_qsub<aaq
                                     obj.add_from_jobqueue(i);
                                     printswitches.jobsinq = true;
                                 end
-                                
                             end
                         end
                         
@@ -142,7 +140,7 @@ classdef aaq_qsub<aaq
                             obj.job_monitor(false);
                         end
                     elseif ~isempty(obj.jobinfo)
-                        % if no jobs left then monitor and update job states
+                        % If no jobs left then monitor and update job states
                         aas_log(obj.aap, false, 'No jobs in the queue, waiting for remaining jobs to complete...')
                         obj.job_monitor_loop();
                         pause(60)
@@ -193,11 +191,23 @@ classdef aaq_qsub<aaq
                         end
                         
                         switch state
+                            case 'pending'
+                                t = toc(obj.jobinfo(jobind).tic);
+                                % Tibor, you may want to add an option to
+                                % aa to switch this on/off or extend the time? On very busy
+                                % servers this might cause all jobs to be
+                                % perpetually deleted and restarted.
+                                if t > 3600 % if job has been pending for more than N seconds
+                                    remove_from_jobqueue(obj, jobind)
+                                end
+                                
                             case 'failed' % failed to launch
                                 msg = sprintf('Job%d had failed to launch (Licence?)!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
                                     fullfile(obj.pool.JobStorageLocation,Jobs.Tasks.Parent.Name,[Jobs.Tasks.Name '.log']));
                                 % If there is an error, it is fatal...
-                                aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
+                                aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.error)
+                                disp('Retrying')
+                                remove_from_jobqueue(obj, jobind)
                                 
                             case 'cancelled' % cancelled
                                 msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
@@ -218,8 +228,7 @@ classdef aaq_qsub<aaq
                                 fprintf(fid,'%s\n',msg);
                                 fclose(fid);
                                 
-                                Jobs.delete;
-                                obj.jobinfo(jobind) = []; % remove inputarguments (otherwise this can get quite large)
+                                remove_from_jobqueue(obj, jobind, true)
                                 
                             case 'error' % running error
                                 
@@ -227,18 +236,19 @@ classdef aaq_qsub<aaq
                                 % exist" type. This can happen when a dependent
                                 % folder is only partially written upon job execution.
                                 % jobinfo etc is indexed by the job ID so get i from jobinfo.
-                                i = obj.jobinfo(jobind).i;
-                                if obj.jobretries(i) <= 5
-                                    obj.jobnotrun(i) = true; % will cause the job to restart on next loop
+                                
+                                if obj.jobretries(jobind) <= 5
+                                    obj.jobnotrun(jobind) = true; % will cause the job to restart on next loop
                                     msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                         ' \n\n Waiting 60 seconds then trying again',...
                                         ' (%d tries remaining for this job)\n'...
                                         'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                         ' to run the job locally in debug mode.\n'],...
-                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(i));
+                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(jobind));
                                     aas_log(aap, false, msg);
                                     pause(60)
                                     Jobs.delete; % delete this job from the cluster
+                                    obj.jobinfo(jobind) = []; % remove inputarguments (otherwise this can get quite large)
                                 else
                                     msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',id,datpath,datname,Jobs.Tasks.ErrorMessage);
                                     for e = 1:numel(Jobs.Tasks.Error.stack)
@@ -304,6 +314,7 @@ classdef aaq_qsub<aaq
                         if ~isempty(varargin{iarg+1}), walltime = varargin{iarg+1}; end
                 end
             end
+            
             switch class(obj.pool)
                 case 'parallel.cluster.Torque'
                     if round(memory) == memory % round
@@ -322,6 +333,7 @@ classdef aaq_qsub<aaq
             end
         end
         
+
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             global aacache
@@ -367,29 +379,24 @@ classdef aaq_qsub<aaq
                 end
                 
                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
-                success = false;
                 retries = 0;
                 
-                % Job submission can sometimes fail (server fault) (DP). Added rety to cope this this.
-                while success == false
+                % Job submission can sometimes fail (server fault) (DP). Added retry to cope this this.
+                while retries < 5
                     try
                         J.submit;
                         success = true;
                     catch ME
-                        if retries > 5
-                            throw(ME)
-                        else
-                            aas_log(obj.aap, false, 'Could not add job. Retrying...')
-                            retries = retries + 1;
-                            pause(5)
-                        end
+                        aas_log(obj.aap, false, sprintf('WARNING: Could not add job due to following error:\n\n%s\n\nRetrying...', ME.message))
+                        retries = retries + 1;
+                        pause(5)
+                        success = false;
                     end
                 end
-                %                 % State what the assigned number of hours and GB is...
-                % Naas_movParsot in use [TA]
-                %                 fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                %                     job.stagename, timReq./(60*60), memReq./(1024^3))
                 
+                if ~success
+                    aas_log(obj.aap, true, sprintf('ERROR: Could not add job due to following error:\n\n%s', ME.message))
+                end
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
@@ -398,54 +405,51 @@ classdef aaq_qsub<aaq
         
         function obj = add_from_jobqueue(obj, i)
             global aaworker
-            try
-                % Add a job to the queue
-                job=obj.jobqueue(i);
-                job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
-                % Run the job
-                obj.qsub_q_job(job);
-                % Create job info for referencing later
-                % (also clean up done jobs to prevent IDs occuring twice)
-                latestjobid = max([obj.pool.Jobs.ID]);
-                if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
-                    obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
-                end
-                
-                ji.InputArguments = {[],job.task,job.k,job.indices, aaworker};
-                ji.ID = latestjobid;
-                ji.i = i;
-                ji.jobrunreported = false;
-                ji.state = 'pending';
-                obj.jobinfo = [obj.jobinfo, ji];
-                
-                obj.jobnotrun(i) = false;
-                if isnan(obj.jobretries(i))
-                    obj.jobretries(i) = 0; % keep track of retries independetly
-                else
-                    obj.jobretries(i) = obj.jobretries(i) + 1;
-                end
-                moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
-                aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
-            catch ME
-                if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
-                    % If the job fails due to "job pending error", then
-                    % remove this job. It will be automatically added again on the next iteration
-                    obj.remove_from_jobqueue(i);
-                     aas_log(obj.aap, false, sprintf('Job error. Resubmitting: %d \n',latestjobid))
-                end
+            % Add a job to the queue
+            job=obj.jobqueue(i);
+            job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
+            % Run the job
+            obj.qsub_q_job(job);
+            % Create job info for referencing later
+            % (also clean up done jobs to prevent IDs occuring twice)
+            latestjobid = max([obj.pool.Jobs.ID]);
+            if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
+                obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
+            end
+            
+            ji.InputArguments = {[],job.task,job.k,job.indices, aaworker};
+            ji.ID = latestjobid;
+            ji.i = i;
+            ji.jobrunreported = false;
+            ji.state = 'pending';
+            ji.tic = tic;
+            obj.jobinfo = [obj.jobinfo, ji];
+            
+            obj.jobnotrun(i) = false;
+            moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
+            aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
+        end
+        
+        function obj = remove_from_jobqueue(obj, i, finished)
+            % exact opposite of method add_from_jobqueue
+            % Sometimes necessary if the job has failed to reach pending
+            aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs)))
+            ID = obj.jobinfo(i).ID;
+            obj.backup_job_diary(ID)
+            obj.jobinfo(i) = [];
+            obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
+            if ~finished
+                obj.jobnotrun(i)=true;
             end
         end
         
-        function obj = remove_from_jobqueue(obj, i)
-            % exact opposite of method add_from_jobqueue
-            % Sometimes necessary if the job has failed to reach pending
-             aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs)))
-            latestjobid = max([obj.pool.Jobs.ID]);
-            jobind = find([obj.pool.Jobs.ID] == latestjobid);
-            obj.jobinfo([obj.jobinfo.ID] == latestjobid) = [];
-            obj.pool.Jobs(jobind).delete; %#ok<FNDSB>
-            obj.jobnotrun(i)=true;
-             aas_log(obj.aap, false, sprintf('Removed job with ID: %d \n',latestjobid))
+        function backup_job_diary(obj, jobid)
+            src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, jobid);
+            dest = sprintf('%s_bck/Job%s', obj.pool.JobStorageLocation, jobid);
+            if exist(src,'dir')
+                mkdir(dest)
+                copyfile(src, dest);
+            end
         end
         
         function states = job_monitor(obj,printjobs)
@@ -466,8 +470,7 @@ classdef aaq_qsub<aaq
             end
             states = cell(1,numel(obj.jobinfo));
             jobids = [obj.pool.Jobs.ID];
-            for ftmind=1:numel(obj.jobinfo)
-                id = obj.jobinfo(ftmind).ID;
+            for id = shiftdim(jobids)'
                 Jobs = obj.pool.Jobs(jobids == id);
                 if isempty(Jobs) % cleared by the GUI
                     if obj.QV.isvalid
@@ -481,14 +484,14 @@ classdef aaq_qsub<aaq
                 if length(find(jobind)) > 1
                     aas_log(obj.aap,true,'Job ID conflict: you should restart aa');
                 end
-                obj.jobinfo(jobind).state = Jobs.Tasks.State;
+                obj.jobinfo(jobind).state = Jobs.State;
             end
             states = {obj.jobinfo.state};
 
             if printjobs
                 Nfinished = sum(strcmp(states,'finished'));
-                Npending  = sum(strcmp(states,'pending'));
-                Nerror    = sum(strcmp(states,'error'));
+                Npending  = sum(strcmp(states,'pending')) + sum(strcmp(states,'queued'));
+                Nerror    = sum(strcmp(states,'error')) + sum(strcmp(states,'failed'));
                 Nrunning  = sum(strcmp(states,'running'));
                 msg = sprintf('Running %3.1d | Pending %3.1d | Finished %3.1d | Error %3.1d', Nrunning, Npending, Nfinished, Nerror);
                 aas_log(obj.aap,false,msg);
@@ -498,11 +501,14 @@ classdef aaq_qsub<aaq
         function job_monitor_loop(obj)
             fw = false;
             while fw == false
+                % Could put some backspaces here to remove the last
+                % iteration
                 states = obj.job_monitor(true); % states are also in e.g. obj.jobinfo(i).state
-                if sum(strcmp(states, 'finished')) || sum(strcmp(states, 'error'));
+                if sum(strcmp(states, 'finished')) || sum(strcmp(states, 'error')) || sum(strcmp(states, 'failed'));
                     fw = true;
+                else
+                    pause(10)
                 end
-                pause(10)
             end
         end
     end
