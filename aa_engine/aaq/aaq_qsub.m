@@ -333,101 +333,105 @@ classdef aaq_qsub<aaq
             end
         end
         
-
+        
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             global aacache
-            
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
             cd(qsubpath);
-            
             % Submit the job
             if ~isempty(obj.pool)
                 % Check how much memory and time we should assign to the job
                 qsubsettings = {'mem',[],'walltime',[]};
-                %                 if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
-                %                     qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
-                %                     for f = fieldnames(qsub)'
-                %                         switch f{1}
-                %                             case 'memoryBase'
-                %                                 qsubsettings{2} = qsub.memoryBase;
-                %                             case 'timeBase'
-                %                                 qsubsettings{4} = qsub.timeBase;
-                %                         end
-                %                     end
-                %                 end
-                
+                % if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
+                % qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
+                % for f = fieldnames(qsub)'
+                % switch f{1}
+                % case 'memoryBase'
+                % qsubsettings{2} = qsub.memoryBase;
+                % case 'timeBase'
+                % qsubsettings{4} = qsub.timeBase;
+                % end
+                % end
+                % end
                 if isa(obj.pool,'parallel.cluster.Torque'), obj = obj.pool_args(qsubsettings{:}); end
-                
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {job.aap,job.task,job.k,job.indices, aaworker};
-                
                 if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
-                
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
-                
                 if isprop(J,'AdditionalPaths')
                     J.AdditionalPaths = aacache.path.reqpath;
                 elseif isprop(J,'PathDependencies')
                     J.PathDependencies = aacache.path.reqpath;
                 end
-                
                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
+                success = false;
                 retries = 0;
-                
-                % Job submission can sometimes fail (server fault) (DP). Added retry to cope this this.
-                while retries < 5
+                % Job submission can sometimes fail (server fault) (DP). Added rety to cope this this.
+                while success == false
                     try
                         J.submit;
                         success = true;
                     catch ME
-                        aas_log(obj.aap, false, sprintf('WARNING: Could not add job due to following error:\n\n%s\n\nRetrying...', ME.message))
-                        retries = retries + 1;
-                        pause(5)
-                        success = false;
+                        if retries > 5
+                            throw(ME)
+                        else
+                            aas_log(obj.aap, false, 'Could not add job. Retrying...')
+                            retries = retries + 1;
+                            pause(5)
+                        end
                     end
                 end
-                
-                if ~success
-                    aas_log(obj.aap, true, sprintf('ERROR: Could not add job due to following error:\n\n%s', ME.message))
-                end
+                % % State what the assigned number of hours and GB is...
+                % Naas_movParsot in use [TA]
+                % fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+                % job.stagename, timReq./(60*60), memReq./(1024^3))
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
         end
-        
-        
         function obj = add_from_jobqueue(obj, i)
             global aaworker
-            % Add a job to the queue
-            job=obj.jobqueue(i);
-            job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
-            % Run the job
-            obj.qsub_q_job(job);
-            % Create job info for referencing later
-            % (also clean up done jobs to prevent IDs occuring twice)
-            latestjobid = max([obj.pool.Jobs.ID]);
-            if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
-                obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
+            try
+                % Add a job to the queue
+                job=obj.jobqueue(i);
+                job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
+                % Run the job
+                obj.qsub_q_job(job);
+                % Create job info for referencing later
+                % (also clean up done jobs to prevent IDs occuring twice)
+                latestjobid = max([obj.pool.Jobs.ID]);
+                if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
+                    obj.jobinfo([obj.jobinfo.ID] == latestjobid) = []; % remove prev job with same ID
+                end
+                ji.InputArguments = {[],job.task,job.k,job.indices, aaworker};
+                ji.ID = latestjobid;
+                ji.i = i;
+                ji.jobrunreported = false;
+                ji.state = 'pending';
+                obj.jobinfo = [obj.jobinfo, ji];
+                obj.jobnotrun(i) = false;
+                if isnan(obj.jobretries(i))
+                    obj.jobretries(i) = 0; % keep track of retries independetly
+                else
+                    obj.jobretries(i) = obj.jobretries(i) + 1;
+                end
+                moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
+                aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
+            catch ME
+                if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
+                    % If the job fails due to "job pending error", then
+                    % remove this job. It will be automatically added again on the next iteration
+                    obj.remove_from_jobqueue(i);
+                    aas_log(obj.aap, false, sprintf('Job error. Resubmitting: %d \n',latestjobid))
+                end
             end
-            
-            ji.InputArguments = {[],job.task,job.k,job.indices, aaworker};
-            ji.ID = latestjobid;
-            ji.i = i;
-            ji.jobrunreported = false;
-            ji.state = 'pending';
-            ji.tic = tic;
-            obj.jobinfo = [obj.jobinfo, ji];
-            
-            obj.jobnotrun(i) = false;
-            moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
-            aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
         end
         
         function obj = remove_from_jobqueue(obj, i, finished)
