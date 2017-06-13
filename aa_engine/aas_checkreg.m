@@ -5,10 +5,17 @@
 %   - stream
 %   - path to image
 % 2nd image will be resliced if needed (put lower resolution image first)
+%
+% CHANGE HISTORY
+%
+% 6/17 [MSJ] -- use a unique prefix for reslicing (not 'r')
+%
+
 
 function aas_checkreg(aap,varargin)
 
 %% Parse arguments
+
 index{1} = varargin{1};
 if isnumeric(varargin{2})
     index{2} = varargin{2};
@@ -16,6 +23,7 @@ if isnumeric(varargin{2})
 else
     iarg0 = 3;
 end
+
 if isnumeric(index{1})
     switch numel(index)
         case 1 % subject level
@@ -45,6 +53,7 @@ for iarg = iarg0:nargin
 end
 
 %% SPM
+
 if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         isstruct(aap.tasklist.currenttask.settings.diagnostic) ||...
         aap.tasklist.currenttask.settings.diagnostic
@@ -88,16 +97,29 @@ if ~aap.options.diagnostic_videos, spmver = ''; end
 
 switch spmver
     case {'SPM12b' 'SPM12'}
-    otherwise
-        %% FSL
-        % Reslice images
+	otherwise
+	%% FSL
+	%
+	% Reslice images
+	%
+	% When you reslice, SPM will most likely create a file called 'r*.nii' because
+	% r is the default reslice prefix. In some analyses (e.g., Dartel), an r prefix
+	% is used for other results. If this code gets called during that analysis,
+	% you're going to blow away files people need.
+	% 
+	% Since we're going to delete the resliced file anyway (see call to delete(), below)
+	% let's temporarily use a unique reslice prefix. How about: 'AACheckRegTEMP_' [MSJ]
+
+	savePrefix = aap.spm.defaults.coreg.write.prefix;
+	aap.spm.defaults.coreg.write.prefix = 'AACheckRegTEMP_';
         flags = aap.spm.defaults.coreg.write; flags.which = [2 0];
         spm_reslice(image,flags)
         for i = 1:numel(image)
             for j = 1:size(image{i},1)
                 rimage{i}{j} = fullfile(fileparts(image{i}(j,:)),[aap.spm.defaults.coreg.write.prefix basename(image{i}(j,:)) '.nii']);
             end
-        end
+		end
+		
         % binarise if specified
         if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
             for i = 1:numel(rimage{1})
@@ -114,7 +136,7 @@ switch spmver
         % Create FSL-like overview
         for i = 1:numel(rimage{1})
             image{1} = rimage{1}{i};
-            numel(aap.spm.defaults.coreg.write.prefix)
+            numel(aap.spm.defaults.coreg.write.prefix); % why is this even here? [MSJ]
             imagename{1} = strtok_ptrn(basename(rimage{1}{i}),'-0');
             imagename{1} = imagename{1}(1+numel(aap.spm.defaults.coreg.write.prefix):end);
             image{2} = rimage{2}{1};
@@ -134,6 +156,8 @@ switch spmver
             delete(image{1});
         end
         delete(image{2});
+	aap.spm.defaults.coreg.write.prefix = savePrefix;
+ 
 end
 
 end
