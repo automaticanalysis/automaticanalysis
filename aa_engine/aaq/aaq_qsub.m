@@ -440,7 +440,7 @@ classdef aaq_qsub<aaq
             
 %             aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs))) % used for debugging 
             ID = obj.jobinfo(i).ID;
-            obj.backup_job_diary(ID)
+            obj.backup_job_diary(ID);
             obj.jobinfo(i) = [];
             obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
             if ~finished
