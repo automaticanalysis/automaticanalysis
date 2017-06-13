@@ -437,7 +437,8 @@ classdef aaq_qsub<aaq
         function obj = remove_from_jobqueue(obj, i, finished)
             % exact opposite of method add_from_jobqueue
             % Sometimes necessary if the job has failed to reach pending
-            aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs)))
+            
+%             aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs))) % used for debugging 
             ID = obj.jobinfo(i).ID;
             obj.backup_job_diary(ID)
             obj.jobinfo(i) = [];
@@ -449,7 +450,7 @@ classdef aaq_qsub<aaq
         
         function backup_job_diary(obj, jobid)
             src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, jobid);
-            dest = sprintf('%s_bck/Job%s', obj.pool.JobStorageLocation, jobid);
+            dest = sprintf('%s_bck/Job%d', obj.pool.JobStorageLocation, jobid);
             if exist(src,'dir')
                 mkdir(dest)
                 copyfile(src, dest);
