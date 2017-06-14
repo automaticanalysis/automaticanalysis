@@ -198,7 +198,7 @@ classdef aaq_qsub<aaq
                                 % servers this might cause all jobs to be
                                 % perpetually deleted and restarted.
                                 if t > 3600 % if job has been pending for more than N seconds
-                                    remove_from_jobqueue(obj, jobind)
+                                    obj.remove_from_jobqueue(jobind, true); % 2nd argument = retry?
                                 end
                                 
                             case 'failed' % failed to launch
@@ -207,7 +207,7 @@ classdef aaq_qsub<aaq
                                 % If there is an error, it is fatal...
                                 aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.error)
                                 disp('Retrying')
-                                remove_from_jobqueue(obj, jobind)
+                                obj.remove_from_jobqueue(jobind, true)
                                 
                             case 'cancelled' % cancelled
                                 msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
@@ -228,7 +228,7 @@ classdef aaq_qsub<aaq
                                 fprintf(fid,'%s\n',msg);
                                 fclose(fid);
                                 
-                                remove_from_jobqueue(obj, jobind, true)
+                                obj.remove_from_jobqueue(jobind, false)
                                 
                             case 'error' % running error
                                 
@@ -237,7 +237,7 @@ classdef aaq_qsub<aaq
                                 % folder is only partially written upon job execution.
                                 % jobinfo etc is indexed by the job ID so get i from jobinfo.
                                 
-                                if obj.jobretries(jobind) <= 5
+                                if obj.jobretries(jobind) <= aap.options.maximumretry
                                     obj.jobnotrun(jobind) = true; % will cause the job to restart on next loop
                                     msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                         ' \n\n Waiting 60 seconds then trying again',...
@@ -379,7 +379,7 @@ classdef aaq_qsub<aaq
                         J.submit;
                         success = true;
                     catch ME
-                        if retries > 5
+                        if retries > aap.options.maximumretry
                             throw(ME)
                         else
                             aas_log(obj.aap, false, 'Could not add job. Retrying...')
@@ -428,13 +428,13 @@ classdef aaq_qsub<aaq
                 if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
                     % If the job fails due to "job pending error", then
                     % remove this job. It will be automatically added again on the next iteration
-                    obj.remove_from_jobqueue(i);
+                    obj.remove_from_jobqueue(i, true);
                     aas_log(obj.aap, false, sprintf('Job error. Resubmitting: %d \n',latestjobid))
                 end
             end
         end
         
-        function obj = remove_from_jobqueue(obj, i, finished)
+        function obj = remove_from_jobqueue(obj, i, retry)
             % exact opposite of method add_from_jobqueue
             % Sometimes necessary if the job has failed to reach pending
             
@@ -443,7 +443,7 @@ classdef aaq_qsub<aaq
             obj.backup_job_diary(ID);
             obj.jobinfo(i) = [];
             obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
-            if ~finished
+            if retry
                 obj.jobnotrun(i)=true;
             end
         end
@@ -452,7 +452,7 @@ classdef aaq_qsub<aaq
             src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, jobid);
             dest = sprintf('%s_bck/Job%d', obj.pool.JobStorageLocation, jobid);
             if exist(src,'dir')
-                mkdir(dest)
+                mkdir(dest);
                 copyfile(src, dest);
             end
         end
