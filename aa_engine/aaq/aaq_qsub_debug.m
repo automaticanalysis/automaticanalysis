@@ -21,12 +21,24 @@ end
 ei = find(errors);
 
 %%
+fprintf('%d errors found\n', L)
 
 if ei
-    for eii = ei
-        aa_doprocessing_onetask(obj.pool.Jobs(eii).Tasks.InputArguments{:})
+    for eii = 1:ei
+        modnum = obj.pool.Jobs(eii).Tasks.InputArguments{3};
+        subjnum = obj.pool.Jobs(eii).Tasks.InputArguments{4}(1);
+        prompt = sprintf('Error found in subject: %s | Module: %s\nDo you want to run this module locally y/n?\n', obj.aap.acq_details.subjects(subjnum).subjname, obj.aap.tasklist.main.module(modnum).name);
+        s = input(prompt, 's');
+        switch s
+            case 'y'
+                aa_doprocessing_onetask(obj.pool.Jobs(eii).Tasks.InputArguments{:})
+            case 'n'
+                disp('Skipped...')
+            case 'q'
+                return
+        end
     end
 else
-    disp('No error found. If you are sure there was an error, then try running in localsingle instead of qsub. There may be some problems getting the job to start remotely.')
+    disp('No error found. If you are sure there was an error, then try running in localsingle mode instead of qsub. There may be some problems getting the job to start remotely.')
 end
 

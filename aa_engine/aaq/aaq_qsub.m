@@ -207,7 +207,7 @@ classdef aaq_qsub<aaq
                                 % If there is an error, it is fatal...
                                 aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.error)
                                 disp('Retrying')
-                                obj.remove_from_jobqueue(jobind, true)
+                                obj.remove_from_jobqueue(jobind, true);
                                 
                             case 'cancelled' % cancelled
                                 msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
@@ -228,7 +228,7 @@ classdef aaq_qsub<aaq
                                 fprintf(fid,'%s\n',msg);
                                 fclose(fid);
                                 
-                                obj.remove_from_jobqueue(jobind, false)
+                                obj.remove_from_jobqueue(jobind, false);
                                 
                             case 'error' % running error
                                 
