@@ -43,7 +43,7 @@ switch task
             Nv       = [];
             Mm       = [];
             ROIval   = [];
-
+%%
             for sessind = 1:1, %aap.acq_details.selected_sessions, % check
             
                 for subjind = 1:length(aap.acq_details.subjects),
@@ -52,11 +52,12 @@ switch task
                     inputdomain = 'session';
                     if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion')), inputdomain = 'diffusion_session'; end
                     ROIfname = aas_getfiles_bystream(aap,inputdomain,[subjind,sessind],instream); % check
+                    if ROIfname
                     load(ROIfname);
                     % Get number of valid voxels in each ROI:
-                    Nv(subjind,:) = [ROI.Nvox_data];
+                    Nv(subjind,:) = [ROI.Nvox];
                     Mm(subjind,:) = mean([ROI.mean],1); % check
-                    
+                    end
                 end
                 
                 [pth stem fext] = fileparts(ROIfname);
@@ -118,5 +119,5 @@ switch task
             aap = aas_desc_outputs(aap,outstream,outfile);
             
         end
-        
+        %%
 end
