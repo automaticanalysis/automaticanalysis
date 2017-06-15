@@ -238,17 +238,15 @@ classdef aaq_qsub<aaq
                                 % jobinfo etc is indexed by the job ID so get i from jobinfo.
                                 
                                 if obj.jobretries(jobind) <= aap.options.maximumretry
-                                    obj.jobnotrun(jobind) = true; % will cause the job to restart on next loop
                                     msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                         ' \n\n Waiting 60 seconds then trying again',...
                                         ' (%d tries remaining for this job)\n'...
                                         'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                         ' to run the job locally in debug mode.\n'],...
-                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, 5 - obj.jobretries(jobind));
+                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, aap.options.maximumretry - obj.jobretries(jobind));
                                     aas_log(aap, false, msg);
+                                    obj.remove_from_jobqueue(jobind, true);
                                     pause(60)
-                                    Jobs.delete; % delete this job from the cluster
-                                    obj.jobinfo(jobind) = []; % remove inputarguments (otherwise this can get quite large)
                                 else
                                     msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',id,datpath,datname,Jobs.Tasks.ErrorMessage);
                                     for e = 1:numel(Jobs.Tasks.Error.stack)
@@ -440,23 +438,25 @@ classdef aaq_qsub<aaq
             
 %             aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs))) % used for debugging 
             ID = obj.jobinfo(i).ID;
-            obj.backup_job_diary(ID);
-            obj.jobinfo(i) = [];
-            obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
-            if retry
-                obj.jobnotrun(i)=true;
-            end
-        end
-        
-        function backup_job_diary(obj, jobid)
+            
+            % Backup Job Diary
             src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, jobid);
             dest = sprintf('%s_bck/Job%d', obj.pool.JobStorageLocation, jobid);
             if exist(src,'dir')
                 mkdir(dest);
                 copyfile(src, dest);
             end
+            
+            % Clear job
+            obj.jobinfo(i) = [];
+            obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
+            
+            % If retry requested, then reset jobnotrun
+            if retry
+                obj.jobnotrun(i)=true;
+            end
         end
-        
+                
         function states = job_monitor(obj,printjobs)
             % This function gathers job information from the job scheduler.
             % This can be slow depending on the size of the pool. 
