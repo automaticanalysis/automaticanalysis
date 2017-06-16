@@ -1,5 +1,5 @@
 
-function aas_writedoneflag(aap,fn)
+function aas_writedoneflag(aap,fn,note)
 global aacache
 global aaworker
 global aaparallel
@@ -124,7 +124,11 @@ switch(aap.directory_conventions.remotefilesystem)
         end;
         
         % Execution time
-        fprintf(fid,'%f\n',toc);
+        if nargin == 3 % there is a note
+            fprintf(fid,'%s\n',note);
+        else
+            fprintf(fid,'%f\n',toc);
+        end
         
         % And dump IP of this machine to done flag
         cmd='/sbin/ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';

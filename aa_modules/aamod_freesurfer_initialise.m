@@ -34,10 +34,9 @@ switch task
         %%  make output stream
         % (JC: now specific to FS directories rather than everything under
         % the sun)
-        subdir = aas_getsubjpath(aap,subj);
         outs = [];
         for d = {'RAW','ANAT','mri'}
-            outs = [outs; dirrec(fullfile(subdir,d{1}))];
+            outs = [outs; dirrec(fullfile(subjpath,d{1}))];
         end
         aap = aas_desc_outputs(aap,subj,'freesurfer',outs);
 end

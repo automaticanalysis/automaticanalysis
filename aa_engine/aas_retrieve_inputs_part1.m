@@ -45,16 +45,11 @@ for depind=1:length(deps)
         aap_remote.internal.aap_initial.aap_remote.internal.aap_initial=[]; % Prevent recursively expanding storage
         
         % Which module?
-        gotit=false;
-        for modind=1:length(aap_remote.tasklist.main.module)
-            if strcmp(aas_getstagetag(aap_remote,modind),inputstream.sourcestagename)
-                gotit=true;
-                break
-            end;
-        end;
-        if (~gotit)
+        try
+            modind = aas_getmoduleindexfromtag(aap_remote, inputstream.sourcestagename);
+        catch
             aas_log(aap,true,sprintf('Could not find module in remote aap file with stage tag %s',inputstream.sourcestagename));
-        end;
+        end
         
         % Set up remote aap for this module
         aap_remote=aas_setcurrenttask(aap_remote,modind,'nodefault');

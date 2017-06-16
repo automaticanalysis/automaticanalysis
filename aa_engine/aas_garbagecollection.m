@@ -106,6 +106,9 @@ for modind=modulestoscan
     for outind=1:length(outs)
         outfn=[outfn loadstreamfile(aap,outs{outind})];
     end
+
+    % List skipped module folders as inputs to delete
+    inpfn = [inpfn findstreamfiles(aap,sprintf('done_%s',aap.tasklist.currenttask.name),'skipped')];
     
     % Find which inputs aren't an output
     % N^2 string comparisons - might be costly [seems fine, though]
@@ -140,7 +143,11 @@ for modind=modulestoscan
             fprintf(fid,'---following files deleted---\n');
         end
         for fn=inpfn(inpnotout)
-            if exist(fn{1},'file')
+            if exist(fn{1},'dir')
+                fprintf(fid,'%s\n',fn{1});
+                if actuallydelete, rmdir(fn{1},'s'); end
+                numdel=numdel+1;
+            elseif exist(fn{1},'file')
                 fprintf(fid,'%s\n',fn{1});
                 if actuallydelete, delete(fn{1}); end
                 numdel=numdel+1;
@@ -155,14 +162,13 @@ for modind=modulestoscan
             fprintf(fid,'---following files deleted---\n');
         end
         for fn=outfn
-            if (exist(fn{1},'file'))
-                if actuallydelete
-                    if exist(fn{1},'file')
-                        fprintf(fid,'%s\n',fn{1});
-                        if actuallydelete, delete(fn{1}); end
-                        numdel=numdel+1;
-                    end
-                end
+            if exist(fn{1},'dir')
+                fprintf(fid,'%s\n',fn{1});
+                if actuallydelete, rmdir(fn{1},'s'); end
+                numdel=numdel+1;
+            elseif exist(fn{1},'file')
+                fprintf(fid,'%s\n',fn{1});
+                if actuallydelete, delete(fn{1}); end
                 numdel=numdel+1;
             end
         end
@@ -178,14 +184,14 @@ fprintf(fid,'---end---\n');
 fclose(fid);
 
 if (~actuallydelete)
-    aas_log(aap,false,sprintf('Garbage collection would delete %d files',numdel));
+    aas_log(aap,false,sprintf('Garbage collection would delete %d files/folders',numdel));
 else
-    aas_log(aap,false,sprintf('Garbage collection deleted %d files',numdel));
+    aas_log(aap,false,sprintf('Garbage collection deleted %d files/folders',numdel));
 end
 end
 
 
-function [streampths]=findstreamfiles(aap,streamfn)
+function [streampths]=findstreamfiles(aap,streamfn,txt)
 % Make a list of all the places the stream file might be
 pthstocheck={aas_getstudypath(aap)};
 for subjind=1:length(aap.acq_details.subjects)
@@ -198,8 +204,17 @@ pthstocheck = unique(pthstocheck); % remove duplicates (e.g. structural "session
 % Check to see which of these exist
 streampths={};
 for pthind=1:length(pthstocheck)
-    if (exist(fullfile(pthstocheck{pthind},streamfn),'file'))
-        streampths=[streampths fullfile(pthstocheck{pthind},streamfn)];
+    if exist(fullfile(pthstocheck{pthind},streamfn),'file')
+        if nargin < 3
+            streampths=[streampths fullfile(pthstocheck{pthind},streamfn)];
+        else
+            fid = fopen(fullfile(pthstocheck{pthind},streamfn),'r');
+            lines = textscan(fid,'%s\n');
+            fclose(fid);
+            if strcmp(lines{1}{1},txt);
+                streampths=[streampths pthstocheck{pthind}];
+            end
+        end        
     end
 end
 end

@@ -8,7 +8,6 @@ switch task
     case 'report'
     case 'doit'
         %% Init
-        sliceaxes = {'x' 'y'};
         
         numdummies = aap.acq_details.numdummies;
         if ~isempty(aap.tasklist.currenttask.settings.numdummies)
@@ -92,7 +91,19 @@ switch task
         end;
         
         if isfield(DICOMHEADERS{1},'PhaseEncodingDirection') && ~isempty(DICOMHEADERS{1}.PhaseEncodingDirection)
-            DICOMHEADERS{1}.NumberOfPhaseEncodingSteps = V(1).dim(cell_index(sliceaxes, DICOMHEADERS{1}.PhaseEncodingDirection(1)));
+            sliceaxes = {'x' 'y'};
+            ind = cell_index(sliceaxes, DICOMHEADERS{1}.PhaseEncodingDirection(1));
+            if ind == 0
+                % newer BIDS spec uses this format insteadj
+                sliceaxes = {'i' 'j'};
+                ind = cell_index(sliceaxes, DICOMHEADERS{1}.PhaseEncodingDirection(1));
+                if ind == 0
+                    aas_log(aap,1,sprintf(...
+                        'Could not parse PhaseEncodingDirection: %s',...
+                        DICOMHEADERS{1}.PhaseEncodingDirection(1)));
+                end
+            end
+            DICOMHEADERS{1}.NumberOfPhaseEncodingSteps = V(1).dim(ind);
         end
         
         % Write out the files
