@@ -69,8 +69,12 @@ switch task
             f = figure(1);
         end
         if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
-            set(f,'Renderer','zbuffer');
-            print(f,'-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+            try
+                set(f,'Renderer','zbuffer');
+                print(f,'-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
+            catch
+                aas_log(aap, 0, 'Error running diagnostics for aamod_coreg_noss, but coregistration completed ok.');
+            end
         end
 
         % Reslice images
