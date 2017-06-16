@@ -42,12 +42,16 @@ switch task
             fullfile(wdir,spm_file(infname,'basename')));
         aas_runfslcommand(aap,cmd,ENV);
         
-        % Describe outputs
+        % Output
+        % - write out .nii
         outfname = spm_file(infname,'prefix','defaced_');
         aap.directory_conventions.fsloutputtype = FslOT;
         aas_runfslcommand(aap,sprintf('fslmaths %s %s',...
             fullfile(wdir,[spm_file(infname,'basename') '_full_normfilter.hdr']),...
             outfname));
+        % - correct space information (FSL-SPM issue)
+        spm_get_space(outfname,spm_get_space(infname));
+        
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,['defaced_' streams{1}],outfname);
     case 'checkrequirements'
         if ~strcmp(aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(1).sourcestagename,'aamod_coreg_extended_1')

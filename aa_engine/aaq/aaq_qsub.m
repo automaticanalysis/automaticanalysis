@@ -101,7 +101,6 @@ classdef aaq_qsub<aaq
                         if (readytorun)
                             % Add a job to the queue
                             job=obj.jobqueue(i);
-                            job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
                             % Run the job
                             obj.qsub_q_job(job);
                             obj.jobnotrun(i)=false;
@@ -119,9 +118,9 @@ classdef aaq_qsub<aaq
                         obj.close;
                         return;
                     end
-                    Task = Jobs.Tasks;
-                    moduleName = Task.InputArguments{1}.tasklist.main.module(Task.InputArguments{3}).name;
-                    state = Task.State;
+                    InputArguments = Jobs.Tasks.InputArguments;
+                    moduleName = InputArguments{1}.tasklist.main.module(InputArguments{3}).name;
+                    state = Jobs.Tasks.State;
                     
                     if ~strcmp(state,'pending')
                         msg = sprintf('MODULE %s RUNNING: Job%d.', moduleName,JobID);
@@ -143,9 +142,10 @@ classdef aaq_qsub<aaq
                         return;
                     end
                     Task = Jobs.Tasks;
-                    aap = aas_setcurrenttask(obj.aap,Task.InputArguments{3});
-                    moduleName = obj.aap.tasklist.main.module(Task.InputArguments{3}).name;
-                    indices = Task.InputArguments{4};
+                    InputArguments = Task.InputArguments;
+                    aap = Task.InputArguments{1};
+                    moduleName = obj.aap.tasklist.main.module(InputArguments{3}).name;
+                    indices = InputArguments{4};
                     datname = ''; datpath = '';
                     if numel(indices) > 0 % subject specified
                         datname = aas_getsubjdesc(aap,indices(1));  
@@ -197,6 +197,7 @@ classdef aaq_qsub<aaq
                             fclose(fid);
                             
                             taskreported(end+1) = ftmind;
+                            Jobs.delete;
                             
                         case 'error' % running error
                             msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JobID,datpath,datname,Task.ErrorMessage);
@@ -311,7 +312,7 @@ classdef aaq_qsub<aaq
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
-                inparg = {job.aap,job.task,job.k,job.indices, aaworker};
+                inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
                 
                 if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
 
