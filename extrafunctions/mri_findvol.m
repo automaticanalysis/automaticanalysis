@@ -55,34 +55,28 @@ else % pattern
     strSubj = dir(fullfile(SEARCHPATH{i},subjpath)); strSubj = strSubj(end).name; % in case of multiple entries
 end
 
-strSubjDir = dir(fullfile(SEARCHPATH{i},strSubj));
+% regexp to find files/folders that start with alphanumeric characters (ignore .
+% files)
+strSubjDir = spm_select('List',fullfile(SEARCHPATH{i},strSubj),'dir','^[a-zA-Z0-9]*');
 
-% test if f1 is a 'date_time' folder 
-
-% numel(strSubjDir) will only be 2 ("." and "..") if the directory is empty. 
-% Also, strSubjDir(3) might be ".DS_Store" if OS X (it might not be -- it 
-% depends on how the folder was created). 
-
-try
-	f1 = strSubjDir(3).name;	% first directory entry?
-catch
-	f1 = '';
+if isempty(strSubjDir)
+    aas_log(aap,true,sprintf('nothing found for path %s',...
+        fullfile(SEARCHPATH{i},strSubj)));
 end
-if (strcmp(f1,'.DS_Store'))
-	try
-		f1 = strSubjDir(4).name;
-	catch
-		f1 = '';
-	end
-end
+
+% handle CBU-style sub-directories with date formats
+% assume first hit is the sub-folder we want (NB if you have multiple
+% sub-folders they do get ignored)
+subfolder = deblank(strSubjDir(1,:));
 try
-    junk = datenum(f1,'yyyymmdd_HHMMSS'); 
+    junk = datenum(subfolder,'yyyymmdd_HHMMSS'); 
 catch
-    f1 = '';
+    % no sub-folder necessary
+    subfolder = '';
 end
 
 if fp
-    strSubj = fullfile(SEARCHPATH{i},strSubj,f1);
+    strSubj = fullfile(SEARCHPATH{i},strSubj,subfolder);
 else
-    strSubj = fullfile(strSubj,f1);
+    strSubj = fullfile(strSubj,subfolder);
 end
