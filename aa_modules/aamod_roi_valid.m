@@ -63,7 +63,6 @@ switch task
                     % Get number of valid voxels in each ROI:
                     Nv(subjind,:) = [ROI.Nvox];
                     mROI = [ROI.mean];
-                    if strcmp(sourcedomain,'session'), mROI = mean(mROI); end
                     Mm(subjind,:) = mROI;
                     
                 end
@@ -97,7 +96,7 @@ switch task
                 r2ignore = sum(invalidroi(~s2ignore,:))>ROIRemoveThr;
                 
                 % Session Summary:
-                ValidROI(p).sessname          = aap.acq_details.sessions(p).name;
+                ValidROI(p).sessname          = aas_getsessname(aap,p);
                 ValidROI(p).ROIval            = ROIval(~r2ignore);
                 ValidROI(p).ROIind            = setdiff(1:length(ROI),find(r2ignore));
                 ValidROI(p).ROIind2ignore     = find(r2ignore);
