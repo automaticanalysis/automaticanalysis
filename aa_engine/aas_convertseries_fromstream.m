@@ -224,15 +224,18 @@ for subdirind=1:length(subdirs)
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
         if isfield(aap.directory_conventions, 'dicom_converter') && ~isempty(aap.directory_conventions.dicom_converter)
             aas_log(aap, false, sprintf('INFO: Using alternative %s script...', aap.directory_conventions.dicom_converter))
-            custompath = spm_file(aap.directory_conventions.dicom_converter,'path');
+            SCRIPT = textscan(aap.directory_conventions.dicom_converter,'%s','delimiter',':'); SCRIPT = SCRIPT{1};
+            custompath = spm_file(SCRIPT{1},'path');
             addpath(custompath);
-            dicom_converter = spm_file(aap.directory_conventions.dicom_converter,'basename');
+            dicom_converter = spm_file(SCRIPT{1},'basename');
+            opts = SCRIPT(2:end);
         else
             custompath = '';
             aas_log(aap, false, 'INFO: Using default spm_dicom_convert...')
             dicom_converter = 'spm_dicom_convert';
+            opts = {'all','flat','nii'};
         end
-        conv = feval(dicom_converter,DICOMHEADERS_selected,'all','flat','nii');
+        conv = feval(dicom_converter,DICOMHEADERS_selected,opts{:});
         if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
