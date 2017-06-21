@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='First level model (1/3): configuration' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.25</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <!-- includemovementpars 0=none; 1=realignment parms -->
+            <includemovementpars>1</includemovementpars>
+            
+            <!-- if the stream 'listspikes' is present, should we include deltas for each spike? -->
+            <includespikes>0</includespikes>
+            
+            <!-- if the stream 'gd_results' is present, should we include the PCA noise regressors? -->
+            <includeGLMDNregs>1</includeGLMDNregs>
+            
+            <!-- Movement matrix, deciding which derivatives/orders of the movement parameters are used! -->
+            <moveMat>[1 0 0; 0 0 0]</moveMat>
+            
+            <!-- include Compartment Regressors derived from aamod_compSignal 
+            By default filled with [2 3] [i.e. WM and CSF signals] if you have run aamoc_compSignal-->
+            <compRegs>[2 3]</compRegs>
+            
+            <!-- high pass filter in seconds -->
+            <highpassfilter>128</highpassfilter>
+            
+            <!-- 'None' or 'AR(1)' -->
+            <autocorrelation>AR(1)</autocorrelation>
+            
+            <!-- enable/disable orthogoanlisation (only for SPM12 and above) -->
+            <orthogonalisation>1</orthogonalisation>
+            
+			<allowemptymodel>0</allowemptymodel>
+			
+            <!-- TR, if we wish to define it within the first level model 
+            If empty, we try to find from DICOM headers... -->
+            <TR></TR>
+            
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
+            <modelC>
+                <subject></subject>
+                <session></session>
+                <covariate>
+                    <name></name>
+                    <vector></vector>
+                    <HRF></HRF>
+                    <interest></interest>
+                </covariate>
+            </modelC>
+            
+            <xBF>
+                <T>17</T>
+                <UNITS>secs</UNITS>
+                <Volterra>1</Volterra>
+                <name>hrf</name>
+                <length>32</length>
+                <order>1</order>
+                <T0></T0>
+                <bf></bf>
+            </xBF>
+            
+            ﻿<inputstreams>
+                <stream isrenameable='1' ismodified='0'>epi</stream>
+				<stream isessential='0'>ppi</stream>
+                <stream isessential='0'>listspikes</stream>
+                <stream isessential='0'>epi_dicom_header</stream>
+                <stream isessential='0'>sliceorder</stream>
+                <stream isessential='0'>realignment_parameter</stream>                
+				<stream isessential='0'>compSignal</stream>
+				<stream isessential='0'>gd_results</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+
