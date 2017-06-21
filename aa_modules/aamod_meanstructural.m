@@ -1,6 +1,7 @@
-function [aap,resp]=aamod_stringentwbmask_secondlevel(aap,task,i,j)
 % AA module - create a mean structural for your sample. 
+%
 % 19/2/2010 J Carlin
+function [aap,resp]=aamod_meanstructural(aap,task)
 
 resp='';
 
