@@ -198,7 +198,7 @@ classdef aaq_qsub<aaq
                                 % servers this might cause all jobs to be
                                 % perpetually deleted and restarted.
                                 if t > 3600 % if job has been pending for more than N seconds
-                                    obj.remove_from_jobqueue(jobind, true); % 2nd argument = retry?
+                                    obj.remove_from_jobqueue(id, true); % 2nd argument = retry?
                                 end
                                 
                             case 'failed' % failed to launch
@@ -207,7 +207,7 @@ classdef aaq_qsub<aaq
                                 % If there is an error, it is fatal...
                                 aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.error)
                                 disp('Retrying')
-                                obj.remove_from_jobqueue(jobind, true);
+                                obj.remove_from_jobqueue(id, true);
                                 
                             case 'cancelled' % cancelled
                                 msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
@@ -228,7 +228,7 @@ classdef aaq_qsub<aaq
                                 fprintf(fid,'%s\n',msg);
                                 fclose(fid);
                                 
-                                obj.remove_from_jobqueue(jobind, false);
+                                obj.remove_from_jobqueue(id, false);
                                 
                             case 'error' % running error
                                 
@@ -245,7 +245,7 @@ classdef aaq_qsub<aaq
                                         ' to run the job locally in debug mode.\n'],...
                                         Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, aap.options.maximumretry - obj.jobretries(jobind));
                                     aas_log(aap, false, msg);
-                                    obj.remove_from_jobqueue(jobind, true);
+                                    obj.remove_from_jobqueue(id, true);
                                     pause(60)
                                 else
                                     msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',id,datpath,datname,Jobs.Tasks.ErrorMessage);
@@ -394,6 +394,8 @@ classdef aaq_qsub<aaq
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
         end
+        
+        
         function obj = add_from_jobqueue(obj, i)
             global aaworker
             try
@@ -423,37 +425,34 @@ classdef aaq_qsub<aaq
                 moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
                 aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
             catch ME
-                if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
-                    % If the job fails due to "job pending error", then
-                    % remove this job. It will be automatically added again on the next iteration
-                    obj.remove_from_jobqueue(i, true);
-                    aas_log(obj.aap, false, sprintf('Job error. Resubmitting: %d \n',latestjobid))
-                end
+                aas_log(obj.aap, false, sprtinf('WARNING: Error starting job: %s', ME.message))
             end
         end
         
-        function obj = remove_from_jobqueue(obj, i, retry)
+        function obj = remove_from_jobqueue(obj, ID, retry)
             % exact opposite of method add_from_jobqueue
-            % Sometimes necessary if the job has failed to reach pending
+            % Need to use JobID from obj.pool here instead of the jobqueue
+            % index (obj.jobinfo.i), which is not unique if uncomplete jobs exist from
+            % previous modules
             
-%             aas_log(obj.aap, false, sprintf('Removing job: %d \n', length(obj.pool.Jobs))) % used for debugging 
-            ID = obj.jobinfo(i).ID;
+            ind = [obj.jobinfo.ID] == ID;
+            ji = obj.jobinfo(ind); % get job info struct
             
             % Backup Job Diary
-            src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, jobid);
-            dest = sprintf('%s_bck/Job%d', obj.pool.JobStorageLocation, jobid);
+            src = sprintf('%s/Job%d', obj.pool.JobStorageLocation, ji.ID);
+            dest = sprintf('%s_bck/Job%d', obj.pool.JobStorageLocation, ji.ID);
             if exist(src,'dir')
                 mkdir(dest);
                 copyfile(src, dest);
             end
             
             % Clear job
-            obj.jobinfo(i) = [];
-            obj.pool.Jobs([obj.pool.Jobs.ID] == ID).delete;
+            obj.jobinfo(ind) = [];
+            obj.pool.Jobs([obj.pool.Jobs.ID] == ji.ID).delete;
             
             % If retry requested, then reset jobnotrun
             if retry
-                obj.jobnotrun(i)=true;
+                obj.jobnotrun(ji.i)=true;
             end
         end
                 
@@ -486,9 +485,6 @@ classdef aaq_qsub<aaq
                     return;
                 end
                 jobind = [obj.jobinfo.ID] == id;
-                if length(find(jobind)) > 1
-                    aas_log(obj.aap,true,'Job ID conflict: you should restart aa');
-                end
                 obj.jobinfo(jobind).state = Jobs.State;
             end
             states = {obj.jobinfo.state};
