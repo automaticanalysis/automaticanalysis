@@ -417,11 +417,6 @@ classdef aaq_qsub<aaq
                 ji.state = 'pending';
                 obj.jobinfo = [obj.jobinfo, ji];
                 obj.jobnotrun(i) = false;
-                if isnan(obj.jobretries(i))
-                    obj.jobretries(i) = 0; % keep track of retries independetly
-                else
-                    obj.jobretries(i) = obj.jobretries(i) + 1;
-                end
                 moduleName = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
                 aas_log(obj.aap, false, sprintf('Added job %s with ID: %d | Jobs submitted: %d',moduleName, latestjobid, length(obj.pool.Jobs)))
             catch ME
@@ -452,6 +447,11 @@ classdef aaq_qsub<aaq
             
             % If retry requested, then reset jobnotrun
             if retry
+                if isnan(obj.jobretries(ji.i))
+                    obj.jobretries(ji.i) = 0; % keep track of retries independetly
+                else
+                    obj.jobretries(ji.i) = obj.jobretries(ji.i) + 1;
+                end
                 obj.jobnotrun(ji.i)=true;
             end
         end
