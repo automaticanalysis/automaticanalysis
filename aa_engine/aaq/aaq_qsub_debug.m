@@ -1,12 +1,13 @@
+function aaq_qsub_debug()
+
+global taskqueue
+obj = taskqueue;
+
 dbstop if error
 
-if ~exist('obj', 'var')
-    global taskqueue
-    obj = taskqueue;
-end
-
 if isempty(obj)
-    error('No task queue found')
+    dbclear all
+    error('No task queue found. This function can only be used after receiving an error running AA in "qsub" mode.')
 end
 
 L = length([obj.pool.Jobs.ID]);
@@ -35,6 +36,8 @@ if ei
             case 'n'
                 disp('Skipped...')
             case 'q'
+                disp('Exiting debug mode!')
+                dbclear all
                 return
         end
     end
@@ -42,3 +45,4 @@ else
     disp('No error found. If you are sure there was an error, then try running in localsingle mode instead of qsub. There may be some problems getting the job to start remotely.')
 end
 
+dbclear all
