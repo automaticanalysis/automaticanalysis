@@ -205,10 +205,12 @@ classdef aaq_qsub<aaq
                                 msg = sprintf('Job%d had failed to launch (Licence?)!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
                                     fullfile(obj.pool.JobStorageLocation,Jobs.Tasks.Parent.Name,[Jobs.Tasks.Name '.log']));
                                 % If there is an error, it is fatal...
-                                aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.error)
+                                
+                                fatalerror = ~(obj.jobretries(jobind) <= aap.options.maximumretry); % will be true if max retries reached
+                                aas_log(obj.aap,fatalerror,msg,obj.aap.gui_controls.colours.error)
                                 disp('Retrying')
                                 obj.remove_from_jobqueue(id, true);
-                                
+                                    
                             case 'cancelled' % cancelled
                                 msg = sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',id,...
                                     fullfile(obj.pool.JobStorageLocation,Jobs.Tasks.Parent.Name,[Jobs.Tasks.Name '.log']));
