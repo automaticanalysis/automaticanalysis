@@ -22,9 +22,9 @@ end
 ei = find(errors);
 
 %%
-fprintf('%d errors found\n', L)
 
 if ei
+    fprintf('%d errors found\n', length(ei))
     for eii = 1:ei
         modnum = obj.pool.Jobs(eii).Tasks.InputArguments{3};
         subjnum = obj.pool.Jobs(eii).Tasks.InputArguments{4}(1);
