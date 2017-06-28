@@ -524,7 +524,15 @@ classdef aaq_qsub<aaq
                     return;
                 end
                 jobind = [obj.jobinfo.JobID] == id;
-                obj.jobinfo(jobind).state = Jobs.State;
+                
+                % If the job ID does not exist, something went wrong.
+                % Assigning failed will cause the state handler to restart
+                % the job without trying to remove it from pool.
+                if any(jobind)
+                    obj.jobinfo(jobind).state = Jobs.State;
+                else
+                    obj.jobinfo(jobind).state = 'failed';
+                end
             end
             states = {obj.jobinfo.state};
 
