@@ -188,8 +188,8 @@ switch task
         %% DIAGNOSTICS...
         if ~isempty(SPMdes.xX.iC) % model is not empty
             h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
-            print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_regs.jpg'));
-            print(h.betas,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostics_aamod_firstlevel_model_betas.jpg'));
+            print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_aamod_firstlevel_model_regs.jpg'));
+            print(h.betas,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_aamod_firstlevel_model_betas.jpg'));
             
             close(h.regs)
             close(h.betas)

@@ -4,25 +4,36 @@
 % Modified for sparse imaging since prefix for mean is different
 % i=subject num
 % Rhodri Cusack MRC CBU 2004-6 based on original by Matthew Brett
-% 
+%
 % Major changes Aug 2010: removed support for central store of structrual
 % images. This code was very long in tooth, and unloved.
 %
 % Tibor Auer MRC CBU Cambridge 2012-2013
+%
+% CHANGE HISTORY
+%
+% 05/17 [MSJ] - add another spm_figure fail check
+%
+%
 
 function [aap,resp] = aamod_coreg_noss(aap, task, subjInd)
 
 resp='';
 
 switch task
+	
 	case 'report' % [TA]
+		
         d = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_aas_checkreg_*'));
+		
         if isempty(d)
             % find input
             in_fname = aas_getfiles_bystream_dep(aap,'subject',subjInd,aap.tasklist.currenttask.inputstreams.stream{2});
             aas_checkreg(aap,subjInd,in_fname,aap.tasklist.currenttask.outputstreams.stream{1});
-        end
+		end
+		
         fdiag = dir(fullfile(aas_getsubjpath(aap,subjInd),'diagnostic_*.jpg'));
+		
         for d = 1:numel(fdiag)
             aap = aas_report_add(aap,subjInd,'<table><tr><td>');
             imgpath = fullfile(aas_getsubjpath(aap,subjInd),fdiag(d).name);
@@ -30,13 +41,17 @@ switch task
             [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
             if exist(avipath,'file'), aap=aas_report_addimage(aap,subjInd,avipath); end
             aap = aas_report_add(aap,subjInd,'</td></tr></table>');
-        end
+		end
+		
     case 'doit'
+		
         global defaults;
+		
         flags = defaults.coreg;
         % check local structural directory exists
         subjpath=aas_getsubjpath(aap,subjInd);
         structdir=fullfile(subjpath,aap.directory_conventions.structdirname);
+		
         if (~length(dir(structdir)))
             [s w]=aas_shell(['mkdir ' structdir]);
             if (s)
@@ -45,11 +60,13 @@ switch task
         end;
         
         % get mean EPI stream
+		
         inStream = aap.tasklist.currenttask.inputstreams.stream{2};
         meanepiImg = aas_getfiles_bystream(aap, subjInd, inStream);                
         VG = spm_vol(meanepiImg);
        
         % Get path to structural for this subject
+		
         inStream = aap.tasklist.currenttask.inputstreams.stream{1};
         outStream = aap.tasklist.currenttask.outputstreams.stream{1};
         structImg = aas_getfiles_bystream(aap, subjInd, inStream);                
@@ -63,17 +80,26 @@ switch task
         aap = aas_desc_outputs(aap, subjInd, outStream, structImg);
 
         % Save graphical output - this will now be done by report task
+		
         try
             f = spm_figure('FindWin', 'Graphics');
         catch
             f = figure(1);
-        end
+	end
+		
+	% spm_figure can also fail by returning empty f, which Matlab
+	% try/catch doesn't register as an error, so it gets passed
+	% to print which chokes on it. Need another test here [MSJ]:
+	
+	if (isempty(f)); f=figure(1); end
+		
         if strcmp(aap.options.wheretoprocess,'localsingle') % printing SPM Graphics does not work parallel
-            set(f,'Renderer','zbuffer');
+            set(f,'Renderer','opengl');
             print(f,'-djpeg','-r75',fullfile(aas_getsubjpath(aap, subjInd),'diagnostic_aamod_coreg'));
         end
 
         % Reslice images
+
         try
             aas_checkreg(aap,subjInd,aap.tasklist.currenttask.inputstreams.stream{2},aap.tasklist.currenttask.inputstreams.stream{1});
         catch
@@ -83,4 +109,5 @@ switch task
 	case 'checkrequirements'
         
 end
+
 end

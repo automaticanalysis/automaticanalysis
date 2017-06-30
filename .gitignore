@@ -1,3 +1,5 @@
 *.m~
 
 *.xml~
+
+.DS_Store

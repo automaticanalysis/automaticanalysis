@@ -33,7 +33,7 @@ switch task
                 f = figure; hold on;
                 plot(x,n); plot([val val],[0 max(n)],'r');
                 title('Intensity distribution with masking threshold');
-                saveas(f,fullfile(aas_getsesspath(aap,subj,sess),'diagnostics_masking.jpg'));
+                saveas(f,fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_masking.jpg'));
                 
                 % save mask
                 maskY = maskY > val;
