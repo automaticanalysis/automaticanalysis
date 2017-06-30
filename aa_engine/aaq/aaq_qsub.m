@@ -88,7 +88,7 @@ classdef aaq_qsub<aaq
             if ~isempty(obj.jobqueue)
                 % probably a better place to get current module index.
                 modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name; 
-                obj.jobretries.(modulename) = nan(njobs,1);
+                obj.jobretries.(modulename) = zeros(njobs,1);
             end
             
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
@@ -453,12 +453,9 @@ classdef aaq_qsub<aaq
                     ji.modulename, ji.JobID, ji.qi, ji.subjectinfo.subjname, rt, length(obj.pool.Jobs)))
             catch ME
                 if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
-                    aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s', ME.message))
+                    obj.jobretries.(ji.modulename)(i) = obj.jobretries.(ji.modulename)(i) + 1;
+                    aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s | Retries: %d', ME.message, obj.jobretries.(ji.modulename)(i)))
                     obj.jobnotrun(i) = true;
-                    % Try to remove the job from the server
-                    
-%                     obj.remove_from_jobqueue()
-%                     aas_log(obj.aap, true, sprintf('WARNING: Error starting job: %s', ME.message))
                 end
             end
         end
@@ -484,13 +481,10 @@ classdef aaq_qsub<aaq
             obj.jobinfo(ind) = [];
             obj.pool.Jobs([obj.pool.Jobs.ID] == ji.JobID).delete;
             
-            % If retry requested, then reset jobnotrun
+            % If retry requested, then reset jobnotrun and increment retry
+            % counter
             if retry
-                if isnan(obj.jobretries.(ji.modulename)(ji.qi))
-                    obj.jobretries.(ji.modulename)(ji.qi) = 0; % keep track of retries independetly
-                else
-                    obj.jobretries.(ji.modulename)(ji.qi) = obj.jobretries.(ji.modulename)(ji.qi) + 1;
-                end
+                obj.jobretries.(ji.modulename)(ji.qi) = obj.jobretries.(ji.modulename)(ji.qi) + 1;
                 obj.jobnotrun(ji.qi)=true;
             end
         end
@@ -531,7 +525,7 @@ classdef aaq_qsub<aaq
                 if any(jobind)
                     obj.jobinfo(jobind).state = Jobs.State;
                 else
-                    obj.jobinfo(jobind).state = 'failed';
+%                     obj.jobinfo(jobind).state = 'failed';
                 end
             end
             states = {obj.jobinfo.state};
