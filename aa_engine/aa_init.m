@@ -142,6 +142,16 @@ else
     end;
 end;
 
+% Path to VBQ
+if ~isempty(aap.directory_conventions.VBQdir)
+    addpath(aap.directory_conventions.VBQdir);
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('vbq_mpr_b0_b1'))
+       aas_log(aap,false,sprintf('VBQ toolbox not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.VBQdir'));
+    end;
+end;
+
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
     setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
@@ -205,6 +215,14 @@ end
 % FaceMasking
 if ~isempty(aap.directory_conventions.FaceMaskingdir)
     p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
+
+% VBQ
+if ~isempty(aap.directory_conventions.VBQdir)
+    p_ind = cell_index(p,aap.directory_conventions.VBQdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
     end
