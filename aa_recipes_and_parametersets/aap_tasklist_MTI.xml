@@ -18,8 +18,8 @@
             <module><name>aamod_dartel_norm_write</name></module>
 			
 			<!-- MTI -->
-            <module><name>aamod_get_dicom_MTI</name></module>
-            <module><name>aamod_convert_MTI</name></module>
+            <module><name>aamod_get_dicom_specialseries</name></module>
+            <module><name>aamod_convert_specialseries</name></module>
             <module><name>aamod_MTI2MTR</name></module>
             <module><name>aamod_MTI_coreg_extended_2</name></module>
             <module><name>aamod_MTI_norm_write_dartel</name></module>

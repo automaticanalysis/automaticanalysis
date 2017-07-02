@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='special_session' desc='Computing MTR image' modality='MTI'>
+        <currenttask domain='subject' desc='Computing MTR image' modality='X'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
