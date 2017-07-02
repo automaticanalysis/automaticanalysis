@@ -23,29 +23,30 @@ aap = aas_configforSPM12(aap);
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
 aap.options.NIFTI4D = 1;
-% aap.options.email='tibor.auer@mrc-cbu.cam.ac.uk';
+aap.options.email='xy01@mrc-cbu.cam.ac.uk';
 
 aap.options.autoidentifystructural_chooselast = 1;
 
-aap=aas_renamestream(aap,'aamod_maths_00001','input','ASL_CBF');
-aap.tasksettings.aamod_maths.operation='div(X,10)'; % ml/100g/min
-aap=aas_renamestream(aap,'aamod_maths_00001','output','ASL_CBF','output');
+aap.tasksettings.aamod_convert_specialseries.numdummies = 0;
+aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
+aap.tasksettings.aamod_ASL.scaleCBF = 0.1;
+aap.tasksettings.aamod_ASL_coreg_extended_2.eoptions.cost_fun = 'ecc';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/ta02/aa'; 
+aap.acq_details.root = '/imaging/xy01/aa'; 
 aap.directory_conventions.analysisid = 'ASL'; 
 
 % Add data
 aap.directory_conventions.rawdatadir = '/mridata/camcan280';
 aap=aas_add_special_session(aap,'ASL');
 for s = 1:size(SUBJ,1)
-   ser = [...
+    ser = [...
        sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_ep2d_tra_pasl$')),aap.directory_conventions.seriesoutputformat) ...
        sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_Perfusion_Weighted$')),aap.directory_conventions.seriesoutputformat) ...
        sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_relCBF$')),aap.directory_conventions.seriesoutputformat) ...
        ];
-   aap = aas_addsubject(aap,SUBJ{s,1},SUBJ{s,2},'specialseries',{ser});
+    aap = aas_addsubject(aap,SUBJ{s,1},SUBJ{s,2},'specialseries',{ser});
 end
 
 %% DO ANALYSIS

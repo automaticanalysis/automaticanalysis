@@ -25,20 +25,7 @@ else
         case 1
             streamDomain = 'subject';
         case 2
-            switch aas_getmodality(aap)
-                case 'FMRI'
-                    streamDomain = 'session';
-                    % for backwad compatibilty
-                    if ~isempty(strfind(aap.tasklist.currenttask.name,'diffusion'))
-                        streamDomain = 'diffusion_session';
-                    end
-                case 'DWI'
-                    streamDomain = 'diffusion_session';
-                case {'MTI' 'ASL'}
-                    streamDomain = 'special_session';
-                case 'MEG'
-                    streamDomain = 'meg_session';
-            end
+            streamDomain = aas_getsesstype(aap);
             varargin = {streamDomain reqestedIndices varargin{cellfun(@(x) ischar(x), varargin)}};
         otherwise
             aas_log(aap, 1, sprintf('Can''t determine the domain for stream ''%s'', givin these indices: %s. Try using this, aas_getfiles_bystream(aap, ''streamDomain'', [%s], ''%s'')', streamName, strjoin(arrayfun(@(x) sprintf('[%d]',x),reqestedIndices, 'UniformOutput', false)), strjoin(arrayfun(@(x) sprintf('%d',x),reqestedIndices, 'UniformOutput', false)), streamName));

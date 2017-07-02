@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
   <tasklist>
-   <currenttask mfile_alias='aamod_roi_extract' domain='special_session' desc='Extract data in ROIs: MTI' modality='MTI'>
+   <currenttask mfile_alias='aamod_roi_extract' domain='subject' desc='Extract data in ROIs: MTI' modality='X'>
         <ROIfile>/imaging/camcan/templates/JHU-WhiteMatter-labels-2mm.nii</ROIfile>        
         <ROIvals></ROIvals>
         
