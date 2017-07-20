@@ -1,9 +1,10 @@
 %function [s,w]=aas_shell(cmd)
 % aa subroutine - wrapper for shell call
 %
-function [s,w]=aas_shell(cmd,quiet)
+function [s,w]=aas_shell(cmd,quiet,stopforerrors)
 
 if nargin < 2, quiet=false; end
+if nargin < 3, stopforerrors=true; end
 
 %% Prepare
 % Cache this as it is remarkably slow
@@ -35,12 +36,12 @@ if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
 %% Process error
 if ~quiet
     if (strcmp('shell-init: error',w))
-        aas_log([],false,sprintf('Likely Linux error %s\n',w));
+        aas_log([],stopforerrors,sprintf('Likely Linux error %s\n',w));
     end
     if s
-        [junk,wenv]=system('/usr/bin/env');
+        [junk, wenv]=system('/usr/bin/env');
         aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
-        aas_log([],false,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
+        aas_log([],stopforerrors,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
         aas_log([],false,'***END, CONTINUING');
     end
 end

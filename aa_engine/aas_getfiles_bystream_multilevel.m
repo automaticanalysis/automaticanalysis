@@ -16,7 +16,7 @@ streamname = varargin{end};
 index = varargin(1:end-1);
 
 domains = {index{1}, aas_getsesstype(aap), 'subject', 'study'};
-[junk, ind] = aa_unique(domains);
+[junk, ind] = unique(domains,'legacy');
 domains = domains(sort(ind));
 ind0 = cell_index(domains,index{1}); ind0 = min(ind0);
 if ind0, domains = domains(ind0:end); end
@@ -33,14 +33,4 @@ aap.options.verbose = verbose0;
 if isempty(img)
     aas_log(aap,true,sprintf('%s stream %s not found',source,streamname));
 end
-end
-
-function [label index] = aa_unique(vals)
-
-try
-    [label index] = unique(vals, 'legacy');
-catch
-    [label index] = unique(vals);
-end
-
 end

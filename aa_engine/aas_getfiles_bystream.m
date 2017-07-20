@@ -92,11 +92,32 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     if ~exist(tmpfname,'file')
         aas_log(aap,true,sprintf('ERROR: Error occurred while copying %s to %s',inpstreamdesc,tmpfname));
     end
-    fid=fopen(tmpfname,'r');
     
-    ind=0;
+    retries = 0;
+    while retries < 5
+        % check that file has been written. There may be a slight delay in
+        % the file being available.
+        if retries > 0
+            copyfile(inpstreamdesc, tmpfname);
+            pause(1)
+        end
+        
+        fid=fopen(tmpfname,'r');
+        lne=fgetl(fid);
+        fclose(fid);
+        
+        if isnumeric(lne)
+            retries = retries + 1;
+            disp('MD5 line could not be found: waiting 1 second and retrying')            
+            pause(1)
+            else
+            break
+        end
+    end
     
     % There should be an MD5 at the top
+    ind=0;
+    fid=fopen(tmpfname,'r');
     lne=fgetl(fid);
     if ((length(lne)>3) && strcmp(lne(1:3),'MD5'))
         allfiles='';
@@ -104,8 +125,12 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     else
         allfiles=lne;
         ind=ind+1;
-    end;
-    
+        if ~exist('md5','var')
+            tn = ['/imaging/dp01/temp/debug_' mfilename '.mat'];
+            save(tn)
+            error(['md5 did not exist: data dump saved to\n /imaging/dp01/temp/debug_' mfilename '.mat'])
+        end
+    end
     
     % Now read in the files
     while (~feof(fid))

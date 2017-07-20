@@ -304,6 +304,17 @@ for l=1:length(mytasks)
         for depind=1:length(deps)
             indices=deps{depind}{2};
             
+%             % create subject-specific selected_sessions
+%             selected_sessions = aap.acq_details.selected_sessions;
+%             if (numel(indices) >= 1)
+%                 [junk, subjSess] = aas_getN_bydomain(aap,aas_getsesstype(aap),indices(1));
+%                 selected_sessions = intersect(selected_sessions, subjSess);
+%             end
+%             
+%             if (numel(indices) >= 2) && ... % if session domain
+%                     ~any(selected_sessions==indices(2)) % session not selected
+%                 continue;
+%             end
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
@@ -348,6 +359,9 @@ for l=1:length(mytasks)
                             if (completefirst(k0i).sourcenumber>0)
                                 tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices,'doneflaglocations');
                                 for tbcf_depsind=1:length(tbcf_deps)
+%                                     if strfind(completefirst(k0i).sourcedomain,'session') % skip session if not selected
+%                                         if ~any(selected_sessions == tbcf_deps{tbcf_depsind}{2}(2)), continue; end
+%                                     end
                                     tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
                                 end;
                             end
@@ -356,6 +370,10 @@ for l=1:length(mytasks)
                         
                         % now queue current stage
                         aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,doneflag));
+                        % update taskspecific aap
+                        taskmask.aap = aap;                        
+%                        taskmask.aap.tasklist.main.module(k).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
+%                        taskmask.aap.internal.aap_initial.tasklist.main.module(k).extraparameters.aap.acq_details.selected_sessions = selected_sessions;
 
                         taskmask.indices=indices;
                         taskmask.doneflag=doneflag;
