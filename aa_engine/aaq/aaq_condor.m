@@ -97,7 +97,6 @@ classdef aaq_condor<aaq
                             obj.jobcount=obj.jobcount+1;
                             job=obj.jobqueue(i);
                             obj.aap.acq_details.root=aas_getstudypath(obj.aap,job.k);
-                            job.aap=obj.aap;
                             obj.condor_q_job(i,job,obj.retrynum(i));
                             obj.jobnotrun(i)=false;
                             flaggedretry(i)=false;

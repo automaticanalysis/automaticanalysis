@@ -2,6 +2,9 @@
 % Required:
 %     - aap.directory_conventions.rawdatadir: path to BIDS
 % Optional:
+%     - sessnames - cell array with sessions to process (useful if you only want
+%           some sessions, or if you want to preserve a certain session order)
+%     - tasknames - cell array of tasks to process - see sessnames
 %     - aap.acq_details.input.combinemultiple:
 %           Combines multiple sessions per subjects (default = false)
 %     - aap.acq_details.input.selected_sessions:
@@ -19,14 +22,28 @@
 %
 % Tibor Auer MRC CBU Cambridge 2015
 
-function aap = aas_processBIDS(aap)
+function aap = aas_processBIDS(aap,sessnames,tasknames)
 
 global BIDSsettings;
+
+if ~exist('sessnames','var') || isempty(sessnames)
+    sessnames = [];
+end
+
+if ~exist('tasknames','var') || isempty(tasknames)
+    tasknames = [];
+end
+
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
 BIDSsettings.directories.fieldmapDIR = 'fmap';
 BIDSsettings.directories.diffusionDIR = 'dwi';
 BIDSsettings.combinemultiple = aap.acq_details.input.combinemultiple;
+BIDSsettings.sessnames = sessnames;
+BIDSsettings.tasknames = tasknames;
+
+
+
 
 %% Init
 aap.directory_conventions.subjectoutputformat = '%s';
@@ -66,6 +83,14 @@ for p = [false true]
     for subj = 1:size(SUBJ,1)
         subjID = deblank(SUBJ(subj,:));
         SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
+        if ~isempty(BIDSsettings.sessnames)
+            % check that custom sessnames exist for this subject
+            SESS = intersect(cellstr(SESS),BIDSsettings.sessnames);
+            if numel(SESS) ~= numel(BIDSsettings.sessnames)
+                aas_log(aap,true,'did not find all sessnames for sub %s',subj);
+            end
+            SESS = char(BIDSsettings.sessnames);
+        end
         if isempty(SESS)
             aap = add_data(aap,subjID,fullfile(BIDS,subjID),p);
         else
@@ -100,7 +125,11 @@ fieldmapDIR = BIDSsettings.directories.fieldmapDIR;
 diffusionDIR = BIDSsettings.directories.diffusionDIR;
 
 % locate first_level modules
-stagenumModel = cell_index({aap.tasklist.main.module.name},'aamod_firstlevel_model');
+stagenumModel(1) = struct('name','aamod_firstlevel_model','ind',...
+    find(strcmp({aap.tasklist.main.module.name},'aamod_firstlevel_model')));
+stagenumModel(2) = struct('name','aamod_firstlevel_model_1_config','ind',...
+    find(strcmp({aap.tasklist.main.module.name},...
+    'aamod_firstlevel_model_1_config')));
 
 % Correct EV onstets for number of dummies?
 numdummies = aap.acq_details.input.correctEVfordummies*aap.acq_details.numdummies;
@@ -111,13 +140,15 @@ if BIDSsettings.combinemultiple
 else
     subjname = strrep(mriname,'/','_');
 end
-aasubjname = strrep(subjname,'sub-','');
+% subjname = strrep(subjname,'sub-','');
 
 structuralimages = {};
 functionalimages = {};
 fieldmapimages = {};
 diffusionimages = {};
 specialimages = {};
+
+
 for cf = cellstr(spm_select('List',sesspath,'dir'))'
     switch cf{1}
         case structDIR
@@ -162,7 +193,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     isess = strcmp(aasessnames,sessname);
                     diffusionimages{isess} = struct('fname',cfname{1},'bval',bvalfname,'bvec',bvecfname);
                 else
-                    aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',aasubjname,sessfname))
+                    aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjname,sessfname))
                 end
             end
         case fieldmapDIR
@@ -194,7 +225,22 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 fieldmapimages = horzcat(fieldmapimages,fmap);
             end            
         case functionalDIR
-            for cfname = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))'
+            allepi = cellstr(spm_select('FPList',...
+                fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))';
+            if ~isempty(BIDSsettings.tasknames)
+                % identify target tasks, in correct order
+                tasks = cellfun(@(x)get_taskname(sesspath,subjname,x),allepi,'uniformoutput',0);
+                outepi = {};
+                for t = BIDSsettings.tasknames(:)'
+                    thits = cell_index(tasks,t{1});
+                    if all(thits)==0
+                        aas_log(aap,true,'could not find task %s',t{1});
+                    end
+                    outepi = [outepi allepi(thits)];
+                end
+                allepi = outepi;
+            end
+            for cfname = allepi
                 taskfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '_bold.nii'},{'',''});
                 [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});
                                
@@ -226,36 +272,38 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 end
                 
                 % Model
-                if any(stagenumModel)
-                    iModel = [];
-                    for m = 1:numel(stagenumModel)
-                        sess = textscan(aap.tasklist.main.module(stagenumModel(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
-                        if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(stagenumModel(m)).index; end
-                    end
-                    
-                    if ~TR
-                        aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',aasubjname,taskname))
-                        aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
-                    end
-                    
-                    % Search for event file
-                    eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); eventfname = eventfname{1}; % ASSUME only one instance
-                    if isempty(eventfname)
-                        aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',aasubjname,taskname));
-                    else
-                        EVENTS = tsvread(eventfname);
-                        iName = cell_index(EVENTS(1,:),'trial_type');
-                        iOns = cell_index(EVENTS(1,:),'onset');
-                        iDur = cell_index(EVENTS(1,:),'duration');
-                        names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
-                        for t = 2:size(EVENTS,1)
-                            iEV = strcmp(names,EVENTS{t,iName});
-                            onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
-                            durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
+                for thisstage = stagenumModel
+                    if any(thisstage.ind)
+                        iModel = [];
+                        for m = 1:numel(thisstage.ind)
+                            sess = textscan(aap.tasklist.main.module(thisstage.ind(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
+                            if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(thisstage.ind(m)).index; end
                         end
-                        for m = iModel
-                            for e = 1:numel(names)
-                                aap = aas_addevent(aap,sprintf('aamod_firstlevel_model_%05d',m),aasubjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                        
+                        if ~TR
+                            aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjname,taskname))
+                            aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
+                        end
+                        
+                        % Search for event file
+                        eventfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname '_events.tsv'])); eventfname = eventfname{1}; % ASSUME only one instance
+                        if isempty(eventfname)
+                            aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
+                        else
+                            EVENTS = tsvread(eventfname);
+                            iName = cell_index(EVENTS(1,:),'trial_type');
+                            iOns = cell_index(EVENTS(1,:),'onset');
+                            iDur = cell_index(EVENTS(1,:),'duration');
+                            names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
+                            for t = 2:size(EVENTS,1)
+                                iEV = strcmp(names,EVENTS{t,iName});
+                                onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
+                                durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
+                            end
+                            for m = iModel
+                                for e = 1:numel(names)
+                                    aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+                                end
                             end
                         end
                     end
@@ -266,7 +314,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
     end
 end
 if toAddData
-    aap = aas_addsubject(aap,aasubjname,mriname,...
+    aap = aas_addsubject(aap,subjname,mriname,...
         'structural',structuralimages,...
         'functional',functionalimages,...
         'fieldmaps',fieldmapimages,...

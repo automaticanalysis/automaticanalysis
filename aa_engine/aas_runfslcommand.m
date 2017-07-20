@@ -10,8 +10,8 @@ end
 if nargin < 3, ENV = {}; end
 
 ENV = vertcat(ENV,{...
-    'MATLABPATH', path;...
     'FSLOUTPUTTYPE', aap.directory_conventions.fsloutputtype ...
+    'MATLABPATH', aap.directory_conventions.spmdir;...
     });
 
 switch (aap.directory_conventions.fslshell)
@@ -39,5 +39,5 @@ end;
 
 % Display error if there was one
 if (s)
-    aas_log(aap,false,sprintf('Error running %s, which was %s',cmd,w));
+    aas_log(aap,true,sprintf('Error running %s, which was %s',cmd,w));
 end;
