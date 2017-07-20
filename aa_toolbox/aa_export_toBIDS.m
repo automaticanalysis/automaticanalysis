@@ -39,7 +39,12 @@ header_part = false; % header completed
 % data
 for subj = 1:numel(aap.acq_details.subjects)
     aas_log(aap,false,['INFO: Exporting subject: ' aas_getsubjname(aap,subj)])
-    subjpath = fullfile(destpath,['sub-' aas_getsubjname(aap,subj)]);
+    subname = aas_getsubjname(aap,subj);
+    suboutname = subname;
+    if ~isequal(suboutname(1:4),'sub-')
+        suboutname = ['sub-' suboutname];
+    end
+    subjpath = fullfile(destpath,suboutname);
     aas_makedir(aap,subjpath);
     if stage_anatt1
         aas_log(aap,false,'\tINFO: Exporting T1 anatomy')
@@ -62,7 +67,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             continue;
         end
         aas_makedir(aap,fullfile(subjpath,'anat')); 
-        dest = fullfile(subjpath,'anat',sprintf('sub-%s_T1w.nii',aas_getsubjname(aap,subj)));
+        dest = fullfile(subjpath,'anat',sprintf('%s_T1w.nii',suboutname));
         copyfile(src,dest); gzip(dest); delete(dest);
         
         % header
@@ -99,7 +104,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             continue;
         end
         aas_makedir(aap,fullfile(subjpath,'anat')); 
-        dest = fullfile(subjpath,'anat',sprintf('sub-%s_T2w.nii',aas_getsubjname(aap,subj)));
+        dest = fullfile(subjpath,'anat',sprintf('%s_T2w.nii',suboutname));
         copyfile(src,dest); gzip(dest); delete(dest);
         
         % header
@@ -131,7 +136,7 @@ for subj = 1:numel(aap.acq_details.subjects)
                 continue;
             end
             aas_makedir(aap,fullfile(subjpath,'func')); 
-            dest = fullfile(subjpath,'func',sprintf('sub-%s_task-%s_bold.nii',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name)));
+            dest = fullfile(subjpath,'func',sprintf('%s_task-%s_bold.nii',suboutname,valueValidate(aap.acq_details.sessions(sess).name)));
             copyfile(src,dest); gzip(dest); delete(dest);
             
             % header
@@ -201,7 +206,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'fmap')); 
             for f = 1:size(fsrc,1)
                 src = deblank(fsrc(f,:));
-                dest_format = fullfile(subjpath,'fmap',sprintf('sub-%s_run-%%02d_%s.nii',aas_getsubjname(aap,subj),fmsuffix{f}));
+                dest_format = fullfile(subjpath,'fmap',sprintf('%s_run-%%02d_%s.nii',suboutname,fmsuffix{f}));
                 ind = 1;
                 while exist(sprintf([dest_format '.gz'],ind),'file'), ind = ind + 1; end
                 dest = sprintf(dest_format,ind);
@@ -220,7 +225,7 @@ for subj = 1:numel(aap.acq_details.subjects)
                     'EchoTime1',TEs(1),...
                     'EchoTime2',TEs(2),...
                     'FlipAngle',hdr(1).FlipAngle,...
-                    'IntendedFor',fullfile('func',sprintf('sub-%s_task-%s_bold.nii.gz',aas_getsubjname(aap,subj),valueValidate(aap.acq_details.sessions(sess).name))) ...
+                    'IntendedFor',fullfile('func',sprintf('%s_task-%s_bold.nii.gz',suboutname,valueValidate(aap.acq_details.sessions(sess).name))) ...
                     );
                 savejson('',json,spm_file(dest,'ext','json'));
             end
@@ -243,7 +248,7 @@ for subj = 1:numel(aap.acq_details.subjects)
                 continue;
             end
             aas_makedir(aap,fullfile(subjpath,'dwi'));
-            dest = fullfile(subjpath,'dwi',sprintf('sub-%s_dwi.nii',aas_getsubjname(aap,subj)));
+            dest = fullfile(subjpath,'dwi',sprintf('%s_dwi.nii',suboutname));
             copyfile(src,dest); gzip(dest); delete(dest);
             
             % header
@@ -273,7 +278,7 @@ for subj = 1:numel(aap.acq_details.subjects)
     
     % participant key file
     hdr = hdr(1);
-    entry = aas_getsubjname(aap,subj);
+    entry = suboutname;
     
     if isfield(hdr,'PatientAge')
         if ~header_part, fprintf(fid_part,'\tage'); end

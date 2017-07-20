@@ -92,6 +92,7 @@ switch task
                 print('-djpeg','-r75',fullfile(aap.acq_details.root, 'diagnostics', ...
                     [mfilename '__' aap.acq_details.subjects(subj).subjname '_' num2str(d) '.jpeg']));
             catch
+                aas_log(aap,false,'failed to generate diagnostic spm_check_registration view');
             end
             if aap.tasklist.currenttask.settings.diagnostic
                 
@@ -99,37 +100,39 @@ switch task
                     [mfilename '__' aap.acq_details.subjects(subj).subjname '_' num2str(d) '.avi']);
                 % Create movie file by defining aviObject
                 try delete(movieFilename); catch; end
-                aviObject = avifile(movieFilename,'compression','none');
-                
                 try close(2); catch; end
-                figure(2)
-                set(2, 'Position', [0 0 1000 600])
-                windowSize = get(2,'Position');
-                
-                % Get resliced structural
-                EPIlims = [min(Y(:)) max(Y(:))];
-                
-                for z = 1:size(Y,3)
-                    h = subplot(1,2,1);
-                    imagesc(rot90(squeeze(Y(:,:,z))))
-                    caxis(EPIlims)
-                    axis equal off
-                    title('Before denoiseANLM')
-                    zoomSubplot(h, 1.2)
+                try
+                    aviObject = avifile(movieFilename,'compression','none');
+                    figure(2)
+                    set(2, 'Position', [0 0 1000 600])
+                    windowSize = get(2,'Position');
+                    % Get resliced structural
+                    EPIlims = [min(Y(:)) max(Y(:))];
                     
-                    h = subplot(1,2,2);
-                    imagesc(rot90(squeeze(dY(:,:,z))))
-                    caxis(EPIlims)
-                    axis equal off
-                    title('After denoiseANLM')
-                    zoomSubplot(h, 1.2)
+                    for z = 1:size(Y,3)
+                        h = subplot(1,2,1);
+                        imagesc(rot90(squeeze(Y(:,:,z))))
+                        caxis(EPIlims)
+                        axis equal off
+                        title('Before denoiseANLM')
+                        zoomSubplot(h, 1.2)
+                        
+                        h = subplot(1,2,2);
+                        imagesc(rot90(squeeze(dY(:,:,z))))
+                        caxis(EPIlims)
+                        axis equal off
+                        title('After denoiseANLM')
+                        zoomSubplot(h, 1.2)
+                        
+                        % Capture frame and store in aviObject
+                        pause(0.01)
+                        aviObject = addframe(aviObject,getframe(2,windowSize));
+                    end
                     
-                    % Capture frame and store in aviObject
-                    pause(0.01)
-                    aviObject = addframe(aviObject,getframe(2,windowSize));
+                    junk = close(aviObject);
+                catch
+                    aas_log(aap,false,'failed to generate diagnostic video');
                 end
-                
-                junk = close(aviObject);
             end
         end
         
@@ -141,6 +144,7 @@ switch task
             
             aap=aas_desc_outputs(aap,subj,'structural_dicom_header', DCMfn);
         catch
+            aas_log(aap,false,'could not generate structural_dicom_header output');
         end
         
         % Structural image after denoising
