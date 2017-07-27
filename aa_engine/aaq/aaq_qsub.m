@@ -527,6 +527,14 @@ classdef aaq_qsub<aaq
                 else
 %                     obj.jobinfo(jobind).state = 'failed';
                 end
+                
+                % Double check that finished jobs do not have an error in the Task object
+                if strcmp(obj.jobinfo(jobind).state, 'finished')
+                    if ~isempty(Jobs.Tasks.ErrorIdentifier)
+                        obj.jobinfo(jobind).state = 'error';
+                    end
+                end
+                
             end
             states = {obj.jobinfo.state};
 
