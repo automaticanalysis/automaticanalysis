@@ -25,7 +25,7 @@ ei = find(errors);
 
 if ei
     fprintf('%d errors found\n', length(ei))
-    for eii = 1:ei
+    for eii = ei
         modnum = obj.pool.Jobs(eii).Tasks.InputArguments{3};
         subjnum = obj.pool.Jobs(eii).Tasks.InputArguments{4}(1);
         prompt = sprintf('Error found in subject: %s | Module: %s\nDo you want to run this module locally y/n?\n', obj.aap.acq_details.subjects(subjnum).subjname, obj.aap.tasklist.main.module(modnum).name);
@@ -37,8 +37,6 @@ if ei
                 disp('Skipped...')
             case 'q'
                 disp('Exiting debug mode!')
-                dbclear all
-                return
         end
     end
 else
