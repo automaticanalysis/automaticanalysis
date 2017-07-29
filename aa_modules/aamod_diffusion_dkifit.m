@@ -24,13 +24,42 @@ switch task
         data_mask = spm_read_vols(spm_vol(betmask));
         bval = dlmread(bvals);
         bvec = dlmread(bvecs);
-        [dki.S0, dki.DT, dki.KT]=fun_DKI_ULLS_comp(data_in,data_mask,bval,bvec);
-        [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear(data_in,data_mask,bval);
+        [D11,D22,D33,D12,D13,D23,...
+            W1111, W2222, W3333, W1112, W1113,...
+            W1222, W2223, W1333, W2333, W1122,...
+            W1133, W2233, W1123, W1223, W1233, dki.S0]=fun_DKI_ULLS_comp_rh(data_in,data_mask,bval,bvec);
+        
+        DT(:,:,:,6)=D23;
+        DT(:,:,:,1)=D11;
+        DT(:,:,:,2)=D22;
+        DT(:,:,:,3)=D33;
+        DT(:,:,:,4)=D12;
+        DT(:,:,:,5)=D13;
+        dki.DT = DT;
+        
+        KT(:,:,:,15)=W1233;
+        KT(:,:,:,1)=W1111;
+        KT(:,:,:,2)=W2222;
+        KT(:,:,:,3)=W3333;
+        KT(:,:,:,4)=W1112;
+        KT(:,:,:,5)=W1113;
+        KT(:,:,:,6)=W1222;
+        KT(:,:,:,7)=W2223;
+        KT(:,:,:,8)=W1333;
+        KT(:,:,:,9)=W2333;
+        KT(:,:,:,10)=W1122;
+        KT(:,:,:,11)=W1133;
+        KT(:,:,:,12)=W2233;
+        KT(:,:,:,13)=W1123;
+        KT(:,:,:,14)=W1223;
+        dki.KT = KT;
+        
+        [dki.dMK, dki.dMD, dki.dS0]=fun_DKI_dMK_linear_rh(data_in,data_mask,bval);
         
         %% Calculate metrics
-        [dki.MK, dki.AK, dki.RK, dki.AWF, dki.ADa, dki.ADe, dki.RDe, dki.tortu] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
         [dki.MD, dki.FA, dki.AD, dki.RD, dki.L1, dki.L2, dki.L3, dki.V1, dki.V2, dki.V3] = fun_DTI_metrics(dki.DT,data_mask);
-        
+        [dki.MK, dki.AK, dki.RK, dki.AWF, dki.ADa, dki.ADe, dki.RDe, dki.tortu] = fun_DKI_metrics(dki.DT,dki.KT,data_mask);
+                
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
         sesspath = aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
