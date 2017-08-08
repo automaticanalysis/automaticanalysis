@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Calculate MP maps using VBQ toolbox' modality='X'>
+
+            <b1_type>3D_EPI_v2b</b1_type>
+            
+            <inputstreams>
+                <stream>MPM</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>mt</stream>
+                <stream isrenameable='1'>pd</stream>
+                <stream isrenameable='1'>r1</stream>
+                <stream isrenameable='1'>r2star</stream>
+                <stream isrenameable='1'>t1</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
