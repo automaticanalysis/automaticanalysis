@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='special_session' mfile_alias='aamod_smooth' desc='SPM smooth ASL images' modality='ASL'>
+        <currenttask domain='special_session' mfile_alias='aamod_smooth' desc='SPM smooth ASL-CBF images' modality='X'>
             
             <permanenceofoutput>2</permanenceofoutput>
             
             <FWHM>8</FWHM>
             
             <inputstreams>
-                <stream>ASL_CBF</stream>
+                <stream>ASL-CBF</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>ASL_CBF</stream>
+                <stream>ASL-CBF</stream>
             </outputstreams>
             
         </currenttask>

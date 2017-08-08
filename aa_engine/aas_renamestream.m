@@ -1,6 +1,6 @@
 function aap=aas_renamestream(aap,stage,origstream,newstream,type)
 % AAS_RENAMESTREAM 
-% Rename a TYPE (input|output) of stream of a STAGE from ORIGSTREAM to NEWSTREAM
+% Rename a TYPE (input|output) of stream of a STAGE from ORIGSTREAM to NEWSTREAM. If ORIGSTREAM is 'append', then the NEWSTREAM will be appended to the list of streams
 %
 % E.g. aap = aas_renamestream(aap,'aamod_firstlevel_model_00001','epi','aamod_coreg_extended_2epi_00001.epi')
 
@@ -9,7 +9,7 @@ if nargin < 5
 end
 
 if strcmp(type,'output')
-    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  Make sure that you know what you are doing!',origstream,stage,newstream));
+    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  It might breake dependency for the consecuting module(s).\n  Make sure that you know what you are doing!',origstream,stage,newstream));
 end
 
 %% Locate STAGE
@@ -33,7 +33,7 @@ toSpecify = any(ndot);
 toRename = ~strcmp(origstreamname,newstreamname);
 
 %% Locate ORIGSTREAM
-inputstreams = aap.tasksettings.(stagename)(end).([type 'streams']).stream;
+inputstreams = aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream;
 if ~iscell(inputstreams)
     inputstreams = {inputstreams};
 end
@@ -45,12 +45,18 @@ for i = 1:numel(inputstreams)
         break;
     end
 end
+
+stream = aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{i};
 if strcmp(inputstreamname,origstreamname)
     ind = i;
+elseif strcmp(origstreamname,'append')
+    ind = i + 1;
+    aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream;
+    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream; end
 else
     aas_log(aap,1,sprintf('ERROR: Stream %s of module %s not found!',origstream,stagename));
 end
-stream = aap.schema.tasksettings.(stagename)(end).([type 'streams']).stream{ind};
+
 switch type
     case 'input'
         internalstore = 'inputstreamsources';
@@ -60,7 +66,10 @@ end
 if isfield(aap,'internal')
     storedstreams = aap.internal.(internalstore){modulenumber}.stream;
     if isempty(storedstreams), streamindex = NaN;
-    else streamindex = cell_index({storedstreams.name},origstreamname); end
+    else
+        if ~strcmp(origstreamname,'append'), streamindex = cell_index({storedstreams.name},origstreamname); 
+        else streamindex = numel(storedstreams); end
+    end
 end
         
 %% Check ORIGSTREAM
@@ -77,12 +86,14 @@ if toSpecify
 end
 
 %% Rename ORIGSTREAM
-if ~iscell(aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream)
-    aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
-    aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+if ~iscell(aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream) % single stream
+    singlenewstream = newstream;
+    if strcmp(origstreamname,'append'), singlenewstream = {aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream newstream}; end
+    aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream = singlenewstream;
+    aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = singlenewstream;
     if isfield(aap,'internal')
-        aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
-        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = newstream;
+        aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream = singlenewstream;
+        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = singlenewstream;
     end
 else
     aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;

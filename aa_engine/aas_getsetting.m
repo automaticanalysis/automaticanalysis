@@ -13,7 +13,7 @@ for f = settingpath'
     end
 end
 
-if nargin == 3 % index
+if ~isempty(val) && (nargin == 3) % index
     if ischar(val)
         val = textscan(val,'%s');
         val = val{1}';
