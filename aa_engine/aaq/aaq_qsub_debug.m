@@ -36,7 +36,8 @@ if ei
             case 'n'
                 disp('Skipped...')
             case 'q'
-                disp('Exiting debug mode!')
+                dbclear all
+                disp('Clearing breakpoints and exiting debug mode!')
         end
     end
 else
