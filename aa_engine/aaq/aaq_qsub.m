@@ -449,8 +449,8 @@ classdef aaq_qsub<aaq
                 obj.jobnotrun(i) = false;
                 rt = obj.jobretries.(ji.modulename)(ji.qi);
                 if isnan(rt), rt = 0; end
-                aas_log(obj.aap, false, sprintf('Added job %s with qsub ID %3.1d | Job Queue ID: %3.1d | Subject ID: %s | Retry: %3.1d | Jobs submitted: %3.1d',...
-                    ji.modulename, ji.JobID, ji.qi, ji.subjectinfo.subjname, rt, length(obj.pool.Jobs)))
+                aas_log(obj.aap, false, sprintf('Added job %s with qsub ID %3.1d | Subject ID: %s | Retry: %3.1d | Jobs submitted: %3.1d',...
+                    ji.modulename, ji.JobID, ji.subjectinfo.subjname, rt, length(obj.pool.Jobs)))
             catch ME
                 if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
                     obj.jobretries.(ji.modulename)(i) = obj.jobretries.(ji.modulename)(i) + 1;
@@ -530,12 +530,17 @@ classdef aaq_qsub<aaq
                 
                 % Double check that finished jobs do not have an error in the Task object
                 if strcmp(obj.jobinfo(jobind).state, 'finished')
-                    if ~isempty(Jobs.Tasks.ErrorIdentifier)
+                    if ~isempty(Jobs.Tasks.ErrorMessage)
+                        obj.jobinfo(jobind).state = 'error';
+                        
+                    % Check if done flag exists.
+                    elseif ~exist(obj.jobqueue(obj.jobinfo(jobind).qi).doneflag, 'file')
+                        %                     obj.jobinfo(jobind).state = 'error';
                         obj.jobinfo(jobind).state = 'error';
                     end
                 end
-                
             end
+            
             states = {obj.jobinfo.state};
 
             if printjobs
