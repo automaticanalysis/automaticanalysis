@@ -8,20 +8,15 @@ switch task
         % Get nii filenames from stream
         DT=nifti_read(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'dki_DT'));
         KT=nifti_read(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'dki_KT'));
-        betmask=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask');
+        betmask=cellstr(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask'));
         
         % Find which line of betmask contains the brain mask
-        for betind=1:size(betmask,1)
-            if strfind(betmask(betind,:),'bet_nodif_brain_mask')
-                break
-            end;
-        end;        
-        betmask=deblank(betmask(betind,:));
-        
+        betmask=betmask{cellfun(@(x) ~isempty(regexp(x,'bet_.*nodif_brain_mask', 'once')), betmask)};
+
         alfa = aap.tasklist.currenttask.settings.alfa;
         
         %% Calculate direction field
-        [dki.NM, dki.DirM, dki.DirF] = fun_DKI_extract_directions(DT,KT,nifti_read(betmask),alfa);
+        [dki.NM, dki.DirM, dki.DirF] = fun_extract_directions_from_DKI_ODF(DT,KT,nifti_read(betmask),alfa);
         
         %% Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
