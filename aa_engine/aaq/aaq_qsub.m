@@ -533,10 +533,12 @@ classdef aaq_qsub<aaq
                     if ~isempty(Jobs.Tasks.ErrorMessage)
                         obj.jobinfo(jobind).state = 'error';
                         
-                    % Check if done flag exists.
-                    elseif ~exist(obj.jobqueue(obj.jobinfo(jobind).qi).doneflag, 'file')
-                        %                     obj.jobinfo(jobind).state = 'error';
-                        obj.jobinfo(jobind).state = 'error';
+                    % Check if done flag exists. 
+                    % Commented out. File system not always up to date and
+                    % reliable.
+%                     elseif ~exist(obj.jobqueue(obj.jobinfo(jobind).qi).doneflag, 'file')
+%                         %                     obj.jobinfo(jobind).state = 'error';
+%                         obj.jobinfo(jobind).state = 'error';
                     end
                 end
             end
