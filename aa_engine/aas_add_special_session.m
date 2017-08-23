@@ -1,20 +1,11 @@
-% Add special session. Suffixes (i.e. substring after "_") will be treated
-% as subsessions (similarly to the two subsessions of the fieldmap) and
-% copied into subfolders. E.g.:
-%
-%   aap.acq_details.special_sessions.name = {'MT_baseline' 'MT_MT'}
-%   aap.acq_details.subjects.specialseries = [14 15]
-%
-%   Series 14 and 15 will go to subjpath/MT/baseline and subjpath/MT/MT,
-%   respectively.
-
 function [aap]=aas_add_special_session(aap,name)
 
 % Blank template for a session entry
 thissess.name=name;
 
 % And put into acq_details, replacing a single blank entry if it exists
-if (length(aap.acq_details.special_sessions)==1 && isempty(aap.acq_details.special_sessions.name))
+firstsession = numel(aap.acq_details.special_sessions)==1 && isempty(aap.acq_details.special_sessions.name);
+if firstsession
     aap.acq_details.special_sessions=thissess;
 else
     doAdd = true;
@@ -25,3 +16,25 @@ else
     end
     if doAdd, aap.acq_details.special_sessions(end+1) = thissess; end
 end;
+
+%% Adjust streams
+stages = arrayfun(@(x) aas_getstagetag(aap,x), 1:numel(aap.tasklist.main.module),'UniformOutput',false);
+for c = cell_index(stages,'aamod_get_dicom_specialseries')'
+    if firstsession, aap = aas_renamestream(aap,stages{c},'dicom_specialseries',['dicom_' name],'output');
+    else aap = aas_renamestream(aap,stages{c},'append',['dicom_' name],'output'); end
+    aas_log(aap,false,['INFO: ' stages{c} ' output stream: ''dicom_' name '''']);
+end
+for c = cell_index(stages,'aamod_convert_specialseries')'
+    if firstsession, aap = aas_renamestream(aap,stages{c},'dicom_specialseries',['dicom_' name],'input');
+    else aap = aas_renamestream(aap,stages{c},'append',['dicom_' name],'input'); end
+    aas_log(aap,false,['INFO: ' stages{c} ' input stream: ''dicom_' name '''']);
+    if firstsession
+        aap = aas_renamestream(aap,stages{c},'specialseries',name,'output');
+        aap = aas_renamestream(aap,stages{c},'specialseries_dicom_header',[name '_dicom_header'],'output');
+    else
+        aap = aas_renamestream(aap,stages{c},'append',name,'output');
+        aap = aas_renamestream(aap,stages{c},'append',[name '_dicom_header'],'output');
+    end
+    aas_log(aap,false,['INFO: ' stages{c} ' output stream: ''' name '''']);
+    aas_log(aap,false,['INFO: ' stages{c} ' output stream: ''' name '_dicom_header''']);
+end

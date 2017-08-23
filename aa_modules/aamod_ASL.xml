@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask domain='special_session' desc='Process ASL' modality='X'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <scaleCBF>0.1</scaleCBF>
+            
+            <inputstreams>
+                <stream>ASL</stream>
+                <stream>ASL_dicom_header</stream>                
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>ASL-raw</stream>           
+                <stream>ASL-PWI</stream>                           
+                <stream>ASL-CBF</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

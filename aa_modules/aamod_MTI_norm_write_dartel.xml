@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias="aamod_norm_write_dartel" domain='special_session' desc='SPM DARTEL normalisation write (stream MTR)' modality='MTI'>
+        <currenttask mfile_alias="aamod_norm_write_dartel" domain='subject' desc='SPM DARTEL normalisation write (stream MTR)' modality='X'>
             
             <qsub>
                 <timeBase>0.75</timeBase>
