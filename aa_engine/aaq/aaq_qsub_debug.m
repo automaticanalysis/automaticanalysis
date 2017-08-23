@@ -27,8 +27,15 @@ if ei
     fprintf('%d errors found\n', length(ei))
     for eii = ei
         modnum = obj.pool.Jobs(eii).Tasks.InputArguments{3};
-        subjnum = obj.pool.Jobs(eii).Tasks.InputArguments{4}(1);
-        prompt = sprintf('Error found in subject: %s | Module: %s\nDo you want to run this module locally y/n?\n', obj.aap.acq_details.subjects(subjnum).subjname, obj.aap.tasklist.main.module(modnum).name);
+        if obj.pool.Jobs(eii).Tasks.InputArguments{4}
+            subjnum = obj.pool.Jobs(eii).Tasks.InputArguments{4}(1);
+            prompt = sprintf('Error found in subject: %s | Module: %s\nDo you want to run this module locally y/n?\n',...
+                obj.aap.acq_details.subjects(subjnum).subjname, obj.aap.tasklist.main.module(modnum).name);
+        else
+            prompt = sprintf('Error found in Session Level Module: %s\nDo you want to run this module locally y/n?\n',...
+                obj.aap.tasklist.main.module(modnum).name);
+        end
+        
         s = input(prompt, 's');
         switch s
             case 'y'

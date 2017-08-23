@@ -53,26 +53,28 @@ switch task
             end
             
             for p = procind
-
+                Nv       = [];
+                Mm       = [];
                 for subjind = 1:length(aap.acq_details.subjects),
-                    
-                    % Load ROI file for subject/session:
-                    indices = [subjind procind];
-                    ROIfname = aas_getfiles_bystream(aap,sourcedomain,indices(indind),instream);
-                    loaded = load(ROIfname); ROI = loaded.ROI;
-                    % Get number of valid voxels in each ROI:
-                    Nv(subjind,:) = [ROI.Nvox];
-                    mROI = [ROI.mean];
-                    Mm(subjind,:) = mROI;
-                    
+                        % Load ROI file for subject/session:
+                        indices = [subjind procind];
+                        ROIfname = aas_getfiles_bystream(aap,sourcedomain,indices(indind),instream);
+                    if ~isempty(ROIfname)
+                        loaded = load(ROIfname); 
+                        ROI = loaded.ROI;
+                        % Get number of valid voxels in each ROI:
+                        Nv(subjind,1:length([ROI.Nvox])) = [ROI.Nvox];
+                        mROI = [ROI.mean];
+                        Mm(subjind,1:length(mROI)) = mROI;
+                    end
                 end
                 
-                [pth stem fext] = fileparts(ROIfname);
+                Nv(Nv == 0) = NaN;
+                Mm(Mm == 0) = NaN;
+%                 [pth, stem, fext] = fileparts(ROIfname);
                 invalidroi = isnan(Mm) | Nv<AbsVoxThr;
                 ROIval = [ROI.ROIval];
-                Nr = length(ROIval);
-                
-                
+
                 % Remove bad subjects before removing ROIs:
                 
                 switch SubjRemoveStat,
