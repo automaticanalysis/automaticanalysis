@@ -85,5 +85,15 @@ switch task
         end
         
         %% Output
-        aap=aas_desc_outputs(aap,'special_session',[subj,sess],char(aas_getstreams(aap,'output')),out);
-end;
+        aap=aas_desc_outputs(aap,'special_session',[subj,sess],['dicom_' aas_getsessname(aap,sess)],out);
+
+    case 'checkrequirements'
+%         %% Adjust outstream
+%         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+%         stageindex = sscanf(index,'_%05d');
+%         out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream;
+%         if ~any(strcmp(out,['dicom_' aas_getsessname(aap,sess)]))
+%             aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',['dicom_' aas_getsessname(aap,sess)],'output');
+%         end
+%         aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''dicom_' aas_getsessname(aap,sess) '''']);
+end

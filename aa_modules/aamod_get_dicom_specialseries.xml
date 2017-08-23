@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='special_session' desc='Get DICOM files for special series' modality='MRI'>
+        <!-- modality "X" means that modality is obtained from the session name -->
+        <currenttask domain='special_session' desc='Get DICOM files for special series' modality='X'>
             
             <qsub>
                 <timeBase>0.05</timeBase>
@@ -26,7 +27,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>dicom_specialseries</stream>
+                <stream isrenameable='1'>dicom_specialseries</stream>
             </outputstreams>
             
         </currenttask>
