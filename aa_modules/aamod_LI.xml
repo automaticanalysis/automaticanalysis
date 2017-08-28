@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='compute laterality index using Wilke LI toolbox' modality='MRI' >
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+			
+			<!-- the command string specifies everything except the file -->
+			<!-- see LI manual for a description (defaults here are probably good for most applications) -->
+			
+			<LI_command_string>B1,1,C1,1,thr1,-5</LI_command_string>
+					
+			<!-- you must rename the input stream using aas_renamestream -->
+			<!-- for example: aap = aas_renamestream(aap,'aamod_LI_00001','input','firstlevel_spmts'); -->
+				
+            <inputstreams>
+                <stream isrenameable='1'>input</stream>
+			</inputstreams>
+           
+			<!-- do we really need these as streams? (they're ps) -->
+			
+            <outputstreams>
+  				<stream>LI_stats</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
