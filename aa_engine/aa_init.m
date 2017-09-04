@@ -133,7 +133,7 @@ else
 end
 
 % Path to FaceMasking
-if ~isempty(aap.directory_conventions.FaceMaskingdir)
+if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     addpath(genpath(fullfile(aap.directory_conventions.FaceMaskingdir,'matlab')));
 else
     % Check whether already in path, give warning if not
@@ -143,7 +143,7 @@ else
 end;
 
 % Path to VBQ
-if ~isempty(aap.directory_conventions.VBQdir)
+if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
     addpath(aap.directory_conventions.VBQdir);
 else
     % Check whether already in path, give warning if not
@@ -213,7 +213,7 @@ if ~isempty(aap.directory_conventions.BrainWaveletdir)
 end
 
 % FaceMasking
-if ~isempty(aap.directory_conventions.FaceMaskingdir)
+if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
@@ -221,7 +221,7 @@ if ~isempty(aap.directory_conventions.FaceMaskingdir)
 end
 
 % VBQ
-if ~isempty(aap.directory_conventions.VBQdir)
+if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
     p_ind = cell_index(p,aap.directory_conventions.VBQdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
