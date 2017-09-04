@@ -80,7 +80,7 @@ switch task
                     Y{a} = Y{a} > thr(a);
                     
                     if numel(Y{a} > 0) == 0 % check for bad thesholding
-                        aas_log(aap, true, sprintf('ERROR: No voxels below the threshold mask (%f) [max: %f]', thr(a), maxY))
+                        aas_log(aap, true, sprintf('ERROR: No voxels above the threshold mask (%f) [max: %f]', thr(a), maxY))
                     end
                     
                     V{a}.fname = spm_file(segimg(a,:),'prefix','S_r');
