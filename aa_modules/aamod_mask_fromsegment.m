@@ -79,7 +79,7 @@ switch task
                     maxY = max(Y{a}(:));
                     Y{a} = Y{a} > thr(a);
                     
-                    if isempty(find(Y{a},1,'first')) % check for bad thesholding
+                    if numel(Y{a} > 0) == 0 % check for bad thesholding
                         aas_log(aap, true, sprintf('ERROR: No voxels below the threshold mask (%f) [max: %f]', thr(a), maxY))
                     end
                     
