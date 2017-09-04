@@ -1,0 +1,18 @@
+<aap>
+    <tasklist>
+        
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module> 
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        
+        <main>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module> 
+            <module><name>aamod_get_dicom_specialseries</name></module> 
+            <module><name>aamod_convert_specialseries</name></module> 
+            <module><name>aamod_MPM</name></module> 
+        </main>
+    </tasklist>
+</aap>
