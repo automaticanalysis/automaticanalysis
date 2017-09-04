@@ -76,10 +76,11 @@ switch task
                 thr = aas_getsetting(aap,'threshold');
                 if numel(thr) == 1, thr(1:3) = thr; end
                 for a = 1:size(segimg,1)
+                    maxY = max(Y{a}(:));
                     Y{a} = Y{a} > thr(a);
                     
                     if isempty(find(Y{a},1,'first')) % check for bad thesholding
-                        aas_log(aap, true, sprintf('ERROR: No voxels below the threshold mask (%f)', thr(a)))
+                        aas_log(aap, true, sprintf('ERROR: No voxels below the threshold mask (%f) [max: %f]', thr(a), maxY))
                     end
                     
                     V{a}.fname = spm_file(segimg(a,:),'prefix','S_r');
