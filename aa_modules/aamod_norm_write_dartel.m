@@ -83,7 +83,19 @@ switch task
         streams=aas_getstreams(aap,'input');
         xfmi = cell_index(streams,'dartel_templatetomni_xfm');
         if xfmi && aas_stream_has_contents(aap,subj,streams{xfmi})
-            xfm = load(aas_getfiles_bystream_multilevel(aap,'subject',subj,'dartel_templatetomni_xfm')); xfm = xfm.xfm;
+            
+            verbose = aap.options.verbose;
+            aap.options.verbose = -1;
+            xfmfile = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'dartel_templatetomni_xfm');
+            aap.options.verbose = verbose;
+            
+            % Must be in a session folder
+            if isempty(xfmfile)
+                xfmfile = cellstr(spm_select('FPListRec',aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,cell2mat(varargin)),'^dartel_templatetomni_xfm.mat$'));
+                xfmfile = xfmfile{1};
+            end
+            
+            xfm = load(xfmfile); xfm = xfm.xfm;
             MMt = spm_get_space(template);
             mni.code = 'MNI152';
             mni.affine = xfm*MMt;

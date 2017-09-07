@@ -41,7 +41,6 @@ stage_study_done = false;
 
 % Provenance
 aap.prov = aa_provenance(aap);
-aap.prov.isvalid = false;
 
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))

@@ -7,6 +7,7 @@ classdef aaq_qsub<aaq
         jobnotrun = []
         jobinfo = []
         jobretries = []
+        waitforalljobs
         
         % ensure MAXFILTER license
         initialSubmitArguments = '';
@@ -72,6 +73,8 @@ classdef aaq_qsub<aaq
         
         % Run all tasks on the queue
         function [obj]=runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
+            obj.waitforalljobs = waitforalljobs;
+            
             global aaworker
             
             % Check number of jobs & monitored files
@@ -88,13 +91,13 @@ classdef aaq_qsub<aaq
             if ~isempty(obj.jobqueue)
                 % probably a better place to get current module index.
                 modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name; 
-                obj.jobretries.(modulename) = zeros(njobs,1);
+                obj.jobretries.(modulename) = ones(njobs,1);
             end
             
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
             
-            while any(obj.jobnotrun) || (waitforalljobs && ~isempty(obj.jobinfo))
+            while any(obj.jobnotrun) || (obj.waitforalljobs && ~isempty(obj.jobinfo))
                 % Lets not overload the filesystem
                 pause(0.1);
                 
@@ -148,12 +151,12 @@ classdef aaq_qsub<aaq
                     elseif ~isempty(obj.jobinfo)
                         % If no jobs left then monitor and update job states
                         aas_log(obj.aap, false, 'No jobs in the queue, waiting for remaining jobs to complete...')
-                        obj.job_monitor_loop();
+                        obj.job_monitor_loop;
                         pause(60)
                     end
                 else
                     aas_log(obj.aap, false, 'No free workers available: monitoring the queue...')
-                    obj.job_monitor_loop()
+                    obj.job_monitor_loop;
                 end
                 
                 idlist = [obj.jobinfo.JobID];
@@ -203,11 +206,10 @@ classdef aaq_qsub<aaq
                         switch JI.state
                             case 'pending'
                                 t = toc(JI.tic);
-                                % Tibor, you may want to add an option to
                                 % aa to switch this on/off or extend the time? On very busy
                                 % servers this might cause all jobs to be
                                 % perpetually deleted and restarted.
-                                if t > 3600 % if job has been pending for more than N seconds
+                                if (obj.aap.options.aaworkermaximumretry > 1) && (t > obj.aap.options.aaworkerwaitbeforeretry) % if job has been pending for more than N seconds
                                     obj.remove_from_jobqueue(JI.JobID, true); % 2nd argument = retry
                                 end
                                 
@@ -220,7 +222,7 @@ classdef aaq_qsub<aaq
                                     JI.qi, JI.JobID, JI.subjectinfo.subjname);
                                 % If there is an error, it is fatal...
                                 
-                                fatalerror = obj.jobretries.(JI.modulename)(JI.qi) > obj.aap.options.maximumretry; % will be true if max retries reached
+                                fatalerror = obj.jobretries.(JI.modulename)(JI.qi) > obj.aap.options.aaworkermaximumretry; % will be true if max retries reached
                                 if fatalerror
                                     msg = sprintf('%s\nMaximum retries reached\n', msg);
                                     aas_log(obj.aap,fatalerror,msg,obj.aap.gui_controls.colours.error)
@@ -258,13 +260,13 @@ classdef aaq_qsub<aaq
                                 % folder is only partially written upon job execution.
                                 % jobinfo etc is indexed by the job ID so get i from jobinfo.
                                 
-                                if obj.jobretries.(JI.modulename)(JI.qi) <= obj.aap.options.maximumretry
+                                if obj.jobretries.(JI.modulename)(JI.qi) <= obj.aap.options.aaworkermaximumretry
                                     msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                         ' \n\n Waiting 60 seconds then trying again',...
                                         ' (%d tries remaining for this job)\n'...
                                         'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                         ' to run the job locally in debug mode.\n'],...
-                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, obj.aap.options.maximumretry - obj.jobretries.(JI.modulename)(JI.qi));
+                                        Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, obj.aap.options.aaworkermaximumretry - obj.jobretries.(JI.modulename)(JI.qi));
                                     aas_log(aap, false, msg);
                                     obj.remove_from_jobqueue(JI.JobID, true);
                                     pause(60)
@@ -286,36 +288,43 @@ classdef aaq_qsub<aaq
                 end
                 
                 % Loop if we are still waiting for jobs to finish...
-                if waitforalljobs
+                if obj.waitforalljobs
                     if ~any(obj.jobnotrun) && sum(strcmp({obj.jobinfo.state}, 'running')) == 0
-                        waitforalljobs = false;
+                        obj.waitforalljobs = false;
                     end
                 end
+               
+                obj.QVUpdate;
                 
-                if obj.aap.options.aaworkerGUI
-                    % queue viewer
-                    % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
-                    %     return
-                    % end
-                    if ~isempty(obj.pool)
-                        if (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
-                            obj.QV = aas_qsubViewerClass(obj);
-                            obj.QV.Hold = true;
-                            obj.QV.setAutoUpdate(false);
-                        else
-                            obj.QV.UpdateAtRate;
-                            if waitforalljobs, obj.QV.Hold = false; end
-                        end
+            end
+        end
+        
+        function obj = QVUpdate(obj)
+            if obj.aap.options.aaworkerGUI
+                % queue viewer
+                % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
+                %     return
+                % end
+                if ~isempty(obj.pool)
+                    if (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
+                        obj.QV = aas_qsubViewerClass(obj);
+                        obj.QV.Hold = true;
+                        obj.QV.setAutoUpdate(false);
+                    else
+                        obj.QV.UpdateAtRate;
+                        if obj.waitforalljobs, obj.QV.Hold = false; end
                     end
                 end
             end
         end
         
         function obj = QVClose(obj)
-            if ~isempty(obj.QV) && obj.QV.isvalid
-                obj.QV.Close;
-                obj.QV.delete;
-                obj.QV = [];
+            if obj.aap.options.aaworkerGUI
+                if ~isempty(obj.QV) && obj.QV.isvalid
+                    obj.QV.Close;
+                    obj.QV.delete;
+                    obj.QV = [];
+                end
             end
         end
         
@@ -379,7 +388,7 @@ classdef aaq_qsub<aaq
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
-                inparg = {job.aap,job.task,job.k,job.indices, aaworker};
+                inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
                 if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
                 % them the aa paths. Users don't need to remember to update
@@ -398,7 +407,7 @@ classdef aaq_qsub<aaq
                         J.submit;
                         success = true;
                     catch ME
-                        if retries > obj.aap.options.maximumretry
+                        if retries > obj.aap.options.aaworkermaximumretry
                             throw(ME)
                         else
                             aas_log(obj.aap, false, 'Could not add job. Retrying...')
@@ -422,9 +431,8 @@ classdef aaq_qsub<aaq
             try
                 % Add a job to the queue
                 job=obj.jobqueue(i);
-                job.aap.acq_details.root=aas_getstudypath(job.aap,job.k);
-                % Run the job
                 obj.qsub_q_job(job);
+
                 % Create job info for referencing later
                 % (also clean up done jobs to prevent IDs occuring twice)
                 latestjobid = max([obj.pool.Jobs.ID]);
@@ -434,6 +442,7 @@ classdef aaq_qsub<aaq
                 
                 ji.InputArguments = {[], job.task, job.k, job.indices, aaworker};
                 ji.modulename = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
+                [junk, ji.jobpath]=aas_doneflag_getpath_bydomain(obj.aap,job.domain,job.indices,job.k);
                 ji.JobID = latestjobid;
                 ji.qi = i;
                 ji.jobrunreported = false;
@@ -456,6 +465,8 @@ classdef aaq_qsub<aaq
                     obj.jobretries.(ji.modulename)(i) = obj.jobretries.(ji.modulename)(i) + 1;
                     aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s | Retries: %d', ME.message, obj.jobretries.(ji.modulename)(i)))
                     obj.jobnotrun(i) = true;
+                else
+                    throw(ME);
                 end
             end
         end
@@ -484,6 +495,10 @@ classdef aaq_qsub<aaq
             % If retry requested, then reset jobnotrun and increment retry
             % counter
             if retry
+                % Remove files from previous execution
+                if exist(ji.jobpath,'dir'), rmdir(ji.jobpath,'s'); end
+                
+                % Add to jobqueue
                 obj.jobretries.(ji.modulename)(ji.qi) = obj.jobretries.(ji.modulename)(ji.qi) + 1;
                 obj.jobnotrun(ji.qi)=true;
             end
@@ -519,7 +534,7 @@ classdef aaq_qsub<aaq
                 end
                 jobind = [obj.jobinfo.JobID] == id;
                 
-                % If the job ID does not exist, something went wrong.
+                % If the job ID does not exist, jobinfo is not up-to-date
                 % Assigning failed will cause the state handler to restart
                 % the job without trying to remove it from pool.
                 if any(jobind)
@@ -552,20 +567,21 @@ classdef aaq_qsub<aaq
                 Nfailed = sum(strcmp(states,'failed'));
                 Nerror    = sum(strcmp(states,'error'));
                 Nrunning  = sum(strcmp(states,'running'));
-                msg = sprintf('Running %3.1d | Queued %3.1d | Pending %3.1d | Finished %3.1d | Failed %3.1d | Error %3.1d',...
+                msg = sprintf('Running %3d | Queued %3d | Pending %3d | Finished %3d | Failed %3d | Error %3d',...
                     Nrunning, Nqueued, Npending, Nfinished, Nfailed, Nerror);
                 aas_log(obj.aap,false,msg);
             end
+            
+            obj.QVUpdate;
         end
         
         function job_monitor_loop(obj)
-            fw = false;
-            while fw == false
+            while true
                 % Could put some backspaces here to remove the last
                 % iteration
                 states = obj.job_monitor(true); % states are also in e.g. obj.jobinfo(i).state
                 if sum(strcmp(states, 'finished')) || sum(strcmp(states, 'error')) || sum(strcmp(states, 'failed'));
-                    fw = true;
+                    break;
                 else
                     pause(10)
                 end
