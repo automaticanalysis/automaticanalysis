@@ -17,7 +17,7 @@
             
 			<inputstreams>
 				<stream>dartel_template</stream>
-                <stream isessential="0">aamod_dartel_norm_write_00001.dartel_templatetomni_xfm</stream>  
+                <stream isessential="0">dartel_templatetomni_xfm</stream>  
 				<stream>dartel_flowfield</stream>
 				<stream diagnostic="1">aamod_dartel_norm_write_00001.structural</stream>
                 <stream>ASL_CBF</stream> 

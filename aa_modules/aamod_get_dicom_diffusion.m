@@ -59,7 +59,7 @@ switch task
                     element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
 
                     for imnum = 1:numel(outfns)
-                        aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,outfns{imnum}));
+                        aas_shell(sprintf('%s/dcmodify -m "(%04x,%04x)=%s" %s',fullfile(aap.directory_conventions.DCMTKdir,'bin'),group,element,f{1}.Value,out{imnum}));
                     end
                 end
             end

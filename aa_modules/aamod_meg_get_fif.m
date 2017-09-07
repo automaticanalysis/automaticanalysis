@@ -28,7 +28,7 @@ switch task
         
         %% Copy file
         sessdir = aas_getsesspath(aap,subj,sess);
-        copyfile(megfile,fullfile(sessdir,megser));
+        copyfile(megfile,fullfile(sessdir,megser),'f'); % DP changed to force file overwrite
         
         %% Describe outputs
         aap=aas_desc_outputs(aap,subj,sess,'meg',...
