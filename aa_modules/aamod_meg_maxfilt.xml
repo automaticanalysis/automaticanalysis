@@ -23,6 +23,7 @@
                 <run>1</run>
                 <window>10</window>
                 <corr>0.980</corr>
+                <mvcomp>on</mvcomp>
             </sss>
             
             <downsampling desc='Downsampling (with low-pass FIR filtering) factor'></downsampling>
