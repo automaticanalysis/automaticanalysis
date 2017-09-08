@@ -1,6 +1,7 @@
-function [MV,MR,R]=Procedure_JHT(Dv,Kv,V,Nvis,Uvis,alfa,optionsT)
+function [MV,MR,R]=Procedure_DKIODF(Dv,Kv,V,Nvis,Uvis,alfa,optionsT)
 % Implemented on 2/07/2014
-% Rafael Neto Henriques MRC CBU
+% Update 6/04/2015
+
 % Inputs:
 % Dv=[D11 D22 D33 D12 D13 D23];
 % Kv=[W1111 W2222 W3333 W1112 W1113...
@@ -12,11 +13,16 @@ function [MV,MR,R]=Procedure_JHT(Dv,Kv,V,Nvis,Uvis,alfa,optionsT)
 % MR = valores dos vertices maximos
 % R = valores dos vertices todos
 
+% step 0 - difine parametres to speed DKIODF computation
+MD=mean(Dv(1:3));
+DT=[Dv(1),Dv(4),Dv(5);...
+    Dv(4),Dv(2),Dv(6);...
+    Dv(5),Dv(6),Dv(3) ];
+U=pinv(DT)*MD;
+
+
 % step 1 - Find the values for the initial points
-R = zeros(size(V,1),1);
-for d = 1:size(V,1)
-	R(d)=DKI_ODF(Dv,Kv,V(d,:),alfa);
-end
+R=DKIODF_v(Dv,Kv,V,alfa);
 
 % step 2 - detect maxima within the initial points
 np=length(R);
@@ -39,22 +45,23 @@ if ~isempty(MR)
     for vm=1:lMR
         xi(2)=el(vm);
         xi(1)=az(vm);
-        myf=@(x) DKI_ODF(Dv,Kv,x,alfa,true); % negate
+        neg=true;
+        myf=@(x) DKIODF(Dv,Kv,x,alfa,neg,U);
         xf = fminsearch(myf,xi,optionsT);
         az(vm)=xf(1);
         el(vm)=xf(2);
-        MR(vm)=DKI_ODF(Dv,Kv,xf,alfa);
+        MR(vm)=DKIODF(Dv,Kv,xf,alfa,false,U);
     end
-
-[x,y,z] = sph2cart(az,el,1);
-MV=[x,y,z];
-
-% step 5 select only unique directions
-vaf=(sum(abs(triu(MV*MV',1))>0.99)==0);
-MV=MV(vaf,:);
-MR=MR(vaf);
-[MR,id]=sort(MR,'descend');
-MV=MV(id,:);
-
+    
+    [x,y,z] = sph2cart(az,el,1);
+    MV=[x,y,z];
+    
+    % step 5 select only unique directions
+    vaf=(sum(abs(triu(MV*MV',1))>0.99)==0);
+    MV=MV(vaf,:);
+    MR=MR(vaf);
+    [MR,id]=sort(MR,'descend');
+    MV=MV(id,:);
+    
 end
 end
