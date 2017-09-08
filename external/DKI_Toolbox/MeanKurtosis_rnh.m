@@ -1,5 +1,4 @@
-function Mk=fun_MK(Dv,Kv,g,mode)
-% Implemented by Rafael Henriques (Last review 20/02/2015)
+function Mk=MeanKurtosis_rnh(Dv,Kv,g,mode)
 % caluclate mean kurtosis
 % Inputs:
 % Dv=[D11 D22 D33 D12 D13 D23];

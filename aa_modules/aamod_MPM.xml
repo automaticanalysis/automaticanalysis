@@ -11,9 +11,12 @@
             
             <outputstreams>
                 <stream isrenameable='1'>mt</stream>
+                <stream isrenameable='1'>mtr</stream>
+                <stream isrenameable='1'>mtw</stream>
                 <stream isrenameable='1'>pd</stream>
                 <stream isrenameable='1'>r1</stream>
                 <stream isrenameable='1'>r2star</stream>
+                <stream isrenameable='1'>r2star_ols</stream>
                 <stream isrenameable='1'>t1</stream>
             </outputstreams>
             

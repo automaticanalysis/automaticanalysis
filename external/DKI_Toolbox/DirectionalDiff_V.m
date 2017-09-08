@@ -1,5 +1,5 @@
-function RK=DirectionalKurt_V(Dv,Kv,V)
-% Compute the value of kurtosis along the directions 
+function R=DirectionalDiff_V(Dv,V)
+% Compute the value of diffusion along the directions 
 % in matrix V given voxel's Dv and Kv
 % Inputs:
 % Dv=[D11 D22 D33 D12 D13 D23];
@@ -11,12 +11,12 @@ function RK=DirectionalKurt_V(Dv,Kv,V)
 % 07/04/2015
 
 N=size(V,1);
-RK=zeros(N,1);
+R=zeros(N,1);
 
 for vt=1:N
     x=V(vt,:);
-    Kapp=DirectionalKurt(Dv,Kv,x);
-    RK(vt)=Kapp;
+    Kapp=DirectionalDiff(Dv,x);
+    R(vt)=Kapp;
 end
 
 

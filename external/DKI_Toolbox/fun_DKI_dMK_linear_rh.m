@@ -1,8 +1,5 @@
-function [MK, MD,  S0]=fun_DKI_dMK_linear(data_in,data_mask,bval)
+function [MK, MD,  S0, BINF]=fun_DKI_dMK_linear_rh(data_in,data_mask,bval)
 %% ULLS DKI
-%
-% Neto Henriques R, Correia MM, CamCAN (2012), �Towards optimization of diffusion kurtosis imaging to study brain changes with age�, 29th annual meeting of the European Society for Magnetic Resonance in Medicine and Biology, Lisbon, Portugal.
-%
 % Implemented by Rafael Henriques
 % november 2011, MRC-CBU
 %%
@@ -26,7 +23,7 @@ for k=1:Nz
         for i=1:Nx  
             if(data_mask(i,j,k)==1)  
                 %B
-                B=log(squeeze(data_in(i,j,k,:)));
+                B=log(double(squeeze(data_in(i,j,k,:))));
                 
                 indinf=isinf(B);
                 if sum(indinf)~=0
@@ -51,4 +48,5 @@ for k=1:Nz
             end
         end
     end
+    disp(k)
 end
