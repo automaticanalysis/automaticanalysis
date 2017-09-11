@@ -1,5 +1,5 @@
 function aap = aas_addsubject(aap, varargin)
-% Add subject/data to the analysis. It can be called it multiple times to add more subjects and/or more sources to a particular subject.
+% Add subject/data to the analysis. It can be called multiple times to add more subjects and/or more sources to a particular subject.
 %
 % FORMAT function aap = aas_addsubject(aap, data)
 % Process only autoidentified images. User will be a warned about the lack of series specification. Subject name, which is used as a reference in aa 
@@ -22,7 +22,7 @@ function aap = aas_addsubject(aap, varargin)
 % FORMAT function aap = aas_addsubject(___,'name',subjectname)
 % Another way to specify subject name, which ignores aap.directory_conventions.subject_directory_format.
 %
-% subjectname   - subject name
+% subjectname   - subject name as text string
 %
 %
 % FORMAT function aap = aas_addsubject(___,'functional',series)
@@ -32,12 +32,12 @@ function aap = aas_addsubject(aap, varargin)
 %                   two series of single-echo EPI: [5 10]
 %                   two series of single-echo EPI and one series of multi-echo EPI with 5 echos: {5 10 15:19}
 %               - for NIfTI: cell array containing one or more
-%                   for structural: string of full or realtive path (from a single rawdatadir)
-%                   for 4D NIfTI: string of full or realtive path (from a single rawdatadir)
-%                   for wholebrain EPI: string of full or realtive path (from a single rawdatadir). Can be specified only after fMRI series.
+%                   for structural: string containing a full or relative path (from a single rawdatadir)
+%                   for 4D NIfTI: string containing a full or relative path (from a single rawdatadir)
+%                   for whole-brain EPI: string containing a full or relative path (from a single rawdatadir). Can be specified only after fMRI series.
 %                   for 3D NIfTI: cell array (i.e. nested) of strings of full path
 %                 Strings can be replaced by structures with fields 'fname' (path to image) and 'hdr' (path to header) to specify metadata.
-%               - for MEG: filename of the *.fif file in the subject folder (i.e. no full path).
+%               - for MEG: full or relative filename of the *.fif file in the subject folder
 % Missing series can be specified either with "0" (for numerical array input) or with "[]" (for cell array input).
 %
 %
@@ -52,7 +52,7 @@ function aap = aas_addsubject(aap, varargin)
 % Specify structural data (overwrites autoidentification).
 %
 % series        - for DICOM: numeric array of series number
-%               - for NIfTI: cell of string (path to image) or cell of structure with fields 'fname' (path to image) and 'hdr' (path to header)
+%               - for NIfTI: cell containing a string (path to image) or a structure with fields 'fname' (path to image) and 'hdr' (path to header)
 %
 %
 % FORMAT function aap = aas_addsubject(___,'fieldmaps', series)
