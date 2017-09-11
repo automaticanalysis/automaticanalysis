@@ -1,34 +1,78 @@
-% Automatic analysis - add subject to the analysis. 
-% You may call it multiple times to add more sources to a particular subject.
-%
-% FORMAT function aap = aas_addsubject(aap, [name], data, [['name',<subject name>], ['functional',<functional series>], ['diffusion',<diffusion series>], ['structural',<structural series>], ['fieldmaps',<fieldmaps series>], ['specialseries',<specialseries>], ['ignoreseries',<ignoreseries>]])
-%   - aap: aap structure with parameters and tasklist
-%   - name: subject name used as a reference in aa (i.e. when calling aas_addevent, aas_addcontrasts, etc.) | aap.directory_conventions.subject_directory_format == 3
-%       When not specified, it will be automatically defined 
-%         - based on predefined list stored in aap.directory_conventions.subject_directory_names | aap.directory_conventions.subject_directory_format == 0
-%         - based on the "data" | aap.directory_conventions.subject_directory_format == 1
-%         - based on subject number (S01, S02, etc.) | aap.directory_conventions.subject_directory_format == 2
-%   - data: subject foldername within database (may include UNIX wildcards, e.g., CBU060500*/*)
-%
-%   'name', subjname: manual entry of subject name (overwrites aap.directory_conventions.subject_directory_format)
-%   'functional'
-%     For fMRI, series can be:
-%         DICOM source: array with series numbers of EPIs for this subject. E.g.: single-echo EPI: [5 10 15]; multi-echo EPI: {5 10 15:19}
-%         NIfTI source: cell array containing (one or more)
-%           - string: full or realtive path (from rawdatadir - only one is supported) to structural
-%           - string: full or realtive path (from rawdatadir - only one is supported) to 4D NIfTI of one fMRI session
-%           - string: full or realtive path (from rawdatadir - only one is supported) to wholebrain EPI (only after fMRI)
-%           - cell array (nested): full path to 3D NIfTI files of one fMRI session
-%         	all strings can be structures with fields 'fname' (path to image) and 'hdr' (path to header)
-%           missing series can be inicated either with "0" (for numerical array input) or with "[]" (for cell array input)
-%     For MEG, series is the filename of the *.fif file.
-%   'diffusion', diffusion-weighted MRI series (DICOM) or cell of structure(s) (NIfTI) with fields 'fname' (path to image), and 'bval', 'bvec' (path to bvals and bvecs)
-%   'structural', series (DICOM), cellstring of 3D NIfTI filename or cell of structure with fields 'fname' (path to image) and 'hdr' (path to header)
-%   'fieldmaps', series (DICOM) or cell of structure(s) with fields 'fname' (3 (2x mag + 1x phase)x 3D NIfTI filenames) and 'hdr' (path to header)
-%   'specialseries', series
-%   'ignoreseries', series (DICOM) to be ignored in the analysis (e.g. a repeated structural) [added by djm 20/3/06]
-
 function aap = aas_addsubject(aap, varargin)
+% Add subject/data to the analysis. It can be called it multiple times to add more subjects and/or more sources to a particular subject.
+%
+% FORMAT function aap = aas_addsubject(aap, data)
+% Process only autoidentified images. User will be a warned about the lack of series specification. Subject name, which is used as a reference in aa 
+% (i.e. when calling aas_addevent, aas_addcontrasts, etc.), will be automatically defined based on aap.directory_conventions.subject_directory_format:
+%   0   - based on predefined list stored in aap.directory_conventions.subject_directory_names
+%   1   - based on the "data" (see below)
+%   2   - based on the order of specification (S01, S02, etc.)
+%
+% aap           - aap structure with parameters and tasklist
+% data          - subject foldername within database. It should correspond to aap.directory_conventions.subjectoutputformat or 
+%                 aap.directory_conventions.megsubjectoutputformat
+%
+%
+% FORMAT function aap = aas_addsubject(aap, name, data)
+% As above, but manually specifies subject name. aap.directory_conventions.subject_directory_format must be set to 3.
+%
+% name          - subject name
+%
+%
+% FORMAT function aap = aas_addsubject(___,'name',subjectname)
+% Another way to specify subject name, which ignores aap.directory_conventions.subject_directory_format.
+%
+% subjectname   - subject name
+%
+%
+% FORMAT function aap = aas_addsubject(___,'functional',series)
+% Specify functional (fMRI/MEG) data.
+%
+% series        - for DICOM: array of series number(s) of EPIs. E.g.: 
+%                   two series of single-echo EPI: [5 10]
+%                   two series of single-echo EPI and one series of multi-echo EPI with 5 echos: {5 10 15:19}
+%               - for NIfTI: cell array containing one or more
+%                   for structural: string of full or realtive path (from a single rawdatadir)
+%                   for 4D NIfTI: string of full or realtive path (from a single rawdatadir)
+%                   for wholebrain EPI: string of full or realtive path (from a single rawdatadir). Can be specified only after fMRI series.
+%                   for 3D NIfTI: cell array (i.e. nested) of strings of full path
+%                 Strings can be replaced by structures with fields 'fname' (path to image) and 'hdr' (path to header) to specify metadata.
+%               - for MEG: filename of the *.fif file in the subject folder (i.e. no full path).
+% Missing series can be specified either with "0" (for numerical array input) or with "[]" (for cell array input).
+%
+%
+% FORMAT function aap = aas_addsubject(___,'diffusion',series)
+% Specify diffusion-weighted MRI data.
+%
+% series        - for DICOM: numeric array of series number(s)
+%               - for NIfTI: cell of structure(s) with fields 'fname' (path to image), and 'bval', 'bvec'(path to bvals and bvecs)
+%
+%
+% FORMAT function aap = aas_addsubject(___,'structural', series)
+% Specify structural data (overwrites autoidentification).
+%
+% series        - for DICOM: numeric array of series number
+%               - for NIfTI: cell of string (path to image) or cell of structure with fields 'fname' (path to image) and 'hdr' (path to header)
+%
+%
+% FORMAT function aap = aas_addsubject(___,'fieldmaps', series)
+% Specify fieldmap data (overwrites autoidentification).
+%
+% series        - for DICOM: numeric array of series numbers
+%               - for NIfTI: cell of structure with fields 'fname' (cell of 3 filenames - 2x magnitude + 1x phase) and 'hdr' (path to header)
+%
+%
+% FORMAT function aap = aas_addsubject(___,'specialseries', series)
+% Specify 'special' data (e.g. ASL, MTI, MPM).
+%
+% series        - for DICOM: cell array of numeric arrays of series numbers
+%               - for NIfTI: not supported yet
+%
+%
+% FORMAT function aap = aas_addsubject(___,'ignoreseries', series)
+% Specify DICOM series to be ignored during autoidentification.
+%
+% series        - numeric arrays of series numbers
 
 %% Parse
 iMRIData = 1; % new subject
@@ -141,8 +185,7 @@ if isfield(args,'functional') && ~isempty(args.functional)
                     fname = args.functional{s};
                 end
                 
-                % Check if exists full path
-                % - try meg
+                % - try in rawmegdatadir
                 if ~exist(fname,'file')
                     if ~isempty(thissubj.megname{iMEGData})
                         tmpaap = aap;
@@ -154,11 +197,17 @@ if isfield(args,'functional') && ~isempty(args.functional)
                         end
                     end
                 end
-                % - try to find in rawdatadir
-                if ~exist(fname,'file'), fname = fullfile(aas_findvol(aap,''),fname); end
+                % - try in rawdatadir
+                if ~exist(fname,'file'), fname = fullfile(aas_findvol(aap,spm_file(fname,'path')),spm_file(fname,'filename')); end
+                
                 if ~exist(fname,'file'), aas_log(aap,1,sprintf('ERROR: File %s does not exist!',fname)); end
                 
                 % Sort
+                if strcmp(spm_file(fname,'ext'),'fif')
+                     MEG{end+1} = fname;
+                     continue;
+                end
+                
                 V = spm_vol(fname);
                 if numel(V) > 1 % 4D --> fMRI
                     fMRI{end+1} = args.functional{s};
