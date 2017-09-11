@@ -38,7 +38,7 @@ function aap = aas_addsubject(aap, varargin)
 %                   for 3D NIfTI: cell array (i.e. nested) of strings of full path
 %                 Strings can be replaced by structures with fields 'fname' (path to image) and 'hdr' (path to header) to specify metadata.
 %               - for MEG: full or relative filename of the *.fif file in the subject folder
-% Missing series can be specified either with "0" (for numerical array input) or with "[]" (for cell array input).
+% Series have to be specified in the same order as the corresponding sessions have been added in the UMS. Missing series can be specified either with "0" (for numerical array input) or with "[]" (for cell array input).
 %
 %
 % FORMAT function aap = aas_addsubject(___,'diffusion',series)
@@ -46,6 +46,7 @@ function aap = aas_addsubject(aap, varargin)
 %
 % series        - for DICOM: numeric array of series number(s)
 %               - for NIfTI: cell of structure(s) with fields 'fname' (path to image), and 'bval', 'bvec'(path to bvals and bvecs)
+% Series have to be specified in the same order as the corresponding sessions have been added in the UMS. 
 %
 %
 % FORMAT function aap = aas_addsubject(___,'structural', series)
@@ -67,6 +68,7 @@ function aap = aas_addsubject(aap, varargin)
 %
 % series        - for DICOM: cell array of numeric arrays of series numbers
 %               - for NIfTI: not supported yet
+% Series have to be specified in the same order as the corresponding sessions have been added in the UMS. 
 %
 %
 % FORMAT function aap = aas_addsubject(___,'ignoreseries', series)
