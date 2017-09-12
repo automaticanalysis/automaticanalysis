@@ -9,15 +9,10 @@ switch task
         diffinput=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'diffusion_data');
         bvals=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvals');
         bvecs=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvecs');
-        betmask=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask');
+        betmask=cellstr(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask'));
         
         % Find which line of betmask contains the brain mask
-        for betind=1:size(betmask,1)
-            if strfind(betmask(betind,:),'bet_nodif_brain_mask')
-                break
-            end;
-        end;        
-        betmask=betmask(betind,:);
+        betmask=betmask{cellfun(@(x) ~isempty(regexp(x,'bet_.*nodif_brain_mask', 'once')), betmask)};
         
         %% Apply dkifit
         data_in = spm_read_vols(spm_vol(diffinput));

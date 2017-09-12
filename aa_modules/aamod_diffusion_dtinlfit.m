@@ -9,15 +9,10 @@ switch task
         diffinput=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'diffusion_data');
         bvals=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvals');
         bvecs=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'bvecs');
-        betmask=aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask');
+        betmask=cellstr(aas_getfiles_bystream(aap,'diffusion_session',[subjind diffsessind],'BETmask'));
         
         % Find which line of betmask contains the brain mask
-        for betind=1:size(betmask,1)
-            if strfind(betmask(betind,:),'bet_nodif_brain_mask')
-                break
-            end;
-        end;        
-        betmask=betmask(betind,:);
+        betmask=betmask{cellfun(@(x) ~isempty(regexp(x,'bet_.*nodif_brain_mask', 'once')), betmask)};
         
         %% Apply dtinlfit
         data_in = spm_read_vols(spm_vol(diffinput));
@@ -25,69 +20,15 @@ switch task
         bval = dlmread(bvals);
         bvec = dlmread(bvecs);
     
-        if strcmp(aap.options.wheretoprocess, 'localsingle') && ~isempty(aap.directory_conventions.poolprofile) % local execution - use parfor for slices
-            profiles = parallel.clusterProfiles;
-            if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
-                ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
-                if isempty(ppfname)
-                    aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
-                else
-                    P=parcluster(parallel.importProfile(ppfname));
-                end
-            else
-                aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
-                P=parcluster(aap.directory_conventions.poolprofile);
-            end
-            switch class(P)
-                case 'parallel.cluster.Torque'
-                    aas_log(aap,false,'INFO: Torque engine is detected');
-                    P.ResourceTemplate = '-l nodes=^N^,mem=100MB,walltime=00:05:00';
-                case 'parallel.cluster.Local'
-                    aap.options.aaparallel.numberofworkers = min([12 feature('numCores')]);
-            end
-            aas_makedir(aap, fullfile(aas_getsesspath(aap,subjind,diffsessind),'cluster'));
-            P.JobStorageLocation = fullfile(aas_getsesspath(aap,subjind,diffsessind),'cluster');
-            P.NumWorkers = min([...
-                size(data_mask,3) ... % for each slice
-                aap.options.aaparallel.numberofworkers
-                ]);
-
-            % submit
-            for z = 1:size(data_in,3)
-                job(z) = createJob(P);
-                if isprop(job(z),'AutoAttachFiles'), job(z).AutoAttachFiles = false; end
-                createTask(job(z), @dti_slice, 7,{squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec});
-                submit(job(z));
-            end
-            % monitor
-            while ~all(strcmp({job.State},'finished') | strcmp({job.State},'failed')), pause(1); end
-            if any(strcmp({job.State},'failed')), aas_log(aap,true,['Slice(s) ' num2str(find(strcmp({job.State},'failed'))) ' failed']); end
-            %retrieve
-            for z = 1:size(data_in,3)
-                out = fetchOutputs(job(z));
-                [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = out{:};
-            end
-        else % within-module cluster computing is not available
-            for z = 1:size(data_in,3)
-                [S0(:,:,z), L1(:,:,z), L2(:,:,z), L3(:,:,z), V1(:,:,z,:), V2(:,:,z,:), V3(:,:,z,:)] = dti_slice(squeeze(data_in(:,:,z,:)), data_mask(:,:,z), bval, bvec);
-            end
-        end
-        
-        dti.S0 = S0;
-        dti.L1 = L1;
-        dti.L2 = L2;
-        dti.L3 = L3;
-        dti.V1 = V1;
-        dti.V2 = V2;
-        dti.V3 = V3;
-        
-        dti.AD = L1;
-        dti.RD = (L2+L3)/2;
-        dti.MD = (L1+L2+L3)/3;
-        dti.FA = sqrt(3/2)*...
-            sqrt(var(cat(4, L1, L2, L3),[],4)*2./...
-            (L1.^2+L2.^2+L3.^2));
-        
+        [D11,D22,D33,D12,D13,D23, dti.S0]=fun_DTI_UNLS_comp_rh(data_in,data_mask,bval,bvec);
+        DT(:,:,:,6)=D23;
+        DT(:,:,:,1)=D11;
+        DT(:,:,:,2)=D22;
+        DT(:,:,:,3)=D33;
+        DT(:,:,:,4)=D12;
+        DT(:,:,:,5)=D13;
+        [dti.MD, dti.FA, dti.AD, dti.RD, dti.L1, dti.L2, dti.L3, dti.V1, dti.V2, dti.V3] = fun_DTI_metrics(DT,data_mask);
+              
         % Now describe outputs
         V = spm_vol(betmask); V.dt = spm_type('float32');
         sesspath = aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
@@ -108,7 +49,7 @@ end
 
 %% DTI wrapper
 
-function [S0, L1, L2, L3, V1, V2, V3] = dti_slice(data, mask, b, bv)
+function [S0, L1, L2, L3, V1, V2, V3] = dti_slice(data, mask, b, bv, tol_b0)
 
 S0 = mask*0;
 L1 = mask*0;
@@ -125,7 +66,7 @@ for x = 1:size(data,1)
         
         if ~mask(x,y), continue; end
         
-        [S0(x,y), DT] = dti_nlfit(vdata, b, bv);
+        [S0(x,y), DT] = dti_nlfit(vdata, b, bv, tol_b0);
         
         [V,D] = eig(DT);
 

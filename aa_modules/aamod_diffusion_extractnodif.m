@@ -34,9 +34,12 @@ switch task
             
             % Pick out the ones with no diffusion
             bvals=spm_load(bvalfn_list{peind});
+            tol_b0 = aas_getsetting(aap,'tol_b0',diffsessind);
+            if isempty(tol_b0), tol_b0 = 0; end
+            indb0 = bvals <= tol_b0;
             
             % Select only images with b=0 and average them
-            Y=Y(:,:,:,bvals==0);
+            Y=Y(:,:,:,indb0);
             Y=mean(Y,4);
             
             if length(difffn_list)>1
