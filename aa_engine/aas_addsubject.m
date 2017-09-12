@@ -20,7 +20,7 @@ function aap = aas_addsubject(aap, varargin)
 %
 %
 % FORMAT function aap = aas_addsubject(___,'name',subjectname)
-% Another way to specify subject name, which ignores aap.directory_conventions.subject_directory_format.
+% Another way to specify subject name manually, if aap.directory_conventions.subject_directory_format is not set to 3.
 %
 % subjectname   - subject name as text string
 %

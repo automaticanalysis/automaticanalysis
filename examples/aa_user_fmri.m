@@ -31,6 +31,7 @@ aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything';
 aap.directory_conventions.analysisid = 'Nature_Paper'; 
 
 % Add data
+aap.directory_conventions.subject_directory_format = 1;
 aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,90973,'functional',[7]);
 aap = aas_addsubject(aap,90979,'functional',[7]);
