@@ -10,8 +10,13 @@ switch task
         [d, megser] = aas_get_series(aap,'meg',subj,sess);
         
         %% Search file
-        srcdir = meg_findvol(aap,aap.acq_details.subjects(subj).megname{d},'fp');
-        megfile = fullfile(srcdir,megser);
+        if exist(megser,'file')
+            megfile = megser;
+            megser = spm_file(megfile,'filename');
+        else
+            srcdir = meg_findvol(aap,aap.acq_details.subjects(subj).megname{d},'fp');
+            megfile = fullfile(srcdir,megser);
+        end
         
         if ~exist(megfile,'file') % try as empty_room
             srcdir = meg_findvol(aap,megser,'fp');
