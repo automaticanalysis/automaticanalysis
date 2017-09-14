@@ -9,8 +9,11 @@ function aap = aas_addsubject(aap, varargin)
 %   2   - based on the order of specification (S01, S02, etc.)
 %
 % aap           - aap structure with parameters and tasklist
-% data          - subject foldername within database. It should correspond to aap.directory_conventions.subjectoutputformat or 
-%                 aap.directory_conventions.megsubjectoutputformat
+% data          - subject foldername within database. 
+%                   - for MRI: a single entry according to aap.directory_conventions.subjectoutputformat
+%                   - for MEG: it is a cell array of two entries according to aap.directory_conventions.megsubjectoutputformat (1st entry for MEG data)
+%                     and aap.directory_conventions.subjectoutputformat (2nd entry for MRI data). When MRI data is not analysed, the 2nd entry must be 
+%                     an empty array.
 %
 %
 % FORMAT function aap = aas_addsubject(aap, name, data)
