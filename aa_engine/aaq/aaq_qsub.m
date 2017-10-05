@@ -7,7 +7,7 @@ classdef aaq_qsub<aaq
         jobnotrun = []
         jobinfo = []
         jobretries = []
-        waitforalljobs
+        waitforalljobs = [];
         
         % ensure MAXFILTER license
         initialSubmitArguments = '';
