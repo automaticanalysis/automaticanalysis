@@ -106,7 +106,7 @@ h4 = plot(mx, 'r');
 hold off
 h5 = xlabel('Slice number');
 h6 = ylabel('Slice variance');
-h7 = legend('Mean','Min','Max',0);
+h7 = legend('Mean','Min','Max','Location','Best');
 h  = [h; h1; h2; h3; h4; h5; h6; h7];
 
 % realignment params
