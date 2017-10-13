@@ -19,7 +19,7 @@ aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe with model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri_advanced.xmll');
+aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri_advanced.xml');
 aap = aas_configforSPM12(aap);
 
 % Modify standard recipe module selection here if you'd like
