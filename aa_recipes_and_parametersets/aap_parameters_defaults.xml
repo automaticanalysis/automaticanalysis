@@ -56,7 +56,7 @@
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-        <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'></poolprofile>
+        <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'></poolprofile>
         <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>mvpaamailer@gmail.com:mvpaamailer</mailerserver>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>

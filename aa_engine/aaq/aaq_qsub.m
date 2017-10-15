@@ -19,17 +19,23 @@ classdef aaq_qsub<aaq
             aaparallel.numberofworkers=1;
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
+                    % Parse configuration
+                    queue = '';
+                    poolprofile = textscan(aap.directory_conventions.poolprofile,'%s','delimiter', ':'); poolprofile = poolprofile{1};
+                    if numel(poolprofile) == 1, poolprofile = poolprofile{1};
+                    else [poolprofile, queue] = poolprofile{1:2}; end
+                    
                     profiles = parallel.clusterProfiles;
-                    if ~any(strcmp(profiles,aap.directory_conventions.poolprofile))
-                        ppfname = which(spm_file(aap.directory_conventions.poolprofile,'ext','.settings'));
+                    if ~any(strcmp(profiles,poolprofile))
+                        ppfname = which(spm_file(poolprofile,'ext','.settings'));
                         if isempty(ppfname)
-                            aas_log(obj.aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
+                            aas_log(obj.aap,true,sprintf('ERROR: settings for pool profile %s not found!',poolprofile));
                         else
                             obj.pool=parcluster(parallel.importProfile(ppfname));
                         end
                     else
-                        aas_log(obj.aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
-                        obj.pool=parcluster(aap.directory_conventions.poolprofile);
+                        aas_log(obj.aap,false,sprintf('INFO: pool profile %s found',poolprofile));
+                        obj.pool=parcluster(poolprofile);
                     end
                     switch class(obj.pool)
                         case 'parallel.cluster.Torque'
@@ -39,6 +45,11 @@ classdef aaq_qsub<aaq
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
+                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                        case 'parallel.cluster.LSF'
+                            aas_log(obj.aap,false,'INFO: pool LSF is detected');
+                            if ~isempty(queue), obj.initialSubmitArguments = [' -q ' queue]; end
+                            obj.initialSubmitArguments = sprintf('%s -M %d -R "rusage[mem=%d]"',obj.initialSubmitArguments,aaparallel.memory*1000,aaparallel.memory*1000);
                             obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
                         case 'parallel.cluster.Generic'
                             aas_log(obj.aap,false,'INFO: Generic engine is detected');

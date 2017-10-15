@@ -34,9 +34,10 @@
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/usr/local/apps/psycapps/freesurfer/freesurfer-6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/usr/local/apps/psycapps/templates</templatedir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/usr/local/apps/psycapps/dcmtk-3.6.0</DCMTKdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/usr/local/apps/psycapps/BrainWavelet/BrainWavelet-1.1</BrainWaveletdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/usr/local/apps/psycapps/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>PsychoSGE</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'>PsychoSGE</poolprofile>
             <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.rhul@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
