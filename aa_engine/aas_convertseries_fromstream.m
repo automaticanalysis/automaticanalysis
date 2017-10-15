@@ -98,78 +98,80 @@ for subdirind=1:length(subdirs)
                 chunksize_volumes=memLimit*1024/(infoD.StartOfPixelData+infoD.SizeOfPixelData)/4;
             end
     
-                TR = [];
-                TE = [];
-                sliceorder = '';
-                slicetimes = [];
-                echospacing = [];
+            TR = [];
+            TE = [];
+            sliceorder = '';
+            slicetimes = [];
+            echospacing = [];
+            
+            % Private field containing info about TR and slices
+            fi = 'Private_0029_1020';
+            if isfield(infoD, fi)
+                str =  infoD.(fi);
+                xstr = char(str');
                 
-                % Private field containing info about TR and slices
-                fi = 'Private_0029_1020';
-                if isfield(infoD, fi)
-                    str =  infoD.(fi);
-                    xstr = char(str');
-                    
-                    % Try to extract TR from this private field
-                    n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
-                    if ~isempty(n)
-                        [junk, r] = strtok(xstr(n:n+100), '=');
-                        TR = str2double(strtok(strtok(r, '=')));
-                        gotTR = true;
+                % Try to extract TR from this private field
+                n = findstr(xstr, 'sWiPMemBlock.adFree[8]');
+                if ~isempty(n)
+                    [junk, r] = strtok(xstr(n:n+100), '=');
+                    TR = str2double(strtok(strtok(r, '=')));
+                    gotTR = true;
+                end
+                
+                % Try to extract slice order
+                n = findstr(xstr, 'sSliceArray.ucMode');
+                if ~isempty(n)
+                    [t, r] = strtok(xstr(n:n+100), '=');
+                    ucmode = strtok(strtok(r, '='));
+                    switch(ucmode)
+                        case '0x1'
+                            sliceorder = 'Ascending';
+                        case '0x2'
+                            sliceorder = 'Descending';
+                        case '0x4'
+                            sliceorder = 'Interleaved';
+                        otherwise
+                            sliceorder = 'Unknown';
                     end
-                    
-                    % Try to extract slice order
-                    n = findstr(xstr, 'sSliceArray.ucMode');
-                    if ~isempty(n)
-                        [t, r] = strtok(xstr(n:n+100), '=');
-                        ucmode = strtok(strtok(r, '='));
-                        switch(ucmode)
-                            case '0x1'
-                                sliceorder = 'Ascending';
-                            case '0x2'
-                                sliceorder = 'Descending';
-                            case '0x4'
-                                sliceorder = 'Interleaved';
-                            otherwise
-                                sliceorder = 'Order undetermined';
-                        end
-                    end                    
                 end
-                
-                % if we didn't find that private field, use standard fields.
-                if isempty(TR) && isfield(infoD, 'RepetitionTime')
-                    TR = infoD.RepetitionTime;
-                else
-                    aas_log(aap,false,'WARNING: TR not found');
-                end
-                if isempty(TE) && isfield(infoD, 'EchoTime')
-                    TE = infoD.EchoTime;
-                else
-                    aas_log(aap,false,'WARNING: TE not found');
-                end
-                if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
-                    slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
-                    [junk, sliceorder] = sort(slicetimes);
-                end
-                if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'BandwidthPerPixelPhaseEncode')
-                    pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
-                    echospacing = 1/(pBWpe * infoD.(headerFields{strcmpi(headerFields,'NumberOfPhaseEncodingSteps')})); % in s
-                end
-                
-                % Try to get sliceorder from other fields...
-                collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
+            end
+            
+            % if we didn't find that private field, use standard fields.
+            if isempty(TR) && isfield(infoD, 'RepetitionTime')
+                TR = infoD.RepetitionTime;
+            else
+                aas_log(aap,false,'WARNING: TR not found');
+            end
+            if isempty(TE) && isfield(infoD, 'EchoTime')
+                TE = infoD.EchoTime;
+            else
+                aas_log(aap,false,'WARNING: TE not found');
+            end
+            
+            % Siemens
+            if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
+                slicetimes = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'MosaicRefAcqTimes')';
+                [junk, sliceorder] = sort(slicetimes);
+            end
+            if isempty(echospacing) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'BandwidthPerPixelPhaseEncode')
+                pBWpe = aas_get_numaris4_numval(infoD.CSAImageHeaderInfo,'BandwidthPerPixelPhaseEncode');
+                echospacing = 1/(pBWpe * infoD.(headerFields{strcmpi(headerFields,'NumberOfPhaseEncodingSteps')})); % in s
+            end
+            
+            % GE
+            collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
             
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
-            if exist('TR','var'), infoD.volumeTR = TR/1000; end
-            if exist('TE','var'), infoD.volumeTE = TE/1000; end
-            if exist('sliceorder','var'), infoD.sliceorder = sliceorder; end
-            if exist('slicetimes','var'), infoD.slicetimes = slicetimes/1000; end
-            if exist('echospacing','var'), infoD.echospacing = echospacing; end
+            infoD.volumeTR = TR/1000;
+            infoD.volumeTE = TE/1000;
+            infoD.sliceorder = sliceorder;
+            infoD.slicetimes = slicetimes/1000;
+            infoD.echospacing = echospacing;
             
-            % Collecting timing and slice location info so we can
-            % reconstruct the slice order.  TemporalPositionIdentifier is
-            % basically the volume number, InstanceNumber is the temporal
-            % position in that acqusition, and SliceLocation is spatial
+            % GE: 
+            % TemporalPositionIdentifier is basically the volume number
+            % InstanceNumber is the temporal position in that acqusition
+            % SliceLocation is spatial
             if collectSOinfo
                 sliceInfo(end+1, :) = [infoD.TemporalPositionIdentifier infoD.InstanceNumber infoD.SliceLocation];
             end
@@ -187,6 +189,7 @@ for subdirind=1:length(subdirs)
             k=k+1;
         end
         
+        % GE:
         if collectSOinfo
             sliceInfo(sliceInfo(:,1)~=1, :) = [];       % Trim volumes that aren't the 1st one
             sliceInfo = sortrows(sliceInfo, [1 3 2]);   % Sort by spatial location (inferior->posterior)
@@ -206,7 +209,10 @@ for subdirind=1:length(subdirs)
             end
             
             aas_log(aap,false,sprintf('Sliceorder %s have been detected', sliceorder));
-            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', 'Ascending')}, DICOMHEADERS); % Update the DICOMHEADERS
+             
+            % Update the DICOMHEADERS
+            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', sliceInfo(:,2)')}, DICOMHEADERS);
+            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'slicetimes', x{1}.volumeTR/numSlices*(x{1}.sliceorder-1))}, DICOMHEADERS);
         end
         
         
