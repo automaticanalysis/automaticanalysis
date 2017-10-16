@@ -65,6 +65,7 @@
 			<diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
             <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>0</autoidentifystructural>
             <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
+            <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='double'>1</autoidentifyfieldmaps_number>
             <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>0</autoidentifyt2>		
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
         </options>
