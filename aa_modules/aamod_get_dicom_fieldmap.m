@@ -15,8 +15,6 @@ switch task
         sesspath=aas_getsesspath(aap,subj,sess);
         fieldpath=fullfile(sesspath,aap.directory_conventions.fieldmapsdirname);
         
-        fieldfolds = {'rawmag' 'rawphase'};
-        
         %% Locate series
         % Manually specified value for fieldmaps series number over-rides automatically scanned value
         if ~isempty(cell2mat(aap.acq_details.subjects(subj).fieldmaps))
@@ -33,17 +31,17 @@ switch task
         if numel(mriser) > 1, mriser = mriser(end); end % last echo
         fieldseries0 = fieldseries0{d};
         fieldseries = fieldseries0(fieldseries0>mriser);
-        if numel(fieldseries)>2
+        if numel(fieldseries)>aap.options.autoidentifyfieldmaps_number
             aas_log(aap,false,sprintf('INFO:autoidentifyseries found %d fieldmaps after EPI serie %d',numel(fieldseries),mriser));
-            aas_log(aap,false,'INFO:Will proceed with the first two, but you might want to try using the ignoreseries field in aas_addsubject in your user script.');
-            fieldseries=fieldseries(1:2);
-        elseif numel(fieldseries)<2
-            if numel(fieldseries0)>=2
+            aas_log(aap,false,sprintf('INFO:Will proceed with the first %d, but you might want to try using the ignoreseries field in aas_addsubject in your user script.',aap.options.autoidentifyfieldmaps_number));
+            fieldseries=fieldseries(1:aap.options.autoidentifyfieldmaps_number);
+        elseif numel(fieldseries)<aap.options.autoidentifyfieldmaps_number
+            if numel(fieldseries0)>=aap.options.autoidentifyfieldmaps_number
                 aas_log(aap,false,sprintf('INFO:autoidentifyseries found no fieldmaps after EPI serie %d',mriser));
-                aas_log(aap,false,'INFO:Will proceed with the last acquired before the EPI.');
-                fieldseries=fieldseries0(end-1:end);
+                aas_log(aap,false,sprintf('INFO:Will proceed with the last %d acquired before the EPI.',aap.options.autoidentifyfieldmaps_number));
+                fieldseries=fieldseries0(end-(aap.options.autoidentifyfieldmaps_number-1):end);
             else
-                aas_log(aap,true,sprintf('ERROR:Was expecting two fieldmaps after EPI serie %d, but autoidentifyseries found only %d',mriser,numel(fieldseries)));
+                aas_log(aap,true,sprintf('ERROR: Was expecting %d fieldmaps after EPI serie %d, but autoidentifyseries found only %d',aap.options.autoidentifyfieldmaps_number,mriser,numel(fieldseries)));
             end
         end
         
@@ -52,7 +50,7 @@ switch task
         out=[];
         for seriesind=1:length(fieldseries)
             [aap, dicom_files_src]=aas_listdicomfiles(aap,[subj d],fieldseries(seriesind));
-            newpath = fullfile(fieldpath, fieldfolds{seriesind});
+            newpath = fullfile(fieldpath, sprintf('serie%02d',seriesind));
             
             % Now copy files to this module's directory
             aas_makedir(aap,newpath);
@@ -63,7 +61,7 @@ switch task
                     end;
                 case 's3'
                     s3fles=spm_file(dicom_files_src,'filename');
-                    s3_copyfrom_filelist(aap,fullfile(fieldpath, fieldfolds{seriesind}),s3fles,aaworker.bucketfordicom,pth);
+                    s3_copyfrom_filelist(aap,fullfile(fieldpath, sprintf('serie%02d',seriesind)),s3fles,aaworker.bucketfordicom,pth);
             end;
             out=[out spm_file(dicom_files_src,'path',newpath)];
         end

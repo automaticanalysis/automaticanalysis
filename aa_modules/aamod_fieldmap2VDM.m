@@ -20,11 +20,11 @@ switch task
         job.sessname = 'session';
         job.anat = [];
         
-        job.defaults.defaultsval.epifm = aas_getsetting(aap,'epifm');
-        job.defaults.defaultsval.blipdir = aas_getsetting(aap,'kdir');
-        job.defaults.defaultsval.maskbrain = aas_getsetting(aap,'mask');
-        job.matchvdm = aas_getsetting(aap,'match');
-        job.writeunwarped = aas_getsetting(aap,'writeunwarpedEPI');
+        job.defaults.defaultsval.epifm = aas_getsetting(aap,'epifm',sess);
+        job.defaults.defaultsval.blipdir = aas_getsetting(aap,'kdir',sess);
+        job.defaults.defaultsval.maskbrain = aas_getsetting(aap,'mask',sess);
+        job.matchvdm = aas_getsetting(aap,'match',sess);
+        job.writeunwarped = aas_getsetting(aap,'writeunwarpedEPI',sess);
         
         % EPI TotalEPIReadoutTime (based on the first EPI)
         EPI_DICOMHEADERS = load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header')); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
@@ -33,7 +33,9 @@ switch task
         elseif isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing') % >=SPM12
             job.defaults.defaultsval.tert = EPI_DICOMHEADERS.NumberOfPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
         else
-            aas_log(aap,true,'ERROR:Field for number of phase encoding steps and/or echospacing not found!\nERROR:You may need to rerun aamod_convert_epis.');
+            job.defaults.defaultsval.tert = aas_getsetting(aap,'tert',sess);
+            aas_log(aap,false,sprintf('WARNING: Field for number of phase encoding steps and/or echospacing not found!\nWARNING: Manual setting is used: %1.3f ms.',job.defaults.defaultsval.tert));
+            if isempty(job.defaults.defaultsval.tert), aas_log(aap,true,'ERROR: No value is specified'); end
         end
         
         try % Fieldmap EchoTimes
@@ -44,8 +46,9 @@ switch task
             if numel(tes) ~= 2, aas_log(aap,true,'Inappropriate fieldmap header!'); end
             job.defaults.defaultsval.et = tes;
         catch E
-            job.defaults.defaultsval.et = [aas_getsetting(aap,'te1') aas_getsetting(aap,'te2')];
-            aas_log(aap,false,sprintf('WARNING: Error during retrieving Fieldmap Echo Times: %s\nWARNING: Defaults are used!',E.message));
+            job.defaults.defaultsval.et = [aas_getsetting(aap,'te1',sess) aas_getsetting(aap,'te2',sess)];
+            aas_log(aap,false,sprintf('WARNING: Error during retrieving Fieldmap Echo Times: %s\nWARNING: Manual settings are used: %1.3f ms and %1.3f ms!',E.message,job.defaults.defaultsval.et));
+            if isempty(job.defaults.defaultsval.et), aas_log(aap,true,'ERROR: No value is specified'); end
         end
         
         % Fieldmaps
@@ -55,6 +58,11 @@ switch task
             FMfn{f} = spm_file(FM(f,:),'path',FMdir);
         end
         switch size(FM,1)
+            case 8 % 2* (mag & phase & real & imag)
+                job.data.realimag.shortreal = FMfn(3);
+                job.data.realimag.shortimag = FMfn(4);
+                job.data.realimag.longreal = FMfn(7);
+                job.data.realimag.longimag = FMfn(8);
             case 3 % presubphase + 2*magnitude
                 job.data.presubphasemag.phase = FMfn(3);
                 job.data.presubphasemag.magnitude = FMfn(1:2);
