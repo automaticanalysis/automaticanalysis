@@ -35,6 +35,9 @@ aap.tasksettings.aamod_smooth.FWHM = 5; 						% smoothing kernel size, typical v
 aap.tasksettings.aamod_firstlevel_model.xBF.name = 'hrf (with time and dispersion derivatives)';
 aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';    	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model.includemovementpars = 1;% Include/exclude Moco params in/from DM, typical value 1
+aap.tasksettings.aamod_firstlevel_threshold.threshold.p = 0.01;
+
+aap = aas_renamestream(aap,'aamod_secondlevel_GIFT_00001','epi','aamod_smooth_00001.epi');
 
 %% STUDY
 % Directory for analysed data
@@ -69,6 +72,8 @@ aap = aas_addevent(aap,'aamod_firstlevel_model','S2','*',...
     'RIGHTFINGER',...                                                                           % name
     [70.0970 140.1860 170.2050 240.3110 310.4020 340.4510]-aap.acq_details.numdummies*TR,...    % onsets
     [10.0060  10.0070  10.0210  10.0220  10.0210  10.0220]);   
+
+aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[-1 1],'Loc_RightFinger-Rest','T');
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
