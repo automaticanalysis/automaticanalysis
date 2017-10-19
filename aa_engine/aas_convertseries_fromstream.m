@@ -16,7 +16,7 @@
 %  outputpath=place to write NIFTI
 % Rhodri Cusack MRC CBU, Cambridge 2005
 %
-function [aap out_allechoes dicomheader subdirs dicomdata]=aas_convertseries_fromstream(aap,varargin)
+function [aap, out_allechoes, dicomheader, subdirs, dicomdata]=aas_convertseries_fromstream(aap,varargin)
 %#function spm_dicom_convert
 v=varargin;
 % if (length(v)>3 && ischar(v{end-2}))
@@ -82,7 +82,7 @@ for subdirind=1:length(subdirs)
     
     % This array is used to collect sliceing timing info so we can
     % reconstruct the slice order
-    sliceInfo = zeros(0, 3);
+    sliceInfoD = zeros(0, 3);
     
     while (k<=size(dicomdata_subdir,1))
         oldAcquisitionNumber=-1;
@@ -159,7 +159,8 @@ for subdirind=1:length(subdirs)
             end
             
             % GE
-            collectSOinfo = isempty(sliceorder) && ~any(~isfield(infoD, {'TemporalPositionIdentifier', 'SliceLocation', 'InstanceNumber'}));
+            if isempty(echospacing) && isfield(infoD,'Private_0043_102c'), echospacing = infoD.Private_0043_102c/10e6; end
+            collectSOinfo = isempty(sliceorder) && isfield(infoD, 'TemporalPositionIdentifier');
             
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
             infoD.volumeTR = TR/1000;
@@ -168,12 +169,13 @@ for subdirind=1:length(subdirs)
             infoD.slicetimes = slicetimes/1000;
             infoD.echospacing = echospacing;
             
-            % GE: 
+            % Single slice per DICOM: 
             % TemporalPositionIdentifier is basically the volume number
             % InstanceNumber is the temporal position in that acqusition
             % SliceLocation is spatial
+            sliceInfoD(end+1, 2:3) = [infoD.InstanceNumber infoD.SliceLocation];
             if collectSOinfo
-                sliceInfo(end+1, :) = [infoD.TemporalPositionIdentifier infoD.InstanceNumber infoD.SliceLocation];
+                sliceInfoD(end, 1) = infoD.TemporalPositionIdentifier;
             end
             
             DICOMHEADERS=[DICOMHEADERS {infoD}];
@@ -191,6 +193,7 @@ for subdirind=1:length(subdirs)
         
         % GE:
         if collectSOinfo
+            sliceInfo = sliceInfoD;
             sliceInfo(sliceInfo(:,1)~=1, :) = [];       % Trim volumes that aren't the 1st one
             sliceInfo = sortrows(sliceInfo, [1 3 2]);   % Sort by spatial location (inferior->posterior)
             
@@ -214,7 +217,6 @@ for subdirind=1:length(subdirs)
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', sliceInfo(:,2)')}, DICOMHEADERS);
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'slicetimes', x{1}.volumeTR/numSlices*(x{1}.sliceorder-1))}, DICOMHEADERS);
         end
-        
         
         if (~exist('echonumbers','var'))
             DICOMHEADERS_selected=DICOMHEADERS;
@@ -245,25 +247,31 @@ for subdirind=1:length(subdirs)
         if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
+        % one DICOM per slice --> one header per volume
+        DICOMHEADERS = DICOMHEADERS(sliceInfoD(:,3) == sliceInfoD(sliceInfoD(:,2)==1,3)); % select the ones for the first slices per volume
+        [junk, sortind] = sort(sliceInfoD(sliceInfoD(:,3) == sliceInfoD(sliceInfoD(:,2)==1,3),2));
+        DICOMHEADERS = DICOMHEADERS(sortind);
+
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
     out_allechoes{subdirind}=unique(out);
-    if ~isempty(strfind(inputstream, 'dicom_structural'))
-        % [AVG] This is to cope with a number of strucutral images, so we
-        % may have the DICOM header of each of them...
-        InstanceNumbers = [];
-        DCMnumbers = [];
-        % Loop throught the dicoms to see if the SeriesNumber changes
-        for l=1:length(DICOMHEADERS);
-            InstanceNumber = 100*DICOMHEADERS{l}.SeriesNumber + DICOMHEADERS{l}.EchoNumbers;
-            if all(InstanceNumbers ~= InstanceNumber)
-                InstanceNumbers(end+1) = InstanceNumber;
-                DCMnumbers = [DCMnumbers l];
-            end
-        end
-        [junk, so] = sort(InstanceNumbers);
-        dicomheader={DICOMHEADERS{DCMnumbers(so)}};
-    end
+    
+%     if ~isempty(strfind(inputstream, 'dicom_structural'))
+%         % [AVG] This is to cope with a number of strucutral images, so we
+%         % may have the DICOM header of each of them...
+%         InstanceNumbers = [];
+%         DCMnumbers = [];
+%         % Loop throught the dicoms to see if the SeriesNumber changes
+%         for l=1:length(DICOMHEADERS);
+%             InstanceNumber = 100*DICOMHEADERS{l}.SeriesNumber + DICOMHEADERS{l}.EchoNumbers;
+%             if all(InstanceNumbers ~= InstanceNumber)
+%                 InstanceNumbers(end+1) = InstanceNumber;
+%                 DCMnumbers = [DCMnumbers l];
+%             end
+%         end
+%         [junk, so] = sort(InstanceNumbers);
+%         dicomheader={DICOMHEADERS{DCMnumbers(so)}};
+%     end
 end
 
 if numel(dicomheader) == 1
