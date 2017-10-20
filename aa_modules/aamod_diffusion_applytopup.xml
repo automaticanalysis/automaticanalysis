@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='diffusion_session' desc='Take mean of images with no diffusion' modality='MRI'>
+        <currenttask domain='diffusion_session' desc='Apply topup' modality='MRI'>
             
             <qsub>
                 <timeBase>0.2</timeBase>
@@ -10,15 +10,19 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            <tol_b0></tol_b0>
-            
             <inputstreams>
                 <stream>diffusion_data</stream>
+                <stream>topup_acquisition_parameters</stream>
+                <stream>topup_output_fieldcoef</stream>
+                <stream>topup_output_movpar</stream>
                 <stream>bvals</stream>
+                <stream>bvecs</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>nodif</stream>
+                <stream>diffusion_data</stream>
+                <stream>bvals</stream>
+                <stream>bvecs</stream>
             </outputstreams>
             
         </currenttask>

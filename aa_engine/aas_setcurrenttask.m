@@ -1,3 +1,4 @@
+
 % This is used to set up particular components of the aap structure that
 % change from module to module. It implements the ability to provide
 % module-specific parameters (e.g., for branched pipelines) by applying the
@@ -30,7 +31,7 @@ if ~isempty(varargin) && isnumeric(varargin{1})
                 sessions = aap.acq_details.sessions;
                 % for backwad compatibilty
                 if ~isempty(strfind(aap.tasklist.main.module(k).name,'diffusion'))
-                    sessions = 'diffusion_sessions';
+                    sessions = aap.acq_details.diffusion_sessions;
                 end
             case 'DWI'
                 aap.spm.defaults.modality = 'FMRI';
