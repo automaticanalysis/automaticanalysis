@@ -248,8 +248,9 @@ for subdirind=1:length(subdirs)
         out=[out(:);conv.files(:)];
         
         % one DICOM per slice --> one header per volume
-        DICOMHEADERS = DICOMHEADERS(sliceInfoD(:,3) == sliceInfoD(sliceInfoD(:,2)==1,3)); % select the ones for the first slices per volume
-        [junk, sortind] = sort(sliceInfoD(sliceInfoD(:,3) == sliceInfoD(sliceInfoD(:,2)==1,3),2));
+        firstsliceInd = sliceInfoD(:,3) == sliceInfoD(find(sliceInfoD(:,2)==min(sliceInfoD(:,2)),1,'first'),3); % select the ones for the first slices per volume
+        DICOMHEADERS = DICOMHEADERS(firstsliceInd); 
+        [junk, sortind] = sort(sliceInfoD(firstsliceInd,2));
         DICOMHEADERS = DICOMHEADERS(sortind);
 
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
