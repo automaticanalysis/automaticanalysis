@@ -103,6 +103,10 @@ classdef aaq_qsub<aaq
                 % probably a better place to get current module index.
                 modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name; 
                 obj.jobretries.(modulename) = ones(njobs,1);
+                
+                if obj.jobqueue(end).k == length(obj.aap.tasklist.main.module)
+                    obj.waitforalljobs = true;
+                end
             end
             
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
@@ -279,6 +283,7 @@ classdef aaq_qsub<aaq
                                         ' to run the job locally in debug mode.\n'],...
                                         Jobs.Tasks.Diary, Jobs.Tasks.ErrorMessage, obj.aap.options.aaworkermaximumretry - obj.jobretries.(JI.modulename)(JI.qi));
                                     aas_log(aap, false, msg);
+                                    obj.jobnotrun(JI.qi) = true;
                                     obj.remove_from_jobqueue(JI.JobID, true);
                                     pause(60)
                                 else
@@ -293,21 +298,15 @@ classdef aaq_qsub<aaq
                                     % If there is an error, it is fatal...
                                     obj.fatalerrors = true;
                                     aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
+                                    obj.jobnotrun(JI.qi) = true;
                                 end
                         end
                     end
                 end
-                
-                % Loop if we are still waiting for jobs to finish...
-                if obj.waitforalljobs
-                    if ~any(obj.jobnotrun) && sum(strcmp({obj.jobinfo.state}, 'running')) == 0
-                        obj.waitforalljobs = false;
-                    end
-                end
                
-                obj.QVUpdate;
-                
+                obj.QVUpdate; 
             end
+
         end
         
         function obj = QVUpdate(obj)
@@ -591,10 +590,10 @@ classdef aaq_qsub<aaq
                 % Could put some backspaces here to remove the last
                 % iteration
                 states = obj.job_monitor(true); % states are also in e.g. obj.jobinfo(i).state
-                if sum(strcmp(states, 'finished')) || sum(strcmp(states, 'error')) || sum(strcmp(states, 'failed'));
+                if sum(strcmp(states, 'finished')) || sum(strcmp(states, 'error')) || sum(strcmp(states, 'failed'))
                     break;
                 else
-                    pause(10)
+                    pause(10);
                 end
             end
         end
