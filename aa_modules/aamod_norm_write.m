@@ -38,7 +38,7 @@ switch task
             if ~exist(fullfile(localpath,fn),'file')
                 aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
             end
-            % Single-subjetc
+            % Single-subject
             fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
             for d = 1:numel(fdiag)
                 aap = aas_report_add(aap,subj,'<table><tr><td>');

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Automatically identify series numbers' modality='MRI'>
+        <currenttask mfile_alias='aamod_autoidentifyseries' domain='subject' desc='Automatically identify series numbers' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>

@@ -21,11 +21,11 @@
                 <stream>fieldmap</stream>
             </outputstreams>
             
-            <!-- set default to 0 if you want to avoid using false values in case of error during retrieving them from the DICOM header-->
-            <te1>0</te1>
-            <te2>0</te2>
+            <!-- set default to emtpy if you want to avoid using false values in case of error during retrieving them from the DICOM header-->
+            <te1></te1>
+            <te2></te2>
+            <tert></tert>
             <epifm>0</epifm>
-            <tert>0</tert>
             <kdir>-1</kdir>
             <mask>1</mask>
             <match>1</match>

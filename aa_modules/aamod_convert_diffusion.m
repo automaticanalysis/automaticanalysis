@@ -74,33 +74,40 @@ switch task
         bvals = zeros(n_hdrs, 1);
         bvecs = zeros(n_hdrs, 3);
 
-        for h = 1:n_hdrs
-            % Read B_matrix info
-            bm = aas_get_numaris4_numval(DICOMHEADERS{h}.CSAImageHeaderInfo,'B_matrix')';
-            % If no B_matrix, this is 0 B value
-            if isempty(bm)
-                continue
+        if isfield(DICOMHEADERS{1},'CSAImageHeaderInfo') % Siemens
+            for h = 1:n_hdrs
+                % Read B_matrix info
+                bm = aas_get_numaris4_numval(DICOMHEADERS{h}.CSAImageHeaderInfo,'B_matrix')';
+                % If no B_matrix, this is 0 B value
+                if isempty(bm)
+                    continue
+                end
+                B_matrix = [bm(1:3); bm(2) bm(4) bm(5); bm(3) bm(5) bm(6)];
+                % find max eigenvalue, eigenvector from B_matrix
+                [vecs, vals] = eig(B_matrix);
+                vals = max(vals);
+                [bvals(h), i] = max(vals);
+                dbvec = vecs(:,i);
+                % For convenience, turn vectors to point towards positive X
+                if dbvec(1) < 0
+                    dbvec = dbvec * -1;
+                end
+                bvecs(h,:) = [vox_to_dicom\dbvec]';
             end
-            B_matrix = [bm(1:3); bm(2) bm(4) bm(5); bm(3) bm(5) bm(6)];
-            % find max eigenvalue, eigenvector from B_matrix
-            [vecs, vals] = eig(B_matrix);
-            vals = max(vals);
-            [bvals(h), i] = max(vals);
-            dbvec = vecs(:,i);
-            % For convenience, turn vectors to point towards positive X
-            if dbvec(1) < 0
-                dbvec = dbvec * -1;
+        elseif all(isfield(DICOMHEADERS{1},{'Private_0019_10bb' 'Private_0019_10bc' 'Private_0019_10bd'})) % GE
+            isb = cellfun(@(x) isfield(x,'DiffusionBValue'), DICOMHEADERS);
+            bvals(1:numel(DICOMHEADERS)) = DICOMHEADERS{find(isb,1,'first')}.DiffusionBValue;
+            bvals(~isb) = 0;
+            
+            bvecs = cell2mat(cellfun(@(x) [x.Private_0019_10bb; x.Private_0019_10bc; x.Private_0019_10bd], DICOMHEADERS,'UniformOutput', false))';
+            
+            if strcmp(deblank(DICOMHEADERS{1}.InPlanePhaseEncodingDirection),'COL')
+                % do nothing
+            elseif strcmp(deblank(DICOMHEADERS{1}.InPlanePhaseEncodingDirection),'ROW')
+                bvecs(:,[1 2]) = bvecs(:,[2 1]); % swap row and col
             end
-            bvecs(h,:) = [vox_to_dicom\dbvec]';
-        end
-        
-%         bvecs=zeros(length(dicomheader),3);
-%         for headerind=1:length(dicomheader)
-%                 bvals(headerind)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'B_value');
-%                 if bvals(headerind)~=0
-%                     bvecs(headerind,:)=aas_get_numaris4_numval(dicomheader{headerind}.CSAImageHeaderInfo,'DiffusionGradientDirection');
-%                 end;
-%         end;
+            bvecs = cell2mat(arrayfun(@(x) vox_to_dicom\bvecs(x,:)', 1:size(bvecs,1),'UniformOutput',0))'; % rotate to scanner space            
+        end        
         
         % Output final data
         sesspth=aas_getpath_bydomain(aap,domain,indices);

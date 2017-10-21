@@ -32,7 +32,6 @@ http://www.automaticanalysis.org
  - Recommended software for features:
    - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
-   - For generating and serialising provenance: [Raptor RDF Syntax Library](http://librdf.org/raptor)
  - Recommended/Partially supported software for analysis:
    - [Advanced Normalization Tools](http://stnava.github.io/ANTs)
    - [VBM8](http://www.neuro.uni-jena.de/vbm)

@@ -16,7 +16,10 @@ switch task
         outstream = vertcat(convertedfns{:});
         aap=aas_desc_outputs(aap,subj,sess,'fieldmap',outstream);
 
-        dcmhdr = dcmhdr{(numel(dcmhdr{2}) > numel(dcmhdr{1}))+1};
+        if iscell(dcmhdr{1}) % multiple series --> selects the one with the most scans (it should contain all TEs)
+            [junk,ind] = max(cellfun(@(x) numel(x), dcmhdr));
+            dcmhdr = dcmhdr{ind};
+        end
         dcmhdrfn=fullfile(sesspath,'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
         aap=aas_desc_outputs(aap,subj,sess,'fieldmap_dicom_header',dcmhdrfn);
