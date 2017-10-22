@@ -255,10 +255,9 @@ classdef aaq_qsub<aaq
                                 
                             case 'finished' % without error
                                 if isempty(Jobs.Tasks.FinishTime), continue; end
-                                dtvs = dts2dtv(Jobs.Tasks.CreateTime);
-                                dtvf = dts2dtv(Jobs.Tasks.FinishTime);
                                 msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
-                                    JI.JobID,moduleName,datname,Jobs.Tasks.CreateTime,Jobs.Tasks.FinishTime,sec2dts(etime(dtvf,dtvs)));
+                                    JI.JobID,moduleName,datname,Jobs.Tasks.CreateTime,Jobs.Tasks.FinishTime,...
+                                    sprintf('%*dd %*dh %dm %ds',round(datevec(jts_etime(Jobs.Tasks.FinishTime,Jobs.Tasks.CreateTime)/3600/24))));
                                 aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                                 
                                 % Also save to file with module name attached!
@@ -602,27 +601,14 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function dtv = dts2dtv(dts)
-s = textscan(dts,'%s'); s = s{1}; s(5) = [];
-s = strcat(s,{' ',' ',' ',' ',' '}'); s = [s{:}]; s = s(1:end-1);
-dtformat = 'ddd mmm dd HH:MM:SS yyyy';
-dtv = datevec(s,dtformat);
+function esec = jts_etime(jts2,jts1)
+    df = java.text.SimpleDateFormat('EEE MMM dd HH:mm:ss zzz yyyy');
+    cal1 = java.util.GregorianCalendar.getInstance;
+    cal2 = java.util.GregorianCalendar.getInstance;
+    cal1.setTime(df.parse(jts1));
+    cal2.setTime(df.parse(jts2));
+    esec = etime([cal2.get(java.util.GregorianCalendar.YEAR) cal2.get(java.util.GregorianCalendar.MONTH)+1 cal2.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
+        cal2.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal2.get(java.util.GregorianCalendar.MINUTE) cal2.get(java.util.GregorianCalendar.SECOND)],...
+        [cal1.get(java.util.GregorianCalendar.YEAR) cal1.get(java.util.GregorianCalendar.MONTH)+1 cal1.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
+        cal1.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal1.get(java.util.GregorianCalendar.MINUTE) cal1.get(java.util.GregorianCalendar.SECOND)]);
 end
-
-function dts = sec2dts(dt)
-dt_str = {'s','m','h'};
-dt_div = [60 60 24];
-
-dts = '';
-for i = 1:numel(dt_str)
-    dts = [' ' num2str(mod(dt,dt_div(i))) dt_str{i} dts]; dt = floor(dt/dt_div(i));
-    if ~dt, break, end
-end
-if dt
-    dts = [num2str(dt) 'd' dts];
-else
-    dts = dts(2:end);
-end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% DLG %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
