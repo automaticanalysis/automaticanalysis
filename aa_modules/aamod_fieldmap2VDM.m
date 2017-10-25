@@ -10,6 +10,8 @@ switch task
     case 'report'
         
     case 'doit'
+        domain = aap.tasklist.currenttask.domain;
+        
         % Fieldmap path
         FMdir = fullfile(aas_getsesspath(aap, subj,sess), aap.directory_conventions.fieldmapsdirname);
         delete(fullfile(FMdir, '*.nii')); % remove previous vdms
@@ -27,7 +29,7 @@ switch task
         job.writeunwarped = aas_getsetting(aap,'writeunwarpedEPI',sess);
         
         % EPI TotalEPIReadoutTime (based on the first EPI)
-        EPI_DICOMHEADERS = load(aas_getimages_bystream(aap,subj,sess,'epi_dicom_header')); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
+        EPI_DICOMHEADERS = load(aas_getfiles_bystream(aap,domain,[subj,sess],aas_getstreams(aap,'input',2))); EPI_DICOMHEADERS = EPI_DICOMHEADERS.DICOMHEADERS{1};
         if isfield(EPI_DICOMHEADERS,'NumberofPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing') % <=SPM8
             job.defaults.defaultsval.tert = EPI_DICOMHEADERS.NumberofPhaseEncodingSteps*EPI_DICOMHEADERS.echospacing*1000;
         elseif isfield(EPI_DICOMHEADERS,'NumberOfPhaseEncodingSteps') && isfield(EPI_DICOMHEADERS,'echospacing') % >=SPM12
@@ -39,7 +41,7 @@ switch task
         end
         
         try % Fieldmap EchoTimes
-            FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'fieldmap_dicom_header'));
+            FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,domain,[subj,sess],'fieldmap_dicom_header'));
             dcmhdrs = cell2mat(FM_DICOMHEADERS.dcmhdr);
             tes = sort(unique([dcmhdrs.volumeTE]),'ascend')*1000; % in ms
             if numel(tes) ~= 2, tes = sort(unique([dcmhdrs.EchoTime]),'ascend'); end % try original (backward compatibility)
@@ -52,7 +54,7 @@ switch task
         end
         
         % Fieldmaps
-        FM = aas_getfiles_bystream(aap,subj,sess,'fieldmap');
+        FM = aas_getfiles_bystream(aap,domain,[subj,sess],'fieldmap');
         for f = 1:size(FM,1)
             aas_shell(['cp ' squeeze(FM(f,:)) ' ' FMdir]);
             FMfn{f} = spm_file(FM(f,:),'path',FMdir);
@@ -71,7 +73,7 @@ switch task
         end
         
         % EPI
-        job.session.epi{1} = spm_file(aas_getfiles_bystream(aap,subj,sess,'epi'),'number',1);
+        job.session.epi{1} = spm_file(aas_getfiles_bystream(aap,domain,[subj,sess],aas_getstreams(aap,'input',1)));
         
         FieldMap_Run(job);
         
@@ -84,5 +86,15 @@ switch task
         
         outstream = spm_file(VDM,'suffix',['_' aap.acq_details.sessions(sess).name]);
         movefile(VDM,outstream);
-        aap=aas_desc_outputs(aap,subj,sess,'fieldmap',outstream);        
+        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);        
+        
+        if aas_getsetting(aap,'writeunwarpedEPI',sess)
+            [sessdir, fname] = fileparts(spm_file(job.session.epi{1},'prefix','u'));
+            outstream = spm_select('FPList',sessdir,['^' fname '.*']);
+            if aap.options.NIFTI4D
+                spm_file_merge(spm_vol(outstream),fname);
+                outstream = fullfile(sessdir,spm_file(fname,'ext','.nii'));
+            end
+            aap=aas_desc_outputs(aap,domain,[subj,sess],aas_getstreams(aap,'input',1),outstream); % output same as input
+        end
 end
