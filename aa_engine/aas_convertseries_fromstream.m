@@ -160,6 +160,21 @@ for subdirind=1:length(subdirs)
             
             % GE
             if isempty(echospacing) && isfield(infoD,'Private_0043_102c'), echospacing = infoD.Private_0043_102c/10e6; end
+            if isfield(infoD,'Private_0025_101b') && numel(infoD.Private_0025_101b) > 14 && all(infoD.Private_0025_101b(5:6) == [31 139]) % GZipped information
+                gzip = java.util.zip.GZIPInputStream(java.io.ByteArrayInputStream(uint8(infoD.Private_0025_101b(5:end))));
+                buffer = java.io.ByteArrayOutputStream();
+                org.apache.commons.io.IOUtils.copy(gzip, buffer);
+                gzip.close();
+                output = char(typecast(buffer.toByteArray(), 'uint8')');
+                if isempty(strfind(output,'xml version'))
+                    output = textscan(output,'%s','delimiter','\n'); output = output{1};
+                    [subfields, vals] = cellfun(@(x) strtok(x), output,'UniformOutput', false);
+                    infoD.Private_0025_101b = [];
+                    for f = 1:numel(subfields), infoD.Private_0025_101b.(subfields{f}) = vals{f}(3:end-1); end
+                    if isfield(infoD.Private_0025_101b,'PHASEACCEL'), echospacing = echospacing/str2double(infoD.Private_0025_101b.PHASEACCEL); end
+                end
+            end
+            if ~any(strcmpi(headerFields,'NumberOfPhaseEncodingSteps')), infoD.NumberOfPhaseEncodingSteps = infoD.AcquisitionMatrix(1); end
             collectSOinfo = isempty(sliceorder) && isfield(infoD, 'TemporalPositionIdentifier');
             
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
