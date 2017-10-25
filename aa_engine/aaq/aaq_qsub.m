@@ -311,11 +311,11 @@ classdef aaq_qsub<aaq
         function obj = QVUpdate(obj)
             if obj.aap.options.aaworkerGUI
                 % queue viewer
-                % if ~isempty(obj.QV) && ~obj.QV.isvalid % killed
-                %     return
-                % end
                 if ~isempty(obj.pool)
-                    if (isempty(obj.QV) || ~obj.QV.OnScreen) % closed
+                    if ~isempty(obj.QV) && ~obj.QV.isvalid % started but killed
+                        return
+                    end
+                    if (isempty(obj.QV) || ~obj.QV.OnScreen) % not started or closed
                         obj.QV = aas_qsubViewerClass(obj);
                         obj.QV.Hold = true;
                         obj.QV.setAutoUpdate(false);
