@@ -58,13 +58,7 @@ end;
 osd.desc=streamdesc;
 
 % If outputs provided as cell array, reformat
-if (iscell(outputs))
-    outputs_asmatrix=[];
-    for d=1:length(outputs)
-        outputs_asmatrix=strvcat(outputs_asmatrix,outputs{d});
-    end;
-    outputs=outputs_asmatrix;
-end;
+if iscell(outputs), outputs=char(outputs); end;
 
 osd.numoutputs=size(outputs,1);
 

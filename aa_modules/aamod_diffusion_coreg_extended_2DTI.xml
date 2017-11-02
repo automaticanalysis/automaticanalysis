@@ -46,6 +46,10 @@
                 <stream>dti_S0</stream> 
             </outputstreams>
             
+            <diagnostic>
+                <streamind desc='index of main (i.e. non-diagnostic) stream to be reported'>1</streamind>
+            </diagnostic>
+            
         </currenttask>
     </tasklist>
 </aap>

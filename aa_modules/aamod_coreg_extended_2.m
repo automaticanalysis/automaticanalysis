@@ -16,11 +16,17 @@ switch task
         
         % Process streams
         [diagstream, mainstream] = process_streams(aap);
+        % find out what streams we should normalise
+        if isfield(aap.tasklist.currenttask.settings,'diagnostic') && isstruct(aap.tasklist.currenttask.settings.diagnostic)
+            inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
+        else
+            inds = 1:length(mainstream);
+        end
         d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
             if numel(varargin) > 1, diagstream = fullfile(aas_getsesspath(aap,varargin{1}, varargin{2}),'sessref.nii'); end
             aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
-            for m = 1:numel(mainstream)
+            for m = inds
                 if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
             end

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_get_dicom_fieldmap" domain='diffusion_session' desc='Get DICOM files for fieldmap for diffusion' modality='DWI'>
+            
+            <qsub>
+                <timeBase>0.05</timeBase>
+                <memoryBase>0.1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+			<DICOMdictionary>spm_dicom_dict.mat</DICOMdictionary>
+			
+            <toEdit>
+				<subject desc='Subject name'></subject>
+				<session desc='Session name'></session>
+                <DICOMfield>
+					<FieldName></FieldName>
+					<Value></Value>
+				</DICOMfield>
+            </toEdit>
+            
+            <inputstreams>
+                <stream>autoidentifyseries</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>dicom_fieldmap</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

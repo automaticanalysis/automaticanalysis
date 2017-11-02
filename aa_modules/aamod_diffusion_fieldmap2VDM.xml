@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='Create VDMs in fieldmaps' modality='MRI'>
+        <currenttask mfile_alias="aamod_fieldmap2VDM" domain='diffusion_session' desc='Create VDMs in fieldmaps' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -11,8 +11,8 @@
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>
-                <stream isrenameable='1'>epi</stream>
-				<stream isrenameable='1'>epi_dicom_header</stream>
+                <stream isrenameable='1'>diffusion_data</stream>
+				<stream isrenameable='1'>diffusion_dicom_header</stream>
                 <stream>fieldmap</stream>
 				<stream>fieldmap_dicom_header</stream>
             </inputstreams>
