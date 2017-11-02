@@ -19,7 +19,6 @@
             
             <outputstreams>
                 <stream>fieldmap</stream>
-                <stream isrenameable='1'>diffusion_data</stream>
             </outputstreams>
             
             <!-- set default to emtpy if you want to avoid using false values in case of error during retrieving them from the DICOM header-->

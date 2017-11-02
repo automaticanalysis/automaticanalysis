@@ -8,7 +8,9 @@ resp='';
 
 switch task
     case 'report'
-        
+%         if aas_getsetting(aap,'writeunwarpedEPI',sess)
+%             spm_file(aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj,sess],aas_getstreams(aap,'input',1)),'prefix','u')
+%         end
     case 'doit'
         domain = aap.tasklist.currenttask.domain;
         
@@ -73,7 +75,7 @@ switch task
         end
         
         % EPI
-        job.session.epi{1} = spm_file(aas_getfiles_bystream(aap,domain,[subj,sess],aas_getstreams(aap,'input',1)));
+        job.session.epi{1} = aas_getfiles_bystream(aap,domain,[subj,sess],aas_getstreams(aap,'input',1));
         
         FieldMap_Run(job);
         
@@ -86,15 +88,5 @@ switch task
         
         outstream = spm_file(VDM,'suffix',['_' aap.acq_details.sessions(sess).name]);
         movefile(VDM,outstream);
-        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);        
-        
-        if aas_getsetting(aap,'writeunwarpedEPI',sess)
-            [sessdir, fname] = fileparts(spm_file(job.session.epi{1},'prefix','u'));
-            outstream = spm_select('FPList',sessdir,['^' fname '.*']);
-            if aap.options.NIFTI4D
-                spm_file_merge(spm_vol(outstream),fname);
-                outstream = fullfile(sessdir,spm_file(fname,'ext','.nii'));
-            end
-            aap=aas_desc_outputs(aap,domain,[subj,sess],aas_getstreams(aap,'input',1),outstream); % output same as input
-        end
+        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);                
 end
