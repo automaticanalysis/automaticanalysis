@@ -77,6 +77,9 @@ switch task
             end
             sesInfo.userInput.numComp = round(feval(lower(settings.numICs), sesInfo.userInput.estimated_comps));
             sesInfo.userInput.numOfPC1 = round(1.5*sesInfo.userInput.numComp);
+            if sesInfo.userInput.numOfPC1 >= min(sesInfo.userInput.diffTimePoints) % low number of timepoints
+                sesInfo.userInput.numOfPC1 = sesInfo.userInput.numComp;
+            end
             sesInfo.userInput.numOfPC2 = sesInfo.userInput.numComp;
         else
             if isempty(settings.numICs) || ~isnumeric(settings.numICs)
@@ -112,13 +115,16 @@ switch task
         
         %% Save parameters ans run
         save(sesInfo.userInput.param_file,'sesInfo');
-        icatb_runAnalysis(sesInfo, 1)
+        icatb_runAnalysis(sesInfo, 1);
         
         %% Outputs
         aap = aas_desc_outputs(aap, 'study', [], 'gift_parameters', fullfile(sesInfo.userInput.param_file));
         
     case 'checkrequirements'
-        
+        if isempty(which('icatb_runAnalysis'))
+            aas_log(aap,true,sprintf('ERROR: GIFT not found! You should set aap.directory_conventions.GIFTdir'));
+        end
+
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end

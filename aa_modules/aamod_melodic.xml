@@ -11,6 +11,7 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             ﻿<inputstreams>
+                <stream isessential='0'>firstlevel_brainmask</stream>
                 <stream>epi</stream>  
             </inputstreams>
             
