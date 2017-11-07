@@ -147,6 +147,11 @@ switch task
         for a = 1:size(SEGimg,1)
             [pth, fn, ext] = fileparts(SEGimg(a,:));
             
+            maxY = max(Y{a}(:));
+            if numel(Y{a} > 0) == 0 % check for bad thesholding
+                aas_log(aap, true, sprintf('ERROR: No voxels above the threshold mask (%f) [max: %f]', thr(a), maxY))
+            end
+            
             if ~isempty(strfind(fn(1), 'w'))
                 eY = WeY == a;
             else

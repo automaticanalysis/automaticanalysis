@@ -21,7 +21,12 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
     for d = dir(fullfile(aawp,'aaworker*'))'
         if etime(clock,datevec(d.date,'dd-mmm-yyyy HH:MM:SS'))/(24*60*60) > aap.options.aaworkercleanup
             aas_log(aap,false,sprintf('INFO: aaworker folder %s is older than %d days...Deleting',d.name,aap.options.aaworkercleanup))
-            rmdir(fullfile(aawp,d.name),'s');
+            try
+                rmdir(fullfile(aawp,d.name),'s');
+            catch
+                aas_log(aap, false, sprintf('WARNING: Could not remove %s. Please remove manually.',fullfile(aawp,d.name)))
+                pause(3)
+            end
         end
     end
 end
@@ -133,7 +138,7 @@ else
 end
 
 % Path to FaceMasking
-if ~isempty(aap.directory_conventions.FaceMaskingdir)
+if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     addpath(genpath(fullfile(aap.directory_conventions.FaceMaskingdir,'matlab')));
 else
     % Check whether already in path, give warning if not
@@ -143,7 +148,7 @@ else
 end;
 
 % Path to VBQ
-if ~isempty(aap.directory_conventions.VBQdir)
+if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
     addpath(aap.directory_conventions.VBQdir);
 else
     % Check whether already in path, give warning if not
@@ -213,7 +218,7 @@ if ~isempty(aap.directory_conventions.BrainWaveletdir)
 end
 
 % FaceMasking
-if ~isempty(aap.directory_conventions.FaceMaskingdir)
+if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
@@ -221,7 +226,7 @@ if ~isempty(aap.directory_conventions.FaceMaskingdir)
 end
 
 % VBQ
-if ~isempty(aap.directory_conventions.VBQdir)
+if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
     p_ind = cell_index(p,aap.directory_conventions.VBQdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};

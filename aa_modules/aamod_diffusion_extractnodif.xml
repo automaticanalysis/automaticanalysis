@@ -10,6 +10,8 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <tol_b0></tol_b0>
+            
             <inputstreams>
                 <stream>diffusion_data</stream>
                 <stream>bvals</stream>

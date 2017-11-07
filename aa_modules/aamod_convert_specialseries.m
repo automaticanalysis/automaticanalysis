@@ -64,11 +64,11 @@ switch task
                         fname4D = [getuniformfields(img4D) '.nii'];
                         spm_file_merge(char(img4D),fname4D,0);
                         img4D = cellstr(fname4D);
+                        % replace first instance with the 4D and remove the rest
+                        outstream(find(ind4D,1,'first')) = img4D;
+                        ind4D(find(ind4D,1,'first')) = false;
+                        outstream(ind4D) = [];
                     end
-                    % replace first instance with the 4D and remove the rest
-                    outstream(find(ind4D,1,'first')) = img4D;
-                    ind4D(find(ind4D,1,'first')) = false;
-                    outstream(ind4D) = [];
                 end
             end
             

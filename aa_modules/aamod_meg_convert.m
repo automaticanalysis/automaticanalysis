@@ -7,6 +7,7 @@ switch task
         
     case 'doit'
         %% Initialise
+
         sessdir = aas_getsesspath(aap,subj,sess);
         inputstreams = aas_getstreams(aap,'input');
         infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],inputstreams{2});        
@@ -52,4 +53,5 @@ switch task
         
         %% Outputs
         aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        
+
 end
