@@ -36,6 +36,7 @@ switch task
         Vo = V;
         for i=1:numel(Vo)
             Vo(i).fname = spm_file(V(i).fname,'prefix',pfx);
+            Vo(i).dt(1) = spm_type('float32');
         end
         Vo = spm_create_vol(Vo);
         
