@@ -55,6 +55,8 @@ classdef aaq_qsub<aaq
                             aas_log(obj.aap,false,'INFO: Generic engine is detected');
                             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
                             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
+                        case 'Local'
+                            aas_log(obj.aap,false,'INFO: Local engine is detected');                           
                     end
                 else
                     obj.pool = parcluster('local');
