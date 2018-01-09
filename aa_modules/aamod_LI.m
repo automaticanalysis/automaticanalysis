@@ -1,4 +1,4 @@
-function [aap,resp] = aamod_LI(aap, task, subj, sess)
+function [aap,resp] = aamod_LI(aap, task, subj)
 %
 % aamod_LI
 %
@@ -18,17 +18,12 @@ function [aap,resp] = aamod_LI(aap, task, subj, sess)
 % articles describing the algorithm. Note Wilke requests developers do not package his toolkit in other
 % software, which is why it's not included in the aa distribution.
 %
-
-% init
+% this module will work at the subject or study level
 
 resp='';
 
 switch task
-	
-    case 'domain'
-		
-        resp='session'; 
-		
+			
     case 'report'
 		
 		% add txt results; add graphics results if jpeg versions exist in the directory
@@ -36,12 +31,22 @@ switch task
 		temp_string = 'Lateralization Statistics';
 		
 		savedir = pwd;
-		session_path = aas_getsesspath(aap, subj, sess);
-		cd(session_path);
+		
+		% check for a valid subject index ; it won't be defined for
+		% domain=study, but we can use an empty placeholder
+		
+		if (exist('subj','var'))
+			working_directory = aas_getsubjpath(aap, subj);
+		else
+			working_directory = aas_getstudypath(aap);
+			subj = [];
+		end
+		
+		cd(working_directory);
 		
 		% the default filename 'li.txt' is hardcoded in LI toolbox
 				
-		lstats_fname = fullfile(session_path, 'li.txt');
+		lstats_fname = fullfile(working_directory, 'li.txt');
 		
 		fid = fopen(lstats_fname,'r');
 		
@@ -63,9 +68,9 @@ switch task
 		% jpeg instead of postscript. The latter is easily done by changing the switch in the print commands in LI.m, 
 		% LI_iter.m, and LI_boot.m, from -dpsc2 to -djpeg. But if we don't find any jpegs, and gs conversion fails,
 		% print a message to help the user to get their ducks aligned.
-		
-		jpg_files = dir(fullfile(session_path,'*.jpg'));
-		ps_files = dir(fullfile(session_path,'*.ps'));
+				
+		jpg_files = dir(fullfile(working_directory,'graphics','*.jpg'));
+		ps_files = dir(fullfile(working_directory, 'graphics','*.ps'));
 					
 		if (numel(jpg_files) == 0 && numel(ps_files) > 0)
 			
@@ -91,8 +96,10 @@ switch task
 				return;
 				
 			else
-				
+								
 				aas_log(aap, false, '\nConverting postscript output to jpeg to include in report...\n');
+				
+				cd('graphics');
 				
 				for index = 1:numel(ps_files)
 					
@@ -128,11 +135,11 @@ switch task
 		
 		% verify jpeg list (may have been updated by ps conversion)
 		
-		jpg_files = dir(fullfile(session_path,'*.jpg'));
+		jpg_files = dir(fullfile(working_directory,'graphics','*.jpg'));
 			
 		for index = 1:numel(jpg_files)
 			aap = aas_report_add(aap, subj, '<table><tr><td>');
-			aap = aas_report_addimage(aap, subj, fullfile(session_path, jpg_files(index).name));
+			aap = aas_report_addimage(aap, subj, fullfile(working_directory, 'graphics', jpg_files(index).name));
 			aap = aas_report_add(aap, subj,'</td></tr></table>');
 		end			
 
@@ -143,26 +150,73 @@ switch task
     case 'doit'
 	
 		% the LI toolbox creates a bunch of files in the working dir
-		% we don't have any control over their code so cd to the sess dir
+		% we can't change their code so cd to the subj dir
 		
 		savedir = pwd;
-		session_path = aas_getsesspath(aap, subj, sess);
-		cd(session_path);
+		
+		% tweak: domain=study vs domain=subject
+		
+		if (exist('subj','var'))
+			working_directory = aas_getsubjpath(aap, subj);
+		else
+			working_directory = aas_getstudypath(aap);
+		end		
+		
+		cd(working_directory);
 		
 		% extract the options into an LI struct
+		%
+		% note LI expects thresholding option is negative but we define it
+		% positive in the header (because it's less confusing) so flip sign
 		
 		LI_command_struct.B1 = aap.tasklist.currenttask.settings.LI_inclusive_mask;
 		LI_command_struct.C1 = aap.tasklist.currenttask.settings.LI_exclusive_mask;
-		LI_command_struct.thr1 = aap.tasklist.currenttask.settings.LI_thresholding;
+		LI_command_struct.thr1 = -aap.tasklist.currenttask.settings.LI_thresholding;
 	
 		% the only thing missing from the command string is the file(s) to process
 		
 		input_streamname = aas_getstreams(aap,'input');
-		fname_list = aas_getfiles_bystream(aap, subj, sess, input_streamname{1});
-	
+		
+		% tweak: domain=study vs domain=subject
+
+		if (exist('subj','var'))
+			fname_list = aas_getfiles_bystream(aap, subj, input_streamname{1});
+		else
+			fname_list = aas_getfiles_bystream(aap, input_streamname{1});
+		end
+
+		% if there are multiple inputs to process, LI toolbox is smart enough to 
+		% append results to li.txt but not smart enough not to overwrite any
+		% graphics output. Ergo, we rename any ps/jpg files created using 
+		% a unique identifer after each analysis and move to a 'graphics'
+		% folder for later processing
+
+		system('mkdir graphics');
+		
 		for index = 1:size(fname_list,1)
+			
 			LI_command_struct.A = fname_list(index,:);
+			
 			LI(LI_command_struct);
+
+			ps_files = dir('*.ps');
+			for findex = 1:numel(ps_files)
+				old_name = ps_files(findex).name;
+				[ p,n,e ] = fileparts(old_name);
+				new_name = sprintf('%s_%04d.ps', n, index);
+				system(sprintf('mv %s %s', old_name, new_name));
+				system(sprintf('mv %s graphics', new_name));
+			end
+			
+			jpg_files = dir('*.jpg');
+			for findex = 1:numel(jpg_files)
+				old_name = jpg_files(findex).name;
+				[ p,n,e ] = fileparts(old_name);
+				new_name = sprintf('%s_%04d.jpg', n, index);
+				system(sprintf('mv %s results/%s', old_name, new_name));
+				system(sprintf('mv %s graphics', new_name));
+			end
+			
 		end
 		
 		% the LI toobox leaves the SPM graphics window up. Take it down.
@@ -177,20 +231,25 @@ switch task
 		%	LI_masking.ps
 		%	li.txt
 		%
-		% we'll save the stats as an output stream. The others
-		% we just save to the report (if they've been jpeg converted)					
+		% just save the stats as an output stream. The others
+		% we just save to the report (if they are/can be jpeg converted)					
 		
- 		LI_stats_fname = fullfile(session_path, 'li.txt');
-		aap = aas_desc_outputs(aap, subj, sess, 'LI_stats', LI_stats_fname);
-				
-		% pop the sess dir
+ 		LI_stats_fname = fullfile(working_directory, 'li.txt');
+		
+		% tweak: domain=study vs domain=subject
+
+		if (exist('subj','var'))
+			aap = aas_desc_outputs(aap, subj, 'LI_stats', LI_stats_fname);
+		else		
+			aap = aas_desc_outputs(aap, 'LI_stats', LI_stats_fname);
+		end
+		
+		% pop the working dir
 		
 		cd(savedir);
 		
-		
     case 'checkrequirements'
 					
-        
     otherwise
         aas_log(aap, 1, sprintf('%s: Unknown task %s', mfilename, task));
 		
