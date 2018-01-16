@@ -54,7 +54,7 @@ switch task
         elseif numel(fieldseries{1})<abs(aap.options.autoidentifyfieldmaps_number)
             if numel(fieldseries{2})>=abs(aap.options.autoidentifyfieldmaps_number)
                 aas_log(aap,false,sprintf('INFO:autoidentifyseries found no(t enough) fieldmaps %s EPI serie %d',msg{1}{1},mriser));
-                aas_log(aap,false,sprintf('INFO:Will proceed with the %s %d acquired %s the EPI.',msg{2}{2},abs(aap.options.autoidentifyfieldmaps_number,msg{2}{1})));
+                aas_log(aap,false,sprintf('INFO:Will proceed with the %s %d acquired %s the EPI.',msg{2}{2},abs(aap.options.autoidentifyfieldmaps_number),msg{2}{1}));
                 fieldseries=fieldseries{2}(end-(aap.options.autoidentifyfieldmaps_number-1):end);
             else
                 aas_log(aap,false,sprintf('ERROR: Was expecting %d fieldmaps %s or %s EPI serie %d, but autoidentifyseries found only %d and %d',...
