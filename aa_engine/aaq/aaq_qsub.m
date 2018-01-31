@@ -46,21 +46,21 @@ classdef aaq_qsub<aaq
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
                             obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-                            aaparallel.numberofworkers=1;
+                            aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.LSF'
                             aas_log(obj.aap,false,'INFO: pool LSF is detected');
                             if ~isempty(queue), obj.initialSubmitArguments = [' -q ' queue]; end
                             obj.initialSubmitArguments = sprintf('%s -M %d -R "rusage[mem=%d]"',obj.initialSubmitArguments,aaparallel.memory*1000,aaparallel.memory*1000);
                             obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-                            aaparallel.numberofworkers=1;
+                            aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                         case 'parallel.cluster.Generic'
                             aas_log(obj.aap,false,'INFO: Generic engine is detected');
                             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
                             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
-                            aaparallel.numberofworkers=1;
+                            aaparallel.numberofworkers = 1;
                         case 'Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');  
-                            aaparallel.numberofworkers=12;
+                            aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                     end
                 else
                     obj.pool = parcluster('local');
