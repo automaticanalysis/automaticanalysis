@@ -231,10 +231,10 @@ if isfield(args,'functional') && ~isempty(args.functional)
                 thissubj.seriesnumbers{iMRIData}=args.functional{s};
             end
         end
-        if ~isempty(fMRI)
+        if ~isempty(fMRI) && any(cellfun(@(x) ~isempty(x), fMRI))
             thissubj.seriesnumbers{iMRIData}=fMRI;
         end
-        if ~isempty(MEG)
+        if ~isempty(MEG) && any(cellfun(@(x) ~isempty(x), MEG))
             thissubj.megseriesnumbers{iMEGData}=MEG;
         end
     end
