@@ -133,7 +133,7 @@ classdef aaq_qsub<aaq
                     % Find how many free workers available, then allocate next
                     % batch. Skip section if there are no jobs to run.
                     if any(obj.jobnotrun)
-                        if printswitches.jobsinq;
+                        if printswitches.jobsinq
                             aas_log(obj.aap, false, sprintf('Jobs in aa queue: %d\n', sum(obj.jobnotrun)))
                             printswitches.jobsinq = false; % Don't display again unless queue length changes
                         end
@@ -188,24 +188,49 @@ classdef aaq_qsub<aaq
                     % job information is stored in JI, including the main
                     % queue index JI.qi used to refer back to the original
                     % job queue (obj.jobqueue) created when this object was called.
+                    Jobs = obj.pool.Jobs([obj.pool.Jobs.ID] == JI.JobID);
+                    moduleName = obj.aap.tasklist.main.module(JI.InputArguments{3}).name;
+                    indices = JI.InputArguments{4};
                     
-                    % This section of code only runs if the job is not
-                    % running (has finished or error)
-                    if strcmp(JI.state, 'finished') || strcmp(JI.state, 'error') || strcmp(JI.state, 'failed')
-                        Jobs = obj.pool.Jobs([obj.pool.Jobs.ID] == JI.JobID);
-                        if isempty(Jobs) % cleared by the GUI
-                            if obj.QV.isvalid
-                                obj.QV.Hold = false;
+                    if isempty(Jobs) % cleared by the GUI
+                        if obj.QV.isvalid
+                            obj.QV.Hold = false;
+                        end
+                        obj.fatalerrors = true; % abnormal terminations
+                        obj.close;
+                        return;
+                    end
+                    
+                    if strcmp(Jobs.State, 'running') % make sure we have up-to-date info (important for fast processes)
+                        
+                        w = Jobs.Tasks.Worker;
+                        if ~isstruct(w) || ~all(isfield(w,{'Host','ProcessId'})), continue; end % structure may not have been updated, yet?
+                        [junk, txt] = system(sprintf('ssh %s ps -o %%cpu %d',w.Host,w.ProcessId));
+                        lines = strsplit(txt,'\n');
+                        CPU = str2double(lines{2});
+                        if CPU > 10 % assume it is processed when %CPU > 10
+                            obj.jobinfo([obj.jobinfo.JobID] == JI.JobID).tic = [];
+%                             aas_log(obj.aap,false,sprintf('Job%d (%s) is running at %3.1f %%%%CPU',JI.JobID,moduleName,CPU),obj.aap.gui_controls.colours.info)
+                        else
+                            if isempty(JI.tic)
+                                obj.jobinfo([obj.jobinfo.JobID] == JI.JobID).tic = tic;
+                                aas_log(obj.aap,false,sprintf('Job%d (%s) seems to be stopped',JI.JobID,moduleName),obj.aap.gui_controls.colours.warning)
+                            else
+                                t = round(toc(JI.tic));
+                                % aa to switch this on/off or extend the time? On very busy
+                                % servers this might cause all jobs to be
+                                % perpetually deleted and restarted.
+                                aas_log(obj.aap,false,sprintf('Job%d (%s) seems to be stopped for %d seconds',JI.JobID,moduleName,t),obj.aap.gui_controls.colours.warning)
+                                if (obj.aap.options.aaworkermaximumretry > 1) && (t > obj.aap.options.aaworkerwaitbeforeretry) % if job has been sleeping for more than N seconds
+                                    obj.remove_from_jobqueue(JI.JobID, true); % 2nd argument = retry
+                                    aas_log(obj.aap,false,'    Job has been restarted',obj.aap.gui_controls.colours.warning)
+                                end
                             end
-                            obj.fatalerrors = true; % abnormal terminations
-                            obj.close;
-                            return;
                         end
                         
-                        %                     moduleName = JI.InputArguments{1}.tasklist.main.module(JI.InputArguments{3}).name;
+                    else
+                        
                         aap = aas_setcurrenttask(obj.aap,JI.InputArguments{3});
-                        moduleName = obj.aap.tasklist.main.module(JI.InputArguments{3}).name;
-                        indices = JI.InputArguments{4};
                         datname = ''; datpath = '';
                         if numel(indices) > 0 % subject specified
                             datname = aas_getsubjdesc(aap,indices(1));
@@ -219,9 +244,9 @@ classdef aaq_qsub<aaq
                         if ~isempty(Jobs.Tasks.Error)
                             switch Jobs.Tasks.Error.identifier
                                 case 'parallel:job:UserCancellation'
-                                    state = 'cancelled';
+                                    JI.state = 'cancelled';
                                 otherwise
-                                    state = 'error';
+                                    JI.state = 'error';
                             end
                         end
                         
@@ -463,6 +488,7 @@ classdef aaq_qsub<aaq
                 ji.qi = i;
                 ji.jobrunreported = false;
                 ji.state = 'pending';
+                ji.tic = tic;
                 
                 if strcmp(job.domain, 'study')
                     ji.subjectinfo = struct('subjname', 'ALL SUBJECTS');
@@ -474,7 +500,7 @@ classdef aaq_qsub<aaq
                 obj.jobnotrun(i) = false;
                 rt = obj.jobretries.(ji.modulename)(ji.qi);
                 if isnan(rt), rt = 0; end
-                aas_log(obj.aap, false, sprintf('Added job %s with qsub ID %3.1d | Subject ID: %s | Retry: %3.1d | Jobs submitted: %3.1d',...
+                aas_log(obj.aap, false, sprintf('Added job %s with qsub ID %3.1d | Subject ID: %s | Execution: %3.1d | Jobs submitted: %3.1d',...
                     ji.modulename, ji.JobID, ji.subjectinfo.subjname, rt, length(obj.pool.Jobs)))
             catch ME
                 if strcmp(ME.message, 'parallel:job:OperationOnlyValidWhenPending')
