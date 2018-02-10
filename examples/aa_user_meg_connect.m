@@ -26,6 +26,7 @@ aap.directory_conventions.analysisid = 'MEGconnect';
 
 % Directory for raw data:
 aap.directory_conventions.rawmegdatadir = '/megdata/cbu/ftd/';
+aap.directory_conventions.subject_directory_format = 1;
 
 % Add subject (full):
 aap = aas_add_meg_session(aap,'psp_bp');

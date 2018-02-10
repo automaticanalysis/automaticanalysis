@@ -48,6 +48,7 @@
                 <branch>
                     <analysisid_suffix>_native</analysisid_suffix>
                     <module><name>aamod_smooth</name></module>
+                    <module><name>aamod_coreg_noss</name></module>
                 </branch>
             </module>
             

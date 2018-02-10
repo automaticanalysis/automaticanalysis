@@ -75,4 +75,5 @@ for k=1:Nz
             end
         end
     end
+    fprintf('%d of %d slices done!\n',k,Nz);
 end

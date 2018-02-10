@@ -35,7 +35,11 @@ switch task
                         structural_choose = sprintf('%s %s - serie(s)%s',structural_choose,...
                             aap.acq_details.subjects(subj).mriname{d},...
                             sprintf(' %d',aap.acq_details.subjects(subj).structural{d}));
-                        series{d}=intersect(series{d},aap.acq_details.subjects(subj).structural{d});
+                        if aap.options.autoidentifystructural
+                            series{d}=intersect(series{d},aap.acq_details.subjects(subj).structural{d});
+                        else
+                            series{d}=aap.acq_details.subjects(subj).structural{d};
+                        end
                     end
                 end
             case 't2'

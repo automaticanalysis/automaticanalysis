@@ -420,6 +420,10 @@ switch task
             
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
             
+            if ~isempty(aas_getsetting(aap,'ignoreafter',sess))
+                fns = fns(1:min(numel(fns),aas_getsetting(aap,'ignoreafter',sess)));
+            end
+            
             finalepis=fns;
             
             if aap.tasklist.currenttask.settings.outputstats || aap.options.NIFTI4D
@@ -504,12 +508,15 @@ switch task
         else
             d = 0;
         end
-        finalepis = {finalepis{d+1:end}};
+        
+        finalepis = finalepis(d+1:end);
+        
         % 4D conversion [TA]
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
-            finalepis = [finalepis(1:ind(2)-1) '.nii'];
+            if numel(ind) > 1, ind = ind(2); end
+            finalepis = [finalepis(1:ind-1) '.nii'];
 			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0);
         end
         % And describe outputs

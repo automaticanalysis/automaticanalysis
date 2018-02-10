@@ -27,6 +27,7 @@ aap.tasksettings.aamod_norm_write_meanepi.vox = [3 3 3];
 
 aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';        	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model.includemovementpars = 0;% Include/exclude Moco params in/from DM, typical value 1
+aap.tasksettings.aamod_firstlevel_threshold.threshold.p = 0.01;
 
 aap = aas_renamestream(aap,'aamod_secondlevel_threshold_00001','structural','normalised_structural');
 aap.tasksettings.aamod_secondlevel_threshold.threshold.correction = 'none';

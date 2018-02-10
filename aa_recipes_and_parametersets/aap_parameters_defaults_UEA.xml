@@ -7,8 +7,8 @@
             <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
-            <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu:/megdata/camcan/camcan/</rawmegdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/gpfs/home/ryb17eeu/data</rawdatadir>
+            <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'></rawmegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -16,38 +16,37 @@
             <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
             <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
-            <subjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>CBU%06d*</subjectoutputformat>
-            <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
+            <subjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>S%02d</subjectoutputformat>
+            <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>SER%03d</seriesoutputformat>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
-            <dicomfilter ui='text'>*.dcm</dicomfilter>
-            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r6906</spmdir>
-			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'>/imaging/local/software/spm_toolbox/vbm8</spmtoolsdir>
+            <dicomfilter ui='text'>*</dicomfilter>
+            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'></megsubjectoutputformat>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/gpfs/home/ryb17eeu/software/spm/spm12_r6906</spmdir>
+			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'></spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh</fslsetup>
-            <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
+            <fsldir desc='Path to fsl' ui='dir'>/gpfs/software/fsl/5.0.10</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
+            <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/latest/x86_64/</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/gpfs/software/freesurfer/6.0</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
-            <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
-            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
-            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICATv3.0a</GIFTdir>
-            <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
-            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
-            <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
-            <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/gpfs/software/freesurfer/6.0/FreeSurferEnv.sh;</freesurferenvironment>
+            <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
+            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
+            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
+            <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
             <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
-            <VBQdir desc='Path to VBQ toolbox' ui='dir'>/imaging/local/software/spm_toolbox/VBQ</VBQdir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
-            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/gpfs/home/ryb17eeu/software/BrainWavelet/BrainWavelet_v1.1</BrainWaveletdir>
+            <VBQdir desc='Path to VBQ toolbox' ui='dir'></VBQdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
+            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'>CBU_Cluster</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'>LSF2016b:long-ib</poolprofile>
+            <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uea@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            
@@ -57,9 +56,16 @@
             <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'>7</aaworkercleanup>
             <aaworkermaximumretry desc='Maximum number of (re)tries to submit job to the scheduler' ui='double'>6</aaworkermaximumretry>
             <aaworkerwaitbeforeretry desc='If job has been pendign for longer than this value, aa re-ubmit it to the scheduler if aaworkermaximumretry > 1' ui='double'>3600</aaworkerwaitbeforeretry>
+            <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
+                <numberofworkers desc='Requested number of workers' ui='double'>8</numberofworkers>
+                <memory desc='Requested amount of memory in GB' ui='double'>4</memory>
+                <walltime desc='Maximum amount of time (in hours) to run a job' ui='double'>24</walltime>
+            </aaparallel>
             <restorepath desc='Restore linux and MATLAB path upon closing' ui='yesno'>1</restorepath>
 			<diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
+            <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>0</autoidentifystructural>
             <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
+            <autoidentifyfieldmaps_number desc='If field maps exist, how many are there? Positive or negatve number indicates fieldmap after or before EPI, respectively' ui='double'>-1</autoidentifyfieldmaps_number>
             <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>0</autoidentifyt2>		
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
         </options>

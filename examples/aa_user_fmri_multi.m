@@ -46,6 +46,8 @@ aap.tasksettings.aamod_firstlevel_model(1).includemovementpars = 1;% Include/exc
 aap.tasksettings.aamod_firstlevel_model(2).xBF.UNITS = 'secs';    	% OPTIONS: 'scans'|'secs' for onsets and durations, typical value 'secs'
 aap.tasksettings.aamod_firstlevel_model(2).includemovementpars = 1;% Include/exclude Moco params in/from DM, typical value 1
 
+aap = aas_renamestream(aap,'aamod_coreg_noss_00001','structural','aamod_biascorrect_structural_00001.structural');
+
 %% STUDY
 % Directory for analysed data
 aap.acq_details.root = '/imaging/xy00/aa'; 

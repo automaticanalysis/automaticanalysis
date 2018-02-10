@@ -7,12 +7,6 @@ resp='';
 switch task
     case 'report'
     case 'doit'
-        forder = {...
-            'rawmag'...
-            'rawmag'...
-            'rawphase'...
-            };
-       
         sesspth=fullfile(aas_getsesspath(aap,subj,sess),aap.directory_conventions.fieldmapsdirname);
         aas_makedir(aap,sesspth);
                
@@ -47,10 +41,10 @@ switch task
                 niftifile{f} = niftifile{f}(1:end-3);
             end
             
-            aas_makedir(aap,fullfile(sesspth,forder{f}));
+            aas_makedir(aap,fullfile(sesspth,sprintf('serie%02d',f)));
             V=spm_vol(niftifile{f});
             Y=spm_read_vols(V(1));
-            V.fname = spm_file(niftifile{f},'path',fullfile(sesspth,forder{f}));
+            V.fname = spm_file(niftifile{f},'path',fullfile(sesspth,sprintf('serie%02d',f)));
             spm_write_vol(V,Y);
             fn{f} = V.fname;
             

@@ -7,7 +7,7 @@
 function strDcm = mri_finddcm(aap,vol,ser)
 
 strSubj = mri_findvol(aap,vol,1);
-strDcmDir = dir(fullfile(strSubj,sprintf(aap.directory_conventions.seriesoutputformat,ser)));
-strDcm = dir(fullfile(strSubj,strDcmDir(1).name,aap.directory_conventions.dicomfilter));
-strDcm = fullfile(strSubj,strDcmDir(1).name,strDcm(1).name);
+strDcmDir = cellstr(spm_select('FPLIst',strSubj,'dir',sprintf(aap.directory_conventions.seriesoutputformat,ser)));
+strDcm = dir(fullfile(strDcmDir{1},aap.directory_conventions.dicomfilter));
+strDcm = fullfile(strDcmDir{1},strDcm(1).name);
 

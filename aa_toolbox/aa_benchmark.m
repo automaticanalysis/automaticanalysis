@@ -25,7 +25,7 @@ end
 load(aaploadfn);
 
 [s w]=system('hostname');
-aas_log(aap,0,['BENCHMARK TIMINGS IN SECONDS ' datestr(now) ' MACHINE ' deblank(w)]);
+aas_log(aap,0,['BENCHMARK TIMINGS ' datestr(now) ' MACHINE ' deblank(w)]);
 aas_log(aap,0,['=============================================================']);
 
 % THE MODULES IN AAP.TASKLIST.STAGES ARE RUN IF A CORRESPONDING DONE_ FLAG
@@ -46,7 +46,7 @@ for k=1:length(aap.tasklist.main.module)
     end;
 end;
 
-fprintf('STAGES NOT COMPLETED: %d  PROCESSING TIME: %f  MAX TIME: %f\n',benchmark.stagesnotdone,benchmark.total,benchmark.max);
+fprintf('STAGES NOT COMPLETED: %d  PROCESSING TIME: %s  MAX TIME: %f\n',benchmark.stagesnotdone,sprintf('%*dd %*dh %dm %ds',round(datevec(benchmark.total/3600/24))),benchmark.max);
 return;
 
 function [benchmark]=processflag(benchmark,aap, doneflag)
@@ -67,6 +67,6 @@ else
         tme2str='-';
     end;
     benchmark.total=benchmark.total+tme;
-    fprintf('%f\t%s\tfor stage %s\n',tme,tme2str,doneflag);
+    fprintf('%s\t%s\tfor stage %s\n',datestr(tme/3600/24,'HH:MM:SS'),tme2str,doneflag);
 end;
 return;

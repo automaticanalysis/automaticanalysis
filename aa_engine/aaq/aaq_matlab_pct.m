@@ -103,6 +103,8 @@ classdef aaq_matlab_pct<aaq
                             aas_log(aap,false,'INFO: Generic engine is detected');
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'walltime',obj.aaparallel.walltime);
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'memory',obj.aaparallel.memory);                            
+                        case 'Local'
+                            aas_log(obj.aap,false,'INFO: Local engine is detected');
                     end
                 else
                     P = parcluster('local');

@@ -21,11 +21,11 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/psycapps/spm/spm12-r6906</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/psycapps/spm/spm12-r7219</spmdir>
 			<spmtoolsdir desc='Path(s) to SPM tools' ui='dir'></spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-5.0.9</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash 5.0.9</fslsetup>
+            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-5.0.10</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash 5.0.10</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/usr/local/apps/psycapps/freesurfer/freesurfer-6.0.0</freesurferdir>        
@@ -33,10 +33,12 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/usr/local/apps/psycapps/freesurfer/freesurfer-6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/usr/local/apps/psycapps/templates</templatedir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/usr/local/apps/psycapps/dcmtk-3.6.0</DCMTKdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/usr/local/apps/psycapps/spm_toolboxes/GIFT/GroupICAT-4.0b</GIFTdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/usr/local/apps/psycapps/dcmtk/dcmtk-3.6.2</DCMTKdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/usr/local/apps/psycapps/BrainWavelet/BrainWavelet-1.1</BrainWaveletdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/usr/local/apps/psycapps/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'>PsychoSGE</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'>PsychoSGE</poolprofile>
             <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.rhul@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
