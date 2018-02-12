@@ -282,7 +282,7 @@ classdef aaq_qsub<aaq
                                     'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                     ' to run the job locally in debug mode.\n'],...
                                     Task.Diary, Task.ErrorMessage, obj.aap.options.aaworkermaximumretry - obj.jobretries.(JI.modulename)(JI.qi));
-                                aas_log(aap, false, msg);
+                                aas_log(obj.aap, false, msg);
                                 obj.jobnotrun(JI.qi) = true;
                                 obj.remove_from_jobqueue(JI.JobID, true);
                                 pause(60)
@@ -576,18 +576,20 @@ classdef aaq_qsub<aaq
                 % Double check that finished jobs do not have an error in the Task object
                 switch obj.jobinfo(jobind).state
                     case 'running'
-                        w = []; retry = 0;
-                        while ~isobject(w) && retry < obj.aap.options.aaworkermaximumretry % may not have been updated, yet - retry
-                            retry = retry + 1;
-                            w = Jobs.Tasks.Worker;
-                            pause(1);
-                        end
-                        if isobject(w) 
-                            [junk, txt] = system(sprintf('ssh %s top -p %d -bn1 | tail -2 | head -1 | awk ''{print $9}''',w.Host,w.ProcessId)); % 9th column of top output
-                            obj.jobinfo(jobind).CPU = str2double(txt);
-                        else
-                            aas_log(obj.aap,false,sprintf('WARNING: Worker information of Job %d not found!',id));
-                            obj.jobinfo(jobind).CPU = [];
+                        if isfield(obj.aap.options,'aaworkercheckCPU') && obj.aap.options.aaworkercheckCPU
+                            w = []; retry = 0;
+                            while ~isobject(w) && retry < obj.aap.options.aaworkermaximumretry % may not have been updated, yet - retry
+                                retry = retry + 1;
+                                w = Jobs.Tasks.Worker;
+                                pause(1);
+                            end
+                            if isobject(w)
+                                [junk, txt] = system(sprintf('ssh %s top -p %d -bn1 | tail -2 | head -1 | awk ''{print $9}''',w.Host,w.ProcessId)); % 9th column of top output
+                                obj.jobinfo(jobind).CPU = str2double(txt);
+                            else
+                                aas_log(obj.aap,false,sprintf('WARNING: Worker information of Job %d not found!',id));
+                                obj.jobinfo(jobind).CPU = [];
+                            end
                         end
                         if ~isempty(obj.jobinfo(jobind).CPU) && (obj.jobinfo(jobind).CPU < 10) % assume it is processed when %CPU > 10
                             obj.jobinfo(jobind).state = 'inactive';
