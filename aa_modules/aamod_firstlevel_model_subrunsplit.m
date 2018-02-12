@@ -87,7 +87,6 @@ switch task
             end
         end
 
-        %oldSPM = SPM;
         SPM = newSPM;
         save(spmpath,'SPM');
         aap=aas_desc_outputs(aap,subj,'firstlevel_spm',spmpath);

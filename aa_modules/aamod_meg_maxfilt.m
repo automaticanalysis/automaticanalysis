@@ -108,7 +108,6 @@ switch task
         end
         
         for sess = meg_sessions
-            try
                 %% Initialise
                 sesspath = aas_getsesspath(aap,subj,sess);
                 
@@ -315,9 +314,5 @@ switch task
                 if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
                     aap=aas_desc_outputs(aap,subj,sess,['trans_' instream],outs{2});
                 end
-            catch ME
-                aas_log(aap, false, sprintf('ERROR: Max Filter Failed\n %s', ME.message))
-                save(fullfile(sesspath,'failed_aamod_meg_maxfilt.mat'), 'ME','maxres')
-            end
         end
 end
