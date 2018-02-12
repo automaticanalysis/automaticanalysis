@@ -11,7 +11,7 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             <inputstreams>
-                <stream>structural</stream>
+                <stream diagnostic="1">structural</stream>
             </inputstreams>
             
             <outputstreams>
