@@ -11,6 +11,7 @@
             <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
                 <stream ismodified='0'>epi</stream>
+                <stream isessential='0'>realignment_parameter</stream>
             </inputstreams>
             <outputstreams>
                 <stream>tsdiffana</stream>
