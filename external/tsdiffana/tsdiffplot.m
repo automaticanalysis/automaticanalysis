@@ -67,12 +67,13 @@ slicemean_norm = qa.slice.mean - repmat(mean(qa.slice.mean,1),size(qa.slice.mean
 
 datatoplot = {...
     {@plot 2:imgno qa.global.diff/mom '-' 'Volume' 'Scaled variance'} {@imagesc 1:imgno 1:zno slicemean_norm' 'Volume' 'Scaled mean slice intensity'};...
-    {@plot 2:imgno sslicediff '*' 'Volume' 'Slice by slice variance'} {@imagesc 2:imgno-1 1:zno qa.slice.fft' 'Number of cycles in timecourse' 'FFT of slice intensity'};...
-    {@plot 1:imgno qa.global.mean/mom '-' 'Volume' 'Scaled mean voxel intensity'} {@plot 2:imgno-1 qa.global.fft '-' 'Number of cycles in timecourse' 'FFT of mean intensity'};...
+    {@plot 2:imgno sslicediff '*' 'Volume' 'Slice by slice variance'} {@imagesc 2:imgno-1 1:zno log(qa.slice.fft)' 'Number of cycles in timecourse' 'FFT of slice intensity [log]'};...
+    {@plot 1:imgno qa.global.mean/mom '-' 'Volume' 'Scaled mean voxel intensity'} {@plot 2:imgno-1 log(qa.global.fft) '-' 'Number of cycles in timecourse' 'FFT of mean intensity [log]'};...
     };
 
 hs = [];
-dxt = 10:20:imgno;
+tickstep = round(imgno/100)*10;
+dxt = tickstep:tickstep:imgno;
 
 for m = 1:size(datatoplot,2)
     figure(fgs(m));
@@ -85,6 +86,7 @@ for m = 1:size(datatoplot,2)
         xlabel(datatoplot{p,m}{5});
         ylabel(datatoplot{p,m}{6});
         if strcmp(func2str(datatoplot{p,m}{1}),'imagesc')
+            colormap('jet')
             pos = get(h1,'position');
             colorbar;
             set(h1,'position',pos);
