@@ -49,6 +49,7 @@ end
 function diag(aap,subjInd,sessInd,keepOpen)
 tdfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
 
+opts = {};
 if aas_stream_has_contents(aap,[subjInd,sessInd],'realignment_parameter')
     opts = {'r' aas_getfiles_bystream(aap,subjInd,sessInd,'realignment_parameter')};
 end
