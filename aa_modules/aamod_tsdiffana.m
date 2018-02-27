@@ -48,7 +48,7 @@ end
 
 function diag(aap,subjInd,sessInd,keepOpen)
 tdfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
-opts = {'r' '/MRIWork/MRIWork09/ADNI/aa/aamod_realignunwarp_00001/C01_1/rest/rp_FSconv.txt'};
+
 if aas_stream_has_contents(aap,[subjInd,sessInd],'realignment_parameter')
     opts = {'r' aas_getfiles_bystream(aap,subjInd,sessInd,'realignment_parameter')};
 end
