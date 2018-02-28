@@ -10,11 +10,15 @@ resp='';
 switch task
     case 'report' % Updated [TA]
         sesspath = aas_getsesspath(aap, subjInd, sessInd);
-        if ~exist(fullfile(sesspath,'diagnostic_aamod_tsdiffana.jpg'),'file')
+        imgList = spm_select('FPList',sesspath,'^diagnostic_aamod_tsdiffana.*jpg$');
+        if isempty(imgList)
             diag(aap,subjInd,sessInd);
+            imgList = spm_select('FPList',sesspath,'^diagnostic_aamod_tsdiffana.*jpg$');
         end
         aap = aas_report_add(aap,subjInd,'<table><tr><td>');
-        aap=aas_report_addimage(aap,subjInd,fullfile(sesspath, 'diagnostic_aamod_tsdiffana.jpg'));
+        for n = 1:size(imgList,1)
+            aap=aas_report_addimage(aap,subjInd,imgList(n,:));
+        end
         aap = aas_report_add(aap,subjInd,'</td></tr></table>');
     case 'doit'
         sesspath=aas_getsesspath(aap,subjInd,sessInd);
