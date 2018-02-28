@@ -51,7 +51,8 @@ tdfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
 
 opts = {};
 if aas_stream_has_contents(aap,[subjInd,sessInd],'realignment_parameter')
-    opts = {'r' aas_getfiles_bystream(aap,subjInd,sessInd,'realignment_parameter')};
+    mp = cellstr(aas_getfiles_bystream(aap,subjInd,sessInd,'realignment_parameter'));
+    opts = {'r' mp{cell_index(mp,'.txt')}};
 end
 
 f(1) = spm_figure('Create', 'Graphics1'); spm_figure('Clear',f(1),'Graphics1');
