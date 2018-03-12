@@ -1,12 +1,60 @@
-% FORMAT aa_export_toBIDS([aap,] dest[, 'anatt1', <stagetag[|streamname]>][, 'anatt2', <stagetag[|streamname]>])
-% TODO: 
+function aa_export_toBIDS(varargin)
+%
+% BIDS export -- create a BIDS-compliant directory tree from an extant aa analysis
+%
+% This function can run standalone or be included at the end of a userscript.
+%
+% usage: aa_export_toBIDS([aap,] dest[, 'anatt1', <stagetag[|streamname]>][, 'anatt2', <stagetag[|streamname]>])
+%
+% also uses: aap.directory_conventions.BIDSfiles
+%
+% example usage:
+%
+%	1) aa_export_toBIDS('/put/results/here');
+%	2) aa_export_toBIDS(aap,'/put/results/here');
+%	3) aa_export_toBIDS('put/results/here','anatt1','aamod_freesurfer_deface_00001|defaced_structural')
+%	4) aa_export_toBIDS(aap,'put/results/here','anatt1','aamod_freesurfer_deface_00001|defaced_structural')
+%	
+% notes
+%
+% a) if you pass the aap struct, you must first load it from aap_parameters.mat
+% (this version contains additional required fields). If you don't pass aap, it 
+% will be loaded from aap_parameters.m for you. As such, there really is no 
+% reason you would ever pass in aap, assuming you first cd to the directory
+% where aap_parameters.mat lives
+%
+% b) example usage #3 and #4 shows how to override the default structural
+% (i.e. t1) file to copy (in this example a defaced structural is used, which
+% is probably required if you're going to upload results to a public
+% repository like openfMRI. The syntax goes: stage|streamname. If you don't
+% supply an explict stream for t1 (or, optionally, t2), the first appearance
+% of t1 [t2] in the analysis tasklist will be used, which is probably the
+% output from dicom covert (which is not defaced).
+%
+% c) BIDS requires three files to appear in the top level directory:
+%
+%		README - a plaintext (ASCII or UTF-8) description of the data
+%		CHANGES- a plaintext (ASCII or UTF-8) list of version changes
+%		dataset_description.json - a JSON description of the data (see the
+%			current specification for required and optional fields)
+%
+%	You must provide these files to be BIDS-compliant. This function will
+%	attempt to copy them from aap.directory_conventions.BIDSfiles, if the
+%	field is defined and the directory exists (otherwise you'll have to add 
+%	them by hand). Note there are a number of optional files that can be also
+%	be included at the top level -- for convenience, all files that live in 
+%	aap.directory_convention.BIDSfiles will be copied for you.
+%
+% See bids.neuroimaging.io/bids_spec1.0.0.pdf for specification details.
+%
+% This function is a work in progress. TODO:
+%
 %   - multi-session
 %   - multi-run
 %   - covariates
 %   - parametric
 %   - multi-model
 
-function aa_export_toBIDS(varargin)
 
 if isstruct(varargin{1})
     aap = varargin{1};
@@ -20,40 +68,69 @@ else
 end
 args = vargParser(varargin);
 
-% source stages
+% identify source stages present from the tasklist
+
 stages = {aap.tasklist.main.module.name};
+
 stage_anatt1 = cell_index(stages,'convert_structural') + cell_index(stages,'structuralfromnifti');
 stage_anatt2 = cell_index(stages,'convert_t2');% + cell_index(stages,'t2fromnifti');
 stage_func = cell_index(stages,'convert_epi') + cell_index(stages,'epifromnifti');
 stage_fmap = cell_index(stages,'convert_fieldmap') + cell_index(stages,'fieldmapfromnifti');
 stage_dwi = cell_index(stages,'convert_diffusion') + cell_index(stages,'diffusionfromnifti');
 
-% folder
-aas_makedir(aap,destpath);
+% create the top-level directory
+
+aas_makedir(aap, destpath);
+
+% copy required BIDS files if they exist
+
+success = 0;
+if isfield(aap.directory_conventions,'BIDSfiles') && ~isempty(aap.directory_conventions.BIDSfiles)
+	bidsdir = fullfile(aap.acq_details.root, aap.directory_conventions.BIDSfiles);
+	if exist(bidsdir,'dir')
+		success = ~system(sprintf('cp %s/* %s', bidsdir, destpath));
+		% these three files are compulsory
+		if ~exists(fullfile(destpath,'dataset_description.json'),'file'); success=0; end
+		if ~exists(fullfile(destpath,'README'),'file'); success=0; end
+		if ~exists(fullfile(destpath,'CHANGES'),'file'); success=0; end
+	end
+end
+
+if ~success
+	aas_log(aap, false, 'WARNING: Required top-level files dataset_description.json, README, and/or CHANGES not copied -- you must add these by hand.');
+end
 
 % participant key file
+
 fid_part = fopen(fullfile(destpath,'participants.tsv'),'w');
 fprintf(fid_part,'participant_id'); % minimal
 header_part = false; % header completed
 
 % data
+
 for subj = 1:numel(aap.acq_details.subjects)
+	
     aas_log(aap,false,['INFO: Exporting subject: ' aas_getsubjname(aap,subj)])
     subname = aas_getsubjname(aap,subj);
     suboutname = subname;
     if ~isequal(suboutname(1:4),'sub-')
         suboutname = ['sub-' suboutname];
-    end
+	end
+	
     subjpath = fullfile(destpath,suboutname);
+	
     aas_makedir(aap,subjpath);
+	
     if stage_anatt1
+		
         aas_log(aap,false,'\tINFO: Exporting T1 anatomy')
         aap = aas_setcurrenttask(aap,stage_anatt1);
         aap.options.verbose = -1;
         fhdr = aas_getfiles_bystream(aap,'subject',subj,'structural_dicom_header','output');
         aap.options.verbose = 2;
         streamname = 'structural';
-        if isfield(args,'anatt1'),
+
+		if isfield(args,'anatt1')
             out = textscan(args.anatt1,'%s','delimiter','|');
             currstage = out{1}{1};
             if numel(out{1}) > 1, streamname = out{1}{2}; end
@@ -82,15 +159,17 @@ for subj = 1:numel(aap.acq_details.subjects)
                 );
             savejson('',json,spm_file(dest,'ext','json'));
         end
-    end
+	end
+	
     if stage_anatt2
+		
         aas_log(aap,false,'\tINFO: Exporting T2 anatomy')
         aap = aas_setcurrenttask(aap,stage_anatt2);
         aap.options.verbose = -1;
         fhdr = aas_getfiles_bystream(aap,'subject',subj,'t2_dicom_header','output');
         aap.options.verbose = 2;
         streamname = 't2';
-        if isfield(args,'anatt2'),
+        if isfield(args,'anatt2')
             out = textscan(args.anatt2,'%s','delimiter','|');
             currstage = out{1}{1};
             if numel(out{1}) > 1, streamname = out{1}{2}; end
@@ -120,8 +199,10 @@ for subj = 1:numel(aap.acq_details.subjects)
                 );
             savejson('',json,spm_file(dest,'ext','json'));
         end
-    end
+	end
+	
     if stage_func
+		
         sliceaxes = {'ROW',{'i+' 'i-'}; 'COL',{'j+' 'j-'}};
         
         aap = aas_setcurrenttask(aap,stage_func);
@@ -159,6 +240,12 @@ for subj = 1:numel(aap.acq_details.subjects)
             end
             
             % events
+			
+			if ~isfield(aap.tasksettings,'aamod_firstlevel_model')
+				aas_log(aap,false,'WARNING: No model information is available!')
+				continue
+			end
+
             models = aap.tasksettings.aamod_firstlevel_model(1).model(2:end);
             selected_model = (strcmp({models.subject},aas_getsubjname(aap,subj)) | strcmp({models.subject},'*')) & ...
                 (strcmp({models.session},aap.acq_details.sessions(sess).name) | strcmp({models.session},'*'));
@@ -186,8 +273,10 @@ for subj = 1:numel(aap.acq_details.subjects)
             fprintf(fid,lines);
             fclose(fid);
         end
-    end
+	end
+	
     if stage_fmap
+		
         fmsuffix = {'magnitude1' 'magnitude2' 'phasediff' };
         
         aap = aas_setcurrenttask(aap,stage_fmap);
@@ -230,8 +319,10 @@ for subj = 1:numel(aap.acq_details.subjects)
                 savejson('',json,spm_file(dest,'ext','json'));
             end
         end
-    end
+	end
+	
     if stage_dwi
+		
         sliceaxes = {'ROW',{'i+' 'i-'}; 'COL',{'j+' 'j-'}};
         
         aap = aas_setcurrenttask(aap,stage_dwi);
@@ -273,10 +364,12 @@ for subj = 1:numel(aap.acq_details.subjects)
                 spm_file(dest,'ext','bval'));
             copyfile(aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'bvecs','output'),...
                 spm_file(dest,'ext','bvec'));
-        end        
+		end 
+		
     end
     
     % participant key file
+	
     hdr = hdr(1);
     entry = suboutname;
     
@@ -292,6 +385,7 @@ for subj = 1:numel(aap.acq_details.subjects)
     
     if ~header_part, fprintf(fid_part,'\n'); header_part = true; end
     fprintf(fid_part,'%s\n',entry);
+	
 end
 
 fclose(fid_part);
@@ -305,3 +399,4 @@ RULES = {...
     };
 out = strrep_multi(in,RULES(:,1),RULES(:,2));
 end
+

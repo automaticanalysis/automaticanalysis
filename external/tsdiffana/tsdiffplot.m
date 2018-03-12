@@ -106,14 +106,15 @@ h4 = plot(mx, 'r');
 hold off
 h5 = xlabel('Slice number');
 h6 = ylabel('Slice variance');
-h7 = legend('Mean','Min','Max',0);
+% h7 = legend('Mean','Min','Max',0);
+h7 = legend('Mean','Min','Max');
 h  = [h; h1; h2; h3; h4; h5; h6; h7];
 
 % realignment params
 if any(flags == 'r')
   h1 = axes('position', [.1 1-4.7/subpno .8 .65*1/subpno]);
   h2 = plot(mparams(:,1:3));
-  h3 = legend('x translation','y translation','z translation',0);
+  h3 = legend('x translation','y translation','z translation');
   h4 = xlabel('image');
   h5 = ylabel('translations in mm');
   h  = [h; h1; h2; h3; h4; h5];
@@ -123,7 +124,7 @@ end
 cp = get(gca,'Position');
 h1 =  axes('Position', [0 0 1 1], 'Visible', 'off');
 img1  = deblank(imgs(1,:));
-h2 = text(0.5,cp(2)/2.5,{'First image:',img1},'HorizontalAlignment','center');
+h2 = text(0.5,cp(2)/2.5,sprintf('First image: %s',img1),'HorizontalAlignment','center','FontSize',8);
 h  = [h; h1; h2];
 
 return

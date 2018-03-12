@@ -505,13 +505,24 @@ switch task
             d = 0;
         end
         finalepis = {finalepis{d+1:end}};
-        % 4D conversion [TA]
-        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
-            finalepis = finalepis{1};
-            ind = find(finalepis=='-');
-            finalepis = [finalepis(1:ind(2)-1) '.nii'];
-			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0);
-        end
+				
+       % 4D conversion [MSJ]
+		
+        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D	
+			finalepis = finalepis{1};
+			ind = find(finalepis=='-');
+			finalepis = [finalepis(1:ind(2)-1) '.nii'];		
+			TR = DICOMHEADERS{1}.volumeTR;
+			filelist = sprintf('%s ',V0.fname);
+			cmd = sprintf('fslmerge -tr %s %s %f', finalepis, filelist, TR);
+			[ err,~ ] = aas_runfslcommand(aap, cmd);
+			if (err)
+				aas_log(aap,false,'Warning: Using SPM for 4D file merge. File header will not include TR');
+				spm_file_merge(char({V0(ndummies+1:end).fname}), finalepis, 0);
+			end
+		end
+		
+
         % And describe outputs
         aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         dcmhdrfn = fullfile(domainpath,'dicom_headers.mat');
