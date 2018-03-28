@@ -15,7 +15,7 @@ switch task
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
 
-        if size(spm_select('List',localpath,'diagnostic_.*.jpg'),1) < 2
+        if isempty(spm_select('List',localpath,'diagnostic_.*.jpg'))
             diag(aap,varargin{:});
         end
         
