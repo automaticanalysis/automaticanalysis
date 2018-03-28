@@ -26,7 +26,7 @@ switch task
                 if exist(f{1},'file')
                     tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                     f{2} = fullfile(aas_getstudypath(aap),...
-                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcnameC,SPM.xCon(C).name));
+                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcname,C,SPM.xCon(C).name));
                     
                     % Add images to study report
                     aap = aas_report_add(aap,[],'<table><tr>');
