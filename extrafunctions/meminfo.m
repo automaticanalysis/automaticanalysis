@@ -7,6 +7,7 @@ function M = meminfo
 %
 % [TA] -- added system, limits, and process sections
 % [MSJ] -- added OS X version
+%
 
 if ismac
 	
