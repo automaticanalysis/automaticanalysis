@@ -126,6 +126,7 @@
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
         <aaworkermaximumretry desc='Maximum number of (re)tries to submit job to the scheduler' ui='double'>1</aaworkermaximumretry>
         <aaworkerwaitbeforeretry desc='If job has been pendign for longer than this value, aa re-ubmit it to the scheduler if aaworkermaximumretry > 1' ui='double'>inf</aaworkerwaitbeforeretry>
+        <aaworkercheckCPU desc='Check job CPU usage (and restart sleeping jobs)?' ui='yesno'>0</aaworkercheckCPU>
         <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
             <numberofworkers desc='Requested number of workers' ui='double'>8</numberofworkers>
             <memory desc='Requested amount of memory in GB' ui='double'>4</memory>

@@ -62,12 +62,17 @@ switch task
             FMfn{f} = spm_file(FM(f,:),'path',FMdir);
         end
         switch size(FM,1)
-            case 8 % 2* (mag & phase & real & imag)
+            case 8 % 2* (mag & phase & real & imag) (GE)
                 job.data.realimag.shortreal = FMfn(3);
                 job.data.realimag.shortimag = FMfn(4);
                 job.data.realimag.longreal = FMfn(7);
                 job.data.realimag.longimag = FMfn(8);
-            case 3 % presubphase + 2*magnitude
+            case 4 % (real & real & imag & imag) (Philips)
+                job.data.realimag.shortreal = FMfn(1);
+                job.data.realimag.shortimag = FMfn(3);
+                job.data.realimag.longreal = FMfn(2);
+                job.data.realimag.longimag = FMfn(4);
+            case 3 % presubphase + 2*magnitude (Siemens)
                 job.data.presubphasemag.phase = FMfn(3);
                 job.data.presubphasemag.magnitude = FMfn(1:2);
             case 1 % precalcfieldmap

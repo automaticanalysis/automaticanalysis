@@ -11,7 +11,7 @@
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>
-                <stream>nodif</stream>
+                <stream diagnostic="1">nodif</stream>
             </inputstreams>
             
             <outputstreams>

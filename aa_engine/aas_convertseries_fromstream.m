@@ -177,6 +177,21 @@ for subdirind=1:length(subdirs)
             if ~any(strcmpi(headerFields,'NumberOfPhaseEncodingSteps')), infoD.NumberOfPhaseEncodingSteps = infoD.AcquisitionMatrix(1); end
             collectSOinfo = isempty(sliceorder) && isfield(infoD, 'TemporalPositionIdentifier');
             
+            % Philips (based on Hester Breman's code for BrainVoyager) 
+            if isempty(echospacing) && all(isfield(infoD,{'EPIFactor' 'WaterFatShift' 'MagneticFieldStrength'}))
+                epifactor 				 = infoD.EPIFactor;
+                water_fat_shift_pixel 	 = infoD.WaterFatShift;
+                fieldstrength_tesla 	 = infoD.MagneticFieldStrength;
+                
+                water_fat_diff_ppm       = 3.35;
+                resonance_freq_mhz_tesla = 42.576;
+                echo_train_length        = epifactor + 1;
+                water_fat_shift_hz       = fieldstrength_tesla * water_fat_diff_ppm * resonance_freq_mhz_tesla; % water_fat_shift_hz 3T = 434.215 Hz
+                BW_hz_pixel              = water_fat_shift_hz / water_fat_shift_pixel;
+                totBW                    = BW_hz_pixel * echo_train_length;
+                echospacing              = 1/totBW;
+            end
+            
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
             infoD.volumeTR = TR/1000;
             infoD.volumeTE = TE/1000;
@@ -206,7 +221,7 @@ for subdirind=1:length(subdirs)
             k=k+1;
         end
         
-        % GE:
+        % GE, Philips
         if collectSOinfo
             sliceInfo = sliceInfoD;
             sliceInfo(sliceInfo(:,1)~=1, :) = [];       % Trim volumes that aren't the 1st one
@@ -229,7 +244,8 @@ for subdirind=1:length(subdirs)
             aas_log(aap,false,sprintf('Sliceorder %s have been detected', sliceorder));
              
             % Update the DICOMHEADERS
-            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', sliceInfo(:,2)')}, DICOMHEADERS);
+            [junk, sliceorder] = sort(sliceInfo(:,2)); % for Philips 
+            DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', sliceorder')}, DICOMHEADERS);
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'slicetimes', x{1}.volumeTR/numSlices*(x{1}.sliceorder-1))}, DICOMHEADERS);
         end
         
@@ -252,6 +268,7 @@ for subdirind=1:length(subdirs)
             addpath(custompath);
             dicom_converter = spm_file(SCRIPT{1},'basename');
             opts = SCRIPT(2:end);
+            if cell_index(opts,'aap'), opts{cell_index(opts,'aap')} = aap; end
         else
             custompath = '';
             aas_log(aap, false, 'INFO: Using default spm_dicom_convert...')

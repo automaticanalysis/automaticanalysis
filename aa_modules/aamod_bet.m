@@ -15,7 +15,7 @@ switch task
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
 
-        if size(spm_select('List',localpath,'diagnostic_.*.jpg'),1) < 2
+        if isempty(spm_select('List',localpath,'diagnostic_.*.jpg'))
             diag(aap,varargin{:});
         end
         
@@ -179,6 +179,6 @@ spm_orthviews('reposition', [0 0 0])
 
 try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
 set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
-print('-djpeg','-r75',fullfile(aas_getsesspath(aap,varargin{:}), ...
+print('-djpeg','-r75',fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[varargin{:}]), ...
     ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' aap.acq_details.subjects(varargin{1}).subjname '.jpg']));
 end
