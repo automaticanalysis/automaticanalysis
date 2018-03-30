@@ -157,10 +157,23 @@ else
     end;
 end;
 
+% Path to LI toolbox
+if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventions.LIdir)
+    addpath(aap.directory_conventions.LIdir);
+else
+    % Check whether already in path, give warning if not
+    if isempty(which('LI'))
+       aas_log(aap,false,sprintf('LI toolbox not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.LIdir'));
+    end;
+end;
+
+
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
     setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
+
+
 
 % Path to spm modifications to the top
 addpath(fullfile(aa.Path,'extrafunctions','spm_mods'),'-begin');
@@ -233,6 +246,14 @@ if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_convent
     end
 end
 
+% LI
+if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventions.LIdir)
+    p_ind = cell_index(p,aap.directory_conventions.LIdir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
+    end
+end
+
 % clean
 reqpath=reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
@@ -242,3 +263,4 @@ aacache.path.reqpath = reqpath;
 % switch off warnings
 aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
 aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
+

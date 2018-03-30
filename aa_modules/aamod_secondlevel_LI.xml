@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+
+	<currenttask domain='study' mfile_alias='aamod_LI' desc='compute laterality index using Wilkes LI toolbox' modality='MRI' >
+            
+	<qsub>
+		<timeBase>1</timeBase>
+		<memoryBase>1</memoryBase>
+	</qsub>
+            
+	<permanenceofoutput>1</permanenceofoutput>
+				
+	<!-- from the LI manual: 
+	
+	LI_inclusive mask options:
+	
+			1  frontal
+			2  parietal
+			3  temporal
+			4  occipital
+			5  cingulate
+			6  central
+			7  cerebellar
+			8  gray matter
+			9  all standard masks
+			10 no mask
+			
+	LI_exclusive mask options:
+	
+			1  standard exclusive mask, midline -5 mm
+			2  standard exclusive mask, midline -10 mm
+			3  no exclusive mask
+			
+	LI_thresholding options:
+	
+			1 adaptive thresholding
+			2 rank-based thresholding
+			3 iterative thresholding
+			4 no thresholding
+			5 bootstrap thresholding
+			
+	-->
+	
+	<LI_inclusive_mask>1</LI_inclusive_mask>
+	<LI_exclusive_mask>1</LI_exclusive_mask>
+	<LI_thresholding>5</LI_thresholding>
+			
+	<!-- you must rename the input stream using aas_renamestream -->
+	<!-- this will probably be a secondlevel t or an F map, for example: --> 
+	<!-- aap = aas_renamestream(aap,'aamod_secondlevel_LI_00001','placeholder','secondlevel_spmts'); -->
+				
+	<inputstreams>
+		<stream isrenameable='1'>placeholder</stream>
+	</inputstreams>
+			
+	<outputstreams>
+		<stream>LI_stats</stream>
+	</outputstreams>
+            
+	</currenttask>
+
+    </tasklist>
+</aap>
+
+
