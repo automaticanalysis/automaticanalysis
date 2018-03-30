@@ -71,6 +71,7 @@ datatoplot = {...
     {@plot 1:imgno qa.global.mean/mom '-' 'Volume' 'Scaled mean voxel intensity'} {@plot 2:imgno-1 log(qa.global.fft) '-' 'Number of cycles in timecourse' 'FFT of mean intensity [log]'};...
     };
 
+
 hs = [];
 tickstep = round(imgno/100)*10;
 dxt = tickstep:tickstep:imgno;

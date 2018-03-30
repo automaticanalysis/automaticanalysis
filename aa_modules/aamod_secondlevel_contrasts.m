@@ -30,7 +30,9 @@ switch task
         end;
         
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
-        cd(rfxrootdir);
+	% if rfxdir doesn't exist, create it [MSJ]
+	if ~exist(rfxrootdir,'file'); mkdir(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);end
+	cd(rfxrootdir);
         
         %% Now set up contrasts
         fnSPMs = aas_getfiles_bystream(aap,'secondlevel_spm');
@@ -66,8 +68,8 @@ switch task
         %  updated spm
         aap = aas_desc_outputs(aap,'secondlevel_spm',char(allSPMs));
         if ~isempty(char(allCons)), aap = aas_desc_outputs(aap,'secondlevel_cons',char(allCons)); end
-        if ~isempty(char(allCons)), aap = aas_desc_outputs(aap,'secondlevel_spmts',char(allTs)); end
-        if ~isempty(char(allCons)), aap = aas_desc_outputs(aap,'secondlevel_spmfs',char(allFs)); end        
+        if ~isempty(char(allTs)), aap = aas_desc_outputs(aap,'secondlevel_spmts',char(allTs)); end
+        if ~isempty(char(allFs)), aap = aas_desc_outputs(aap,'secondlevel_spmfs',char(allFs)); end        
         
     case 'checkrequirements'
         

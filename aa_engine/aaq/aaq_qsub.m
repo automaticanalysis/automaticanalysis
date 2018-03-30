@@ -296,6 +296,7 @@ classdef aaq_qsub<aaq
                                         Task.Error.stack(e).file, Task.Error.stack(e).line)];
                                 end
                                 % If there is an error, it is fatal...
+
                                 obj.fatalerrors = true;
                                 obj.jobnotrun(JI.qi) = true;
                                 aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
