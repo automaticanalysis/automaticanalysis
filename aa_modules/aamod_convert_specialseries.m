@@ -54,7 +54,7 @@ switch task
                             cmd=['mv ' img4D{dummyind} ' ' dummypath];
                             [s w]=aas_shell(cmd);
                             if (s)
-                                aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',niifiles{dummyind},dummypath));
+                                aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',img4D{dummyind},dummypath));
                             end
                         end
                         img4D(1:ndummies) = [];
@@ -62,7 +62,7 @@ switch task
                     
                     if NIFTI4D
                         fname4D = [getuniformfields(img4D) '.nii'];
-                        spm_file_merge(char(img4D),fname4D,0);
+                        spm_file_merge(char(img4D),fname4D,0,dcmhdr{d}.volumeTR);
                         img4D = cellstr(fname4D);
                         % replace first instance with the 4D and remove the rest
                         outstream(find(ind4D,1,'first')) = img4D;
