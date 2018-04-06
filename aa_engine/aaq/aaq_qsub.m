@@ -17,6 +17,8 @@ classdef aaq_qsub<aaq
     end
     methods
         function [obj]=aaq_qsub(aap)
+            obj = obj@aaq(aap);
+            
             global aaworker;
             global aaparallel;
             
@@ -34,12 +36,13 @@ classdef aaq_qsub<aaq
                         if isempty(ppfname)
                             aas_log(obj.aap,true,sprintf('ERROR: settings for pool profile %s not found!',poolprofile));
                         else
-                            obj.pool=parcluster(parallel.importProfile(ppfname));
+                            poolprofile = parallel.importProfile(ppfname);
                         end
                     else
                         aas_log(obj.aap,false,sprintf('INFO: pool profile %s found',poolprofile));
-                        obj.pool=parcluster(poolprofile);
                     end
+                    obj.pool=parcluster(poolprofile);
+                    
                     switch class(obj.pool)
                         case 'parallel.cluster.Torque'
                             aas_log(obj.aap,false,'INFO: pool Torque is detected');
@@ -76,7 +79,6 @@ classdef aaq_qsub<aaq
                 aas_log(aap,false,sprintf('\tERROR in %s:\n\tline %d: %s',ME.stack(1).file, ME.stack(1).line, ME.message),aap.gui_controls.colours.warning);
                 obj.pool=[];
             end
-            obj.aap=aap;
         end
         
         function close(obj)
@@ -397,7 +399,7 @@ classdef aaq_qsub<aaq
                 % end
                 % end
                 % end
-                if isa(obj.pool,'parallel.cluster.Torque'), obj = obj.pool_args(qsubsettings{:}); end
+                obj = obj.pool_args(qsubsettings{:});
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
