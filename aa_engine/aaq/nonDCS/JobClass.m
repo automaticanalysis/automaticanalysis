@@ -31,7 +31,7 @@ classdef JobClass < handle
             obj.Script = fullfile(obj.Folder,'run.sh');
             obj.Log = fullfile(obj.Folder,'log.txt');
             
-            if (nargin >= 5) && ~isempty(userVariable)
+            if (nargin >= 4) && ~isempty(userVariable)
                 save(fullfile(obj.Folder,'data.mat'),'-struct','userVariable');
                 Command = sprintf('load(''%s''); %s',fullfile(obj.Folder,'data.mat'),Command);
             end

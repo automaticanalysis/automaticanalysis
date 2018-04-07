@@ -5,8 +5,8 @@ classdef PoolClass < handle
         Jobs = JobClass.empty
         latestJobID = 0
         
-        reqMemory
-        reqWalltime
+        reqMemory = 1
+        reqWalltime = 1
         
         getSubmitStringFcn
         getSchedulerIDFcn
@@ -30,6 +30,14 @@ classdef PoolClass < handle
             switch obj.Type
                 case 'Torque'
                     obj.SubmitArguments = strcat(pool.ResourceTemplate, ' ', pool.SubmitArguments);
+                    datWT = sscanf(regexp(obj.SubmitArguments,'walltime=[0-9]*','once','match'),'walltime=%d');
+                    datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d');
+                    obj.reqWalltime = datWT;
+                    obj.reqMemory = datMem;
+                    obj.getSubmitStringFcn = @(Job) sprintf( 'qsub %s -N %s -j oe -o "%s" "%s"', ...
+                                        obj.SubmitArguments, Job.Name, Job.Log, Job.Script );
+                    obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
+                    obj.getJobStateFcn = @(SchedulerID) PBS_getJobState(SchedulerID);
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
                 case 'Generic'
@@ -67,7 +75,7 @@ classdef PoolClass < handle
             retries = 0;
             while success == false
                 Job.Submit(cmd);
-                success = strcmp(Job.State,'unknown');
+                success = ~strcmp(Job.State,'unknown');
                 if ~success
                     if retries > obj.maximumRetry
                         error('#%d: %s',s,w);
@@ -116,5 +124,17 @@ if isempty(ji)
 else
     state = ji.ATTRIBUTE.state; 
 end
+end
 
+function state = PBS_getJobState(ID)
+stateList = {...
+    'HQ' 'queued';...
+    'W' 'pending';...
+    'R' 'running';...
+    'C' 'finished';...
+    'E' 'error'...
+    };
+[s, w] = system(sprintf('qstat -f %d',ID));
+chState = regexp(w,'job_state = [A-Z]','match','once'); chState = chState(end); % RE HQW
+state = stateList{cell_index(stateList(:,1),chState),2};
 end
