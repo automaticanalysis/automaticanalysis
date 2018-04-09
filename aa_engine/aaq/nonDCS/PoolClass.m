@@ -11,6 +11,7 @@ classdef PoolClass < handle
         getSubmitStringFcn
         getSchedulerIDFcn
         getJobStateFcn
+        getJobDeleteStringFcn
         
         maximumRetry = 0
     end
@@ -35,18 +36,20 @@ classdef PoolClass < handle
                     obj.reqWalltime = datWT;
                     obj.reqMemory = datMem;
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub %s -N %s -j oe -o "%s" "%s"', ...
-                                        obj.SubmitArguments, Job.Name, Job.Log, Job.Script );
+                                        obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.ShellFile);
                     obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
                     obj.getJobStateFcn = @(SchedulerID) PBS_getJobState(SchedulerID);
+                    obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
                 case 'Generic'
                     obj.reqWalltime = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
                     obj.reqMemory = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'memory'))+1};
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub -S /bin/sh -N %s -j yes -o %s %s %s', ...
-                        Job.Name, Job.Log, obj.SubmitArguments, Job.Script);
+                        Job.Name, Job.Tasks.LogFile, obj.SubmitArguments, Job.Tasks.ShellFile);
                     obj.getSchedulerIDFcn = @(stdOut) sscanf(regexp(stdOut, 'Your job [0-9]*', 'once', 'match'),'Your job %d');
                     obj.getJobStateFcn = @(SchedulerID) SGE_getJobState(SchedulerID);
+                    obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
             end
         end
         
@@ -60,33 +63,16 @@ classdef PoolClass < handle
             obj.updateSubmitArguments;
         end
         
-        function Job = addJob(obj,jobName,Command,userVariable)
-            if nargin < 4, userVariable = []; end
-            Job = JobClass(obj,jobName,Command,userVariable);
+        function Job = addJob(obj)
+            Job = JobClass(obj);
             obj.Jobs(end+1) = Job;
             obj.latestJobID = obj.latestJobID + 1;
         end
         
-        function submitJob(obj,Job)
-            cmd = obj.SubmitString(Job);
-            % submit
-            % Job submission can sometimes fail (server fault) (DP). Added rety to cope this this.
-            success = false;
-            retries = 0;
-            while success == false
-                Job.Submit(cmd);
-                success = ~strcmp(Job.State,'unknown');
-                if ~success
-                    if retries > obj.maximumRetry
-                        error('#%d: %s',s,w);
-                    else
-                        warning('Could not add job. Retrying...')
-                        retries = retries + 1;
-                        pause(5)
-                    end
-                end
-            end
+        function val = get.Jobs(obj)
+            val = obj.Jobs(obj.Jobs.isvalid);
         end
+        
     end
     
     methods (Hidden, Access = protected)
@@ -135,6 +121,10 @@ stateList = {...
     'E' 'error'...
     };
 [s, w] = system(sprintf('qstat -f %d',ID));
-chState = regexp(w,'job_state = [A-Z]','match','once'); chState = chState(end); % RE HQW
-state = stateList{cell_index(stateList(:,1),chState),2};
+if s == 153 % Unknown Job ID
+    state = 'finished';
+else
+    chState = regexp(w,'job_state = [A-Z]','match','once'); chState = chState(end); % RE HQW
+    state = stateList{cell_index(stateList(:,1),chState),2};
+end
 end

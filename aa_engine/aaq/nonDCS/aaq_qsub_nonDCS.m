@@ -4,10 +4,12 @@ classdef aaq_qsub_nonDCS < aaq_qsub
         function [obj]=aaq_qsub_nonDCS(aap)
             obj = obj@aaq_qsub(aap);
            
-            if isempty(obj.pool), return; end
-            
-            pool = obj.pool;
-            obj.pool = [];
+            if ~isempty(obj.pool)
+                pool = obj.pool;
+                obj.pool = [];
+            else
+                % Type, JobStorageLocation, initialSubmitArguments 
+            end
             obj.pool = PoolClass(pool,obj.initialSubmitArguments);
             obj.pool.maximumRetry = obj.aap.options.aaworkermaximumretry;
         end
@@ -55,15 +57,10 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                 % end
                 obj = obj.pool_args(qsubsettings{:});
                 
-                jobName = sprintf('aa%04d_%s',obj.pool.latestJobID+1,obj.aap.tasklist.main.module(job.k).name);
-                % save job data
-                aa.reqpath = aacache.path.reqpath;
-                aa.aap = obj.aap;
-                aa.job = job;
-                aa.aaworker = aaworker;
-                Job = obj.pool.addJob(jobName,...
-                    'addpath(reqpath{:}); aa_doprocessing_onetask(aap,job.task,job.k,job.indices,aaworker);',...
-                    aa);
+                taskName = obj.aap.tasklist.main.module(job.k).name;
+                Job = obj.pool.addJob;
+                Job.AdditionalPaths = aacache.path.reqpath;
+                Job.addTask(taskName,@aa_doprocessing_onetask,{obj.aap,job.task,job.k,job.indices,aaworker});
                 Job.Submit;
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);

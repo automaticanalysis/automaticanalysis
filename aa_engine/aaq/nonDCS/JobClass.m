@@ -3,8 +3,9 @@ classdef JobClass < handle
         ID
         Name
         Folder
-        Script
-        Log
+        AdditionalPaths = {}
+        Tasks = TaskClass.empty;
+        latestTaskID = 0
     end
     
     properties (Dependent)
@@ -17,35 +18,48 @@ classdef JobClass < handle
     end
     
     methods
-        function obj = JobClass(Pool,Name,Command,userVariable)
+        function obj = JobClass(Pool)
             obj.Pool = Pool;
             
-            obj.Folder = fullfile(obj.Pool.JobStorageLocation,Name);
-            while exist(obj.Folder,'dir')
-                obj.Folder = [obj.Folder '+'];
-            end
-            mkdir(obj.Folder);            
-            
             obj.ID = obj.Pool.latestJobID+1;
-            obj.Name = Name;
-            obj.Script = fullfile(obj.Folder,'run.sh');
-            obj.Log = fullfile(obj.Folder,'log.txt');
+            obj.Name = sprintf('Job%d',obj.ID);
             
-            if (nargin >= 4) && ~isempty(userVariable)
-                save(fullfile(obj.Folder,'data.mat'),'-struct','userVariable');
-                Command = sprintf('load(''%s''); %s',fullfile(obj.Folder,'data.mat'),Command);
+            obj.Folder = fullfile(obj.Pool.JobStorageLocation,obj.Name);
+%             while exist(obj.Folder,'dir')
+%                 obj.Folder = [obj.Folder '+'];
+%             end
+            mkdir(obj.Folder);            
+        end
+        
+        function delete(obj)
+            if ~obj.isvalid, return; end
+            if obj.cancel
+                rmdir(obj.Folder,'s'); 
+                delete@handle(obj)
+            else
+                warning('Job %s could not be killed!\nYou may need to kill manually by calling %s.',obj.ID,obj.Pool.getJobDeleteStringFcn(obj.schedulerID));
             end
-            
-            if Command(end) ~= ';', Command(end+1) = ';'; end
-            
-            % create script
-            fid = fopen(obj.Script,'w');
-            fprintf(fid,'matlab -nosplash -nodesktop -r "%s quit"',Command);
-            fclose(fid);
+        end
+        
+        function s = cancel(obj)
+            s = false;
+            if ~any(strcmp({'unknown','finished','error'},obj.State)), [s, w] = system(obj.Pool.getJobDeleteStringFcn(obj.schedulerID)); end
+            if s, warning(w); 
+%             else
+%                 obj.Pool.Jobs([obj.Pool.Jobs.ID]==obj.ID) = [];
+            end
+            s = ~s;
+        end
+        
+        function addTask(obj,Name,varargin)
+            Task = TaskClass(obj,Name,varargin{:});
+            obj.Tasks(end+1) = Task;
+            obj.latestTaskID = obj.latestTaskID + 1;
         end
         
         function Submit(obj)
             [s, w] = system(obj.Pool.getSubmitStringFcn(obj));
+            obj.Tasks.CreateTime = char(toString(java.util.Date));
             if ~s
                 obj.schedulerID = obj.Pool.getSchedulerIDFcn(w);
             end            
@@ -55,7 +69,8 @@ classdef JobClass < handle
             val = 'unknown';
             if ~isnan(obj.schedulerID)
                 val = obj.Pool.getJobStateFcn(obj.schedulerID);
-            end           
+            end
+            if any(strcmp({'finished','error'},val)), val = obj.Tasks.State; end
         end
     end
     

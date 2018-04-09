@@ -53,9 +53,9 @@ classdef QueueViewerClass < handle
             obj.Open;
         end
         
-        function delete(obj)
-            obj.Pool = [];
-        end
+%         function delete(obj)
+%             obj.Pool = [];
+%         end
         
         function Open(obj)
             FontSize = [1.7*get(0,'DefaultUicontrolFontSize') get(0,'DefaultUicontrolFontSize')*0.8]; % H W
