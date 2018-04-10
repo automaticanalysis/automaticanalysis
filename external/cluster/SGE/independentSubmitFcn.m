@@ -106,9 +106,8 @@ for ii = 1:numberOfTasks
     % the qsub command here.
     additionalSubmitArgs = '-pe matlab 1';
     
-    % walltime
-%     additionalSubmitArgs = sprintf('%s -l h_vmem=%dG -l h_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
-    additionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00',additionalSubmitArgs, req_walltime);
+    % memory and walltime
+    additionalSubmitArgs = sprintf('%s -l h_rss=%dG -l h_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
     
     dctSchedulerMessage(5, '%s: Generating command for task %i', currFilename, ii);
     commandToRun = getSubmitString(jobName, quotedLogFile, quotedScriptName, ...

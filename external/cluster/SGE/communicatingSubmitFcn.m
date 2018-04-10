@@ -108,9 +108,8 @@ numberOfNodes = ceil(props.NumberOfTasks/procsPerNode);
 % the qsub command here.
 additionalSubmitArgs  = sprintf('-pe matlab %d', numberOfNodes);
 
-% walltime
-% additionalSubmitArgs = sprintf('%s -l h_vmem=%dG -l h_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
-additionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00',additionalSubmitArgs, req_walltime);
+% memory and walltime
+additionalSubmitArgs = sprintf('%s -l h_rss=%dG -l h_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
 
 dctSchedulerMessage(4, '%s: Requesting %d nodes with %d processors per node', currFilename, ...
     numberOfNodes, procsPerNode);
