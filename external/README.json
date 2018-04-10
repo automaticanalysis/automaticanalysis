@@ -32,6 +32,13 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
+				"Name": "MRtools",
+				"Version": "",
+				"DateDownloaded": "10 Apr 2018",
+				"URL": "http:\/\/mrtools.mgh.harvard.edu\/index.php?title=Downloads",
+				"aaMaintainer": "Tibor Auer"
+			},
+			{
 				"Name": "PEwarp",
 				"Version": "",
 				"DateDownloaded": "08 May 2012",
@@ -46,13 +53,6 @@
 				"aaMaintainer": "Jonathan Peele"
 			},
 			{
-				"Name": "tsdiffana",
-				"Version": "",
-				"DateDownloaded": "09 Jun 2016",
-				"URL": "https:\/\/sourceforge.net\/p\/spmtools\/tsdiffana\/code\/ci\/master\/tree",
-				"aaMaintainer": "Tibor Auer"
-			},
-			{
 				"Name": "TFCE",
 				"Version": "r88 (mod - cg_get_tfce_results accepts input)",
 				"DateDownloaded": "3 Jun 2016",
@@ -60,11 +60,11 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
-				"Name": "Utilities",
+				"Name": "tsdiffana",
 				"Version": "",
-				"DateDownloaded": "02 May 2012",
-				"URL": "http:\/\/mrtools.mgh.harvard.edu\/index.php\/Downloads",
-				"aaMaintainer": "Jonathan Peelle"
+				"DateDownloaded": "09 Jun 2016",
+				"URL": "https:\/\/sourceforge.net\/p\/spmtools\/tsdiffana\/code\/ci\/master\/tree",
+				"aaMaintainer": "Tibor Auer"
 			},
 			{
 				"Name": "XML_IO_Tools",
