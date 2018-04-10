@@ -3,20 +3,24 @@ classdef PoolClass < handle
         Type
         JobStorageLocation
         Jobs = JobClass.empty
-        latestJobID = 0
         
         reqMemory = 1
         reqWalltime = 1
         
+        maximumRetry = 0
+    end
+    
+    properties (Hidden)
+        latestJobID = 0
+
         getSubmitStringFcn
         getSchedulerIDFcn
         getJobStateFcn
         getJobDeleteStringFcn
-        
-        maximumRetry = 0
     end
     
     properties (Hidden, Access = protected)
+        newGenericVersion
         initialSubmitArguments = ''
         SubmitArguments        
     end
@@ -43,8 +47,20 @@ classdef PoolClass < handle
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
                 case 'Generic'
-                    obj.reqWalltime = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
-                    obj.reqMemory = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'memory'))+1};
+                    obj.newGenericVersion = isempty(pool.IndependentSubmitFcn);
+                    if obj.newGenericVersion
+                        if ~isprop(pool.AdditionalProperties,'AdditionalSubmitArgs')
+                            warning(sprintf('WARNING: Propertiy "AdditionalSubmitArgs" not found.\n    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.\n    Your jobs will be submitted to th default queue.'));
+                        else
+                            datWT = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_cpu=[0-9]*','once','match'),'walltime=%d');
+                            datMem = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_rss=[0-9]*','once','match'),'mem=%d');
+                            obj.reqWalltime = datWT;
+                            obj.reqMemory = datMem;
+                        end
+                    else
+                        obj.reqWalltime = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
+                        obj.reqMemory = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'memory'))+1};
+                    end
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub -S /bin/sh -N %s -j yes -o %s %s %s', ...
                         Job.Name, Job.Tasks.LogFile, obj.SubmitArguments, Job.Tasks.ShellFile);
                     obj.getSchedulerIDFcn = @(stdOut) sscanf(regexp(stdOut, 'Your job [0-9]*', 'once', 'match'),'Your job %d');
@@ -54,11 +70,13 @@ classdef PoolClass < handle
         end
         
         function set.reqWalltime(obj,value)
+            if isempty(value), return; end
             obj.reqWalltime = value;
             obj.updateSubmitArguments;
         end
         
         function set.reqMemory(obj,value)
+            if isempty(value), return; end
             obj.reqMemory = value;
             obj.updateSubmitArguments;
         end

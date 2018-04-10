@@ -10,7 +10,8 @@ classdef aaq_qsub<aaq
         waitforalljobs
         
         % ensure resources (e.g. MAXFILTER license)
-        initialSubmitArguments = '';
+        initialSubmitArguments
+        newGenericVersion % with AdditionalProperties
         
         refresh_waitforjob
         refresh_waitforworker
@@ -25,10 +26,8 @@ classdef aaq_qsub<aaq
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    queue = '';
-                    poolprofile = textscan(aap.directory_conventions.poolprofile,'%s','delimiter', ':'); poolprofile = poolprofile{1};
-                    if numel(poolprofile) == 1, poolprofile = poolprofile{1};
-                    else [poolprofile, queue] = poolprofile{1:2}; end
+                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':'); 
+                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
                     
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
@@ -51,18 +50,28 @@ classdef aaq_qsub<aaq
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
-                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                            obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                             aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.LSF'
                             aas_log(obj.aap,false,'INFO: pool LSF is detected');
-                            if ~isempty(queue), obj.initialSubmitArguments = [' -q ' queue]; end
-                            obj.initialSubmitArguments = sprintf('%s -M %d -R "rusage[mem=%d]"',obj.initialSubmitArguments,aaparallel.memory*1000,aaparallel.memory*1000);
-                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                            obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',aaparallel.memory*1000,aaparallel.memory*1000);
+                            obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                         case 'parallel.cluster.Generic'
                             aas_log(obj.aap,false,'INFO: Generic engine is detected');
-                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
-                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
+                            obj.newGenericVersion = isempty(obj.pool.IndependentSubmitFcn);
+                            if obj.newGenericVersion
+                                if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
+                                    aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
+                                    aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
+                                    aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
+                                else
+                                    obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,aaparallel.walltime,aaparallel.memory);
+                                end
+                            else
+                                obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
+                                obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
+                            end
                             aaparallel.numberofworkers = 1;
                         case 'Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');  
@@ -365,14 +374,26 @@ classdef aaq_qsub<aaq
                     else % non-round --> MB
                         memory = sprintf('%dMB',memory*1000);
                     end
-                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
+                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600));
                     %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
                     %                     sprintf(' -N Mod%02d_',job.k),...
                     %                     sprintf('%03d',job.indices));
+                case 'parallel.cluster.LSF'
+                    obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',memory*1000,memory*1000);
+                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                 case 'parallel.cluster.Generic'
-                    aas_log(aap,false,'INFO: Generic engine is detected');
-                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
-                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
+                    if obj.newGenericVersion
+                        if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
+                            aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
+                            aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
+                            aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
+                        else
+                            obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,walltime,memory);
+                        end
+                    else
+                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
+                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
+                    end
             end
         end
         

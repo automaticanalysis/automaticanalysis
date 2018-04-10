@@ -7,12 +7,15 @@ classdef TaskClass < handle
         Parent
         
         InputArguments = {}        
+    end
+    
+    properties (Hidden)
+        Folder
         ShellFile
         LogFile
     end
     
     properties (Access = private)
-        Folder
         DiaryFile
         DoneFile
         ErrorFile
@@ -82,7 +85,7 @@ classdef TaskClass < handle
         function val = get.Diary(obj)
             val = '';
             if exist(obj.DiaryFile,'file')
-                fid = fopen(obj.DoneFile,'r');
+                fid = fopen(obj.DiaryFile,'r');
                 while ~feof(fid)
                    val = cat(2,val,fgets(fid));
                 end

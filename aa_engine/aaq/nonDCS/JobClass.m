@@ -2,14 +2,17 @@ classdef JobClass < handle
     properties
         ID
         Name
-        Folder
         AdditionalPaths = {}
         Tasks = TaskClass.empty;
-        latestTaskID = 0
     end
     
     properties (Dependent)
         State
+    end
+    
+    properties (Hidden)
+        Folder
+        latestTaskID = 0
     end
     
     properties (Hidden, Access = protected)
