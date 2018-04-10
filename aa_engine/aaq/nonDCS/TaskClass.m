@@ -63,7 +63,7 @@ classdef TaskClass < handle
             
             % create script
             fid = fopen(obj.ShellFile,'w');
-            fprintf(fid,'matlab -nosplash -nodesktop -logfile %s -r "try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''w''); fprintf(fid,''%%s'',char(toString(java.util.Date))); fclose(fid); quit"',...
+            fprintf(fid,'export MALLOC_ARENA_MAX=4; matlab -nosplash -nodesktop -logfile %s -r "try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''w''); fprintf(fid,''%%s'',char(toString(java.util.Date))); fclose(fid); quit"',...
                 obj.DiaryFile,Command,obj.ErrorFile,obj.DoneFile);
             fclose(fid);
         end
