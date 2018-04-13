@@ -26,7 +26,7 @@ classdef aaq_qsub<aaq
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':'); 
+                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':');
                     if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
                     
                     profiles = parallel.clusterProfiles;
@@ -74,7 +74,7 @@ classdef aaq_qsub<aaq
                             end
                             aaparallel.numberofworkers = 1;
                         case 'Local'
-                            aas_log(obj.aap,false,'INFO: Local engine is detected');  
+                            aas_log(obj.aap,false,'INFO: Local engine is detected');
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                     end
                 else
@@ -116,13 +116,13 @@ classdef aaq_qsub<aaq
             submittedJobs = 1:length(obj.jobnotrun);
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
-                
+            
             % Create a array of job retry attempts (needs to be specific to
-            % each module so using dynamic fields with modulename as fieldname. 
+            % each module so using dynamic fields with modulename as fieldname.
             % modulename is also saved in jobinfo so is easily retrieved later)
             if ~isempty(obj.jobqueue)
                 % probably a better place to get current module index.
-                modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name; 
+                modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name;
                 obj.jobretries.(modulename) = ones(njobs,1);
                 
                 if obj.jobqueue(end).k == length(obj.aap.tasklist.main.module)
@@ -197,7 +197,7 @@ classdef aaq_qsub<aaq
                 
                 idlist = [obj.jobinfo.JobID];
                 for id = idlist
-                    JI = obj.jobinfo([obj.jobinfo.JobID] == id); 
+                    JI = obj.jobinfo([obj.jobinfo.JobID] == id);
                     % For clarity use JI.JobID from now on (JI.JobID = id). All
                     % job information is stored in JI, including the main
                     % queue index JI.qi used to refer back to the original
@@ -213,7 +213,7 @@ classdef aaq_qsub<aaq
                         return;
                     end
                     Task = Job.Tasks;
-                        
+                    
                     switch JI.state
                         case 'pending'
                             t = toc(JI.tic);
@@ -266,10 +266,18 @@ classdef aaq_qsub<aaq
                             aas_log(obj.aap,true,sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JI.JobID,JI.logfile),obj.aap.gui_controls.colours.warning)
                             
                         case 'finished' % without error
-                            if isempty(Task.FinishTime), continue; end
+                            if isprop(Task,'StartDateTime')
+                                startTime = char(Task.StartDateTime);
+                                finishTime = char(Task.FinishDateTime);
+                            elseif isprop(Task,'StartTime')
+                                startTime = Task.StartTime;
+                                finishTime = Task.FinishTime;
+                            else
+                                aas_log(obj.aap,true,'Time-related property of Task class not found!')
+                            end
+                            if isempty(finishTime), continue; end
                             msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
-                                JI.JobID,JI.modulename,JI.jobname,Task.CreateTime,Task.FinishTime,...
-                                sprintf('%*dd %*dh %dm %ds',round(datevec(jts_etime(Task.FinishTime,Task.CreateTime)/3600/24))));
+                                JI.JobID,JI.modulename,JI.jobname,startTime,finishTime,aas_getTaskDuration(Task));
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!
@@ -307,7 +315,7 @@ classdef aaq_qsub<aaq
                                         Task.Error.stack(e).file, Task.Error.stack(e).line)];
                                 end
                                 % If there is an error, it is fatal...
-
+                                
                                 obj.fatalerrors = true;
                                 obj.jobnotrun(JI.qi) = true;
                                 aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
@@ -317,10 +325,10 @@ classdef aaq_qsub<aaq
                             % aas_log(obj.aap,false,sprintf('Job%d (%s) is running at %3.1f %%%%CPU',JI.JobID,JI.modulename,CPU),obj.aap.gui_controls.colours.info)
                     end
                 end
-               
-                obj.QVUpdate; 
+                
+                obj.QVUpdate;
             end
-
+            
         end
         
         function obj = QVUpdate(obj)
@@ -468,7 +476,7 @@ classdef aaq_qsub<aaq
                 % Add a job to the queue
                 job=obj.jobqueue(i);
                 obj.qsub_q_job(job);
-
+                
                 % Create job info for referencing later
                 % (also clean up done jobs to prevent IDs occuring twice)
                 latestjobid = max([obj.pool.Jobs.ID]);
@@ -556,14 +564,14 @@ classdef aaq_qsub<aaq
                 obj.jobnotrun(ji.qi)=true;
             end
         end
-                
+        
         function states = job_monitor(obj, printjobs)
             % This function gathers job information from the job scheduler.
-            % This can be slow depending on the size of the pool. 
+            % This can be slow depending on the size of the pool.
             % INPUT
             % printjobs [true|false]: print job information to the screen.
             % OUTPUT
-            % states: cell array of states (character) 
+            % states: cell array of states (character)
             %   {'running' | 'failed' | 'error' | 'finished'}
             % obj.jobinfo is also updated with the state information
             if nargin < 2
@@ -594,7 +602,7 @@ classdef aaq_qsub<aaq
                     obj.jobinfo(jobind).state = Jobs.State;
                 else
                     aas_log(obj.aap,false,sprintf('WARNING: Job %d not found in aa queue!',id));
-%                     obj.jobinfo(jobind).state = 'failed';
+                    %                     obj.jobinfo(jobind).state = 'failed';
                 end
                 
                 % Double check that finished jobs do not have an error in the Task object
@@ -634,7 +642,7 @@ classdef aaq_qsub<aaq
             end
             
             states = {obj.jobinfo.state};
-
+            
             if printjobs
                 Nfinished = sum(strcmp(states,'finished'));
                 Nqueued  = sum(strcmp(states,'queued'));
@@ -664,18 +672,4 @@ classdef aaq_qsub<aaq
             end
         end
     end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function esec = jts_etime(jts2,jts1)
-    df = java.text.SimpleDateFormat('EEE MMM dd HH:mm:ss zzz yyyy');
-    cal1 = java.util.GregorianCalendar.getInstance;
-    cal2 = java.util.GregorianCalendar.getInstance;
-    cal1.setTime(df.parse(jts1));
-    cal2.setTime(df.parse(jts2));
-    esec = etime([cal2.get(java.util.GregorianCalendar.YEAR) cal2.get(java.util.GregorianCalendar.MONTH)+1 cal2.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
-        cal2.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal2.get(java.util.GregorianCalendar.MINUTE) cal2.get(java.util.GregorianCalendar.SECOND)],...
-        [cal1.get(java.util.GregorianCalendar.YEAR) cal1.get(java.util.GregorianCalendar.MONTH)+1 cal1.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
-        cal1.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal1.get(java.util.GregorianCalendar.MINUTE) cal1.get(java.util.GregorianCalendar.SECOND)]);
 end

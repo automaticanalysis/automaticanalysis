@@ -62,7 +62,7 @@ classdef JobClass < handle
         
         function Submit(obj)
             [s, w] = system(obj.Pool.getSubmitStringFcn(obj));
-            obj.Tasks.CreateTime = char(toString(java.util.Date));
+            obj.Tasks.StartDateTime = datetime('now','Timezone','local');
             if ~s
                 obj.schedulerID = obj.Pool.getSchedulerIDFcn(w);
             end            

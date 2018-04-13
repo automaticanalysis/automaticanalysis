@@ -1,8 +1,8 @@
 classdef TaskClass < handle
     properties
         Name
-        CreateTime
-        FinishTime
+        CreateDateTime = datetime.empty
+        StartDateTime = datetime.empty
         
         Parent
         
@@ -17,12 +17,14 @@ classdef TaskClass < handle
     
     properties (Access = private)
         DiaryFile
-        DoneFile
+        ProcessFile
         ErrorFile
     end
     
     properties (Dependent)
         State
+        Worker
+        FinishDateTime
         Diary
         ErrorMessage
         Error
@@ -30,6 +32,8 @@ classdef TaskClass < handle
     
     methods
         function obj = TaskClass(Job,Name,varargin)
+            obj.CreateDateTime = datetime('now','Timezone','local');
+            
             obj.Parent = Job;
             obj.Name = sprintf('Task%d_%s',obj.Parent.latestTaskID+1,Name);
             obj.Folder = fullfile(obj.Parent.Folder,obj.Name);
@@ -38,7 +42,7 @@ classdef TaskClass < handle
             obj.ShellFile = fullfile(obj.Folder,'run.sh');
             obj.LogFile = fullfile(obj.Folder,'log.txt');
             obj.DiaryFile = fullfile(obj.Folder,'diary.txt');
-            obj.DoneFile = fullfile(obj.Folder,'done');
+            obj.ProcessFile = fullfile(obj.Folder,'process');
             obj.ErrorFile = fullfile(obj.Folder,'error.mat');
             
             % assemble command
@@ -66,20 +70,40 @@ classdef TaskClass < handle
             
             % create script
             fid = fopen(obj.ShellFile,'w');
-            fprintf(fid,'export MALLOC_ARENA_MAX=4; matlab -nosplash -nodesktop -logfile %s -r "try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''w''); fprintf(fid,''%%s'',char(toString(java.util.Date))); fclose(fid); quit"',...
-                obj.DiaryFile,Command,obj.ErrorFile,obj.DoneFile);
+            fprintf(fid,'export MALLOC_ARENA_MAX=4; matlab -nosplash -nodesktop -logfile %s -r "fid = fopen(''%s'',''w''); fprintf(fid,''%%s\\n'',java.lang.management.ManagementFactory.getRuntimeMXBean.getName.char); fclose(fid); try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''a''); fprintf(fid,''%%s'',char(datetime(''now'',''Timezone'',''local''))); fclose(fid); quit"',...
+                obj.DiaryFile,obj.ProcessFile,Command,obj.ErrorFile,obj.ProcessFile);
             fclose(fid);
         end
         
         function val = get.State(obj)
             val = 'unknown';
-            if exist(obj.DoneFile,'file')
-                val = 'finished';
-                fid = fopen(obj.DoneFile,'r');
-                obj.FinishTime = fgetl(fid);
+            if exist(obj.ProcessFile,'file')
+                fid = fopen(obj.ProcessFile,'r');
+                lines = textscan(fid,'%s','delimiter','@'); lines = lines{1};
                 fclose(fid);
+                if numel(lines) >= 3, val = 'finished'; end
             end
             if exist(obj.ErrorFile,'file'), val = 'error'; end
+        end
+        
+        function val = get.Worker(obj)
+            val = WorkerClass.empty;
+            if exist(obj.ProcessFile,'file')
+                fid = fopen(obj.ProcessFile,'r');
+                lines = textscan(fid,'%s','delimiter','@'); lines = lines{1};
+                fclose(fid);
+                if numel(lines) >= 2, val = WorkerClass(lines{2},str2double(lines{1})); end
+            end
+        end
+        
+        function val = get.FinishDateTime(obj)
+            val = datetime.empty;
+            if any(strcmp({'finished','error'},obj.State))
+                fid = fopen(obj.ProcessFile,'r');
+                lines = textscan(fid,'%s','delimiter','@'); lines = lines{1};
+                fclose(fid);
+                if numel(lines) >= 3, val = datetime(lines{3},'Timezone','local'); end
+            end
         end
         
         function val = get.Diary(obj)
