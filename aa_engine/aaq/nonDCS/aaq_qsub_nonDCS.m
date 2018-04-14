@@ -2,16 +2,35 @@ classdef aaq_qsub_nonDCS < aaq_qsub
     
     methods
         function [obj]=aaq_qsub_nonDCS(aap)
+            global aaparallel;
+            global aaworker;
+            
+            v0 = aap.options.verbose;
+            aap.options.verbose = -1; % disable error
             obj = obj@aaq_qsub(aap);
+            aap.options.verbose = v0;
            
             if ~isempty(obj.pool)
                 pool = obj.pool;
                 obj.pool = [];
             else
-                % Type, JobStorageLocation, initialSubmitArguments 
+                % assume aap.directory_conventions.poolprofile is a path to settings
+                poolprofile = strtok(aap.directory_conventions.poolprofile,':');
+                if ~exist(poolprofile,'file')
+                    aas_log(obj.aap,false,'aap.directory_conventions.poolprofile is either not a file or cannot be found');
+                    return
+                else
+                    xml = xml_read(poolprofile);
+                    pool.Type = xml.settings(2).settings.ATTRIBUTE.name;
+                    pool.JobStorageLocation =  aaworker.parmpath;
+                    pool.ResourceTemplate = '';
+                    pool.SubmitArguments = '';
+                    pool.AdditionalProperties.AdditionalSubmitArgs = '';
+                end
             end
             obj.pool = PoolClass(pool,obj.initialSubmitArguments);
-            obj.pool.maximumRetry = obj.aap.options.aaworkermaximumretry;
+            obj.pool.reqMemory = aaparallel.memory;
+            obj.pool.reqWalltime = aaparallel.walltime;
         end
         
         function obj = pool_args(obj,varargin)

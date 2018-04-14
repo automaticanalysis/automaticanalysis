@@ -6,8 +6,6 @@ classdef PoolClass < handle
         
         reqMemory = 1
         reqWalltime = 1
-        
-        maximumRetry = 0
     end
     
     properties (Hidden)
@@ -27,6 +25,26 @@ classdef PoolClass < handle
     
     methods
         function obj = PoolClass(pool,initialSubmitArguments)
+            % Required argument:
+            % pool - Initializiation object (created by PCT function parcluster) or structure
+            %
+            % Required properties/fields of pool are:
+            %
+            % Type               - Scheduler 'Torque', 'LSF', 'Generic' (also for SGE)
+            % JobStorageLocation - Location of log files for each job/task. Can be empty.
+            %
+            % Required properties/fields of pool for LSF:
+            % SubmitArguments - Submission string pre-specifying memory and walltime. If empty defaults (1GB, 1hour) will be used.
+            %
+            % Required properties/fields of pool for Torque:
+            % ResourceTemplate - Submission string pre-specifying memory and walltime. If empty defaults (1GB, 1hour) will be used.
+            % SubmitArguments  - Submission string specifying resources other than memory and waltime. Can be empty.
+            %
+            % Required properties/fields of pool for Generic/SGE:
+            % AdditionalProperties.AdditionalSubmitArgs - Submission string pre-specifying memory and walltime. If empty defaults (1GB, 1hour) will be used.
+            %
+            % Optionmal argument:
+            % initialSubmitArguments - Submission string specifying resources other than memory and waltime. Can be empty.
             if nargin >= 2, obj.initialSubmitArguments = initialSubmitArguments; end
             
             obj.Type = pool.Type;
@@ -34,7 +52,8 @@ classdef PoolClass < handle
             
             switch obj.Type
                 case 'Torque'
-                    obj.SubmitArguments = strcat(pool.ResourceTemplate, ' ', pool.SubmitArguments);
+                    obj.initialSubmitArguments = strcat(obj.initialSubmitArguments,pool.SubmitArguments);
+                    obj.SubmitArguments = pool.ResourceTemplate;
                     datWT = sscanf(regexp(obj.SubmitArguments,'walltime=[0-9]*','once','match'),'walltime=%d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d');
                     obj.reqWalltime = datWT;
@@ -47,9 +66,9 @@ classdef PoolClass < handle
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
                 case 'Generic'
-                    obj.newGenericVersion = isempty(pool.IndependentSubmitFcn);
+                    obj.newGenericVersion = ~isfield(pool,'IndependentSubmitFcn') || isempty(pool.IndependentSubmitFcn);
                     if obj.newGenericVersion
-                        if ~isprop(pool.AdditionalProperties,'AdditionalSubmitArgs')
+                        if ~isprop(pool.AdditionalProperties,'AdditionalSubmitArgs') && ~isfield(pool.AdditionalProperties,'AdditionalSubmitArgs')
                             warning(sprintf('WARNING: Propertiy "AdditionalSubmitArgs" not found.\n    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.\n    Your jobs will be submitted to th default queue.'));
                         else
                             datWT = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_cpu=[0-9]*','once','match'),'walltime=%d');
@@ -67,8 +86,18 @@ classdef PoolClass < handle
                     obj.getJobStateFcn = @(SchedulerID) SGE_getJobState(SchedulerID);
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
             end
+            obj.updateSubmitArguments;
         end
         
+        function set.JobStorageLocation(obj,value)
+            obj.JobStorageLocation = value;
+            if isempty(obj.JobStorageLocation)
+                warning('JobStorageLocation is not specified. The current directory of %s will be used',pwd);
+                obj.JobStorageLocation = pwd;
+            elseif ~exist(obj.JobStorageLocation,'dir'), mkdir(obj.JobStorageLocation); 
+            end
+        end
+            
         function set.reqWalltime(obj,value)
             if isempty(value), return; end
             obj.reqWalltime = value;
