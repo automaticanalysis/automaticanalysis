@@ -30,12 +30,9 @@ switch task
         
         %%  make output stream
         % now specific to freesurfer dirs. 
-        subdir = fullfile(aas_getsubjpath(aap, subj)); % freesurfer autorecon1 dir
-        outs = [];
-        dirs = {'ANAT','bem','label','mri','scripts','src','stats',...
-            'surf','touch',};
-        for d = dirs
-            outs = [outs dirrec(fullfile(subdir,d{1}))];
-        end
+        subjpath = fullfile(aas_getsubjpath(aap, subj)); % freesurfer autorecon1 dir
+        outs = cellfun(@(x) spm_select('FPListRec',fullfile(subjpath,x),'.*'),...
+            {'ANAT','bem','label','mri','scripts','src','stats', 'surf','touch',},'UniformOutput',false);
+        outs = char(outs(cellfun(@(x) ~isempty(x), outs)));
         aap = aas_desc_outputs(aap,subj,'freesurfer',outs);
 end
