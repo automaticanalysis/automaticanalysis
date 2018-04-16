@@ -10,11 +10,15 @@ resp='';
 switch task
     case 'report' % Updated [TA]
         sesspath = aas_getsesspath(aap, subjInd, sessInd);
-        if ~exist(fullfile(sesspath,'diagnostic_aamod_tsdiffana.jpg'),'file')
+        imgList = spm_select('FPList',sesspath,'^diagnostic_aamod_tsdiffana.*jpg$');
+        if isempty(imgList)
             diag(aap,subjInd,sessInd);
+            imgList = spm_select('FPList',sesspath,'^diagnostic_aamod_tsdiffana.*jpg$');
         end
         aap = aas_report_add(aap,subjInd,'<table><tr><td>');
-        aap=aas_report_addimage(aap,subjInd,fullfile(sesspath, 'diagnostic_aamod_tsdiffana.jpg'));
+        for n = 1:size(imgList,1)
+            aap=aas_report_addimage(aap,subjInd,imgList(n,:));
+        end
         aap = aas_report_add(aap,subjInd,'</td></tr></table>');
     case 'doit'
         sesspath=aas_getsesspath(aap,subjInd,sessInd);
@@ -29,12 +33,16 @@ switch task
         subjpth=aas_getsesspath(aap,subjInd,sessInd);
         aap=aas_desc_outputs(aap,subjInd,sessInd,'tsdiffana',fullfile(subjpth,'timediff.mat'));
 
-        diag(aap,subjInd,sessInd);
+        diag(aap,subjInd,sessInd,true);
         
         subjname = aas_prepare_diagnostic(aap, subjInd);
-        set(gcf,'Renderer','zbuffer');
-        print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '_' subjname '_' aap.acq_details.sessions(sessInd).name '.jpeg']));        
+        for i = 1:2
+            f = spm_figure('FindWin', sprintf('Graphics%d',i));
+            set(f,'Renderer','zbuffer');
+            print(f, '-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
+                [mfilename '_' subjname '_' aap.acq_details.sessions(sessInd).name sprintf('_%d.jpeg',i)]));
+            spm_figure('Close',f)
+        end
     case 'checkrequirements'
         
     otherwise
@@ -42,10 +50,21 @@ switch task
 end;
 end
 
-function diag(aap,subjInd,sessInd)
-tsfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
-tsdiffplot(tsfn);
-try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
-set(f,'Renderer','zbuffer');
-print(f,'-djpeg','-r150',fullfile(aas_getsesspath(aap, subjInd, sessInd),'diagnostic_aamod_tsdiffana'));
+function diag(aap,subjInd,sessInd,keepOpen)
+tdfn = aas_getfiles_bystream(aap,subjInd,sessInd,'tsdiffana');
+
+opts = {};
+if aas_stream_has_contents(aap,[subjInd,sessInd],'realignment_parameter')
+    mp = cellstr(aas_getfiles_bystream(aap,subjInd,sessInd,'realignment_parameter'));
+    opts = {'r' mp{cell_index(mp,'.txt')}};
+end
+
+f(1) = spm_figure('Create', 'Graphics1'); spm_figure('Clear',f(1),'Graphics1');
+f(2) = spm_figure('Create', 'Graphics2'); spm_figure('Clear',f(2),'Graphics2');
+tsdiffplot(tdfn,f,opts{:});
+for i = 1:2
+    set(f(i),'Renderer','zbuffer');
+    print(f(i),'-djpeg','-r150',fullfile(aas_getsesspath(aap, subjInd, sessInd),sprintf('diagnostic_aamod_tsdiffana%d',i)));
+    if (nargin < 4) || ~keepOpen, spm_figure('Close',f(i)); end
+end
 end

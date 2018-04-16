@@ -16,6 +16,8 @@
                 
             <outputstats>1</outputstats>  <!-- output noise estimates and so on? -->
             
+            <ignoreafter desc='Only take this many volume (including dummies)'>9999999</ignoreafter>            
+
             <numdummies></numdummies>
 
             <inputstreams>

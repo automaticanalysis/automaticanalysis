@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_applyVDM" domain='diffusion_session' desc='Apply VDMs on diffusion data' modality='DWI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <roptions>
+                <rinterp desc='interpolation method'>4</rinterp>
+                <pedir desc='phase encode dimension (i.e. apply VDM and warp along this dimension)'></pedir>
+                <mask desc='perform masking'>1</mask>
+                <which desc='reslice time series (#1) and mean (#2)'>1 0</which>
+                <prefix>u</prefix>
+            </roptions>
+            
+            <inputstreams>
+                <stream isrenameable='1'>diffusion_data</stream>
+                <stream isrenameable='1'>diffusion_dicom_header</stream>
+                <stream>fieldmap</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>diffusion_data</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,18 +1,30 @@
-function [imdiff, g, slicediff] = timediff(imgs, flags)
+function qa = timediff(imgs, flags)
 % Analyses slice by slice variance across time series
 % FORMAT [imdiff, g, slicediff] = timediff(imgs, flags)
 %
-% imgs   - string or cell or spm_vol list of images
-% flags  - specify options; if contains:
-%           m - create mean var image (vmean*), max slice var image
-%               (vsmax*) and scan to scan variance image (vscmean*)
-%           v - create variance image for between each time point
+% imgs  - string or cell or spm_vol list of images
+% flags - specify options; if contains:
+%           m   - create mean var image (vmean*), max slice var image
+%                 (vsmax*) and scan to scan variance image (vscmean*)
+%           v   - create variance image for between each time point
 %
-% imdiff - mean variance between each image in time series
-% g      - mean voxel signal intensity for each image
-% slicediff - slice by slice variance between each image
+% qa    - QA measures
+%   imgs    - input
+%   global  - for each volume 
+%       mean    - mean voxel signal intensity for each volume
+%       diff    - mean variance between each image in time series
+%       fft     - Fast Fourier Transform of the mean corrected for global mean
+%   slice   - for volume x slice
+%       mean    - mean voxel signal intensity for image x slices
+%       diff    - slice by slice variance between each image
+%       fft     - Fast Fourier Transform of the mean corrected for slice means
+
+
 %
-% Matthew Brett 17/7/00
+% Matthew Brett 17/7/2000
+% Narender Ramnani & Tibor Auer 26/2/2018
+
+qa.imgs = imgs;
 
 imgs = spm_vol(char(imgs));
 V1 = imgs(1);
@@ -36,6 +48,7 @@ end
 
 p1 = spm_read_vols(V1);
 slicediff = zeros(ndimgs,zno);
+slicemean = zeros(ndimgs,zno);
 g = zeros(ndimgs,1);
 for z = 1:zno % across slices
     M = spm_matrix([0 0 z]);
@@ -50,6 +63,7 @@ for z = 1:zno % across slices
     % note that Vr contains volumes 2:T (not the first)
     for i = 1:ndimgs % across DTPs
         c = spm_slice_vol(Vr(i),M,xydim,Hold); % get slice from this time point
+        slicemean(i,z) = mean(c(:));
         v = (c - pr).^2; % SVD from this slice to last
         slicediff(i,z) = mean(v(:)); % MSVD for this slice
         g(i) = g(i) + mean(c(:)); % simple mean of data
@@ -78,7 +92,15 @@ for z = 1:zno % across slices
 end
 
 g = [mean(p1(:)); g/zno];
-imdiff = mean(slicediff,2);
+qa.global.mean = g;
+qa.global.diff = mean(slicediff,2);
+gfft = abs(fft(g-mean(g))); qa.global.fft = gfft(2:end-1);
+
+s = [squeeze(mean(mean(p1)))'; slicemean];
+qa.slice.mean = s;
+qa.slice.diff = slicediff;
+slicemean_norm = s - repmat(mean(s,1),size(s,1),1);
+sfft = abs(fft(slicemean_norm)); qa.slice.fft = sfft(2:end-1,:);
 end
 
 function Vo = makevol(Vi, prefix, datatype)

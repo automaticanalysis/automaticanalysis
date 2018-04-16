@@ -162,7 +162,7 @@ else
                     end
                     
                     [gotinputs, streamfiles{inpind}]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
-                    if isempty(gotinputs)
+                    if isempty(setdiff(gotinputs,allinputs)) && inp.isessential % no new inputs found
                         aas_log(aap,true,sprintf('No inputs obtained for stream %s',inp.name));
                     end;
                     allinputs=[allinputs;gotinputs];

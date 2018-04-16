@@ -34,9 +34,7 @@ switch task
         %%  make output stream
         % (JC: now specific to FS directories rather than everything under
         % the sun)
-        outs = [];
-        for d = {'RAW','ANAT','mri'}
-            outs = [outs; dirrec(fullfile(subjpath,d{1}))];
-        end
+        outs = cellfun(@(x) spm_select('FPListRec',fullfile(subjpath,x),'.*'), {'RAW','ANAT','mri'},'UniformOutput',false);
+        outs = char(outs(cellfun(@(x) ~isempty(x), outs)));
         aap = aas_desc_outputs(aap,subj,'freesurfer',outs);
 end

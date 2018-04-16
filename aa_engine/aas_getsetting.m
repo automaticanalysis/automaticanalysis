@@ -17,7 +17,7 @@ if ~isempty(val) && (nargin == 3) % index
     if ischar(val)
         val = textscan(val,'%s');
         val = val{1}';
-    elseif isnumeric(val)
+    elseif isnumeric(val) || isstruct(val)
         val = num2cell(val);
     end
     

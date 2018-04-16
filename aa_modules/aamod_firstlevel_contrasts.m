@@ -63,15 +63,13 @@ switch task
         if (isempty(contrasts_set))
             % Try for wildcard
             contrasts_set=find(strcmp({settings.contrasts.subject},'*'));
-            if (isempty(contrasts_set))
-                aas_log(aap,true,'ERROR: Can''t find declaration of what contrasts to use  -  check user master script!');
-            end
         end
         
         contrasts=settings.contrasts(contrasts_set);
         % add contrasts for each task regressor v baseline?
         if settings.eachagainstbaseline
-            basev = zeros(1,length(SPM.Sess(1).col));
+            if isempty(contrasts), contrasts(1).subject = aas_getsubjname(aap,subj); end
+            basev = zeros(1,min(numel(SPM.Sess(1).col),numel(SPM.xX.iC)));
             for conind = 1:length(basev)
                 newv = basev;
                 newv(conind) = 1;
@@ -80,8 +78,12 @@ switch task
                     'format','sameforallsessions',...
                     'vector',newv,...
                     'session',[],...
-                    'contype','T');
+                    'type','T');
             end
+        end
+        
+        if isempty(contrasts)
+            aas_log(aap,true,'ERROR: Can''t find declaration of what contrasts to use  -  check user master script!');
         end
         
         % logical vector for run-specific contrasts
