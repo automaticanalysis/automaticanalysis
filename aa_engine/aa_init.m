@@ -91,6 +91,14 @@ addpath(...
     fullfile(spm('Dir'),'toolbox', 'Neural_Models'),...
     fullfile(spm('Dir'),'toolbox', 'MEEGtools'));
 
+% Path fore spmtools
+if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
+    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':'); SPMTools = SPMTools{1};
+    for pp = SPMTools'
+        addpath(genpath(pp{1}));
+    end
+end
+
 % Path for EEGLAB, if specified
 if ~isempty(aap.directory_conventions.eeglabdir)
     addpath(...
@@ -147,16 +155,6 @@ else
     end;
 end;
 
-% Path to VBQ
-if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
-    addpath(aap.directory_conventions.VBQdir);
-else
-    % Check whether already in path, give warning if not
-    if isempty(which('vbq_mpr_b0_b1'))
-       aas_log(aap,false,sprintf('VBQ toolbox not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.VBQdir'));
-    end;
-end;
-
 % Path to LI toolbox
 if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventions.LIdir)
     addpath(aap.directory_conventions.LIdir);
@@ -191,10 +189,12 @@ for ip = p_ind
 end
 % spmtools
 if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
-    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':');
-    SPMTools = SPMTools{1};
+    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':'); SPMTools = SPMTools{1};
     for pp = SPMTools'
-        if exist(pp{1},'dir'), reqpath{end+1}=pp{1};end
+        if exist(pp{1},'dir')
+            pdir = textscan(genpath(pp{1}),'%s','delimiter', ':'); pdir = pdir{1};
+            reqpath = [reqpath; pdir];
+        end
     end
 end
 
@@ -233,14 +233,6 @@ end
 % FaceMasking
 if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
-end
-
-% VBQ
-if isfield(aap.directory_conventions,'VBQdir') && ~isempty(aap.directory_conventions.VBQdir)
-    p_ind = cell_index(p,aap.directory_conventions.VBQdir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
     end
