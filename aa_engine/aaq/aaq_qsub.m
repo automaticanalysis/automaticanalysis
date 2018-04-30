@@ -10,23 +10,24 @@ classdef aaq_qsub<aaq
         waitforalljobs
         
         % ensure resources (e.g. MAXFILTER license)
-        initialSubmitArguments = '';
+        initialSubmitArguments
+        newGenericVersion % with AdditionalProperties
         
         refresh_waitforjob
         refresh_waitforworker
     end
     methods
         function [obj]=aaq_qsub(aap)
+            obj = obj@aaq(aap);
+            
             global aaworker;
             global aaparallel;
             
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    queue = '';
-                    poolprofile = textscan(aap.directory_conventions.poolprofile,'%s','delimiter', ':'); poolprofile = poolprofile{1};
-                    if numel(poolprofile) == 1, poolprofile = poolprofile{1};
-                    else [poolprofile, queue] = poolprofile{1:2}; end
+                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':');
+                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
                     
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
@@ -34,12 +35,13 @@ classdef aaq_qsub<aaq
                         if isempty(ppfname)
                             aas_log(obj.aap,true,sprintf('ERROR: settings for pool profile %s not found!',poolprofile));
                         else
-                            obj.pool=parcluster(parallel.importProfile(ppfname));
+                            poolprofile = parallel.importProfile(ppfname);
                         end
                     else
                         aas_log(obj.aap,false,sprintf('INFO: pool profile %s found',poolprofile));
-                        obj.pool=parcluster(poolprofile);
                     end
+                    obj.pool=parcluster(poolprofile);
+                    
                     switch class(obj.pool)
                         case 'parallel.cluster.Torque'
                             aas_log(obj.aap,false,'INFO: pool Torque is detected');
@@ -48,21 +50,31 @@ classdef aaq_qsub<aaq
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
-                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                            obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                             aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.LSF'
                             aas_log(obj.aap,false,'INFO: pool LSF is detected');
-                            if ~isempty(queue), obj.initialSubmitArguments = [' -q ' queue]; end
-                            obj.initialSubmitArguments = sprintf('%s -M %d -R "rusage[mem=%d]"',obj.initialSubmitArguments,aaparallel.memory*1000,aaparallel.memory*1000);
-                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                            obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',aaparallel.memory*1000,aaparallel.memory*1000);
+                            obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                         case 'parallel.cluster.Generic'
                             aas_log(obj.aap,false,'INFO: Generic engine is detected');
-                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
-                            obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
+                            obj.newGenericVersion = isempty(obj.pool.IndependentSubmitFcn);
+                            if obj.newGenericVersion
+                                if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
+                                    aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
+                                    aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
+                                    aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
+                                else
+                                    obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,aaparallel.walltime,aaparallel.memory);
+                                end
+                            else
+                                obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
+                                obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
+                            end
                             aaparallel.numberofworkers = 1;
                         case 'Local'
-                            aas_log(obj.aap,false,'INFO: Local engine is detected');  
+                            aas_log(obj.aap,false,'INFO: Local engine is detected');
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                     end
                 else
@@ -76,7 +88,6 @@ classdef aaq_qsub<aaq
                 aas_log(aap,false,sprintf('\tERROR in %s:\n\tline %d: %s',ME.stack(1).file, ME.stack(1).line, ME.message),aap.gui_controls.colours.warning);
                 obj.pool=[];
             end
-            obj.aap=aap;
         end
         
         function close(obj)
@@ -105,13 +116,13 @@ classdef aaq_qsub<aaq
             submittedJobs = 1:length(obj.jobnotrun);
             obj.jobnotrun = true(njobs,1);
             obj.jobnotrun(submittedJobs) = false;
-                
+            
             % Create a array of job retry attempts (needs to be specific to
-            % each module so using dynamic fields with modulename as fieldname. 
+            % each module so using dynamic fields with modulename as fieldname.
             % modulename is also saved in jobinfo so is easily retrieved later)
             if ~isempty(obj.jobqueue)
                 % probably a better place to get current module index.
-                modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name; 
+                modulename = obj.aap.tasklist.main.module(obj.jobqueue(end).k).name;
                 obj.jobretries.(modulename) = ones(njobs,1);
                 
                 if obj.jobqueue(end).k == length(obj.aap.tasklist.main.module)
@@ -186,7 +197,7 @@ classdef aaq_qsub<aaq
                 
                 idlist = [obj.jobinfo.JobID];
                 for id = idlist
-                    JI = obj.jobinfo([obj.jobinfo.JobID] == id); 
+                    JI = obj.jobinfo([obj.jobinfo.JobID] == id);
                     % For clarity use JI.JobID from now on (JI.JobID = id). All
                     % job information is stored in JI, including the main
                     % queue index JI.qi used to refer back to the original
@@ -202,7 +213,7 @@ classdef aaq_qsub<aaq
                         return;
                     end
                     Task = Job.Tasks;
-                        
+                    
                     switch JI.state
                         case 'pending'
                             t = toc(JI.tic);
@@ -255,10 +266,18 @@ classdef aaq_qsub<aaq
                             aas_log(obj.aap,true,sprintf('Job%d had been cancelled by user!\n Check <a href="matlab: open(''%s'')">logfile</a>\n',JI.JobID,JI.logfile),obj.aap.gui_controls.colours.warning)
                             
                         case 'finished' % without error
-                            if isempty(Task.FinishTime), continue; end
+                            if isprop(Task,'StartDateTime')
+                                startTime = char(Task.StartDateTime);
+                                finishTime = char(Task.FinishDateTime);
+                            elseif isprop(Task,'StartTime')
+                                startTime = Task.StartTime;
+                                finishTime = Task.FinishTime;
+                            else
+                                aas_log(obj.aap,true,'Time-related property of Task class not found!')
+                            end
+                            if isempty(finishTime), continue; end
                             msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
-                                JI.JobID,JI.modulename,JI.jobname,Task.CreateTime,Task.FinishTime,...
-                                sprintf('%*dd %*dh %dm %ds',round(datevec(jts_etime(Task.FinishTime,Task.CreateTime)/3600/24))));
+                                JI.JobID,JI.modulename,JI.jobname,startTime,finishTime,aas_getTaskDuration(Task));
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!
@@ -296,7 +315,7 @@ classdef aaq_qsub<aaq
                                         Task.Error.stack(e).file, Task.Error.stack(e).line)];
                                 end
                                 % If there is an error, it is fatal...
-
+                                
                                 obj.fatalerrors = true;
                                 obj.jobnotrun(JI.qi) = true;
                                 aas_log(obj.aap,true,msg,obj.aap.gui_controls.colours.error)
@@ -306,10 +325,10 @@ classdef aaq_qsub<aaq
                             % aas_log(obj.aap,false,sprintf('Job%d (%s) is running at %3.1f %%%%CPU',JI.JobID,JI.modulename,CPU),obj.aap.gui_controls.colours.info)
                     end
                 end
-               
-                obj.QVUpdate; 
+                
+                obj.QVUpdate;
             end
-
+            
         end
         
         function obj = QVUpdate(obj)
@@ -363,14 +382,26 @@ classdef aaq_qsub<aaq
                     else % non-round --> MB
                         memory = sprintf('%dMB',memory*1000);
                     end
-                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
+                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600));
                     %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
                     %                     sprintf(' -N Mod%02d_',job.k),...
                     %                     sprintf('%03d',job.indices));
+                case 'parallel.cluster.LSF'
+                    obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',memory*1000,memory*1000);
+                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                 case 'parallel.cluster.Generic'
-                    aas_log(aap,false,'INFO: Generic engine is detected');
-                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
-                    obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
+                    if obj.newGenericVersion
+                        if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
+                            aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
+                            aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
+                            aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
+                        else
+                            obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,walltime,memory);
+                        end
+                    else
+                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
+                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
+                    end
             end
         end
         
@@ -397,7 +428,7 @@ classdef aaq_qsub<aaq
                 % end
                 % end
                 % end
-                if isa(obj.pool,'parallel.cluster.Torque'), obj = obj.pool_args(qsubsettings{:}); end
+                obj = obj.pool_args(qsubsettings{:});
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
@@ -445,7 +476,7 @@ classdef aaq_qsub<aaq
                 % Add a job to the queue
                 job=obj.jobqueue(i);
                 obj.qsub_q_job(job);
-
+                
                 % Create job info for referencing later
                 % (also clean up done jobs to prevent IDs occuring twice)
                 latestjobid = max([obj.pool.Jobs.ID]);
@@ -533,14 +564,14 @@ classdef aaq_qsub<aaq
                 obj.jobnotrun(ji.qi)=true;
             end
         end
-                
+        
         function states = job_monitor(obj, printjobs)
             % This function gathers job information from the job scheduler.
-            % This can be slow depending on the size of the pool. 
+            % This can be slow depending on the size of the pool.
             % INPUT
             % printjobs [true|false]: print job information to the screen.
             % OUTPUT
-            % states: cell array of states (character) 
+            % states: cell array of states (character)
             %   {'running' | 'failed' | 'error' | 'finished'}
             % obj.jobinfo is also updated with the state information
             if nargin < 2
@@ -571,7 +602,7 @@ classdef aaq_qsub<aaq
                     obj.jobinfo(jobind).state = Jobs.State;
                 else
                     aas_log(obj.aap,false,sprintf('WARNING: Job %d not found in aa queue!',id));
-%                     obj.jobinfo(jobind).state = 'failed';
+                    %                     obj.jobinfo(jobind).state = 'failed';
                 end
                 
                 % Double check that finished jobs do not have an error in the Task object
@@ -611,7 +642,7 @@ classdef aaq_qsub<aaq
             end
             
             states = {obj.jobinfo.state};
-
+            
             if printjobs
                 Nfinished = sum(strcmp(states,'finished'));
                 Nqueued  = sum(strcmp(states,'queued'));
@@ -641,18 +672,4 @@ classdef aaq_qsub<aaq
             end
         end
     end
-end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-function esec = jts_etime(jts2,jts1)
-    df = java.text.SimpleDateFormat('EEE MMM dd HH:mm:ss zzz yyyy');
-    cal1 = java.util.GregorianCalendar.getInstance;
-    cal2 = java.util.GregorianCalendar.getInstance;
-    cal1.setTime(df.parse(jts1));
-    cal2.setTime(df.parse(jts2));
-    esec = etime([cal2.get(java.util.GregorianCalendar.YEAR) cal2.get(java.util.GregorianCalendar.MONTH)+1 cal2.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
-        cal2.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal2.get(java.util.GregorianCalendar.MINUTE) cal2.get(java.util.GregorianCalendar.SECOND)],...
-        [cal1.get(java.util.GregorianCalendar.YEAR) cal1.get(java.util.GregorianCalendar.MONTH)+1 cal1.get(java.util.GregorianCalendar.DAY_OF_MONTH) ...
-        cal1.get(java.util.GregorianCalendar.HOUR_OF_DAY) cal1.get(java.util.GregorianCalendar.MINUTE) cal1.get(java.util.GregorianCalendar.SECOND)]);
 end
