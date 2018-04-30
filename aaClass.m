@@ -22,6 +22,7 @@ classdef aaClass
                 fprintf('\nPlease wait a moment, adding <a href = "matlab: cd %s">%s</a> to the path\n',obj.Path,obj.Name);
                 addpath(genpath(obj.Path)); % recursively add AA subfolders
                 rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
+                rmpath(genpath(fullfile(obj.Path,'external','cluster'))); % remove cluster-integration path
             end
             
             obj.Name = 'automaticanalysis';            

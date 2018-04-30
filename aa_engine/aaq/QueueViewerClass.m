@@ -53,9 +53,9 @@ classdef QueueViewerClass < handle
             obj.Open;
         end
         
-        function delete(obj)
-            obj.Pool = [];
-        end
+%         function delete(obj)
+%             obj.Pool = [];
+%         end
         
         function Open(obj)
             FontSize = [1.7*get(0,'DefaultUicontrolFontSize') get(0,'DefaultUicontrolFontSize')*0.8]; % H W
@@ -205,7 +205,7 @@ classdef QueueViewerClass < handle
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     methods (Hidden=true)
         function str = TaskInfo(obj,Task)
-            elapsedtime = obj.DisplayHelper.getRunningDuration(Task.StartTime,Task.FinishTime);
+            elapsedtime = aas_getTaskDuration(Task);
             str = sprintf(['- Has been running on %s\n'...
                 '- For %s'],...
                 Task.Worker.Host,...
