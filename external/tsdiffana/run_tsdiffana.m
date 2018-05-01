@@ -8,7 +8,7 @@ switch cmd,
         switch subfun
             case 'timediff'
                 for k = 1:numel(job.imgs)
-                    [p f e] = spm_fileparts(job.imgs{k}{1});
+                    p = spm_fileparts(deblank(job.imgs{k}{1}(1,:)));
                     if job.vf
                         flags = 'mv';
                     else
