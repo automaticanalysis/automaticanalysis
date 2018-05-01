@@ -69,10 +69,7 @@ switch task
                 
                 conname=flSPM{1}.SPM.xCon(n).name;
                 % take out characters that don't go well in filenames...
-                conname(conname==':')=[];
-                conname(conname==' ')=[];
-                conname(conname=='/')=[];
-                conname(conname=='\')=[];
+                conname = char(regexp(conname,'[a-zA-Z0-9_-]','match'))';
                 rfxdir = fullfile(rfxrootdir,conname);
                 if exist(rfxdir)~=7; mkdir(rfxrootdir,conname);end
                 cd(rfxdir);
