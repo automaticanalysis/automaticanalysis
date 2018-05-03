@@ -41,14 +41,14 @@ switch task
             
             % select images in the same folder
             dirs = unique(spm_file(outstream,'path'))';
-            for d = dirs
-                ind4D = cellfun(@(x) ~isempty(x), strfind(outstream,d{1}));
+            for d = 1:numel(dirs)
+                ind4D = cellfun(@(x) ~isempty(x), strfind(outstream,dirs{d}));
                 if sum(ind4D) > 1
                     img4D = outstream(ind4D);
                     
                     % dummies
                     if ndummies
-                        dummypath=fullfile(d{1},'dummy_scans');
+                        dummypath=fullfile(dirs{d},'dummy_scans');
                         aap=aas_makedir(aap,dummypath);
                         for dummyind=1:ndummies
                             cmd=['mv ' img4D{dummyind} ' ' dummypath];
