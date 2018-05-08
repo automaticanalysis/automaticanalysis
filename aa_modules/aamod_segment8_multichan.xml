@@ -34,8 +34,8 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>normalised_structural</stream>
-                <stream>normalised_t2</stream>
+                <stream>structural</stream>
+                <stream>t2</stream>
 
                 <stream>seg8</stream>
                 <stream>forward_deformation_field</stream>
