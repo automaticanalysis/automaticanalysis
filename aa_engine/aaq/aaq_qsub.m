@@ -63,7 +63,7 @@ classdef aaq_qsub<aaq
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
-                            obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
+                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
                             aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.LSF'
                             aas_log(obj.aap,false,'INFO: pool LSF is detected');
@@ -393,7 +393,7 @@ classdef aaq_qsub<aaq
                     else % non-round --> MB
                         memory = sprintf('%dMB',memory*1000);
                     end
-                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600));
+                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
                     %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
                     %                     sprintf(' -N Mod%02d_',job.k),...
                     %                     sprintf('%03d',job.indices));
