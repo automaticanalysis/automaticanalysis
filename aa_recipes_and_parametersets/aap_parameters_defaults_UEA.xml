@@ -44,7 +44,7 @@
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='dir'>LSF2016b: -q long-ib</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>LSF2016b: -q long-ib</poolprofile>
             <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uea@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
