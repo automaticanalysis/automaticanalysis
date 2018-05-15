@@ -15,7 +15,8 @@ switch task
         sesspath=aas_getsesspath(aap,subj,sess);
         
         % Restructure outputs
-        outstream = char(vertcat(convertedfns{:}));
+        if iscell(convertedfns{1}), convertedfns = vertcat(convertedfns{:}); end % multiseries
+        outstream = char(convertedfns{:});
         aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);
 
         if iscell(dcmhdr{1}) % multiple series --> selects the one with the most scans (it should contain all TEs)
