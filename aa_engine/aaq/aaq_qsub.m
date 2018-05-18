@@ -199,7 +199,6 @@ classdef aaq_qsub<aaq
                         % If no jobs left then monitor and update job states
                         aas_log(obj.aap, false, 'No jobs in the queue, waiting for remaining jobs to complete...')
                         obj.job_monitor_loop;
-                        pause(60)
                     end
                 else
                     aas_log(obj.aap, false, 'No free workers available: monitoring the queue...')
