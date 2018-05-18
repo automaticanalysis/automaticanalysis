@@ -1,6 +1,8 @@
 function aap=aas_renamestream(aap,stage,origstream,newstream,type)
 % AAS_RENAMESTREAM 
-% Rename a TYPE (input|output) of stream of a STAGE from ORIGSTREAM to NEWSTREAM. If ORIGSTREAM is 'append', then the NEWSTREAM will be appended to the list of streams
+% Rename a TYPE (input|output) of stream of a STAGE from ORIGSTREAM to NEWSTREAM. 
+% If ORIGSTREAM is 'append', then the NEWSTREAM will be appended to the list of streams
+% If NEWSTREAM is [], then the ORIGSTREAM will be removed from the list of streams
 %
 % E.g. aap = aas_renamestream(aap,'aamod_firstlevel_model_00001','epi','aamod_coreg_extended_2epi_00001.epi')
 
@@ -65,7 +67,7 @@ switch type
 end
 if isfield(aap,'internal')
     storedstreams = aap.internal.(internalstore){modulenumber}.stream;
-    if isempty(storedstreams), streamindex = NaN;
+    if isempty(storedstreams) || ~cell_index({storedstreams.name},origstreamname), streamindex = NaN;
     else
         if ~strcmp(origstreamname,'append'), streamindex = cell_index({storedstreams.name},origstreamname); 
         else streamindex = numel(storedstreams); end
@@ -104,13 +106,18 @@ else
     end
 end
 if isfield(aap,'internal') && ~isnan(streamindex)
-    aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
-    aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+    if isempty(newstream) % remove
+        aap.internal.(internalstore){modulenumber}.stream(streamindex) = [];
+        aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex) = [];
+    else
+        aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+        aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+    end
 end
 if ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream; end
-else % with attributes
+elseif ~isempty(newstream) % with attributes
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream; end
 end

@@ -23,7 +23,7 @@
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'></megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/gpfs/home/ryb17eeu/software/spm/spm12_r6906</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/gpfs/home/ryb17eeu/imaging_pipelines/software/spm12</spmdir>
             <spmtoolsdir desc='Path(s) to SPM tools (colon separated list)' ui='dir'></spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/gpfs/software/fsl/5.0.10</fsldir>
@@ -40,11 +40,11 @@
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
             <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/gpfs/home/ryb17eeu/software/BrainWavelet/BrainWavelet_v1.1</BrainWaveletdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/gpfs/home/vue17btu/imaging_pipelines/software/BrainWavelet_v2.0</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='dir'>LSF2016b: -q long-ib</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>LSF2016b: -q long-ib</poolprofile>
             <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uea@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>

@@ -67,7 +67,7 @@ classdef aaq_qsub<aaq
                             aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.LSF'
                             aas_log(obj.aap,false,'INFO: pool LSF is detected');
-                            obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',aaparallel.memory*1000,aaparallel.memory*1000);
+                            obj.pool.SubmitArguments = sprintf(' -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',aaparallel.walltime*60, aaparallel.memory*1000,aaparallel.memory*1000,aaparallel.walltime);
                             obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                         case 'parallel.cluster.Generic'
@@ -199,7 +199,6 @@ classdef aaq_qsub<aaq
                         % If no jobs left then monitor and update job states
                         aas_log(obj.aap, false, 'No jobs in the queue, waiting for remaining jobs to complete...')
                         obj.job_monitor_loop;
-                        pause(60)
                     end
                 else
                     aas_log(obj.aap, false, 'No free workers available: monitoring the queue...')
