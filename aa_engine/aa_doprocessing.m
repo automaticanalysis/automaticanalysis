@@ -361,7 +361,6 @@ for mytasks = {'checkrequirements','doit'} %
     switch task
         case 'checkrequirements'
             % update map
-            aap.acq_details.root = aap.internal.aap_initial.acq_details.root;
             aap = update_aap(aap);
         case 'doit'
             % Wait until all the jobs have finished
@@ -401,6 +400,8 @@ end
 function aap = update_aap(aap)
 global aa
 
+aap.acq_details.root = aap.internal.aap_initial.acq_details.root;
+
 % Create folder (required by aas_findinputstreamsources to save provenance)
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
@@ -411,9 +412,15 @@ end
 % out what data comes from where and goes where
 aap=aas_findinputstreamsources(aap);
 
-% Store these initial settings before any module specific customisation
-aap.internal.aap_initial=aap;
-aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
+if ~isfield(aap.tasklist,'currenttask') % Store these initial settings before any module specific customisation
+    aap.internal.aap_initial=aap;
+    aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
+else % Restore initial settings
+    initinternal = aap.internal;
+    aap = aap.internal.aap_initial;
+    aap.internal = initinternal;
+    if isfield(aap,'aap'), aap = rmfield(aap,'aap'); end
+end
 
 % Save AAP structure (S3?)
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
