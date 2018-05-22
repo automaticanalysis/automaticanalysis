@@ -70,7 +70,7 @@ for k=1:Nz
                 D12(i,j,k)=X(4);
                 D13(i,j,k)=X(5);
                 D23(i,j,k)=X(6);
-                S0(i,j,k)=exp(X(7));
+                S0(i,j,k)=X(7);
                 
             end
         end
