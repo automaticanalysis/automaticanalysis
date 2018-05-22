@@ -400,7 +400,8 @@ end
 function aap = update_aap(aap)
 global aa
 
-aap.acq_details.root = aap.internal.aap_initial.acq_details.root;
+% restore root
+if isfield(aap.tasklist,'currenttask'), aap.acq_details.root = aap.internal.aap_initial.acq_details.root; end
 
 % Create folder (required by aas_findinputstreamsources to save provenance)
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
