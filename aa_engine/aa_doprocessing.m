@@ -362,6 +362,7 @@ for mytasks = {'checkrequirements','doit'} %
         case 'checkrequirements'
             % update map
             aap = update_aap(aap);
+            taskqueue.aap = aap;
         case 'doit'
             % Wait until all the jobs have finished
             taskqueue.runall(dontcloseexistingworkers, true);
@@ -401,7 +402,11 @@ function aap = update_aap(aap)
 global aa
 
 % restore root
-if isfield(aap.tasklist,'currenttask'), aap.acq_details.root = aap.internal.aap_initial.acq_details.root; end
+if isfield(aap.tasklist,'currenttask')
+    aap.acq_details.root = aap.internal.aap_initial.acq_details.root; 
+    aap.directory_conventions.analysisid = aap.internal.aap_initial.directory_conventions.analysisid;
+    aap.directory_conventions.analysisid_suffix = aap.internal.aap_initial.directory_conventions.analysisid_suffix;
+end
 
 % Create folder (required by aas_findinputstreamsources to save provenance)
 if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
