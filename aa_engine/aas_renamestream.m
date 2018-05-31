@@ -105,6 +105,8 @@ else
         aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
     end
 end
+
+% Edit internalstore (inputstreamsources or outputstreamdestinations)
 if isfield(aap,'internal') && ~isnan(streamindex)
     if isempty(newstream) % remove
         aap.internal.(internalstore){modulenumber}.stream(streamindex) = [];
@@ -114,7 +116,9 @@ if isfield(aap,'internal') && ~isnan(streamindex)
         aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
     end
 end
-if ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
+
+% Edit schema
+if isempty(newstream) || ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream; end
 elseif ~isempty(newstream) % with attributes
