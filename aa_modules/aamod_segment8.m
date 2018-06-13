@@ -316,7 +316,7 @@ switch task
     case 'checkrequirements'
         %% Adjust outstream
         if ~aap.tasklist.currenttask.settings.writenormimg 
-            for out = aap.tasklist.currenttask.settings.inputstreams.stream;
+            for out = aap.tasklist.currenttask.settings.inputstreams.stream
                 if any(strcmp(aas_getstreams(aap,'output'),out{1}))
                     aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{1},[],'output');
                     aas_log(aap,false,sprintf('REMOVED: %s output stream: %s', aap.tasklist.currenttask.name,out{1}));

@@ -125,3 +125,6 @@ elseif ~isempty(newstream) % with attributes
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream; end
 end
+
+% Update current (if applicable)
+if isfield(aap.tasklist,'currenttask'), aap.tasklist.currenttask.([type 'streams']) = aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']); end
