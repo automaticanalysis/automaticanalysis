@@ -56,8 +56,6 @@ classdef PoolClass < handle
                     obj.SubmitArguments = pool.ResourceTemplate;
                     datWT = sscanf(regexp(obj.SubmitArguments,'walltime=[0-9]*','once','match'),'walltime=%d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d');
-                    obj.reqWalltime = datWT;
-                    obj.reqMemory = datMem;
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub %s -N %s -j oe -o "%s" "%s"', ...
                                         obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.ShellFile);
                     obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
@@ -65,6 +63,13 @@ classdef PoolClass < handle
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
+                    datWT = sscanf(regexp(obj.SubmitArguments,'duration=[0-9]*','once','match'),'duration=%d');
+                    datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d')/1000;
+                    obj.getSubmitStringFcn = @(Job) sprintf( 'bsub %s -J %s -oo "%s" < "%s"', ...
+                        obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.ShellFile);
+                    obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
+                    obj.getJobStateFcn = @(SchedulerID) LSF_getJobState(SchedulerID);
+                    obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('bkill %d',SchedulerID);
                 case 'Generic'
                     obj.newGenericVersion = ~isfield(pool,'IndependentSubmitFcn') || isempty(pool.IndependentSubmitFcn);
                     if obj.newGenericVersion
@@ -73,12 +78,10 @@ classdef PoolClass < handle
                         else
                             datWT = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_cpu=[0-9]*','once','match'),'walltime=%d');
                             datMem = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_rss=[0-9]*','once','match'),'mem=%d');
-                            obj.reqWalltime = datWT;
-                            obj.reqMemory = datMem;
                         end
                     else
-                        obj.reqWalltime = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
-                        obj.reqMemory = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'memory'))+1};
+                        datWT = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
+                        datMem = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'memory'))+1};
                     end
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub -S /bin/sh -N %s -j yes -o %s %s %s', ...
                         Job.Name, Job.Tasks.LogFile, obj.SubmitArguments, Job.Tasks.ShellFile);
@@ -86,7 +89,8 @@ classdef PoolClass < handle
                     obj.getJobStateFcn = @(SchedulerID) SGE_getJobState(SchedulerID);
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
             end
-            obj.updateSubmitArguments;
+            obj.reqWalltime = datWT;
+            obj.reqMemory = datMem;
         end
         
         function set.JobStorageLocation(obj,value)
@@ -135,6 +139,8 @@ classdef PoolClass < handle
                         memory = sprintf('%dMB',memory*1000);
                     end
                     obj.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
+                case 'LSF'
+                    obj.SubmitArguments = sprintf('%s -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',obj.initialSubmitArguments,walltime*60,memory*1000,memory*1000,walltime);
                 case 'Generic'
                     obj.SubmitArguments = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,walltime,memory);
             end
@@ -173,5 +179,20 @@ if s == 153 % Unknown Job ID
 else
     chState = regexp(w,'job_state = [A-Z]','match','once'); chState = chState(end); % RE HQW
     state = stateList{cell_index(stateList(:,1),chState),2};
+end
+end
+
+function state = LSF_getJobState(ID)
+stateList = {...
+    'PEND' 'pending';...
+    'RUN' 'running';...
+    'DONE' 'finished';...
+    'EXIT' 'error'...
+    };
+[s, w] = system(sprintf('bjobs -noheader -o "stat" %d',ID));
+if ~isempty(strfind(w,'not found'))
+    state = 'finished';
+else
+    state = stateList{cell_index(stateList(:,1),deblank(w)),2};
 end
 end

@@ -38,7 +38,7 @@
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/usr/local/apps/psycapps/BrainWavelet/BrainWavelet-1.1</BrainWaveletdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/usr/local/apps/psycapps/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='dir'>PsychoSGE</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>PsychoSGE</poolprofile>
             <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.rhul@gmail.com:aamailer</mailerserver>
         </directory_conventions>
         <options>
@@ -47,6 +47,7 @@
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>localsingle</wheretoprocess>
             <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>1</garbagecollection>
             <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'>7</aaworkercleanup>
+            <aaworkermaximumretry desc='Maximum number of (re)tries to submit job to the scheduler' ui='double'>6</aaworkermaximumretry>
             <restorepath desc='Restore linux and MATLAB path upon closing' ui='yesno'>1</restorepath>
             <diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
             <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
