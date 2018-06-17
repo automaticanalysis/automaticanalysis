@@ -74,7 +74,7 @@
 
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
-%#function aaq_condor aaq_localsingle aaq_matlab_pct aaq_qsub
+%#function aaq_condor aaq_localsingle aaq_matlab_pct aaq_qsub aaq_qsub_debug aaq_qsub_monitor_jobs aaq_qsub_nonDCS
 
 aap = aa_init(aap);
 
