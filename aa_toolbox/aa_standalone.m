@@ -36,9 +36,8 @@ end
 %% User customisation
 xml_aa = xml_read(fname_aa,struct('ReadAttr',0));
 aap = recursive_set(aap,xml_aa);
-
+    
 % templates
-aap.directory_conventions.spmdir = spm('Dir');
 if strcmp(spm('Ver'),'SPM12'), aap = aas_configforSPM12(aap); end
 % check path to T1 template --> the rest should work, too
 if exist(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template),'file')
