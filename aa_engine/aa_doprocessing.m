@@ -74,7 +74,7 @@
 
 
 function [aap]=aa_doprocessing(aap,username,bucket,bucketfordicom,workerid,analysisid,jobid)
-%#function aaq_condor aaq_localsingle aaq_matlab_pct aaq_qsub
+%#function aaq_condor aaq_localsingle aaq_matlab_pct aaq_qsub aaq_qsub_debug aaq_qsub_monitor_jobs aaq_qsub_nonDCS
 
 aap = aa_init(aap);
 
@@ -184,51 +184,21 @@ aas_requiresversion(aap);
 % Run initialisation modules
 aap=aas_doprocessing_initialisationmodules(aap);
 
-% THE MODULES IN AAP.TASKLIST.STAGES ARE RUN IF A CORRESPONDING DONE_ FLAG
-% IS NOT FOUND. ONE IS CREATED AFTER SUCCESSFUL EXECUTION
-% Now run stage-by-stage tasks
-
 % get dependencies of stages, referenced in both directions (aap.internal.dependenton
 % and aap.internal.dependencyof)
-
 aap=aas_builddependencymap(aap);
 
-% Create folder (required by aas_findinputstreamsources to save provenance)
-if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
-    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
-    if (isempty(dir(aapsavepth)))
-        [s w]=aas_shell(['mkdir ' aapsavepth]);
-        if (s)
-            aas_log(aap,1,sprintf('Problem making directory%s',aapsavepth));
-        end
-    end
-end
-
-% Use input and output stream information in XML header to find
-% out what data comes from where and goes where
-aap=aas_findinputstreamsources(aap);
-
-% Store these initial settings before any module specific customisation
-aap.internal.aap_initial=aap;
-aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
-
-% Save AAP structure
-%  could save aaps somewhere on S3 too?
-studypath=aas_getstudypath(aap);
+% - find out what data comes from where and goes where
+% - store initial settings before any module specific customisation
+% - save AAP structure
+aap = update_aap(aap);
 
 % check disk space
-FileObj=java.io.File(studypath);
+FileObj=java.io.File(aas_getstudypath(aap));
 GBFree=FileObj.getUsableSpace/1024/1000/1000;
 if (GBFree<10)
     aas_log(aap,false,sprintf('WARNING: Only %f GB of disk space free on analysis drive',GBFree));
 end;
-
-if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
-    aapsavefn=fullfile(aapsavepth,'aap_parameters');
-    aap.internal.aapversion=aa.Version;
-    aap.internal.aappath=aa.Path;
-    save(aapsavefn,'aap');
-end
 
 % Choose where to run all tasks
 if ~exist(sprintf('aaq_%s', aap.options.wheretoprocess),'file'), 
@@ -258,10 +228,9 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
 end
 
 %% Main task loop
-mytasks={'checkrequirements','doit'}; %
-for l=1:length(mytasks)
+for mytasks = {'checkrequirements','doit'} %
     for k=1:length(aap.tasklist.main.module)
-        task=mytasks{l};
+        task=mytasks{1};
         % allow full path of module to be provided [djm]
         [stagepath stagename]=fileparts(aap.tasklist.main.module(k).name);
         index=aap.tasklist.main.module(k).index;
@@ -380,17 +349,24 @@ for l=1:length(mytasks)
                 
                 aas_log(aap,false,msg);
             end
+            % Get jobs started as quickly as possible - important on AWS as it
+            % can take a while to scan all of the done flags
+            taskqueue.runall(dontcloseexistingworkers, false);
+            if ~isempty(localtaskqueue.jobqueue),
+                localtaskqueue.runall(dontcloseexistingworkers, false);
+            end
+            if ~taskqueue.isOpen, break; end
         end
-        % Get jobs started as quickly as possible - important on AWS as it
-        % can take a while to scan all of the done flags
-        taskqueue.runall(dontcloseexistingworkers, false);
-        if ~isempty(localtaskqueue.jobqueue), 
-            localtaskqueue.runall(dontcloseexistingworkers, false); 
-        end
-        if ~taskqueue.isOpen, break; end
     end
-    % Wait until all the jobs have finished
-    taskqueue.runall(dontcloseexistingworkers, true);
+    switch task
+        case 'checkrequirements'
+            % update map
+            aap = update_aap(aap);
+            taskqueue.aap = aap;
+        case 'doit'
+            % Wait until all the jobs have finished
+            taskqueue.runall(dontcloseexistingworkers, true);
+    end
 end
 
 if taskqueue.isOpen, taskqueue.close; end
@@ -420,6 +396,45 @@ end
 
 aa_close(aap);
 
+end
+
+function aap = update_aap(aap)
+global aa
+
+% restore root
+if isfield(aap.tasklist,'currenttask')
+    aap.acq_details.root = aap.internal.aap_initial.acq_details.root; 
+    aap.directory_conventions.analysisid = aap.internal.aap_initial.directory_conventions.analysisid;
+    aap.directory_conventions.analysisid_suffix = aap.internal.aap_initial.directory_conventions.analysisid_suffix;
+end
+
+% Create folder (required by aas_findinputstreamsources to save provenance)
+if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
+    aapsavepth=fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
+    aas_makedir(aap,aapsavepth);
+end
+
+% Use input and output stream information in XML header to find
+% out what data comes from where and goes where
+aap=aas_findinputstreamsources(aap);
+
+if ~isfield(aap.tasklist,'currenttask') % Store these initial settings before any module specific customisation
+    aap.internal.aap_initial=aap;
+    aap.internal.aap_initial.aap.internal.aap_initial=[]; % Prevent recursively expanding storage
+else % Restore initial settings
+    initinternal = aap.internal;
+    aap = aap.internal.aap_initial;
+    aap.internal = initinternal;
+    if isfield(aap,'aap'), aap = rmfield(aap,'aap'); end
+end
+
+% Save AAP structure (S3?)
+if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
+    aapsavefn=fullfile(aapsavepth,'aap_parameters');
+    aap.internal.aapversion=aa.Version;
+    aap.internal.aappath=aa.Path;
+    save(aapsavefn,'aap');
+end
 end
 
 

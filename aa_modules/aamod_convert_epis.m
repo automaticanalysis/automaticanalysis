@@ -517,7 +517,7 @@ switch task
             ind = find(finalepis=='-');
             if numel(ind) > 1, ind = ind(2); end
             finalepis = [finalepis(1:ind-1) '.nii'];
-			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0);
+			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
         % And describe outputs
         aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);

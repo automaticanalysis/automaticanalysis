@@ -138,7 +138,7 @@ switch task
             ind(2) = ind(end);
             finalepis = [finalepis(1:ind(2)-1) sfx '.nii'];
             if iscell(V), V = cell2mat(V); end
-            spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0);
+            spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
         % And describe outputs
         if comp, delete(niftifile{1}); end

@@ -56,7 +56,7 @@ switch task
             niifiles = niifiles{1};
             ind = find(niifiles=='-');
             niifiles = [niifiles(1:ind(2)-1) '.nii'];
-			spm_file_merge(char({V.fname}),niifiles,0);
+			spm_file_merge(char({V.fname}),niifiles,0,DICOMHEADERS{1}.volumeTR);
         end
         
         % bvals and bvecs based on Guy William's algorithm as implemented by Matthew Brett
