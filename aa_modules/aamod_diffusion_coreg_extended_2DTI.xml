@@ -19,8 +19,8 @@
                 <stream>t1totemplate_xfm</stream>
                 <stream diagnostic="1">aamod_diffusion_extractnodif_00001.nodif</stream>   
                 <stream>dti_FA</stream> 
-                <stream isessential="0">dti_AD</stream>
-                <stream isessential="0">dti_RD</stream>
+                <stream>dti_AD</stream>
+                <stream>dti_RD</stream>
                 <stream>dti_MD</stream> 
                 <stream>dti_L1</stream> 
                 <stream>dti_L2</stream> 
