@@ -89,8 +89,13 @@ if isfield(args,'connection')
 end
 
 %% DO ANALYSIS
-aa_doprocessing(aap);
-aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+try
+    aa_doprocessing(aap);
+    aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+catch E
+    aa_close(aap);
+    rethrow(E);
+end
 end
 
 function aap = recursive_set(aap,xml)
