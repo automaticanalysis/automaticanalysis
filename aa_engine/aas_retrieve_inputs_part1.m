@@ -1,7 +1,7 @@
 % Retrieves inputs from a particular stream to a particular destination
 %
 
-function [gotinputs streamfiles]=aas_retrieve_inputs_part1(aap,inputstream,gotinputs,deps)
+function [gotinputs, streamfiles]=aas_retrieve_inputs_part1(aap,inputstream,gotinputs,deps)
 global aaworker
 
 streamfiles=[];
@@ -21,7 +21,7 @@ for depind=1:length(deps)
         fromstreamname=streamname(pos(end)+1:end);
     else
         fromstreamname=streamname;
-    end;
+    end
     
     %% REMOTE STREAM - this is stored on another machine and retrieved with rsync+ssh
     % Is it a remote stream?
@@ -72,6 +72,7 @@ for depind=1:length(deps)
         if any(remoteindices == 0)
             badIndex = find(remoteindices==0,1,'first');
             domainItems = aas_getNames_bydomain(aap, localTree{badIndex+1});
+            if isempty(domainItems{1}), domainItems{1}{indices(badIndex)} = localTree{badIndex+1}; end
             aas_log(aap, false, sprintf('WARNING: Remote AAP doesn''t have %s ''%s''!', localTree{badIndex+1}, domainItems{1}{indices(badIndex)}));
         end
                 
@@ -236,10 +237,10 @@ for depind=1:length(deps)
                 
                 gotinputs=[gotinputs;fns_dest_full];
             else % cleanup
-                if isCreated, rmdir(dest); end
-            end;
+                if isCreated, rmdir(dest,'s'); end
+            end
             
-        end;
+        end
         
     else
         %% LOCALLY - local disc or S3
