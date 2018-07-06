@@ -21,6 +21,8 @@
 
 function aa_standalone(fname_config, fname_tasklist, fname_aa, varargin)
 
+if strcmp(fname_config,'version'), aaClass('nopath'); return; end
+
 %% Load tasklist and customisation
 aap=aarecipe(fname_config,fname_tasklist);
 
