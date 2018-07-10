@@ -17,7 +17,7 @@ classdef aa_provenance < handle
         relations = {}
         
         % so far only one subject and sessopn is supported
-        indices = [1 1]
+        indices = [1 1 1]
     end
     
     properties (SetAccess = private)
@@ -269,17 +269,31 @@ classdef aa_provenance < handle
         end
         
         function [prid, id] = addStream(obj,idsrc,stream)
-            obj.IDs{idsrc}.aap.options.maximumretry = 1;
-            obj.IDs{idsrc}.aap.options.verbose = -1;
-            if ~isempty(obj.IDs{idsrc}.aap.acq_details.selected_sessions)
-                sess = obj.IDs{idsrc}.aap.acq_details.selected_sessions(obj.indices(2));
+            aap = obj.IDs{idsrc}.aap;
+            aap.options.maximumretry = 1;
+            aap.options.verbose = -1;
+            if ~isempty(aap.acq_details.selected_sessions)
+                sess = aap.acq_details.selected_sessions(obj.indices(2));
             else
                 sess = obj.indices(2);
             end
             
-            [files, MD5, fname] = aas_getfiles_bystream_multilevel(obj.IDs{idsrc}.aap,...
-                aas_getsesstype(obj.IDs{idsrc}.aap),...
-                [obj.indices(1),sess],stream,'output'); % TODO: associate files
+            outp = aap.internal.outputstreamdestinations{aap.tasklist.currenttask.modulenumber}.stream;
+            if isempty(outp) || ~any(strcmp({outp.name},stream))
+                destdomain = aap.tasklist.currenttask.domain; 
+            else
+                ioutp = strcmp({outp.name},stream);
+                outp = outp(ioutp); outp = outp(1);
+                destdomain = outp.destdomain;
+            end
+            if strcmp(destdomain,'study'), destdomain = 'subject'; end
+            [junk, dtModule] = aas_dependencytree_allfromtrunk(aap,aap.tasklist.currenttask.domain);
+            [junk, dtOutput] = aas_dependencytree_allfromtrunk(aap,destdomain);
+            if (numel(dtModule) > numel(dtOutput)), destdomain = dtModule{end}; end
+
+            [files, MD5, fname] = aas_getfiles_bystream_multilevel(aap,...
+                destdomain,...
+                [obj.indices(1),sess,obj.indices(3)],stream,'output'); % TODO: associate files
             if ~exist('files','var') || isempty(files)
                 prid = ''; id = 0;
                 return

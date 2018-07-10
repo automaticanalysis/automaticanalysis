@@ -43,7 +43,7 @@ switch task
         job.transform.transM = M;
         job.prefix = '';
         
-        spm_run_reorient(job)
+        spm_run_reorient(job);
         
         % Describe outputs
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,streams{1},fname);

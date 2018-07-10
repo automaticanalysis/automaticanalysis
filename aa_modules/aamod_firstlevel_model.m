@@ -195,7 +195,12 @@ switch task
             close(h.betas)
         end
     case 'checkrequirements'
-        
+        %% Adjust outstream
+        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
+            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
+            aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
+        end
+
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end

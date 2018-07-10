@@ -101,16 +101,11 @@ for k=1:numel(stages)
         end
         
         % build dependency
-        dep = aas_dependencytree_allfromtrunk(curr_aap,domain);
+        [dep, domaintree] = aas_dependencytree_allfromtrunk(curr_aap,domain);
         
         % Set inSession flag
-        if ~isempty(strfind(domain,'session')) && ~inSession
-            inSession = true;
-        end
-        if isempty(strfind(domain,'session')) && inSession
-            inSession = false;
-        end
-        
+        inSession = (numel(domaintree) >= 2) & ~isempty(strfind(domain,'session'));
+
         % run through
         for d = 1:numel(dep)
             indices = dep{d}{2};
@@ -119,20 +114,26 @@ for k=1:numel(stages)
             if numel(dep{d}{2}) >= 2, sess = dep{d}{2}(2); end % Session/Occurrance No
             
             if inSession
-                [junk, iSess] = aas_getN_bydomain(curr_aap,domain,subj);
+                sessdomain = domain;
+                if numel(domaintree) > 2, sessdomain = domaintree{2}; end
+                [junk, iSess] = aas_getN_bydomain(curr_aap,sessdomain,subj);
                 firstSess = iSess(1);
                 lastSess = iSess(end);
             end
             
-            if ~inSession || (sess == firstSess), aap = aas_report_add(aap,subj,...
+            if ~inSession || ((sess == firstSess)  && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'first'))), aap = aas_report_add(aap,subj,...
                     ['<h2>Stage: ' stagerepname '</h2>']); 
             end
             
             % evaluate with handling sessions
             if inSession
-                if sess == firstSess, aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
+                if (sess == firstSess) && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'first')), aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td valign="top">');
-                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domain 's'])(dep{d}{2}(2)).name '</h3>']);
+                aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domaintree{2} 's'])(dep{d}{2}(2)).name '</h3>']);
+                if numel(dep{d}{2}) >= 3
+                    descSubSession = strrep(domaintree{3},'_',' '); descSubSession(1) = upper(descSubSession(1));
+                    aap = aas_report_add(aap,subj,sprintf('<h4>%s: %d</h4>',descSubSession,dep{d}{2}(3))); 
+                end
             end
             if ~isdone
                 aap = aas_report_add(aap,subj,'<h3>Not finished yet!</h3>');
@@ -153,10 +154,10 @@ for k=1:numel(stages)
                 % save report
                 aap.report = run_aap.report;
                 aap.prov = run_aap.prov;
-            end;
+            end
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if sess == lastSess, aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if (sess == lastSess) && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'last')), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end
     end

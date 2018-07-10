@@ -96,6 +96,7 @@ if exist('tasklistxml','var')
 end
 
 % SPM
+if isdeployed, aap.directory_conventions.spmdir = spm('Dir'); end
 if ~isempty(aap.directory_conventions.spmdir)
     addpath(aap.directory_conventions.spmdir); 
     spm_jobman('initcfg');

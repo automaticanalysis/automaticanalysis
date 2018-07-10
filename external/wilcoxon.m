@@ -107,7 +107,10 @@ fprintf('95%% Confidence interval: %0.4f  %0.4f\n',cintpem(1),cintpem(2))
 disp('')
 
 doHLE = true;
-if exist('meminfo','file')
+if isdeployed
+        fprintf('Hodges-Lehmann estimatation of median of differences is disabled in deployed application\n')
+        doHLE = false;
+elseif exist('meminfo','file')
     m = meminfo;
     if m.VirtLimit-(0.028*numel(dff)^2+m.VirtUsedBy) < 0 % not enough vmem (0.028 comes from simulations)
         fprintf('Not enough memory (soft-test) to Hodges-Lehmann estimate median of differences\n')
