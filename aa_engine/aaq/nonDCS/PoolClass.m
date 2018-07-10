@@ -6,6 +6,7 @@ classdef PoolClass < handle
         
         reqMemory = 1
         reqWalltime = 1
+        initialConfiguration = ''
     end
     
     properties (Hidden)
@@ -24,7 +25,7 @@ classdef PoolClass < handle
     end
     
     methods
-        function obj = PoolClass(pool,initialSubmitArguments)
+        function obj = PoolClass(pool,initialSubmitArguments,initialConfiguration)
             % Required argument:
             % pool - Initializiation object (created by PCT function parcluster) or structure
             %
@@ -46,6 +47,7 @@ classdef PoolClass < handle
             % Optionmal argument:
             % initialSubmitArguments - Submission string specifying resources other than memory and waltime. Can be empty.
             if nargin >= 2, obj.initialSubmitArguments = initialSubmitArguments; end
+            if nargin >= 3, obj.initialConfiguration = initialConfiguration; end           
             
             obj.Type = pool.Type;
             obj.JobStorageLocation = pool.JobStorageLocation;
