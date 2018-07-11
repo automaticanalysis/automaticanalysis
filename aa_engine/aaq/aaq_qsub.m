@@ -4,6 +4,8 @@ classdef aaq_qsub<aaq
         QV = []
     end
     properties (Hidden)
+        poolConf = cell(1,3)
+        
         jobnotrun = []
         jobinfo = struct(...
             'InputArguments',{},...
@@ -39,7 +41,8 @@ classdef aaq_qsub<aaq
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':');
+                    conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':'); for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
+                    [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
                     if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
                     
                     profiles = parallel.clusterProfiles;

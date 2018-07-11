@@ -11,12 +11,12 @@ classdef JobClass < handle
     end
     
     properties (Hidden)
+        Pool
         Folder
         latestTaskID = 0
     end
     
     properties (Hidden, Access = protected)
-        Pool
         schedulerID = NaN
     end
     

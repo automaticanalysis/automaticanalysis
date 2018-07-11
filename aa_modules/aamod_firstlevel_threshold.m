@@ -41,6 +41,8 @@ switch task
             conName = strrep_multi(loaded.SPM.xCon(C).name,{' ' ':' '>'},{'' '_' '-'});
             conInd = find(strcmp(conNames, loaded.SPM.xCon(C).name));
             
+            if isempty(conInd), continue; end % implicit contrasts (e.g. eachagainstbaseline)
+            
             % Study summary
             aap = aas_report_add(aap,sprintf('C%02d',conInd),['Subject: ' basename(aas_getsubjpath(aap,subj)) '<br>']);
             
