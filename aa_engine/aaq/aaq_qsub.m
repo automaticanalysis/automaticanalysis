@@ -43,7 +43,6 @@ classdef aaq_qsub<aaq
                     % Parse configuration
                     conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':'); for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
                     [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
-                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
                     
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
