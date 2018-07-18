@@ -31,8 +31,8 @@ classdef aas_qsubViewerClass < QueueViewerClass
             end
             if numel(indices) == 0, indicesstr = 'study';
             else
-                if numel(indices) >= 1, indicesstr = sprintf('\n\t- Subject %s',acq.subjects(indices(1)).subjname); end
-                if numel(indices) >= 2, indicesstr = sprintf('%s\n\t- Session %s',indicesstr,acq.(field_sess)(indices(2)).name); end
+                if numel(indices) >= 1, indicesstr = sprintf('\n  - Subject %s',acq.subjects(indices(1)).subjname); end
+                if numel(indices) >= 2, indicesstr = sprintf('%s\n  - Session %s',indicesstr,acq.(field_sess)(indices(2)).name); end
             end
             
             str = sprintf(['- Module: %s\n'...

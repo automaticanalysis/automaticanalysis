@@ -14,10 +14,9 @@ function [aap]=aas_setcurrenttask(aap,varargin)
 
 
 % Start with the initial pure aap
-initinternal=aap.internal;
-initaap=aap.internal.aap_initial;
-aap=initaap;
-aap.internal=initinternal;
+initinternal = aap.internal;
+aap = aap.internal.aap_initial;
+aap.internal = initinternal;
 
 if ~isempty(varargin) && isnumeric(varargin{1})
     k = varargin{1};

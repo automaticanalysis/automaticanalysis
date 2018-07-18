@@ -41,20 +41,20 @@ switch task
             
             % select images in the same folder
             dirs = unique(spm_file(outstream,'path'))';
-            for d = dirs
-                ind4D = cellfun(@(x) ~isempty(x), strfind(outstream,d{1}));
+            for d = 1:numel(dirs)
+                ind4D = cellfun(@(x) ~isempty(x), strfind(outstream,dirs{d}));
                 if sum(ind4D) > 1
                     img4D = outstream(ind4D);
                     
                     % dummies
                     if ndummies
-                        dummypath=fullfile(d{1},'dummy_scans');
+                        dummypath=fullfile(dirs{d},'dummy_scans');
                         aap=aas_makedir(aap,dummypath);
                         for dummyind=1:ndummies
                             cmd=['mv ' img4D{dummyind} ' ' dummypath];
                             [s w]=aas_shell(cmd);
                             if (s)
-                                aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',niifiles{dummyind},dummypath));
+                                aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',img4D{dummyind},dummypath));
                             end
                         end
                         img4D(1:ndummies) = [];
@@ -62,7 +62,7 @@ switch task
                     
                     if NIFTI4D
                         fname4D = [getuniformfields(img4D) '.nii'];
-                        spm_file_merge(char(img4D),fname4D,0);
+                        spm_file_merge(char(img4D),fname4D,0,dcmhdr{d}.volumeTR);
                         img4D = cellstr(fname4D);
                         % replace first instance with the 4D and remove the rest
                         outstream(find(ind4D,1,'first')) = img4D;

@@ -36,10 +36,6 @@ function [aap,resp] = aamod_segment8(aap, task, subjind)
 resp='';
 
 switch task
-    case 'domain'
-        resp='subject';
-    case 'description'
-        resp='SPM8 segment8 for structural images.';
     case 'report'
         fdiag = dir(fullfile(aas_getsubjpath(aap,subjind),'diagnostic_*.jpg'));
         if isempty(fdiag)
@@ -316,6 +312,16 @@ switch task
         %% Diagnostics
         if strcmp(aap.options.wheretoprocess,'localsingle')
             diag(aap,subjind);
+        end
+    case 'checkrequirements'
+        %% Adjust outstream
+        if ~aap.tasklist.currenttask.settings.writenormimg 
+            for out = aap.tasklist.currenttask.settings.inputstreams.stream
+                if any(strcmp(aas_getstreams(aap,'output'),out{1}))
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{1},[],'output');
+                    aas_log(aap,false,sprintf('REMOVED: %s output stream: %s', aap.tasklist.currenttask.name,out{1}));
+                end
+            end
         end
 end
 end
