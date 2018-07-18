@@ -56,7 +56,7 @@
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-        <poolprofile desc='MATLAB function to create cluster profile on local machine (should be in your MATLAB path)' ui='dir'></poolprofile>
+        <poolprofile desc='Cluster Profile and (optional) queue name separated with colon' ui='dir'></poolprofile>
         <mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>mvpaamailer@gmail.com:mvpaamailer</mailerserver>
         <parallel_dependencies desc='Describes relationships of different domains of processing' ui='custom'>
             <study desc='The whole study (root)' ui='custom'>
@@ -113,7 +113,7 @@
         <autoidentifyt2_average desc='Average across T2 when there is more than one?' ui='yesno'>0</autoidentifyt2_average>
         <autoidentifyt2_multiple desc='We require several T2 to do complex postprocessing on. e.g. MP2RAGE creates 5 images, which can be ultimately transformed into a single one' ui='yesno'>0</autoidentifyt2_multiple>
         <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
-        <autoidentifyfieldmaps_number desc='If field maps exist, how many are there?' ui='double'>2</autoidentifyfieldmaps_number>
+        <autoidentifyfieldmaps_number desc='If field maps exist, how many are there? Positive or negatve number indicates fieldmap after or before EPI, respectively' ui='double'>2</autoidentifyfieldmaps_number>
         <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>1</autoidentifytmaps>
         <aa_minver desc='Minimum allowed aa version' ui='double'>5.0.0</aa_minver>
         <aa_maxver desc='Maximum allowed aa version' ui='double'>99.99.99</aa_maxver>
@@ -124,6 +124,9 @@
         <aaworkerGUI desc='Show GUI to monitor parallel workers?' ui='yesno'>1</aaworkerGUI>
         <aaworkerroot desc='Path to folder where folder .aa for execution reports is created' ui='dir'></aaworkerroot>
         <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'></aaworkercleanup>
+        <aaworkermaximumretry desc='Maximum number of (re)tries to submit job to the scheduler' ui='double'>1</aaworkermaximumretry>
+        <aaworkerwaitbeforeretry desc='If job has been pendign for longer than this value, aa re-ubmit it to the scheduler if aaworkermaximumretry > 1' ui='double'>inf</aaworkerwaitbeforeretry>
+        <aaworkercheckCPU desc='Check job CPU usage (and restart sleeping jobs)?' ui='yesno'>0</aaworkercheckCPU>
         <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
             <numberofworkers desc='Requested number of workers' ui='double'>8</numberofworkers>
             <memory desc='Requested amount of memory in GB' ui='double'>4</memory>

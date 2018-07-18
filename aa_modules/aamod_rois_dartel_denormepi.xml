@@ -12,7 +12,7 @@
                 <stream isessential="0" diagnostic="1">aamod_coreg_extended_2epi_00001.meanepi</stream>                
                 <stream isessential="0" diagnostic="1">aamod_realignunwarp_00001.meanepi</stream>                
                 <stream isessential="0" diagnostic="1">aamod_realign_00001.meanepi</stream>                
-                <stream>aamod_norm_write_dartel_00001.dartel_templatetomni_xfm</stream>
+                <stream>dartel_templatetomni_xfm</stream>
                 <stream>dartel_flowfield</stream>
                 <stream>rois</stream>                
             </inputstreams>

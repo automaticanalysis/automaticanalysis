@@ -10,7 +10,11 @@ resp='';
 switch task
         
     case 'report'
+        html = fullfile(aas_getsubjpath(aap,subj),'MELODIC','report','00index.html');
         
+        aap = aas_report_add(aap,subj,'<table><tr>');
+        aap = aas_report_add(aap,subj,sprintf('<td><a href="%s">FSL MELODIC report: %s</a><br></td>',html,html));
+        aap = aas_report_add(aap,subj,'</tr></table>');
     case 'doit'
         
         spaced_EPIimg = [];
@@ -25,51 +29,40 @@ switch task
         
         %% CONCATENATE THE DATA...
         aas_log(aap,false,'Concatenating the data')
-        
         data4D = fullfile(aas_getsubjpath(aap,subj), sprintf('4Ddata_%s.nii', aap.acq_details.subjects(subj).subjname));
+        aas_runfslcommand(aap, ...
+            sprintf('fslmerge -t %s %s', data4D, spaced_EPIimg));
         
-        [junk, w]=aas_runfslcommand(aap, ...
-            sprintf('fslmerge -t %s %s', ...
-            data4D, ...
-            spaced_EPIimg));
+        %% MELODIC options
+        opts = aap.tasklist.currenttask.settings.MELODICoptions;
+        
+        % Brain mask (optional)
+        if aas_stream_has_contents(aap,subj,'firstlevel_brainmask')
+            opts = [opts ' -m ' aas_getfiles_bystream(aap,'subject',subj,'firstlevel_brainmask')];
+        end
+        
+        % thresholding (optional)
+        mmthresh = aas_getsetting(aap,'mmthresh');
+        if isempty(mmthresh), mmthresh = 0.5; end % backward compatibility: 0.5 is default
+        if mmthresh > 0
+            opts = sprintf('%s --mmthresh %1.3f',opts, mmthresh);
+        else
+            opts = [opts ' --no_mm'];
+        end
         
         %% RUN MELODIC
         aas_log(aap,false,'Running MELODIC')
         
         outDir = fullfile(aas_getsubjpath(aap,subj), 'MELODIC');
-        if ~exist(outDir, 'dir')
-            mkdir(outDir)
-        end
+        aas_makedir(aap,outDir);
         
-        [junk, w]=aas_runfslcommand(aap, ...
-            sprintf('melodic -i %s %s -o %s', ...
-            data4D, ...
-            aap.tasklist.currenttask.settings.MELODICoptions, ...
-            outDir));
+        aas_runfslcommand(aap, ...
+            sprintf('melodic -i %s %s -o %s --report', data4D, opts, outDir));
         
         % Delete 4D file once we finish!
-        unix(['rm ' data4D])
+        delete(data4D);
         
         %% DESCRIBE OUTPUTS!
-        
-        % MAKE A SEPARATE FUNCTION OF THIS SOMETIME?
-        melodicFiles = [];
-        fldrDir = genpath(outDir);
-        % Then recurse inside each directory until you run out of paths
-        while ~isempty(strtok(fldrDir, ':'))
-            % Get each of the directories made by gendir
-            [fldrCurr fldrDir] = strtok(fldrDir, ':');
-            % Check it's not a .svn folder
-            D = dir(fldrCurr);
-            for d = 1:length(D)
-                if ~D(d).isdir && isempty(strfind(D(d).name(1), '.'))
-                    melodicFiles = strvcat(melodicFiles, fullfile(fldrCurr, D(d).name));
-                else
-                    % It is one of the . or .. folders
-                end
-            end
-        end
-        
-        aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);
-        
+        melodicFiles = spm_select('FPList',outDir);
+        aap=aas_desc_outputs(aap,subj,'melodic', melodicFiles);        
 end

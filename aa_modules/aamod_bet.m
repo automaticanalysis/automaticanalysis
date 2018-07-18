@@ -11,10 +11,23 @@ resp='';
 
 switch task
     case 'report'
+        subj = varargin{1};
+        domain = aap.tasklist.currenttask.domain;
+        localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
+
+        if isempty(spm_select('List',localpath,'diagnostic_.*.jpg'))
+            diag(aap,varargin{:});
+        end
         
+        for fdiag = cellstr(spm_select('FPList',localpath,'diagnostic_.*.jpg'))'
+            aap = aas_report_add(aap,subj,'<table><tr><td>');
+            aap=aas_report_addimage(aap,subj,fdiag{1});
+            [p, f] = fileparts(fdiag{1}); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
+            aap = aas_report_add(aap,subj,'</td></tr></table>');
+        end
     case 'doit'
         % Whatever domain we're operating at must have subj as top domain
-        subj=varargin{1};
         fslext=aas_getfslext(aap);
         
         % Get inputs
@@ -117,40 +130,6 @@ switch task
             outMesh = strvcat(outMesh, fullfile(pth, D(d).name));
         end
         
-        %% DIAGNOSTIC IMAGE
-        try
-            %% Draw structural image...
-            spm_check_registration(Simg)
-            
-            % This will only work for 1-7 masks
-            OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
-                [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
-            
-            indx = 0;
-            
-            % Colour the brain extracted bit pink
-            spm_orthviews('addcolouredimage',1,outStruct, [0.9 0.4 0.4])
-            % Add mesh outlines, to see if BET has worked properly!
-            if aap.tasklist.currenttask.settings.masks
-                for r = 1:size(outMesh,1)
-                    if strfind(outMesh(r,:), fslext)
-                        indx = indx + 1;
-                        spm_orthviews('addcolouredimage',1,outMesh(r,:), OVERcolours{indx})
-                    end
-                end
-            end
-            %% Diagnostic VIDEO of masks
-            aas_checkreg_avi(aap, subj, 0)
-            
-            spm_orthviews('reposition', [0 0 0])
-            
-            try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
-            set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
-            print('-djpeg','-r75',fullfile(aas_getsesspath(aap,varargin{:}), ...
-                ['diagnostic_' mfilename '_' aap.acq_details.subjects(subj).subjname '.jpg']));
-        catch
-        end
-        
         %% DESCRIBE OUTPUTS!
         
         % Structural image after BETting
@@ -160,4 +139,46 @@ switch task
         if aap.tasklist.currenttask.settings.masks
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},outMesh);
         end
+        
+        try diag(aap,varargin{:}); catch, end
+end
+end
+
+function diag(aap,varargin)
+%% DIAGNOSTIC IMAGE
+%% Draw structural image...
+inpstreams = aas_getstreams(aap,'input'); % 
+outstreams = aas_getstreams(aap,'output'); % 
+Simg = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],inpstreams{1},'input');
+outStruct = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{1},'output');
+outMesh = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},'output');
+
+spm_check_registration(Simg)
+
+% This will only work for 1-7 masks
+OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
+    [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
+
+indx = 0;
+
+% Colour the brain extracted bit pink
+spm_orthviews('addcolouredimage',1,outStruct, [0.9 0.4 0.4])
+% Add mesh outlines, to see if BET has worked properly!
+if aap.tasklist.currenttask.settings.masks
+    for r = 1:size(outMesh,1)
+        if strfind(outMesh(r,:), aas_getfslext(aap))
+            indx = indx + 1;
+            spm_orthviews('addcolouredimage',1,outMesh(r,:), OVERcolours{indx})
+        end
+    end
+end
+%% Diagnostic VIDEO of masks
+aas_checkreg_avi(aap, {aap.tasklist.currenttask.domain cell2mat(varargin)}, 0)
+
+spm_orthviews('reposition', [0 0 0])
+
+try figure(spm_figure('FindWin', 'Graphics')); catch; figure(1); end;
+set(gcf,'PaperPositionMode','auto','Renderer','zbuffer');
+print('-djpeg','-r75',fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[varargin{:}]), ...
+    ['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' aap.acq_details.subjects(varargin{1}).subjname '.jpg']));
 end

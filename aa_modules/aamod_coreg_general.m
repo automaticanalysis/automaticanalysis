@@ -22,9 +22,11 @@ switch task
         end
         targetimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
         
+        srcstream = textscan(inpstream{tInd+1},'%s','delimiter','.'); srcstream = srcstream{1}{end};
+        
         d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_*']));
         if isempty(d)
-            aas_checkreg(aap,domain,cell2mat(varargin),inpstream{tInd+1},targetimfn);
+            aas_checkreg(aap,domain,cell2mat(varargin),srcstream,targetimfn);
             if numel(inpstream) > (tInd+1)
                 for s = 1:numel(inpstream)-(tInd+1)
                     aas_checkreg(aap,domain,cell2mat(varargin),inpstream{tInd+1+s},targetimfn);

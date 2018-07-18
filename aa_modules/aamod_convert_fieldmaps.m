@@ -8,18 +8,23 @@ resp='';
 switch task
     case 'report'
     case 'doit'
-        [aap, convertedfns, dcmhdr]=aas_convertseries_fromstream(aap,subj,sess,'dicom_fieldmap');
+        domain = aap.tasklist.currenttask.domain;
+        
+        [aap, convertedfns, dcmhdr]=aas_convertseries_fromstream(aap,domain,[subj,sess],'dicom_fieldmap');
         
         sesspath=aas_getsesspath(aap,subj,sess);
         
         % Restructure outputs
-        outstream = vertcat(convertedfns{:});
-        aap=aas_desc_outputs(aap,subj,sess,'fieldmap',outstream);
+        outstream = char(vertcat(convertedfns{:}));
+        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);
 
-        dcmhdr = dcmhdr{(numel(dcmhdr{2}) > numel(dcmhdr{1}))+1};
+        if iscell(dcmhdr{1}) % multiple series --> selects the one with the most scans (it should contain all TEs)
+            [junk,ind] = max(cellfun(@(x) numel(x), dcmhdr));
+            dcmhdr = dcmhdr{ind};
+        end
         dcmhdrfn=fullfile(sesspath,'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
-        aap=aas_desc_outputs(aap,subj,sess,'fieldmap_dicom_header',dcmhdrfn);
+        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap_dicom_header',dcmhdrfn);
         
     case 'checkrequirements'
         

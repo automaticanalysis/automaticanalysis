@@ -60,6 +60,7 @@ switch task
         outfilepfx = horzcat(spm_file(P,'path'),repmat(filesep,[size(P,1) 1]),spm_file(P,'basename'));
         WaveletDespike(P,outfilepfx, args{:});
         outputfns = spm_file(outfilepfx,'suffix','_wds.nii');
+        if exist(spm_file(outputfns,'ext','nii.gz'),'file'), gunzip(spm_file(outputfns,'ext','nii.gz')); end
         
         %% Describe outputs
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],streams{1},outputfns);

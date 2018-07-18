@@ -55,10 +55,10 @@ else % pattern
     strSubj = dir(fullfile(SEARCHPATH{i},subjpath)); strSubj = strSubj(end).name; % in case of multiple entries
 end
 
-% regexp to find files/folders that start with alphanumeric characters (ignore .
-% files)
+% regexp to find files/folders that start with alphanumeric characters (ignore . files)
 strSubjDir = spm_select('List',fullfile(SEARCHPATH{i},strSubj),'dir','^[a-zA-Z0-9]*');
-
+% if there is no subdirectory
+if isempty(strSubjDir), strSubjDir = spm_select('List',fullfile(SEARCHPATH{i},strSubj),'^[a-zA-Z0-9]*'); end
 if isempty(strSubjDir)
     aas_log(aap,true,sprintf('nothing found for path %s',...
         fullfile(SEARCHPATH{i},strSubj)));

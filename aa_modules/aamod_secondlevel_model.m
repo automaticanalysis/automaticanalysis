@@ -12,7 +12,8 @@ resp='';
 switch task
     case 'report'
         if ~exist(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
-            load(aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}));
+            fSPM = aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}); fSPM = deblank(fSPM(1,:)); %all models are the same (number of inputs may vary)
+            load(fSPM);            
             spm_DesRep('DesOrth',SPM.xX);
             saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
             close all;

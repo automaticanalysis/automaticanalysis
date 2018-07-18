@@ -35,7 +35,11 @@ switch task
                         structural_choose = sprintf('%s %s - serie(s)%s',structural_choose,...
                             aap.acq_details.subjects(subj).mriname{d},...
                             sprintf(' %d',aap.acq_details.subjects(subj).structural{d}));
-                        series{d}=intersect(series{d},aap.acq_details.subjects(subj).structural{d});
+                        if aap.options.autoidentifystructural
+                            series{d}=intersect(series{d},aap.acq_details.subjects(subj).structural{d});
+                        else
+                            series{d}=aap.acq_details.subjects(subj).structural{d};
+                        end
                     end
                 end
             case 't2'
@@ -136,7 +140,7 @@ switch task
                 element = dict.element(strcmp({dict.values.name}',f{1}.FieldName));
                 
                 for imnum = 1:numel(out)
-                    aas_shell(sprintf('dcmodify -m "(%04x,%04x)=%s" %s',group,element,f{1}.Value,out{imnum}));
+                    aas_shell(sprintf('%s/dcmodify -m "(%04x,%04x)=%s" %s',fullfile(aap.directory_conventions.DCMTKdir,'bin'),group,element,f{1}.Value,out{imnum}));
                 end
             end
         end

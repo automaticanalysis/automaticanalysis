@@ -15,10 +15,11 @@ switch cmd,
                         flags = 'm';
                     end
                     imgs = char(job.imgs{k});
-                    [td globals slicediff] = timediff(imgs,flags);
+                    qa = timediff(imgs,flags); % old [td globals slicediff]
                     out.tdfn{k} = fullfile(p,'timediff.mat');
-                    save(out.tdfn{k}, 'imgs', 'td', 'globals', 'slicediff');
+                    save(out.tdfn{k}, 'qa');
                 end
+                out.qa = qa;
                 varargout{1} = out;
             case 'tsdiffplot'
                 fg = spm_figure('GetWin', 'Graphics');

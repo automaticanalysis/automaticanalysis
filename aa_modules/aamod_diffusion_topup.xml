@@ -10,20 +10,6 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            <!-- This is the table as described in 
-            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/TopupUsersGuide
-            The first three values in each row describe the phase encoding directions of your first and second acquisitions.
-            The fourth value in each row is described here
-            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/Faq
-            This was also helpful to me
-            http://fsl.fmrib.ox.ac.uk/fsl/fslwiki/TOPUP/Faq
-            -->
-            
-            <topuptable>
-                <topuprow></topuprow>
-                <topuprow></topuprow>
-            </topuptable>
-            
             <inputstreams>
                 <stream>nodif</stream>
                 <stream>diffusion_dicom_header</stream>

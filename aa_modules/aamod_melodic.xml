@@ -11,8 +11,11 @@
             <permanenceofoutput>2</permanenceofoutput>
             
             ﻿<inputstreams>
+                <stream isessential='0'>firstlevel_brainmask</stream>
                 <stream>epi</stream>  
             </inputstreams>
+            
+            <mmthresh desc='threshold for Mixture Model based inference; 0 - switch off mixture modelling on IC maps'>0.5</mmthresh>
             
             <outputstreams>
                 <stream>melodic</stream>

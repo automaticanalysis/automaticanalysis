@@ -26,7 +26,7 @@ switch task
                 if exist(f{1},'file')
                     tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
                     f{2} = fullfile(aas_getstudypath(aap),...
-                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcnameC,SPM.xCon(C).name));
+                        sprintf('diagnostic_aamod_secondlevel_threshold_%s_C%02d_%s_render.jpg',flcname,C,SPM.xCon(C).name));
                     
                     % Add images to study report
                     aap = aas_report_add(aap,[],'<table><tr>');
@@ -68,9 +68,11 @@ switch task
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
         cd(rfxrootdir);
         
-        if aas_stream_has_contents(aap,'structural') % Structural if available (backward compatibility)
+        inpstreams = aas_getstreams(aap,'input');
+        
+        if aas_stream_has_contents(aap,inpstreams{end}) % Structural if available (backward compatibility)
             for s = 1:numel(aap.acq_details.subjects)
-                tmpfile{s} = aas_getfiles_bystream(aap, s,'structural');
+                tmpfile{s} = aas_getfiles_bystream(aap, s,inpstreams{end});
                 if size(tmpfile{s},1) > 1 % in case of norm_write (first: native, second: normalised)
                     tmpfile{s} = tmpfile{s}(2,:);
                 end

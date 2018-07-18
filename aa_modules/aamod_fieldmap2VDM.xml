@@ -11,8 +11,8 @@
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>
-                <stream>epi</stream>
-				<stream>epi_dicom_header</stream>
+                <stream isrenameable='1'>epi</stream>
+				<stream isrenameable='1'>epi_dicom_header</stream>
                 <stream>fieldmap</stream>
 				<stream>fieldmap_dicom_header</stream>
             </inputstreams>
@@ -21,15 +21,15 @@
                 <stream>fieldmap</stream>
             </outputstreams>
             
-            <!-- set default to 0 if you want to avoid using false values in case of error during retrieving them from the DICOM header-->
-            <te1>0</te1>
-            <te2>0</te2>
+            <!-- set default to emtpy if you want to avoid using false values in case of error during retrieving them from the DICOM header-->
+            <te1></te1>
+            <te2></te2>
+            <tert></tert>
             <epifm>0</epifm>
-            <tert>0</tert>
             <kdir>-1</kdir>
             <mask>1</mask>
             <match>1</match>
-            <writeunwarpedEPI>0</writeunwarpedEPI>
+            <writeunwarpedEPI>1</writeunwarpedEPI>
             
         </currenttask>
     </tasklist>
