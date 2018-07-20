@@ -52,7 +52,9 @@ stream = aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stre
 if strcmp(inputstreamname,origstreamname)
     ind = i;
 elseif strcmp(origstreamname,'append')
-    ind = i + 1;
+    ind = i + 1;    
+    stream.CONTENT = newstream;
+    stream.ATTRIBUTE.isrenameable = 1;
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream; end
 else

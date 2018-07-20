@@ -21,6 +21,8 @@
 
 function aa_standalone(fname_config, fname_tasklist, fname_aa, varargin)
 
+if strcmp(fname_config,'version'), aaClass('nopath'); return; end
+
 %% Load tasklist and customisation
 aap=aarecipe(fname_config,fname_tasklist);
 
@@ -36,9 +38,8 @@ end
 %% User customisation
 xml_aa = xml_read(fname_aa,struct('ReadAttr',0));
 aap = recursive_set(aap,xml_aa);
-
+    
 % templates
-aap.directory_conventions.spmdir = spm('Dir');
 if strcmp(spm('Ver'),'SPM12'), aap = aas_configforSPM12(aap); end
 % check path to T1 template --> the rest should work, too
 if exist(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template),'file')
@@ -57,7 +58,7 @@ end
 fc = cellfun(@(x) regexp(x,'^firstlevel_contrasts.*','match'), fieldnames(xml_aa)','UniformOutput',false);
 for mod = horzcat(fc{:})
     for con = fieldnames(xml_aa.(mod{1}))'
-        if strcmp(con{1},'COMMENT'), continue; end
+        if strcmp(con{1},'COMMENT') || ~isstruct(xml_aa.(mod{1}).(con{1})), continue; end
         aap = aas_addcontrast(aap,['aamod_' mod{1}],...
             xml_aa.(mod{1}).(con{1}).subject,...
             xml_aa.(mod{1}).(con{1}).format,...
@@ -90,8 +91,13 @@ if isfield(args,'connection')
 end
 
 %% DO ANALYSIS
-aa_doprocessing(aap);
-aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+try
+    aa_doprocessing(aap);
+    aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+catch E
+    aa_close(aap);
+    rethrow(E);
+end
 end
 
 function aap = recursive_set(aap,xml)

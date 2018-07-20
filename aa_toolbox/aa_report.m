@@ -104,15 +104,8 @@ for k=1:numel(stages)
         [dep, domaintree] = aas_dependencytree_allfromtrunk(curr_aap,domain);
         
         % Set inSession flag
-        if numel(domaintree) >= 2
-            if ~isempty(strfind(domain,'session')) && ~inSession
-                inSession = true;
-            end
-            if isempty(strfind(domain,'session')) && inSession
-                inSession = false;
-            end
-        end
-        
+        inSession = (numel(domaintree) >= 2) & ~isempty(strfind(domain,'session'));
+
         % run through
         for d = 1:numel(dep)
             indices = dep{d}{2};
@@ -128,13 +121,13 @@ for k=1:numel(stages)
                 lastSess = iSess(end);
             end
             
-            if ~inSession || ((sess == firstSess)  && (d == 1)), aap = aas_report_add(aap,subj,...
+            if ~inSession || ((sess == firstSess)  && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'first'))), aap = aas_report_add(aap,subj,...
                     ['<h2>Stage: ' stagerepname '</h2>']); 
             end
             
             % evaluate with handling sessions
             if inSession
-                if (sess == firstSess) && (d == 1), aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
+                if (sess == firstSess) && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'first')), aap = aas_report_add(aap,subj,'<table><tr>'); end % Open session
                 aap = aas_report_add(aap,subj,'<td valign="top">');
                 aap = aas_report_add(aap,subj,['<h3>Session: ' aap.acq_details.([domaintree{2} 's'])(dep{d}{2}(2)).name '</h3>']);
                 if numel(dep{d}{2}) >= 3
@@ -164,7 +157,7 @@ for k=1:numel(stages)
             end
             if inSession
                 aap = aas_report_add(aap,subj,'</td>');
-                if (sess == lastSess) && (d == numel(dep)), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
+                if (sess == lastSess) && (d == find(cellfun(@(x) x{2}(1) == subj, dep),1,'last')), aap = aas_report_add(aap,subj,'</tr></table>'); end % Close session
             end
         end
     end

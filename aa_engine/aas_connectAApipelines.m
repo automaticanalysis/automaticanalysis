@@ -204,8 +204,9 @@ for modI = 1 : length(aap.tasklist.main.module)
             isfield(aap.tasksettings.(mod.name)(mod.index).inputstreams, 'stream')
         
         % Names of input and output streams for this module
-        inputStreams = aap.tasksettings.(mod.name)(mod.index).inputstreams.stream;
+        [inputStreams, inputStreamAttr] = aas_getstreams(aap,mod.name,mod.index,'input');
         if ~iscell(inputStreams), inputStreams = {inputStreams}; end
+        if ~iscell(inputStreamAttr), inputStreamAttr = {inputStreamAttr}; end
         
         remoteStreams = struct('stream', {}, 'stagetag', {}, 'sourcedomain', {}, 'sourcemodality', {}, 'host', {}, 'aapfilename', {}, 'allowcache', {});
         
@@ -266,7 +267,8 @@ for modI = 1 : length(aap.tasklist.main.module)
                     rIQual = find(strcmp(inputStageTag, {remoteOutputs(rI).stagetag}));
                     
                     if isempty(rIQual)
-                        aas_log(aap, 1, sprintf('Can''t find %s.%s in remotely specified AAPs!', inputStageTag, inputStreamName));
+                        if  isfield(inputStreamAttr{iI},'isessential') && ~inputStreamAttr{iI}.isessential, continue;
+                        else aas_log(aap, 1, sprintf('Can''t find %s.%s in remotely specified AAPs!', inputStageTag, inputStreamName)); end
                     end
                     rI = rI(rIQual(end));
                 end

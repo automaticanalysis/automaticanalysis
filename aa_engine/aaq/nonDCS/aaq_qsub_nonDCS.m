@@ -14,8 +14,8 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                 pool = obj.pool;
                 obj.pool = [];
             else
+                poolprofile = obj.poolConf{1};
                 % assume aap.directory_conventions.poolprofile is a path to settings
-                poolprofile = strtok(aap.directory_conventions.poolprofile,':');
                 if ~exist(poolprofile,'file')
                     aas_log(obj.aap,false,'aap.directory_conventions.poolprofile is either not a file or cannot be found');
                     return
@@ -28,7 +28,7 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                     pool.AdditionalProperties.AdditionalSubmitArgs = '';
                 end
             end
-            obj.pool = PoolClass(pool,obj.initialSubmitArguments);
+            obj.pool = PoolClass(pool,obj.initialSubmitArguments,obj.poolConf{3});
             obj.pool.reqMemory = aaparallel.memory;
             obj.pool.reqWalltime = aaparallel.walltime;
         end
