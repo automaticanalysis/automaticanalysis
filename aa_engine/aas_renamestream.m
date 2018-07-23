@@ -27,6 +27,7 @@ odot = origstream == '.';
 if any(odot), origstreamname = origstream(find(odot)+1:end);
 else origstreamname = origstream; end
 
+[newstream, newattr] = strtok(newstream,':'); if ~isempty(newattr), newattr(1) = []; end
 ndot = newstream == '.';
 if any(ndot), newstreamname = newstream(find(ndot)+1:end);
 else newstreamname = newstream; end
@@ -54,7 +55,16 @@ if strcmp(inputstreamname,origstreamname)
 elseif strcmp(origstreamname,'append')
     ind = i + 1;    
     stream.CONTENT = newstream;
+    % defaults
     stream.ATTRIBUTE.isrenameable = 1;
+    stream.ATTRIBUTE.isessential = 1;
+    if ~isempty(newattr)
+        listAttr = textscan(newattr,'%s','delimiter',':'); listAttr = listAttr{1};
+        for a = listAttr'
+            [key, val] = strtok(listAttr{1},'-'); val = str2double(val);
+            stream.ATTRIBUTE.(key) = val;
+        end
+    end
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream; end
 else
