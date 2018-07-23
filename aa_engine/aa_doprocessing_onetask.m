@@ -148,13 +148,16 @@ else
                         end
                     end
                     for d = 1:numel(deps)
-                        if ~strcmp(deps{d}{1},inp.sourcedomain), continue; end % only relevant modules
+                        if ~strcmp(deps{d}{1},inp.sourcedomain) ||... % only relevant modules
+                                ~exist(aas_doneflag_getpath_bydomain(sourceaap,inp.sourcedomain,deps{d}{2},sourcenumber),'file') % only finished modules (patch for remote only)
+                            continue;
+                        end
                         fid = fopen(aas_doneflag_getpath_bydomain(sourceaap,inp.sourcedomain,deps{d}{2},sourcenumber),'r');
                         lines = textscan(fid,'%s\n');
                         fclose(fid);
                         skipped(d) = strcmp(lines{1}{1},'skipped');
                     end
-                    if all(skipped)
+                    if all(skipped) && inp.isessential
                         aas_log(aap,false,sprintf('WARNING: No inputs selected for stream %s. --> MODULE %s will be SKIPPED',inp.name, stagename));
                         close_task(aap,tempdirtodelete);
                         aas_writedoneflag(aap,doneflag,'skipped');

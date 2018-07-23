@@ -30,6 +30,7 @@ switch task
         aas_makedir(aap,RSAROOT);
         
         inps = aas_getstreams(aap,'input');
+        inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
         struct_fn = aas_getfiles_bystream(aap,'subject',subj,inps{1});
         
         fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_brainmask')),'UniformOutput',false);
