@@ -8,6 +8,7 @@ switch task
     case 'doit'
         
         mpmfns = cellstr(aas_getfiles_bystream(aap,'special_session',[subj,cell_index({aap.acq_details.special_sessions.name},'MPM')],'MPM'));
+        b0fn = cellstr(aas_getfiles_bystream(aap,'special_session',[subj,cell_index({aap.acq_details.special_sessions.name},'MPM')],'fieldmap'));
         
         switch aas_getsetting(aap,'sensitivity')
             case 'RF_none'
@@ -15,20 +16,15 @@ switch task
         end
         switch aas_getsetting(aap,'b1_type')
             case 'i3D_EPI'
-                job.subj.b1_type.i3D_EPI.b1input = mpmfns(cell_index(mpmfns,'serie03'));
-                job.subj.b1_type.i3D_EPI.b0input = [...
-                    mpmfns(cell_index(mpmfns,'serie01')),...
-                    mpmfns(cell_index(mpmfns,'serie02')),...
-                    mpmfns(cell_index(mpmfns,'serie02')),...
-                    ]';
+                job.subj.b1_type.i3D_EPI.b1input = mpmfns(cell_index(mpmfns,'serie01'));
+                job.subj.b1_type.i3D_EPI.b0input = b0fn([1 2 2]);
                 job.subj.b1_type.i3D_EPI.b1parameters.b1metadata = 'yes';
         end
         
-        job.subj.raw_mpm.MT = mpmfns(cell_index(mpmfns,'serie04'))';
-        job.subj.raw_mpm.PD = mpmfns(cell_index(mpmfns,'serie05'))';
-        job.subj.raw_mpm.T1 = mpmfns(cell_index(mpmfns,'serie06'))';
+        job.subj.raw_mpm.MT = mpmfns(cell_index(mpmfns,'serie02'))';
+        job.subj.raw_mpm.PD = mpmfns(cell_index(mpmfns,'serie03'))';
+        job.subj.raw_mpm.T1 = mpmfns(cell_index(mpmfns,'serie04'))';
         
-        aas_makedir(aap,fullfile(aas_getsubjpath(aap,subj),'MPM'));
         job.subj.output.outdir = cellstr(fullfile(aas_getsubjpath(aap,subj),'MPM'));
         
         out = hmri_run_create(job);

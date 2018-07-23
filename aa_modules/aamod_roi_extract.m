@@ -155,7 +155,7 @@ switch task
                 else
                     
                     % Remove zero-variance voxels:
-                    f = setdiff(f,zero_vox);
+                    f(zero_vox) = [];
                     d = spm_get_data(VY,XYZind(:,f));
                     
                     aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels\n',Nvox-zero_count));

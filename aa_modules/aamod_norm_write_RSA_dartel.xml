@@ -20,12 +20,12 @@
 				<stream isessential="0">dartel_templatetomni_xfm</stream>  
 				<stream>dartel_flowfield</stream>
 				<stream diagnostic="1">structural</stream>
-                <stream>RSAmaps</stream>
+                <stream>RSAmap</stream>
 			</inputstreams>
 			
 			<outputstreams>
                 <preservefilename>1</preservefilename>
-                <stream>RSAmaps</stream>
+                <stream>RSAmap</stream>
 				<stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             

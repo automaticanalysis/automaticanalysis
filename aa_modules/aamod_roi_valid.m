@@ -62,7 +62,7 @@ switch task
                     loaded = load(ROIfname); ROI = loaded.ROI;
                     % Get number of valid voxels in each ROI:
                     Nv(subjind,:) = [ROI.Nvox];
-                    mROI = [ROI.mean];
+                    mROI = arrayfun(@(x) mean(x.mean), ROI);
                     Mm(subjind,:) = mROI;
                     
                 end

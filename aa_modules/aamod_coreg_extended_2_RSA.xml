@@ -18,7 +18,7 @@
              
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>RSAmaps</stream>
+                <stream>RSAmap</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
                 <stream diagnostic="1" isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
 				<stream diagnostic="1" isessential="0">aamod_realign_00001.meanepi</stream>  
@@ -26,7 +26,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>RSAmaps</stream>
+                <stream>RSAmap</stream>
             </outputstreams>
             
         </currenttask>
