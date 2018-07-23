@@ -36,7 +36,7 @@ switch task
         fnSPM = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cellfun(@(x) ~isempty(regexp(x,'firstlevel_spm$', 'once')), inps)),'UniformOutput',false);
         fnTmaps = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_spmts')),'UniformOutput',false);
         
-        brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(RSAROOT,'brain_mask.nii'),'min(X)',{1});
+        brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(RSAROOT,'brain_mask.nii'),'min(X,[],4)',{1});
 
         ITEMS = aas_getsetting(aap,'itemList');
         fnT = {};
