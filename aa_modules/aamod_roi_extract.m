@@ -155,7 +155,7 @@ switch task
                 else
                     
                     % Remove zero-variance voxels:
-                    f = setdiff(f,zero_vox);
+                    f(zero_vox) = [];
                     d = spm_get_data(VY,XYZind(:,f));
                     
                     aas_log(aap,false,sprintf('INFO: (%d nonzero) voxels\n',Nvox-zero_count));
@@ -218,8 +218,8 @@ switch task
         for s = 1:numel(in)
             if ~strcmp(out{s},['roidata_' in{s}])
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},['roidata_' in{s}],'output');
-            end
-            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''roidata_' in{s} '''']);
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''roidata_' in{s} '''']);
+            end            
         end        
 end
 
