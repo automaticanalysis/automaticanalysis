@@ -66,8 +66,8 @@ switch task
         for s = 1:numel(in)
             if ~strcmp(out{s},in{s})
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},in{s},'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' in{s} '''']);
             end
-            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' in{s} '''']);
         end        
 end
 
