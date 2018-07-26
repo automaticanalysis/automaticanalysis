@@ -20,28 +20,28 @@
             <seriesoutputformat desc='sprintf formatting string to get series directory from number - at AWS Series_%04d  at CBU Series_%03d*; at CABI *_%d' ui='text'>Series_%03d*</seriesoutputformat>
             <protocol_fieldmap ui='text'>FieldMapping</protocol_fieldmap>
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
-            <protocol_t2 ui='text'>t2_spc</protocol_t2>
+            <protocol_t2 ui='text'>TSE</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r6906</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7219</spmdir>
             <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'>/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/latest/x86_64/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh</fslsetup>
+            <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.8/x86_64/fsl</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh v5.0.8</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/latest/x86_64/</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/6.0.0/x86_64/</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/latest/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/6.0.0/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
-            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab13_4_3b</eeglabdir>
+            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab/eeglab_v14.1.1</eeglabdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICATv3.0a</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
-            <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
+            <fieldtripdir desc='Path to fieldtrip toolbox' ui='dir'></fieldtripdir>
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
@@ -55,12 +55,17 @@
             <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>1</garbagecollection>
             <aaworkercleanup desc='Remove aaworker folders older then the specified number of days (Empty means no cleanup)' ui='double'>7</aaworkercleanup>
             <aaworkermaximumretry desc='Maximum number of (re)tries to submit job to the scheduler' ui='double'>6</aaworkermaximumretry>
-            <aaworkerwaitbeforeretry desc='If job has been pendign for longer than this value, aa re-ubmit it to the scheduler if aaworkermaximumretry > 1' ui='double'>3600</aaworkerwaitbeforeretry>
+            <aaworkerwaitbeforeretry desc='If job has been pending for longer than this value, aa re-ubmit it to the scheduler if aaworkermaximumretry > 1' ui='double'>3600</aaworkerwaitbeforeretry>
             <restorepath desc='Restore linux and MATLAB path upon closing' ui='yesno'>1</restorepath>
             <diagnostic_videos desc='Enable diagnostic videos (matlab not stable on some platforms)' ui='yesno'>1</diagnostic_videos>
             <autoidentifyfieldmaps desc='Automatically identify field maps?' ui='yesno'>0</autoidentifyfieldmaps>
             <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>0</autoidentifyt2>		
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
+            <aaparallel desc='Settings for parallel execution on a cluster (if applicable)' ui='none'>
+                <numberofworkers desc='Requested number of workers' ui='double'>20</numberofworkers>
+                <memory desc='Requested amount of memory in GB' ui='double'>4</memory>
+                <walltime desc='Maximum amount of time (in hours) to run a job' ui='double'>24</walltime>
+            </aaparallel>
         </options>
     </local>
 </aap>
