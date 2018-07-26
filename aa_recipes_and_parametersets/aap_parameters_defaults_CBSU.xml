@@ -36,7 +36,7 @@
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/6.0.0/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
             <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab/eeglab_v14.1.1</eeglabdir>
-            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICATv3.0a</GIFTdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICAT/GroupICAT-v4.0b</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
@@ -46,7 +46,7 @@
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional)  initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='dir'>CBU_Cluster</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional)  initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>CBU_Cluster</poolprofile>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            

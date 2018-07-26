@@ -78,9 +78,12 @@ switch task
                 end
             end
         else  % Template
-            aas_log(aap,false,'WARNING: Structural cannot be loaded! Template will be used...');
+           aas_log(aap,false,'Structural cannot be loaded! Template will be used...');
             tmpfile = aap.directory_conventions.T1template;
-            if ~exist(tmpfile,'file') && (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+            if tmpfile(1) ~= '/'
+                if exist(tmpfile,'file'), tmpfile = which(tmpfile);
+                else tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+            end
         end
         
         Vtemplate=spm_vol(tmpfile); if iscell(Vtemplate), Vtemplate = cell2mat(Vtemplate); end
