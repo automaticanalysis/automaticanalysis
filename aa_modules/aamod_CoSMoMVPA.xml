@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='aa module for MVPA with CosmoMVPA' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <bsMatrix desc='mat-file containing the behavioural similarity matrix'></bsMatrix>
+            <itemList desc='Cell of event names (or distinct parts) in order corresponding with the bsMatrix. One cell may contain multiple event names to refer to the same event across subjects'></itemList>
+            
+            <searchlightVox desc='Number of voxels per spherical searchlight'></searchlightVox>
+            
+            <!-- firstlevel_brainmask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream --> 
+            <inputstreams>
+                <stream attr='1'>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>RSAmap</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

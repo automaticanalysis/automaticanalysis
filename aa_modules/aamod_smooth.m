@@ -59,10 +59,17 @@ switch task
         % All done
         spm_progress_bar('Clear');
     case 'checkrequirements'
-        
-    otherwise
-        aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+        in =  aas_getstreams(aap,'input');
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            if ~strcmp(out{s},in{s})
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},in{s},'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' in{s} '''']);
+            end
+        end        
+end
 
 
 

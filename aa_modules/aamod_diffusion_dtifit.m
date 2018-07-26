@@ -19,8 +19,8 @@ switch task
         for betind=1:size(betmask,1)
             if strfind(betmask(betind,:),'bet_nodif_brain_mask')
                 break
-            end;
-        end;        
+            end
+        end    
         betmask=betmask(betind,:);
         
         % Get diffusion data streams and apply dtifit
@@ -28,17 +28,19 @@ switch task
         fslext=aas_getfslext(aap);
         dsesspth= aas_getpath_bydomain(aap,'diffusion_session',[subjind,diffsessind]);
         out=fullfile(dsesspth,'dti');
-        cmd=sprintf('dtifit -b %s -r %s  -k %s  -m %s -o %s',bvals,bvecs,diffinput,betmask,out)
-        [s w]=aas_runfslcommand(aap,cmd);
+        cmd=sprintf('dtifit -b %s -r %s  -k %s  -m %s -o %s',bvals,bvecs,diffinput,betmask,out);
+        [s, w]=aas_runfslcommand(aap,cmd);
         if (s)
             aas_log(aap,true,sprintf('Error executing\n  %s\nof\n%s',cmd,w));
-        end;
+        end
+        copyfile([out '_L1' fslext],[out '_AD' fslext]);
+        spm_imcalc(char([out '_L2' fslext],[out '_L3' fslext]),[out '_RD' fslext],'mean(X)',{1});
         
         % Now describe outputs
         outstreams=aap.tasklist.currenttask.outputstreams;        
         for outind=1:length(outstreams.stream)
             aap=aas_desc_outputs(aap,'diffusion_session',[subjind,diffsessind],outstreams.stream{outind},[outstreams.stream{outind} fslext]);
-        end;
+        end
         
 end
 end

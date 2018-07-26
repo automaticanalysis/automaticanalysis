@@ -7,6 +7,8 @@
             <b1_type>i3D_EPI</b1_type>
             
             <inputstreams>
+                <stream>fieldmap</stream>
+                <stream>fieldmap_dicom_header</stream>
                 <stream>MPM</stream>
                 <stream>MPM_dicom_header</stream>
             </inputstreams>

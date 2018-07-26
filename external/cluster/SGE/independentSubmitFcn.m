@@ -107,7 +107,7 @@ for ii = 1:numberOfTasks
     additionalSubmitArgs = '-pe matlab 1';
     
     % memory and walltime
-    additionalSubmitArgs = sprintf('%s -l h_rss=%dG -l h_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
+    additionalSubmitArgs = sprintf('%s -l s_rss=%dG -l s_cpu=%d:00:00',additionalSubmitArgs, req_memory, req_walltime);
     
     dctSchedulerMessage(5, '%s: Generating command for task %i', currFilename, ii);
     commandToRun = getSubmitString(jobName, quotedLogFile, quotedScriptName, ...

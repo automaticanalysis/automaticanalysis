@@ -4,6 +4,8 @@ classdef aaq_qsub<aaq
         QV = []
     end
     properties (Hidden)
+        poolConf = cell(1,3)
+        
         jobnotrun = []
         jobinfo = struct(...
             'InputArguments',{},...
@@ -39,8 +41,8 @@ classdef aaq_qsub<aaq
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    [poolprofile, obj.initialSubmitArguments] = strtok(aap.directory_conventions.poolprofile,':');
-                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments(1) = []; end
+                    conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':'); for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
+                    [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
                     
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
@@ -79,7 +81,7 @@ classdef aaq_qsub<aaq
                                     aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
                                     aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
                                 else
-                                    obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,aaparallel.walltime,aaparallel.memory);
+                                    obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l s_cpu=%d:00:00 -l s_rss=%dG',obj.initialSubmitArguments,aaparallel.walltime,aaparallel.memory);
                                 end
                             else
                                 obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
@@ -406,7 +408,7 @@ classdef aaq_qsub<aaq
                             aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
                             aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
                         else
-                            obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,walltime,memory);
+                            obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l s_cpu=%d:00:00 -l s_rss=%dG',obj.initialSubmitArguments,walltime,memory);
                         end
                     else
                         obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);

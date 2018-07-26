@@ -279,10 +279,10 @@ classdef aa_provenance < handle
             end
             
             outp = aap.internal.outputstreamdestinations{aap.tasklist.currenttask.modulenumber}.stream;
-            if isempty(outp)
+            if isempty(outp) || ~any(strcmp({outp.name},stream))
                 destdomain = aap.tasklist.currenttask.domain; 
             else
-                ioutp = cell_index({outp.name},stream); if ~ioutp, prid = ''; id = 0; return; end            
+                ioutp = strcmp({outp.name},stream);
                 outp = outp(ioutp); outp = outp(1);
                 destdomain = outp.destdomain;
             end
