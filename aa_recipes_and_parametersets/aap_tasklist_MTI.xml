@@ -31,13 +31,7 @@
                 </branch>
                 <branch>
                     <analysisid_suffix>_Juelich</analysisid_suffix>
-                    <module><name>aamod_MTI_roi_extract</name>
-                        <extraparameters>
-                            <aap><tasklist><currenttask><settings>
-                                            <ROIfile>/imaging/camcan/templates/Juelich-maxprob-thr25-2mm.nii</ROIfile>
-                            </settings></currenttask></tasklist></aap>
-                        </extraparameters>
-                    </module>
+                    <module><name>aamod_MTI_roi_extract</name></module>
                     <module><name>aamod_MTI_roi_valid</name></module>
                 </branch>
             </module>

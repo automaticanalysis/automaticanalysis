@@ -29,6 +29,8 @@ function [aap,resp]=aamod_roi_extract(aap,task,varargin)
 %  + jt (22/Oct/2013): per RH, added svd_vox
 %  + jt (25/Oct/2013): stop removing voxel means (screws up svd),
 %                      multiply SVD by sign of corr with data
+%  + jc (27/Jul/2018): refactor to get ROIfile from first input stream instead
+%                      of task settings
 
 resp='';
 
@@ -42,7 +44,6 @@ switch task
     case 'doit'
       
         %% Settings
-        ROIfile    = aap.tasklist.currenttask.settings.ROIfile;        
         ROIvals    = aap.tasklist.currenttask.settings.ROIvals;
         
         mask_space = aap.tasklist.currenttask.settings.mask_space;
@@ -54,7 +55,10 @@ switch task
         svd_tol = aap.tasklist.currenttask.settings.svd_tol;
         
         %% Process
-        for in =  aas_getstreams(aap,'input')
+        inputstreams = aas_getstreams(aap,'input');
+        % first input stream is the roi stream, all others are data
+        [ROIfile, inputstreams] = deal(inputstreams(1),inputstreams(2:end));
+        for in = inputstreams
             instream = in{1};            
             
             % Get data (assumes all data files are aligned)

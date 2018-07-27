@@ -2,7 +2,6 @@
 <aap>
   <tasklist>
    <currenttask domain='diffusion_session' mfile_alias='aamod_roi_extract' desc='Extract data in ROIs' modality='MRI'>
-        <ROIfile>/imaging/camcan/templates/JHU-WhiteMatter-labels-2mm.nii</ROIfile>
         <ROIvals></ROIvals>
         
         <mask_space desc='Voxels from which space to use: 0 - data; 1 - mask'>1</mask_space>
@@ -15,6 +14,7 @@
         <svd_tol>1e-6</svd_tol>
         
         <inputstreams>
+            <stream>rois</stream>
             <stream>dki_MK</stream>
         </inputstreams>
         <outputstreams>
