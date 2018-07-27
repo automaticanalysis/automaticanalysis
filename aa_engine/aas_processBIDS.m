@@ -85,16 +85,17 @@ BIDS = aap.directory_conventions.rawdatadir;
 if ~exist('SUBJ','var') || isempty(SUBJ)
     % Look for subjects
     SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
-    if isempty(SUBJ)
-        % avoid cryptic errors later
-        aas_log(aap,true,sprintf('no subjects found in directory %s',...
-            aap.directory_conventions.rawdatadir));
-    end
 end
 
 if iscell(SUBJ)
     % assume user has supplied cell array
     SUBJ = char(SUBJ);
+end
+
+if isempty(SUBJ)
+    % avoid cryptic errors later
+    aas_log(aap,true,sprintf('no subjects found in directory %s',...
+        aap.directory_conventions.rawdatadir));
 end
 
 % 1st pass - Add sessions only
