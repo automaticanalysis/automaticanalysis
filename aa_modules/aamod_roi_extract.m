@@ -57,7 +57,8 @@ switch task
         %% Process
         inputstreams = aas_getstreams(aap,'input');
         % first input stream is the roi stream, all others are data
-        [ROIfile, inputstreams] = deal(inputstreams(1),inputstreams(2:end));
+        [roistream, inputstreams] = deal(inputstreams(1),inputstreams(2:end));
+        ROIfile = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],roistream{1});
         for in = inputstreams
             instream = in{1};            
             
@@ -66,7 +67,7 @@ switch task
             pth = fileparts(Datafiles);
             VY = spm_vol(Datafiles);
             Yinv  = inv(VY(1).mat);
-            [junk, yXYZmm] = spm_read_vols(VY(1));
+            [~, yXYZmm] = spm_read_vols(VY(1));
             
             % Get ROI
             ROIfstem = spm_str_manip(ROIfile,'rt');
@@ -109,7 +110,7 @@ switch task
             
             % Gather ROI data:
             ROI = struct();
-            for nr=1:Nrois,
+            for nr=1:Nrois
                 ROI(nr).ROIfile  = ROIfstem;
                 ROI(nr).ROIval   = ROIvals(nr);
                 
@@ -212,17 +213,25 @@ switch task
             outfile = fullfile(pth,['ROI_' instream '.mat']);
             save(outfile,'ROI');
             aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstream,outfile);
-            
         end
+
     case 'checkrequirements'
-        in =  aas_getstreams(aap,'input');
+        inputstreams = aas_getstreams(aap,'input');
+        % first input stream is the roi stream, all others are data
+        inputstreams = inputstreams(2:end);
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
         stageindex = sscanf(index,'_%05d');
-        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
-        for s = 1:numel(in)
-            if ~strcmp(out{s},['roidata_' in{s}])
-                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},['roidata_' in{s}],'output');
-                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''roidata_' in{s} '''']);
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; 
+        if ~iscell(out)
+            out = {out};
+        end
+        for s = 1:numel(inputstreams)
+            if ~strcmp(out{s},['roidata_' inputstreams{s}])
+                aap = aas_renamestream(aap,...
+                    aap.tasklist.currenttask.name,out{s},...
+                    ['roidata_' inputstreams{s}],'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ...
+                    ' output stream: ''roidata_' inputstreams{s} '''']);
             end            
         end        
 end
