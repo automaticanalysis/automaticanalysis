@@ -46,7 +46,7 @@
             </outputstreams>
             
             <diagnostic>
-                <streamind>1</streamind>
+                <streamind desc='index of main (i.e. non-diagnostic) stream to be reported'>1</streamind>
             </diagnostic>
                 
         </currenttask>

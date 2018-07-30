@@ -6,6 +6,7 @@ classdef PoolClass < handle
         
         reqMemory = 1
         reqWalltime = 1
+        initialConfiguration = ''
     end
     
     properties (Hidden)
@@ -24,7 +25,7 @@ classdef PoolClass < handle
     end
     
     methods
-        function obj = PoolClass(pool,initialSubmitArguments)
+        function obj = PoolClass(pool,initialSubmitArguments,initialConfiguration)
             % Required argument:
             % pool - Initializiation object (created by PCT function parcluster) or structure
             %
@@ -46,6 +47,7 @@ classdef PoolClass < handle
             % Optionmal argument:
             % initialSubmitArguments - Submission string specifying resources other than memory and waltime. Can be empty.
             if nargin >= 2, obj.initialSubmitArguments = initialSubmitArguments; end
+            if nargin >= 3, obj.initialConfiguration = initialConfiguration; end           
             
             obj.Type = pool.Type;
             obj.JobStorageLocation = pool.JobStorageLocation;
@@ -76,8 +78,8 @@ classdef PoolClass < handle
                         if ~isprop(pool.AdditionalProperties,'AdditionalSubmitArgs') && ~isfield(pool.AdditionalProperties,'AdditionalSubmitArgs')
                             warning(sprintf('WARNING: Propertiy "AdditionalSubmitArgs" not found.\n    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.\n    Your jobs will be submitted to th default queue.'));
                         else
-                            datWT = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_cpu=[0-9]*','once','match'),'walltime=%d');
-                            datMem = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'h_rss=[0-9]*','once','match'),'mem=%d');
+                            datWT = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'s_cpu=[0-9]*','once','match'),'walltime=%d');
+                            datMem = sscanf(regexp(pool.AdditionalProperties.AdditionalSubmitArgs,'s_rss=[0-9]*','once','match'),'mem=%d');
                         end
                     else
                         datWT = pool.IndependentSubmitFcn{find(strcmp(pool.IndependentSubmitFcn,'walltime'))+1};
@@ -142,7 +144,7 @@ classdef PoolClass < handle
                 case 'LSF'
                     obj.SubmitArguments = sprintf('%s -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',obj.initialSubmitArguments,walltime*60,memory*1000,memory*1000,walltime);
                 case 'Generic'
-                    obj.SubmitArguments = sprintf('%s -l h_cpu=%d:00:00 -l h_rss=%dG',obj.initialSubmitArguments,walltime,memory);
+                    obj.SubmitArguments = sprintf('%s -l s_cpu=%d:00:00 -l s_rss=%dG',obj.initialSubmitArguments,walltime,memory);
             end
         end
     end

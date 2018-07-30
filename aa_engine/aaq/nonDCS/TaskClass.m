@@ -70,7 +70,8 @@ classdef TaskClass < handle
             
             % create script
             fid = fopen(obj.ShellFile,'w');
-            fprintf(fid,'export MALLOC_ARENA_MAX=4; matlab -nosplash -nodesktop -logfile %s -r "fid = fopen(''%s'',''w''); fprintf(fid,''%%s\\n'',java.lang.management.ManagementFactory.getRuntimeMXBean.getName.char); fclose(fid); try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''a''); fprintf(fid,''%%s'',char(datetime(''now'',''Timezone'',''local''))); fclose(fid); quit"',...
+            if ~isempty(obj.Parent.Pool.initialConfiguration), fprintf(fid,'%s',obj.Parent.Pool.initialConfiguration); end
+            fprintf(fid,'matlab -nosplash -nodesktop -logfile %s -r "fid = fopen(''%s'',''w''); fprintf(fid,''%%s\\n'',java.lang.management.ManagementFactory.getRuntimeMXBean.getName.char); fclose(fid); try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''a''); fprintf(fid,''%%s'',char(datetime(''now'',''Timezone'',''local''))); fclose(fid); quit"',...
                 obj.DiaryFile,obj.ProcessFile,Command,obj.ErrorFile,obj.ProcessFile);
             fclose(fid);
         end
