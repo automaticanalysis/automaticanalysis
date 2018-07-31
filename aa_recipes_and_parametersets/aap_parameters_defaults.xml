@@ -7,7 +7,7 @@
         <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
         <rawdatadir desc='Directory to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan</rawdatadir>
         <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu/</rawmegdatadir>
-        <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>templates/T1.nii</T1template>
+        <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>toolbox/OldNorm/T1.nii</T1template>
         <Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
         <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
         <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
@@ -169,7 +169,7 @@
     </gui_controls>
     
     <acq_details>
-        <root desc='Root on local machine for processed data' ui='dir'></root>
+        <root desc='Root on local machine for processed data' ui='dir'>$HOME/aa</root>
         <s3>
             <root desc='Root on S3 for processed data' ui='dir'>teststudy</root>
         </s3>

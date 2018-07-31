@@ -67,5 +67,8 @@
                 <walltime desc='Maximum amount of time (in hours) to run a job' ui='double'>24</walltime>
             </aaparallel>
         </options>
+        <acq_details>
+            <root desc='Root on local machine for processed data' ui='dir'>/imaging/$USER/aa</root>
+        </acq_details>
     </local>
 </aap>
