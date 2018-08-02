@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias="aamod_convert_fieldmaps" domain='special_session' desc='Converting fielmaps for diffusion' modality='X'>
+            
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>dicom_fieldmap</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>fieldmap</stream>
+                <stream>fieldmap_dicom_header</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

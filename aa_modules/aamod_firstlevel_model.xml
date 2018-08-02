@@ -104,7 +104,7 @@
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_betas</stream>
                 <stream>firstlevel_brainmask</stream>
-                <stream>epi</stream>
+                <stream isrenameable='1'>epi</stream>
             </outputstreams>
             
         </currenttask>

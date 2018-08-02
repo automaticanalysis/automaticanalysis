@@ -12,6 +12,8 @@
             <module><name>aamod_autoidentifyseries_timtrio</name></module> 
             <module><name>aamod_get_dicom_specialseries</name></module> 
             <module><name>aamod_convert_specialseries</name></module> 
+            <module><name>aamod_special_get_dicom_fieldmap</name></module> 
+            <module><name>aamod_special_convert_fieldmaps</name></module> 
             <module><name>aamod_MPM</name></module> 
         </main>
     </tasklist>
