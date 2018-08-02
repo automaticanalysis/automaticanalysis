@@ -219,7 +219,6 @@ switch task
                 % mean only for first session
                 fn=dir(fullfile(pth,'mean*.nii'));
                 aap = aas_desc_outputs(aap,subj,'meanepi',fullfile(pth,fn(1).name));
-				three_ortho_jpgs(fullfile(pth,fn(1).name), fullfile(pth,'mean_epi'));
             end
             
             % Add it to the movement pars...
@@ -234,11 +233,10 @@ switch task
             [mfilename '__' subjname '_MP.jpeg']));
         close(f);
         
-		cd(startingDir);
-		
     case 'checkrequirements'
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end
 end
+
