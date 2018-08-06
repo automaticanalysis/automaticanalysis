@@ -20,18 +20,14 @@ SUBJ = {...
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_MTI.xml');
+aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_MTI.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; %'localsingle'; %'qsub'; % queuing system	% typical value localsingle or qsub
-aap.options.NIFTI4D = 1;
-% aap.options.email='xy01@mrc-cbu.cam.ac.uk';
 
 aap.options.autoidentifystructural_chooselast = 1;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
 aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
-
-aap.tasksettings.aamod_convert_specialseries.numdummies = 0;
 aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
 
 %% STUDY
@@ -41,7 +37,6 @@ aap.acq_details.root = fullfile(aap.acq_details.root,'test_MTI');
 aap.directory_conventions.analysisid = 'MTI'; 
 
 % Add data
-aap.acq_details.numdummies = 1;
 aap=aas_add_special_session(aap,'MTI');
 for s = 1:size(SUBJ,1)
    MTser = sscanf(basename(spm_select('FPListRec',mri_findvol(aap,SUBJ{s,2},1),'dir','.*_CBU_MTR_TR50_MT$')),aap.directory_conventions.seriesoutputformat);
