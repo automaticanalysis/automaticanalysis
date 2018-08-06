@@ -100,7 +100,7 @@
         <verbose desc='How verbose to be: 0 - do not show any message; 1 - show errors only; 2 - show every message' ui='double'>2</verbose>
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
-        <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>0</NIFTI4D>
+        <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>1</NIFTI4D>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
         <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
@@ -173,7 +173,7 @@
         <s3>
             <root desc='Root on S3 for processed data' ui='dir'>teststudy</root>
         </s3>
-        <numdummies desc='Number of dummy scans' ui='int'>5</numdummies>
+        <numdummies desc='Number of dummy scans' ui='int'>0</numdummies>
         <topscannumber desc='Ignore EPI scans after this one' ui='int'/>
         
         <input>
