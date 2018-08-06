@@ -106,7 +106,7 @@ if isdeployed
 end
 
 % expand shell paths (before SPM so SPM can be in e.g. home directory)
-aap = aas_expandpathbyvars(aap, aap.options.verbose>0);
+aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
 
 if ~isempty(aap.directory_conventions.spmdir)
     addpath(aap.directory_conventions.spmdir); 
