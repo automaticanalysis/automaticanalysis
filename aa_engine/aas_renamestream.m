@@ -119,13 +119,15 @@ else
 end
 
 % Edit internalstore (inputstreamsources or outputstreamdestinations)
-if isfield(aap,'internal') && ~isnan(streamindex)
+if isfield(aap,'internal') && ((numel(streamindex) > 1) || ~isnan(streamindex))
     if isempty(newstream) % remove
         aap.internal.(internalstore){modulenumber}.stream(streamindex) = [];
         aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex) = [];
     else
-        aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
-        aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+        for i = streamindex'
+            aap.internal.(internalstore){modulenumber}.stream(i).name = newstream;
+            aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(i).name = newstream;
+        end
     end
 end
 
