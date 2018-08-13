@@ -96,11 +96,11 @@ switch task
             end
         end
         spm_reslice(imreslice,flags);
-        aap=aas_desc_outputs(aap,domain,[subj,sess],['native_' workstream],rwimgs);
+        aap=aas_desc_outputs(aap,domain,[subj,sess],workstream,rwimgs);
         
         %% Diag
         if strcmp(aap.options.wheretoprocess,'localsingle')
-            aas_checkreg(aap,domain,[subj,sess],['native_' workstream],regstreams{end});
+            aas_checkreg(aap,domain,[subj,sess],workstream,regstreams{end});
         end
     case 'checkrequirements'
         in =  aas_getstreams(aap,'input'); in = in{end}; % last stream
