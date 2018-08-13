@@ -79,7 +79,7 @@ switch type
 end
 if isfield(aap,'internal')
     storedstreams = aap.internal.(internalstore){modulenumber}.stream;
-    if isempty(storedstreams) || ~cell_index({storedstreams.name},origstreamname), streamindex = NaN;
+    if isempty(storedstreams) || ~any(cell_index({storedstreams.name},origstreamname)), streamindex = NaN;
     else
         if ~strcmp(origstreamname,'append'), streamindex = cell_index({storedstreams.name},origstreamname); 
         else streamindex = numel(storedstreams); end
