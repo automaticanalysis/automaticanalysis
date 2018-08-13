@@ -20,6 +20,9 @@
             </inputstreams>
             
             <outputstreams>               
+                <stream isrenameable='1'>grey_mask</stream>
+                <stream isrenameable='1'>white_mask</stream>
+                <stream isrenameable='1'>csf_mask</stream>
                 <stream>segmasks</stream>
             </outputstreams>
             
