@@ -102,4 +102,13 @@ switch task
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,[subj,sess],['native_' workstream],regstreams{end});
         end
+    case 'checkrequirements'
+        in =  aas_getstreams(aap,'input'); in = in{end}; % last stream
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if iscell(out), out = out{1}; end
+        if ~strcmp(out,in)
+            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out,in,'output');
+            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' in '''']);
+        end
 end
