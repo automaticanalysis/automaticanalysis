@@ -105,7 +105,7 @@ switch task
         out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
         for s = 1:numel(in)
             if ~strcmp(out{s},[in{s} '_mask'])
-                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out,[in{s} '_mask'],'output');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},[in{s} '_mask'],'output');
                 aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' [in{s} '_mask'] '''']);
             end
         end
