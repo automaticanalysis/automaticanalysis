@@ -13,11 +13,11 @@
                 <stream diagnostic="1">aamod_diffusion_dkifit_00001.dki_FA</stream>                
                 <stream>dartel_templatetomni_xfm</stream>
                 <stream>dartel_flowfield</stream>
-                <stream isrenameable="1">normalised_grey</stream>                
+                <stream isrenameable="1">grey</stream>                
             </inputstreams>
             
             <outputstreams>
-                <stream isrenameable="1">native_grey</stream>
+                <stream isrenameable="1">grey</stream>
             </outputstreams>            
         </currenttask>
     </tasklist>

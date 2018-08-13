@@ -14,7 +14,9 @@
             
             <searchlightVox desc='Number of voxels per spherical searchlight'></searchlightVox>
             
-            <!-- firstlevel_brainmask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream --> 
+            <!-- mask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream
+            N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname
+            --> 
             <inputstreams>
                 <stream attr='1'>structural</stream>
             </inputstreams>

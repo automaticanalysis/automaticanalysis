@@ -33,7 +33,7 @@ switch task
         inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
         struct_fn = aas_getfiles_bystream(aap,'subject',subj,inps{1});
         
-        fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_brainmask')),'UniformOutput',false);
+        fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'mask')),'UniformOutput',false);
         fnSPM = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cellfun(@(x) ~isempty(regexp(x,'firstlevel_spm$', 'once')), inps)),'UniformOutput',false);
         fnTmaps = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_spmts')),'UniformOutput',false);
         

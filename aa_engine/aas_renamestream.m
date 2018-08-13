@@ -79,7 +79,7 @@ switch type
 end
 if isfield(aap,'internal')
     storedstreams = aap.internal.(internalstore){modulenumber}.stream;
-    if isempty(storedstreams) || ~cell_index({storedstreams.name},origstreamname), streamindex = NaN;
+    if isempty(storedstreams) || ~any(cell_index({storedstreams.name},origstreamname)), streamindex = NaN;
     else
         if ~strcmp(origstreamname,'append'), streamindex = cell_index({storedstreams.name},origstreamname); 
         else streamindex = numel(storedstreams); end
@@ -119,13 +119,15 @@ else
 end
 
 % Edit internalstore (inputstreamsources or outputstreamdestinations)
-if isfield(aap,'internal') && ~isnan(streamindex)
+if isfield(aap,'internal') && ((numel(streamindex) > 1) || ~isnan(streamindex))
     if isempty(newstream) % remove
         aap.internal.(internalstore){modulenumber}.stream(streamindex) = [];
         aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex) = [];
     else
-        aap.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
-        aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(streamindex).name = newstream;
+        for i = streamindex'
+            aap.internal.(internalstore){modulenumber}.stream(i).name = newstream;
+            aap.internal.aap_initial.internal.(internalstore){modulenumber}.stream(i).name = newstream;
+        end
     end
 end
 
