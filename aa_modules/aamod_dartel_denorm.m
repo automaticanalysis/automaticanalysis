@@ -11,6 +11,7 @@ resp='';
 % possible tasks 'doit','report','checkrequirements'
 switch task
     case 'report'
+        subj = varargin{1};
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         inpstreams = aas_getstreams(aap,'input');
@@ -41,6 +42,7 @@ switch task
         
     case 'doit'
         %% Preapre
+        subj = varargin{1};
         domain = aap.tasklist.currenttask.domain;
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         inpstreams = aas_getstreams(aap,'input');
