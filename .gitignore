@@ -3,3 +3,5 @@
 *.xml~
 
 .DS_Store
+
+aa_parametersets/aap_parameters_user.xml
