@@ -42,7 +42,7 @@ if ~exist('tasknames','var') || isempty(tasknames)
 end
 
 if ~exist('regcolumn','var') || isempty(regcolumn)
-    regcolumn = 'trial_type'
+    regcolumn = 'trial_type';
 end
 
 BIDSsettings.directories.structDIR = 'anat';
