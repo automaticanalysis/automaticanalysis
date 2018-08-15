@@ -1,35 +1,52 @@
-% Download the minimal AA demo dataset from the Cusack lab's AWS store - or just
-% reference it in aap if it's already available.
+% Download dataset from the URL into an aa_demo folder as specified in
+% aap.directory_conventions.rawdatadir. It also adds data to
+% aap.directory_conventions.rawdatadir;
+% If no URL is provided then the small aa_demo from Rhodri Cusack will be used.
 %
-% aap = aa_downloaddemo(aap)
-function aap = aa_downloaddemo(aap)
+% ds114_test : https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162
+%
+% aap = aa_downloaddemo(aap,[URL])
+function aap = aa_downloaddemo(aap,URL)
+
+DEMODIRBASENAME = 'aa_demo';
+
+DATA = {...
+    'https://files.osf.io/v1/resources/umhtq/providers/osfstorage/5b7465680b87a00018c6a76f', 'aa_demo';...
+    };
+
+if nargin < 2
+    URL = DATA{1,1};
+    rawdir = DATA{1,2};
+end
 
 % where to look for raw DICOM data
+% something like [root]/aa_demo
 sources = strsplit(aap.directory_conventions.rawdatadir,':')';
-demoind = cell_index(sources, 'aa_demo');
+demoind = cell_index(sources, DEMODIRBASENAME);
 assert(~any(demoind==0), ...
-    'did not find demo directory in aap.directory_conventions.rawdatadir')
+    ['did not find ''' DEMODIRBASENAME ''' directory in aap.directory_conventions.rawdatadir'])
 assert(numel(demoind)==1,...
-    'multiple demo directories in aap.directory_conventions.rawdatadir')
-% something like [root]/aa_demo/rawdata
-rawdir = sources{demoind};
-if exist(rawdir,'dir')
-    % we're done
-    return
-end
+    ['multiple reference to ''' DEMODIRBASENAME ''' directory in aap.directory_conventions.rawdatadir'])
+demodir = sources{demoind};
+if exist('rawdir','var') && ~isempty(strfind(demodir,fullfile(DEMODIRBASENAME,rawdir))), demodir = fileparts(demodir); end % remove reference
 
-% we need to download
-rawdirroot = fileparts(fileparts(rawdir));
-if ~exist(rawdirroot,'dir')
-    success = mkdir(rawdirroot);
-    assert(success);
+if ~exist('rawdir','var') || ~exist(fullfile(demodir,rawdir),'dir') % we need to download
+    aas_makedir(aap,demodir);
+    aas_log(aap, false, ['INFO: downloading demo data to ' demodir]);
+    % attempt to download the data
+    outfn = [tempname '.tar.gz'];
+    outfn = websave(outfn,URL);
+    [s, w] = aas_shell(sprintf('tar -xvf %s -C %s',outfn,demodir));
+    assert(s==0);
+    % the sub-directory should now exist
+    assert(exist(sources{demoind},'dir')~=0);
+    aas_log(aap, false, 'INFO: done');
+    % delete the downloaded archive
+    delete(outfn);
+    rawdir = strsplit(w); rawdir = rawdir{1}(1:end-1);
 end
-aas_log(aap, false, ['downloading demo data to ' rawdirroot]);
-% attempt to download the data
-outfn = websave(fullfile(rawdirroot,'aa_demo_data.tar.gz'),...
-    'http://cusacklab.s3.amazonaws.com/html/downloads/aa_demo_v1.tar.gz');
-s = aas_shell(sprintf('tar -xvf %s -C %s',outfn,rawdirroot));
-assert(s==0);
-% the sub-directory should now exist
-assert(exist(sources{demoind},'dir')~=0);
-aas_log(aap, false, 'done');
+% add dataset to rawdatadir
+if ~any(strcmp(sources,fullfile(demodir,rawdir)))
+    sources{demoind} = fullfile(demodir,rawdir);
+    aap.directory_conventions.rawdatadir = strjoin(sources,':');
+end
