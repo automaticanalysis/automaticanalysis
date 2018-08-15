@@ -49,16 +49,16 @@
             <!-- Modelling -->
             <module>
                 <branch>
-                    <analysisid_suffix>_Slow</analysisid_suffix>
-                    <selected_sessions>overt_verb_generation_test overt_verb_generation_retest overt_word_repetition_test overt_word_repetition_retest</selected_sessions>
+                    <analysisid_suffix>_FingerFootLips</analysisid_suffix>
+                    <selected_sessions>finger_foot_lips_test finger_foot_lips_retest</selected_sessions>
                     <module><name>aamod_firstlevel_model</name></module>
                     <module><name>aamod_firstlevel_contrasts</name></module>
                     <module><name>aamod_firstlevel_threshold</name></module>
                     <module><name>aamod_firstlevel_threshold_register2FS</name></module>
                 </branch>
                 <branch>
-                    <analysisid_suffix>_Fast</analysisid_suffix>
-                    <selected_sessions>covert_verb_generation_test covert_verb_generation_retest finger_foot_lips_test finger_foot_lips_retest line_bisection_test line_bisection_retest</selected_sessions>
+                    <analysisid_suffix>_LineBisection</analysisid_suffix>
+                    <selected_sessions>line_bisection_test line_bisection_retest</selected_sessions>
                     <module><name>aamod_firstlevel_model</name></module>
                     <module><name>aamod_firstlevel_contrasts</name></module>
                     <module><name>aamod_firstlevel_threshold</name></module>
