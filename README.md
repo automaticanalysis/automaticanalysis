@@ -55,7 +55,7 @@ Unzip the downloaded package, and add the main folder to the MATLAB path.
 
 # Configure
 
-Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_recipes_and_parametersets/aap_parameters_defaults.xml_** have to be configured. Instead of editing the main **_aap_parameters_defaults.xml_**, we recommend to create a local version by *inhereting* most of the settings from **_aap_parameters_defaults.xml_**. See **_aap_parameters_defaults_CBSU.xml_** as an example.
+Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_parametersets/aap_parameters_defaults.xml_** have to be configured. Instead of editing the main **_aap_parameters_defaults.xml_**, we recommend to create a local version by *inhereting* most of the settings from **_aap_parameters_defaults.xml_**. See **_aap_parameters_defaults_CBSU.xml_** as an example.
  - *directory_conventions/rawdatadir*: Directories to find raw MRI data
  - *directory_conventions/subjectoutputformat*: `sprintf` formatting string to get subject directory as stored in *directory_conventions/rawdatadir*
  - *directory_conventions/seriesoutputformat*: `sprintf` formatting string to get series directory as stored in subject directory
