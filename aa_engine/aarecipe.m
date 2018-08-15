@@ -32,56 +32,35 @@ clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
-    fprintf('Cannot find parameters file %s\n',defaultparameters);
-    done = false;
-    while ~done
-        resp = input('Seed new parameter file from existing default? (yes / exit):','s');
-        switch lower(resp)
-            case {'yes','y'}
-                done = true;
-            case {'no','n','exit','e'}
-                error('exiting');
-            otherwise
-                fprintf('unknown input: %s\n',resp)
-        end
-    end
+    resp = questdlg(sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
+        'Parameter file', ...
+        'Yes','No (Exit)','No (Exit)');
+    assert(~strcmp(resp,'No (Exit)'), 'exiting');
     % if we made it here, we are seeding a new parameters file
     % we have default parameters
     defaultdir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'aa_parametersets');
-    defaultnames = dir(fullfile(defaultdir,'*.xml'));
-    fprintf('available default parameters in %s:\n', defaultdir);
-    fprintf('%s\n',defaultnames.name);
-    done = false;
-    while ~done
-        seedparam = input('Desired seed parameter (or type exit to abort):','s');
-        % filter out extension (so we are robust to whether this is provided or not)
-        [rootpath,seedparam,~] = fileparts(seedparam);
-        seedparam = fullfile(rootpath,[seedparam '.xml']);
-        if exist(seedparam,'file')
-            done = true;
-        else
-            fprintf('could not find seed %s, please try again\n',seedparam);
-        end
-    end
-    % ensure seedparam is an absolute path (Matlab exist will return >0 for file names
-    % that are on the path. FML)
-    if isempty(rootpath)
-        seedparam = which(seedparam);
-        % double-check since there may be edge cases lurking here
-        assert(exist(seedparam,'file')>0, 'could not find file %s',seedparam);
-    end
-    % generate new parameters file
-    destination = fullfile(defaultdir, defaultparameters);
-    success = copyfile(seedparam, destination);
-    assert(success,'failed to copy %s to %s',seedparam,destination);
-    % nb we don't actually modify defaultparameters - it should now be on the path. But
+    [seedparam, rootpath] = uigetfile({'*.xml','All Paremeters Files' },'Desired seed parameter',defaultdir);
+    assert(ischar(seedparam), 'exiting');
+    seedparam = fullfile(rootpath, seedparam);
+    
+    % generate new parameters file N.B.: in networks with shared resources
+    % average user may not be able to write into aa_paremetersets
+    [defaultparameters, rootpath] = uiputfile({'*.xml','All Paremeters Files' },...
+        'Location of the parameters file and analyses by default',fullfile(pwd,defaultparameters));
+    assert(ischar(defaultparameters), 'exiting');
+    destination = fullfile(rootpath, defaultparameters);
+    
+    create_minimalXML(seedparam, destination);
+    assert(exist(destination,'file')>0,'failed to create %s',defaultparameters);
+
+    % N.B. we don't actually modify defaultparameters - it should now be on the path. But
     % let's double check. It might not be e.g. if you haven't actually added AA to your
     % path properly before calling this function.
     assert(exist(defaultparameters,'file')>0, ...
-        'could not find %s - have you added AA to your path with aa_ver5?',...
+        'could not find %s - Are you sure it is in your path?',...
         defaultparameters);
-    fprintf('created new parameter set in %s\n',destination);
-    fprintf('you may need to edit this file further to reflect local configuration\n')
+    
+    msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn')
 end
 
 Pref.ReadAttr=0;
@@ -425,4 +404,30 @@ catch
     [label index] = unique(vals);
 end
 
+end
+
+function create_minimalXML(seedparam,destination)
+
+docNode = com.mathworks.xml.XMLUtils.createDocument('aap');
+aap = docNode.getDocumentElement;
+aap.setAttribute('xmlns:xi','http://www.w3.org/2001/XInclude');
+
+seed = docNode.createElement('xi:include');
+seed.setAttribute('href',seedparam);
+seed.setAttribute('parse','xml');
+aap.appendChild(seed);
+
+local = docNode.createElement('local');
+aap.appendChild(local);
+
+acq_details = docNode.createElement('acq_details');
+local.appendChild(acq_details);
+
+root = docNode.createElement('root');
+root.setAttribute('desc','Root on local machine for processed data');
+root.setAttribute('ui','dir');
+root.appendChild(docNode.createTextNode(fileparts(destination)));
+acq_details.appendChild(root);
+
+xmlwrite(destination,docNode);
 end
