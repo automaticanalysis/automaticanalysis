@@ -1,32 +1,29 @@
 % Automatic analysis
 % User master script example (aa version 5.*.*)
 %
-% Advanced features:
+% This script demonstrates an advanced fMRI pipeline (compare with aa_user_fmri):
 %	- Specifying structural series
 % 	- Motion FingerPrint instead of simple mocoparameters
-% 	- Automatic slicetiming
 % 	- DARTEL normalisation
 % 	- Activation maps projected to surface (FreeSurfer)
 % 	- Second-level GIFT
 %
-% Tibor Auer, MRC-CBSU
-% 01-02-2016
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 01-02-2016
 
 %% INITIALISE
 clear
-
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-%  Default recipe with model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri_advanced.xml');
-aap = aas_configforSPM12(aap);
+aap=aarecipe('aap_tasklist_fmri_advanced.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% OPTIONS: 'localsingle'|'qsub' for aa engine, typical value 'qsub'
-aap.options.autoidentifyfieldmaps=1;  							% typical value 1
-aap.options.NIFTI4D = 1;										% typical value 1
-aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
+aap.options.autoidentifyfieldmaps = 1;
 % Set slice order for slice timing correction
 aap.tasksettings.aamod_realignunwarp.mfp.run = 1;               % Motion FingerPrint, typical value 0
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;           	% auto
@@ -41,11 +38,11 @@ aap = aas_renamestream(aap,'aamod_secondlevel_GIFT_00001','epi','aamod_smooth_00
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
-aap.directory_conventions.analysisid = 'Nature_Paper'; 
-aap.directory_conventions.subject_directory_format = 3;
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_fmri_advanced');
+aap.directory_conventions.analysisid = 'test_fmri_advanced'; 
 
 % Add data
+aap.directory_conventions.subject_directory_format = 3;
 aap = aas_addsession(aap,'Loc');
 aap = aas_addsubject(aap,'S1',90973,'structural',2,'functional',7);
 aap = aas_addsubject(aap,'S2',90979,'structural',2,'functional',7);

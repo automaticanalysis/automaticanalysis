@@ -1,29 +1,35 @@
 % Automatic analysis
 % User master script example (aa version 5.*.*)
 %
-% Tibor Auer, MRC-CBSU
-% 01-02-2016
+% This script demonstrates a basic MEG pipeline.
+%
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 01-02-2016
 
 clear;
 aa_ver5
 
 %% RECIPE:
-aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_meg.xml');
+aap = aarecipe('aap_tasklist_meg.xml');
 
 % SITE-SPECIFIC CONFIGURATION:
 aap.options.wheretoprocess='qsub'; % queuing system			% typical value localsingle or qsub
-aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 aap.tasksettings.aamod_meg_denoise_ICA_2_applytrajectory.toremove = 'spat';
 aap.tasksettings.aamod_meg_epochs.timewindow = [-2000 500];
 
 %% DATA
 % Directory & sub-directory for analysed data:
-aap.acq_details.root = '/imaging/xy00/aa'; 
-aap.directory_conventions.analysisid = 'MEG'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_meg');
+aap.directory_conventions.analysisid = 'meg'; 
 
 % Add extra files
-aap= aas_addinitialstream(aap,'channellabels',{'/imaging/rh01/VectorView_MAG_GRD_EEG_EOG_STI101.mat'});
-aap= aas_addinitialstream(aap,'topography',{'/imaging/rh01/Methods/MEGEEGArtifactTemplateTopographies.mat'});
+aap= aas_addinitialstream(aap,'channellabels',...
+    {'/imaging/local/software/AA/test_resources/meg/VectorView_MAG_GRD_EEG_EOG_STI101.mat'});
+aap= aas_addinitialstream(aap,'topography',...
+    {'/imaging/local/software/AA/test_resources/meg/MEGEEGArtifactTemplateTopographies.mat'});
 
 % Directory for raw data:
 aap.directory_conventions.rawmegdatadir = '/megdata/cbu/ftd';

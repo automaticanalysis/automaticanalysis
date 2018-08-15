@@ -1,47 +1,51 @@
-
 % Automatic analysis
 % User master example (aa version 5.*.*)
 %
-% Tibor Auer, MRC-CBSU
-% 16-08-2017
+% This user script demonstrates a diffusion ROI pipeline with diffusion kurtosis imaging
+% (DKI) and distortion correction with FSL topup.
+%
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 16-08-2017
 
 %% INITIALISE
 clear
+aa_ver5
 
+
+
+%% DEFINE SPECIFIC PARAMETERS
 SUBJ = {...
      'S01' 160018; ...
      };
 
-aa_ver5
-
-%% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_diffusion_with_topup.xml');
+aap=aarecipe('aap_tasklist_diffusion_with_topup.xml');
+
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','normalised_grey','normalised_white');
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','native_grey','native_white','output');
 
-aap = aas_configforSPM12(aap);
-
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
-aap.options.NIFTI4D = 1;
-aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 
 aap.options.autoidentifystructural_choosefirst = 1;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
 aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 
-aap.tasksettings.aamod_convert_diffusion_phaseencode_direction.numdummies = 0;
 aap.tasksettings.aamod_diffusion_extractnodif.tol_b0 = 10;
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.2;
 aap.tasksettings.aamod_diffusion_smooth.FWHM = 2.5;        
 aap.tasksettings.aamod_diffusion_dartel_denormDKI.interp=4;
-%% STUDY
-aap=aas_addinitialstream(aap,'rois',{'/imaging/camcan/templates/craddock_ROI_841_Linda_FCpaper.nii'});
 
-% Directory for analysed data
-aap.acq_details.root = '/imaging/xy00/aa/topup'; 
-aap.directory_conventions.analysisid = 'Diffusion'; 
+%% STUDY
+aap=aas_addinitialstream(aap,'rois',{...
+    '/imaging/local/software/AA/test_resources/diffusion/craddock_ROI_841_Linda_FCpaper.nii'});
+
+% Directory for analysed data - appending to cbu default root directory
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_diffusion_topup');
+aap.directory_conventions.analysisid = 'test_diffusion_topup'; 
 aap.directory_conventions.subject_directory_format = 3;
 
 % Add data

@@ -1,14 +1,20 @@
 % Automatic analysis
-% User master script based on
-% github.com/rhodricusack/automaticanalysis/wiki/Manual:
-% Example (aa version 5.*.*)
+% User master script example (aa version 5.*.*)
 %
-% Tibor Auer, MRC-CBSU
-% 08-02-2016
+% This script demonstrates a magnetisation transfer imaging (MTI) pipeline using the
+% CamCAN dataset.
+%
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 08-02-2016
 
 %% INITIALISE
 clear
+aa_ver5
 
+%% DEFINE SPECIFIC PARAMETERS
 SUBJ = {...
      'S01' 140905; ...
      'S02' 140910; ...
@@ -17,13 +23,10 @@ SUBJ = {...
      'S05' 140931; ...
      };
 
-aa_ver5
-
-%% DEFINE SPECIFIC PARAMETERS
-aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_MTI.xml');
+aap = aarecipe('aap_tasklist_MTI.xml');
 
 % Modify standard recipe module selection here if you'd like
-aap.options.wheretoprocess = 'qsub'; %'localsingle'; %'qsub'; % queuing system	% typical value localsingle or qsub
+aap.options.wheretoprocess = 'qsub'; %'localsingle'; 
 
 aap.options.autoidentifystructural_chooselast = 1;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
@@ -32,9 +35,10 @@ aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
 
 %% STUDY
 % Directory for analysed data 
-% (expanding off existing default root, so /imaging/$USER/MTI)
-aap.acq_details.root = fullfile(aap.acq_details.root,'test_MTI');
-aap.directory_conventions.analysisid = 'MTI'; 
+% (expanding off existing default root, so /imaging/$USER/aa/MTI if you haven't changed
+% your defaults.)
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_mti');
+aap.directory_conventions.analysisid = 'mti'; 
 
 % Add data
 aap=aas_add_special_session(aap,'MTI');

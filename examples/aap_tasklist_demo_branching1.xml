@@ -27,14 +27,13 @@
                     <module><name>aamod_realign</name></module>
                 </branch>            
             </module>
-            
+            <!-- NB, modules that appear after branching are executed in BOTH branches! -->
             <module><name>aamod_coreg_noss</name></module>
             <module><name>aamod_norm_noss_cbu32channel</name></module>
             <module><name>aamod_norm_write</name></module>
             <module><name>aamod_smooth</name></module>
             <module><name>aamod_tsdiffana</name></module>
             
-            <!-- Modelling. Now no need to make local copies of the first level model and contrasts -->
             <module><name>aamod_firstlevel_model</name></module>
             <module><name>aamod_firstlevel_contrasts</name></module>
             <module><name>aamod_firstlevel_threshold</name></module>			

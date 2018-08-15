@@ -1,44 +1,31 @@
-% Automatic analysis (aa) - user master script
-% This example runs one session of one subject through a standard SPM-based
-% fMRI analysis. After running, look at the results using SPM in
-% ../analysis_v1/auditory/aamod_firstlevel_contrasts_00001/2014_03_29_9001/stats
-% Prerequistes are aa and spm 8 or 12, I'm using Matlab 2014a.
+% Automatic analysis (aa) - user master script This example runs one session of one
+% subject through a standard SPM-based fMRI analysis. See also aa_user_demo.
+%
+% This script demonstrates how branching can be used to explore how the order of slice
+% time and motion correction affects results (see aap_tasklist_demo_branching1.xml).
+%
+% v3: Johan Carlin, MRC CBU, 2018-08-06
 % v2: Tibor Auer MRC Cognition and Brain Sciences Unit, 2016-02-17
 % v1: Rhodri Cusack Brain and Mind Institute, Western University, 2014-12-15
 
 %% INIT
 clear
-
 aa_ver5;
 
-%% LOAD RECIPE AND TASKLIST
-% You might want to set up a configuration for your local site settings in 
-% aap_parameters_defaults_<your site>.xml and use it instead of aap_parameters_defaults.xml
-% The settings for this script are manually configured in lines 20-42.
-aap = aarecipe('aap_parameters_defaults.xml','aap_tasklist_branching_example1.xml');
-% SPM12 is used, set path according to your environment
-aap.directory_conventions.spmdir = '/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r6685';
-aap.directory_conventions.fsldir = '/imaging/local/software/fsl/v5.0.9/x86_64/fsl';
-aap = aas_configforSPM12(aap);
+%% LOAD TASKLIST
+aap = aarecipe('aap_tasklist_demo_branching1.xml');
 
 %% DEFINE STUDY SPECIFIC PARAMETERS
-aap.options.aa_minver = '5.0.0'; % designed for aa version 4.3.0 or above
-aap.options.wheretoprocess = 'matlab_pct';
-aap.options.NIFTI4D = 1;
-aap.options.aaparallel.numberofworkers = 2;
+aap.options.wheretoprocess = 'localsingle';
 
 aap.tasksettings.aamod_slicetiming(1).sliceorder = [1:2:36 2:2:36];
 aap.tasksettings.aamod_slicetiming(1).refslice = 16;
 aap.tasksettings.aamod_slicetiming(2).sliceorder = [1:2:36 2:2:36];
 aap.tasksettings.aamod_slicetiming(2).refslice = 16;
 
-%% DATA
-% Define following paths relative to this script. You might not always want
-% to do this, but it is good for this example
-localroot=fileparts(pwd);
+% download the demo dataset (if necessary)
+aap = aa_downloaddemo(aap);
 
-% Location of raw DICOM data
-aap.directory_conventions.rawdatadir = fullfile(localroot,'rawdata');
 % Define how subject identifier (e.g. 2014_03_29_9001) is turned into
 % subject foldername in rawdatadir
 aap.directory_conventions.subjectoutputformat = '%s';
@@ -52,7 +39,7 @@ aap.acq_details.numdummies = 10;
 
 %% STUDY
 % Where to put the analyzed data
-aap.acq_details.root = fullfile(localroot,'analysis_v2');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_branching1_results');
 aap.directory_conventions.analysisid = 'auditory_branching1';     
 
 % Add data

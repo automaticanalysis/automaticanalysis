@@ -1,24 +1,26 @@
-% Automatic analysis
-% User master script example (aa version 5.*.*)
+% Automatic analysis (aa) - user master script
 %
-% Tibor Auer, MRC-CBSU
-% 01-02-2016
+% This script demonstrates an up-to-date SPM12 fMRI pipeline - realign-unwarp for joint
+% motion correction and undistortion, segment8 template normalisation, robust
+% coregistration through an initial rigid-body step.
+%
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 01-02-2016
 
 %% INITIALISE
 clear
-
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe with model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri.xml');
-aap = aas_configforSPM12(aap);
+aap=aarecipe('aap_tasklist_fmri.xml');
 
 % Modify standard recipe module selection here if you'd like
-aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value localsingle
-aap.options.autoidentifyfieldmaps=1;  							% typical value 1
-aap.options.NIFTI4D = 1;										% typical value 0
-aap.options.email='All.Knowing@mrc-cbu.cam.ac.uk';
+aap.options.wheretoprocess = 'qsub'; %'qsub'; % queuing system			% typical value localsingle
+aap.options.autoidentifyfieldmaps = 1;
 % Set slice order for slice timing correction
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
 aap.tasksettings.aamod_slicetiming.refslice = 16;              	% reference slice (first acquired)
@@ -34,8 +36,8 @@ aap.tasksettings.aamod_secondlevel_threshold.threshold.correction = 'none';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy00/World_Universe_and_Everything'; 
-aap.directory_conventions.analysisid = 'Nature_Paper'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_fmri');
+aap.directory_conventions.analysisid = 'test_fmri'; 
 
 % Add data
 aap.directory_conventions.subject_directory_format = 1;
@@ -70,4 +72,4 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts','*','singlesession:Loc',[
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
-% aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

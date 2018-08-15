@@ -1,40 +1,31 @@
-% Automatic analysis
-% User master script based on
-% github.com/rhodricusack/automaticanalysis/wiki/Manual:
-% Example (aa version 5.*.*)
+% Automatic analysis (aa) - user master script
 %
-% Tibor Auer, MRC-CBSU
-% 08-02-2016
+% This script demonstrate an Arterial Spin Labelling pipeline using CamCAN data.
+% 
+% v2: Johan Carlin, MRC CBU, 2018-08-08
+% v1: Tibor Auer, MRC-CBSU, 08-02-2016
 
 %% INITIALISE
 clear
+aa_ver5
 
 SUBJ = {...
      'CC320500' 131117; ...
      };
 
-aa_ver5
-
-%% DEFINE SPECIFIC PARAMETERS
-%  Default recipe without model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_ASL.xml');
-aap = aas_configforSPM12(aap);
+%% LOAD TASKLIST
+aap=aarecipe('aap_tasklist_ASL.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
-aap.options.NIFTI4D = 1;
-aap.options.email='xy01@mrc-cbu.cam.ac.uk';
 
 aap.options.autoidentifystructural_chooselast = 1;
-
-aap.tasksettings.aamod_convert_specialseries.numdummies = 0;
-aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
 aap.tasksettings.aamod_ASL.scaleCBF = 0.1;
 aap.tasksettings.aamod_ASL_coreg_extended_2.eoptions.cost_fun = 'ecc';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy01/aa'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_ASL');
 aap.directory_conventions.analysisid = 'ASL'; 
 
 % Add data
@@ -51,3 +42,5 @@ end
 
 %% DO ANALYSIS
 aa_doprocessing(aap);
+% prepare report (this can be slow...)
+aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));

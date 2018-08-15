@@ -1,13 +1,16 @@
 % Load parameter defaults and tasklist into the structure "aap"
 %
 % FORMAT aap = aarecipe(tasklist)
-% Parameter defaults are loaded from <aa DIR>/aa_recipes_and_parametersets/aap_parameters_defaults.xml
+% Parameter defaults are loaded from <aa DIR>/aa_parametersets/aap_parameters_user.xml
 %   - tasklist: XML-file containing the list of modules
 %
 % FORMAT aap = aarecipe(parameters,tasklist)
 %   - parameters: XML-file containing the parameter defaults
 %   - tasklist: XML-file containing the list of modules
 %
+% If the specified parameters file does not exist, the user is prompted to generate one
+% by copying one of the files that are included in AA. If you use this functionality you
+% may need to make further manual edits to the parameter file.
 %
 % Rhodri Cusack
 % Tibor Auer MRC CBU Cambridge 2016
@@ -18,7 +21,7 @@ switch(nargin)
     case 0
         fprintf('You must provide a tasklist to aarecipe.\n');
     case 1
-        defaultparameters='aap_parameters_defaults.xml';
+        defaultparameters='aap_parameters_user.xml';
         tasklistxml=varargin{1};
     case 2
         defaultparameters=varargin{1};
@@ -29,7 +32,56 @@ clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
-    fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
+    fprintf('Cannot find parameters file %s\n',defaultparameters);
+    done = false;
+    while ~done
+        resp = input('Seed new parameter file from existing default? (yes / exit):','s');
+        switch lower(resp)
+            case {'yes','y'}
+                done = true;
+            case {'no','n','exit','e'}
+                error('exiting');
+            otherwise
+                fprintf('unknown input: %s\n',resp)
+        end
+    end
+    % if we made it here, we are seeding a new parameters file
+    % we have default parameters
+    defaultdir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'aa_parametersets');
+    defaultnames = dir(fullfile(defaultdir,'*.xml'));
+    fprintf('available default parameters in %s:\n', defaultdir);
+    fprintf('%s\n',defaultnames.name);
+    done = false;
+    while ~done
+        seedparam = input('Desired seed parameter (or type exit to abort):','s');
+        % filter out extension (so we are robust to whether this is provided or not)
+        [rootpath,seedparam,~] = fileparts(seedparam);
+        seedparam = fullfile(rootpath,[seedparam '.xml']);
+        if exist(seedparam,'file')
+            done = true;
+        else
+            fprintf('could not find seed %s, please try again\n',seedparam);
+        end
+    end
+    % ensure seedparam is an absolute path (Matlab exist will return >0 for file names
+    % that are on the path. FML)
+    if isempty(rootpath)
+        seedparam = which(seedparam);
+        % double-check since there may be edge cases lurking here
+        assert(exist(seedparam,'file')>0, 'could not find file %s',seedparam);
+    end
+    % generate new parameters file
+    destination = fullfile(defaultdir, defaultparameters);
+    success = copyfile(seedparam, destination);
+    assert(success,'failed to copy %s to %s',seedparam,destination);
+    % nb we don't actually modify defaultparameters - it should now be on the path. But
+    % let's double check. It might not be e.g. if you haven't actually added AA to your
+    % path properly before calling this function.
+    assert(exist(defaultparameters,'file')>0, ...
+        'could not find %s - have you added AA to your path with aa_ver5?',...
+        defaultparameters);
+    fprintf('created new parameter set in %s\n',destination);
+    fprintf('you may need to edit this file further to reflect local configuration\n')
 end
 
 Pref.ReadAttr=0;

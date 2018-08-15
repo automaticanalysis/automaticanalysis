@@ -1,29 +1,25 @@
 % Automatic analysis
 % User master script example (aa version 5.*.*)
 %
-% This is an example how to process a lonigtudinal dataset.
-% This example processes one subject with six visits: one structural plus
-% five functional; each functional with four sessions.
-% It reads six events from files saved in <EVFolder>/Visit<visit #>_Run<run% #>_<event name>.txt (not included).
-% It uses a tasklist aap_tasklist_fmri_multi.xml (included).
+% This is an example of how to process a longitudinal dataset.  This example processes
+% one subject with six visits: one structural plus five functional; each functional with
+% four sessions.
 %
-% Tibor Auer, MRC-CBSU
-% 08-02-2016
+% For internal use at MRC CBU, Cambridge, UK - requires access to the CBU imaging
+% system.
+%
+% v2: Johan Carlin, MRC CBU, 08-08-2018
+% v1: Tibor Auer, MRC-CBSU, 08-02-2016
 
 %% INITIALISE
 clear
-
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-%  Default recipe without model
-aap=aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_fmri_multi.xml');
-aap = aas_configforSPM12(aap);
+aap=aarecipe('aap_tasklist_fmri_multi.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
-aap.options.NIFTI4D = 1;										% typical value 0
-aap.options.email='xy00@mrc-cbu.cam.ac.uk';
 aap.options.autoidentifyfieldmaps = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
 
@@ -50,12 +46,11 @@ aap = aas_renamestream(aap,'aamod_coreg_noss_00001','structural','aamod_biascorr
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = '/imaging/xy00/aa'; 
-aap.directory_conventions.analysisid = 'fMRImulti'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_fmri_multi');
+aap.directory_conventions.analysisid = 'test_fmri_multi'; 
 
 % Add data and model
 aap.directory_conventions.subject_directory_format = 3; % manual
-aap.acq_details.numdummies = 0;
 nVisit = 5;
 nRun = 4;
 for r = 1:(nVisit*nRun)
@@ -63,7 +58,6 @@ for r = 1:(nVisit*nRun)
 end
 
 subj = 'S1';
-
 aap = aas_addsubject(aap,subj,150479);
 aap = aas_addsubject(aap,subj,150489,'functional',5:5:20);
 aap = aas_addsubject(aap,subj,150498,'functional',5:5:20);
@@ -71,7 +65,7 @@ aap = aas_addsubject(aap,subj,150504,'functional',5:5:20);
 aap = aas_addsubject(aap,subj,150510,'functional',5:5:20);
 aap = aas_addsubject(aap,subj,150526,'functional',5:5:20);
 
-EVFolder = ['/imaging/xy00/NFB/evfiles/' subj];
+EVFolder = '/imaging/local/software/AA/test_resources/fmri_multi/evfiles';
 for v = 1:nVisit
     for r = 1:nRun
         sessind = (v-1)*nRun+r;
