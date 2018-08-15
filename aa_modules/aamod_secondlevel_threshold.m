@@ -87,6 +87,10 @@ switch task
 		if (numel(aap.acq_details.subjects) < 4 && strcmp(aap.tasklist.currenttask.settings.threshold.correction,'FWE') )
 			aas_log(aap, false, sprintf('WARNING: (%s): FWE may fail with fewer than 4 subjects.', mfilename));
 		end
+		
+		if (strcmp(aap.tasklist.currenttask.settings.overlay.template, 'averaged_structurals'))
+			aas_log(aap, false, sprintf('WARNING: (%s): structurals must be compatible (or normed) to use averaged_structurals template option', mfilename));	
+		end
 
         % Init
 		
@@ -130,26 +134,12 @@ switch task
 
 					for s = 1:numel(aap.acq_details.subjects)
 						tmpfile{s} = aas_getfiles_bystream(aap,s,inpstreams{end});
-						if size(tmpfile{s},1) > 1 % in case of norm_write (first: native, second: normalised)
-							tmpfile{s} = tmpfile{s}(2,:);
-						end
 					end
 
+				else
+					aas_log(aap, true, sprintf('%s: No structural stream found. Define one, or use SPMT1 template option. Exiting...', mfilename));
 				end
 				
-				% if we didn't find a structural stream, try to load the SPM template rather than just halting 
-				% (this to be consistent with how previous versions of the module worked...)
-				
-				if isempty(tmpfile)
-					tmpfile = 'toolbox/OldNorm/T1.nii';
-					if ~isempty(aap.directory_conventions.T1template) tmpfile = aap.directory_conventions.T1template; end
-					if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end	
-					if exist(tmpfile,'file')
-						aas_log(aap, false, sprintf('WARNING (%s): Structural not found. Using SPM T1 template instead...', mfilename));
-					else
-						aas_log(aap, true, sprintf('%s: Cannot find normalised_structural. Exiting...', mfilename));
-					end
-				end
 
 			case 'SPMT1'
 				

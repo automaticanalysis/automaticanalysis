@@ -155,55 +155,10 @@ switch task
 		
 				if aas_stream_has_contents(aap,subj,'structural')
 					tmpfile = aas_getfiles_bystream(aap, subj, 'structural');
-					% check for multi-file stream weirdness, just to be thorough
-					if size(tmpfile,1) > 1
-						tmpfile = tmpfile(1,:); % assuming native is 1st
-					end
 				else
 					aas_log(aap, true, sprintf('%s: Cannot find structural. Exiting...', mfilename));
 				end
-					
-			
-			case 'normalised_structural'
-				
-				% let's try to be magnanimous with the normed structural
-				% option - we'd prefer to find a normalised_structural
-				% stream, but if that's not found, then check if it might
-				% be in the structural stream, and if that's not found try
-				% to use the SPM T1 template. This is a little weird, but
-				% its how previous versions of the module worked.
-				
-				tmpfile = [];
-				
-				if aas_stream_has_contents(aap,subj,'normalised_structural')
-					tmpfile = aas_getfiles_bystream(aap, subj,'normalised_structural');
-				end
-				
-				if isempty(tmpfile)
-					% saving throw #1 -- check for multi-file structural stream
-					if aas_stream_has_contents(aap,subj,'structural')
-						tmpfile = aas_getfiles_bystream(aap, subj, 'structural');
-						if size(tmpfile,1) > 1
-							tmpfile = tmpfile(2,:); % assuming normalised is 2nd
-						else
-							tmpfile=[];
-						end
-					end
-				end
-				
-				if isempty(tmpfile)
-					% saving throw #2 - use the SPM T1 template
-					tmpfile = 'toolbox/OldNorm/T1.nii';
-					if ~isempty(aap.directory_conventions.T1template) tmpfile = aap.directory_conventions.T1template; end
-					if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end	
-					if exist(tmpfile,'file')
-						aas_log(aap, false, sprintf('WARNING (%s): Normed structural not found. Using SPM T1 template instead...', mfilename));
-					else
-						aas_log(aap, true, sprintf('%s: Cannot find normalised_structural. Exiting...', mfilename));
-					end
-				end
-
-				
+							
 			case 'SPMT1'
 				
 				% assume a reasonable default location, but assume the user put
@@ -462,4 +417,3 @@ else
     fo = fi;
 end
 end
-
