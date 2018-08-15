@@ -157,8 +157,8 @@ for k1=1:length(aap.tasklist.main.module)
                 % change domain and modality if needed (due to input)
                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
-                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI')) && ... % general-purpose module
-                        (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
+                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI'))% general-purpose module
+%                         (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
