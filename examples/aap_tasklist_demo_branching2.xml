@@ -15,24 +15,31 @@
             <module><name>aamod_convert_structural</name></module>
             <module><name>aamod_convert_epis</name></module>
             <module><name>aamod_tsdiffana</name></module>
+
+            <module><name>aamod_coreg_extended_1</name></module>
+            <module><name>aamod_biascorrect_structural</name></module>
+            <module><name>aamod_segment8</name></module>
+
             <module>
                 <!-- First fork: realign or slice timing first? -->
                 <branch>
                     <analysisid_suffix>_realign_then_slicetime</analysisid_suffix>
                     <module><name>aamod_realign</name></module>
                     <module><name>aamod_slicetiming</name></module>
-                    <module><name>aamod_coreg_noss</name></module>
-                    <module><name>aamod_norm_noss</name></module>
-                    <module><name>aamod_norm_write</name></module>
+                    <module><name>aamod_coreg_extended_2epi</name></module>
+                    <module><name>aamod_coreg_extended_2meanepi</name></module>			
+                    <module><name>aamod_norm_write</name></module> 
+                    <module><name>aamod_norm_write_meanepi</name></module> 
                     <module><name>aamod_smooth</name></module>
                 </branch>
                 <branch>
                     <analysisid_suffix>_slicetime_then_realign</analysisid_suffix>
                     <module><name>aamod_slicetiming</name></module>
                     <module><name>aamod_realign</name></module>
-                    <module><name>aamod_coreg_noss</name></module>
-                    <module><name>aamod_norm_noss</name></module>
-                    <module><name>aamod_norm_write</name></module>
+                    <module><name>aamod_coreg_extended_2epi</name></module>
+                    <module><name>aamod_coreg_extended_2meanepi</name></module>			
+                    <module><name>aamod_norm_write</name></module> 
+                    <module><name>aamod_norm_write_meanepi</name></module> 
                     <module>
                         <!-- Second fork: for the slice time first, try two different smoothing kernels  -->
                         <branch>

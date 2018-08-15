@@ -18,6 +18,9 @@ aap = aarecipe('aap_tasklist_demo.xml');
 %% DEFINE STUDY SPECIFIC PARAMETERS
 aap.options.wheretoprocess = 'localsingle'; % running locally
 
+aap.tasksettings.aamod_norm_write.vox = [3 3 3];
+aap.tasksettings.aamod_norm_write_meanepi.vox = [3 3 3];
+
 %% DATA
 % download the demo dataset (if necessary)
 aap = aa_downloaddemo(aap);
@@ -35,7 +38,7 @@ aap.acq_details.numdummies = 10;
 
 %% STUDY
 % Where to put the analyzed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_results');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'auditory';     
 
 % Add data

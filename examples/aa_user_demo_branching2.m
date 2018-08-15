@@ -21,8 +21,12 @@ aap.options.wheretoprocess = 'localsingle';
 
 aap.tasksettings.aamod_slicetiming(1).sliceorder = [1:2:36 2:2:36];
 aap.tasksettings.aamod_slicetiming(1).refslice = 16;
+aap.tasksettings.aamod_norm_write(1).vox = [3 3 3];
+aap.tasksettings.aamod_norm_write_meanepi(1).vox = [3 3 3];
 aap.tasksettings.aamod_slicetiming(2).sliceorder = [1:2:36 2:2:36];
 aap.tasksettings.aamod_slicetiming(2).refslice = 16;
+aap.tasksettings.aamod_norm_write(2).vox = [3 3 3];
+aap.tasksettings.aamod_norm_write_meanepi(2).vox = [3 3 3];
 
 %% DATA
 % download the demo dataset (if necessary)
@@ -41,7 +45,7 @@ aap.acq_details.numdummies = 10;
 
 %% STUDY
 % Where to put the analyzed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_branching2');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'auditory_branching2';
 
 % Add data
