@@ -275,6 +275,8 @@ classdef aa_provenance < handle
             indices = obj.indices;
             if ~isempty(aap.acq_details.selected_sessions)
                 indices(2) = aap.acq_details.selected_sessions(indices(2));
+            else % no selected session specified
+                aap.acq_details.selected_sessions = '*';
             end
             
             outp = aap.internal.outputstreamdestinations{aap.tasklist.currenttask.modulenumber}.stream;
@@ -284,6 +286,8 @@ classdef aa_provenance < handle
                 ioutp = strcmp({outp.name},stream);
                 outp = outp(ioutp); outp = outp(1);
                 destdomain = outp.destdomain;
+                daap = aas_setcurrenttask(aap,outp.destnumber);
+                aap.tasklist.currenttask.modality = daap.tasklist.currenttask.modality;
             end
             if strcmp(destdomain,'study'), destdomain = 'subject'; end
             [junk, dtModule] = aas_dependencytree_allfromtrunk(aap,aap.tasklist.currenttask.domain);
