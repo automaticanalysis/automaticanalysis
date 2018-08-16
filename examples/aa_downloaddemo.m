@@ -35,7 +35,8 @@ if ~exist('rawdir','var') || ~exist(fullfile(demodir,rawdir),'dir') % we need to
     aas_log(aap, false, ['INFO: downloading demo data to ' demodir]);
     % attempt to download the data
     outfn = [tempname '.tar.gz'];
-    outfn = websave(outfn,URL);
+    assert(aas_shell(sprintf('wget -O %s %s',outfn,URL))==0, ...
+        ['could not download dataset from ' URL]);
     [s, w] = aas_shell(sprintf('tar -xvf %s -C %s',outfn,demodir));
     assert(s==0);
     % the sub-directory should now exist
