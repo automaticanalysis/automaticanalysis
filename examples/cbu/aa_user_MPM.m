@@ -23,13 +23,15 @@ SUBJ = {...
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
 aap.options.autoidentifyfieldmaps = 1;
-aap.directory_conventions.protocol_fieldmap= 'gre_field_mapping';
+
+aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 0;
 
 % Directory for analysed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_mpm');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'mpm'; 
 
 % Add data
+aap.directory_conventions.protocol_fieldmap= 'gre_field_mapping';
 aap.directory_conventions.subject_directory_format = 3;
 aap.directory_conventions.rawdatadir = '/mridata/camcan_f';
 aap = aas_add_special_session(aap,'MPM');

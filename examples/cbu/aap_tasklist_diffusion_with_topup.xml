@@ -13,7 +13,7 @@
             <module><name>aamod_convert_structural</name></module>
             <module><name>aamod_coreg_extended_1</name></module>
             <module><name>aamod_biascorrect_structural</name></module>
-            <module><name>aamod_segment8_multichan</name></module>
+            <module><name>aamod_segment8</name></module>
             <module><name>aamod_structuralstats</name></module> 
             <module><name>aamod_dartel_createtemplate</name></module>
             <module><name>aamod_dartel_normmni</name></module>         

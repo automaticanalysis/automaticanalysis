@@ -23,6 +23,7 @@ aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingl
 aap.options.autoidentifyfieldmaps = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
 
+aap.tasksettings.aamod_segment8.writenormimg=0;
 % Set slice order for slice timing correction
 aap.tasksettings.aamod_realignunwarp.eoptions.quality = 0.9;
 aap.tasksettings.aamod_realignunwarp.eoptions.sep = 4;
@@ -46,8 +47,8 @@ aap = aas_renamestream(aap,'aamod_coreg_noss_00001','structural','aamod_biascorr
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_fmri_multi');
-aap.directory_conventions.analysisid = 'test_fmri_multi'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
+aap.directory_conventions.analysisid = 'fmri_multi'; 
 
 % Add data and model
 aap.directory_conventions.subject_directory_format = 3; % manual

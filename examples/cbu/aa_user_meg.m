@@ -22,7 +22,7 @@ aap.tasksettings.aamod_meg_epochs.timewindow = [-2000 500];
 
 %% DATA
 % Directory & sub-directory for analysed data:
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_meg');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'meg'; 
 
 % Add extra files

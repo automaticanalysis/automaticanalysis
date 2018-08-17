@@ -36,8 +36,8 @@ aap.tasksettings.aamod_secondlevel_threshold.threshold.correction = 'none';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_fmri');
-aap.directory_conventions.analysisid = 'test_fmri'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
+aap.directory_conventions.analysisid = 'fmri'; 
 
 % Add data
 aap.directory_conventions.subject_directory_format = 1;

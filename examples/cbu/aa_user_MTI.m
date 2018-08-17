@@ -29,7 +29,7 @@ aap = aarecipe('aap_tasklist_MTI.xml');
 aap.options.wheretoprocess = 'qsub'; %'localsingle'; 
 
 aap.options.autoidentifystructural_chooselast = 1;
-aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
+aap.tasksettings.aamod_segment8.writenormimg=0;
 aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
 
@@ -37,7 +37,7 @@ aap.tasksettings.aamod_convert_specialseries.NIFTI4D = 1;
 % Directory for analysed data 
 % (expanding off existing default root, so /imaging/$USER/aa/MTI if you haven't changed
 % your defaults.)
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_mti');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'mti'; 
 
 % Add data

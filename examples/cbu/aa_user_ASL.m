@@ -25,7 +25,7 @@ aap.tasksettings.aamod_ASL_coreg_extended_2.eoptions.cost_fun = 'ecc';
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_ASL');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'ASL'; 
 
 % Add data

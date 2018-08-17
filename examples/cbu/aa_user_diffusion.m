@@ -32,7 +32,7 @@ aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','native_grey
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
 
 aap.options.autoidentifystructural_chooselast = 1;
-aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
+aap.tasksettings.aamod_segment8.writenormimg=0;
 aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.2;
@@ -44,8 +44,8 @@ aap=aas_addinitialstream(aap,'rois',{...
     '/imaging/local/software/AA/test_resources/diffusion/craddock_ROI_841_Linda_FCpaper.nii'});
 
 % Directory for analysed data - appending to cbu default root directory
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_diffusion');
-aap.directory_conventions.analysisid = 'test_diffusion'; 
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
+aap.directory_conventions.analysisid = 'diffusion'; 
 aap.directory_conventions.subject_directory_format = 3;
 
 % Add data

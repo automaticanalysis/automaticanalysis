@@ -17,6 +17,7 @@ aap = aarecipe('aap_tasklist_bids_ds000114.xml');
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% typical value qsub | localsingle
 
+aap.tasksettings.aamod_segment8.writenormimg = 0;
 aap.tasksettings.aamod_dartel_norm_write.vox = 1;
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;

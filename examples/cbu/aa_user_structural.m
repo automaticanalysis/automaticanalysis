@@ -38,7 +38,7 @@ aap.tasksettings.aamod_dartel_normmni.fwhm=1;
 
 %% STUDY
 % Directory for analysed data
-aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo_structural_fmri_connect');
+aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'structural'; 
 
 % Add data
