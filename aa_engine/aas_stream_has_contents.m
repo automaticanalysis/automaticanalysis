@@ -12,6 +12,7 @@ streamname=varargin{end};
 streamname=aas_remapstreamname(aap,streamname,true);
 
 % If this stream has source, it will be listed in the dependency maps
-stream_has_contents=any(strcmp(streamname,{aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream.name}));
+c = cellfun(@(x) strsplit(x,'.'), {aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream.name},'UniformOutput',false);
+stream_has_contents=any(strcmp(streamname,horzcat(c{:})));
     
 end
