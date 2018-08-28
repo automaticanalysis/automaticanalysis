@@ -54,5 +54,8 @@
             <autoidentifyt2 desc='Automatically identify T2?' ui='yesno'>0</autoidentifyt2>		
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
         </options>
+        <acq_details>
+            <root desc='Root on local machine for processed data' ui='dir'></root>
+        </acq_details>
     </local>
 </aap>

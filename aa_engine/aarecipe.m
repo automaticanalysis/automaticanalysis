@@ -17,9 +17,14 @@
 
 function aap = aarecipe(varargin)
 
-switch(nargin)
+isGUI = ~any(strcmp(varargin,'nogui'));
+varargin(strcmp(varargin,'nogui')) = [];
+
+Pref.ReadAttr=0;
+
+switch(numel(varargin))
     case 0
-        fprintf('You must provide a tasklist to aarecipe.\n');
+        warning('You must provide a tasklist to aarecipe.\n');
     case 1
         defaultparameters='aap_parameters_user.xml';
         tasklistxml=varargin{1};
@@ -32,21 +37,26 @@ clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
-    resp = questdlg(sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
+    resp = userinput('questdlg',sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
         'Parameter file', ...
-        'Yes','No (Exit)','No (Exit)');
+        'Yes','No (Exit)','No (Exit)','GUI',isGUI);
     assert(~strcmp(resp,'No (Exit)'), 'exiting');
     % if we made it here, we are seeding a new parameters file
     % we have default parameters
     defaultdir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'aa_parametersets');
-    [seedparam, rootpath] = uigetfile({'*.xml','All Paremeters Files' },'Desired seed parameter',defaultdir);
+    [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Paremeters Files' },'Desired seed parameter',defaultdir,'GUI',isGUI);
     assert(ischar(seedparam), 'exiting');
     seedparam = fullfile(rootpath, seedparam);
     
+    % initialise the save dialogue in the current aap.acq_details.root if specified
+    xml=xml_read(seedparam,Pref);
+    defaultdir = aas_expandpathbyvars(xml.acq_details.root);
+    if isempty(defaultdir), defaultdir = pwd; end
+    
     % generate new parameters file N.B.: in networks with shared resources
     % average user may not be able to write into aa_paremetersets
-    [defaultparameters, rootpath] = uiputfile({'*.xml','All Paremeters Files' },...
-        'Location of the parameters file and analyses by default',fullfile(pwd,defaultparameters));
+    [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Paremeters Files' },...
+        'Location of the parameters file and analyses by default',fullfile(defaultdir,defaultparameters),'GUI',isGUI);
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
     
@@ -60,10 +70,14 @@ if ~exist(defaultparameters,'file')
         'could not find %s - Are you sure it is in your path?',...
         defaultparameters);
     
-    msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn')
+    if isGUI
+        h = msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn');
+        waitfor(h);
+    else
+        fprintf('\nNew parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.\n',destination);
+    end
 end
 
-Pref.ReadAttr=0;
 aap=xml_read(defaultparameters,Pref);
 aap.schema=xml_read(defaultparameters);
 
