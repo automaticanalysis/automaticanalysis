@@ -36,14 +36,15 @@ aap.directory_conventions.analysisid = 'bids_ds114';
 
 % Add data
 % download the demo dataset (if necessary)
-aap = aa_downloaddemo(aap,'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162');
+rawdir = 'ds114_test2';
+aap = aa_downloaddemo(aap,'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162',rawdir);
 % The bids parser only supports a single rawdatadir. Pick the one that has bids in it.
 sources = strsplit(aap.directory_conventions.rawdatadir,':')';
-bidsind = cell_index(sources,'ds114_test2');
+bidsind = cell_index(sources,rawdir);
 assert(~any(bidsind==0), ...
-    'did not find "ds114_test2" BIDS directory in aap.directory_conventions.rawdatadir')
+    ['did not find "' rawdir '" BIDS directory in aap.directory_conventions.rawdatadir'])
 assert(numel(bidsind)==1,...
-    'multiple reference to "ds114_test2" BIDS directory in aap.directory_conventions.rawdatadir')
+    ['multiple reference to "' rawdir '" BIDS directory in aap.directory_conventions.rawdatadir'])
 aap.directory_conventions.rawdatadir = sources{bidsind};
 
 aap.acq_details.numdummies = 0;

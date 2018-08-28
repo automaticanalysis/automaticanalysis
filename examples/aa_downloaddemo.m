@@ -5,8 +5,8 @@
 %
 % ds114_test : https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162
 %
-% aap = aa_downloaddemo(aap,[URL])
-function aap = aa_downloaddemo(aap,URL)
+% aap = aa_downloaddemo(aap,[URL, [rawdir]])
+function aap = aa_downloaddemo(aap,URL,rawdir)
 
 DEMODIRBASENAME = 'aa_demo';
 
