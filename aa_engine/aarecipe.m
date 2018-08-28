@@ -56,11 +56,13 @@ if ~exist(defaultparameters,'file')
     % generate new parameters file N.B.: in networks with shared resources
     % average user may not be able to write into aa_paremetersets
     [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Paremeters Files' },...
-        'Location of the parameters file and analyses by default',fullfile(defaultdir,defaultparameters),'GUI',isGUI);
+        'Location of the parameters file',fullfile(defaultdir,defaultparameters),'GUI',isGUI);
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
     
-    create_minimalXML(seedparam, destination);
+    analysisroot = userinput('uigetdir',rootpath,'Location of analyses by default','GUI',isGUI);
+    
+    create_minimalXML(seedparam, destination,analysisroot);
     assert(exist(destination,'file')>0,'failed to create %s',defaultparameters);
 
     % N.B. we don't actually modify defaultparameters - it should now be on the path. But
@@ -420,7 +422,9 @@ end
 
 end
 
-function create_minimalXML(seedparam,destination)
+function create_minimalXML(seedparam,destination,analysisroot)
+
+if nargin < 3, analysisroot = fileparts(destination); end
 
 docNode = com.mathworks.xml.XMLUtils.createDocument('aap');
 aap = docNode.getDocumentElement;
@@ -440,7 +444,7 @@ local.appendChild(acq_details);
 root = docNode.createElement('root');
 root.setAttribute('desc','Root on local machine for processed data');
 root.setAttribute('ui','dir');
-root.appendChild(docNode.createTextNode(fileparts(destination)));
+root.appendChild(docNode.createTextNode(analysisroot));
 acq_details.appendChild(root);
 
 xmlwrite(destination,docNode);
@@ -473,6 +477,15 @@ switch varargin{1}
                 if ~isempty(resp), break; end
             end
             varargout{1} = resp{1};
+        end
+    case  'uigetdir'
+        if isGUI
+            varargout{1} = uigetdir(varargin{2:end});
+        else
+            rootpath = input([varargin{3} ' (or leave empty for ' varargin{2} '):'],'s');
+            if isempty(rootpath), rootpath = varargin{2}; end
+
+            varargout{1} = rootpath;
         end
     case  'uigetfile'
         if isGUI
