@@ -24,6 +24,11 @@ classdef aaClass
                 rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
                 rmpath(genpath(fullfile(obj.Path,'external','cluster'))); % remove cluster-integration path
             end
+
+            % user config directory
+            configdir = fullfile(getenv('HOME'),'.aa');
+            aas_makedir([], configdir);
+            addpath(configdir);
             
             obj.Name = 'automaticanalysis';            
             info = loadjson(strrep(aafile,'Class.m','.json'));
