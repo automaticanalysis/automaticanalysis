@@ -1,7 +1,7 @@
 % Load parameter defaults and tasklist into the structure "aap"
 %
 % FORMAT aap = aarecipe(tasklist)
-% Parameter defaults are loaded from <aa DIR>/aa_parametersets/aap_parameters_user.xml
+% Parameter defaults are loaded from ~/.aa/aap_parameters_user.xml
 %   - tasklist: XML-file containing the list of modules
 %
 % FORMAT aap = aarecipe(parameters,tasklist)
