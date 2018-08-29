@@ -37,39 +37,43 @@ clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
-    resp = userinput('questdlg',sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
+    fprintf(...
+        'Cannot find parameters file %s, opening user interface to generate a new file\n',...
+        defaultparameters);
+    resp = userinput('questdlg',...
+        sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
         'Parameter file', ...
         'Yes','No (Exit)','No (Exit)','GUI',isGUI);
     assert(~strcmp(resp,'No (Exit)'), 'exiting');
     % if we made it here, we are seeding a new parameters file
     % we have default parameters
     defaultdir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'aa_parametersets');
-    [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Paremeters Files' },'Desired seed parameter',defaultdir,'GUI',isGUI);
+    [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },'Desired seed parameter',defaultdir,'GUI',isGUI);
     assert(ischar(seedparam), 'exiting');
     seedparam = fullfile(rootpath, seedparam);
     
     % initialise the save dialogue in the current aap.acq_details.root if specified
     xml=xml_read(seedparam,Pref);
-    defaultdir = aas_expandpathbyvars(xml.acq_details.root);
-    if isempty(defaultdir), defaultdir = pwd; end
-    
+    configdir = fullfile(getenv('HOME'),'.aa');
     % generate new parameters file N.B.: in networks with shared resources
     % average user may not be able to write into aa_paremetersets
-    [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Paremeters Files' },...
-        'Location of the parameters file',fullfile(defaultdir,defaultparameters),'GUI',isGUI);
+    [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' },...
+        'Location of the parameters file',fullfile(configdir, defaultparameters),'GUI',isGUI);
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
     
-    analysisroot = userinput('uigetdir',rootpath,'Location of analyses by default','GUI',isGUI);
+    analysisroot = aas_expandpathbyvars(xml.acq_details.root);
+    aas_makedir([], analysisroot);
+    analysisroot = userinput('uigetdir',analysisroot,'Location of analyses by default','GUI',isGUI);
     
-    create_minimalXML(seedparam, destination,analysisroot);
-    assert(exist(destination,'file')>0,'failed to create %s',defaultparameters);
+    create_minimalXML(seedparam, destination, analysisroot);
+    assert(exist(destination,'file')>0,'failed to create %s', defaultparameters);
 
     % N.B. we don't actually modify defaultparameters - it should now be on the path. But
     % let's double check. It might not be e.g. if you haven't actually added AA to your
     % path properly before calling this function.
     assert(exist(defaultparameters,'file')>0, ...
-        'could not find %s - Are you sure it is in your path?',...
+        'could not find %s - Are you sure it is on your path?',...
         defaultparameters);
     
     if isGUI
@@ -453,8 +457,8 @@ end
 function varargout = userinput(varargin)
 % Examples:
 % resp = userinput('questdlg',sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?','paramfile'), 'Parameter file', 'Yes','No (Exit)','No (Exit)','GUI',true);
-% [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Paremeters Files' },'Desired seed parameter',defaultdir,'GUI',true);
-% [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Paremeters Files' }, 'Location of the parameters file and analyses by default',fullfile(pwd,defaultparameters),'GUI',true);
+% [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },'Desired seed parameter',defaultdir,'GUI',true);
+% [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' }, 'Location of the parameters file and analyses by default',fullfile(pwd,defaultparameters),'GUI',true);
 
 isGUI = true;
 iParam = find(strcmpi(varargin,'gui'),1);
