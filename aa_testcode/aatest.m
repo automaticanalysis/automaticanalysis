@@ -26,7 +26,7 @@ tests = dir(fullfile(testdir,'aa_user_*.m'));
 testnames = {tests.name};
 % detect 'connect' user scripts - these need to run in a second pass since they depend
 % on some previous results being generated
-connectind = cell_index(testnames,'_connect_');
+connectind = cell_index(testnames,'_connect');
 % cell_index should probably return empty when nothing is found, but it doesn't
 connectind(connectind==0) = [];
 secondpass = testnames(connectind);
