@@ -23,6 +23,7 @@ aap.options.wheretoprocess = 'qsub';
 
 %% STUDY
 % Directory for analysed data
+aap.directory_conventions.subject_directory_format = 1;
 aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
 aap.directory_conventions.analysisid = 'freesurfer'; 
 
