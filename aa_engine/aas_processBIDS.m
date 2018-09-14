@@ -151,6 +151,7 @@ specialimages = {};
 
 for cf = cellstr(spm_select('List',sesspath,'dir'))'
     switch cf{1}
+	case '.'
         case structDIR
             if ~toAddData, continue; end
             for sfx = {'T1w','T2w'};
