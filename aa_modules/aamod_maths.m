@@ -1,4 +1,4 @@
-function [aap,resp]=aamod_maths(aap,task,subj,sess)
+function [aap,resp]=aamod_maths(aap,task,varargin)
 resp='';
 
 switch task
@@ -10,7 +10,7 @@ switch task
         outputstreams=aas_getstreams(aap,'output'); ostream = outputstreams{1};
         
         % obtain data
-        inputfnameslist = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj sess],istream);
+        inputfnameslist = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),istream);
         outputfnameslist = '';
         for inp = 1:size(inputfnameslist,1)
             inputfnames = deblank(inputfnameslist(inp,:));
@@ -53,7 +53,7 @@ switch task
             nifti_write(outputfnames,dat,funcstr,V);
             outputfnameslist(inp,:) = outputfnames;
         end
-        aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],ostream,outputfnameslist);
+        aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),ostream,outputfnameslist);
         
     case 'checkrequirements'
         

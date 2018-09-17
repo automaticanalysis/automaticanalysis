@@ -1,0 +1,40 @@
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+			<!-- Structural -->
+			<module><name>aamod_autoidentifyseries_timtrio</name></module> 
+            <module><name>aamod_get_dicom_structural</name></module>
+            <module><name>aamod_convert_structural</name></module>
+            <module><name>aamod_biascorrect_structural</name></module>
+			<module><name>aamod_coreg_extended_1</name></module>            
+            <module><name>aamod_segment8</name></module>
+            <module><name>aamod_dartel_createtemplate</name></module>
+            <module><name>aamod_dartel_norm_write</name></module>
+			
+			<!-- MTI -->
+            <module><name>aamod_get_dicom_specialseries</name></module>
+            <module><name>aamod_convert_specialseries</name></module>
+            <module><name>aamod_MTI2MTR</name></module>
+            <module><name>aamod_MTI_coreg_extended_2</name></module>
+            <module><name>aamod_MTI_norm_write_dartel</name></module>
+			<module>
+                <branch>
+                    <analysisid_suffix>_JHU</analysisid_suffix>
+                    <module><name>aamod_MTI_roi_extract</name></module>
+                    <module><name>aamod_MTI_roi_valid</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_Juelich</analysisid_suffix>
+                    <module><name>aamod_MTI_roi_extract</name></module>
+                    <module><name>aamod_MTI_roi_valid</name></module>
+                </branch>
+            </module>
+        </main>
+    </tasklist>
+</aap>

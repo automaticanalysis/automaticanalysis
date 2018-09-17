@@ -23,11 +23,11 @@ switch task
         end
         regstreams(toRemove) = [];
 
-        streamfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),['native_' workstream],'output');
+        streamfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),workstream,'output');
         streamfn = strtok_ptrn(basename(streamfn(1,:)),'-0');
         fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
         if ~exist(fullfile(localpath,fn),'file')
-            aas_checkreg(aap,domain,cell2mat(varargin),['native_' workstream],regstreams{end});
+            aas_checkreg(aap,domain,cell2mat(varargin),workstream,regstreams{end});
         end
         % Single-subjetc
         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));

@@ -6,7 +6,7 @@
             <permanenceofoutput>2</permanenceofoutput>
             
 	        <samp desc='Sampling distance (mm)'>3</samp>
-            <tpm desc='Full path to tissue probability map file'></tpm> <!-- if blank defaults to Seg/TPM.nii -->
+            <tpm desc='path to tissue probability map file'>$SPMDIR/tpm/TPM.nii</tpm>
             <vox desc='Voxel size of segmented images'>1.5</vox>
             <affreg desc='Initial affine registration'>mni</affreg>
         	<biasfwhm desc='FWHM of the bias field'>60</biasfwhm>
