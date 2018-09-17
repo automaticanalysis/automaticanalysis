@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='SPM DARTEL normalisation write (stream EPI)' modality='MRI'>
+        <currenttask domain='session' desc='SPM DARTEL normalisation write' modality='MRI'>
             
             <qsub>
                 <timeBase>0.75</timeBase>
@@ -20,11 +20,11 @@
                 <stream isessential="0">dartel_templatetomni_xfm</stream>  
 				<stream>dartel_flowfield</stream>
 				<stream diagnostic="1">structural</stream>
-                <stream ismodified='0'>epi</stream>
+                <stream isrenameable='1' ismodified='0'>epi</stream>
 			</inputstreams>
 			
 			<outputstreams>
-                <stream>epi</stream>
+                <stream isrenameable='1'>epi</stream>
                 <stream>dartel_templatetomni_xfm</stream>  
 			</outputstreams>
             

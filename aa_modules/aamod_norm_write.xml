@@ -18,11 +18,11 @@
                 <stream isessential='0'>forward_deformation_field</stream>
                 <stream isessential='0'>normalisation_seg_sn</stream>                  
                 <stream diagnostic="1">structural</stream> 
-                <stream ismodified='0'>epi</stream>
+                <stream isrenameable='1' ismodified='0'>epi</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>epi</stream>                
+                <stream isrenameable='1'>epi</stream>                
             </outputstreams>
             
         </currenttask>
