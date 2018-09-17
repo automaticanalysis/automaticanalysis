@@ -71,14 +71,16 @@ switch task
                     ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
                         'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))');
                     ds=cosmo_fx(ds, @(x)mean(x,1), 'targets', 1);
+                    ds.sa.labels=cellfun(@(x) x{1}, ITEMS, 'UniformOutput', false)';
+                    ds.sa.set=(1:numel(ITEMS))';
                 case 'C'
                     ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
                         'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))','chunks',floor(((1:numel(ITEMS)*numel(fnSPM))-1)/numel(ITEMS))+1);
+                    ds.sa.labels=cellfun(@(x) x{1}, repmat(ITEMS,1,numel(fnSPM)), 'UniformOutput', false)';
+                    ds.sa.set=repmat((1:numel(ITEMS))',numel(fnSPM),1);
             end            
             
             % Data            
-            ds.sa.labels=cellfun(@(x) x{1}, ITEMS, 'UniformOutput', false)';
-            ds.sa.set=(1:numel(ITEMS))';
             cosmo_check_dataset(ds);
             
             % Searchlight
