@@ -90,11 +90,11 @@ switch task
                 case 'RSA'
                     target_dsm=importdata(aas_getsetting(aap,'bsMatrix'));
                     measure=@cosmo_target_dsm_corr_measure;
-                    measure_args=struct();
+                    measure_args = aas_getsetting(aap,'RSAsettings');
                     measure_args.target_dsm=target_dsm;
                 case 'C'
-                    measure_args=struct();
-                    measure_args.classifier = @cosmo_classify_lda;
+                    measure_args = aas_getsetting(aap,'Csettings');
+                    measure_args.classifier = str2func(['cosmo_classify_' lower(measure_args.classifier)]);
                     measure_args.partitions = cosmo_nfold_partitioner(ds);
                     measure=@cosmo_crossvalidation_measure;
             end  
