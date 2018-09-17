@@ -3,29 +3,31 @@ resp='';
 
 switch task
     case 'report'
-%         localpath = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]);
-%         
-%         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
-%         if isempty(fdiag)
-%             streams=aas_getstreams(aap,'output');
-%             for streamind=1:length(streams)
-%                 % obtain output
-%                 outputfnames = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj sess],streams{streamind},'output');
-%                 
-%                 % perform diagnostics
-%                 do_diag(outputfnames);
-%             end
-%             fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
-%         end
-%         
-%         for d = 1:numel(fdiag)
-%             aap = aas_report_add(aap,subj,'<table><tr><td>');
-%             imgpath = fullfile(localpath,fdiag(d).name);
-%             aap=aas_report_addimage(aap,subj,imgpath);
-%             aap = aas_report_add(aap,subj,'</td></tr></table>');
-%         end
+        %         localpath = aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[subj,sess]);
+        %
+        %         fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
+        %         if isempty(fdiag)
+        %             streams=aas_getstreams(aap,'output');
+        %             for streamind=1:length(streams)
+        %                 % obtain output
+        %                 outputfnames = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[subj sess],streams{streamind},'output');
+        %
+        %                 % perform diagnostics
+        %                 do_diag(outputfnames);
+        %             end
+        %             fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
+        %         end
+        %
+        %         for d = 1:numel(fdiag)
+        %             aap = aas_report_add(aap,subj,'<table><tr><td>');
+        %             imgpath = fullfile(localpath,fdiag(d).name);
+        %             aap=aas_report_addimage(aap,subj,imgpath);
+        %             aap = aas_report_add(aap,subj,'</td></tr></table>');
+        %         end
     case 'doit'
         %% Prepare data
+        TASKS = textscan(aas_getsetting(aap,'tasks'),'%s','Delimiter',':'); TASKS = TASKS{1}';
+        
         RSAROOT = fullfile(aas_getsubjpath(aap,subj),'RSA');
         aas_makedir(aap,RSAROOT);
         
@@ -37,12 +39,12 @@ switch task
         fnSPM = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cellfun(@(x) ~isempty(regexp(x,'firstlevel_spm$', 'once')), inps)),'UniformOutput',false);
         fnTmaps = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_spmts')),'UniformOutput',false);
         
-        if numel(fnMask) > 1
+        if numel(fnSPM) > 1
             brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(RSAROOT,'brain_mask.nii'),'min(X)',{1});
         else
             brain_mask.fname = char(fnMask);
         end
-
+        
         ITEMS = aas_getsetting(aap,'itemList');
         fnT = {};
         for run = 1:numel(fnSPM)
@@ -60,46 +62,66 @@ switch task
         cosmo_set_path
         cosmo_check_external('-tic');
         
-        % Data
-        ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
-            'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))');
-        ds=cosmo_fx(ds, @(x)mean(x,1), 'targets', 1);
-        ds.sa.labels=cellfun(@(x) x{1}, ITEMS, 'UniformOutput', false)';
-        ds.sa.set=(1:numel(ITEMS))';
-        cosmo_check_dataset(ds);
+        if isempty(aas_getsetting(aap,'bsMatrix')), TASKS(cell_index(TASKS, 'RSA')) = []; end
         
-        % Searchlight
-        nbrhood=cosmo_spherical_neighborhood(ds,'count',aas_getsetting(aap,'searchlightVox'));
-        
-        % Model
-        target_dsm=importdata(aas_getsetting(aap,'bsMatrix'));
-        measure=@cosmo_target_dsm_corr_measure;
-        measure_args=struct();
-        measure_args.target_dsm=target_dsm;
-        
-        %% Info
-        aas_log(aap,false,'INFO:Dataset input:'); cosmo_disp(ds);
-        aas_log(aap,false,'INFO:Searchlight neighborhood definition:'); cosmo_disp(nbrhood);
-        aas_log(aap,false,'INFO:Target DSM:'); disp(target_dsm);
-        
-%         imagesc(target_dsm)
-%         set(gca,'XTick',1:size(ds.samples,1),'XTickLabel',ds.sa.labels,...
-%             'YTick',1:size(ds.samples,1),'YTickLabel',ds.sa.labels)
-
-        %% Run
-        ds_rsm_behav=cosmo_searchlight(ds,nbrhood,measure,measure_args);
-
-%         cosmo_plot_slices(ds_rsm_behav);
-
-        % store results
-        rsa_fn=fullfile(RSAROOT,'RSAmap.nii');
-        cosmo_map2fmri(ds_rsm_behav,rsa_fn);
-        
-        %% Cleanup
-        path(oldPath);
-
-        aap=aas_desc_outputs(aap,'subject',subj,'RSAmap',rsa_fn);
-
+        for t = TASKS
+            % Data
+            switch t{1}
+                case 'RSA'
+                    ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
+                        'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))');
+                    ds=cosmo_fx(ds, @(x)mean(x,1), 'targets', 1);
+                case 'C'
+                    ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
+                        'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))','chunks',floor(((1:numel(ITEMS)*numel(fnSPM))-1)/numel(ITEMS))+1);
+            end            
+            
+            % Data            
+            ds.sa.labels=cellfun(@(x) x{1}, ITEMS, 'UniformOutput', false)';
+            ds.sa.set=(1:numel(ITEMS))';
+            cosmo_check_dataset(ds);
+            
+            % Searchlight
+            nbrhood=cosmo_spherical_neighborhood(ds,'count',aas_getsetting(aap,'searchlightVox'));
+            
+            % Model
+            target_dsm = 'not specified';
+            switch t{1}
+                case 'RSA'
+                    target_dsm=importdata(aas_getsetting(aap,'bsMatrix'));
+                    measure=@cosmo_target_dsm_corr_measure;
+                    measure_args=struct();
+                    measure_args.target_dsm=target_dsm;
+                case 'C'
+                    measure_args=struct();
+                    measure_args.classifier = @cosmo_classify_lda;
+                    measure_args.partitions = cosmo_nfold_partitioner(ds);
+                    measure=@cosmo_crossvalidation_measure;
+            end  
+            
+            %% Info
+            aas_log(aap,false,'INFO:Dataset input:'); cosmo_disp(ds);
+            aas_log(aap,false,'INFO:Searchlight neighborhood definition:'); cosmo_disp(nbrhood);
+            aas_log(aap,false,'INFO:Target DSM:'); disp(target_dsm);
+            
+            %         imagesc(target_dsm)
+            %         set(gca,'XTick',1:size(ds.samples,1),'XTickLabel',ds.sa.labels,...
+            %             'YTick',1:size(ds.samples,1),'YTickLabel',ds.sa.labels)
+            
+            %% Run
+            ds_rsm_behav=cosmo_searchlight(ds,nbrhood,measure,measure_args);
+            
+            %         cosmo_plot_slices(ds_rsm_behav);
+            
+            % store results
+            rsa_fn=fullfile(RSAROOT,[t{1} 'map.nii']);
+            cosmo_map2fmri(ds_rsm_behav,rsa_fn);
+            
+            %% Cleanup
+            path(oldPath);
+            
+            aap=aas_desc_outputs(aap,'subject',subj,[t{1} 'map'],rsa_fn);
+        end
     case 'checkrequirements'
         
     otherwise
