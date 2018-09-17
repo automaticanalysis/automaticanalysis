@@ -80,14 +80,15 @@ for subdirind=1:length(subdirs)
     memLimit = meminfo; memLimit = memLimit.ResFree;
     k=1;
     
-    % This array is used to collect sliceing timing info so we can
-    % reconstruct the slice order
-    sliceInfoD = zeros(0, 3);
-    
     while (k<=size(dicomdata_subdir,1))
         oldAcquisitionNumber=-1;
         thispass_numvolumes=0;
         DICOMHEADERS=[];
+
+        % This array is used to collect sliceing timing info so we can
+        % reconstruct the slice order
+        sliceInfoD = zeros(0, 3);
+
         while (k<=size(dicomdata_subdir,1))
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
@@ -214,6 +215,7 @@ for subdirind=1:length(subdirs)
                 thispass_numvolumes=thispass_numvolumes+1;
                 if (thispass_numvolumes>chunksize_volumes)
                     DICOMHEADERS=DICOMHEADERS(1:(end-1));
+                    sliceInfoD=sliceInfoD(1:(end-1),:);
                     break
                 end
             end
