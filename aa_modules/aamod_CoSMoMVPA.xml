@@ -9,6 +9,9 @@
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
+            <!-- RSA - cosmo_target_dsm_corr_measure; C - cosmo_classify_lda -->
+            <tasks desc='MVPA analysis'>RSA:C</tasks>
+            
             <bsMatrix desc='mat-file containing the behavioural similarity matrix'></bsMatrix>
             <itemList desc='Cell of event names (or distinct parts) in order corresponding with the bsMatrix. One cell may contain multiple event names to refer to the same event across subjects'></itemList>
             
@@ -23,6 +26,7 @@
             
             <outputstreams>
                 <stream>RSAmap</stream>
+                <stream>Cmap</stream>
             </outputstreams>    
             
         </currenttask>
