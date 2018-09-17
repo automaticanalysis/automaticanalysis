@@ -46,7 +46,8 @@ switch task
                 setenv('SUBJECTS_DIR', fileparts(localroot))
                 subjname = basename(localroot);
                 struct = aas_getfiles_bystream(aap,subj,srcstream{2});
-                switch srcstream{2}
+                srcstr = strsplit(srcstream{2},'.');
+                switch srcstr{end}
                     case 'structural'
                         mod = 't1';
                 end
@@ -57,7 +58,7 @@ switch task
         reg = fullfile(localroot,aap.directory_conventions.structdirname,'register.dat');        
         
         % Register T1 to FS        
-        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-spm --%s',subjname,struct,reg,mod);
+        FScommand = sprintf('bbregister --s %s --mov %s --reg %s --init-spm --spm-nii --%s',subjname,struct,reg,mod);
         [s, w] = aas_runFScommand(aap,FScommand);
         
         % Register SRC to FS

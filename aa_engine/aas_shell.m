@@ -1,9 +1,9 @@
-%function [s,w]=aas_shell(cmd)
 % aa subroutine - wrapper for shell call
 %
+% [s,w]=aas_shell(cmd,quiet,stopforerrors)
 function [s,w]=aas_shell(cmd,quiet,stopforerrors)
 
-if nargin < 2, quiet=false; end
+if nargin < 2, quiet=true; end
 if nargin < 3, stopforerrors=true; end
 
 %% Prepare
@@ -33,17 +33,17 @@ end
 if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
 [s,w]=system([prefix cmd]);
 
-%% Process error
-if ~quiet
-    if (strcmp('shell-init: error',w))
-        aas_log([],stopforerrors,sprintf('Likely Linux error %s\n',w));
-    end
-    if s
-        [junk, wenv]=system('/usr/bin/env');
-        aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
-        aas_log([],stopforerrors,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
-        aas_log([],false,'***END, CONTINUING');
-    end
+if strcmp('shell-init: error', w)
+    % ensure this is an error code
+    s = 1;
+end
+
+%% Process error if we're in non-quiet mode OR if we want to stop for errors
+if s && (~quiet || stopforerrors)
+    [junk, wenv]=system('/usr/bin/env');
+    aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
+    aas_log([],stopforerrors,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
+    aas_log([],false,'***END, CONTINUING');
 end
 
 rw = ''; lw = '';

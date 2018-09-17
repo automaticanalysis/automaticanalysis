@@ -14,10 +14,9 @@ the license.txt file distributed with this software.
 # About
 
 aa is a pipeline system for neuroimaging written primarily in Matlab. It
-robustly supports recent versions of SPM, as well as selected functions
-from other software packages. The goal is to facilitate automatic,
-flexible, and replicable neuroimaging analyses through a comprehensive
-pipeline system.
+supports SPM 12, as well as selected functions from other software packages 
+(e.g., FSL, Freesurfer). The goal is to facilitate automatic, flexible, and 
+replicable neuroimaging analyses through a comprehensive pipeline system.
 
 More information can be found on the aa webpage:
 
@@ -27,8 +26,8 @@ http://www.automaticanalysis.org
 
  - System: Linux or MacOX (Windows is not supported. Sorry!)
  - Softwares: 
-   - **MATLAB** - It has been tested with version r2009a and later
-   - **SPM** - It has been tested with versions SPM5 and later (SPM12 r6685 is recommended!)
+   - **MATLAB** - It has been tested with version r2013a and later
+   - **SPM** - It has been tested with versions SPM12 and later (SPM12 r7219 is recommended!)
  - Recommended software for features:
    - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
@@ -55,13 +54,15 @@ Unzip the downloaded package, and add the main folder to the MATLAB path.
 
 # Configure
 
-Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_recipes_and_parametersets/aap_parameters_defaults.xml_** have to be configured. Instead of editing the main **_aap_parameters_defaults.xml_**, we recommend to create a local version by *inhereting* most of the settings from **_aap_parameters_defaults.xml_**. See **_aap_parameters_defaults_CBSU.xml_** as an example.
+Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_parametersets/aap_parameters_defaults.xml_** have to be configured to reflect your local environment. We recommend naming your local configuration file aap_parameters_user.xml if you want to run the examples easily (see below).
+ 
+ Instead of copying the main **_aap_parameters_defaults.xml_**, we recommend to create a local version by *inheriting* most of the settings from **_aap_parameters_defaults.xml_**. See **_aap_parameters_defaults_CBSU.xml_** as an example.
  - *directory_conventions/rawdatadir*: Directories to find raw MRI data
  - *directory_conventions/subjectoutputformat*: `sprintf` formatting string to get subject directory as stored in *directory_conventions/rawdatadir*
  - *directory_conventions/seriesoutputformat*: `sprintf` formatting string to get series directory as stored in subject directory
  - *directory_conventions/protocol_structural*: Name of the structural/anatomical protocol as stored in the DICOM header
  - *directory_conventions/dicomfilter*: Directory listing filter to find DICOM data
- - *directory_conventions/spmdir*: Path to SPM. **N.B.: You should not modify SPM version in your UMS but rather in your local parameter file.**
+ - *directory_conventions/spmdir*: Path to SPM. **N.B.: You should not modify SPM version in your user script but rather in your local parameter file.**
 Optional:
  - For distortion correction using fieldmap:
    - *directory_conventions/protocol_fieldmap*: Name of the fieldmap protocol as stored in the DICOM header
@@ -98,9 +99,19 @@ Optional:
    - *directory_conventions/qsubscheduler*: MATLAB function to set up qsub scheduler to execute jobs in the cluster (should be in your MATLAB path)
    - *directory_conventions/poolprofile*: MATLAB function to create cluster profile for parallel processing in a local job (should be in your MATLAB path)
 
+# Get started
+The user scripts and task lists in the examples folder demonstrate a wide range of analyses. It is easy to get started with AA by adapting the example that most resembles your planned analysis. Before you do that, we recommend that you try to run a few these scripts to confirm that your installation is running (e.g., aa_user_demo.m).
+
+# Testing
+We provide rudimentary automated tests under the aa_test folder. If you are having trouble with AA it's a good idea to start by checking that you can get the automated test to run.
+
+
+
 # Help and support
 
-In addition to the wiki, there is also a discussion list:
+Please feel free to open an issue here on Github if you are having trouble getting AA to work.
+
+There is also a discussion list:
 
 https://groups.google.com/d/forum/automaticanalysis
 

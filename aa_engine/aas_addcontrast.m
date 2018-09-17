@@ -107,6 +107,12 @@ for subj = 1:numel(subjname)
         havesess = true(1,numel(sessnames));
         for s = 1:numel(sessnames)
             sess = find(strcmp({aap.acq_details.sessions.name},sessnames{s}));
+            if isempty(sess)
+                % avoid cryptic crashes in aas_get_series
+                aas_log(aap,true,sprintf(...
+                    'did not find sessname %s in {aap.acq_details.sessions.name}',...
+                    sessnames{s}));
+            end
             [junk, mriser] = aas_get_series(aap,'functional',subj,sess);
             if isempty(mriser) || (isnumeric(mriser) && ~mriser), havesess(s) = false; end
         end

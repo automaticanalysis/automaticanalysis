@@ -132,11 +132,14 @@ switch task
             f = basename(P);
             P = P(f(:,1) ~= 'w',:);
             imgs = strvcat(imgs, P);
-            % delete previous because otherwise nifti write routine doesn't
-            % save disc space when you reslice to a coarser voxel
+            % delete any previous results because otherwise nifti write routine
+            % doesn't save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
                 [pth fle ext]=fileparts(P(c,:));
-                [s w] = aas_shell(['rm ' fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext])],true); % quietly
+                previous = fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext]);
+                if exist(previous,'file') > 0
+                    [s w] = aas_shell(['rm ' previous],true); % quietly
+                end
             end;
             job.data.subj.images = cellstr(imgs);
             

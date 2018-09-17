@@ -93,7 +93,10 @@ switch task
             % delete previous because otherwise nifti write routine doesn't
             % save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
-                aas_shell(['rm ' spm_file(P(c,:),'prefix',flags.prefix)],true); % quietly
+                thisfile = spm_file(P(c,:),'prefix',flags.prefix);
+                if exist(thisfile,'file')
+                    aas_shell(['rm ' thisfile]);
+                end
             end
             
             if aas_stream_has_contents(aap,'normalisation_seg_sn')
