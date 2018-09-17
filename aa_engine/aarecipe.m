@@ -1,24 +1,32 @@
 % Load parameter defaults and tasklist into the structure "aap"
 %
 % FORMAT aap = aarecipe(tasklist)
-% Parameter defaults are loaded from <aa DIR>/aa_recipes_and_parametersets/aap_parameters_defaults.xml
+% Parameter defaults are loaded from ~/.aa/aap_parameters_user.xml
 %   - tasklist: XML-file containing the list of modules
 %
 % FORMAT aap = aarecipe(parameters,tasklist)
 %   - parameters: XML-file containing the parameter defaults
 %   - tasklist: XML-file containing the list of modules
 %
+% If the specified parameters file does not exist, the user is prompted to generate one
+% by copying one of the files that are included in AA. If you use this functionality you
+% may need to make further manual edits to the parameter file.
 %
 % Rhodri Cusack
 % Tibor Auer MRC CBU Cambridge 2016
 
 function aap = aarecipe(varargin)
 
-switch(nargin)
+isGUI = ~any(strcmp(varargin,'nogui'));
+varargin(strcmp(varargin,'nogui')) = [];
+
+Pref.ReadAttr=0;
+
+switch(numel(varargin))
     case 0
-        fprintf('You must provide a tasklist to aarecipe.\n');
+        warning('You must provide a tasklist to aarecipe.\n');
     case 1
-        defaultparameters='aap_parameters_defaults.xml';
+        defaultparameters='aap_parameters_user.xml';
         tasklistxml=varargin{1};
     case 2
         defaultparameters=varargin{1};
@@ -29,13 +37,55 @@ clear aap
 
 % First work on default parameters
 if ~exist(defaultparameters,'file')
-    fprintf('Cannot find file %s as specified in call to aarecipe\n',defaultparameters);
+    fprintf(...
+        'Cannot find parameters file %s, opening user interface to generate a new file\n',...
+        defaultparameters);
+    resp = userinput('questdlg',...
+        sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?',defaultparameters), ...
+        'Parameter file', ...
+        'Yes','No (Exit)','No (Exit)','GUI',isGUI);
+    assert(~strcmp(resp,'No (Exit)'), 'exiting');
+    % if we made it here, we are seeding a new parameters file
+    % we have default parameters
+    defaultdir = fullfile(fileparts(fileparts(mfilename('fullpath'))),'aa_parametersets');
+    [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },'Desired seed parameter',defaultdir,'GUI',isGUI);
+    assert(ischar(seedparam), 'exiting');
+    seedparam = fullfile(rootpath, seedparam);
+    
+    % initialise the save dialogue in the current aap.acq_details.root if specified
+    xml=xml_read(seedparam,Pref);
+    configdir = fullfile(getenv('HOME'),'.aa');
+    % generate new parameters file N.B.: in networks with shared resources
+    % average user may not be able to write into aa_paremetersets
+    [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' },...
+        'Location of the parameters file',fullfile(configdir, defaultparameters),'GUI',isGUI);
+    assert(ischar(defaultparameters), 'exiting');
+    destination = fullfile(rootpath, defaultparameters);
+    
+    analysisroot = aas_expandpathbyvars(xml.acq_details.root);
+    aas_makedir([], analysisroot);
+    analysisroot = userinput('uigetdir',analysisroot,'Location of analyses by default','GUI',isGUI);
+    
+    create_minimalXML(seedparam, destination, analysisroot);
+    assert(exist(destination,'file')>0,'failed to create %s', defaultparameters);
+
+    % N.B. we don't actually modify defaultparameters - it should now be on the path. But
+    % let's double check. It might not be e.g. if you haven't actually added AA to your
+    % path properly before calling this function.
+    assert(exist(defaultparameters,'file')>0, ...
+        'could not find %s - Are you sure it is on your path?',...
+        defaultparameters);
+    
+    if isGUI
+        h = msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn');
+        waitfor(h);
+    else
+        fprintf('\nNew parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.\n',destination);
+    end
 end
 
-Pref.ReadAttr=0;
 aap=xml_read(defaultparameters,Pref);
 aap.schema=xml_read(defaultparameters);
-
 
 % And now load up task list
 if exist('tasklistxml','var')
@@ -95,8 +145,20 @@ if exist('tasklistxml','var')
     
 end
 
-% SPM
-if isdeployed, aap.directory_conventions.spmdir = spm('Dir'); end
+if ~isempty(aap.directory_conventions.spmdir)
+    % by setting this environment variable it becomes possible to define other
+    % paths relative to $SPMDIR in defaults files and task lists
+    setenv('SPMDIR',aap.directory_conventions.spmdir);
+end
+
+if isdeployed
+    aap.directory_conventions.spmdir = spm('Dir');
+    setenv('SPMDIR',aap.directory_conventions.spmdir);
+end
+
+% expand shell paths (before SPM so SPM can be in e.g. home directory)
+aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
+
 if ~isempty(aap.directory_conventions.spmdir)
     addpath(aap.directory_conventions.spmdir); 
     spm_jobman('initcfg');
@@ -104,6 +166,7 @@ else
     aas_log(aap,false,'WARNING: SPM path is not defined and cannot be loaded.')
     aas_log(aap,false,'    Make sure that SPM is already in you path and configured!')
 end
+
 try
     aap.spm.defaults=spm_get_defaults;
 catch
@@ -361,4 +424,112 @@ catch
     [label index] = unique(vals);
 end
 
+end
+
+function create_minimalXML(seedparam,destination,analysisroot)
+
+if nargin < 3, analysisroot = fileparts(destination); end
+
+docNode = com.mathworks.xml.XMLUtils.createDocument('aap');
+aap = docNode.getDocumentElement;
+aap.setAttribute('xmlns:xi','http://www.w3.org/2001/XInclude');
+
+seed = docNode.createElement('xi:include');
+seed.setAttribute('href',seedparam);
+seed.setAttribute('parse','xml');
+aap.appendChild(seed);
+
+local = docNode.createElement('local');
+aap.appendChild(local);
+
+acq_details = docNode.createElement('acq_details');
+local.appendChild(acq_details);
+
+root = docNode.createElement('root');
+root.setAttribute('desc','Root on local machine for processed data');
+root.setAttribute('ui','dir');
+root.appendChild(docNode.createTextNode(analysisroot));
+acq_details.appendChild(root);
+
+xmlwrite(destination,docNode);
+end
+
+function varargout = userinput(varargin)
+% Examples:
+% resp = userinput('questdlg',sprintf('Cannot find parameters file %s\nSeed new parameter file from existing default?','paramfile'), 'Parameter file', 'Yes','No (Exit)','No (Exit)','GUI',true);
+% [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },'Desired seed parameter',defaultdir,'GUI',true);
+% [defaultparameters, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' }, 'Location of the parameters file and analyses by default',fullfile(pwd,defaultparameters),'GUI',true);
+
+isGUI = true;
+iParam = find(strcmpi(varargin,'gui'),1);
+if ~isempty(iParam)
+    isGUI = varargin{iParam+1};
+    varargin(iParam:iParam+1) = [];
+end
+
+switch varargin{1}
+    case 'questdlg' % question, title, btn1, btn2, default
+        if isGUI
+            varargout{1} = questdlg(varargin{2:end});
+        else
+            btns = varargin(4:end-1);
+            msgBtn = sprintf(' / %s',btns{:}); msgBtn(1:3) = '';
+            respList = cellfun(@(x) lower(strtok(x)), btns, 'UniformOutput', false);
+            while true
+                resp = input([varargin{2} ' (' msgBtn '):' ],'s');
+                resp = btns(cellfun(@(x) strcmp(resp,x) || (resp==x(1)), respList));
+                if ~isempty(resp), break; end
+            end
+            varargout{1} = resp{1};
+        end
+    case  'uigetdir'
+        if isGUI
+            varargout{1} = uigetdir(varargin{2:end});
+        else
+            rootpath = input([varargin{3} ' (or leave empty for ' varargin{2} '):'],'s');
+            if isempty(rootpath), rootpath = varargin{2}; end
+
+            varargout{1} = rootpath;
+        end
+    case  'uigetfile'
+        if isGUI
+            [varargout{1}, varargout{2}] = uigetfile(varargin{2:end});
+        else
+            defaultdir = varargin{4};
+            defaultnames = dir(fullfile(defaultdir,varargin{2}{1}));
+            fprintf('%s in %s:\n', varargin{2}{2}, defaultdir);
+            fprintf('%s\n',defaultnames.name);
+            while true
+                seedparam = input([varargin{3} ' (or leave empty to abort):'],'s');
+                % filter out extension (so we are robust to whether this is provided or not)
+                [rootpath,seedparam,~] = fileparts(seedparam);
+                if isempty(rootpath), rootpath = defaultdir; end
+                seedparam = [seedparam varargin{2}{1}(2:end)];
+                
+                if exist(fullfile(rootpath,seedparam),'file'), break;
+                else
+                    fprintf('Could not find file %s. Please try again!\n',seedparam);
+                end
+            end
+            
+            varargout{1} = seedparam;
+            varargout{2} = rootpath;
+        end
+    case  'uiputfile'
+        if isGUI
+            [varargout{1}, varargout{2}] = uiputfile(varargin{2:end});
+        else
+            [defaultdir, defaultseed]= fileparts(varargin{4});
+            seedparam = input([varargin{3} ' (or leave empty for ' varargin{4} '):'],'s');
+            % filter out extension (so we are robust to whether this is provided or not)
+            [rootpath,seedparam] = fileparts(seedparam);
+            if isempty(rootpath), rootpath = defaultdir; end
+            if isempty(seedparam), seedparam = defaultseed; end
+
+            varargout{1} = [seedparam varargin{2}{1}(2:end)];
+            varargout{2} = rootpath;
+        end
+    otherwise
+        error('Function %s is not an existing function or not implemented!',varargin{1});
+end
 end
