@@ -62,7 +62,7 @@ switch task
         cosmo_set_path
         cosmo_check_external('-tic');
         
-        if isempty(aas_getsetting(aap,'bsMatrix')), TASKS(cell_index(TASKS, 'RSA')) = []; end
+        if cell_index(TASKS, 'RSA') && isempty(aas_getsetting(aap,'bsMatrix')), TASKS(cell_index(TASKS, 'RSA')) = []; end
         
         for t = TASKS
             % Data
