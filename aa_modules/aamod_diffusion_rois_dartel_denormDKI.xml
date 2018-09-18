@@ -17,7 +17,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>native_rois</stream>
+                <stream>rois</stream>
             </outputstreams>            
         </currenttask>
     </tasklist>

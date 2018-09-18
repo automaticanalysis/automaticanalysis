@@ -1,3 +1,7 @@
+% Assert that input pth (with fieldname nme) does not contain forbidden
+% characters. Called by aas_validatepaths.
+%
+% [aap passed]=aas_checkpath(aap,pth,nme,allowwildcards,allowcolon)
 function [aap passed]=aas_checkpath(aap,pth,nme,allowwildcards,allowcolon)
 
 if ~exist('allowwildcards','var') || isempty(allowwildcards)

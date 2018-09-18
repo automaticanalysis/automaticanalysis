@@ -272,10 +272,11 @@ classdef aa_provenance < handle
             aap = obj.IDs{idsrc}.aap;
             aap.options.maximumretry = 1;
             aap.options.verbose = -1;
+            indices = obj.indices;
             if ~isempty(aap.acq_details.selected_sessions)
-                sess = aap.acq_details.selected_sessions(obj.indices(2));
-            else
-                sess = obj.indices(2);
+                indices(2) = aap.acq_details.selected_sessions(indices(2));
+            else % no selected session specified
+                aap.acq_details.selected_sessions = '*';
             end
             
             outp = aap.internal.outputstreamdestinations{aap.tasklist.currenttask.modulenumber}.stream;
@@ -285,15 +286,19 @@ classdef aa_provenance < handle
                 ioutp = strcmp({outp.name},stream);
                 outp = outp(ioutp); outp = outp(1);
                 destdomain = outp.destdomain;
+                daap = aas_setcurrenttask(aap,outp.destnumber);
+                aap.tasklist.currenttask.modality = daap.tasklist.currenttask.modality;
             end
             if strcmp(destdomain,'study'), destdomain = 'subject'; end
             [junk, dtModule] = aas_dependencytree_allfromtrunk(aap,aap.tasklist.currenttask.domain);
             [junk, dtOutput] = aas_dependencytree_allfromtrunk(aap,destdomain);
             if (numel(dtModule) > numel(dtOutput)), destdomain = dtModule{end}; end
+            dep = aas_dependencytree_allfromtrunk(aap,destdomain);
+            indices = indices(1:numel(dep{1}{2}));
 
             [files, MD5, fname] = aas_getfiles_bystream_multilevel(aap,...
                 destdomain,...
-                [obj.indices(1),sess,obj.indices(3)],stream,'output'); % TODO: associate files
+                indices,stream,'output'); % TODO: associate files
             if ~exist('files','var') || isempty(files)
                 prid = ''; id = 0;
                 return

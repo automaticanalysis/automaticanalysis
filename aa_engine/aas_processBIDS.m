@@ -5,6 +5,10 @@
 %     - sessnames - cell array with sessions to process (useful if you only want
 %           some sessions, or if you want to preserve a certain session order)
 %     - tasknames - cell array of tasks to process - see sessnames
+%     - SUBJ - cell or char array of subjects to process
+%     - regcolumn - (default 'trial_type') column in events.tsv to use for first
+%           level model
+% Relevant AAP sub-fields:
 %     - aap.acq_details.input.combinemultiple:
 %           Combines multiple sessions per subjects (default = false)
 %     - aap.acq_details.input.selected_sessions:
@@ -21,8 +25,11 @@
 %               - "repetition_time" (TR) specified in JSON header
 %
 % Tibor Auer MRC CBU Cambridge 2015
+% Update: J Carlin 2018
+%
+% aap = aas_processBIDS(aap,[sessnames],[tasknames],[SUBJ],[regcolumn])
 
-function aap = aas_processBIDS(aap,sessnames,tasknames)
+function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 
 global BIDSsettings;
 
@@ -34,6 +41,10 @@ if ~exist('tasknames','var') || isempty(tasknames)
     tasknames = [];
 end
 
+if ~exist('regcolumn','var') || isempty(regcolumn)
+    regcolumn = 'trial_type';
+end
+
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
 BIDSsettings.directories.fieldmapDIR = 'fmap';
@@ -41,9 +52,6 @@ BIDSsettings.directories.diffusionDIR = 'dwi';
 BIDSsettings.combinemultiple = aap.acq_details.input.combinemultiple;
 BIDSsettings.sessnames = sessnames;
 BIDSsettings.tasknames = tasknames;
-
-
-
 
 %% Init
 aap.directory_conventions.subjectoutputformat = '%s';
@@ -74,8 +82,21 @@ end
 % Set BIDS
 BIDS = aap.directory_conventions.rawdatadir;
 
-% Look for subjects
-SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
+if ~exist('SUBJ','var') || isempty(SUBJ)
+    % Look for subjects
+    SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
+end
+
+if iscell(SUBJ)
+    % assume user has supplied cell array
+    SUBJ = char(SUBJ);
+end
+
+if isempty(SUBJ)
+    % avoid cryptic errors later
+    aas_log(aap,true,sprintf('no subjects found in directory %s',...
+        aap.directory_conventions.rawdatadir));
+end
 
 % 1st pass - Add sessions only
 % 2ns pass - Add data
@@ -87,15 +108,15 @@ for p = [false true]
             % check that custom sessnames exist for this subject
             SESS = intersect(cellstr(SESS),BIDSsettings.sessnames);
             if numel(SESS) ~= numel(BIDSsettings.sessnames)
-                aas_log(aap,true,'did not find all sessnames for sub %s',subj);
+                aas_log(aap,false,sprintf('WARNING: did not find all specified sessnames for sub %s',subjID));
             end
-            SESS = char(BIDSsettings.sessnames);
+            SESS = char(SESS);
         end
         if isempty(SESS)
-            aap = add_data(aap,subjID,fullfile(BIDS,subjID),p);
+            aap = add_data(aap,subjID,fullfile(BIDS,subjID),p,regcolumn);
         else
             for sess = 1:size(SESS,1)
-                aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))),p);
+                aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))),p,regcolumn);
             end
         end
     end
@@ -105,7 +126,8 @@ for p = [false true]
         sessstr = vertcat(sessstr{:});
         sessstr = sessstr(:,2);
         if numel(aap.acq_details.sessions) > 1
-            aap.acq_details.sessions = aap.acq_details.sessions(sort_sessions(aap.acq_details.sessions,sessstr));
+            sortind = sort_sessions(aap.acq_details.sessions,sessstr);
+            aap.acq_details.sessions = aap.acq_details.sessions(sortind);
         end
         if numel(aap.acq_details.diffusion_sessions) > 1
             aap.acq_details.diffusion_sessions = aap.acq_details.diffusion_sessions(sort_sessions(aap.acq_details.diffusion_sessions,sessstr));
@@ -116,7 +138,7 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function aap = add_data(aap,mriname,sesspath,toAddData)
+function aap = add_data(aap,mriname,sesspath,toAddData,regcolumn)
 
 global BIDSsettings;
 structDIR = BIDSsettings.directories.structDIR;
@@ -291,10 +313,12 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                             aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
                         else
                             EVENTS = tsvread(eventfname);
-                            iName = cell_index(EVENTS(1,:),'trial_type');
+                            iName = cell_index(EVENTS(1,:),regcolumn);
                             iOns = cell_index(EVENTS(1,:),'onset');
                             iDur = cell_index(EVENTS(1,:),'duration');
-                            names = unique(EVENTS(2:end,iName)); onsets = cell(numel(names),1); durations = cell(numel(names),1);
+                            names = unique(EVENTS(2:end,iName));
+                            onsets = cell(numel(names),1);
+                            durations = cell(numel(names),1);
                             for t = 2:size(EVENTS,1)
                                 iEV = strcmp(names,EVENTS{t,iName});
                                 onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
@@ -403,6 +427,8 @@ sessord = [];
 for sess = sessstr'
     sessord = horzcat(sessord, cell_index(aasessnames,sess{1})');
 end
+% filter out misses (e.g., anatomy-only sessions)
+sessord(sessord==0) = [];
 end
 
 function info = loadjson_multi(fnamecell)
