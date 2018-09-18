@@ -1,3 +1,7 @@
+% Validate that paths specified in aap struct meet format requirements by
+% calling aas_checkpath. Called during aa_doprocessing.
+%
+% [aap]=aas_validatepaths(aap)
 function [aap]=aas_validatepaths(aap)
 
 validatepaths(aap,aap.schema,aap,'aap');
@@ -25,8 +29,8 @@ if (isfield(mystruct,'ATTRIBUTE'))
             else
                 aap=aas_checkpath(aap,values,nme,[],allowcolons);
             end
-            
-            
+        otherwise
+            % no checking
     end;
 else
     if (~strcmp(nme,'aap.tasksettings'))

@@ -61,10 +61,10 @@ switch task
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
                 sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',conInd,conName));
 			
-			% older versions didn't create overlay/renders if no voxels
-			% survived thresholding, ergo the check here. We now create
-			% all images, but this check doesn't hurt, and may be useful
-			% if generating a report on an old extant analysis
+		% older versions didn't create overlay/renders if no voxels
+		% survived thresholding, ergo the check here. We now create
+		% all images, but this check doesn't hurt, and may be useful
+		% if generating a report on an old extant analysis
 			
             if exist(f{1},'file')
 				
@@ -83,13 +83,13 @@ switch task
                     aap = aas_report_add(aap, subj,'</td>');
 				end
 				
-				% add SPM stats table
+		% add SPM stats table
 				
-				statsfname = fullfile(aas_getsubjpath(aap,subj),sprintf('table_firstlevel_threshold_C%02d_%s.jpg', conInd, conName));
+		statsfname = fullfile(aas_getsubjpath(aap,subj),sprintf('table_firstlevel_threshold_C%02d_%s.jpg', conInd, conName));
 									
-				corr = aap.tasklist.currenttask.settings.threshold.correction;
-				u0   = aap.tasklist.currenttask.settings.threshold.p;
-				make_stats_table(loaded.SPM, statsfname, C, u0, corr);
+		corr = aap.tasklist.currenttask.settings.threshold.correction;
+		u0   = aap.tasklist.currenttask.settings.threshold.p;
+		make_stats_table(loaded.SPM, statsfname, C, u0, corr);
 
                 aap = aas_report_add(aap, subj,'<td>');
 				aap = aas_report_addimage(aap, subj, statsfname);
@@ -111,24 +111,24 @@ switch task
                 aap = aas_report_add(aap,sprintf('C%02d',conInd),'</td>');	
 				aap = aas_report_add(aap,sprintf('C%02d',conInd),'</tr></table>');
                             
-			end
+		end
 			
         end
         
     case 'doit'
  
-		% sanity checks
+	% sanity checks
 		
-		if (strcmp(aap.tasklist.currenttask.settings.overlay.template,'structural'))
-			aas_log(aap, false, sprintf('WARNING (%s): You should verify template ''structural'' is in the same space as ''epi''.', mfilename));
-		end
+	if (strcmp(aap.tasklist.currenttask.settings.overlay.template,'structural'))
+		aas_log(aap, false, sprintf('WARNING (%s): You should verify template ''structural'' is in the same space as ''epi''.', mfilename));
+	end
 		
-		% Init
-		
-		try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
+	% Init
+	
+	try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
         corr = aap.tasklist.currenttask.settings.threshold.correction;		% correction
-        u0   = aap.tasklist.currenttask.settings.threshold.p;				% height threshold
-        k   = aap.tasklist.currenttask.settings.threshold.extent;			% extent threshold {voxels}
+        u0   = aap.tasklist.currenttask.settings.threshold.p;			% height threshold
+        k   = aap.tasklist.currenttask.settings.threshold.extent;		% extent threshold {voxels}
         nSl = aap.tasklist.currenttask.settings.overlay.nth_slice;
         tra = aap.tasklist.currenttask.settings.overlay.transparency;
         Outputs.thr = '';
@@ -140,43 +140,43 @@ switch task
         anadir = fullfile(localroot,aap.directory_conventions.stats_singlesubj);
         cd(anadir);
 
-		% we now explicitly define which structural template (native, normed, or SPMT1)
-		% to use for overlay mapping rather than leaving it up to provenance
+	% we now explicitly define which structural template (native, normed, or SPMT1)
+	% to use for overlay mapping rather than leaving it up to provenance
 		
-		switch  aap.tasklist.currenttask.settings.overlay.template
+	switch  aap.tasklist.currenttask.settings.overlay.template
 		
-			case 'structural'
+		case 'structural'
 				
-				% we can guarantee normalised_structural and SPMT1, but "structural"
-				% could be native or normalised depending on tasklist. That's why
-				% the option is called "structural" not "native" (although native
-				% is intended).	If the user picks this option, we assume they know
-				% what they're doing...
+			% we can guarantee normalised_structural and SPMT1, but "structural"
+			% could be native or normalised depending on tasklist. That's why
+			% the option is called "structural" not "native" (although native
+			% is intended).	If the user picks this option, we assume they know
+			% what they're doing...
 		
-				if aas_stream_has_contents(aap,subj,'structural')
-					tmpfile = aas_getfiles_bystream(aap, subj, 'structural');
-				else
-					aas_log(aap, true, sprintf('%s: Cannot find structural. Exiting...', mfilename));
-				end
+			if aas_stream_has_contents(aap,subj,'structural')
+				tmpfile = aas_getfiles_bystream(aap, subj, 'structural');
+			else
+				aas_log(aap, true, sprintf('%s: Cannot find structural. Exiting...', mfilename));
+			end
 							
-			case 'SPMT1'
-				
-				% assume a reasonable default location, but assume the user put
-				% the correct location in aap.dir_con.T1template if it's not empty
+		case 'SPMT1'
 			
-				tmpfile = 'toolbox/OldNorm/T1.nii';
-				if ~isempty(aap.directory_conventions.T1template) tmpfile = aap.directory_conventions.T1template; end
-				if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
+			% assume a reasonable default location, but assume the user put
+			% the correct location in aap.dir_con.T1template if it's not empty
+			
+			tmpfile = 'toolbox/OldNorm/T1.nii';
+			if ~isempty(aap.directory_conventions.T1template) tmpfile = aap.directory_conventions.T1template; end
+			if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
 				
-				if ~exist(tmpfile,'file')
-					aas_log(aap, true, sprintf('%s: SPM T1 template not found. Exiting...', mfilename));
-				end
+			if ~exist(tmpfile,'file')
+				aas_log(aap, true, sprintf('%s: SPM T1 template not found. Exiting...', mfilename));
+			end
 				
-			otherwise
+		otherwise
 
-				aas_log(aap, true, sprintf('%s: Unknown template option. Exiting...', mfilename));
-				
-		end			
+			aas_log(aap, true, sprintf('%s: Unknown template option. Exiting...', mfilename));
+			
+	end			
 			
         Vtemplate=spm_vol(tmpfile);
         [Ytemplate, tXYZ]=spm_read_vols(Vtemplate);
@@ -306,41 +306,41 @@ switch task
                 mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
                 fnsl(a+1,:) = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,conName,a));
 
-				if (~isempty(aap.tasklist.currenttask.settings.description))
-					mon = insertInImage(mon, @()text(40,25,aap.tasklist.currenttask.settings.description),...
-					{'fontweight','bold','color','y','fontsize',18,...
-					'linewidth',1,'margin',5,'backgroundcolor','k'});	
-				end
+		if (~isempty(aap.tasklist.currenttask.settings.description))
+			mon = insertInImage(mon, @()text(40,25,aap.tasklist.currenttask.settings.description),...
+			{'fontweight','bold','color','y','fontsize',18,...
+			'linewidth',1,'margin',5,'backgroundcolor','k'});	
+		end
 
-				if (no_sig_voxels)
-					mon = insertInImage(mon, @()text(40,50,'No voxels survive threshold'),...
-					{'fontweight','bold','color','y','fontsize',18,...
-					'linewidth',1,'margin',5,'backgroundcolor','k'});	
-				end
+		if (no_sig_voxels)
+			mon = insertInImage(mon, @()text(40,50,'No voxels survive threshold'),...
+			{'fontweight','bold','color','y','fontsize',18,...
+			'linewidth',1,'margin',5,'backgroundcolor','k'});	
+		end
 
                 imwrite(mon,deblank(fnsl(a+1,:)));
-			end
+		end
 			
             dlmwrite(strrep(deblank(fnsl(1,:)),'_overlay_0.jpg','.txt'),[min(v(v~=0)), max(v)]);
 			
             % Render
 			
-			% FYI: render should always work regardless of template type because it
-			% maps input into MNI, if necessary
+		% FYI: render should always work regardless of template type because it
+		% maps input into MNI, if necessary
 
-			if ~no_sig_voxels
-				if numel(Z)  < 2 % render fails with only one active voxel
-					Z = horzcat(Z,Z);
-					XYZ = horzcat(XYZ,XYZ);
-				end
-				% render fails with single first slice 
-				for a = 1:3
-					if all(XYZ(a,:)==1)
-						Z = horzcat(Z,Z(end));
-						XYZ = horzcat(XYZ,XYZ(:,end)+circshift([1;0;0],a-1));
-					end
+		if ~no_sig_voxels
+			if numel(Z)  < 2 % render fails with only one active voxel
+				Z = horzcat(Z,Z);
+				XYZ = horzcat(XYZ,XYZ);
+			end
+			% render fails with single first slice 
+			for a = 1:3
+				if all(XYZ(a,:)==1)
+					Z = horzcat(Z,Z(end));
+					XYZ = horzcat(XYZ,XYZ(:,end)+circshift([1;0;0],a-1));
 				end
 			end
+		end
 
             dat.XYZ = XYZ;
             dat.t = Z';
@@ -358,19 +358,19 @@ switch task
             mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
             mon = mon(1:size(mon,2)*2/3,:,:);			
 
-			if (~isempty(aap.tasklist.currenttask.settings.description))
-				mon = insertInImage(mon, @()text(40,25,aap.tasklist.currenttask.settings.description),...
-				{'fontweight','bold','color','y','fontsize',18,...
-				'linewidth',1,'margin',5,'backgroundcolor','k'});	
-			end
+		if (~isempty(aap.tasklist.currenttask.settings.description))
+			mon = insertInImage(mon, @()text(40,25,aap.tasklist.currenttask.settings.description),...
+			{'fontweight','bold','color','y','fontsize',18,...
+			'linewidth',1,'margin',5,'backgroundcolor','k'});	
+		end
 
-			if (no_sig_voxels)
-				mon = insertInImage(mon, @()text(40,50,'No voxels survive threshold'),...
-				{'fontweight','bold','color','y','fontsize',18,...
-				'linewidth',1,'margin',5,'backgroundcolor','k'});	
-			end	
+		if (no_sig_voxels)
+			mon = insertInImage(mon, @()text(40,50,'No voxels survive threshold'),...
+			{'fontweight','bold','color','y','fontsize',18,...
+			'linewidth',1,'margin',5,'backgroundcolor','k'});	
+		end	
 
-			imwrite(mon,fn3d);
+		imwrite(mon,fn3d);
  
             % Outputs
 			

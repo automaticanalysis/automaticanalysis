@@ -45,7 +45,7 @@ switch task
             end
         end
         comp = false;
-        if any(strcmp(spm_file(niftifile,'Ext'),'gz')),
+        if any(strcmp(spm_file(niftifile,'Ext'),'gz'))
             comp = true;
             gunzip(niftifile{1});
             niftifile{1} = niftifile{1}(1:end-3);
@@ -72,7 +72,7 @@ switch task
         % Image
         finalepis={};
         V = spm_vol(niftifile); 
-        if iscell(V) V = cell2mat(V); end;
+        if iscell(V), V = cell2mat(V); end
         sesspth=aas_getsesspath(aap,subj,sess);
         aas_makedir(aap,sesspth);
         fle = spm_file(niftifile,'basename');
@@ -88,7 +88,7 @@ switch task
             V(fileind).n=[1 1];
             spm_write_vol(V(fileind),Y);
             finalepis = [finalepis fn];
-        end;
+        end
         
         if isfield(DICOMHEADERS{1},'PhaseEncodingDirection') && ~isempty(DICOMHEADERS{1}.PhaseEncodingDirection)
             sliceaxes = {'x' 'y'};
@@ -115,11 +115,11 @@ switch task
             aap=aas_makedir(aap,dummypath);
             for d=1:numdummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
-                [pth nme ext]=fileparts(finalepis{d});
-                dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
-                [s w]=aas_shell(cmd);
+                [pth, nme, ext]=fileparts(finalepis{d});
+                dummylist=char(dummylist,fullfile('dummy_scans',[nme ext]));
+                [s, w]=aas_shell(cmd);
                 if (s)
-                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',convertedfns{d},dummypath));
+                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n\n%s',finalepis{d},dummypath,w));
                 end
             end
         else
@@ -129,14 +129,13 @@ switch task
         % 4D conversion [TA]
         if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             finalepis = finalepis{1};
-            ind = find(finalepis=='-');
+            ind = regexp(finalepis,'_[0-9]*\.'); % find volume numbers just before the extension
             sfx = '';
-            if isempty(ind),
+            if isempty(ind)
                 ind = find(finalepis=='.');
                 sfx = '_4D';
             end
-            ind(2) = ind(end);
-            finalepis = [finalepis(1:ind(2)-1) sfx '.nii'];
+            finalepis = [finalepis(1:ind-1) sfx '.nii'];
             if iscell(V), V = cell2mat(V); end
             spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
@@ -152,7 +151,7 @@ switch task
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end
 
 function hdr = header_dcmhdr(fname)
@@ -210,5 +209,5 @@ function fullfilepaths=cell_fullfile(basepath,filepaths)
 % array
 for fileind=1:length(filepaths)
     fullfilepaths{fileind}=fullfile(basepath,filepaths{fileind});
-end;
+end
 end

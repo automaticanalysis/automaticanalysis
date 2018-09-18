@@ -16,11 +16,7 @@ switch task
              studydir=aap.acq_details.root;
              d=dir(studydir);
              if isempty(d) 
-                 cmd=['mkdir ' studydir];
-                 [s w]=aas_shell(cmd);
-                 if (s~=0)
-                     aas_log(aap,1,w);
-                 end;    
+                 aas_makedir(aap,studydir);
              elseif (length(d)<2)
                  aas_log(aap,1,sprintf('There is a file with the same name as the desired study directory: %s',studydir));
              end;

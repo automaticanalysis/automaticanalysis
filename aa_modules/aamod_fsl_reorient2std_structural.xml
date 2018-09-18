@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_fsl_reorient2std' domain='subject' desc='FSL Reorient structural dimensions to MNI standard' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.05</timeBase>
+                <memoryBase desc='Required memory in GB'>0.5</memoryBase>
+            </qsub>
+            
+            <inputstreams>
+                <stream>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>structural</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

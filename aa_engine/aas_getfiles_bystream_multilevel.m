@@ -16,6 +16,8 @@ streamname = varargin{end};
 index = varargin(1:end-1);
 
 domains = {index{1}, aas_getsesstype(aap), 'subject', 'study'};
+sessind = cell_index(domains,'session');
+if numel(sessind) > 1 && numel(aa_unique(domains(sessind))) > 1, domains(sessind) = domains(sessind(~strcmp(domains(sessind),'session'))); end
 [junk, ind] = aa_unique(domains);
 domains = domains(sort(ind));
 ind0 = cell_index(domains,index{1}); ind0 = min(ind0);
