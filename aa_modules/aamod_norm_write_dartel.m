@@ -116,7 +116,7 @@ switch task
         job.preserve = aap.tasklist.currenttask.settings.preserve;      % modulation
         
 		% find out what streams we should normalise
-        streams=aap.tasklist.currenttask.outputstreams.stream;        
+        streams=aas_getstreams(aap,'output');
         for streamind=1:length(streams)
             if ~aas_stream_has_contents(aap,streams{streamind}), continue; end
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
