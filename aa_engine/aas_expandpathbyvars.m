@@ -1,5 +1,7 @@
 % expand environment variables (anything with a $ prefix) in the input path x
-% with their current value.
+% with their current value. This assumes bash-style expansion, where variables are
+% referenced $likethis and expressions are evaluated $(like this). We also support
+% historical csh-style expansion where expressions are evaluated `like this`.
 %
 % If x is a cell, struct or multi-row char array we recurse and return
 % something of similar structure.
@@ -13,7 +15,7 @@
 %
 % 20180730 J Carlin
 %
-% x = aas_expandpathbyvars(x, [verbose=false])
+% xnew = aas_expandpathbyvars(x, [verbose=false])
 function x = aas_expandpathbyvars(x, verbose)
 
 if ~exist('verbose','var') || isempty(verbose)
@@ -47,30 +49,24 @@ end
 % so if we get here it's a single-row array, presumably string
 % (nb this also means we ignore other type fields in e.g. struct inputs)
 if ischar(x)
-    while ~isempty(strfind(x, '$'))
-        expandind = strfind(x, '$');
-        thisind = expandind(1);
-        % need this inside loop since x is changing inside the loop
-        separators = strfind(x, filesep);
-        nextsep = separators(find(separators > thisind, 1, 'first'));
-        if isempty(nextsep)
-            nextsep = numel(x)+1;
-        end
-        shellvariable = x(thisind:nextsep-1);
-        % need deblank to get rid of possible line break
-        [err,res] = aas_shell(...
-            ['echo ' shellvariable]);
-        res = deblank(res);
-        if isempty(res)
+    if ~isempty(expandind(x))
+        xold = x;
+        [err, x] = aas_shell(['echo ' x]);
+        % white space and row breaks aren't valid XML so these are errors we assume
+        x = deblank(x);
+        if isempty(x) || err~=0
             aas_log([],true,sprintf(...
-                'failed to expand shell variable in x: %s',...
-                shellvariable));
+                'failed to expand x: %s',...
+                xold));
         end
-        x = fullfile(x(1:(thisind-1)),res,x(nextsep:end));
         if verbose
             aas_log([],false,sprintf(...
                 'expanded %s to produce %s',...
-                shellvariable, x));
+                xold, x));
         end
     end
 end
+
+function ind = expandind(x)
+
+ind = sort([strfind(x,'$'),strfind(x,'`')]);
