@@ -64,7 +64,7 @@ for k1=1:length(aap.tasklist.main.module)
         end;
         
         % Now we have one stream per cell
-        for i=1:length(streamlist)
+        for i=1:numel(streamlist)
             inputstreamname=inputstreams.stream{i};
             ismodified=1; isessential=1;
             if isstruct(inputstreamname)
@@ -153,7 +153,7 @@ for k1=1:length(aap.tasklist.main.module)
                     end;
                 end;
             end;
-            if ~isempty(findremote) || ~isempty(stagethatoutputs)
+            if (~isempty(findremote) || ~isempty(stagethatoutputs)) && (i==numel(streamlist))
                 % change domain and modality if needed (due to input)
                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
