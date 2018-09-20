@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='SPM DARTEL normalisation write' modality='MRI'>
+        <currenttask domain='*' desc='SPM DARTEL normalisation write' modality='MRI'>
             
             <qsub>
                 <timeBase>0.75</timeBase>
