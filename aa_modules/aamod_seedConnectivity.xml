@@ -22,7 +22,7 @@
             
             <summaryFun>mean</summaryFun>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>firstlevel_spm</stream>
                 <stream ismodified='0'>epi</stream>
             </inputstreams>

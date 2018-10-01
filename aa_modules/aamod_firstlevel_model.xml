@@ -89,7 +89,7 @@
                 <bf></bf>
             </xBF>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream isrenameable='1' ismodified='0'>epi</stream>
 				<stream isessential='0'>ppi</stream>
                 <stream isessential='0'>listspikes</stream>

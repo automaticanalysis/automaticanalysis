@@ -3,7 +3,7 @@
     <tasklist>
         <currenttask mfile_alias='aamod_GLMdenoise' inheritfrom='aamod_GLMdenoise' domain='subject' desc='GLM denoising of data...' modality='MRI'>
                                 
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi_dicom_header</stream>
                 <stream isessential='0'>epiBETmask</stream>
                 <stream ismodified='0'>epi</stream>
