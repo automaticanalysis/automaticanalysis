@@ -26,11 +26,15 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                     pool.ResourceTemplate = '';
                     pool.SubmitArguments = '';
                     pool.AdditionalProperties.AdditionalSubmitArgs = '';
+                    
+                    keyInd = arrayfun(@(x) strcmp(x.ATTRIBUTE.name,'NumWorkers'), xml.settings(2).settings.settings.key);
+                    pool.NumWorkers = xml.settings(2).settings.settings.key(keyInd).double.value;
                 end
             end
             obj.pool = PoolClass(pool,obj.initialSubmitArguments,obj.poolConf{3});
             obj.pool.reqMemory = aaparallel.memory;
             obj.pool.reqWalltime = aaparallel.walltime;
+            obj.pool.NumWorkers = aaparallel.numberofworkers;
         end
         
         function obj = pool_args(obj,varargin)

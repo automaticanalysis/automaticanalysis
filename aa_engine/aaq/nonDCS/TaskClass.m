@@ -79,6 +79,7 @@ classdef TaskClass < handle
         function val = get.State(obj)
             val = 'unknown';
             if exist(obj.ProcessFile,'file')
+                val = 'running';
                 fid = fopen(obj.ProcessFile,'r');
                 lines = textscan(fid,'%s','delimiter','@'); lines = lines{1};
                 fclose(fid);
