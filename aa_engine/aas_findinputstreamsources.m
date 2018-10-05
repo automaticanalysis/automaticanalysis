@@ -154,7 +154,7 @@ for k1=1:length(aap.tasklist.main.module)
                 end;
             end;
             if (~isempty(findremote) || ~isempty(stagethatoutputs)) && (i==numel(streamlist))
-                % change domain and modality if needed (due to input)
+                % change domain and modality if needed (due to input, which is expected to be the last stream)
                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
                 if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI'))% general-purpose module
