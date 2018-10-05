@@ -17,7 +17,7 @@
 			-->
             <firstlevelmasking>1</firstlevelmasking>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>firstlevel_spm</stream>
             </inputstreams>
             

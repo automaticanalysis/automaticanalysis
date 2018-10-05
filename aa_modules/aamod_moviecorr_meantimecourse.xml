@@ -10,7 +10,7 @@
             <truncatevolumes>1</truncatevolumes> <!-- If different numbers of volumes across subjects, trucate to least (set to 1) or throw error (set to 0) -->
            
             <inputstreams>
-﻿                <stream>epi</stream>  
+                <stream>epi</stream>  
                 <stream>meanepitimecourse</stream>  
             </inputstreams>
             

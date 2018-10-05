@@ -2,7 +2,7 @@
 <aap>
     <tasksettings>
         <aamod_moviecorr_summary domain='isc_session' desc='Movie correlation summary' modality='MRI'>
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>moviecorr_loo</stream>  
             </inputstreams>
             <outputstreams>
