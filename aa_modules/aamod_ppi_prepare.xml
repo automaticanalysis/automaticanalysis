@@ -13,7 +13,7 @@
             <contrasts>1</contrasts>
             <voi>1</voi> <!-- vois index -->
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>firstlevel_spm</stream> 
                 <stream>vois</stream>  
             </inputstreams>

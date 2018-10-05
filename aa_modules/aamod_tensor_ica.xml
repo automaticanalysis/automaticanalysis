@@ -4,7 +4,7 @@
         <currenttask domain='study' desc='Run tensor ICA using FSL melodic' modality='MRI'>
             <permanenceofoutput>3</permanenceofoutput>
             <inputstreams>
-﻿                <stream>epi</stream>
+                <stream>epi</stream>
                 <stream>epi_dicom_header</stream>
                 <stream>structural</stream>
             </inputstreams>

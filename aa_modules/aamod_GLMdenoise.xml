@@ -43,7 +43,7 @@
             <!-- Overriding settings from aamod_firstlevel_model.xml -->
             <includemovementpars>0</includemovementpars>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream isessential='0'>epi_dicom_header</stream>
                 <stream>epiBETmask</stream>
                 <stream ismodified='0'>epi</stream>

@@ -20,7 +20,7 @@
                 <jobtype>fMRI</jobtype>
             </specialrequirements>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi</stream>
                 <stream>weightingImage</stream>                
             </inputstreams>

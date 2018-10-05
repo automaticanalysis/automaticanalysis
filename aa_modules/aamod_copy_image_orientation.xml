@@ -6,7 +6,7 @@
         <currenttask domain='session' desc='Apply realignment parameters from one stream to another' modality='MRI'>
             <permanenceofoutput>1</permanenceofoutput>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi</stream>  
                 <stream>epi_nulled</stream>  
             </inputstreams>

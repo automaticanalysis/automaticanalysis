@@ -10,7 +10,7 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
             

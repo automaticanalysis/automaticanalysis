@@ -7,7 +7,7 @@
             <!-- Given that input stream rois usually has more than one file, which one do we use as the seed? -->
             <seedROIindex>1</seedROIindex>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>rois</stream>
                 <stream>firstlevel_spm</stream>
                 <stream ismodified='0'>epi</stream>
