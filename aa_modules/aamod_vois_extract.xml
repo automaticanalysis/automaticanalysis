@@ -21,7 +21,7 @@
                 <spec>0</spec>
             </VOI>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>firstlevel_spm</stream> 
                 <stream>firstlevel_betas</stream> 
                 <stream>firstlevel_spmts</stream> 

@@ -14,7 +14,7 @@
             <HParam desc='High pass filter cutoff, in seconds - as for SPM'>128</HParam>
             
             <inputstreams>
-﻿                <stream>epi</stream>  
+                <stream>epi</stream>  
                 <stream>epi_dicom_header</stream>  
             </inputstreams>
             

@@ -102,7 +102,7 @@
                 </event>
             </model> 
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi</stream>
                 <stream isessential='0'>epi_dicom_header</stream>
                 <stream isessential='0'>sliceorder</stream>
