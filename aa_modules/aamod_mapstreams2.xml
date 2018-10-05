@@ -2,7 +2,7 @@
 <aap>
     <tasklist>
         <currenttask domain='session' mfile_alias='aamod_mapstreams' desc='Map streams' modality='MRI'>
-            ﻿
+            
             <permanenceofoutput>1</permanenceofoutput>
             
             <inputstreams>

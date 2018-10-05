@@ -37,7 +37,7 @@
                 <jobtype>fMRI</jobtype>
             </specialrequirements>
             
-            ﻿<inputstreams>
+            <inputstreams>
                 <stream>epi</stream>  
             </inputstreams>
             
