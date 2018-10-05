@@ -4,6 +4,13 @@
 		"Legend": "Below is a list of all packages, version and\/or date downloaded, and maintainer:",
 		"Packages": [
 			{
+				"Name": "insertInImage",
+				"Version": "3.0.0.1",
+				"DateDownloaded": "01 August 2018",
+				"URL": "https:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/38721-embed-text-and-graphics-in-an-image",
+				"aaMaintainer": "Jonathan Peelle"
+			},
+			{
 				"Name": "cluster/SGE",
 				"Version": "",
 				"DateDownloaded": "19 December 2016",

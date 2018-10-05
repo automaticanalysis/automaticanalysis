@@ -8,7 +8,9 @@ function [aap,resp]=aamod_tsdiffana(aap,task,subjInd,sessInd)
 resp='';
 
 switch task
+	
     case 'report' % Updated [TA]
+		
         sesspath = aas_getsesspath(aap, subjInd, sessInd);
         imgList = spm_select('FPList',sesspath,'^diagnostic_aamod_tsdiffana.*jpg$');
         if isempty(imgList)
@@ -20,12 +22,13 @@ switch task
             aap=aas_report_addimage(aap,subjInd,imgList(n,:));
         end
         aap = aas_report_add(aap,subjInd,'</td></tr></table>');
+		
     case 'doit'
+		
         sesspath=aas_getsesspath(aap,subjInd,sessInd);
         
         aas_makedir(aap,sesspath);
-        
-        % get files in this directory
+		
         job.imgs{1}{1} = aas_getfiles_bystream(aap,subjInd,sessInd,'epi');
         job.vf = 0;
         run_tsdiffana('run','timediff',job);
@@ -43,9 +46,11 @@ switch task
                 [mfilename '_' subjname '_' aap.acq_details.sessions(sessInd).name sprintf('_%d.jpeg',i)]));
             spm_figure('Close',f)
         end
+
     case 'checkrequirements'
         
-    otherwise
+	otherwise
+		
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end;
 end

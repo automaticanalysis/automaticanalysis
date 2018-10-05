@@ -10,27 +10,34 @@
             
             <permanenceofoutput>3</permanenceofoutput>
 			
-			<threshold>
-				<correction>FWE</correction> <!-- FWE/FDR/iTT/none -->
-				<p>0.05</p>
-				<extent>0</extent>
-			</threshold>
+            <threshold>
+               <correction>FWE</correction> <!-- FWE/FDR/iTT/none -->
+               <p>0.05</p>
+               <extent>0</extent>
+            </threshold>
 			
-			<overlay>
-				<transparency>0</transparency>
-				<nth_slice>3</nth_slice>
-			</overlay>
+            <overlay>
+               <transparency>0</transparency>
+               <nth_slice>3</nth_slice>
+               <template>SPMT1</template>  <!-- averaged_structurals/SPMT1 -->
+           </overlay>
             
-            <inputstreams>
+           <!-- optional text description (included on map) -->
+			
+           <description></description>
+			
+           <inputstreams>
                 <stream diagnostic='1'>secondlevel_spm</stream>
                 <stream isessential='0'>secondlevel_spmts</stream>
                 <stream isessential='0'>secondlevel_spmfs</stream>
-				<stream isessential='0' isrenameable='1'>structural</stream> <!-- has to be the last -->
+                <!-- the structural stream must be last -->
+                <stream isessential='0' isrenameable='1'>structural</stream>
             </inputstreams>
+
             <outputstreams>
-			    <stream>secondlevel_thr</stream>
-                <stream>secondlevel_thrslice</stream>
-                <stream>secondlevel_thr3D</stream>
+               <stream>secondlevel_thr</stream>
+               <stream>secondlevel_thrslice</stream>
+               <stream>secondlevel_thr3D</stream>
             </outputstreams>
             
         </currenttask>
