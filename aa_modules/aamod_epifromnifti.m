@@ -115,8 +115,7 @@ switch task
             aap=aas_makedir(aap,dummypath);
             for d=1:numdummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
-                [pth, nme, ext]=fileparts(finalepis{d});
-                dummylist=char(dummylist,fullfile('dummy_scans',[nme ext]));
+                dummylist=strvcat(dummylist,fullfile(dummypath, spm_file(finalepis{d},'filename')));
                 [s, w]=aas_shell(cmd);
                 if (s)
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n\n%s',finalepis{d},dummypath,w));
