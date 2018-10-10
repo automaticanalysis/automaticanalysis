@@ -47,7 +47,7 @@ assert(numel(bidsind)==1,...
     ['multiple reference to "' rawdir '" BIDS directory in aap.directory_conventions.rawdatadir'])
 aap.directory_conventions.rawdatadir = sources{bidsind};
 
-aap.acq_details.numdummies = 0;
+aap.acq_details.numdummies = 1;
 
 aap.acq_details.input.combinemultiple = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
