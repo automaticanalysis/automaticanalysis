@@ -200,7 +200,7 @@ classdef aa_provenance < handle
                 for i = 1:numel(inputs)
                     istream = inputs{i};
                     if any(istream=='.')
-                        [junk, istream] = strtok(istream,'.');
+                        [istage, istream] = strtok(istream,'.');
                         istream = istream(2:end);
                     end
                     isOptional = numel(inputattrs)>=i && isstruct(inputattrs{i}) && isfield(inputattrs{i},'isessential') && ~inputattrs{i}.isessential;
@@ -220,10 +220,11 @@ classdef aa_provenance < handle
                     if srcindex == -1 % remote src --> add
 %                         [junk,src] = strtok(src,':'); src = src(3:end);
                         rstage = smod.remotestream(strcmp({smod.remotestream.stream},istream));
-                        if isempty(rstage) % try specified steamname
-                            [junk,rem] = strtok_ptrn({smod.remotestream.stream},istream);
-                            rstage = smod.remotestream(strcmp(rem,istream));
-                        end
+                        if isempty(rstage), rstage = smod.remotestream(strcmp({smod.remotestream.stream},[istage '.' istream])); end  % try current specified steamname
+%                         if isempty(rstage) % try any specified steamname                            
+%                             [junk,rem] = strtok_ptrn({smod.remotestream.stream},istream);
+%                             rstage = smod.remotestream(strcmp(rem,istream));
+%                         end
                         idsrc = obj.addModule(rstage);
                     else % local --> already added
                         src = sprintf('%s_%05d',curr_aap.tasklist.main.module(srcindex).name,curr_aap.tasklist.main.module(srcindex).index);
