@@ -196,10 +196,10 @@ switch task
             
             if aap.options.autoidentifyfieldmaps
                 aap.acq_details.subjects(i).fieldmaps{d}=[];
-                if numel(series_fieldmap{d})>=aap.options.autoidentifyfieldmaps_number
+                if numel(series_fieldmap{d})>=abs(aap.options.autoidentifyfieldmaps_number)
                     comment=[comment '  fieldmap series'];
                     % Generalisation of fieldmap number...
-                    for n = 1:aap.options.autoidentifyfieldmaps_number
+                    for n = 1:abs(aap.options.autoidentifyfieldmaps_number)
                         comment=[comment sprintf(' %d',series_fieldmap{d}(n))];
                     end
                     comment=[comment '\n'];
