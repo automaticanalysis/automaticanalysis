@@ -64,7 +64,7 @@ for k1=1:length(aap.tasklist.main.module)
         end;
         
         % Now we have one stream per cell
-        for i=1:length(streamlist)
+        for i=1:numel(streamlist)
             inputstreamname=inputstreams.stream{i};
             ismodified=1; isessential=1;
             if isstruct(inputstreamname)
@@ -153,12 +153,12 @@ for k1=1:length(aap.tasklist.main.module)
                     end;
                 end;
             end;
-            if ~isempty(findremote) || ~isempty(stagethatoutputs)
-                % change domain and modality if needed (due to input)
+            if (~isempty(findremote) || ~isempty(stagethatoutputs)) && (i==numel(streamlist))
+                % change domain and modality if needed (due to input, which is expected to be the last stream)
                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
-                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI')) && ... % general-purpose module
-                        (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
+                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI'))% general-purpose module
+%                         (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;

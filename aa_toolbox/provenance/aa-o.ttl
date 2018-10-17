@@ -5,8 +5,9 @@
 @prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix provone: <http://purl.org/provone#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@base <http://automaticanalysis.org/ns/aa#> .
+@base <http://purl.org/aa#> .
 
 <http://automaticanalysis.org/ns/aa#> rdf:type owl:Ontology ;
                                       
@@ -173,7 +174,7 @@
 
 :module rdf:type owl:Class ;
         
-        rdfs:subClassOf prov:Activity ;
+        rdfs:subClassOf provone:ProcessExec ;
         
         rdfs:seeAlso "http://automaticanalysis.org/getting-started/aa-orientation-components/" ;
         
@@ -186,7 +187,7 @@
 :stream rdf:type owl:Class ;
         
         rdfs:subClassOf nfo:LocalFileDataObject ,
-                        prov:Collection ;
+                        provone:Data ;
         
         rdfs:seeAlso "http://automaticanalysis.org/getting-started/streams-work/" ;
         

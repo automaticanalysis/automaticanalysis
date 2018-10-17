@@ -14,6 +14,8 @@
                 <cost_fun>nmi</cost_fun>
             </eoptions>
             
+            <structural>1</structural>
+            
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
                 <stream>epi</stream>

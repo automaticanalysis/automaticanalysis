@@ -9,18 +9,32 @@
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
+            <!-- RSA - cosmo_target_dsm_corr_measure; C - cosmo_classify_lda -->
+            <tasks desc='MVPA analysis'>RSA:C</tasks>
+            
+            <RSAsettings>
+                <center_data>0</center_data>
+            </RSAsettings>
+            
+            <Csettings>
+                <classifier desc='CoSMo classifier suffix (e.g. LDA --> cosmo_classify_lda)'>LDA</classifier>
+            </Csettings>
+            
             <bsMatrix desc='mat-file containing the behavioural similarity matrix'></bsMatrix>
             <itemList desc='Cell of event names (or distinct parts) in order corresponding with the bsMatrix. One cell may contain multiple event names to refer to the same event across subjects'></itemList>
             
             <searchlightVox desc='Number of voxels per spherical searchlight'></searchlightVox>
             
-            <!-- firstlevel_brainmask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream --> 
+            <!-- mask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream
+            N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname
+            --> 
             <inputstreams>
                 <stream attr='1'>structural</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>RSAmap</stream>
+                <stream>Cmap</stream>
             </outputstreams>    
             
         </currenttask>

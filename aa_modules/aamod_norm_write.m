@@ -80,7 +80,7 @@ switch task
         if ~isempty(interp), flags.interp = interp; end
         
 		% find out what streams we should normalise
-        streams=aap.tasklist.currenttask.outputstreams.stream;
+        streams=aas_getstreams(aap,'output');
         for streamind=1:length(streams)
             % Image to reslice
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
