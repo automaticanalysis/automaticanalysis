@@ -37,8 +37,8 @@ switch task
         for f = 1:numel(niftifile)
             comp = strcmp(spm_file(niftifile{f},'Ext'),'gz');
             if comp
-                gunzip(niftifile{f});
-                niftifile{f} = niftifile{f}(1:end-3);
+                gunzip(niftifile{f},fullfile(sesspth,'temp'));
+                niftifile{1} = spm_file(niftifile{f}(1:end-3),'path',fullfile(sesspth,'temp'));
             end
             
             aas_makedir(aap,fullfile(sesspth,sprintf('serie%02d',f)));
@@ -48,7 +48,7 @@ switch task
             spm_write_vol(V,Y);
             fn{f} = V.fname;
             
-            if comp, delete(niftifile{f}); end
+            if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         end
         aap=aas_desc_outputs(aap,'session',[subj sess],'fieldmap',char(fn));
         
