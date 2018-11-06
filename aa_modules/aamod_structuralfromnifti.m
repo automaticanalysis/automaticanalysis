@@ -38,6 +38,8 @@ switch task
                     end
             end
             
+            sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
+            aas_makedir(aap,sesspth);
             Ys = 0;
             for s = 1:numel(series)
                 niftifile = series(s).fname;
@@ -51,20 +53,18 @@ switch task
                     end
                 end
                 comp = false;
-                if strcmp(spm_file(niftifile,'Ext'),'gz'),
+                if strcmp(spm_file(niftifile,'Ext'),'gz')
                     comp = true;
-                    gunzip(niftifile);
-                    niftifile = niftifile(1:end-3);
+                    gunzip(niftifile,fullfile(sesspth,'temp'));
+                    niftifile = spm_file(niftifile(1:end-3),'path',fullfile(sesspth,'temp'));
                 end
-                sesspth=fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.structdirname);
-                aas_makedir(aap,sesspth);
                 
                 fn(s,:)=spm_file(niftifile,'path',sesspth,'suffix','_0001');
                 V(s)=spm_vol(niftifile);
                 Y=spm_read_vols(V(s));  
                 V(s).fname=deblank(fn(s,:));
                 V(s).n=[1 1];
-                if comp, delete(niftifile); end                
+                if comp, rmdir(fullfile(sesspth,'temp'),'s'); end                
                 
                 if aap.options.(['autoidentify' stream '_average'])
                     Ys = Ys + Y/numel(series);
