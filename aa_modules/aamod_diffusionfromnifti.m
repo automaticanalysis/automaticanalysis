@@ -38,10 +38,10 @@ switch task
             end
         end
         comp = false;
-        if strcmp(spm_file(niftifile,'Ext'),'gz'),
+        if strcmp(spm_file(niftifile,'Ext'),'gz')
             comp = true;
-            gunzip(niftifile);
-            niftifile = niftifile(1:end-3);
+            gunzip(niftifile,fullfile(sesspth,'temp'));
+            niftifile = spm_file(niftifile(1:end-3),'path',fullfile(sesspth,'temp'));
         end
         
         % BVals/BVecs
@@ -59,7 +59,7 @@ switch task
         for ln=1:3
             fprintf(fid,'%.14f ',bvecs(:,ln));
             fprintf(fid,'\n');
-        end;
+        end
         fclose(fid);
         
         % Image
@@ -73,7 +73,7 @@ switch task
             V(fileind).n=[1 1];
             spm_write_vol(V(fileind),Y);
             finalepis=[finalepis fn];
-        end;
+        end
         
         % Write out the files        
         % Now move dummy scans to dummy_scans directory
@@ -84,7 +84,7 @@ switch task
             for d=1:numdummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
                 dummylist=strvcat(dummylist,spm_file(finalepis{d},'path','dummy_scans'));
-                [s w]=aas_shell(cmd);
+                s=aas_shell(cmd);
                 if (s)
                     aas_log(aap,1,sprintf('ERROR:Problem moving dummy scan\nERROR:    %s to\nERROR:    %s\n',finalepis{d},dummypath));
                 end
@@ -98,7 +98,7 @@ switch task
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             sfx = '';
-            if isempty(ind),
+            if isempty(ind)
                 ind = find(finalepis=='.');
                 sfx = '_4D';
             end
@@ -109,7 +109,7 @@ switch task
         end
         
         %% Describe outputs
-        if comp, delete(niftifile); end
+        if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         aap=aas_desc_outputs(aap,domain,indices,'diffusion_data',finalepis);
         aap=aas_desc_outputs(aap,domain,indices,'bvals',bvals_fn);
@@ -119,5 +119,5 @@ switch task
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end
