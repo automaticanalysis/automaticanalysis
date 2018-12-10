@@ -95,6 +95,18 @@ end
 
 global aaworker;
 
+% Initialise aap
+% - evaluate subject names
+aap=aas_doprocessing_initialisationmodules(aap);
+% - integrate initial streams into the pipelines, if any
+aap=aas_builddependencymap(aap);
+v0 = aap.options.verbose;
+aap.options.verbose = -1; % mute error on missing streams, for they will be connected later
+aap=aas_findinputstreamsources(aap);
+aap.options.verbose = v0;
+% - remove partial initialisation
+aap = rmfield(aap,'internal');
+
 % We need to transfer over the remote AAP files, will put them here
 studyPath = aas_getstudypath(aap);
 aas_makedir(aap, studyPath);
