@@ -57,9 +57,6 @@ end
 if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         isstruct(aap.tasklist.currenttask.settings.diagnostic) ||...
         aap.tasklist.currenttask.settings.diagnostic
-    % This will only work for 1-7 overlays
-    OVERcolours = {[1 0 0], [0 1 0], [0 0 1], ...
-        [1 1 0], [1 0 1], [0 1 1], [1 1 1]};
     
     % One-by-one
     for i = 1:size(image{1},1)
@@ -83,9 +80,11 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
     end
     if i > 1
         % Summary
+        OVERcolours = distinguishable_colors(size(image{1},1));
+
         spm_check_registration(image{2});
         for i = 1:size(image{1},1)
-            spm_orthviews('addcolouredimage',1,image{1}(i,:), OVERcolours{i})
+            spm_orthviews('addcolouredimage',1,image{1}(i,:), OVERcolours(i,:))
         end
         aas_checkreg_avi(aap, index, 0,'_summary');
         close(1);
