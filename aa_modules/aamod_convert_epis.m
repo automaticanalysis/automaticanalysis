@@ -15,7 +15,7 @@ switch task
         resp=sprintf('Performing dicom to nifti conversion of EPIs');
         
     case 'summary'
-        resp=sprintf('Made directory %s and did dicom to nifti conversion of EPIs\n');
+        resp=sprintf('Made directory and did dicom to nifti conversion of EPIs\n');
         
     case 'report'
         
@@ -419,22 +419,35 @@ switch task
             aas_makedir(aap,aas_getpath_bydomain(aap,domain,indices));
             
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
-            
-            if ~isempty(aas_getsetting(aap,'ignoreafter',sess))
-                fns = fns(1:min(numel(fns),aas_getsetting(aap,'ignoreafter',sess)));
-            end
+            			
+			if ~isempty(aas_getsetting(aap,'ignoreafter'))
+				fns = fns(1:min(numel(fns),aas_getsetting(aap,'ignoreafter')));
+			end
             
             finalepis=fns;
             
             if aap.tasklist.currenttask.settings.outputstats || aap.options.NIFTI4D
+				
                 % Find temporal SNR
-                for fileind=1:numel(fns)
-                    V(fileind)=spm_vol(fns{fileind});
-                end
+				
+				if (numel(fns) > 1)
+					for fileind=1:numel(fns)
+						V(fileind)=spm_vol(fns{fileind});
+					end
+				else
+					temp=spm_vol(fns{1});
+					for fileind=1:numel(temp)
+						V(fileind)=temp(fileind);
+					end
+				end			
+				
                 V0 = V; % save V for 4D conversion [TA]
+				
             end;
+			
             if aap.tasklist.currenttask.settings.outputstats 
-                [Y XYZ]=spm_read_vols(V);
+				
+               [Y XYZ]=spm_read_vols(V);
                for ind=1:numel(V)
                     if (ind==1)
                         Ytot=Y(:,:,:,1);
@@ -512,13 +525,17 @@ switch task
         finalepis = finalepis(d+1:end);
         
         % 4D conversion [TA]
-        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
+		
+		if numel(finalepis) > 1 && isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             finalepis = finalepis{1};
             ind = find(finalepis=='-');
             if numel(ind) > 1, ind = ind(2); end
             finalepis = [finalepis(1:ind-1) '.nii'];
 			spm_file_merge(char({V0(ndummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
-        end
+		else
+			finalepis = finalepis{1};
+		end
+		
         % And describe outputs
         aap = aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         dcmhdrfn = fullfile(domainpath,'dicom_headers.mat');

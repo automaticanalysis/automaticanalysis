@@ -80,14 +80,17 @@ for subdirind=1:length(subdirs)
     memLimit = meminfo; memLimit = memLimit.ResFree;
     k=1;
     
-    % This array is used to collect sliceing timing info so we can
-    % reconstruct the slice order
-    sliceInfoD = zeros(0, 3);
     
     while (k<=size(dicomdata_subdir,1))
+		
         oldAcquisitionNumber=-1;
         thispass_numvolumes=0;
         DICOMHEADERS=[];
+		
+	% This array is used to collect sliceing timing info so we can
+	% reconstruct the slice order
+	sliceInfoD = zeros(0, 3);
+		
         while (k<=size(dicomdata_subdir,1))
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
@@ -134,19 +137,45 @@ for subdirind=1:length(subdirs)
                             sliceorder = 'Unknown';
                     end
                 end
-            end
+			end
             
-            % if we didn't find that private field, use standard fields.
-            if isempty(TR) && isfield(infoD, 'RepetitionTime')
-                TR = infoD.RepetitionTime;
-            else
-                aas_log(aap,false,'WARNING: TR not found');
-            end
-            if isempty(TE) && isfield(infoD, 'EchoTime')
-                TE = infoD.EchoTime;
-            else
-                aas_log(aap,false,'WARNING: TE not found');
-            end
+		if isempty(TR) && isfield(infoD,'Private_2005_1030')
+			% saving throw -- might be a weird Philips scanner
+			TR = infoD.('Private_2005_1030') * 1000;
+			TR = TR(1);
+		end
+
+
+		if isempty(TE) && isfield(infoD,'Private_2001_1025')
+			% saving throw -- might be a weird Philips scanner
+			TE = infoD.('Private_2001_1025');
+			TE = str2num(TE);
+			infoD.EchoTime = TE;
+		end
+
+
+                % if we didn't find a private field, try standard fields.
+			
+                if isempty(TR) && isfield(infoD, 'RepetitionTime')
+                    TR = infoD.RepetitionTime;
+		end
+			
+                if isempty(TE) && isfield(infoD, 'EchoTime')
+                    TE = infoD.EchoTime;
+		end
+
+		% we have an obligation to warn the user
+
+		if isempty(TR)
+			aas_log(aap,false,'WARNING: TR not found');
+		end
+
+		if isempty(TE)
+		    aas_log(aap,false,'WARNING: TE not found, setting to NaN');
+		    TE = NaN;
+		    infoD.EchoTime = NaN;
+		end		
+
             
             % Siemens
             if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
@@ -190,23 +219,28 @@ for subdirind=1:length(subdirs)
                 BW_hz_pixel              = water_fat_shift_hz / water_fat_shift_pixel;
                 totBW                    = BW_hz_pixel * echo_train_length;
                 echospacing              = 1/totBW;
-            end
-            
+			end
+			
             % [AVG] Add the TR to each DICOMHEADERS instance explicitly before saving (and in seconds!)
             infoD.volumeTR = TR/1000;
             infoD.volumeTE = TE/1000;
             infoD.sliceorder = sliceorder;
             infoD.slicetimes = slicetimes/1000;
             infoD.echospacing = echospacing;
-            
-            % Single slice per DICOM: 
-            % TemporalPositionIdentifier is basically the volume number
-            % InstanceNumber is the temporal position in that acqusition
-            % SliceLocation is spatial
-            sliceInfoD(end+1, 2:3) = [infoD.InstanceNumber infoD.SliceLocation];
-            if collectSOinfo
-                sliceInfoD(end, 1) = infoD.TemporalPositionIdentifier;
-            end
+
+		if isfield(infoD,'SliceLocation')
+
+			% Single slice per DICOM: 
+			% TemporalPositionIdentifier is basically the volume number
+			% InstanceNumber is the temporal position in that acqusition
+			% SliceLocation is spatial
+
+			sliceInfoD(end+1, 2:3) = [infoD.InstanceNumber infoD.SliceLocation];
+			if collectSOinfo
+				sliceInfoD(end, 1) = infoD.TemporalPositionIdentifier;
+			end
+			
+		end
             
             DICOMHEADERS=[DICOMHEADERS {infoD}];
             
@@ -214,6 +248,7 @@ for subdirind=1:length(subdirs)
                 thispass_numvolumes=thispass_numvolumes+1;
                 if (thispass_numvolumes>chunksize_volumes)
                     DICOMHEADERS=DICOMHEADERS(1:(end-1));
+					sliceInfoD=sliceInfoD(1:(end-1),:);
                     break
                 end
             end
@@ -258,7 +293,8 @@ for subdirind=1:length(subdirs)
                     DICOMHEADERS_selected=[DICOMHEADERS_selected DICOMHEADERS(l)];
                 end
             end
-        end
+		end
+		
         % [AVG] to cope with modern cutting edge scanners, and other probs
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
         if isfield(aap.directory_conventions, 'dicom_converter') && ~isempty(aap.directory_conventions.dicom_converter)
@@ -274,16 +310,23 @@ for subdirind=1:length(subdirs)
             aas_log(aap, false, 'INFO: Using default spm_dicom_convert...')
             dicom_converter = 'spm_dicom_convert';
             opts = {'all','flat','nii'};
-        end
+		end
+		
         conv = feval(dicom_converter,DICOMHEADERS_selected,opts{:});
         if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
         % one DICOM per slice --> one header per volume
-        firstsliceInd = sliceInfoD(:,3) == sliceInfoD(find(sliceInfoD(:,2)==min(sliceInfoD(:,2)),1,'first'),3); % select the ones for the first slices per volume
-        DICOMHEADERS = DICOMHEADERS(firstsliceInd); 
-        [junk, sortind] = sort(sliceInfoD(firstsliceInd,2));
-        DICOMHEADERS = DICOMHEADERS(sortind);
+		
+		if ~isempty(sliceInfoD)
+			firstsliceInd = sliceInfoD(:,3) == sliceInfoD(find(sliceInfoD(:,2)==min(sliceInfoD(:,2)),1,'first'),3); % select the ones for the first slices per volume
+			DICOMHEADERS = DICOMHEADERS(firstsliceInd); 
+			[junk, sortind] = sort(sliceInfoD(firstsliceInd,2));
+		else
+			sortind = 1;
+		end
+		
+		DICOMHEADERS = DICOMHEADERS(sortind);
 
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
