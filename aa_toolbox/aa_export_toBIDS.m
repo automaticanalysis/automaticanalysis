@@ -4,7 +4,7 @@ function aa_export_toBIDS(varargin)
 %
 % This function can run standalone or be included at the end of a userscript.
 %
-% usage: aa_export_toBIDS([aap,] dest[, 'anatt1', <stagetag[|streamname]>][, 'anatt2', <stagetag[|streamname]>])
+% usage: aa_export_toBIDS([aap,] dest[, 'anatt1', <stagetag[|streamname]>][, 'anatt2', <stagetag[|streamname]>][, 'model', <stageindex>|'session'])
 %
 % also uses: aap.directory_conventions.BIDSfiles
 %
@@ -13,7 +13,8 @@ function aa_export_toBIDS(varargin)
 %	1) aa_export_toBIDS('/put/results/here');
 %	2) aa_export_toBIDS(aap,'/put/results/here');
 %	3) aa_export_toBIDS('put/results/here','anatt1','aamod_freesurfer_deface_00001|defaced_structural')
-%	4) aa_export_toBIDS(aap,'put/results/here','anatt1','aamod_freesurfer_deface_00001|defaced_structural')
+%	4) aa_export_toBIDS('put/results/here','model',1)
+%	5) aa_export_toBIDS('put/results/here','model','session')
 %	
 % notes
 %
@@ -23,7 +24,7 @@ function aa_export_toBIDS(varargin)
 % reason you would ever pass in aap, assuming you first cd to the directory
 % where aap_parameters.mat lives
 %
-% b) example usage #3 and #4 shows how to override the default structural
+% b) example usage #3 shows how to override the default structural
 % (i.e. t1) file to copy (in this example a defaced structural is used, which
 % is probably required if you're going to upload results to a public
 % repository like openfMRI. The syntax goes: stage|streamname. If you don't
@@ -31,7 +32,11 @@ function aa_export_toBIDS(varargin)
 % of t1 [t2] in the analysis tasklist will be used, which is probably the
 % output from dicom covert (which is not defaced).
 %
-% c) BIDS requires three files to appear in the top level directory:
+% c) eample usage #4 and #5 show how to select model to extract events. aa
+% uses the first model by default. A number here can specify a certain
+% model, while 'session' tells aa that every session has its own specific model.
+%
+% d) BIDS requires three files to appear in the top level directory:
 %
 %		README - a plaintext (ASCII or UTF-8) description of the data
 %		CHANGES- a plaintext (ASCII or UTF-8) list of version changes
@@ -49,12 +54,10 @@ function aa_export_toBIDS(varargin)
 %
 % This function is a work in progress. TODO:
 %
+%   - multi-model
 %   - multi-session
-%   - multi-run
 %   - covariates
 %   - parametric
-%   - multi-model
-
 
 if isstruct(varargin{1})
     aap = varargin{1};
@@ -67,6 +70,7 @@ else
     varargin(1) = [];
 end
 args = vargParser(varargin);
+if ~isfield(args,'model'), args.model = 1; end % default model
 
 % identify source stages present from the tasklist
 
@@ -152,6 +156,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_log(aap,false,'WARNING: No header is available!')
         else
             loaded = load(fhdr); hdr = loaded.dcmhdr;
+            if iscell(hdr), hdr = hdr{1}; end; hdr = hdr(1);
             json = struct(...
                 'RepetitionTime',hdr.volumeTR,...
                 'EchoTime',hdr.volumeTE,...
@@ -207,18 +212,35 @@ for subj = 1:numel(aap.acq_details.subjects)
         
         aap = aas_setcurrenttask(aap,stage_func);
         for sess = 1:numel(aap.acq_details.sessions)
-            aas_log(aap,false,['\tINFO: Exporting fMRI session: ' aas_getsessname(aap,sess)])
-            src = aas_getfiles_bystream(aap,'session',[subj sess],'epi','output');
-            fhdr = aas_getfiles_bystream(aap,'session',[subj sess],'epi_dicom_header','output');
-            
+            taskname = aas_getsessname(aap,sess);
+            aas_log(aap,false,['\tINFO: Exporting fMRI session: ' taskname])
+            src_main = aas_getfiles_bystream(aap,'session',[subj sess],'epi','output');
+
             % image
-            if isempty(src)
+            if isempty(src_main)
                 aas_log(aap,false,'WARNING: No image is available!')
                 continue;
             end
+
+            if any(strcmp(aas_getstreams(aap,'output'),'dummyscans'))
+                src = spm_file(tempname,'ext','nii');
+                src_dummy = aas_getfiles_bystream(aap,'session',[subj sess],'dummyscans','output');
+                spm_file_merge(char(src_dummy,src_main),src);
+            else
+                src = src_main;
+            end
+            fhdr = aas_getfiles_bystream(aap,'session',[subj sess],'epi_dicom_header','output');
+            
+            isRun = regexp(taskname,'[_-]?[rR]un[0-9]*$');
+            if isRun
+                taskname = taskname(1:isRun-1);
+                runNo = str2double(regexp(aap.acq_details.sessions(sess).name(isRun:end),'[0-9]*','match'));
+            end
+            
             aas_makedir(aap,fullfile(subjpath,'func')); 
-            dest = fullfile(subjpath,'func',sprintf('%s_task-%s_bold.nii',suboutname,valueValidate(aap.acq_details.sessions(sess).name)));
-            copyfile(src,dest); gzip(dest); delete(dest);
+            dest = fullfile(subjpath,'func',sprintf('%s_task-%s_bold.nii',suboutname,valueValidate(taskname)));
+            if isRun, dest = strrep(dest,'bold.nii',sprintf('run-%d_bold.nii',runNo)); end
+            copyfile(src,dest); gzip(dest); delete(dest); if exist('src_dummy','var'), delete(src); clear src_dummy; end
             
             % header
             loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
@@ -234,19 +256,28 @@ for subj = 1:numel(aap.acq_details.subjects)
                     'PhaseEncodingDirection',[...
                     sliceaxes{cell_index(sliceaxes(:,1),deblank(hdr.InPlanePhaseEncodingDirection)),2}{aas_get_numaris4_numval(hdr.CSAImageHeaderInfo,'PhaseEncodingDirectionPositive')+1}...
                     ],...
-                    'TaskName',aap.acq_details.sessions(sess).name ...
+                    'TaskName',taskname ...
                     );
                 savejson('',json,spm_file(dest,'ext','json'));
             end
             
             % events
 			
-			if ~isfield(aap.tasksettings,'aamod_firstlevel_model')
+            stageModels = aap.tasklist.main.module(strcmp({aap.tasklist.main.module.name},'aamod_firstlevel_model'));
+            
+			if isempty(stageModels)
 				aas_log(aap,false,'WARNING: No model information is available!')
 				continue
-			end
+            end
 
-            models = aap.tasksettings.aamod_firstlevel_model(1).model(2:end);
+            switch args.model
+                case 'session'
+                    stageindex = strcmp(arrayfun(@(x) x.extraparameters.aap.acq_details.selected_sessions, stageModels,'UniformOutput',false),aas_getsessname(aap,sess));
+                otherwise
+                    stageindex = args.model;
+            end
+            
+            models = aap.tasksettings.aamod_firstlevel_model(stageindex).model(2:end);
             selected_model = (strcmp({models.subject},aas_getsubjname(aap,subj)) | strcmp({models.subject},'*')) & ...
                 (strcmp({models.session},aap.acq_details.sessions(sess).name) | strcmp({models.session},'*'));
             if ~any(selected_model)
@@ -328,19 +359,28 @@ for subj = 1:numel(aap.acq_details.subjects)
         aap = aas_setcurrenttask(aap,stage_dwi);
         for sess = 1:numel(aap.acq_details.diffusion_sessions)
             aas_log(aap,false,['\tINFO: Exporting DWI session: ' aas_getsessname(aap,sess)])
-            src = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_data','output');
+            src_main = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_data','output');
+
+            % image
+            if isempty(src_main)
+                aas_log(aap,false,'WARNING: No image is available!')
+                continue;
+            end
+            
+            if any(strcmp(aas_getstreams(aap,'output'),'dummyscans'))
+                src = spm_file(tempname,'ext','nii');
+                src_dummy = aas_getfiles_bystream(aap,'session',[subj sess],'dummyscans','output');
+                spm_file_merge(char(src_dummy,src_main),src);
+            else
+                src = src_main;
+            end
             aap.options.verbose = -1;
             fhdr = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],'diffusion_dicom_header','output');
             aap.options.verbose = 2;
             
-            % image
-            if isempty(src)
-                aas_log(aap,false,'WARNING: No image is available!')
-                continue;
-            end
             aas_makedir(aap,fullfile(subjpath,'dwi'));
             dest = fullfile(subjpath,'dwi',sprintf('%s_dwi.nii',suboutname));
-            copyfile(src,dest); gzip(dest); delete(dest);
+            copyfile(src,dest); gzip(dest); delete(dest); if exist('src_dummy','var'), delete(src); clear src_dummy; end
             
             % header
             if isempty(fhdr)
