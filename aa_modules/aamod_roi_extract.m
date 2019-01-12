@@ -58,7 +58,7 @@ switch task
         inputstreams = aas_getstreams(aap,'input');
         % first input stream is the roi stream, all others are data
         [roistream, inputstreams] = deal(inputstreams(1),inputstreams(2:end));
-        ROIfile = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],roistream{1});
+        ROIfile = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[varargin{:}],roistream{1});
         for in = inputstreams
             instream = in{1};            
             
