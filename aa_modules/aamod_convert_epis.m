@@ -421,7 +421,7 @@ switch task
             [aap fns DICOMHEADERS]=aas_convertseries_fromstream(aap,domain,indices,'dicom_epi');
             			
 			if ~isempty(aas_getsetting(aap,'ignoreafter'))
-				fns = fns(1:min(numel(fns),aas_getsetting(aap,'ignoreafter')));
+				fns = fns(1:min(numel(fns),aas_getsetting(aap,'ignoreafter',sess)));
 			end
             
             finalepis=fns;
