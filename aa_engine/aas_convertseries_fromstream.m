@@ -217,6 +217,20 @@ for subdirind=1:length(subdirs)
             infoD.slicetimes = slicetimes/1000;
             infoD.echospacing = echospacing;
             
+            % sanity check: some aa modules assume fieldnames
+            % RepetitionTime and EchoTime exist in the DICOM header 
+            % which might not if they were defined by private
+            % fields -- create them now if need be (note also
+            % these are in milliseconds not seconds)
+            
+            if (~isfield(infoD,'EchoTime'))
+                infoD.EchoTime = TE;
+            end
+            
+            if (~isfield(infoD,'RepetitionTime'))
+                infoD.RepetitionTime = TR;
+            end		
+            
             if isfield(infoD,'SliceLocation')
                 
                 % Single slice per DICOM:
