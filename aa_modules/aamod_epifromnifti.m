@@ -116,7 +116,11 @@ switch task
             for d=1:numdummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
                 [pth, nme, ext]=fileparts(finalepis{d});
-                dummylist=char(dummylist,fullfile('dummy_scans',[nme ext]));
+                if d==1
+                    dummylist = fullfile('dummy_scans', [nme ext]);
+                else
+                    dummylist=char(dummylist,fullfile('dummy_scans',[nme ext]));
+                end
                 [s, w]=aas_shell(cmd);
                 if (s)
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n\n%s',finalepis{d},dummypath,w));
