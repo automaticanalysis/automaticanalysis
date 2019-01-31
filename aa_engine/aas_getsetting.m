@@ -22,8 +22,10 @@ if ~isempty(val) && (nargin == 3) % index
     end
     
     try val = val{index};
-    catch
-        aas_log(aap,false,sprintf('WARNING: Setting <%s> has fewer then %d elements.\nWARNING: First value will be applied!',settingstring,index));
+    catch E
+        aas_log(aap,false,sprintf('WARNING (%s): %s requested %s(%d), but', mfilename, E.stack(min(2,numel(E.stack))).name, settingstring, index));
+        aas_log(aap,false,sprintf('WARNING (%s): only %d value(s) are defined in the current settings.', mfilename, numel(val)));
+        aas_log(aap,false,sprintf('WARNING (%s): The first value (%0.9g) will be returned instead.', mfilename, val{1}));
         val = val{1};
     end
 end
