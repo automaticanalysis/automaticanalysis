@@ -81,10 +81,11 @@ for subdirind=1:length(subdirs)
     k=1;
     
     while (k<=size(dicomdata_subdir,1))
+        
         oldAcquisitionNumber=-1;
         thispass_numvolumes=0;
         DICOMHEADERS=[];
-
+        
         % This array is used to collect sliceing timing info so we can
         % reconstruct the slice order
         sliceInfoD = zeros(0, 3);
@@ -94,11 +95,11 @@ for subdirind=1:length(subdirs)
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
             infoD = tmp{1};
             headerFields = fieldnames(infoD);
-                
+            
             if k == 1
                 chunksize_volumes=memLimit*1024/(infoD.StartOfPixelData+infoD.SizeOfPixelData)/4;
             end
-    
+            
             TR = [];
             TE = [];
             sliceorder = '';
@@ -137,17 +138,32 @@ for subdirind=1:length(subdirs)
                 end
             end
             
-            % if we didn't find that private field, use standard fields.
+            % Philips
+            if isempty(TR) && isfield(infoD,'Private_2005_1030')
+                TR = infoD.Private_2005_1030(1);
+            end
+            if isempty(TE) && isfield(infoD,'Private_2001_1025')
+                TE = cellfun(@(x) str2double(x), regexp(infoD.Private_2001_1025,'[0-9.]*','match'));
+            end            
+            
+            % if we didn't find a private field, try standard fields.            
             if isempty(TR) && isfield(infoD, 'RepetitionTime')
                 TR = infoD.RepetitionTime;
-            else
-                aas_log(aap,false,'WARNING: TR not found');
             end
+            
             if isempty(TE) && isfield(infoD, 'EchoTime')
                 TE = infoD.EchoTime;
-            else
-                aas_log(aap,false,'WARNING: TE not found');
             end
+            
+            % we have an obligation to warn the user            
+            if isempty(TR)
+                aas_log(aap,false,'WARNING: TR not found');
+                TR = NaN;
+            end            
+            if isempty(TE)
+                aas_log(aap,false,'WARNING: TE not found, setting to NaN');
+                TE = NaN;
+            end            
             
             % Siemens
             if isempty(sliceorder) && isfield(infoD, 'CSAImageHeaderInfo') && cell_index({infoD.CSAImageHeaderInfo.name},'MosaicRefAcqTimes')
@@ -178,7 +194,7 @@ for subdirind=1:length(subdirs)
             if ~any(strcmpi(headerFields,'NumberOfPhaseEncodingSteps')), infoD.NumberOfPhaseEncodingSteps = infoD.AcquisitionMatrix(1); end
             collectSOinfo = isempty(sliceorder) && isfield(infoD, 'TemporalPositionIdentifier');
             
-            % Philips (based on Hester Breman's code for BrainVoyager) 
+            % Philips (based on Hester Breman's code for BrainVoyager)
             if isempty(echospacing) && all(isfield(infoD,{'EPIFactor' 'WaterFatShift' 'MagneticFieldStrength'}))
                 epifactor 				 = infoD.EPIFactor;
                 water_fat_shift_pixel 	 = infoD.WaterFatShift;
@@ -200,13 +216,32 @@ for subdirind=1:length(subdirs)
             infoD.slicetimes = slicetimes/1000;
             infoD.echospacing = echospacing;
             
-            % Single slice per DICOM: 
-            % TemporalPositionIdentifier is basically the volume number
-            % InstanceNumber is the temporal position in that acqusition
-            % SliceLocation is spatial
-            sliceInfoD(end+1, 2:3) = [infoD.InstanceNumber infoD.SliceLocation];
-            if collectSOinfo
-                sliceInfoD(end, 1) = infoD.TemporalPositionIdentifier;
+            % sanity check: some aa modules assume fieldnames
+            % RepetitionTime and EchoTime exist in the DICOM header 
+            % which might not if they were defined by private
+            % fields -- create them now if need be (note also
+            % these are in milliseconds not seconds)
+            
+            if (~isfield(infoD,'EchoTime'))
+                infoD.EchoTime = TE;
+            end
+            
+            if (~isfield(infoD,'RepetitionTime'))
+                infoD.RepetitionTime = TR;
+            end		
+            
+            if isfield(infoD,'SliceLocation')
+                
+                % Single slice per DICOM:
+                % TemporalPositionIdentifier is basically the volume number
+                % InstanceNumber is the temporal position in that acqusition
+                % SliceLocation is spatial
+                
+                sliceInfoD(end+1, 2:3) = [infoD.InstanceNumber infoD.SliceLocation];
+                if collectSOinfo
+                    sliceInfoD(end, 1) = infoD.TemporalPositionIdentifier;
+                end
+                
             end
             
             DICOMHEADERS=[DICOMHEADERS {infoD}];
@@ -244,9 +279,9 @@ for subdirind=1:length(subdirs)
             end
             
             aas_log(aap,false,sprintf('Sliceorder %s have been detected', sliceorder));
-             
+            
             % Update the DICOMHEADERS
-            [junk, sliceorder] = sort(sliceInfo(:,2)); % for Philips 
+            [junk, sliceorder] = sort(sliceInfo(:,2)); % for Philips
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'sliceorder', sliceorder')}, DICOMHEADERS);
             DICOMHEADERS = arrayfun(@(x) {setfield(x{1}, 'slicetimes', x{1}.volumeTR/numSlices*(x{1}.sliceorder-1))}, DICOMHEADERS);
         end
@@ -261,6 +296,7 @@ for subdirind=1:length(subdirs)
                 end
             end
         end
+        
         % [AVG] to cope with modern cutting edge scanners, and other probs
         % (e.g. 7T Siemens scanners, which seem to mess up the ICE dimensions...)
         if isfield(aap.directory_conventions, 'dicom_converter') && ~isempty(aap.directory_conventions.dicom_converter)
@@ -277,36 +313,43 @@ for subdirind=1:length(subdirs)
             dicom_converter = 'spm_dicom_convert';
             opts = {'all','flat','nii'};
         end
+        
         conv = feval(dicom_converter,DICOMHEADERS_selected,opts{:});
         if ~isempty(custompath), rmpath(custompath); end
         out=[out(:);conv.files(:)];
         
         % one DICOM per slice --> one header per volume
-        firstsliceInd = sliceInfoD(:,3) == sliceInfoD(find(sliceInfoD(:,2)==min(sliceInfoD(:,2)),1,'first'),3); % select the ones for the first slices per volume
-        DICOMHEADERS = DICOMHEADERS(firstsliceInd); 
-        [junk, sortind] = sort(sliceInfoD(firstsliceInd,2));
+        
+        if ~isempty(sliceInfoD)
+            firstsliceInd = sliceInfoD(:,3) == sliceInfoD(find(sliceInfoD(:,2)==min(sliceInfoD(:,2)),1,'first'),3); % select the ones for the first slices per volume
+            DICOMHEADERS = DICOMHEADERS(firstsliceInd);
+            [junk, sortind] = sort(sliceInfoD(firstsliceInd,2));
+        else
+            sortind = 1;
+        end
+        
         DICOMHEADERS = DICOMHEADERS(sortind);
-
+        
         dicomheader{subdirind}=[dicomheader{subdirind} DICOMHEADERS];
     end
     out_allechoes{subdirind}=unique(out);
     
-%     if ~isempty(strfind(inputstream, 'dicom_structural'))
-%         % [AVG] This is to cope with a number of strucutral images, so we
-%         % may have the DICOM header of each of them...
-%         InstanceNumbers = [];
-%         DCMnumbers = [];
-%         % Loop throught the dicoms to see if the SeriesNumber changes
-%         for l=1:length(DICOMHEADERS);
-%             InstanceNumber = 100*DICOMHEADERS{l}.SeriesNumber + DICOMHEADERS{l}.EchoNumbers;
-%             if all(InstanceNumbers ~= InstanceNumber)
-%                 InstanceNumbers(end+1) = InstanceNumber;
-%                 DCMnumbers = [DCMnumbers l];
-%             end
-%         end
-%         [junk, so] = sort(InstanceNumbers);
-%         dicomheader={DICOMHEADERS{DCMnumbers(so)}};
-%     end
+    %     if ~isempty(strfind(inputstream, 'dicom_structural'))
+    %         % [AVG] This is to cope with a number of strucutral images, so we
+    %         % may have the DICOM header of each of them...
+    %         InstanceNumbers = [];
+    %         DCMnumbers = [];
+    %         % Loop throught the dicoms to see if the SeriesNumber changes
+    %         for l=1:length(DICOMHEADERS);
+    %             InstanceNumber = 100*DICOMHEADERS{l}.SeriesNumber + DICOMHEADERS{l}.EchoNumbers;
+    %             if all(InstanceNumbers ~= InstanceNumber)
+    %                 InstanceNumbers(end+1) = InstanceNumber;
+    %                 DCMnumbers = [DCMnumbers l];
+    %             end
+    %         end
+    %         [junk, so] = sort(InstanceNumbers);
+    %         dicomheader={DICOMHEADERS{DCMnumbers(so)}};
+    %     end
 end
 
 if numel(dicomheader) == 1
