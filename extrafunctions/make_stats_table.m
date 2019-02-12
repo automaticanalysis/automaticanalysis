@@ -117,7 +117,7 @@ if (~isempty(fname))
 	[p,n,~] = fileparts(fname);
 	fname = fullfile(p,[n '.jpg']);
 
-	print(hreg, '-djpeg', '-r200', fname);
+	print(hreg, '-djpeg', '-r200', fname, '-noui');
 
 	close(hreg);
 
