@@ -48,26 +48,31 @@ if ismac
 	
 	% limits
 
-	[ status, result ] = system('ulimit -m');
-	
-	result = deblank(result);
-	
-	if strcmp(result,'unlimited')
-		M.ResLimit = Inf;
-	else
-		M.ResLimit = str2double(result);
-	end
+    try
+        [ status, result ] = system('ulimit -m');
+        result = deblank(result);
+        if strcmp(result,'unlimited')
+            M.ResLimit = Inf;
+        else
+            M.ResLimit = str2double(result);
+        end
+    catch
+        fprintf('ulimit not available, defaulting to inf\n');
+        M.ResLimit = Inf;
+    end
 
-	[ status, result ] = system('ulimit -v');
-	
-	result = deblank(result);
-	
-	if strcmp(result,'unlimited')
-		M.VirtLimit = Inf;
-	else
-		M.VirtLimit = str2double(result);
-	end
-		
+    try
+        [ status, result ] = system('ulimit -v');
+        result = deblank(result);
+        if strcmp(result,'unlimited')
+            M.VirtLimit = Inf;
+        else
+            M.VirtLimit = str2double(result);
+        end
+    catch
+        M.VirtLimit = Inf;
+    end
+    
 	% process
 	
 	% assuming ps returns results in KB
@@ -101,13 +106,24 @@ else
 
 	% limits
 
-	[junk, out] = aas_shell('ulimit -m',true); out = deblank(out);
-	if strcmp(out,'unlimited'), dat = Inf;
-	else dat = str2double(out); end
+    try
+        [junk, out] = aas_shell('ulimit -m',true);
+        out = deblank(out);
+        if strcmp(out,'unlimited'), dat = Inf;
+        else dat = str2double(out); end
+    catch
+        fprintf('ulimit not available, defaulting to inf\n');
+        dat = Inf;
+    end
 	M.ResLimit = dat;
-	[junk, out] = aas_shell('ulimit -v',true); out = deblank(out);
-	if strcmp(out,'unlimited'), dat = Inf;
-	else dat = str2double(out); end
+
+    try
+        [junk, out] = aas_shell('ulimit -v',true);
+        out = deblank(out);
+        if strcmp(out,'unlimited'), dat = Inf;
+        else dat = str2double(out); end
+    catch
+        dat = Inf;
 	M.VirtLimit = dat;
 
 	% process
