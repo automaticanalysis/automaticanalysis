@@ -25,6 +25,9 @@ switch task
         series = series{sess};
         
         %% Process
+        sesspth=aas_getsesspath(aap,subj,sess);
+        aas_makedir(aap,sesspth);
+
         % Files
         headerFn ='';
         imageFn = series;
@@ -47,8 +50,8 @@ switch task
         comp = false;
         if any(strcmp(spm_file(niftifile,'Ext'),'gz'))
             comp = true;
-            gunzip(niftifile{1});
-            niftifile{1} = niftifile{1}(1:end-3);
+            gunzip(niftifile{1},fullfile(sesspth,'temp'));
+            niftifile{1} = spm_file(niftifile{1}(1:end-3),'path',fullfile(sesspth,'temp'));
         end
         
         % Header
@@ -73,8 +76,6 @@ switch task
         finalepis={};
         V = spm_vol(niftifile); 
         if iscell(V), V = cell2mat(V); end
-        sesspth=aas_getsesspath(aap,subj,sess);
-        aas_makedir(aap,sesspth);
         fle = spm_file(niftifile,'basename');
         ext = spm_file(niftifile,'Ext');
         for fileind=1:numel(V)
@@ -115,8 +116,7 @@ switch task
             aap=aas_makedir(aap,dummypath);
             for d=1:numdummies
                 cmd=['mv ' finalepis{d} ' ' dummypath];
-                [pth, nme, ext]=fileparts(finalepis{d});
-                dummylist=char(dummylist,fullfile('dummy_scans',[nme ext]));
+                dummylist=strvcat(dummylist,fullfile(dummypath, spm_file(finalepis{d},'filename')));
                 [s, w]=aas_shell(cmd);
                 if (s)
                     aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n\n%s',finalepis{d},dummypath,w));
@@ -140,7 +140,7 @@ switch task
             spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
         % And describe outputs
-        if comp, delete(niftifile{1}); end
+        if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
         aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
         dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');

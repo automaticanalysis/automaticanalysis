@@ -11,7 +11,7 @@ function hs = tsdiffplot(tdfn,fgs,flags, varargin)
 %              or selected via the GUI if not present
 
 if nargin < 1
-    tdfn = spm_get(1, 'timediff.mat', 'Select time diff information');
+    tdfn = spm_select(1, 'timediff.mat', 'Select time diff information');
 end
 if nargin < 2
     fgs = [];
@@ -66,9 +66,9 @@ sslicediff = qa.slice.diff/mom;
 slicemean_norm = qa.slice.mean - repmat(mean(qa.slice.mean,1),size(qa.slice.mean,1),1);
 
 datatoplot = {...
-    {@plot 2:imgno qa.global.diff/mom '-' 'Volume' 'Scaled variance'} {@imagesc 1:imgno 1:zno slicemean_norm' 'Volume' 'Scaled mean slice intensity'};...
-    {@plot 2:imgno sslicediff '*' 'Volume' 'Slice by slice variance'} {@imagesc 2:imgno-1 1:zno log(qa.slice.fft)' 'Number of cycles in timecourse' 'FFT of slice intensity [log]'};...
-    {@plot 1:imgno qa.global.mean/mom '-' 'Volume' 'Scaled mean voxel intensity'} {@plot 2:imgno-1 log(qa.global.fft) '-' 'Number of cycles in timecourse' 'FFT of mean intensity [log]'};...
+    {{@plot}              2:imgno       qa.global.diff/mom  '-' 'Volume' 'Scaled variance'}              {{@imagesc @colorbar} 1:imgno     1:zno slicemean_norm'             'Volume' 'Scaled mean slice intensity'};...
+    {{@imagesc @colorbar} 2:imgno 1:zno sslicediff'             'Volume' 'Scaled slice variance'}        {{@imagesc @colorbar} 2:imgno-1   1:zno log(qa.slice.fft)'          'Number of cycles in timecourse' 'FFT of slice intensity [log]'};...
+    {{@plot}              1:imgno       qa.global.mean/mom  '-' 'Volume' 'Scaled mean voxel intensity'}  {{@plot}              2:imgno-1         log(qa.global.fft)      '-' 'Number of cycles in timecourse' 'FFT of mean intensity [log]'};...
     };
 
 
@@ -81,15 +81,15 @@ for m = 1:size(datatoplot,2)
     
     for p = 1:size(datatoplot,1)
         h1 = axes('position', [.1 1-(.7+p-1)/subpno .6958 .65*1/subpno]);
-        h2 = datatoplot{p,m}{1}(datatoplot{p,m}{2:4});
+        h2 = datatoplot{p,m}{1}{1}(datatoplot{p,m}{2:4});
         axis([0.5 imgno+0.5 -Inf Inf]);
         set(h1,'xtick',dxt);
         xlabel(datatoplot{p,m}{5});
         ylabel(datatoplot{p,m}{6});
-        if strcmp(func2str(datatoplot{p,m}{1}),'imagesc')
-            colormap('jet')
+        if strcmp(func2str(datatoplot{p,m}{1}{1}),'imagesc'), colormap('jet'); end
+        if numel(datatoplot{p,m}{1}) > 1
             pos = get(h1,'position');
-            colorbar;
+            datatoplot{p,m}{1}{2}();
             set(h1,'position',pos);
         end
         hs  = [hs; h2];
@@ -100,16 +100,11 @@ for m = 1:size(datatoplot,2)
         mx = max(sslicediff);
         mn = min(sslicediff);
         avg = mean(sslicediff);
-        h2 = plot(avg, 'k');
-        axis([0 zno+1 -Inf Inf]);
-        hold on
-        h3 = plot(mn, 'b');
-        h4 = plot(mx, 'r');
-        hold off
+        h2 = errorbar(1:zno,avg,mn-avg,mx-avg,'r*','MarkerEdgeColor','k');
         xlabel('Slice');
         ylabel('Slice variance');
-        legend('Mean','Min','Max','Location','Best');
-        hs  = [hs; h2; h3; h4];
+        legend(sprintf('Mean\nMin-Max'),'Location','Best');
+        hs  = [hs; h2];
     end
     
     % realignment params

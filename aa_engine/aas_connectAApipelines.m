@@ -66,38 +66,35 @@ function aap = aas_connectAApipelines(aap, remoteAAlocations)
 %
 % -------------------------------------------------------
 % created by:  cwild 2014-03-10
-%
-% updates:
-%
-% rhodri & cwild 2014-09-*: Update to allow fully qualified stream names in
-% local and remote analyses. E.g., using aamod_realign_00001.epi to fetch
-% the epi stream from the realign stage of a remote analysis, instead of
-% the last occurence of epi.
-% cwild 2014-09-09: output/input stream searching respects branches in the
-% local and remote analyses.
-% cwild 2014-04-02: Major update, added check for udpated data on the
-% remote
-% cwild 2014-03-18: misc cleaning
-%
 
 % Error checking:
 if isempty(aap.acq_details.subjects)
     aas_log(aap, 1, 'aas_connectAApipelines() should be used after you have added subjects in your user script.');
 end
-
 if isempty(aap.acq_details.sessions)
     aas_log(aap, 1, 'aas_connectAApipelines() should be used after you have added sessions in your user script.');
 end
-
 if any(~isfield(remoteAAlocations, {'host', 'directory', 'allowcache', 'maxstagetag', 'checkMD5'}))
     aas_log(aap, 1, 'remoteAAlocations (input to aas_connectAApipelines) should be a struct array with the following fields: ''host'', ''directory'', ''allowcache'', ''maxstagetag'' ''checkMD5''');
 end
 
 global aaworker;
 
-% We need to transfer over the remote AAP files, will put them here
-studyPath = aas_getstudypath(aap);
+% We need study directory for aas_findinputstreamsources and to transfer over the remote AAP files
+studyPath = fullfile(aas_getstudypath(aap),[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix]);
 aas_makedir(aap, studyPath);
+
+% Initialise aap
+% - evaluate subject names
+aap=aas_doprocessing_initialisationmodules(aap);
+% - integrate initial streams into the pipelines, if any
+aap=aas_builddependencymap(aap);
+v0 = aap.options.verbose;
+aap.options.verbose = -1; % mute error on missing streams, for they will be connected later
+aap=aas_findinputstreamsources(aap);
+aap.options.verbose = v0;
+% - remove partial initialisation
+aap = rmfield(aap,'internal');
     
 % Collect remote AA structures here
 remoteAA = {};
@@ -284,6 +281,8 @@ for modI = 1 : length(aap.tasklist.main.module)
                     srcDomain = remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.domain;
                     srcModality = remoteAA{remoteOutput.locI}.schema.tasksettings.(remoteModule.name)(remoteModule.index).ATTRIBUTE.modality;
                     
+                   if strcmp(trgDomain,'*'), trgDomain = srcDomain; end % for general purpose modules, such as aamod_maths
+                    
                     remoteStreams(end+1) = struct('stream',       inputStreams{iI}, ...
                         'stagetag',     aas_getstagetag(remoteAA{remoteOutput.locI}, remoteOutput.modI), ...
                         'sourcedomain', srcDomain, ...
@@ -401,9 +400,11 @@ for modI = 1 : length(aap.tasklist.main.module)
                 else
                     
                     if isstruct(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}) && ...
-                            isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') && ...
-                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential
-                        aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this AA, or from one of your remote locations.\nTry connecting the AA pipelines *after* all aas_addinitialstream() calls in your user script.', mod.name, inputStreams{iI}));
+                            (~isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}, 'isessential') || ...
+                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.isessential) && ...
+                            (~isfield(aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE, 'isessential') || ...
+                            aap.schema.tasksettings.(mod.name)(mod.index).inputstreams.stream{iI}.ATTRIBUTE.isessential)
+                        aas_log(aap, 1, sprintf('%s''s input stream ''%s'' does not come from any module in this pipeline, or from one of your remote locations.\nTry connecting the pipelines *after* all aas_addinitialstream() and aas_renamestream() calls in your user script.', mod.name, inputStreams{iI}));
                     end
                     
                 end

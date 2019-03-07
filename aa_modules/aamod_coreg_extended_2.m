@@ -164,7 +164,7 @@ switch task
         %% Describe the outputs and Diagnostics
         
         if strcmp(aap.options.wheretoprocess,'localsingle')
-            aas_checkreg(aap,domain,cell2mat(varargin),diagstream,'structural');
+            aas_checkreg(aap,domain,cell2mat(varargin),mEPIimg,'structural');
             for m = 1:numel(mainstream)
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
             end
@@ -179,7 +179,7 @@ switch task
         end
         
     case 'checkrequirements'
-        aas_log(aap,0,'No need to trim or skull strip structural\n' );
+
 end
 end
 

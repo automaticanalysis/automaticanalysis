@@ -433,6 +433,10 @@ if (strcmp(aap.directory_conventions.remotefilesystem,'none'))
     aapsavefn=fullfile(aapsavepth,'aap_parameters');
     aap.internal.aapversion=aa.Version;
     aap.internal.aappath=aa.Path;
+    aap.internal.spmversion=spm('Version');
+    aap.internal.spmpath=spm('Dir');
+    aap.internal.matlabversion=version;
+    aap.internal.matlabpath=matlabroot;
     save(aapsavefn,'aap');
 end
 end

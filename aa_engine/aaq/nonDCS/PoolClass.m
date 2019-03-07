@@ -4,6 +4,9 @@ classdef PoolClass < handle
         JobStorageLocation
         Jobs = JobClass.empty
         
+        Host = getenv('HOSTNAME')
+        NumWorkers
+        
         reqMemory = 1
         reqWalltime = 1
         initialConfiguration = ''
@@ -51,6 +54,7 @@ classdef PoolClass < handle
             
             obj.Type = pool.Type;
             obj.JobStorageLocation = pool.JobStorageLocation;
+            obj.NumWorkers = pool.NumWorkers;
             
             switch obj.Type
                 case 'Torque'

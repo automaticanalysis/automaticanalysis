@@ -21,9 +21,9 @@ switch task
             case 'study'
                 localroot = aas_getstudypath(aap);
                 setenv('SUBJECTS_DIR', localroot)
-                system(sprintf('ln -s %s/subjects/fsaverage %s/fsaverage',getenv('FREESURFER_HOME'),localroot));
-                system(sprintf('ln -s %s/subjects/lh.EC_average %s/lh.EC_average',getenv('FREESURFER_HOME'),localroot));
-                system(sprintf('ln -s %s/subjects/rh.EC_average %s/rh.EC_average',getenv('FREESURFER_HOME'),localroot));
+                system(sprintf('ln -s %s/subjects/fsaverage %s/fsaverage',aap.directory_conventions.freesurferdir,localroot));
+                system(sprintf('ln -s %s/subjects/lh.EC_average %s/lh.EC_average',aap.directory_conventions.freesurferdir,localroot));
+                system(sprintf('ln -s %s/subjects/rh.EC_average %s/rh.EC_average',aap.directory_conventions.freesurferdir,localroot));
                 subjname = 'fsaverage';
                 aas_makedir(aap,fullfile(localroot,aap.directory_conventions.structdirname));
                 % get template try FSL's
@@ -65,7 +65,7 @@ switch task
         resliceflags = aap.spm.defaults.coreg.write;
         resliceflags.interp = aap.tasklist.currenttask.settings.interp;
         resliceflags.which = [1 0];
-        srcwfs = '';
+        srcwfs = {};
         for i = 1:numel(srcstream)
             fsrc = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain, indices, srcstream{i}); 
             for f = 1:size(fsrc,1)
@@ -79,9 +79,9 @@ switch task
                 if FWHM, FScommand = [FScommand sprintf(' --surf-fwhm %d',FWHM)]; end            
                 [s, w] = aas_runFScommand(aap,FScommand);
                 %% Output stream
-                srcwfs(end+1,:) = [strrep(src,[localroot '/'],'') '2FS_rh.mgh'];
-                srcwfs(end+1,:) = [strrep(src,[localroot '/'],'') '2FS_lh.mgh'];
+                srcwfs{end+1} = [strrep(src,[localroot '/'],'') '2FS_rh.mgh'];
+                srcwfs{end+1} = [strrep(src,[localroot '/'],'') '2FS_lh.mgh'];
             end
-            aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,[srcstream{i} '_FS'],srcwfs);
+            aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,[srcstream{i} '_FS'],char(srcwfs));
         end
 end

@@ -23,8 +23,8 @@ switch task
     case 'report'
 		
         % collect contrast names and prepare summary
-		
-        cons = [aap.tasksettings.aamod_firstlevel_contrasts(aap.tasklist.currenttask.index).contrasts(2:end).con];
+        contrasts = aas_getsetting(aas_setcurrenttask(aap,aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(1).sourcenumber),'contrasts');
+        cons = [contrasts(2:end).con];
         conNames = {cons.name};
         [~,a] = unique(conNames,'first');
         conNames = conNames(sort(a));

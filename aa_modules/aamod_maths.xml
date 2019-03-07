@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
+        <!-- domain is set in aas_findinputstreamsources -->
         <currenttask domain='*' desc='Performing mathematical operations' modality='MRI'>
             
             <qsub>

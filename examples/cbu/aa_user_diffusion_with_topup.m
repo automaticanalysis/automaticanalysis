@@ -24,8 +24,8 @@ SUBJ = {...
 %  Default recipe without model
 aap=aarecipe('aap_tasklist_diffusion_with_topup.xml');
 
-aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','normalised_grey','normalised_white');
-aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','native_grey','native_white','output');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','normalised_white', 'input');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','native_white','output');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub

@@ -46,14 +46,14 @@ switch task
                 %% A) Zero thresholding is easy...
                 for a = 1:size(segimg,1)
                     Y{a} = Y{a} > 0;
-
+                    
                     V{a}.fname = spm_file(segimg(a,:),'prefix','Z_r');
                     outstream = strvcat(outstream, V{a}.fname); % Save to stream...
                     spm_write_vol(V{a}, Y{a});
                     
                     aas_log(aap,false,sprintf('Zero thresholded image %s sums up to %d vox', ...
                         V{a}.fname, sum(Y{a}(:))))
-                end                
+                end
             case 'exclusive'
                 %% C) Exclusive thresholding of masks:
                 % Any particular voxel has greatest chance of being...
@@ -89,9 +89,25 @@ switch task
                     
                     aas_log(aap,false,sprintf('Strict thresholded image %s sums up to %d vox', ...
                         V{a}.fname, sum(Y{a}(:))))
-                end                       
+                end
         end
         
-        %% DIFFERENT STREAMS FOR DIFFERENT
+        %% OUTPUT
+        outStreams = aas_getstreams(aap,'output');
+        for a = 1:numel(inStreams)-1 % not for reference
+            aap = aas_desc_outputs(aap,subj,outStreams{a},outstream(a,:));
+        end
         aap = aas_desc_outputs(aap,subj,'segmasks',outstream);
+    case 'checkrequirements'
+        in = aas_getstreams(aap,'input'); in(1) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            if ~strcmp(out{s},[in{s} '_mask'])
+                instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},[instream '_mask'],'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' [instream '_mask'] '''']);
+            end
+        end
 end

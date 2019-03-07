@@ -80,7 +80,6 @@ for subdirind=1:length(subdirs)
     memLimit = meminfo; memLimit = memLimit.ResFree;
     k=1;
     
-    
     while (k<=size(dicomdata_subdir,1))
         
         oldAcquisitionNumber=-1;
@@ -90,7 +89,7 @@ for subdirind=1:length(subdirs)
         % This array is used to collect sliceing timing info so we can
         % reconstruct the slice order
         sliceInfoD = zeros(0, 3);
-        
+
         while (k<=size(dicomdata_subdir,1))
             
             tmp = spm_dicom_headers(deblank(dicomdata_subdir(k,:)));
