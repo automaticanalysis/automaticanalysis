@@ -38,6 +38,7 @@ toolsdir = [aap.directory_conventions.spmdir, toolsdir',...
     aap.directory_conventions.DCMTKdir,...
     aap.directory_conventions.templatedir...
     }];
+toolsdir = toolsdir(cellfun(@(x) ~isempty(x), toolsdir));
 toolsdir = mcc_a(toolsdir);
 
 aas_makedir(aap,outdir);
@@ -56,8 +57,8 @@ try
         '-a',aap.directory_conventions.spmdir,...
         toolsdir{:},...
         'aa_standalone.m');
-catch
-    warning('Error during compilation!')
+catch E
+    warning(E.identifier,'Error during compilation: %s\nSetting the environmental variable MCC_USE_DEPFUN to 1 before launching MATLAB may solve the issue.',E.message)
 end
 
 aa_close(aap);
