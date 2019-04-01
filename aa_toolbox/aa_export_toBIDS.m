@@ -94,9 +94,9 @@ if isfield(aap.directory_conventions,'BIDSfiles') && ~isempty(aap.directory_conv
 	if exist(bidsdir,'dir')
 		success = ~system(sprintf('cp %s/* %s', bidsdir, destpath));
 		% these three files are compulsory
-		if ~exists(fullfile(destpath,'dataset_description.json'),'file'); success=0; end
-		if ~exists(fullfile(destpath,'README'),'file'); success=0; end
-		if ~exists(fullfile(destpath,'CHANGES'),'file'); success=0; end
+		if ~exist(fullfile(destpath,'dataset_description.json'),'file'); success=0; end
+		if ~exist(fullfile(destpath,'README'),'file'); success=0; end
+		if ~exist(fullfile(destpath,'CHANGES'),'file'); success=0; end
 	end
 end
 
@@ -221,13 +221,14 @@ for subj = 1:numel(aap.acq_details.subjects)
                 aas_log(aap,false,'WARNING: No image is available!')
                 continue;
             end
-
+            
+            src = src_main;
             if any(strcmp(aas_getstreams(aap,'output'),'dummyscans'))
-                src = spm_file(tempname,'ext','nii');
                 src_dummy = aas_getfiles_bystream(aap,'session',[subj sess],'dummyscans','output');
-                spm_file_merge(char(src_dummy,src_main),src);
-            else
-                src = src_main;
+                if ~isempty(src_dummy)
+                    src = spm_file(tempname,'ext','nii');
+                    spm_file_merge(char(src_dummy,src_main),src);
+                end
             end
             fhdr = aas_getfiles_bystream(aap,'session',[subj sess],'epi_dicom_header','output');
             
@@ -240,13 +241,14 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'func')); 
             dest = fullfile(subjpath,'func',sprintf('%s_task-%s_bold.nii',suboutname,valueValidate(taskname)));
             if isRun, dest = strrep(dest,'bold.nii',sprintf('run-%d_bold.nii',runNo)); end
-            copyfile(src,dest); gzip(dest); delete(dest); if exist('src_dummy','var'), delete(src); clear src_dummy; end
+            copyfile(src,dest); gzip(dest); delete(dest); if exist('src_dummy','file'), delete(src_dummy); clear src_dummy; end
             
             % header
             loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
             if isempty(fieldnames(hdr))
                 aas_log(aap,false,'WARNING: No header information is available!')
             else
+            if iscell(hdr), hdr = hdr{1}; end; hdr = hdr(1);
                 json = struct(...
                     'RepetitionTime',hdr.volumeTR,...
                     'EchoTime',hdr.volumeTE,...
