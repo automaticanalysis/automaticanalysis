@@ -21,10 +21,10 @@
             <protocol_structural ui='text'>t1_mpr</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/psycapps/spm/spm12-r7219</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/usr/local/apps/psycapps/spm/spm12-r7487</spmdir>
             <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'>/usr/local/apps/psycapps/CoSMoMVPA/CoSMoMVPA-1.1.0/mvpa</spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-5.0.10</fsldir>
+            <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash 5.0.10</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
