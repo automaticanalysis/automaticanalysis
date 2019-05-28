@@ -241,8 +241,7 @@ for subj = 1:numel(aap.acq_details.subjects)
             aas_makedir(aap,fullfile(subjpath,'func')); 
             dest = fullfile(subjpath,'func',sprintf('%s_task-%s_bold.nii',suboutname,valueValidate(taskname)));
             if isRun, dest = strrep(dest,'bold.nii',sprintf('run-%d_bold.nii',runNo)); end
-            copyfile(src,dest); gzip(dest); delete(dest); if exist('src_dummy','file'), delete(src_dummy); clear src_dummy; end
-            
+            copyfile(src,dest); gzip(dest); delete(dest); if (exist('src_dummy','var') && ~isempty(src_dummy)), delete(src); clear src_dummy; end       
             % header
             loaded = load(fhdr); hdr = loaded.DICOMHEADERS{1};
             if isempty(fieldnames(hdr))
