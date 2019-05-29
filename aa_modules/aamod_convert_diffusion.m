@@ -96,8 +96,14 @@ switch task
             end
         elseif all(isfield(DICOMHEADERS{1},{'Private_0019_10bb' 'Private_0019_10bc' 'Private_0019_10bd'})) % GE
             isb = cellfun(@(x) isfield(x,'DiffusionBValue'), DICOMHEADERS);
-            bvals(1:numel(DICOMHEADERS)) = DICOMHEADERS{find(isb,1,'first')}.DiffusionBValue;
-            bvals(~isb) = 0;
+            if any(isb)
+                bvals(1:numel(DICOMHEADERS)) = DICOMHEADERS{find(isb,1,'first')}.DiffusionBValue;
+                bvals(~isb) = 0;
+            elseif isfield(DICOMHEADERS{1},'Private_0043_1039') % Signa Excite 12.0 or later
+                bvals = cellfun(@(x) x.Private_0043_1039(1), DICOMHEADERS);
+            else
+                aas_log(aap,true,'No field for b-value found!')
+            end
             
             bvecs = cell2mat(cellfun(@(x) [x.Private_0019_10bb; x.Private_0019_10bc; x.Private_0019_10bd], DICOMHEADERS,'UniformOutput', false))';
             

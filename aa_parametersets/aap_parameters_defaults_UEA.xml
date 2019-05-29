@@ -27,7 +27,7 @@
             <spmtoolsdir desc='Path(s) to SPM tools (colon separated list)' ui='dir'></spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/gpfs/software/fsl/5.0.10</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/gpfs/home/ryb17eeu/imaging_pipelines/bin/fsl_bash</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/gpfs/software/freesurfer/6.0</freesurferdir>        
