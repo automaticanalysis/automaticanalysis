@@ -11,17 +11,9 @@ function [aap,resp]=aamod_listspikes(aap,task,subj,sess)
 resp='';
 
 switch task
-    case 'domain'
-        resp='session';   % this module needs to be run once per session
-    case 'description'
-        resp='Run list spikes';
-    case 'summary'
-        resp='List spikes\n';
     case 'report'
-        dirn = aas_getsesspath(aap,i,j);
-        spfn = fullfile(dirn,'spikesandmoves.mat');
-        load(spfn);
-        aap.report.html=strcat(aap.report.html,sprintf('Spikes %d   Moves %d<br>',size(spikes,1),size(moves,1)));
+        spl = load(aas_getfiles_bystream(aap,subj,sess,'listspikes'));
+        aap.report.html=strcat(aap.report.html,sprintf('Spikes %d   Moves %d<br>',size(spl.TSspikes,1),size(spl.Mspikes,1)));
     case 'doit'
         
         subjname = aas_prepare_diagnostic(aap,subj);
@@ -34,8 +26,8 @@ switch task
         % spm_realign.
         
         % Load the movement parameters
-        rp = aas_getfiles_bystream(aap,subj,sess,'realignment_parameter'); % aas_movPars(aap,subj, [1 0 0; 0 0 0]);
-        rp = spm_load(rp);
+        Mfn = cellstr(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter')); % aas_movPars(aap,subj, [1 0 0; 0 0 0]);
+        rp = spm_load(Mfn{strcmp(spm_file(Mfn, 'ext'),'txt')});
         nsess = length(aap.acq_details.sessions);
         
         
@@ -43,7 +35,7 @@ switch task
         tdfn = aas_getimages_bystream(aap,subj,sess,'tsdiffana');
         
         try
-            load (tdfn, 'td', 'globals', 'slicediff');
+            qa = load (tdfn);
         catch
             aas_log(aap,1,sprintf('%s not found: Please run tsdiffana first',tdfn));
         end
@@ -52,10 +44,10 @@ switch task
         rotlimit_radians=aap.tasklist.currenttask.settings.rotlimit_degrees*pi/180;
         
         %% Now find big changes from one image to the next
-        %  td = mean (across voxels) of square difference between one volume and the next
-        %  globals = mean global value across an image
+        %  qa.qa.global.diff = mean (across voxels) of square difference between one volume and the next
+        %  qa.qa.global.mean = mean global value across an image
         
-        tm = td/(mean(globals).^2); % RC/KM added .^2 16/6/2008
+        tm = qa.qa.global.diff/(mean(qa.qa.global.mean).^2); % RC/KM added .^2 16/6/2008
         
         switch aap.tasklist.currenttask.settings.tmbaseline
             case 'zero'
@@ -85,7 +77,7 @@ switch task
         
         badimages=[false; (Rtm > tmlimit)];
         
-        TSspikes=[find(badimages),tm(badimages(2:end)),slicediff(badimages(2:end))];
+        TSspikes=[find(badimages),tm(badimages(2:end)),qa.qa.slice.diff(badimages(2:end))];
         
         %% Now find big movements
         % shift to sync with scan number
