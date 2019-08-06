@@ -69,8 +69,10 @@ switch task
         % add contrasts for each task regressor v baseline?
         if settings.eachagainstbaseline
             if isempty(contrasts), contrasts(1).subject = aas_getsubjname(aap,subj); end
-            basev = zeros(1,min(numel(SPM.Sess(1).col),numel(SPM.xX.iC)));
-            for conind = 1:length(basev)
+            basev = zeros(1,numel(SPM.xX.name));
+            if any(cellfun(@(x) ~isempty(regexp(x,'.*constant$')), SPM.xX.name)), basev(end) = []; end
+            for conind = 1:numel(SPM.xX.name)
+                if any(cellfun(@(x) ~isempty(regexp(SPM.xX.name{conind},sprintf('.*%s$',x))), {'x' 'y' 'z' 'r' 'p' 'j' 'constant'})), continue; end
                 newv = basev;
                 newv(conind) = 1;
                 contrasts.con(end+1)= struct(...
@@ -78,7 +80,7 @@ switch task
                     'vector',newv,...
                     'session',[],...
                     'type','T',...
-                    'name',sprintf('%s-o-baseline',SPM.xX.name{SPM.xX.iC(conind)})...
+                    'name',sprintf('%s-o-baseline',SPM.xX.name{conind})...
                     );
             end
         end
