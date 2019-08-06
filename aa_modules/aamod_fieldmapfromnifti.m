@@ -16,10 +16,10 @@ switch task
         end;
         niftistruct = [];
         % try session-specific --> visit-specific --> rest
-        d = aas_get_series(aap,'functional',subj,sess);
+        d = aas_get_series(aap,strtok(aas_getsesstype(aap),'_'),subj,sess);
         fieldmaps = [aap.acq_details.subjects(subj).fieldmaps(d:end) aap.acq_details.subjects(subj).fieldmaps(1:d-1)];
         for n = horzcat(fieldmaps{:})
-            if strcmp(n{1}.hdr.session,aap.acq_details.sessions(sess).name) || strcmp(n{1}.hdr.session,'*'), niftistruct = n{1}; end
+            if any(strcmp(n{1}.session,aap.acq_details.([aas_getsesstype(aap) 's'])(sess).name)) || strcmp(n{1}.session,'*'), niftistruct = n{1}; end
         end
         if isempty(niftistruct), aas_log(aap,true,sprintf('ERROR: No fieldmap found for session %s',aap.acq_details.sessions(sess).name)); end
 
@@ -43,28 +43,36 @@ switch task
             
             aas_makedir(aap,fullfile(sesspth,sprintf('serie%02d',f)));
             V=spm_vol(niftifile{f});
-            Y=spm_read_vols(V(1));
-            V.fname = spm_file(niftifile{f},'path',fullfile(sesspth,sprintf('serie%02d',f)));
-            spm_write_vol(V,Y);
-            fn{f} = V.fname;
+            for iV = V'
+                Y=spm_read_vols(iV);
+                iV.fname = spm_file(niftifile{f},'path',fullfile(sesspth,sprintf('serie%02d',f)));
+                spm_write_vol(iV,Y);
+            end
+            fn{f} = iV.fname;
             
             if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         end
-        aap=aas_desc_outputs(aap,'session',[subj sess],'fieldmap',char(fn));
+        aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],'fieldmap',char(fn));
         
         %% header
-        if ischar(hdrfile), hdrfile = loadjson(hdrfile); end
-        % convert timings to ms (DICOM default)
-        for f = fieldnames(hdrfile)'
-            if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+        switch spm_file(hdrfile,'Ext')
+            case 'mat'
+                dat = load(hdrfile);
+                dcmhdr = dat.dcmhdr;
+            case 'json'
+                hdrfile = loadjson(hdrfile);
+                % convert timings to ms (DICOM default)
+                for f = fieldnames(hdrfile)'
+                    if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+                end
+                if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
+                if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
         end
-        if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
-        if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
         
         %% Output
         dcmhdrfn=fullfile(aas_getsesspath(aap,subj,sess),'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
-        aap=aas_desc_outputs(aap,'session',[subj sess],'fieldmap_dicom_header',dcmhdrfn);
+        aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],'fieldmap_dicom_header',dcmhdrfn);
         
     case 'checkrequirements'
         

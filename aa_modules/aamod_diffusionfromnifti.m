@@ -27,12 +27,14 @@ switch task
         finalepis={}; 
         % Files
         niftifile = series.fname;
+        headerfile = series.hdr;
         bvalfile = series.bval;
         bvecfile = series.bvec;
         if ~exist(niftifile,'file') % assume path realtive to (first) rawdatadir
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
-                niftifile = fullfile(niftisearchpth,imageFn);
+                niftifile = fullfile(niftisearchpth,niftifile);
+                headerfile = fullfile(niftisearchpth,headerfile);
                 bvalfile = fullfile(niftisearchpth,bvalfile);
                 bvecfile = fullfile(niftisearchpth,bvecfile);
             end
@@ -61,6 +63,29 @@ switch task
             fprintf(fid,'\n');
         end
         fclose(fid);
+        
+        % Header
+        DICOMHEADERS{1} = struct;
+        if ~isempty(headerfile)
+            if strcmp(spm_file(headerfile,'Ext'),'mat')
+                dat = load(headerfile);
+                DICOMHEADERS = dat.DICOMHEADERS;
+            else
+                switch spm_file(headerfile,'Ext')
+                    case 'dcmhdr'
+                        DICOMHEADERS{1} = header_dcmhdr(headerfile);
+                    case 'json'
+                        DICOMHEADERS{1} = header_json(headerfile); % BIDS
+                end
+                DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
+                DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
+                DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
+                [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
+                DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
+            end
+        else
+            aas_log(aap,false,'WARNING: No header provided!');
+        end 
         
         % Image
         V = spm_vol(niftifile);
@@ -112,6 +137,9 @@ switch task
         if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         aap=aas_desc_outputs(aap,domain,indices,'diffusion_data',finalepis);
+        dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
+        save(dcmhdrfn,'DICOMHEADERS');
+        aap=aas_desc_outputs(aap,domain,indices,'diffusion_dicom_header',dcmhdrfn);
         aap=aas_desc_outputs(aap,domain,indices,'bvals',bvals_fn);
         aap=aas_desc_outputs(aap,domain,indices,'bvecs',bvecs_fn);  
         

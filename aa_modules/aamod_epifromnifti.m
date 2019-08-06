@@ -57,17 +57,22 @@ switch task
         % Header
         DICOMHEADERS{1} = struct;
         if ~isempty(headerfile)
-            switch spm_file(headerfile,'Ext')
-                case 'dcmhdr'
-                    DICOMHEADERS{1} = header_dcmhdr(headerfile);
-                case 'json'
-                    DICOMHEADERS{1} = header_json(headerfile); % BIDS
+            if strcmp(spm_file(headerfile,'Ext'),'mat')
+                dat = load(headerfile);
+                DICOMHEADERS = dat.DICOMHEADERS;
+            else
+                switch spm_file(headerfile,'Ext')
+                    case 'dcmhdr'
+                        DICOMHEADERS{1} = header_dcmhdr(headerfile);
+                    case 'json'
+                        DICOMHEADERS{1} = header_json(headerfile); % BIDS
+                end
+                DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
+                DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
+                DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
+                [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
+                DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
             end
-            DICOMHEADERS{1}.volumeTR = DICOMHEADERS{1}.RepetitionTime/1000;
-            DICOMHEADERS{1}.volumeTE = DICOMHEADERS{1}.EchoTime/1000;
-            DICOMHEADERS{1}.slicetimes = DICOMHEADERS{1}.SliceTiming/1000;
-            [junk, DICOMHEADERS{1}.sliceorder] = sort(DICOMHEADERS{1}.slicetimes);
-            DICOMHEADERS{1}.echospacing = DICOMHEADERS{1}.EchoSpacing/1000;
         else
             aas_log(aap,false,'WARNING: No header provided!');
         end        
