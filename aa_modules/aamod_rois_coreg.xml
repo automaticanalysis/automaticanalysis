@@ -22,11 +22,11 @@
                 <stream isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
 				<stream isessential="0">aamod_realign_00001.meanepi</stream>  
                 <stream>rois_refvol</stream>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </outputstreams>
             
         </currenttask>

@@ -14,7 +14,7 @@
         <svd_tol>1e-6</svd_tol>
         
         <inputstreams>
-            <stream>rois</stream>
+            <stream isrenameable="1">rois</stream>
             <stream>MTR</stream>
         </inputstreams>
         <outputstreams>

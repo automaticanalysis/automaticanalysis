@@ -18,7 +18,7 @@
              
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
                 <stream isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
 				<stream isessential="0">aamod_realign_00001.meanepi</stream>  
@@ -26,7 +26,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </outputstreams>
             
         </currenttask>

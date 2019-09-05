@@ -14,11 +14,11 @@
                 <stream isessential="0" diagnostic="1">aamod_realign_00001.meanepi</stream>                
                 <stream>dartel_templatetomni_xfm</stream>
                 <stream>dartel_flowfield</stream>
-                <stream>rois</stream>                
+                <stream isrenameable="1">rois</stream>                
             </inputstreams>
             
             <outputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </outputstreams>            
         </currenttask>
     </tasklist>

@@ -13,11 +13,11 @@
                 <stream diagnostic="1">aamod_diffusion_dtinlfit_00001.dti_FA</stream>                
                 <stream>dartel_templatetomni_xfm</stream>
                 <stream>dartel_flowfield</stream>
-                <stream>rois</stream>                
+                <stream isrenameable="1">rois</stream>                
             </inputstreams>
             
             <outputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </outputstreams>            
         </currenttask>
     </tasklist>
