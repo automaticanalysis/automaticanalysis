@@ -6,11 +6,8 @@ if strcmp(aap.options.wheretoprocess,'aws')
 elseif ~isempty(aap.options.aaworkerroot)
     aapth = aap.options.aaworkerroot;
 else
-    username=spm('GetUser');
-    if strcmp(username,'anonymous')
-        [s, w]=system('whoami');
-        username=deblank(w);
-    end;
+    [s, w]=system('whoami');
+    username=deblank(w);
   
     if ispc
         aapth = getenv('USERPROFILE');
