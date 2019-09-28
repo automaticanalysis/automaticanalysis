@@ -74,13 +74,21 @@ switch task
                 
                 %% header
                 if ~isempty(hdrfile)
-                    if ischar(hdrfile), hdrfile = loadjson(hdrfile); end
-                    % convert timings to ms (DICOM default)
-                    for f = fieldnames(hdrfile)'
-                        if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
+                    switch spm_file(hdrfile,'Ext')
+                        case 'mat'
+                            dat = load(hdrfile);
+                            dcmhdr = dat.dcmhdr;
+                        case 'json'
+                            hdrfile = loadjson(hdrfile);
+                            % convert timings to ms (DICOM default)
+                            for f = fieldnames(hdrfile)'
+                                if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
+                            end
+                            if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
+                            if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
                     end
-                    if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
-                    if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
+                else
+                    aas_log(aap,false,'WARNING: No header provided!');
                 end
             end
             if aap.options.(['autoidentify' stream '_average'])
