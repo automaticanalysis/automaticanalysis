@@ -58,6 +58,15 @@ classdef aaq_qsub<aaq
                     obj.pool=parcluster(poolprofile);
                     
                     switch class(obj.pool)
+                        case 'parallel.cluster.Slurm'
+                            aas_log(obj.aap,false,'INFO: pool Slurm is detected');
+                            obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG, -t %d', aaparallel.memory,aaparallel.walltime*60);
+                            if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
+                                    ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
+                                obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+                            end
+                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
+                            aaparallel.numberofworkers = 1;
                         case 'parallel.cluster.Torque'
                             aas_log(obj.aap,false,'INFO: pool Torque is detected');
                             obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
@@ -228,6 +237,10 @@ classdef aaq_qsub<aaq
                     
                     switch JI.state
                         case 'pending'
+                            if isempty(JI.tic)
+                                JI.tic = tic; 
+                                obj.jobinfo([obj.jobinfo.JobID] == JI.JobID).tic = JI.tic;
+                            end
                             t = toc(JI.tic);
                             % aa to switch this on/off or extend the time? On very busy
                             % servers this might cause all jobs to be
