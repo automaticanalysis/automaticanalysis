@@ -22,6 +22,17 @@ switch task
         % header
         [aap niifiles DICOMHEADERS subdirs]=aas_convertseries_fromstream(aap,domain,indices,'dicom_diffusion');
         
+        if (numel(niifiles) > 1)
+            for fileind=1:numel(niifiles)
+                V(fileind)=spm_vol(niifiles{fileind});
+            end
+        else
+            temp=spm_vol(niifiles{1});
+            for fileind=1:numel(temp)
+                V(fileind)=temp(fileind);
+            end
+        end            
+        
         % Now move dummy scans to dummy_scans directory
         
         % From header of this module
@@ -36,27 +47,29 @@ switch task
         if ndummies
             dummypath=fullfile(domainpath,'dummy_scans');
             aap=aas_makedir(aap,dummypath);
-            for dummyind=1:ndummies
-                cmd=['mv ' niifiles{dummyind} ' ' dummypath];
-                [pth nme ext]=fileparts(niifiles{dummyind});
+            for d=1:ndummies
+                cmd=['mv ' niifiles{d} ' ' dummypath];
+                [pth nme ext]=fileparts(niifiles{d});
                 dummylist=strvcat(dummylist,fullfile('dummy_scans',[nme ext]));
                 [s w]=aas_shell(cmd);
                 if (s)
-                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',niifiles{dummyind},dummypath));
+                    aas_log(aap,1,sprintf('Problem moving dummy scan\n%s\nto\n%s\n',niifiles{d},dummypath));
                 end
             end
+        else
+            d = 0;
         end
-        niifiles = {niifiles{ndummies+1:end}};
-        DICOMHEADERS = {DICOMHEADERS{ndummies+1:end}};
+        niifiles = niifiles(d+1:end);
+        DICOMHEADERS = DICOMHEADERS(d+1:end);
+        
         % 4D conversion [TA]
-        for fileind=1:numel(niifiles)
-            V(fileind)=spm_vol(niifiles{fileind});
-        end
-        if isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
+
+        if numel(niifiles) > 1 && isfield(aap.options, 'NIFTI4D') && aap.options.NIFTI4D
             niifiles = niifiles{1};
             ind = find(niifiles=='-');
-            niifiles = [niifiles(1:ind(2)-1) '.nii'];
-			spm_file_merge(char({V.fname}),niifiles,0,DICOMHEADERS{1}.volumeTR);
+            if numel(ind) > 1, ind = ind(2); end
+            niifiles = [niifiles(1:ind(1)-1) '.nii'];
+            spm_file_merge(char({V(ndummies+1:end).fname}),niifiles,0,DICOMHEADERS{1}.volumeTR);
         end
         
         % bvals and bvecs based on Guy William's algorithm as implemented by Matthew Brett
@@ -64,7 +77,11 @@ switch task
         y_flipper = diag([1 -1 1]);
         
         % Get voxel to dicom rotation matrix
-        orient           = reshape(DICOMHEADERS{1}.ImageOrientationPatient,[3 2]);
+        if isfield(DICOMHEADERS{1},'ImageOrientationPatient')
+            orient           = reshape(DICOMHEADERS{1}.ImageOrientationPatient,[3 2]);
+        elseif isfield(DICOMHEADERS{1},'PerFrameFunctionalGroupsSequence') % Philips (stack)
+            orient           = reshape(DICOMHEADERS{1}.PerFrameFunctionalGroupsSequence{1}.PlaneOrientationSequence{1}.ImageOrientationPatient,[3 2]);
+        end
         orient(:,3)      = null(orient');
         if det(orient)<0, orient(:,3) = -orient(:,3); end;
         vox_to_dicom = orient;
@@ -112,7 +129,15 @@ switch task
             elseif strcmp(deblank(DICOMHEADERS{1}.InPlanePhaseEncodingDirection),'ROW')
                 bvecs(:,[1 2]) = bvecs(:,[2 1]); % swap row and col
             end
-            bvecs = cell2mat(arrayfun(@(x) vox_to_dicom\bvecs(x,:)', 1:size(bvecs,1),'UniformOutput',0))'; % rotate to scanner space            
+            bvecs = cell2mat(arrayfun(@(x) vox_to_dicom\bvecs(x,:)', 1:size(bvecs,1),'UniformOutput',0))'; % rotate to scanner space
+        elseif isfield(DICOMHEADERS{1},'PerFrameFunctionalGroupsSequence') % Philips (stack)
+            H = cell2mat(DICOMHEADERS{1}.PerFrameFunctionalGroupsSequence);
+            pos = cell2mat([H.FrameContentSequence]);
+            pos = reshape([pos.DimensionIndexValues],4,[])';
+            H = H(pos(:,2) == 1); % first slices
+            
+            bvals = arrayfun(@(x) x.MRDiffusionSequence{1}.DiffusionBValue, H);
+            bvecs(bvals~=0,:) = cell2mat(arrayfun(@(x) x.MRDiffusionSequence{1}.DiffusionGradientDirectionSequence{1}.DiffusionGradientOrientation', H(bvals~=0),'UniformOutput',false))';
         end        
         
         % Output final data
