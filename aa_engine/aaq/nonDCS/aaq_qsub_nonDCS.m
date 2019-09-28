@@ -15,23 +15,22 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                 obj.pool = [];
             else
                 poolprofile = obj.poolConf{1};
-                % assume aap.directory_conventions.poolprofile is a path to settings
-                if ~exist(poolprofile,'file')
-                    aas_log(obj.aap,false,'aap.directory_conventions.poolprofile is either not a file or cannot be found');
-                    return
-                else
+                if exist(poolprofile,'file') % assume aap.directory_conventions.poolprofile is a path to settings
                     xml = xml_read(poolprofile);
-                    pool.Type = xml.settings(2).settings.ATTRIBUTE.name;
+                    SchedulerSettings = xml.settings(arrayfun(@(x) strcmp(x.ATTRIBUTE.name,'schedulercomponents'), xml.settings)).settings;
+                    pool.Type = SchedulerSettings.ATTRIBUTE.name;
                     pool.JobStorageLocation =  aaworker.parmpath;
                     pool.ResourceTemplate = '';
                     pool.SubmitArguments = '';
                     pool.AdditionalProperties.AdditionalSubmitArgs = '';
-                    
-                    keyInd = arrayfun(@(x) strcmp(x.ATTRIBUTE.name,'NumWorkers'), xml.settings(2).settings.settings.key);
-                    pool.NumWorkers = xml.settings(2).settings.settings.key(keyInd).double.value;
+                    pool.NumWorkers = SchedulerSettings.settings.key(arrayfun(@(x) strcmp(x.ATTRIBUTE.name,'NumWorkers'), SchedulerSettings.settings.key)).double.value;
+                else
+                    aas_log(obj.aap,false,'aap.directory_conventions.poolprofile is either not a file or cannot be found');
+                    return
                 end
             end
             obj.pool = PoolClass(pool,obj.initialSubmitArguments,obj.poolConf{3});
+            obj.pool.Shell = aap.directory_conventions.linuxshell;
             obj.pool.reqMemory = aaparallel.memory;
             obj.pool.reqWalltime = aaparallel.walltime;
             obj.pool.NumWorkers = aaparallel.numberofworkers;
