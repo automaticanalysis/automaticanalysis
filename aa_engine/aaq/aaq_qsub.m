@@ -41,9 +41,14 @@ classdef aaq_qsub<aaq
             try
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
-                    conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':'); for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
+                    conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':');
+                    if numel(conf{1}) > 3 % ":" in the initial configuration command
+                        conf{1}{3} = sprintf('%s:%s',conf{1}{3:end});
+                        conf{1}(4:end) = [];
+                    end
+                    for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
                     [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
-                    
+
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
                         ppfname = which(spm_file(poolprofile,'ext','.settings'));
@@ -116,7 +121,7 @@ classdef aaq_qsub<aaq
         
         function close(obj)
             if ~isempty(obj.pool)
-                for j = 1:numel(obj.pool.Jobs)
+                for j = numel(obj.pool.Jobs):-1:1
                     obj.pool.Jobs(j).cancel;
                 end
             end

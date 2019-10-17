@@ -9,7 +9,7 @@ classdef aaq_qsub_nonDCS < aaq_qsub
             aap.options.verbose = -1; % disable error
             obj = obj@aaq_qsub(aap);
             obj.aap.options.verbose = v0;
-           
+
             if ~isempty(obj.pool)
                 pool = obj.pool;
                 obj.pool = [];
