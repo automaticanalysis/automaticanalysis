@@ -39,7 +39,7 @@
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/ta0015/imaging/software/FaceMasking</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
             <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/ta0015/imaging/software/config/Slurm.settings</poolprofile>
-		<mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uos@gmail.com:aamailer</mailerserver>
+		<mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uos@gmail.com:aam4il3r#</mailerserver>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            
