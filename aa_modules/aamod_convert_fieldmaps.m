@@ -38,25 +38,24 @@ switch task
                 aas_runfslcommand(aap,sprintf('bet2 %s %s -m -n -f 0.7',Vmag.fname,spm_file(Vmag.fname,'ext','')))
                 Ymag = spm_read_vols(spm_vol(spm_file(Vmag.fname,'suffix','_mask')));
                 toMask = true;
-
             else
                 aas_log(aap,true,sprintf('ERROR: Unhandled mismatch between volumes (n=%d) and header (n=%d).',numel(V),numel(dcmhdr)));
             end
-        end
                 
-        outstream = cell(0,0);
-        for v = 1:numel(Vfm)
-            Y = spm_read_vols(Vfm(v));
-            
-            if toMask, Y = Y.*Ymag; end
-            
-            Vfm(v).fname = fullfile(sesspath,aap.directory_conventions.fieldmapsdirname,sprintf('serie%02d.nii',v)); 
-            Vfm(v).n = [1 1];
-            spm_write_vol(Vfm(v),Y);
-            outstream(v) = cellstr(Vfm(v).fname);
-        end        
-        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);
+            outstream = cell(0,0);
+            for v = 1:numel(Vfm)
+                Y = spm_read_vols(Vfm(v));
+                
+                if toMask, Y = Y.*Ymag; end
+                
+                Vfm(v).fname = fullfile(sesspath,aap.directory_conventions.fieldmapsdirname,sprintf('serie%02d.nii',v)); 
+                Vfm(v).n = [1 1];
+                spm_write_vol(Vfm(v),Y);
+                outstream(v) = cellstr(Vfm(v).fname);
+            end        
+        end
 
+        aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap',outstream);
         dcmhdrfn=fullfile(sesspath,'fieldmap_dicom_header.mat');
         save(dcmhdrfn,'dcmhdr');
         aap=aas_desc_outputs(aap,domain,[subj,sess],'fieldmap_dicom_header',dcmhdrfn);
