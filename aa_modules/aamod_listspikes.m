@@ -13,7 +13,10 @@ resp='';
 switch task
     case 'report'
         spl = load(aas_getfiles_bystream(aap,subj,sess,'listspikes'));
-        aap.report.html=strcat(aap.report.html,sprintf('Spikes %d   Moves %d<br>',size(spl.TSspikes,1),size(spl.Mspikes,1)));
+
+        aap = aas_report_add(aap,subj,'<table><tr><td>');
+        aap = aas_report_add(aap,subj,sprintf('Spikes %d   Moves %d<br>',size(spl.TSspikes,1),size(spl.Mspikes,1)));
+        aap = aas_report_add(aap,subj,'</td></tr></table>');
     case 'doit'
         
         subjname = aas_prepare_diagnostic(aap,subj);

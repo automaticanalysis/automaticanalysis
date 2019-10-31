@@ -63,7 +63,7 @@ function aap = aas_addsubject(aap, varargin)
 % Specify fieldmap data (overwrites autoidentification).
 %
 % series        - for DICOM: numeric array of series numbers
-%               - for NIfTI: cell of structure with fields 'fname' (cell of 3 filenames - 2x magnitude + 1x phase) and 'hdr' (path to header)
+%               - for NIfTI: cell of structure with fields 'fname' (cell of 3 filenames - 2x magnitude + 1x phase), 'hdr' (path to header), and 'session' (cell of session names or '*' for all sessions)
 %
 %
 % FORMAT function aap = aas_addsubject(___,'specialseries', series)

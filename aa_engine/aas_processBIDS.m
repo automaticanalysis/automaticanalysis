@@ -244,11 +244,11 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 ftype = jfname(ind+1:end);
                 switch ftype
                     case 'phasediff'
-                        fmap.hdr = loadjson(f{1});
-                        if isfield(fmap.hdr,'IntendedFor')
-                            fmap.hdr.session = get_taskname(sesspath,subjname,fmap.hdr.IntendedFor);
+                        fmap.hdr = {loadjson(f{1})};
+                        if isfield(fmap.hdr{1},'IntendedFor')
+                            fmap.session = cellstr(get_taskname(sesspath,subjname,fmap.hdr.IntendedFor));
                         else
-                            fmap.hdr.session = '*';
+                            fmap.session = '*';
                         end
                         fmap.fname = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[strrep(jfname,ftype,'') '.*.nii.gz']));
                     case 'phase1'
