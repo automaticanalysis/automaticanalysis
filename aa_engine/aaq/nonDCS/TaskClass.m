@@ -69,8 +69,15 @@ classdef TaskClass < handle
             Command(end+1) = ';';
             
             % create script
-            fid = fopen(obj.ShellFile,'w');
-            if ~isempty(obj.Parent.Pool.initialConfiguration), fprintf(fid,'%s',obj.Parent.Pool.initialConfiguration); end
+            fid = fopen(obj.ShellFile,'w');         
+            switch obj.Parent.Pool.Type
+                case 'Slurm'
+                    switch obj.Parent.Pool.Shell
+                        case 'bash'
+                            fprintf(fid,'#!/bin/bash\n');
+                    end
+            end
+            if ~isempty(obj.Parent.Pool.initialConfiguration), fprintf(fid,'%s;',obj.Parent.Pool.initialConfiguration); end
             fprintf(fid,'matlab -nosplash -nodesktop -singleCompThread -logfile %s -r "fid = fopen(''%s'',''w''); fprintf(fid,''%%s\\n'',java.lang.management.ManagementFactory.getRuntimeMXBean.getName.char); fclose(fid); try; %s catch E; save(''%s'',''E''); end; fid = fopen(''%s'',''a''); fprintf(fid,''%%s'',char(datetime(''now'',''Timezone'',''local''))); fclose(fid); quit"',...
                 obj.DiaryFile,obj.ProcessFile,Command,obj.ErrorFile,obj.ProcessFile);
             fclose(fid);
