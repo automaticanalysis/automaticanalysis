@@ -21,11 +21,11 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/users/ta0015/imaging/software/spm12</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/users/ta0015/software/spm12</spmdir>
             <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'></spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/ta0015/imaging/software/config/fsl_module</fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/ta0015/software/config/fsl_module</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/opt/pkg/apps/freesurfer/6.0.0</freesurferdir>        
@@ -33,12 +33,12 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/opt/pkg/apps/freesurfer/6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
-            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/ta0015/imaging/software/GroupICATv4.0b</GIFTdir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/ta0015/imaging/software/dcmtk</DCMTKdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/ta0015/imaging/software/BrainWavelet</BrainWaveletdir>
-            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/ta0015/imaging/software/FaceMasking</FaceMaskingdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/ta0015/software/GroupICATv4.0b</GIFTdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/ta0015/software/dcmtk</DCMTKdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/ta0015/software/BrainWavelet</BrainWaveletdir>
+            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/ta0015/software/FaceMasking</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/ta0015/imaging/software/config/Slurm.settings</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/ta0015/software/config/Slurm.settings</poolprofile>
 		<mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uos@gmail.com:aam4il3r#</mailerserver>
         </directory_conventions>
         <options>
