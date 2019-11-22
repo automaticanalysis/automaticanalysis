@@ -118,7 +118,7 @@ The master branch on github is only updated after testing, so this version is th
 # References and citation
 
 For any papers that report data analyzed with aa, please include the
-website (http://www.automaticanalysis.org) and cite the aa paper:
+github repo URL and cite the aa paper:
 
 Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC,
 Peelle JE (2015) Automatic analysis (aa): Efficient neuroimaging
