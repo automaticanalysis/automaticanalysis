@@ -18,16 +18,14 @@ supports SPM 12, as well as selected functions from other software packages
 (e.g., FSL, Freesurfer). The goal is to facilitate automatic, flexible, and 
 replicable neuroimaging analyses through a comprehensive pipeline system.
 
-More information can be found on the aa webpage:
-
-http://www.automaticanalysis.org
+More information can be found on the [wiki](https://github.com/automaticanalysis/automaticanalysis/wiki):
 
 # Requirements
 
  - System: Linux or MacOX (Windows is not supported. Sorry!)
  - Softwares: 
    - **MATLAB** - It has been tested with version r2013a and later
-   - **SPM** - It has been tested with versions SPM12 and later (SPM12 r7219 is recommended!)
+   - **SPM** - It has been tested with versions SPM12 and later (SPM12 r7487 is recommended!)
  - Recommended software for features:
    - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
@@ -117,11 +115,7 @@ https://groups.google.com/d/forum/automaticanalysis
 
 # Software updates
 
-The master branch on github will always have the latest stable version.
-To be notified when a new version is available, please sign up for the
-automaticanalysis-announce email list:
-
-https://groups.google.com/d/forum/automaticanalysis-announce
+The master branch on github is only updated after testing, so this version is the one to use. Developer versions are maintained in each developer's AA fork on Github.
 
 # References and citation
 
