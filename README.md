@@ -18,7 +18,7 @@ supports SPM 12, as well as selected functions from other software packages
 (e.g., FSL, Freesurfer). The goal is to facilitate automatic, flexible, and 
 replicable neuroimaging analyses through a comprehensive pipeline system.
 
-More information can be found on the [wiki](https://github.com/automaticanalysis/automaticanalysis/wiki):
+More information can be found on the [wiki](https://github.com/automaticanalysis/automaticanalysis/wiki).
 
 # Requirements
 
@@ -42,7 +42,7 @@ More information can be found on the [wiki](https://github.com/automaticanalysis
  
 # Download
 
-aa is maintained on [github](https://github.com/automaticanalysis/automaticanalysis/)
+aa is maintained on [github](https://github.com/automaticanalysis/automaticanalysis/).
 
 # Install
 
