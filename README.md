@@ -42,9 +42,7 @@ More information can be found on the [wiki](https://github.com/automaticanalysis
  
 # Download
 
-aa is maintained on github. The most recent version can be found at:
-
-https://github.com/rhodricusack/automaticanalysis/
+aa is maintained on [github](https://github.com/automaticanalysis/automaticanalysis/)
 
 # Install
 
