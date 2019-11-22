@@ -8,7 +8,7 @@
             <seedROIindex>1</seedROIindex>
             
             <inputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
                 <stream>firstlevel_spm</stream>
                 <stream ismodified='0'>epi</stream>
             </inputstreams>

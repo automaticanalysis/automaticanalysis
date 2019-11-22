@@ -14,7 +14,7 @@
             <HParam>100</HParam>
             
             <inputstreams>
-                <stream isessential='0'>rois</stream>
+                <stream isrenameable="1" isessential="0">rois</stream>
                 <stream>epi</stream>
                 <stream isessential='0'>epi_dicom_header</stream>
             </inputstreams>

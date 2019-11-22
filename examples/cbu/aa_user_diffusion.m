@@ -25,6 +25,17 @@ SUBJ = {...
 %% DEFINE SPECIFIC PARAMETERS
 aap=aarecipe('aap_tasklist_diffusion.xml');
 
+% this example uses SPM tools in the user script, so we have to ensure SPM is
+% on the path
+spmhit = which('spm_spm');
+if any(spmhit)
+    assert(strcmp(fileparts(spmhit), aap.directory_conventions.spmdir), ...
+        'spm on path differs from aap.directory_conventions.spmdir');
+else
+    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.spmdir);
+    addpath(aap.directory_conventions.spmdir);
+end
+
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','normalised_white', 'input');
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','native_white','output');
 

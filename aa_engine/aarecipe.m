@@ -145,39 +145,6 @@ if exist('tasklistxml','var')
     
 end
 
-if ~isempty(aap.directory_conventions.spmdir)
-    % by setting this environment variable it becomes possible to define other
-    % paths relative to $SPMDIR in defaults files and task lists
-    setenv('SPMDIR',aap.directory_conventions.spmdir);
-end
-
-if isdeployed
-    aap.directory_conventions.spmdir = spm('Dir');
-    setenv('SPMDIR',aap.directory_conventions.spmdir);
-end
-
-% expand shell paths (before SPM so SPM can be in e.g. home directory)
-aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
-
-if ~isempty(aap.directory_conventions.spmdir)
-    addpath(aap.directory_conventions.spmdir); 
-    spm_jobman('initcfg');
-else
-    aas_log(aap,false,'WARNING: SPM path is not defined and cannot be loaded.')
-    aas_log(aap,false,'    Make sure that SPM is already in you path and configured!')
-end
-
-try
-    aap.spm.defaults=spm_get_defaults;
-catch
-    global defaults    
-    if (~isstruct(defaults))
-        aas_log(aap,false,'WARNING: SPM defaults has not been found, global defaults will be used');
-    else
-        aap.spm.defaults=defaults;
-    end
-end
-
 % Make copy of aap
 aap.aap_beforeuserchanges=[];
 aap.aap_beforeuserchanges=aap;

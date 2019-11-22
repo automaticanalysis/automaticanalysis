@@ -77,17 +77,19 @@ switch task
                     % Go through all of the series we've found
                     rawdata_allseries{d}=unique(serieslist);
                     
-                    for j=1:length(rawdata_allseries{d});
-                        hdr=spm_dicom_headers(alldicomfiles{d}{rawdata_allseries{d}(j)}{1});
-                        for dpf = dicom_protocol_fields{1}'
-                            if isfield(hdr{1},dpf{1}), break; end
+                    if aap.options.autoidentifystructural || aap.options.autoidentifyt2 || aap.options.autoidentifyfieldmaps || aap.options.autoidentifytmaps
+                        for j=1:length(rawdata_allseries{d});
+                            hdr=spm_dicom_headers(alldicomfiles{d}{rawdata_allseries{d}(j)}{1});
+                            for dpf = dicom_protocol_fields{1}'
+                                if isfield(hdr{1},dpf{1}), break; end
+                            end
+                            if isfield(hdr{1},dpf{1})
+                                curr_dicom_protocol_field{d}{j} = dpf{1};
+                            else
+                                aas_log(aap,true,sprintf('Series %d: protocol fields %s not found in DICOM header!',rawdata_allseries{d}(j),sprintf(' %s',dicom_protocol_fields{1}{:})));
+                            end
+                            aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.(curr_dicom_protocol_field{d}{j}), length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
                         end
-                        if isfield(hdr{1},dpf{1})
-                            curr_dicom_protocol_field{d}{j} = dpf{1};
-                        else
-                            aas_log(aap,true,sprintf('Series %d: protocol fields %s not foound in DICOM header!',rawdata_allseries{d}(j),sprintf(' %s',dicom_protocol_fields{1}{:})));
-                        end
-                        aas_log(aap,false,sprintf('Series %d (%s) with %d dicom files',rawdata_allseries{d}(j), hdr{1}.(curr_dicom_protocol_field{d}{j}), length(alldicomfiles{d}{rawdata_allseries{d}(j)})));
                     end
                 case 's3'
                     % Use delimiter to get series names as CommonPrefixes

@@ -142,6 +142,9 @@ for subdirind=1:length(subdirs)
             if isempty(TR) && isfield(infoD,'Private_2005_1030')
                 TR = infoD.Private_2005_1030(1);
             end
+            if isempty(TE) && isfield(infoD,'EchoTimeDisplay')
+                TE = cellfun(@(x) str2double(x), regexp(infoD.EchoTimeDisplay,'[0-9.]*','match'));
+            end            
             if isempty(TE) && isfield(infoD,'Private_2001_1025')
                 TE = cellfun(@(x) str2double(x), regexp(infoD.Private_2001_1025,'[0-9.]*','match'));
             end            

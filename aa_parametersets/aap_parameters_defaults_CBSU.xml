@@ -23,7 +23,7 @@
             <protocol_t2 ui='text'>TSE</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7219</spmdir>
+            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7487</spmdir>
             <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'>/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</spmtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.8/x86_64/fsl</fsldir>
@@ -46,7 +46,7 @@
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional)  initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>CBU_Cluster</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional)  initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>CBU_Slurm_2018</poolprofile>
         </directory_conventions>
         <options>
             <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            

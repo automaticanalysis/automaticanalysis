@@ -12,7 +12,7 @@
                 <stream>firstlevel_cons</stream>
                 -->
                 <!-- ROIs that we want to test -->
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
                 
                 <!-- Masks [IMPLEMENT LATER!] -->
                 <!-- 

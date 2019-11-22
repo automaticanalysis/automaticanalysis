@@ -16,11 +16,11 @@
 				<stream>aamod_dartel_createtemplate_00001.dartel_template</stream>
 				<stream>dartel_flowfield</stream>
 				<stream>structural</stream>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
 			</inputstreams>
 			
 			<outputstreams>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
 			</outputstreams>
             
         </currenttask>

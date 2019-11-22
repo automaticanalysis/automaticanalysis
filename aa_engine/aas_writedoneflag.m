@@ -31,8 +31,10 @@ switch(aap.directory_conventions.remotefilesystem)
             end;
             attr.outputstreams=osd;
         end;
-        cmd='/sbin/ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
-        [s w]=aas_shell(cmd);
+        cmd='/sbin/ifconfig  | grep -s "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
+        % ignore errors
+        [s w]=aas_shell(cmd, true, false);
+        ipaddress = "";
         if (~s)
             [ipaddress junk]=strtok(w);
         end;
@@ -131,8 +133,9 @@ switch(aap.directory_conventions.remotefilesystem)
         end
         
         % And dump IP of this machine to done flag
-        cmd='/sbin/ifconfig  | grep "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
-        [s w]=aas_shell(cmd);
+        cmd='/sbin/ifconfig  | grep -s "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
+        [s w]=aas_shell(cmd, true, false);
+        ipaddress = "";
         if (~s)
             [ipaddress junk]=strtok(w);
             fprintf(fid,'%s\n',ipaddress);

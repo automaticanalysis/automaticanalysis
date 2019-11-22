@@ -14,17 +14,17 @@
         <svd_tol>1e-6</svd_tol>
         
         <inputstreams>
-            <stream>rois</stream>
+            <stream isrenameable="1">rois</stream>
             <stream>dti_FA</stream>
             <stream>dti_AD</stream>
             <stream>dti_RD</stream>
             <stream>dti_MD</stream>
         </inputstreams>
         <outputstreams>
-            <stream>roidata_dti_FA</stream>
-            <stream>roidata_dti_AD</stream>
-            <stream>roidata_dti_RD</stream>
-            <stream>roidata_dti_MD</stream>
+            <stream isrenameable="1">roidata_dti_FA</stream>
+            <stream isrenameable="1">roidata_dti_AD</stream>
+            <stream isrenameable="1">roidata_dti_RD</stream>
+            <stream isrenameable="1">roidata_dti_MD</stream>
         </outputstreams>
    </currenttask>
   </tasklist>

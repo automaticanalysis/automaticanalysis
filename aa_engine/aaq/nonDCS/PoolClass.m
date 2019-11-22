@@ -5,6 +5,7 @@ classdef PoolClass < handle
         Jobs = JobClass.empty
         
         Host = getenv('HOSTNAME')
+        Shell = 'bash'
         NumWorkers
         
         reqMemory = 1
@@ -57,15 +58,25 @@ classdef PoolClass < handle
             obj.NumWorkers = pool.NumWorkers;
             
             switch obj.Type
+                case 'Slurm'
+                    obj.initialSubmitArguments = strcat(obj.initialSubmitArguments,pool.SubmitArguments);
+                    obj.SubmitArguments = pool.ResourceTemplate;
+                    datWT = sscanf(regexp(obj.SubmitArguments,'-t [0-9]*','once','match'),'-t %d');
+                    datMem = sscanf(regexp(obj.SubmitArguments,'--mem=[0-9]*[MGT]{1}','once','match'),'--mem=%d%c');
+                    obj.getSubmitStringFcn = @(Job) sprintf( 'sbatch %s -J %s -o "%s" -e "%s" "%s"', ...
+                         obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.LogFile, Job.Tasks.ShellFile);
+                    obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
+                    obj.getJobStateFcn = @(SchedulerID) Slurm_getJobState(SchedulerID);
+                    obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('scancel %d',SchedulerID);
                 case 'Torque'
                     obj.initialSubmitArguments = strcat(obj.initialSubmitArguments,pool.SubmitArguments);
                     obj.SubmitArguments = pool.ResourceTemplate;
                     datWT = sscanf(regexp(obj.SubmitArguments,'walltime=[0-9]*','once','match'),'walltime=%d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d');
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub %s -N %s -j oe -o "%s" "%s"', ...
-                                        obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.ShellFile);
+                        obj.SubmitArguments, Job.Name, Job.Tasks.LogFile, Job.Tasks.ShellFile);
                     obj.getSchedulerIDFcn = @(stdOut) str2double(regexp(stdOut, '[0-9]*', 'match', 'once' ));
-                    obj.getJobStateFcn = @(SchedulerID) PBS_getJobState(SchedulerID);
+                    obj.getJobStateFcn = @(SchedulerID) Torque_getJobState(SchedulerID);
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('qdel %d',SchedulerID);
                 case 'LSF'
                     obj.SubmitArguments = pool.SubmitArguments;
@@ -138,6 +149,13 @@ classdef PoolClass < handle
             walltime = obj.reqWalltime;
             
             switch obj.Type
+                case 'Slurm'
+                    if round(memory) == memory % round
+                        memory = sprintf('%dG',memory);
+                    else % non-round --> MB
+                        memory = sprintf('%dM',memory*1000);
+                    end
+                    obj.SubmitArguments = strcat(sprintf('--mem=%s -t %d ',memory,walltime*60),obj.initialSubmitArguments);
                 case 'Torque'
                     if round(memory) == memory % round
                         memory = sprintf('%dGB',memory);
@@ -171,7 +189,7 @@ else
 end
 end
 
-function state = PBS_getJobState(ID)
+function state = Torque_getJobState(ID)
 stateList = {...
     'HQ' 'queued';...
     'W' 'pending';...
@@ -185,6 +203,21 @@ if s == 153 % Unknown Job ID
 else
     chState = regexp(w,'job_state = [A-Z]','match','once'); chState = chState(end); % RE HQW
     state = stateList{cell_index(stateList(:,1),chState),2};
+end
+end
+
+function state = Slurm_getJobState(ID)
+stateList = {...
+    'PENDING' 'pending';...
+    'RUNNING' 'running';...
+    'COMPLETED' 'finished';...
+    'FAILED' 'error';...
+    };
+[s, w] = system(sprintf('sacct -j %d --format=state',ID)); w = textscan(w,'%s'); w = w{1};
+if numel(w) == 2
+    state = 'finished';
+else
+    state = stateList{cell_index(stateList(:,1),deblank(w{3})),2};
 end
 end
 

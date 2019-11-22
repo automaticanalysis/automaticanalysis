@@ -8,7 +8,7 @@
             <inputstreams>
                 <stream>structural</stream>
                 <!--
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
                 -->
                 <!--
                 <stream>segmentation</stream>

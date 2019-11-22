@@ -251,6 +251,11 @@ for modI = 1 : length(aap.tasklist.main.module)
             end
             
             if ~foundPrevious
+                % Check initial stream if any
+                if any(strcmp({aap.tasklist.main.module.name},'aamod_importfilesasstream'))
+                    if ismember(inputStreamName,{allPrevOutputs.streamname}), continue; end
+                end
+                
                 % Check previously added remotestreams
                 if ~isempty(mod.remotestream) && ismember(inputStreams{iI}, {mod.remotestream.stream}), continue; end
                 
