@@ -16,7 +16,7 @@
             
             <outputstreams>
                 <stream>structural</stream>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </outputstreams>
             
             <!-- This specifies which structural (or other image) we want to use, typically the first, but can be changed 

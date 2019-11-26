@@ -33,7 +33,7 @@
                 <stream ismodified='0'>firstlevel_spm</stream>
                 <stream ismodified='0' isessential='0'>firstlevel_betas</stream>
                 <stream ismodified='0' isessential='0'>firstlevel_cons</stream>
-                <stream>rois</stream>
+                <stream isrenameable="1">rois</stream>
             </inputstreams>
             
             <outputstreams>

@@ -16,6 +16,17 @@ aa_ver5
 %% DEFINE STUDY SPECIFIC PARAMETERS
 aap=aarecipe('aap_tasklist_MPM.xml');
 
+% this example uses SPM tools in the user script, so we have to ensure SPM is
+% on the path
+spmhit = which('spm_spm');
+if any(spmhit)
+    assert(strcmp(fileparts(spmhit), aap.directory_conventions.spmdir), ...
+        'spm on path differs from aap.directory_conventions.spmdir');
+else
+    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.spmdir);
+    addpath(aap.directory_conventions.spmdir);
+end
+
 SUBJ = {...
      'S01' 160886;...
      };

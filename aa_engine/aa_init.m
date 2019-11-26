@@ -44,6 +44,20 @@ end
 aacache.path.bcp_path = path;
 aacache.path.bcp_shellpath = getenv('PATH');
 % Path for SPM
+if ~isempty(aap.directory_conventions.spmdir)
+    % by setting this environment variable it becomes possible to define other
+    % paths relative to $SPMDIR in defaults files and task lists
+    setenv('SPMDIR',aap.directory_conventions.spmdir);
+end
+
+if isdeployed
+    aap.directory_conventions.spmdir = spm('Dir');
+    setenv('SPMDIR',aap.directory_conventions.spmdir);
+end
+
+% expand shell paths (before SPM so SPM can be in e.g. home directory)
+aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
+
 if isempty(aap.directory_conventions.spmdir)
     if isempty(which('spm'))
         aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set aap.directory_conventions.spmdir');
@@ -52,25 +66,29 @@ if isempty(aap.directory_conventions.spmdir)
     end;
 end;
 
+if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
+    oldspmdefaults = aap.spm.defaults;
+end
+
 addpath(aap.directory_conventions.spmdir);
-    
 spm_jobman('initcfg');
 
-if ~isfield(aap,'spm') || ~isfield(aap.spm,'defaults') || numel(fields(aap.spm.defaults))<5
-    try
-        aap.spm.defaults=spm_get_defaults;
-    catch
-        global defaults
-        if (~isstruct(defaults))
-            aas_log(aap,true,'Global SPM defaults has not been found;');
-        else
-            aap.spm.defaults=defaults;
-        end;
-    end;    
-    
-    % Make copy of aap
-    aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
+try
+    aap.spm.defaults=spm_get_defaults;
+catch
+    global defaults    
+    if isstruct(defaults)
+        aas_log(aap,false,'WARNING: SPM defaults has not been found, global defaults will be used');
+        aap.spm.defaults=defaults;
+    else
+        aap.spm.defaults = struct;
+    end
 end
+
+if exist('oldspmdefaults', 'var')
+    aap.spm.defaults = setstructfields(aap.spm.defaults, oldspmdefaults);
+end
+aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
 
 % Path for SPM MEG/EEG
 addpath(fullfile(spm('Dir'),'external','fieldtrip'));

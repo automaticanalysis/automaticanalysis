@@ -14,11 +14,11 @@
         <svd_tol>1e-6</svd_tol>
         
         <inputstreams>
-            <stream>rois</stream>
+            <stream isrenameable="1">rois</stream>
             <stream>dki_MK</stream>
         </inputstreams>
         <outputstreams>
-            <stream>roidata_dki_MK</stream>
+            <stream isrenameable="1">roidata_dki_MK</stream>
         </outputstreams>
    </currenttask>
   </tasklist>

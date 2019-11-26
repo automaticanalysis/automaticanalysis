@@ -68,7 +68,7 @@ classdef aaq_qsub<aaq
                             obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG, -t %d', aaparallel.memory,aaparallel.walltime*60);
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
-                                obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
+                                obj.initialSubmitArguments = ' --constraint=maxfilter';
                             end
                             obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
                             aaparallel.numberofworkers = 1;

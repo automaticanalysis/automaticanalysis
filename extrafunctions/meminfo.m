@@ -106,29 +106,31 @@ else
 
 	% limits
 
-    try
-        [junk, out] = aas_shell('ulimit -m',true);
+    % ulimit is bash specific so this will fail on csh / tcsh
+    [exception, out] = aas_shell('ulimit -m', true, false);
+    if exception
+        fprintf('ulimit not available, defaulting to inf\n');
+        dat = Inf;
+    else
         out = deblank(out);
         if strcmp(out,'unlimited'), dat = Inf;
         else dat = str2double(out); end
-    catch
-        fprintf('ulimit not available, defaulting to inf\n');
-        dat = Inf;
     end
 	M.ResLimit = dat;
 
-    try
-        [junk, out] = aas_shell('ulimit -v',true);
+    [exception, out] = aas_shell('ulimit -v',true, false);
+    if exception
+        dat = Inf;
+    else
         out = deblank(out);
         if strcmp(out,'unlimited'), dat = Inf;
         else dat = str2double(out); end
-    catch
-        dat = Inf;
+    end
 	M.VirtLimit = dat;
 
 	% process
 
-	[junk, out] = aas_shell(sprintf('cat /proc/%d/status',feature('getpid')),true);
+	[exception, out] = aas_shell(sprintf('cat /proc/%d/status',feature('getpid')),true);
 	out = textscan(out,'%s','delimiter',':'); out = out{1};
 	dat = str2double(strtok(out{find(strcmp(out,'VmRSS'))+1}));
 	M.ResUsedBy = dat;

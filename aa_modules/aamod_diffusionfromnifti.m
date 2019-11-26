@@ -27,14 +27,15 @@ switch task
         finalepis={}; 
         % Files
         niftifile = series.fname;
-        headerfile = series.hdr;
+        if isfield(series,'hdr'), headerfile = series.hdr;
+        else headerfile = ''; end
         bvalfile = series.bval;
         bvecfile = series.bvec;
         if ~exist(niftifile,'file') % assume path realtive to (first) rawdatadir
             niftisearchpth=aas_findvol(aap,'');
             if ~isempty(niftisearchpth)
                 niftifile = fullfile(niftisearchpth,niftifile);
-                headerfile = fullfile(niftisearchpth,headerfile);
+                if ~isempty(headerfile), headerfile = fullfile(niftisearchpth,headerfile); end
                 bvalfile = fullfile(niftisearchpth,bvalfile);
                 bvecfile = fullfile(niftisearchpth,bvecfile);
             end
@@ -65,8 +66,8 @@ switch task
         fclose(fid);
         
         % Header
-        DICOMHEADERS{1} = struct;
         if ~isempty(headerfile)
+            DICOMHEADERS{1} = struct;
             if strcmp(spm_file(headerfile,'Ext'),'mat')
                 dat = load(headerfile);
                 DICOMHEADERS = dat.DICOMHEADERS;
@@ -137,9 +138,11 @@ switch task
         if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
         aap=aas_desc_outputs(aap,domain,indices,'dummyscans',dummylist);
         aap=aas_desc_outputs(aap,domain,indices,'diffusion_data',finalepis);
-        dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
-        save(dcmhdrfn,'DICOMHEADERS');
-        aap=aas_desc_outputs(aap,domain,indices,'diffusion_dicom_header',dcmhdrfn);
+        if ~isempty(headerfile)
+            dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
+            save(dcmhdrfn,'DICOMHEADERS');
+            aap=aas_desc_outputs(aap,domain,indices,'diffusion_dicom_header',dcmhdrfn);
+        end
         aap=aas_desc_outputs(aap,domain,indices,'bvals',bvals_fn);
         aap=aas_desc_outputs(aap,domain,indices,'bvecs',bvecs_fn);  
         
