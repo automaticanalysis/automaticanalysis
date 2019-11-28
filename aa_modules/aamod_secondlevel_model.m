@@ -40,7 +40,7 @@ switch task
             so.cbar = [so.cbar 2];
 
             so = paint(so);
-            spm_print(['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_groupmasksummary.jpg'],so.figure,'jpg');
+            spm_print(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_groupmasksummary.jpg']),so.figure,'jpg');
 
             % design
             fSPM = aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}); fSPM = deblank(fSPM(1,:)); %all models are the same (number of inputs may vary)
