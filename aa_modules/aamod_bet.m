@@ -151,7 +151,6 @@ inpstreams = aas_getstreams(aap,'input'); %
 outstreams = aas_getstreams(aap,'output'); % 
 Simg = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],inpstreams{1},'input');
 outStruct = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{1},'output');
-outMesh = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},'output');
 
 spm_check_registration(Simg)
 
@@ -165,6 +164,7 @@ indx = 0;
 spm_orthviews('addcolouredimage',1,outStruct, [0.9 0.4 0.4])
 % Add mesh outlines, to see if BET has worked properly!
 if aap.tasklist.currenttask.settings.masks
+    outMesh = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},'output');
     for r = 1:size(outMesh,1)
         if strfind(outMesh(r,:), aas_getfslext(aap))
             indx = indx + 1;
