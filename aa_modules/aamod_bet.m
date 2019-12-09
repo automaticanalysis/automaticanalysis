@@ -44,19 +44,19 @@ switch task
         [pth nme ext]=fileparts(Simg);
         
         outStruct=fullfile(pth,['bet_' nme fslext]);
-        
+
+        fslcommand = sprintf('bet %s %s -f %f -v',Simg,outStruct, ...
+                aap.tasklist.currenttask.settings.bet_f_parameter);
+
         if aap.tasklist.currenttask.settings.robust
-            % Run BET [-R Using robust setting to improve performance!]
             aas_log(aap,false,'1st BET pass (recursive) to find optimal centre of gravity and radius')
-            [junk, w]=aas_runfslcommand(aap, ...
-                sprintf('bet %s %s -f %f -v -R',Simg,outStruct, ...
-                aap.tasklist.currenttask.settings.bet_f_parameter));
-        else
-            aas_log(aap,false,'1st BET pass')
-            [junk, w]=aas_runfslcommand(aap, ...
-                sprintf('bet %s %s -f %f -v ',Simg,outStruct, ...
-                aap.tasklist.currenttask.settings.bet_f_parameter));
+            fslcommand = [fslcommand ' -R'];
+        else aap.tasklist.currenttask.settings.biasneck
+            aas_log(aap,false,'1st BET pass (using bias field and neck cleanup) to find optimal centre of gravity and radius')
+            fslcommand = [fslcommand ' -B'];
         end
+        
+        [junk, w]=aas_runfslcommand(aap, fslcommand);
         
         aas_log(aap,false,sprintf('Bet output: %s',w));
         
