@@ -55,18 +55,24 @@ switch task
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],'fieldmap',char(fn));
         
         %% header
-        switch spm_file(hdrfile,'Ext')
-            case 'mat'
-                dat = load(hdrfile);
-                dcmhdr = dat.dcmhdr;
-            case 'json'
-                hdrfile = loadjson(hdrfile);
-                % convert timings to ms (DICOM default)
-                for f = fieldnames(hdrfile)'
-                    if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+        if ~isempty(hdrfile)
+            if iscell(hdrfile)
+                dcmhdr = hdrfile;
+            else
+                switch spm_file(hdrfile,'Ext')
+                    case 'mat'
+                        dat = load(hdrfile);
+                        dcmhdr = dat.dcmhdr;
+                    case 'json'
+                        hdrfile = loadjson(hdrfile);
+                        % convert timings to ms (DICOM default)
+                        for f = fieldnames(hdrfile)'
+                            if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+                        end
+                        if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
+                        if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
                 end
-                if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
-                if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
+            end
         end
         
         %% Output
