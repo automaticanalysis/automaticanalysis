@@ -38,7 +38,7 @@ switch task
             comp = strcmp(spm_file(niftifile{f},'Ext'),'gz');
             if comp
                 gunzip(niftifile{f},fullfile(sesspth,'temp'));
-                niftifile{1} = spm_file(niftifile{f}(1:end-3),'path',fullfile(sesspth,'temp'));
+                niftifile{f} = spm_file(niftifile{f}(1:end-3),'path',fullfile(sesspth,'temp'));
             end
             
             aas_makedir(aap,fullfile(sesspth,sprintf('serie%02d',f)));
