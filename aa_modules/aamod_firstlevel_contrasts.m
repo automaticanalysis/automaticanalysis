@@ -149,7 +149,7 @@ switch task
                             else
                                 sessweights = ones(1,numel(sessions));
                             end
-                            [junk, indsess] = intersect(sessnames,sessions);
+                            indsess = cellfun(@(x) find(strcmp(sessnames,x)), sessions);
                             sessforcon(indsess) = sessweights;
                         end
                         

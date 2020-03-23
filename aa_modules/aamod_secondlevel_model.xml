@@ -11,6 +11,7 @@
             <permanenceofoutput>3</permanenceofoutput>
             
             <inputstreams>
+                <stream diagnostic="1">firstlevel_brainmask</stream>
                 <stream>firstlevel_spm</stream>
                 <stream>firstlevel_cons</stream>
             </inputstreams>

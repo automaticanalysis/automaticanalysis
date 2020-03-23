@@ -11,7 +11,38 @@ resp='';
 
 switch task
     case 'report'
-        if ~exist(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']),'file')
+        if numel(cellstr(spm_select('List',aas_getstudypath(aap),'^diagnostic.*'))) < 2 % two images expected
+            % group mask
+            for subj = 1:numel(aap.acq_details.subjects)
+                mask{subj} = aas_getfiles_bystream(aap,'subject',subj,'firstlevel_brainmask');
+            end
+            Vm = cell2mat(spm_vol(mask));
+            Ym = spm_read_vols(Vm);
+            Ys = sum(Ym,4);
+            Vs = Vm(1);
+            Vs.fname = fullfile(aas_getstudypath(aap),'groupmaps_summary.nii');
+            spm_write_vol(Vs,Ys)
+            
+            so = slover;
+            so.figure = spm_figure('GetWin', 'SliceOverlay');
+            
+            so.img.vol = spm_vol(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template));
+            so.img.prop = 1;
+            so.transform = 'axial';
+            so = fill_defaults(so);
+            so.slices = -72:6:108;
+
+            so.img(2).vol = Vs;
+            so.img(2).type  = 'truecolour';
+            so.img(2).prop  = 0.33;
+            so.img(2).cmap  = hot;
+            so.img(2).range = [0 max(Ys(:))];
+            so.cbar = [so.cbar 2];
+
+            so = paint(so);
+            spm_print(fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_groupmasksummary.jpg']),so.figure,'jpg');
+
+            % design
             fSPM = aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}); fSPM = deblank(fSPM(1,:)); %all models are the same (number of inputs may vary)
             load(fSPM);            
             spm_DesRep('DesOrth',SPM.xX);

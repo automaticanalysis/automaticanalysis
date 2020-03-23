@@ -44,19 +44,19 @@ switch task
         [pth nme ext]=fileparts(Simg);
         
         outStruct=fullfile(pth,['bet_' nme fslext]);
-        
+
+        fslcommand = sprintf('bet %s %s -f %f -v',Simg,outStruct, ...
+                aap.tasklist.currenttask.settings.bet_f_parameter);
+
         if aap.tasklist.currenttask.settings.robust
-            % Run BET [-R Using robust setting to improve performance!]
             aas_log(aap,false,'1st BET pass (recursive) to find optimal centre of gravity and radius')
-            [junk, w]=aas_runfslcommand(aap, ...
-                sprintf('bet %s %s -f %f -v -R',Simg,outStruct, ...
-                aap.tasklist.currenttask.settings.bet_f_parameter));
-        else
-            aas_log(aap,false,'1st BET pass')
-            [junk, w]=aas_runfslcommand(aap, ...
-                sprintf('bet %s %s -f %f -v ',Simg,outStruct, ...
-                aap.tasklist.currenttask.settings.bet_f_parameter));
+            fslcommand = [fslcommand ' -R'];
+        else aap.tasklist.currenttask.settings.biasneck
+            aas_log(aap,false,'1st BET pass (using bias field and neck cleanup) to find optimal centre of gravity and radius')
+            fslcommand = [fslcommand ' -B'];
         end
+        
+        [junk, w]=aas_runfslcommand(aap, fslcommand);
         
         aas_log(aap,false,sprintf('Bet output: %s',w));
         
@@ -151,7 +151,6 @@ inpstreams = aas_getstreams(aap,'input'); %
 outstreams = aas_getstreams(aap,'output'); % 
 Simg = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],inpstreams{1},'input');
 outStruct = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{1},'output');
-outMesh = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},'output');
 
 spm_check_registration(Simg)
 
@@ -165,6 +164,7 @@ indx = 0;
 spm_orthviews('addcolouredimage',1,outStruct, [0.9 0.4 0.4])
 % Add mesh outlines, to see if BET has worked properly!
 if aap.tasklist.currenttask.settings.masks
+    outMesh = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstreams{3},'output');
     for r = 1:size(outMesh,1)
         if strfind(outMesh(r,:), aas_getfslext(aap))
             indx = indx + 1;
