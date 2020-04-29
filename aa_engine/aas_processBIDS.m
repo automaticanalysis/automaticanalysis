@@ -59,6 +59,7 @@ if ~exist('regcolumn','var') || isempty(regcolumn)
     regcolumn = 'trial_type';
 end
 
+
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
 BIDSsettings.directories.fieldmapDIR = 'fmap';
@@ -85,6 +86,8 @@ if isfield(aap.tasksettings,'aamod_firstlevel_model')
         aap.tasksettings.aamod_firstlevel_model(m).xBF.UNITS  ='secs';
     end
 end
+
+
 
 %% Process
 if BIDSsettings.combinemultiple
@@ -159,6 +162,39 @@ structDIR = BIDSsettings.directories.structDIR;
 functionalDIR = BIDSsettings.directories.functionalDIR;
 fieldmapDIR = BIDSsettings.directories.fieldmapDIR;
 diffusionDIR = BIDSsettings.directories.diffusionDIR;
+
+% defaults for acq_details flags
+
+if (isfield(aap.acq_details,'omitBIDSmodeling') && aap.acq_details.omitBIDSmodeling == true)
+    omitBIDSmodeling = true;
+else
+	omitBIDSmodeling = false;
+end
+
+if (isfield(aap.acq_details,'stripBIDSEventNames') && aap.acq_details.stripBIDSEventNames == true)
+    stripBIDSEventNames = true;
+else
+    stripBIDSEventNames = false;
+end
+ 
+if (isfield(aap.acq_details,'omitNullBIDSEvents') && aap.acq_details.omitNullBIDSEvents == true)
+    omitNullBIDSEvents = true;
+else
+    omitNullBIDSEvents = false;
+end
+                                
+if (isfield(aap.acq_details,'convertBIDSEventsToUppercase') && aap.acq_details.convertBIDSEventsToUppercase == true)
+    convertBIDSEventsToUppercase = true;
+else
+    convertBIDSEventsToUppercase = false;
+end
+
+if (isfield(aap.acq_details,'maxBIDSEventNameLength') && aap.acq_details.maxBIDSEventNameLength > 0)
+    maxBIDSEventNameLength = aap.acq_details.maxBIDSEventNameLength;
+else
+    maxBIDSEventNameLength = Inf;
+end
+
 
 % locate first_level modules
 stagenumModel(1) = struct('name','aamod_firstlevel_model','ind',...
@@ -314,10 +350,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 
                 % Model
                 
-                if (isfield(aap.acq_details,'omitBIDSmodeling') && aap.acq_details.omitBIDSmodeling == true)
-                    
+                if (omitBIDSmodeling)                    
                     aas_log(aap,false,sprintf('INFO: Omitting addevent in aas_processBIDS (change in aap.acq_details.omitBIDSmodeling)'));
-
                 else
                 
                     for thisstage = stagenumModel
@@ -342,7 +376,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 iName = cell_index(EVENTS(1,:),regcolumn);
                                 iOns = cell_index(EVENTS(1,:),'onset');
                                 iDur = cell_index(EVENTS(1,:),'duration');                        
-                                if (isfield(aap.acq_details,'stripBIDSEventNames') && aap.acq_details.stripBIDSEventNames == true)
+                                if (stripBIDSEventNames)
                                     EVENTS(2:end,iName) = regexprep(EVENTS(2:end,iName),'[^a-zA-Z0-9]','');
                                 end                         
                                 names = unique(EVENTS(2:end,iName));           
@@ -353,21 +387,16 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                     onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
                                     durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
                                 end                                                    
-                                if (isfield(aap.acq_details,'omitNullBIDSEvents') && aap.acq_details.omitNullBIDSEvents == true)
-                                    omitNullEvents = true;
-                                else
-                                    omitNullEvents = false;
-                                end
-                                if (isfield(aap.acq_details,'convertBIDSEventsToUppercase') && aap.acq_details.convertBIDSEventsToUppercase == true)
+                                if (convertBIDSEventsToUppercase)
                                     names = upper(names); 
                                 end
-                                if (isfield(aap.acq_details,'maxBIDSEventNameLength') && aap.acq_details.maxBIDSEventNameLength > 0)
-                                    maxlen =  aap.acq_details.maxBIDSEventNameLength;
+                                if (maxBIDSEventNameLength < Inf)
+                                    maxlen =  maxBIDSEventNameLength;
                                     names = cellfun(@(x) x(1:min(maxlen,length(x))), names,'UniformOutput',false);
                                 end
                                 for m = iModel
                                     for e = 1:numel(names)
-                                        if (strcmpi(names{e},'null') && omitNullEvents)
+                                        if (strcmpi(names{e},'null') && omitNullBIDSEvents)
                                             continue;
                                         end
                                         aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
