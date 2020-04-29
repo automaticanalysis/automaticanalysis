@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Second level thresholding for FSL randomise output' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.3</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+			
+            <threshold>0.05</threshold>
+            
+            <!-- which pmap to use for masking -->
+            <!-- we do: threshed_map = (pmap<thresh) .* tmap) -->
+  
+            <pmap ui='optionlist' options='vox|tfce|clustere'>clustere</pmap>
+   
+           <!-- label (written on jpegs) -->
+           <description>no description</description>
+           
+           <!-- inputs come from aamod_secondlevel_randomise -->
+           <!-- fslts are t maps; fslcorrps are corrected p maps -->
+           <!-- remember: FSL p maps are 1-p -->       
+ 			
+           <inputstreams>
+                <stream>secondlevel_fslts</stream>
+                <stream>secondlevel_fslcorrps</stream>
+             </inputstreams>
+           
+            <outputstreams>
+               <stream>secondlevel_thr</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='extract global (epi) signal' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.1</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+			
+            <!-- implicit_mask will omit voxels less than the mask value in computing -->
+            <!-- the global signal. The appropriate value depends on the application -->
+            <!-- it might bbe 0.05 for a p-value, or 0 for a contrast, or 1000 for an epi -->
+            <!-- leave empty for "no implicit masking" -->
+			
+            <implicit_mask></implicit_mask>
+			
+            <!-- template_mask is a fullpath to a single mask nii to be used for all -->
+            <!-- subjects/sess (e.g., a MNI template). If present, it takes precedence -->
+            <!-- over all other mask options (eventually should we AND multiple options?) -->
+            <!-- template_mask must match the epi and will be resliced if necessary -->
+			
+            <template_mask></template_mask>
+            
+            <!-- brain mask is a subject-specific mask (e.g., a native gray matter mask -->
+						
+            <inputstreams>
+                <stream isessential='0' isrenameable='1'>brainmask</stream>
+                <stream ismodified='0'>epi</stream>
+            </inputstreams>
+			
+            <outputstreams>
+                <stream>GLOBALMEAN</stream>
+            </outputstreams>
+			
+        </currenttask>
+    </tasklist>
+</aap>

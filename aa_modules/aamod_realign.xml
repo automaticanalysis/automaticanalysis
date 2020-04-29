@@ -45,6 +45,7 @@
                 <stream>realignment_parameter</stream>
                 <stream>meanepi</stream>
                 <stream>epi</stream>
+                <stream>FD</stream>
             </outputstreams>
             
             <mfp desc="Motion Fingerprint: Wilke M, NeuroImage 2012, 59: 2062-2072">

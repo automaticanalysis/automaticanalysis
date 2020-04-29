@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='study' mfile_alias='aamod_secondlevel_randomise' desc='SPM second level model' modality='MRI'>
+        <currenttask domain='study' desc='secondlevel nonparametric one-sample or two-sample ttest using FSL randomise' modality='MRI'>
             
             <qsub>
                 <timeBase>6</timeBase>
@@ -9,22 +9,63 @@
             </qsub>
             
             <permanenceofoutput>3</permanenceofoutput>
+ 
+            <!-- if you specify group_one_subjectIDs and group_two_subjectIDs, the module will run a 2-sample ttest -->
+            <!-- if you specify only group_one_subjectIDs, the module will run a 1-sample ttest on those subjects -->
+            <!-- if you specify neither, the module will run a 1-sample ttest on ALL subjects -->
             
+            <!-- expected format is an nx1 cell array, e.g.
+
+            K>> aap.tasklist.currenttask.settings.group_one_subjectIDs
+
+            ans =
+
+             18×1 cell array
+
+                {'PL00581'}
+                {'PL00306'}
+                ...
+                {'PL00875'}
+                
+            -->
+
+            
+            <!-- also note the two-sample test is UNpaired -->
+            
+            <group_one_subjectIDs></group_one_subjectIDs>
+            <group_two_subjectIDs></group_two_subjectIDs>
+            
+            <!-- covariate(s) -->
+            <!-- this can be either a matrix (one covariate per column) or a path to a plaintext file (extension must be '.txt') -->
+            <!-- you are responsible for making sure the dimensions match the # of subjects -->
+            <!-- note code will add a contrast for each covariate -->
+
+            <covariates></covariates>
+
+            <!-- demean the covariate(s)? (default: no) -->
+            
+            <demean_covariates>0</demean_covariates>
+                     
+            <!-- we provide option editing for convenience; note some options -->
+            <!-- change the files FLS outputs and may cause a crash -->
+
+            <options>--glm_output -T -x -c 3 -v 5 -n 5000</options> <!-- recommended options (add -D to mean center data) -->
+            <!-- <options> -T -x -c 3 -v 5 -n 10</options> --> <!-- small n for testing -->
+
+            <!-- we test all defined firstlevel contrasts -->
+            <!-- (all subjects must all have the same contrasts!) -->
+                      
             <inputstreams>
                 <stream>firstlevel_cons</stream>
             </inputstreams>
             
+            <!-- WARNING: FSL p-maps are really 1-p maps (e.g., >0.95 is really <0.05) -->
+            
             <outputstreams>
                 <stream>secondlevel_fslts</stream>
-                <stream>secondlevel_fslps</stream>
                 <stream>secondlevel_fslcorrps</stream>
             </outputstreams>
             
-            <options>-T -v 5</options>
-            
-            <parallel desc='Parallelisation mode [serial/none, torque]'
-            >torque</parallel>
-            
-        </currenttask>
+          </currenttask>
     </tasklist>
 </aap>

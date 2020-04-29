@@ -3,6 +3,11 @@
 % Modified for aa by Rhodri Cusack Mar 2006-2011
 % Additions by Rik Henson Mar 2011
 % Tibor Auer MRC CBU Cambridge 2012-2013
+%
+% CHANGE HISTORY
+%
+% 04/2020 [MSJ] added string contrast option for "uniquebysession";
+% save contrasts diagnostics even if not "localsingle"
 
 function [aap,resp]=aamod_firstlevel_contrasts(aap,task,subj)
 
@@ -69,10 +74,8 @@ switch task
         % add contrasts for each task regressor v baseline?
         if settings.eachagainstbaseline
             if isempty(contrasts), contrasts(1).subject = aas_getsubjname(aap,subj); end
-            basev = zeros(1,numel(SPM.xX.name));
-            if any(cellfun(@(x) ~isempty(regexp(x,'.*constant$')), SPM.xX.name)), basev(end) = []; end
-            for conind = 1:numel(SPM.xX.name)
-                if any(cellfun(@(x) ~isempty(regexp(SPM.xX.name{conind},sprintf('.*%s$',x))), {'x' 'y' 'z' 'r' 'p' 'j' 'constant'})), continue; end
+            basev = zeros(1,min(numel(SPM.Sess(1).col),numel(SPM.xX.iC)));
+            for conind = 1:length(basev)
                 newv = basev;
                 newv(conind) = 1;
                 contrasts.con(end+1)= struct(...
@@ -80,7 +83,7 @@ switch task
                     'vector',newv,...
                     'session',[],...
                     'type','T',...
-                    'name',sprintf('%s-o-baseline',SPM.xX.name{conind})...
+                    'name',sprintf('%s-o-baseline',SPM.xX.name{SPM.xX.iC(conind)})...
                     );
             end
         end
@@ -149,7 +152,7 @@ switch task
                             else
                                 sessweights = ones(1,numel(sessions));
                             end
-                            indsess = cellfun(@(x) find(strcmp(sessnames,x)), sessions);
+                            [~,indsess] = intersect(sessnames,sessions);
                             sessforcon(indsess) = sessweights;
                         end
                         
@@ -199,32 +202,70 @@ switch task
                         % they will be weighted differently in 2nd level
                         % model. So, normalize the contrast by the number
                         % of sesisons that contribute to it [default]
+                        
                         if isempty(aas_getsetting(aap,'scalebynumberofsessions')) || aas_getsetting(aap,'scalebynumberofsessions')
                             convec = convec ./ nnz(sessforcon); 
                         end
                         
                     case 'uniquebysession'
+                                               
                         totnumcolsbarconstants = size(SPM.xX.X,2) - nsess;
-                        
-                        if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
-                            aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix is more than number of columns in model - wanted %d columns, got %d',totnumcolsbarconstants, size(contrasts.con(conind).vector,2)));
-                        elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
-                            convec = [];
-                            convec(SPM.xX.iC) = 0;
-                            convec(1:numel(contrasts.con(conind).vector)) = contrasts.con(conind).vector;
-                            if settings.automatic_movesandmeans
-                                % [AVG] *better* way of specifying the correct columns...
-                                convec_out = zeros(1,totnumcolsbarconstants);
-                                convec_out(SPM.xX.iC) = convec;
-                                                                
-                                convec = convec_out;
+        
+                       if ischar(contrasts.con(conind).vector) 
+                           
+                           % new! apply string contrast across all sessions as a whole
+                           % (events in contrast can be missing in some sessions) 
+                           
+                            convec = zeros(1,totnumcolsbarconstants);
+                                
+                            for cr = 1:size(contrasts.con(conind).vector,1)
+                                cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%[^mpn]%c%d','Delimiter','|'); 
+                                if isempty(cs{3}) % simple format
+                                    cs = textscan(contrasts.con(conind).vector(cr,:),'%fx%s','Delimiter','|');
+                                    cs{3}(1:numel(cs{1}),1) = 'm';
+                                    cs{4}(1:numel(cs{1}),1) = int32(1);
+                                end
+                                for e = 1:numel(cs{1})
+                                    switch cs{3}(e)
+                                        case 'm' % main trail
+                                            EVpttrn = sprintf(' %s*',deblank(cs{2}{e}));
+                                        case 'p' % parametric
+                                            EVpttrn = sprintf(' %sx',deblank(cs{2}{e}));
+                                        case 'n' % NEW -- contrast can specify nusiance columns using "n" suffix
+                                            EVpttrn = sprintf(' %s',deblank(cs{2}{e}));
+                                    end
+                                    ind = cell_index(SPM.xX.name,EVpttrn);
+                                    convec(ind) = cs{1}(e);
+                                end
                             end
-                        else
-                            convec=contrasts.con(conind).vector;
-                        end
+
+                       else         
+                        
+                            if (size(contrasts.con(conind).vector,2) > totnumcolsbarconstants)
+                                aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix is more than number of columns in model - wanted %d columns, got %d',totnumcolsbarconstants, size(contrasts.con(conind).vector,2)));
+                            elseif (size(contrasts.con(conind).vector,2) < totnumcolsbarconstants)
+                                convec = [];
+                                convec(SPM.xX.iC) = 0;
+                                convec(1:numel(contrasts.con(conind).vector)) = contrasts.con(conind).vector;
+                                if settings.automatic_movesandmeans
+                                    % [AVG] *better* way of specifying the correct columns...
+                                    convec_out = zeros(1,totnumcolsbarconstants);
+                                    convec_out(SPM.xX.iC) = convec;                                    
+                                    convec = convec_out;
+                                end
+                            else
+                                convec=contrasts.con(conind).vector;
+                            end
+                        
+                        
+                       end                      
+                        
+                        
                     otherwise
                         aas_log(aap,true,sprintf('Unknown format %s specified for contrast %d',contrasts.con(conind).format,ccount));
+                        
                 end
+                
                 cons{ccount} = [convec zeros(size(convec,1),nsess)];  % Add final constant terms
                 
                 % Check not empty
@@ -247,12 +288,28 @@ switch task
                 
                 % DIAGNOSTIC
                 aas_log(aap,false,contrasts.con(conind).name)
-                for conind  =  1:max(size(convec_names))
-                    aas_log(aap,false,sprintf('\t%s: %d', convec_names{conind}, convec(SPM.xX.iC(conind))))
+                for cindex  =  1:max(size(convec_names))
+                    aas_log(aap,false,sprintf('\t%s: %d', convec_names{cindex}, convec(SPM.xX.iC(cindex))))
                 end
             end
         end
         
+
+        % document the contrast values
+
+        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'diagnostic_CONVEC.txt'),'w');
+        if (fid > 0) 
+            for conind = 1:length(contrasts.con)
+                fprintf(fid,sprintf('%s\n', contrasts.con(conind).name));
+                for cindex  =  1:max(size(convec_names))
+                    fprintf(fid,'\t%s: %d\n', convec_names{cindex}, convec(SPM.xX.iC(cindex)));
+                end
+            end
+            fclose(fid);
+        else
+            aas_log(aap,false,'WARNING: Could not save contrast diagnostic');
+        end
+       
         % Make the con images
         SPM.xCon =[];
         for conind = 1:length(cons)
@@ -269,11 +326,12 @@ switch task
         SPM = spm_contrasts(SPM);
         
         % Efficiency based on Rik Henson's script [TA]
-        if settings.estimateefficiency && strcmp(aap.options.wheretoprocess,'localsingle')
+        if (settings.estimateefficiency)
             diag(aap, subj, SPM); 
         end
         
         % Describe outputs
+        
         %  updated spm
         aap = aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
         
@@ -283,15 +341,15 @@ switch task
         for filterind=1:length(filters)
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.nii']));
             betafns=[];
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.img']));
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.hdr']));
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             aap=aas_desc_outputs(aap,subj,['firstlevel_' lower(filters{filterind}) 's'],betafns);
@@ -305,6 +363,8 @@ switch task
         
 end
 end
+
+
 
 function h = diag(aap,subj,SPM)
 % Based on Rik Henson's script
@@ -362,8 +422,10 @@ subplot('Position', [tWidth 0.1 0.6-tWidth 0.9/20*numel(cons)]); % assume not mo
 imagesc(columnsCon);
 colormap(vertcat(create_grad([0 0 1],[1 1 1],128),create_grad([1 1 1],[1 0 0],128)));
 caxis([-max(abs(columnsCon(:))) max(abs(columnsCon(:)))]);
-set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
-    'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
+% set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
+%     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
+set(gca, 'YTick', 1:numel(cons), 'YTickLabel',strrep(nameCons,'_','-'),  ...
+    'Xtick', 1:length(nameCols), 'XTickLabel',strrep(nameCols,'_','-'))
 set(gca, 'XAxisLocation','top');
 xlab = rotateticklabel(gca,90);
 set(gca,'FontSize',12,'FontWeight','Bold');

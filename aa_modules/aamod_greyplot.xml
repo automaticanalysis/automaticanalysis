@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='generate and save epi greyplot and related metrics' modality='MRI'>
+       
+            <permanenceofoutput>1</permanenceofoutput>
+			
+            <numberOfVoxelsToPlot>500</numberOfVoxelsToPlot>
+			
+            <!-- the mask must match the epi - if it doesn't, give the option -->
+            <!-- of automatically reslicing it (time consuming if multiple -->
+            <!-- calls) or bailing (user can fix the tasklist to reslice once) -->
+			
+           <resliceMaskIfNecessary>1</resliceMaskIfNecessary>
+		   
+            <!-- summary metrics are defined using eval strings -->
+            <!-- the defaults are global mean, DV, gm DVARS*, and FD -->
+            <!-- the plots are metric v framenumber -->
+
+            <!-- * this requires GM mask be passed to aamod_DVARS! -->
+		   
+            <!-- "label3sig" is yes/no flag to superimpose a red line at 3 sigma -->
+		   
+            <!-- "fieldname" is used as a struct fieldname in "metric_data" -->
+            <!-- to dave the data. It must be a valid matlab fieldname. -->
+		   
+            <metric_plots>
+              <plot>
+                <eval_string>GLOBALMEAN</eval_string>
+                <yaxis_label>Global Mean</yaxis_label>
+                <label3sig>0</label3sig>
+                <fieldname>GM</fieldname>
+              </plot>
+              <plot>
+                <eval_string>DVARS.wb</eval_string>
+                <yaxis_label>DVARS</yaxis_label>
+                <label3sig>1</label3sig>
+                <fieldname>DVARS</fieldname>
+              </plot>
+              <plot>
+                <eval_string>FD</eval_string>
+                <yaxis_label>FD</yaxis_label>
+                <label3sig>1</label3sig>
+                <fieldname>FD</fieldname>
+              </plot>	
+            </metric_plots>
+			
+            <!-- we tag epi as unmodifed so aa will use link to save some disc -->
+			
+            <!-- if both masks are missing, whole-brain greymap is plotted -->
+            <!-- if both masks are present, half-n-half gm/wm grayplot is generated -->
+			
+            <!-- meanepi is used to reslice the meaks, if required and requested -->
+			
+            <!-- these are NATIVE masks, so you should call this BEFORE norming the epi stream -->
+			
+            <!-- the required input streams are what's needed to create the default metric plots -->
+            <!-- (yeah, it's a little clunky, but there's no good way around it) -->
+			
+            <inputstreams>
+              <stream ismodified='0'>epi</stream>
+              <stream isessential='0'>meanepi</stream>
+              <stream isessential='0'>native_greymask</stream>
+              <stream isessential='0'>native_whitemask</stream>
+              <stream>GLOBALMEAN</stream>
+              <stream>DVARS</stream>
+              <stream>FD</stream>
+           </inputstreams>
+			
+            <!-- the metric data (i.e. the data that appears in the metric plots -->
+            <!-- may be used by other modules (e.g., aamod_lossplot uses it to create dataloss plots) -->
+		   
+            <!-- format: metric_data.fieldname = time-series-data -->
+            <!-- aamod_lossplot will add: metric_data.threshold.fieldname.onepercent etc -->
+		   	   
+            <outputstreams>
+              <stream>metric_data</stream>	   
+            </outputstreams>
+ 			
+        </currenttask>
+    </tasklist>
+</aap>

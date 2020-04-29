@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='construct scrub regressors' modality='MRI' >
+            
+			<qsub>
+				<timeBase>1</timeBase>
+				<memoryBase>1</memoryBase>
+			</qsub>
+
+			<permanenceofoutput>1</permanenceofoutput>
+	
+			<!-- scrub_criteria defines the scrubbing criteria using any -->
+			<!-- valid matlab expression. The following variable names -->
+			<!-- are available (along with the required stream): -->	
+			<!-- dXYZ, dRPJ (realignment_parameters) -->
+			<!-- TD, SV, GLOBALS, TM (tsdiffana) -->
+			<!-- DVARS.wb, DVARS.gm, DVARS.wm (DVARS) -->
+			<!-- FD (FD) -->
+				
+			<!-- examples
+	
+				<scrub_criteria> DVARS>0.43 </scrub_criteria>
+				<scrub_criteria> FD>0.15 || DVARS.gm>0.43 </scrub_criteria>
+				<scrub_criteria> FD>0.15 && (DVARS.gm+SV)>0.9 </scrub_criteria>
+				<scrub_criteria> TM>0.5 </scrub_criteria>
+				<scrub_criteria> (TM-mean(tm))>0.5 </scrub_criteria>
+				<scrub_criteria> (TM-smooth(1:length(TM),tm,0.1,'rloess')>tmlimit </scrub_criteria>
+				<scrub_criteria> (TM-smooth(1:length(TM),tm,0.1,'rloess')>tmlimit </scrub_criteria>
+				<scrub_criteria> abs(dXYZ)>0.1 || abs(dRPJ)>0.3 </scrub_criteria>
+				<scrub_criteria> abs(dXYZ)>0.1 && abs(dRPJ)>0.3 || FD>0.1 </scrub_criteria>		
+				
+				if you supply metric_data, you can use that in the criteria string
+				(i.e., instead of calculating your metrics de novo):
+				
+					<scrub_criteria> metric_data.FD > 0.123 </scrub_criteria>
+		
+				and if you supply metric_thresholds (e.g., from aamod_dataloss) 
+				you can use the field contents instead of hardcoding values:
+				
+					<scrub_criteria> metric_data.FD > metric_thresholds.FD.fivepercent </scrub_criteria>
+			
+			-->
+	
+			<scrub_criteria></scrub_criteria>
+			
+			<!-- user can also specify explicit criteria to ID frames to scrub. This is -->
+			<!-- expanded using eval (ex: [1:2:end] will scrub all odd frames) -->
+
+			<explicit_framelist></explicit_framelist>
+			
+			<!-- you can optionally extend the scrub range before and after any identified -->
+			<!-- single vols by a fixed number of frames using pre- and postkillbox -->
+
+			<prekillbox>0</prekillbox>
+			<postkillbox>0</postkillbox>		
+	
+			<inputstreams>
+				<stream>epi</stream>
+				<stream isessential='0'>realignment_parameter</stream>
+				<stream isessential='0'>tsdiffana</stream>
+				<stream isessential='0'>DVARS</stream>
+				<stream isessential='0'>FD</stream>
+				<stream isessential='0'>metric_data</stream>
+				<stream isessential='0'>metric_thresholds</stream>
+			</inputstreams>	
+			
+			<!-- the output is an integer list of the scrubbed and retained -->
+			<!-- frame numbers. We duplicate this info in "listspikes" (in a -->
+			<!-- somewhat different format) for aamod_firstlevel_model -->
+
+			<outputstreams>
+				<stream>scrublist</stream>
+				<stream>keeperlist</stream>
+				<stream>listspikes</stream>
+			</outputstreams>
+
+        </currenttask>
+    </tasklist>
+</aap>

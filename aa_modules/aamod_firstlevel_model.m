@@ -6,6 +6,14 @@
 % Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
 % Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
 % Thanks to Rik Henson for various suggestions (modified) [AVG & TA]
+%
+% CHANGE HISTORY
+%
+% 04/2020 [MSJ] added rWLS
+% 03/2018 [MSJ] don't wait for reporting to plot the design matrix, save
+% masks as QA images; save regressors to text file (SPM figure labeling
+% is hard to read!)
+%
 
 function [aap,resp]=aamod_firstlevel_model(aap,task,subj)
 
@@ -85,7 +93,7 @@ switch task
                                                              cols_interest, cols_nuisance, currcol, ...
                                                              movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
         end
-
+                
         cd (anadir)
 
         %%%%%%%%%%%%%%%%%%%
@@ -95,7 +103,12 @@ switch task
         if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
             spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
         end
-        SPMdes = spm_fmri_spm_ui(SPM);
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            SPMdes = spm_rwls_fmri_spm_ui(SPM);
+        else
+            SPMdes = spm_fmri_spm_ui(SPM);
+        end
 
         SPMdes.xX.X = double(SPMdes.xX.X);
         
@@ -132,9 +145,13 @@ switch task
             for ind=1:size(prevmask,1)
                 spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
             end;
+        end  
+
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            SPMest = spm_rwls_spm(SPMdes);
+        else
+            SPMest = spm_spm(SPMdes);
         end
-                
-        SPMest = spm_spm(SPMdes);
         
         % Saving Residuals
         if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
@@ -148,7 +165,7 @@ switch task
                 end
                 residuals{subjSessionI(s)} = horzcat(repmat([sesspath filesep],[SPM.nscan(s) 1]),fres);
                 if aap.options.NIFTI4D
-                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))),0,SPM.xY.RT);
+                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))));
                     fres = cellstr(residuals{subjSessionI(s)});
                     residuals{subjSessionI(s)} = fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s)));                
                     delete(fres{:});
@@ -174,8 +191,13 @@ switch task
                 dir(fullfile(anadir,'mask.*')));
             mask = dir(fullfile(anadir,'mask.*'));
             mask=strcat(repmat([anadir filesep],[numel(mask) 1]),char({mask.name}));
-            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);            
+            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);	
+			
+            % save diagnostic images for QA montage
+            save_three_ortho_jpgs(mask,fullfile(aas_getsubjpath(aap,subj),'diagnostic_BRAINMASK'));
+
         end
+        
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
         
@@ -185,7 +207,67 @@ switch task
             end
         end
 
-        %% DIAGNOSTICS...
+        %% DIAGNOSTICS
+		   
+    %  document rwls results using spm_rwls_resstats 
+
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            % sometimes rwls looks for the movement params using the wrong          
+            % filename, so pass in an expliclit fname if we can
+           if (aas_stream_has_contents(aap, subj, 'realignment_parameter'))
+                for sindex = 1:numSess
+                    moveparfname{sindex} = aas_getfiles_bystream(aap, subj, sindex,'realignment_parameter'); 
+                end
+                spm_rwls_resstats(SPMest,[],moveparfname);
+            else
+                spm_rwls_resstats(SPMest);  % fingers crossed
+           end
+            
+            
+            h = spm_figure('GetWin', 'Graphics');
+            set(h,'Renderer','opengl');
+            % the following is a workaround for font rescaling weirdness -- needs more testing
+            set(findall(h,'Type','text'),'FontSize', 10);
+            set(findall(h,'Type','text'),'FontUnits','normalized');
+            print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_RWLS.jpg'));
+            spm_figure('Close','Graphics');
+            spm_figure('Close','Interactive'); % rWLS toolbox leaves the interactive window up...
+
+        end
+ 
+ 
+        % don't wait for reporting to plot the design matrix!
+
+        spm_DesRep('DesOrth',SPMest.xX);
+        h = spm_figure('GetWin', 'Graphics');
+        set(h,'Renderer','opengl');
+        % the following is a workaround for font rescaling weirdness -- needs more testing
+        set(findall(h,'Type','text'),'FontSize', 10);
+        set(findall(h,'Type','text'),'FontUnits','normalized');
+        print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'DESIGN_MATRIX.jpg'));
+        spm_figure('Close','Graphics');
+
+        % document columns of design matrix
+
+        writetable(cell2table(SPMest.xX.name'), fullfile(aas_getsubjpath(aap,subj),'REGRESSORS.txt'));
+
+        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'diagnostic_ONSETS.txt'),'w');
+
+        if (fid > 0) 
+            for sessindex = 1:numel(SPMest.Sess)
+                fprintf(fid,sprintf('\n\t--- SESSION %0d ---\n',sessindex));
+                regressors = SPMest.Sess(sessindex).U;
+                for rindex = 1:numel(regressors)
+                    fprintf(fid,sprintf('\n\t%s\n\n', regressors(rindex).name{1}));
+                    onsets = regressors(rindex).ons;
+                    for oindex = 1:length(onsets)
+                        fprintf(fid,'\t%g\n', onsets(oindex));
+                    end
+                end
+            end
+            fclose(fid);
+        end
+
         if ~isempty(SPMdes.xX.iC) % model is not empty
             h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
             print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_aamod_firstlevel_model_regs.jpg'));
@@ -194,13 +276,18 @@ switch task
             close(h.regs)
             close(h.betas)
         end
+        
     case 'checkrequirements'
-        %% Adjust outstream
-        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
-            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
-            aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            if (isempty(which('spm_rwls_spm')))
+                aas_log(aap, true, 'Cannot find WLS functions. Check that the rWLS toolbox is installed');
+            end
         end
+        
+               
 
+        
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end

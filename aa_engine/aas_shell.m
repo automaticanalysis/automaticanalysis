@@ -38,6 +38,15 @@ if strcmp('shell-init: error', w)
     s = 1;
 end
 
+% ln returns s=1 on "file exists" -- this shouldn't be treated as
+% an error when using the -f option (and aas_retrieve_intputs does)
+
+if (s && contains(cmd,'ln')  && contains(cmd,'-f') && contains(w,'File exists'))
+    s = 0;
+    w = '';      
+end
+
+
 %% Process error if we're in non-quiet mode OR if we want to stop for errors
 if s && (~quiet || stopforerrors)
     [junk, wenv]=system('/usr/bin/env');

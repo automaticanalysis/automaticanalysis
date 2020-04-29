@@ -107,6 +107,9 @@ switch task
             aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end
     case 'doit'
+		
+		savedir = pwd;
+		
         % Get realignment defaults from the XML!
         reaFlags = aap.tasklist.currenttask.settings.eoptions;
         if strcmp(reaFlags.weight,'''''') % empty
@@ -223,6 +226,17 @@ switch task
             
             % Add it to the movement pars...
             movPars = [movPars outpars];
+			
+			% may as well save FD while we're here...
+			
+			rp = load(outpars);
+			dM = abs(diff(rp * diag([1 1 1 50 50 50])));
+			FD = [0;sum(dM,2)];
+			fname = fullfile(pth,'FD.mat');
+			save(fname,'FD');
+			aap = aas_desc_outputs(aap,subj,sess,'FD', fname);
+
+
         end
         
         %% DIAGNOSTICS
@@ -232,6 +246,8 @@ switch task
         print('-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
             [mfilename '__' subjname '_MP.jpeg']));
         close(f);
+		
+		cd(savedir);
         
     case 'checkrequirements'
         
@@ -239,3 +255,4 @@ switch task
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end
 end
+
