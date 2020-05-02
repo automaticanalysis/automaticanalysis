@@ -31,18 +31,19 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
     end
 end
 
-global aacache
 % Set UTC time function
 if exist('utc_time','file')
-    aacache.utc_time = @utc_time;
+    utc_time = @utc_time;
 else
     aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
-    aacache.utc_time = @java.lang.System.currentTimeMillis;
+    utc_time = @java.lang.System.currentTimeMillis;
 end
+aas_cache_put(aap,'utc_time',utc_time,'utils');
 
 %% Set Paths
-aacache.path.bcp_path = path;
-aacache.path.bcp_shellpath = getenv('PATH');
+aas_cache_put(aap,'bcp_path',path,'system');
+aas_cache_put(aap,'bcp_shellpath',getenv('PATH'),'system');
+
 % Path for SPM
 if ~isempty(aap.directory_conventions.spmdir)
     % by setting this environment variable it becomes possible to define other
@@ -113,7 +114,7 @@ addpath(...
 if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
     SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':'); SPMTools = SPMTools{1};
     for pp = SPMTools'
-        addpath(genpath(pp{1}));
+        addpath(pp{1});
     end
 end
 
@@ -186,7 +187,8 @@ end;
 
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
-    setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+    [s,p] = aas_cache_get(aap,'bcp_shellpath','system');
+    setenv('PATH',[p ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
 
@@ -269,8 +271,8 @@ reqpath=reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
 if exc, reqpath(exc) = []; end
 
-aacache.path.reqpath = reqpath;
+aas_cache_put(aap,'reqpath',reqpath,'system');
 % switch off warnings
-aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
-aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
-
+warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
+warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
+aas_cache_put(aap,'warnings',warnings,'system');

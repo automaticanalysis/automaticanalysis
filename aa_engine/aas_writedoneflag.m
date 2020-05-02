@@ -1,6 +1,5 @@
 
 function aas_writedoneflag(aap,fn,note)
-global aacache
 global aaworker
 global aaparallel
 
@@ -8,7 +7,7 @@ switch(aap.directory_conventions.remotefilesystem)
     case 's3'
         % Find out how many retries and when
         sql=sprintf('select utctime from %s where analysisid=''%s'' and itemName()=''%s''',aaworker.jobtablename,aap.directory_conventions.analysisid,aaworker.jobid);
-        [aap jobentry]=sdb_select(aap,sql);
+        [aap, jobentry]=sdb_select(aap,sql);
         % Write to the sdb _doneflags table
         attr=[];
         attr.duration=num2str(24*3600*(now-aaworker.modulestarttime));
@@ -16,8 +15,9 @@ switch(aap.directory_conventions.remotefilesystem)
             utctimelaunches=jobentry.SelectResult.Item.Attribute.Value;
             attr.utctimelaunches=utctimelaunches;
         catch
-        end;
-        attr.utctime=num2str(aacache.utc_time()/1000); % second
+        end
+        [s,utc] = aas_cache_get(aap,'utc_time','utils');
+        attr.utctime=num2str(utc()/1000); % second
         attr.studypath=aas_getstudypath(aap,aap.directory_conventions.remotefilesystem);
         attr.analysisid=aap.directory_conventions.analysisid;
         attr.jobid=aaworker.jobid;
@@ -28,22 +28,21 @@ switch(aap.directory_conventions.remotefilesystem)
             for sind=1:length(aaworker.outputstreams)
                 st=aaworker.outputstreams(sind);
                 osd=[osd sprintf('%s|%d|%s|%s|%s',st.name,st.numoutputs,st.desc,st.s3root,st.filename)];
-            end;
+            end
             attr.outputstreams=osd;
-        end;
+        end
         cmd='/sbin/ifconfig  | grep -s "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
         % ignore errors
-        [s w]=aas_shell(cmd, true, false);
+        [s, w]=aas_shell(cmd, true, false);
         ipaddress = "";
         if (~s)
-            [ipaddress junk]=strtok(w);
-        end;
+            ipaddress=strtok(w);
+        end
         attr.ipaddress=ipaddress;
-        attr
-        [attr success]=sdb_put_attributes(aap,aaworker.doneflagtablename,fn,attr);
+        [attr, success]=sdb_put_attributes(aap,aaworker.doneflagtablename,fn,attr);
         if (~success)
             aas_log(aap,true,sprintf('Error writing done flag %s',fn));
-        end;
+        end
         % Delete entry from the sdb _jobs table
         %  sdb_delete_attributes(aap,aaworker.jobtablename,fn);
         %      >> Now done in aws_process_jobq
@@ -55,7 +54,7 @@ switch(aap.directory_conventions.remotefilesystem)
         % For each pending job depedendent on this stage...
         sqlish=sprintf('select * from %s where analysisid=''%s'' and tobecompletedfirst=''%s''',aaworker.jobtablename,[aap.directory_conventions.analysisid aap.directory_conventions.analysisid_suffix],fn);
         aas_log(aap,false,sprintf('Getting dependencies with %s',sqlish));
-        [aap depresp]=sdb_select(aap,sqlish);
+        [aap, depresp]=sdb_select(aap,sqlish);
         njobs=length(depresp.SelectResult.Item);
         aas_log(aap,false,sprintf('Now adjusting %d dependencies',njobs));
         for depjobind=1:njobs
@@ -81,8 +80,8 @@ switch(aap.directory_conventions.remotefilesystem)
 
             % Retrieve up-to-date copy in case another thread has already
             % queued it while we've been working through our list
-            sqlish=sprintf('select * from %s where itemName()=''%s''',aaworker.jobtablename,depjobname)
-            [aap depresp_single]=sdb_select(aap,sqlish);
+            sqlish = sprintf('select * from %s where itemName()=''%s''',aaworker.jobtablename,depjobname);
+            [aap, depresp_single]=sdb_select(aap,sqlish);
             tbcf_ind=strfind({depresp_single.SelectResult.Item.Attribute.Name},'tobecompletedfirst');
             numtbcf=sum(~cellfun(@isempty,tbcf_ind));
 %            end;
@@ -110,20 +109,20 @@ switch(aap.directory_conventions.remotefilesystem)
                     aas_log(aap,false,sprintf('Job %s now queued as good-to-go',depjobname));
                 else
                     aas_log(aap,false,sprintf('Job %s already queued',depjobname));
-                end;
+                end
             else
                 aas_log(aap,false,sprintf('Job %s is still dependent on other stages',depjobname));
-            end;
-        end;
+            end
+        end
     otherwise
         
 
-        [pth nme ext]=fileparts(fn);
+        pth=fileparts(fn);
         aas_makedir(aap,pth);
         fid=fopen(fn,'w');
         if (~fid)
             aas_log(aap,1,['Error writing done flag ' fn])
-        end;
+        end
         
         % Execution time
         if nargin == 3 % there is a note
@@ -134,15 +133,15 @@ switch(aap.directory_conventions.remotefilesystem)
         
         % And dump IP of this machine to done flag
         cmd='/sbin/ifconfig  | grep -s "inet addr:"| grep -v "127.0.0.1" | cut -d: -f2 | awk "{ print $1}"';
-        [s w]=aas_shell(cmd, true, false);
+        [s, w]=aas_shell(cmd, true, false);
         ipaddress = "";
         if (~s)
-            [ipaddress junk]=strtok(w);
+            ipaddress=strtok(w);
             fprintf(fid,'%s\n',ipaddress);
-        end;
+        end
         if isfield(aap.internal,'benchmark')
             fprintf(fid,'%f\n',toc(aap.internal.benchmark.start_tic));
         end
         fclose(fid);
         
-end;
+end

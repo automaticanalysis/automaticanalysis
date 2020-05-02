@@ -438,7 +438,7 @@ classdef aaq_qsub<aaq
         
         function [obj]=qsub_q_job(obj,job)
             global aaworker
-            global aacache
+            [s, reqpath] = aas_cache_get(aap,'reqpath','system');
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
@@ -468,9 +468,9 @@ classdef aaq_qsub<aaq
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
                 if isprop(J,'AdditionalPaths')
-                    J.AdditionalPaths = aacache.path.reqpath;
+                    J.AdditionalPaths = reqpath;
                 elseif isprop(J,'PathDependencies')
-                    J.PathDependencies = aacache.path.reqpath;
+                    J.PathDependencies = reqpath;
                 end
                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
                 success = false;
