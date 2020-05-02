@@ -17,12 +17,14 @@
             <inputstreams>
                 <stream isessential="0">forward_deformation_field</stream> 
                 <stream isessential="0">normalisation_seg_sn</stream> 
-				<stream diagnostic="1">structural</stream>
+                <stream diagnostic="1">structural</stream>
+                <stream>firstlevel_brainmask</stream>
                 <stream>firstlevel_cons</stream>
             </inputstreams>
             
             <outputstreams>
                 <preservefilename>1</preservefilename>
+                <stream>firstlevel_brainmask</stream>
                 <stream>firstlevel_cons</stream>
             </outputstreams>
             
