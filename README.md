@@ -25,7 +25,7 @@ More information can be found on the [wiki](https://github.com/automaticanalysis
  - System: Linux or MacOX (Windows is not supported. Sorry!)
  - Softwares: 
    - **MATLAB** - It has been tested with version r2013a and later
-   - **SPM** - It has been tested with versions SPM12 and later (SPM12 r7487 is recommended!)
+   - **SPM** - It has been tested with versions SPM12 and later (SPM12 r7487 or later **required**!)
  - Recommended software for features:
    - For MEG (maxfilter): Neuromag (Elekta Instrument AB Stockholm, Stockholm, Sweden)
    - For visual representation of the pipeline: [GraphViz](http://www.graphviz.org)
@@ -58,7 +58,7 @@ Some parameters (path settings, format settings) stored in **_<aarootdir>/aa_par
  - *directory_conventions/seriesoutputformat*: `sprintf` formatting string to get series directory as stored in subject directory
  - *directory_conventions/protocol_structural*: Name of the structural/anatomical protocol as stored in the DICOM header
  - *directory_conventions/dicomfilter*: Directory listing filter to find DICOM data
- - *directory_conventions/spmdir*: Path to SPM. **N.B.: You should not modify SPM version in your user script but rather in your local parameter file.**
+ - *directory_conventions/toolboxes/spm*: Settings for SPM. **N.B.: You should not modify SPM version in your user script but rather in your local parameter file.**
 Optional:
  - For distortion correction using fieldmap:
    - *directory_conventions/protocol_fieldmap*: Name of the fieldmap protocol as stored in the DICOM header
@@ -84,10 +84,10 @@ Optional:
      - *directory_conventions/freesurfershell*: Shell used to run FreeSurfer. It should be in accordance with *directory_conventions/freesurfersetup* and *directory_conventions/freesurferenvironment*
      - *directory_conventions/freesurferenvironment*: Path to FreeSurfer environmental setup script, executing before any FreeSurfer command
    
-   - *directory_conventions/eeglabdir*: Path to EEGLab
+   - *directory_conventions/toolboxes/eeglab*: Settings for EEGLab
    - *directory_conventions/GIFTdir*: Path to GIFT
    - *directory_conventions/ANTSdir*: Path to ANTS
-   - *directory_conventions/fieldtripdir*: Path to FieldTrip
+   - *directory_conventions/toolboxes/fieldtrip*: Settings for FieldTrip
    - *directory_conventions/BrainWaveletdir*: Path to BrainWavelet
    - *directory_conventions/spmtoolsdir*: Path to external/custom SPM toolboxes
 
