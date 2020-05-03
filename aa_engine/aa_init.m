@@ -45,6 +45,7 @@ aas_cache_put(aap,'bcp_shellpath',getenv('PATH'),'system');
 
 % Path for SPM
 SPMDIR = '';
+doKeepInPath = true;
 % backward compatibility
 if isfield(aap.directory_conventions,'spmdir') && ~isempty(aap.directory_conventions.spmdir)
     SPMDIR = aap.directory_conventions.spmdir;
@@ -52,6 +53,7 @@ end
 % toolboxes
 if isfield(aap.directory_conventions,'toolboxes') && isfield(aap.directory_conventions.toolboxes,'spm')
     SPMDIR = aap.directory_conventions.toolboxes.spm.dir;
+    doKeepInPath = aap.directory_conventions.toolboxes.spm.extraparameters.doKeepInPath;
 end
 % path
 if isempty(SPMDIR)
@@ -59,15 +61,17 @@ if isempty(SPMDIR)
         aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set in aap.directory_conventions.toolbox');
     else
         SPMDIR = spm('Dir');
+        doKeepInPath = true;
     end
 end
 % deployed
 if isdeployed
     SPMDIR = spm('Dir');
+    doKeepInPath = true;
 end
 % reset
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
-if isfield(aap.directory_conventions,'toolboxes'), aap.directory_conventions.toolboxes.spm.dir = SPMDIR; end
+if isfield(aap.directory_conventions,'toolboxes') && isfield(aap.directory_conventions.toolboxes,'spm'), aap.directory_conventions.toolboxes.spm.dir = SPMDIR; end
 
 % by setting this environment variable it becomes possible to define other
 % paths relative to $SPMDIR in defaults files and task lists
@@ -80,8 +84,8 @@ if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
     oldspmdefaults = aap.spm.defaults;
 end
 
-SPM = spmClass(SPMDIR);
-SPM.init;
+SPM = spmClass(SPMDIR,'doAddToPath',true,'doKeepInPath',doKeepInPath);
+SPM.load;
 aas_cache_put(aap,'spm',SPM);
 
 try
@@ -128,6 +132,7 @@ end
 % Toolboxes
 if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conventions.toolboxes)
     for t = fieldnames(aap.directory_conventions.toolboxes)'
+        if strcmp(t{1},'spm'), continue; end
         if ~exist([t{1} 'Class'],'class')
             aas_log(aap,false,sprintf('No interfaces for %s in extrafunctions/toolboxes',f{1}));
         else
@@ -136,7 +141,10 @@ if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conv
             params = {};
             if isfield(TBX,'extraparameters')
                 for p = fieldnames(TBX.extraparameters)
-                    params{end+1} = TBX.extraparameters.(p{1});
+                    val = TBX.extraparameters.(p{1});
+                    if ischar(val) && contains(val,':'), val = strsplit(val,':'); end
+                    params{end+1} = p{1};
+                    params{end+1} = val;
                 end
             end
             T = constr(TBX.dir,params{:});
@@ -262,7 +270,7 @@ if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventi
 end
 
 % clean
-reqpath=reqpath(strcmp('',reqpath)==0);
+reqpath = reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
 if exc, reqpath(exc) = []; end
 

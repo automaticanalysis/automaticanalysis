@@ -1,4 +1,8 @@
 classdef toolboxClass < handle
+    properties
+        keepInPath = false % keep the toolbox in the path after deletion
+    end
+    
     properties (Dependent)
         status
     end
@@ -10,56 +14,57 @@ classdef toolboxClass < handle
             'unloaded', 1,...
             'loaded', 2 ...            
         )
-        p_status = -1
+        pStatus = -1
         
-        tool_path = ''
-        tool_in_path = {}
+        toolPath = ''
+        toolInPath = {}
     end
     
     methods
-        function obj = toolboxClass(path,do_add_to_path)
-            obj.tool_path = path;
-            if do_add_to_path, addpath(obj.tool_path); end
-            obj.p_status = obj.CONST_STATUS.defined;
-        end
-        
-        function delete(obj)
-            obj.close;
+        function obj = toolboxClass(path,doAddToPath,doKeepInPath)
+            obj.toolPath = path;
+            if doAddToPath
+                addpath(obj.toolPath); 
+                obj.toolInPath = cellstr(obj.toolPath);
+            end
+            obj.keepInPath = doKeepInPath;
+            obj.pStatus = obj.CONST_STATUS.defined;
         end
         
         function val = get.status(obj)
             for f = fieldnames(obj.CONST_STATUS)'
-                if obj.CONST_STATUS.(f{1}) == obj.p_status
+                if obj.CONST_STATUS.(f{1}) == obj.pStatus
                     val = f{1};
                     break;
                 end
             end
         end
         
-        function init(obj)
-            if obj.p_status < obj.CONST_STATUS.loaded
+        function load(obj)
+            if obj.pStatus < obj.CONST_STATUS.loaded
                 p = split(path,pathsep);
-                obj.tool_in_path = p(cellfun(@(x) contains(x,obj.tool_path), p));
-                obj.p_status = obj.CONST_STATUS.loaded;
+                obj.toolInPath = p(cellfun(@(x) contains(x,obj.toolPath), p));
+                obj.pStatus = obj.CONST_STATUS.loaded;
             end
         end
         
         function close(obj)
-            obj.remove_from_path;    
-            obj.p_status = obj.CONST_STATUS.undefined;
+            if ~obj.keepInPath, obj.unload; end
+            obj.pStatus = obj.CONST_STATUS.undefined;
         end
         
-        function add_to_path(obj)
-            if obj.p_status < obj.CONST_STATUS.loaded
-                addpath(sprintf(['%s' pathsep],obj.tool_in_path{:}))
-                obj.p_status = obj.CONST_STATUS.loaded;
+        function reload(obj)
+            if obj.pStatus < obj.CONST_STATUS.loaded
+                addpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
+                obj.pStatus = obj.CONST_STATUS.loaded;
             end
         end
         
-        function remove_from_path(obj)
-            if obj.p_status > obj.CONST_STATUS.unloaded
-                rmpath(sprintf(['%s' pathsep],obj.tool_in_path{:}))
-                obj.p_status = obj.CONST_STATUS.unloaded;
+        function unload(obj)
+            if ~isempty(obj.toolInPath)
+                warning('%s''s folders (and subfolders) will be removed from the MATLAB path',class(obj));
+                rmpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
+                obj.pStatus = obj.CONST_STATUS.unloaded;
             end
         end
     end

@@ -1,6 +1,6 @@
 classdef eeglabClass < toolboxClass
     properties
-        req_plugins = {}
+        requiredPlugins = {}
     end
     
     properties (Access = private)
@@ -8,16 +8,26 @@ classdef eeglabClass < toolboxClass
     end
     
     properties (Dependent)
-        dipfit_path
+        dipfitPath
     end
     
     methods
-        function obj = eeglabClass(path,req_plugins)
-            obj = obj@toolboxClass(path,true);
-            if nargin > 1, obj.req_plugins = req_plugins; end
+        function obj = eeglabClass(path,varargin)
+            defaultKeepInPath = false;
+            defaultRequiredPlugins = {};
+            
+            argParse = inputParser;
+            argParse.addRequired('path',@ischar);
+            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
+            argParse.addParameter('doKeepInPath',defaultKeepInPath);
+            argParse.parse(path,varargin{:});
+            
+            obj = obj@toolboxClass(argParse.Results.path,true,argParse.Results.doKeepInPath);
+            
+            obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
         
-        function init(obj)
+        function load(obj)
             is_new_plugin = false;
             eeglab;
             close(gcf);
@@ -25,17 +35,17 @@ classdef eeglabClass < toolboxClass
             evalin('base','clear ALLCOM ALLEEG CURRENTSET CURRENTSTUDY EEG eeglabUpdater globalvars LASTCOM PLUGINLIST STUDY')
             
             for p = plugin_getweb('', obj.plugins, 'newlist')
-                if any(strcmp(obj.req_plugins, p.name)) && ~p.installed
+                if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
                     plugin_install(p.zip, p.name, p.version, p.size);
                     is_new_plugin = true;
                 end
             end
             if is_new_plugin, obj.init; end
             
-            init@toolboxClass(obj)
+            load@toolboxClass(obj)
         end
         
-        function val = get.dipfit_path(obj)
+        function val = get.dipfitPath(obj)
             [~,~,pl] = plugin_status('dipfit');
             val = fullfile(obj.tool_path,'plugins',pl.foldername);
         end

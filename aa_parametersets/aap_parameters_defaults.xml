@@ -34,11 +34,15 @@
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
         <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
         <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-            <spm><dir></dir></spm>
+            <spm><dir></dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </spm>
             <eeglab>
                 <dir></dir>
                 <extraparameters>
-                    <plugins></plugins>
+                    <requiredPlugins></requiredPlugins>
                 </extraparameters>
             </eeglab>
             <fieldtrip><dir></dir></fieldtrip>

@@ -1,15 +1,23 @@
 classdef spmClass < toolboxClass
     methods
-        function obj = spmClass(path,do_add_to_path)
-            if nargin < 2, do_add_to_path = false; end
-            obj = obj@toolboxClass(path,do_add_to_path);
+        function obj = spmClass(path,varargin)
+            defaultAddToPath = false;
+            defaultKeepInPath = false;
+            
+            argParse = inputParser;
+            argParse.addRequired('path',@ischar);
+            argParse.addParameter('doAddToPath',defaultAddToPath);
+            argParse.addParameter('doKeepInPath',defaultKeepInPath);
+            argParse.parse(path,varargin{:});
+            
+            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
         end
         
-        function init(obj)
-            addpath(obj.tool_path);
+        function load(obj)
+            addpath(obj.toolPath);
             spm_jobman('initcfg');
             
-            init@toolboxClass(obj)
+            load@toolboxClass(obj)
         end
         
     end

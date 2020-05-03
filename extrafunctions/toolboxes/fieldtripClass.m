@@ -1,24 +1,38 @@
 classdef fieldtripClass < toolboxClass
     methods
-        function obj = fieldtripClass(path,do_add_to_path)
-            if nargin < 2, do_add_to_path = false; end
-            obj = obj@toolboxClass(path,do_add_to_path);
+        function obj = fieldtripClass(path,varargin)
+            defaultAddToPath = false;
+            defaultKeepInPath = false;
+            
+            argParse = inputParser;
+            argParse.addRequired('path',@ischar);
+            argParse.addParameter('doAddToPath',defaultAddToPath);
+            argParse.addParameter('doKeepInPath',defaultKeepInPath);
+            argParse.parse(path,varargin{:});
+            
+            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
         end
         
-        function init(obj)
-            addpath(obj.tool_path);
+        function load(obj)
+            addpath(obj.toolPath);
             ft_defaults
-            spmver = '';
-            try spmver = spm('ver'); catch, warning('SPM is not detected'); end
-            if ~isempty(spmver)
+            spmVer = '';
+            try spmVer = spm('ver'); catch, warning('SPM is not detected'); end
+            if ~isempty(spmVer)
                 global ft_default
                 ft_default.trackcallinfo = 'no';
                 ft_default.showcallinfo = 'no';
-                ft_default.spmversion = lower(spmver);
+                if ~isempty(spmVer), ft_default.spmversion = lower(spmVer); end
             end
             
-            init@toolboxClass(obj)
+            load@toolboxClass(obj)
         end
         
+        function close(obj)
+            global ft_default
+            ft_default = [];
+            clear ft_default;
+            close@toolboxClass(obj)
+        end        
     end
 end
