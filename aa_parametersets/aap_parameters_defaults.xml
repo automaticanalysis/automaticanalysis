@@ -32,8 +32,17 @@
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
-        <spmdir desc="Path(s) to SPM software (>SPM12 r6470 required)" ui="dir"></spmdir>		
-        <spmtoolsdir desc="Path(s) to SPM tools (colon separated list)" ui="dir"></spmtoolsdir>
+        <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
+        <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
+            <spm><dir></dir></spm>
+            <eeglab>
+                <dir></dir>
+                <extraparameters>
+                    <plugins></plugins>
+                </extraparameters>
+            </eeglab>
+            <fieldtrip><dir></dir></fieldtrip>
+        </toolboxes>
         <linuxshell desc='Linux shell used to run linux commands' ui='text'></linuxshell>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
@@ -44,13 +53,11 @@
         <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
         <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
         <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
-        <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
         <GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
-        <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
         <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'></BrainWaveletdir>
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
