@@ -37,7 +37,7 @@ classdef toolboxClass < handle
         end
         
         function init(obj)
-            if obj.p_status < obj.CONST_STATUS.initialised
+            if obj.p_status < obj.CONST_STATUS.loaded
                 p = split(path,pathsep);
                 obj.tool_in_path = p(cellfun(@(x) contains(x,obj.tool_path), p));
                 obj.p_status = obj.CONST_STATUS.loaded;
@@ -57,8 +57,10 @@ classdef toolboxClass < handle
         end
         
         function remove_from_path(obj)
-            rmpath(sprintf(['%s' pathsep],obj.tool_in_path{:}))
-            obj.p_status = obj.CONST_STATUS.unloaded;
+            if obj.p_status > obj.CONST_STATUS.unloaded
+                rmpath(sprintf(['%s' pathsep],obj.tool_in_path{:}))
+                obj.p_status = obj.CONST_STATUS.unloaded;
+            end
         end
     end
 end

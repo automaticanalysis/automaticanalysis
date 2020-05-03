@@ -12,6 +12,8 @@ classdef fieldtripClass < toolboxClass
             try spmver = spm('ver'); catch, warning('SPM is not detected'); end
             if ~isempty(spmver)
                 global ft_default
+                ft_default.trackcallinfo = 'no';
+                ft_default.showcallinfo = 'no';
                 ft_default.spmversion = lower(spmver);
             end
             
