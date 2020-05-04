@@ -229,6 +229,16 @@ if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory
     end
 end
 
+% Toolboxes
+if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conventions.toolboxes)
+    for t = fieldnames(aap.directory_conventions.toolboxes)'
+        TBX = aap.directory_conventions.toolboxes.(t{1});
+        if isfield(TBX,'extraparameters') && isfield(TBX.extraparameters,'doAddToPath') && TBX.extraparameters.doAddToPath
+            reqpath{end+1} = TBX.dir;
+        end
+    end
+end
+
 % MNE
 if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
     if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')

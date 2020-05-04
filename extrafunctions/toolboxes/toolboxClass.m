@@ -1,5 +1,6 @@
 classdef toolboxClass < handle
     properties
+        toolPath = ''
         keepInPath = false % keep the toolbox in the path after deletion
     end
     
@@ -16,7 +17,6 @@ classdef toolboxClass < handle
         )
         pStatus = -1
         
-        toolPath = ''
         toolInPath = {}
     end
     
