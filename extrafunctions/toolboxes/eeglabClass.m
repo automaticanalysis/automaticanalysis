@@ -1,3 +1,4 @@
+
 classdef eeglabClass < toolboxClass
     properties
         requiredPlugins = {}
@@ -13,21 +14,24 @@ classdef eeglabClass < toolboxClass
     
     methods
         function obj = eeglabClass(path,varargin)
+            defaultAddToPath = true;
             defaultKeepInPath = false;
             defaultRequiredPlugins = {};
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
-            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
+            argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
+            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);            
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.path,true,argParse.Results.doKeepInPath);
+            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
         
         function load(obj)
+            addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
             close(gcf);

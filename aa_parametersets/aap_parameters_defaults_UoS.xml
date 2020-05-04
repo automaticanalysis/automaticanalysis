@@ -31,6 +31,7 @@
                 <eeglab>
                     <dir>/users/psychology01/software/eeglab</dir>
                     <extraparameters>
+                        <doAddToPath>1</doAddToPath>
                         <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
                     </extraparameters>
                 </eeglab>
