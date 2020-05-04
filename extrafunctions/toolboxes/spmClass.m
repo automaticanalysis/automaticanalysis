@@ -6,8 +6,8 @@ classdef spmClass < toolboxClass
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
-            argParse.addParameter('doAddToPath',defaultAddToPath);
-            argParse.addParameter('doKeepInPath',defaultKeepInPath);
+            argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
+            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
             obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
