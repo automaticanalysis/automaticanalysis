@@ -438,7 +438,7 @@ classdef aaq_qsub<aaq
         
         function [obj]=qsub_q_job(obj,job)
             global aaworker
-            [s, reqpath] = aas_cache_get(aap,'reqpath','system');
+            [s, reqpath] = aas_cache_get([],'reqpath','system');
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
