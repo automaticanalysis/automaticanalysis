@@ -19,7 +19,7 @@ classdef eeglabClass < toolboxClass
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
             argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
-            argParse.addParameter('doKeepInPath',defaultKeepInPath);
+            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
             obj = obj@toolboxClass(argParse.Results.path,true,argParse.Results.doKeepInPath);
@@ -47,7 +47,7 @@ classdef eeglabClass < toolboxClass
         
         function val = get.dipfitPath(obj)
             [~,~,pl] = plugin_status('dipfit');
-            val = fullfile(obj.tool_path,'plugins',pl.foldername);
+            val = fullfile(obj.toolPath,'plugins',pl.foldername);
         end
     end
 end
