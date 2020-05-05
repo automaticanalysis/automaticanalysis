@@ -10,7 +10,7 @@ resp='';
 switch task
     case 'doit'
         issubj=false;
-        isMRI = false; isMEG = false;
+        isMRI = false; isMEEG = false;
         if ~iscell(aap.acq_details.subjects(subj).mriname), aap.acq_details.subjects(subj).mriname = {aap.acq_details.subjects(subj).mriname}; end
         
         if numel(aap.acq_details.subjects)>=subj
@@ -19,13 +19,13 @@ switch task
                 isMRI = true;
             end;
             if all(strcmp(aap.acq_details.subjects(subj).mriname,'missing'))
-                aas_log(aap,0,sprintf('MRI from subject number %d is missing, hope you are doing MEG',subj));
+                aas_log(aap,0,sprintf('MRI from subject number %d is missing, hope you are doing MEEG',subj));
                 issubj = false;
                 isMRI = false;
             end;
-            if ~isempty(cell2mat(aap.acq_details.subjects(subj).megname))
+            if ~isempty(cell2mat(aap.acq_details.subjects(subj).meegname))
                 issubj = true;
-                isMEG = true;
+                isMEEG = true;
             end
         end;
         if ~issubj
@@ -38,8 +38,8 @@ switch task
                         s = mri_findvol(aap,aap.acq_details.subjects(subj).mriname{m});
                         if isempty(s)
                             aas_log(aap,false,sprintf('WARNING: Problem finding raw MRI data directory for subject %s',aap.acq_details.subjects(subj).subjname));
-                            if ~isempty(cell2mat(aap.acq_details.subjects(subj).megname))
-                                aas_log(aap,false,'INFO: You can still run MEG analysis');
+                            if ~isempty(cell2mat(aap.acq_details.subjects(subj).meegname))
+                                aas_log(aap,false,'INFO: You can still run MEEG analysis');
                                 aap.acq_details.subjects(subj).mriname{m}='missing';
                             end
                         else
@@ -51,24 +51,24 @@ switch task
                         name = aas_mriname2subjname(aap,aap.acq_details.subjects(subj).mriname{iname});
                     end
                 end
-                if isMEG
+                if isMEEG
                     for m = 1:numel(aap.acq_details.subjects(subj).mriname)
-                        s = meg_findvol(aap,aap.acq_details.subjects(subj).megname{m});
+                        s = meeg_findvol(aap,aap.acq_details.subjects(subj).meegname{m});
                         if isempty(s)
                             if isempty(cell2mat(aap.acq_details.subjects(subj).mriname)) || all(strcmp(aap.acq_details.subjects(subj).mriname,'missing'))
-                                aas_log(aap,true,sprintf('ERROR: Problem finding raw MEG data directory for subject %s',aap.acq_details.subjects(subj).subjname));
+                                aas_log(aap,true,sprintf('ERROR: Problem finding raw MEEG data directory for subject %s',aap.acq_details.subjects(subj).subjname));
                             else
-                                aas_log(aap,false,'WARNING: Problem finding raw MEG data directory for subject %s\n',aap.acq_details.subjects(subj).subjname);
+                                aas_log(aap,false,'WARNING: Problem finding raw MEEG data directory for subject %s\n',aap.acq_details.subjects(subj).subjname);
                                 aas_log(aap,false,'INFO: You can still run MRI analysis');
-                                aap.acq_details.subjects(subj).megname{m}='missing';
+                                aap.acq_details.subjects(subj).meegname{m}='missing';
                             end
                         else
-                            aap.acq_details.subjects(subj).megname{m}=s;
+                            aap.acq_details.subjects(subj).meegname{m}=s;
                         end
                     end
-                    iname = find(~strcmp(aap.acq_details.subjects(subj).megname,'missing'),1);
+                    iname = find(~strcmp(aap.acq_details.subjects(subj).meegname,'missing'),1);
                     if ~isempty(iname)
-                        name = aas_megname2subjname(aap,aap.acq_details.subjects(subj).megname{iname});
+                        name = aas_meegname2subjname(aap,aap.acq_details.subjects(subj).meegname{iname});
                     end
                 end
                 if ~isfield(aap.acq_details.subjects(subj),'subjname') || isempty(aap.acq_details.subjects(subj).subjname)
@@ -89,7 +89,7 @@ switch task
                 % [TA] needs changing to enable 
                 %   - multiple rawdatadir
                 %   - multiple mriname
-                %   - multiple megname
+                %   - multiple meegname
                 %   - use of subjname
                 global aaworker
                 % Separately match subject and visit parts

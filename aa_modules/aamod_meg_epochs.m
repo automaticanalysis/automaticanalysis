@@ -8,7 +8,7 @@ switch task
     case 'doit'
         %% Initialise
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = infname(1,:);
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = infname(1,:);
         S.D = spm_eeg_load(infname);
         
         S.bc = aap.tasklist.currenttask.settings.baselinecorrection;
@@ -16,7 +16,7 @@ switch task
         
         %% Conditions
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{aap.tasklist.currenttask.settings.condition.subject});
-        sessmatches=strcmp(aap.acq_details.meg_sessions(sess).name,{aap.tasklist.currenttask.settings.condition.session});
+        sessmatches=strcmp(aap.acq_details.meeg_sessions(sess).name,{aap.tasklist.currenttask.settings.condition.session});
         % If no exact spec found, try session wildcard, then subject
         % wildcard, then wildcard for both
         if (~any(sessmatches & subjmatches))

@@ -66,10 +66,10 @@ Optional:
  - For multichannel segmentation using T2-weighted image:
    - *directory_conventions/protocol_t2*: Name of the T2-weighted protocol as stored in the DICOM header
 
- - For MEG: 
-   - *directory_conventions/rawmegdatadir*: Directories to find raw MEG data
-   - *directory_conventions/megsubjectoutputformat*: `sprintf` formatting string to get subject directory as stored in *directory_conventions/rawmegdatadir*		
-   - *directory_conventions/neuromagdir*: Path to Neuromag (maxfilter)
+ - For MEEG: 
+   - *directory_conventions/rawmeegdatadir*: Directories to find raw MEEG data
+   - *directory_conventions/meegsubjectoutputformat*: `sprintf` formatting string to get subject directory as stored in *directory_conventions/rawmeegdatadir*		
+   - (optional) *directory_conventions/neuromagdir*: Path to Neuromag (maxfilter)
 
  - Optional analysis software:
    - FMRIB Software Library:

@@ -1,9 +1,9 @@
-function subjName = aas_megname2subjname(aap,name)
+function subjName = aas_meegname2subjname(aap,name)
 
 subjName = name;
 
 % subjprefix
-subjprefix = aap.directory_conventions.megsubjectoutputformat;
+subjprefix = aap.directory_conventions.meegsubjectoutputformat;
 subjprefix = subjprefix(1:regexp(subjprefix,'[%*]','once')-1);
 
 numpos=strfind(name,subjprefix);

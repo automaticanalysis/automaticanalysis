@@ -6,7 +6,7 @@ switch task
     case 'doit'
         fname = {};
         for sess = aap.acq_details.selected_sessions
-            fname{end+1} = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');
+            fname{end+1} = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg');
         end
         
         cd(aas_getsubjpath(aap,subj));

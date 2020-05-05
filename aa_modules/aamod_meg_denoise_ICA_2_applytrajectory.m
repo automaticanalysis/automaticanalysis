@@ -6,8 +6,8 @@ resp='';
 switch task
     case 'report'
         FNUM = 10;  % To avoid too many figures!
-        load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica','output'));
-        infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
+        load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica','output'));
+        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
         D = spm_eeg_load(infname_meg);
         
         for m = 1:length(modality)
@@ -83,8 +83,8 @@ switch task
         % clear previous diagnostics
         delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_*'));
         
-        infname_meg = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
-        infname_ica = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica');
+        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
+        infname_ica = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica');
         
         D = spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
         ICA = load(infname_ica);

@@ -1,4 +1,4 @@
-function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventdef,trialshift)
+function aap=aas_add_meeg_event(aap,modulename,subject,session,eventname,eventdef,trialshift)
 % Op.1a.: Using onsets from data --> may multiple calls per subject/session
 %     argument 5 (eventname)    - conditionlabel
 %     argument 6 (eventvalue)   - eventvalue

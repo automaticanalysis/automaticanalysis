@@ -11,11 +11,11 @@ switch task
                     megdata = aas_getfiles_bystream(aap,'subject',subj,'meg');
                     fname{end+1} = spm_file(megdata(1,:),'ext','mat');
                 end
-            case 'meg_session' % non-merged data
+            case 'meeg_session' % non-merged data
                 for subj = 1:numel(aap.acq_details.subjects)
-                    [junk, megsess] = aas_getN_bydomain(aap,'meg_session',subj);
+                    [junk, megsess] = aas_getN_bydomain(aap,'meeg_session',subj);
                     for sess = megsess
-                        megdata = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg');
+                        megdata = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg');
                         fname{end+1} = spm_file(megdata(1,:),'ext','mat');
                     end
                 end

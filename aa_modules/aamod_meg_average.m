@@ -10,7 +10,7 @@ switch task
         switch aap.tasklist.currenttask.domain
             case 'subject'
                 localroot = aas_getsubjpath(aap,varargin{1});
-            case 'meg_session'
+            case 'meeg_session'
                 localroot = aas_getsesspath(aap,varargin{:});
         end
         infname = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meg'); infname = infname(1,:);        

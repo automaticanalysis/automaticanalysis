@@ -8,12 +8,12 @@ switch task
     case 'doit'
         %% Initialise
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = basename(infname(1,:));
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = basename(infname(1,:));
         outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
         
         %% Not sure if bit below is needed?
 %         if aas_stream_has_contents(aap,[subj sess],'meg_ica')
-%             ICA0 = load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica'));
+%             ICA0 = load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica'));
 %             ICA = struct(...
 %                 'weights',ICA0.ica.weights, ...
 %                 'compvars',ICA0.ica.compvars ...

@@ -32,17 +32,17 @@ aap= aas_addinitialstream(aap,'topography',...
     {'/imaging/local/software/AA/test_resources/meg/MEGEEGArtifactTemplateTopographies.mat'});
 
 % Directory for raw data:
-aap.directory_conventions.rawmegdatadir = '/megdata/cbu/ftd';
+aap.directory_conventions.rawmeegdatadir = '/megdata/cbu/ftd';
 aap.directory_conventions.subject_directory_format = 3;
 
 % Add subject (full):
-aap = aas_add_meg_session(aap,'run1');
+aap = aas_add_meeg_session(aap,'run1');
 aap = aas_addsubject(aap,'S1',{[12 442] []},'functional',{'psp_button_press_self_raw.fif'});
 aap = aas_addsubject(aap,'S2',{[13 133] []},'functional',{'ftd_0133_bsp_raw.fif'});
 
 % Add conditions
-aap = aas_add_meg_event(aap,'aamod_meg_epochs','S1','run1','BP',{'STI101_down' 8192},34);
-aap = aas_add_meg_event(aap,'aamod_meg_epochs','S2','run1','BP',{'STI101_down' 22},34);
+aap = aas_add_meeg_event(aap,'aamod_meg_epochs','S1','run1','BP',{'STI101_down' 8192},34);
+aap = aas_add_meeg_event(aap,'aamod_meg_epochs','S2','run1','BP',{'STI101_down' 22},34);
 
 %% RUN
 aa_doprocessing(aap);

@@ -10,7 +10,7 @@ switch task
 
         sessdir = aas_getsesspath(aap,subj,sess);
         inputstreams = aas_getstreams(aap,'input');
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],inputstreams{2});        
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],inputstreams{2});        
         outfname = fullfile(sessdir,['spm12_' basename(infname)]); % specifying output filestem
         
         chan=load(aas_getfiles_bystream(aap,'channellabels'));

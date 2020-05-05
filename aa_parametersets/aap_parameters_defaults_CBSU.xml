@@ -8,7 +8,7 @@
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
             <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/mridata/cbu:/mridata/csl:/mridata/camcan:/imaging/$USER/bids:/imaging/local/software/AA/test_resources/aa_demo</rawdatadir>
-            <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>/megdata/cbu:/megdata/camcan/camcan/</rawmegdatadir>
+            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>/megdata/cbu:/megdata/camcan/camcan/</rawmeegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -22,9 +22,9 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>TSE</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
-            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
+            <meegsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</meegsubjectoutputformat>
             <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7487</spmdir>
-            <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'>/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</spmtoolsdir>
+            <matlabtoolsdir desc='Path(s) to MATLAB tools  (colon separated list)' ui='dir'>/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</matlabtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.8/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh v5.0.8</fslsetup>
