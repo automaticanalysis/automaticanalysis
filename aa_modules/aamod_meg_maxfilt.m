@@ -305,14 +305,17 @@ switch task
                 end
                 
                 %% Outputs
-                aap=aas_desc_outputs(aap,subj,sess,instream,outs{1});
+                outstream = aas_getstreams(aap,'output');
+                [junk,ind] = min(cellfun(@(x) numel(x), outstream)) % shortest
+                
+                aap=aas_desc_outputs(aap,subj,sess,outstream{ind},outs{1});
                 
                 if ~isEmptyRoom
-                    aap=aas_desc_outputs(aap,subj,sess,[instream '_head'],mvcomp_out);
+                    aap=aas_desc_outputs(aap,subj,sess,outstream{contains(outstream,'head')},mvcomp_out);
                 end
                 
                 if ~isempty(spherefit) && ~isempty(aap.tasklist.currenttask.settings.transform)
-                    aap=aas_desc_outputs(aap,subj,sess,['trans_' instream],outs{2});
+                    aap=aas_desc_outputs(aap,subj,sess,outstream{contains(outstream,'trans')},outs{2});
                 end
         end
 end
