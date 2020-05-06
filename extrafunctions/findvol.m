@@ -10,7 +10,7 @@
 
 function strSubj = findvol(aap,modality,subjpath,fdate,fp)
 
-DTFORMAT = 'yyyymmdd_HHMMSS';
+DTFORMAT = {'yymmdd' 'yyyymmdd_HHMMSS'};
 
 switch modality
     case 'mri'
@@ -32,13 +32,13 @@ SEARCHPATH = SEARCHPATH{1};
 
 % get subjname
 if ~isempty(regexp(subjectoutputformat,'%s', 'once')) % string input expected
-	if ~ischar(subjpath)
-		aas_log(aap,true,'Second input must be a string. Check aap.directory_conventions.subjectoutputformat');
-	end
+    if ~ischar(subjpath)
+        aas_log(aap,true,'Second input must be a string. Check aap.directory_conventions.subjectoutputformat');
+    end
 else  % numeric input expected
-	if ~isnumeric(subjpath)
-    	aas_log(aap,true,'Second input must be an integer. Check aap.directory_conventions.subjectoutputformat');
-	end
+    if ~isnumeric(subjpath)
+        aas_log(aap,true,'Second input must be an integer. Check aap.directory_conventions.subjectoutputformat');
+    end
 end
 subjpath = sprintf(subjectoutputformat,subjpath);
 
@@ -73,7 +73,7 @@ end
 
 % handle CBU-style sub-directories with date formats
 strSubjDir = cellstr(strSubjDir);
-des = cellfun(@(x) datenum_safe(x,DTFORMAT),strSubjDir);
+des = cellfun(@(x) datenum_which(x,DTFORMAT),strSubjDir);
 
 if ~any(des)
     if ~isempty(fdate) % subfolder of specific date required
@@ -85,7 +85,9 @@ if ~any(des)
     end
 else
     if ~isempty(fdate) % subfolder of specific date required
-        ind = find(des == datenum(fdate,DTFORMAT),1,'first'); % first matching subfolder (we do not even expect more)
+        testDir = strSubjDir(logical(des));
+        [junk,idf] = datenum_which(testDir{1},DTFORMAT);
+        ind = find(des == datenum(fdate,DTFORMAT{idf}),1,'first'); % first matching subfolder (we do not even expect more)
         if isempty(ind)
             aas_log(aap,false,sprintf('Subject %s* on date %s not found',subjpath,fdate));
             strSubj = '';
@@ -107,10 +109,16 @@ else
 end
 end
 
-function de = datenum_safe(datestr,dtformat)
-try
-    de = datenum(datestr,dtformat);
-catch
-    de = 0;
+function [de,  i] = datenum_which(datestr,dtformats)
+isFound = false; de = 0;
+for i = 1:numel(dtformats)
+    if numel(datestr) ~= numel(dtformats{i}), continue; end
+    try
+        de = datenum(datestr,dtformats{i});
+        isFound = true;
+        break;
+    catch
+    end
 end
+if ~isFound, i = 0; end
 end

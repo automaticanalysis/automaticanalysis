@@ -17,6 +17,9 @@ aap = aarecipe('aap_tasklist_meg.xml');
 
 % SITE-SPECIFIC CONFIGURATION:
 aap.options.wheretoprocess='qsub'; % queuing system			% typical value localsingle or qsub
+
+%% PIPELINE
+aap = aas_renamestream(aap,'aamod_meg_maxfilt_00001','meg','meeg','input');
 aap.tasksettings.aamod_meg_denoise_ICA_2_applytrajectory.toremove = 'spat';
 aap.tasksettings.aamod_meg_epochs.timewindow = [-2000 500];
 
@@ -33,6 +36,7 @@ aap= aas_addinitialstream(aap,'topography',...
 
 % Directory for raw data:
 aap.directory_conventions.rawmeegdatadir = '/megdata/cbu/ftd';
+aap.directory_conventions.meegsubjectoutputformat = 'meg%02d_%04d*';
 aap.directory_conventions.subject_directory_format = 3;
 
 % Add subject (full):
