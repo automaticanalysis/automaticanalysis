@@ -41,9 +41,6 @@
             </spm>
             <eeglab>
                 <dir></dir>
-                <extraparameters>
-                    <requiredPlugins></requiredPlugins>
-                </extraparameters>
             </eeglab>
             <fieldtrip><dir></dir></fieldtrip>
         </toolboxes>

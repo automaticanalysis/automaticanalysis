@@ -7,6 +7,11 @@ switch task
         
     case 'doit'
         %% Initialise
+        [s,EL] = aas_cache_get(aap,'eeglab');
+        if ~s, aas_log(aap,true,'EEGLAB not found'); end
+        
+        EL.load;
+        
         sessdir = aas_getsesspath(aap,subj,sess);
         infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = basename(infname(1,:));
         outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
@@ -55,6 +60,8 @@ switch task
                 aas_log(aap,true,['MEG:detect_ICA_artefacts:' E.message]);
             end
         end
+        
+        EL.unload;
         
         %% Outputs
         save(outfname,'ica');

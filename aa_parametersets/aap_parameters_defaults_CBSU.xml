@@ -34,7 +34,6 @@
                     <dir>/imaging/local/software/eeglab/eeglab-github</dir>
                     <extraparameters>
                         <doAddToPath>1</doAddToPath>
-                        <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
                     </extraparameters>
                 </eeglab>
                 <fieldtrip>
