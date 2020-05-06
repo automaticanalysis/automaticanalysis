@@ -23,7 +23,24 @@
             <protocol_t2 ui='text'>TSE</protocol_t2>
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <meegsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</meegsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7487</spmdir>
+            <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
+                <spm>
+                    <dir>/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7771</dir>
+                    <extraparameters>
+                        <doKeepInPath>1</doKeepInPath>
+                    </extraparameters>
+                </spm>
+                <eeglab>
+                    <dir>/imaging/local/software/eeglab/eeglab-github</dir>
+                    <extraparameters>
+                        <doAddToPath>1</doAddToPath>
+                        <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                    </extraparameters>
+                </eeglab>
+                <fieldtrip>
+                    <dir>/imaging/local/software/fieldtrip/fieldtrip-github</dir>
+                </fieldtrip>
+            </toolboxes>
             <matlabtoolsdir desc='Path(s) to MATLAB tools  (colon separated list)' ui='dir'>/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</matlabtoolsdir>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.8/x86_64/fsl</fsldir>
@@ -35,13 +52,11 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/6.0.0/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
-            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'>/imaging/local/software/spm_toolbox/eeglab/eeglab_v14.1.1</eeglabdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICAT/GroupICAT-v4.0b</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
-            <fieldtripdir desc='Path to fieldtrip toolbox' ui='dir'></fieldtripdir>
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
