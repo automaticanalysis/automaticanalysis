@@ -44,7 +44,7 @@ classdef eeglabClass < toolboxClass
                     is_new_plugin = true;
                 end
             end
-            if is_new_plugin, obj.init; end
+            if is_new_plugin, obj.load; end
             
             load@toolboxClass(obj)
         end
