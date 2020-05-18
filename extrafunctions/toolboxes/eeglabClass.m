@@ -17,12 +17,14 @@ classdef eeglabClass < toolboxClass
             defaultAddToPath = true;
             defaultKeepInPath = false;
             defaultRequiredPlugins = {};
+            defaultKeepGUI = false;
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
-            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);            
+            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
+            argParse.addParameter('doKeepGUI',defaultKeepGUI,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
             obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
@@ -34,7 +36,8 @@ classdef eeglabClass < toolboxClass
             addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
-            close(gcf);
+            if obj.showGUI, obj.hGUI = gcf;
+            else, close(gcf); end
             obj.plugins = evalin('base','PLUGINLIST');
             evalin('base','clear ALLCOM ALLEEG CURRENTSET CURRENTSTUDY EEG eeglabUpdater globalvars LASTCOM PLUGINLIST STUDY')
             

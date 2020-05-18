@@ -2,6 +2,7 @@ classdef toolboxClass < handle
     properties
         toolPath = ''
         keepInPath = false % keep the toolbox in the path after deletion
+        showGUI = false % show GUI upon load
     end
     
     properties (Dependent)
@@ -18,6 +19,8 @@ classdef toolboxClass < handle
         pStatus = -1
         
         toolInPath = {}
+        
+        hGUI % GUI handles
     end
     
     methods
@@ -50,6 +53,7 @@ classdef toolboxClass < handle
         
         function close(obj)
             if ~obj.keepInPath, obj.unload; end
+            for h = obj.hGUI, close(h); end
             obj.pStatus = obj.CONST_STATUS.undefined;
         end
         
@@ -58,14 +62,16 @@ classdef toolboxClass < handle
                 addpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
+            if obj.showGUI, for h = obj.hGUI, set(h,'visible','on'); end; end
         end
         
         function unload(obj)
-            if ~isempty(obj.toolInPath)
+            if obj.pStatus > obj.CONST_STATUS.unloaded
                 warning('%s''s folders (and subfolders) will be removed from the MATLAB path',class(obj));
                 rmpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
                 obj.pStatus = obj.CONST_STATUS.unloaded;
             end
+            if obj.showGUI, for h = obj.hGUI, set(h,'visible','off'); end; end
         end
     end
 end
