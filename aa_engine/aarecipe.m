@@ -125,6 +125,9 @@ if exist('tasklistxml','var')
         for task=1:length(aap.tasklist.main.module)
             [aap index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
             aap.tasklist.main.module(task).index=index;
+            if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(task).name)(1).ATTRIBUTE,'mfile_alias')
+                aap.tasklist.main.module(task).aliasfor = aap.schema.tasksettings.(aap.tasklist.main.module(task).name).ATTRIBUTE.mfile_alias;
+            end
         end
     end
     

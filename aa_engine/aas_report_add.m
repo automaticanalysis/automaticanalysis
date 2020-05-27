@@ -32,25 +32,40 @@ if isempty(str)
     aap.report.(ptr).fid = fopen(aap.report.(ptr).fname,'w');
 elseif (numel(str) > 5) && strcmp(str(1:5), 'HEAD=')
     aap.report.(ptr).fid = fopen(aap.report.(ptr).fname,'w');
-    fprintf(aap.report.(ptr).fid,'%s\n','<TABLE BORDER=0>');
-    fprintf(aap.report.(ptr).fid,'%s\n','<td align=center width=100%>');
+    
+    % calculate path difference
+    dpath = sum(strrep(spm_file(aap.report.(ptr).fname,'path'),spm_file(aap.report.html_main.fname,'path'),'')==filesep);
+    dpath = reshape(char(arrayfun(@(x) '../',1:dpath,'UniformOutput',false))',1,[]);
+    
+    fprintf(aap.report.(ptr).fid,'<!DOCTYPE html>\n');
+    fprintf(aap.report.(ptr).fid,'<html>\n');
+    fprintf(aap.report.(ptr).fid,'<head><link rel="stylesheet" href="%saa_styles.css"></head>\n',dpath);
+    fprintf(aap.report.(ptr).fid,'<body>\n');
+    fprintf(aap.report.(ptr).fid,'<table border=0>\n');
+    fprintf(aap.report.(ptr).fid,'<td align=center width=100%%>\n');
     fprintf(aap.report.(ptr).fid,'%s\n',['<tr><td align=center><font size=+3><b>' str(6:end) '</b></font></tr>']);
-    fprintf(aap.report.(ptr).fid,'%s\n','</TABLE>');
-    fprintf(aap.report.(ptr).fid,'%s\n','<TABLE BORDER=0>');
-    fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>Main</a> &nbsp;-&nbsp',aap.report.html_main.fname));
-    fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>Subject list</a> &nbsp;-&nbsp;',aap.report.html_S00.fname));
-    fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>Motion correction summary</a> &nbsp;-&nbsp;',aap.report.html_moco.fname));
-    fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>Registration summary</a> &nbsp;-&nbsp;',aap.report.html_reg.fname));
-    fprintf(aap.report.(ptr).fid,'%s',...
-        sprintf('<a href="%s" target=_top>First-level thresholded maps</a>;',aap.report.html_C00.fname));
-    fprintf(aap.report.(ptr).fid,'%s\n','</TABLE><hr>');
-    fprintf(aap.report.(ptr).fid,'%s\n','<TABLE BORDER=0>');    
+    fprintf(aap.report.(ptr).fid,'</table>\n');
+    fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>Main</a> &nbsp;-&nbsp;',aap.report.html_main.fname);
+    fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>Subject list</a> &nbsp;-&nbsp;',aap.report.html_S00.fname);
+    if isfield(aap.report,'html_moco')
+        fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>Motion correction summary</a> &nbsp;-&nbsp;',aap.report.html_moco.fname);
+    end
+    if isfield(aap.report,'html_reg')
+        fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>Registration summary</a> &nbsp;-&nbsp;',aap.report.html_reg.fname);
+    end
+    if isfield(aap.report,'html_C00')
+        fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>First-level results</a>',aap.report.html_C00.fname);
+    end
+    if isfield(aap.report,'html_er')
+        fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>MEEG epoch summary</a>',aap.report.html_er.fname);
+    end
+    fprintf(aap.report.(ptr).fid,'\n<hr class="rounded">\n');
+    fprintf(aap.report.(ptr).fid,'<table border=0>\n');
 elseif strcmp(str, 'EOF')
-    fprintf(aap.report.(ptr).fid,'%s\n','</TABLE><hr>');    
+    fprintf(aap.report.(ptr).fid,'</table>\n');
+    fprintf(aap.report.(ptr).fid,'\n<hr class="rounded">\n');
+    fprintf(aap.report.(ptr).fid,'</body>\n');
+    fprintf(aap.report.(ptr).fid,'</html>\n');
     aap.report.(ptr).fid = fclose(aap.report.(ptr).fid);
 else
     fprintf(aap.report.(ptr).fid,'%s\n',str);
