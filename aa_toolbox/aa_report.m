@@ -119,7 +119,7 @@ for k=1:numel(stages)
     if ~strcmp(domain,'[unknown]')
         stagerepname = stages{k};
         if ~isempty(aap.tasklist.main.module(k).extraparameters)
-            stagerepname = [stagerepname ' ' aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix];
+            stagerepname = [stagerepname aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix];
         end
         
         % build dependency
