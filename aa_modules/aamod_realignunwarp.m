@@ -100,7 +100,20 @@ switch task
                 fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realignunwarp_' aap.acq_details.sessions(sess).name '.jpg']);
 
                 mvmax = squeeze(aap.report.(mfilename).mvmax(:,sess,:));
-                f = figure; boxplot(mvmax,'label',meas);
+                
+                jitter = 0.1; % jitter around position
+                jitter = (...
+                    1+(rand(size(mvmax))-0.5) .* ...
+                    repmat(jitter*2./[1:size(mvmax,2)],size(mvmax,1),1)...
+                    ) .* ...
+                    repmat([1:size(mvmax,2)],size(mvmax,1),1);
+                
+                f = figure; hold on;
+                boxplot(mvmax,'label',meas);
+                for s = 1:size(mvmax,2)
+                    scatter(jitter(:,s),mvmax(:,s),'k','filled','MarkerFaceAlpha',0.4);
+                end                
+                
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 set(f,'Renderer','zbuffer');
                 if ~exist(fn,'file'), print(f,'-djpeg','-r150',fn); end
