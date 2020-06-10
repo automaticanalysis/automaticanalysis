@@ -10,7 +10,7 @@ classdef fieldtripClass < toolboxClass
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
+            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,{});
         end
         
         function load(obj)

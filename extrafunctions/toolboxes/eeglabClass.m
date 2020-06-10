@@ -27,7 +27,9 @@ classdef eeglabClass < toolboxClass
             argParse.addParameter('doKeepGUI',defaultKeepGUI,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath);
+            vars = {'ALLCOM' 'ALLEEG' 'CURRENTSET' 'CURRENTSTUDY' 'eeglabUpdater' 'globalvars' 'LASTCOM' 'PLUGINLIST' 'STUDY'};
+            
+            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
@@ -36,10 +38,9 @@ classdef eeglabClass < toolboxClass
             addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
-            if obj.showGUI, obj.hGUI = gcf;
-            else, close(gcf); end
+            obj.hGUI = gcf;
+            if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
-            evalin('base','clear ALLCOM ALLEEG CURRENTSET CURRENTSTUDY EEG eeglabUpdater globalvars LASTCOM PLUGINLIST STUDY')
             
             for p = plugin_getweb('', obj.plugins, 'newlist')
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed

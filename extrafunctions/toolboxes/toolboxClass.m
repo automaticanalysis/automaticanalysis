@@ -21,10 +21,12 @@ classdef toolboxClass < handle
         toolInPath = {}
         
         hGUI % GUI handles
+        
+        workspace = struct
     end
     
     methods
-        function obj = toolboxClass(path,doAddToPath,doKeepInPath)
+        function obj = toolboxClass(path,doAddToPath,doKeepInPath,workspaceVariableNames)
             obj.toolPath = path;
             if doAddToPath
                 addpath(obj.toolPath); 
@@ -32,6 +34,10 @@ classdef toolboxClass < handle
             end
             obj.keepInPath = doKeepInPath;
             obj.pStatus = obj.CONST_STATUS.defined;
+            
+            for v = workspaceVariableNames
+                obj.workspace.(v{1}) = [];
+            end
         end
         
         function val = get.status(obj)
@@ -43,11 +49,16 @@ classdef toolboxClass < handle
             end
         end
         
-        function load(obj)
+        function load(obj,keepWorkspace)
+            if nargin < 2, keepWorkspace = false; end
             if obj.pStatus < obj.CONST_STATUS.loaded
                 p = split(path,pathsep);
                 obj.toolInPath = p(cellfun(@(x) contains(x,obj.toolPath), p));
                 obj.pStatus = obj.CONST_STATUS.loaded;
+            end
+            for v = fieldnames(obj.workspace)'
+                obj.workspace.(v{1}) = evalin('base',v{1});
+                if ~keepWorkspace, evalin('base',['clear ' v{1}]); end
             end
         end
         
@@ -55,23 +66,37 @@ classdef toolboxClass < handle
             if ~obj.keepInPath, obj.unload; end
             for h = obj.hGUI, close(h); end
             obj.pStatus = obj.CONST_STATUS.undefined;
+            for v = fieldnames(obj.workspace)'
+                obj.workspace.(v{1}) = [];
+            end
         end
         
-        function reload(obj)
+        function reload(obj,loadWorkspace)
+            if nargin < 2, loadWorkspace = false; end
             if obj.pStatus < obj.CONST_STATUS.loaded
                 addpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
             if obj.showGUI, for h = obj.hGUI, set(h,'visible','on'); end; end
+            if loadWorkspace
+                for v = fieldnames(obj.workspace)'
+                    assignin('base', v{1}, obj.workspace.(v{1}));
+                end
+            end
         end
         
-        function unload(obj)
+        function unload(obj,updateWorkspace)
+            if nargin < 2, updateWorkspace = false; end
             if obj.pStatus > obj.CONST_STATUS.unloaded
                 warning('%s''s folders (and subfolders) will be removed from the MATLAB path',class(obj));
                 rmpath(sprintf(['%s' pathsep],obj.toolInPath{:}))
                 obj.pStatus = obj.CONST_STATUS.unloaded;
             end
             if obj.showGUI, for h = obj.hGUI, set(h,'visible','off'); end; end
+            for v = fieldnames(obj.workspace)'
+                if updateWorkspace, obj.workspace.(v{1}) = evalin('base',v{1}); end
+                evalin('base',['clear ' v{1}]);
+            end
         end
     end
 end
