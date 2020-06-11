@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meeg_session' desc='Run ICA on MEEG data' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>2</timeBase>
+                <memoryBase>2</memoryBase>
+            </qsub>
+            
+            <PCA desc='run PCA before ICA' options='empty for no PCA|rank|number of components'></PCA>
+            
+            <iterations desc='max number of ICA iterations'></iterations>
+
+            <method desc='ICA method' options='AMICA|runica'>AMICA</method>
+            
+            <errorOnFailedCheck desc='throw an error if post-ICA check fails'>1</errorOnFailedCheck>
+            
+            <options desc='method-specific options'>
+                <AMICA>
+                    <num_models desc='number of models'></num_models>
+                    <numrej desc='number of rejections (empty for no rejection)'></numrej>
+                    <rejint desc='interval between rejection'></rejint>
+                    <rejsig desc='number of standard dev of likelihood below which to reject data'></rejsig>
+                </AMICA>
+                
+                <runica>
+                    <extended desc='number of sub-Gaussian sources (positive: automatic; negative: fixed)'></extended>
+                </runica>
+            </options>
+            
+            <inputstreams>
+                <stream>meeg</stream>                
+            </inputstreams>
+
+            <outputstreams>
+                <stream>meeg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
