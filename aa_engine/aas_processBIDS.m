@@ -49,7 +49,7 @@ global BIDSsettings;
 
 oldpath = path;
 % we need spm_select here...
-addpath(aap.directory_conventions.spmdir);
+addpath(aap.directory_conventions.toolboxes.spm.dir);
 
 
 if ~exist('sessnames','var') || isempty(sessnames)
@@ -292,7 +292,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     case 'phasediff'
                         fmap.hdr = {loadjson(f{1})};
                         if isfield(fmap.hdr{1},'IntendedFor')
-                            fmap.session = cellstr(get_taskname(sesspath,subjname,fmap.hdr.IntendedFor));
+                            fmap.session = cellstr(get_taskname(sesspath,subjname,fmap.hdr{1}.IntendedFor));
                         else
                             fmap.session = '*';
                         end
