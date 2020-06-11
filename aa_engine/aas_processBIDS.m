@@ -49,7 +49,7 @@ global BIDSsettings;
 
 oldpath = path;
 % we need spm_select here...
-addpath(aap.directory_conventions.spmdir);
+addpath(aap.directory_conventions.toolboxes.spm.dir);
 
 
 if ~exist('sessnames','var') || isempty(sessnames)
