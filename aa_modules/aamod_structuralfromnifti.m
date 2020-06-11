@@ -74,18 +74,22 @@ switch task
                 
                 %% header
                 if ~isempty(hdrfile)
-                    switch spm_file(hdrfile,'Ext')
-                        case 'mat'
-                            dat = load(hdrfile);
-                            dcmhdr = dat.dcmhdr;
-                        case 'json'
-                            hdrfile = loadjson(hdrfile);
-                            % convert timings to ms (DICOM default)
-                            for f = fieldnames(hdrfile)'
-                                if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
-                            end
-                            if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
-                            if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
+                    if isstruct(hdrfile)
+                        dcmhdr = hdrfile;
+                    else
+                        switch spm_file(hdrfile,'Ext')
+                            case 'mat'
+                                dat = load(hdrfile);
+                                dcmhdr = dat.dcmhdr;
+                            case 'json'
+                                hdrfile = loadjson(hdrfile);
+                                % convert timings to ms (DICOM default)
+                                for f = fieldnames(hdrfile)'
+                                    if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
+                                end
+                                if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
+                                if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
+                        end
                     end
                 else
                     aas_log(aap,false,'WARNING: No header provided!');
@@ -104,6 +108,8 @@ switch task
                 save(dcmhdrfn,'dcmhdr');
                 aap=aas_desc_outputs(aap,subj,[stream '_dicom_header'],dcmhdrfn);
             end
+            % remove variable to avoid writing wrong header to subsequent sfxs
+            clear dcmhdr
         end
     case 'checkrequirements'
         
