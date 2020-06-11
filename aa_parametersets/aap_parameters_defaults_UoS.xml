@@ -7,7 +7,8 @@
             <structdirname desc='Subdirectory in subject dir for MRI structurals' ui='dir'>structurals</structdirname>
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
-            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'></rawdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/users/psychology01/datasets:/users/psychology01/datasets/aa_demo</rawdatadir>
+            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>/users/psychology01/datasets:/users/psychology01/datasets/aa_demo</rawmeegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -41,7 +42,7 @@
             </toolboxes>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/ta0015/software/config/fsl_module</fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_module</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/opt/pkg/apps/freesurfer/6.0.0</freesurferdir>        
@@ -49,12 +50,12 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/opt/pkg/apps/freesurfer/6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
-            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/ta0015/software/GroupICATv4.0b</GIFTdir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/ta0015/software/dcmtk</DCMTKdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/ta0015/software/BrainWavelet</BrainWaveletdir>
-            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/ta0015/software/FaceMasking</FaceMaskingdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/psychology01/software/GroupICATv4.0b</GIFTdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/psychology01/software/dcmtk</DCMTKdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/psychology01/software/BrainWavelet</BrainWaveletdir>
+            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/psychology01/software/FaceMasking</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/ta0015/software/config/Slurm.settings</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/psychology01/software/config/Slurm.settings</poolprofile>
 		<mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uos@gmail.com:aam4il3r#</mailerserver>
         </directory_conventions>
         <options>
