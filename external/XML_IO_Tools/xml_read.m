@@ -120,8 +120,8 @@ if (ischar(xmlfile)) % if xmlfile is a string
   else
     try
       DOMnode = xmlread(xmlfile,p);
-    catch
-      error('Failed to read XML file %s.',xmlfile);
+    catch E
+      error('Failed to read XML file %s: %s.',xmlfile, E.message);
     end
   end
   Node = DOMnode.getFirstChild;

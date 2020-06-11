@@ -12,21 +12,20 @@ switch nargin
         tasks = varargin(2:end);
 end
 
-global aacache;
-
 if cell_index(tasks,'restorepath') && ...
         (~isstruct(aap) || ~isfield(aap.options,'restorepath') ||... % not specified
         aap.options.restorepath) % specified and enabled
-    if isstruct(aacache) && isfield(aacache,'path')
-        if isfield(aacache.path,'bcp_path'), path(aacache.path.bcp_path); end
-        if isfield(aacache.path,'bcp_shellpath'), setenv('PATH', aacache.path.bcp_shellpath); end
-    end
+    [s,p] = aas_cache_get(aap,'bcp_path','system'); if s, path(p); end
+    [s,p] = aas_cache_get(aap,'bcp_shellpath','system'); if s, setenv('PATH', p); end
 end
 
 % restore warnings
-if cell_index(tasks,'restorewarnings') && isstruct(aacache) && isfield(aacache,'warnings')
-    for w = aacache.warnings
-        warning(w);
+if cell_index(tasks,'restorewarnings')
+    [s,ws] = aas_cache_get(aap,'warnings','system');
+    if s
+       for w = ws
+           warning(w);
+       end
     end
 end
 

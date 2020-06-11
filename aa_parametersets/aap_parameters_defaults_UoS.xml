@@ -21,8 +21,24 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/users/ta0015/software/spm12</spmdir>
-            <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'></spmtoolsdir>
+            <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
+                <spm>
+                    <dir>/users/psychology01/software/spm12</dir>
+                    <extraparameters>
+                        <doKeepInPath>1</doKeepInPath>
+                    </extraparameters>
+                </spm>
+                <eeglab>
+                    <dir>/users/psychology01/software/eeglab</dir>
+                    <extraparameters>
+                        <doAddToPath>1</doAddToPath>
+                        <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                    </extraparameters>
+                </eeglab>
+                <fieldtrip>
+                    <dir>/users/psychology01/software/fieldtrip</dir>
+                </fieldtrip>
+            </toolboxes>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/ta0015/software/config/fsl_module</fslsetup>
