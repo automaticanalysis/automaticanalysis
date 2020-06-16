@@ -1,4 +1,4 @@
-function [s w]=aas_runFScommand(aap,FScmd,quiet)
+function [s, w]=aas_runFScommand(aap,FScmd,quiet)
 if nargin < 3, quiet = false; end
 
 % AVG
@@ -13,17 +13,18 @@ for path2check = {FSbin mniFSbin fastFSbin}
     sf=strfind([':' pth ':'],[':' path2check{1} ':']);
     if (isempty(sf))
         pth = [pth ':' path2check{1}];
-    end;
+    end
 end
 
+[s, SPMtool] = aas_cache_get(aap,'spm');
+if ~s, aas_log(aap,true,'SPM is not found'); end
 ENV = {...
     'PATH',pth;...
     'SUBJECTS_DIR',getenv('SUBJECTS_DIR');...
     'FREESURFER_HOME',aap.directory_conventions.freesurferdir;...
     'FSF_OUTPUT_FORMAT','nii.gz';...
-    'MATLABPATH',aap.directory_conventions.spmdir;...
+    'MATLABPATH',SPMtool.toolPath;...
     };
-
 
 FSsetup='';
 for setupscript = {deblank(aap.directory_conventions.freesurfersetup) deblank(aap.directory_conventions.freesurferenvironment)}

@@ -28,11 +28,11 @@ aap=aarecipe('aap_tasklist_diffusion_with_topup.xml');
 % on the path
 spmhit = which('spm_spm');
 if any(spmhit)
-    assert(strcmp(fileparts(spmhit), aap.directory_conventions.spmdir), ...
-        'spm on path differs from aap.directory_conventions.spmdir');
+    assert(strcmp(fileparts(spmhit), aap.directory_conventions.toolboxes.spm.dir), ...
+        'spm on path differs from aap.directory_conventions.toolboxes.spm.dir');
 else
-    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.spmdir);
-    addpath(aap.directory_conventions.spmdir);
+    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.toolboxes.spm.dir);
+    addpath(aap.directory_conventions.toolboxes.spm.dir);
 end
 
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','normalised_white', 'input');

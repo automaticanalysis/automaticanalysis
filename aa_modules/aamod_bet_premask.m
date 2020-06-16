@@ -22,6 +22,7 @@ switch task
     case 'report'
         
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
         
         Simg = aas_getfiles_bystream(aap,subj,'structural');
         
@@ -36,8 +37,7 @@ switch task
         %% 0) Check that the templates we need exist!
         % Get the template
         % perhaps a sub-dir of SPM?
-        sTimg = fullfile(aap.directory_conventions.spmdir,...
-            aap.directory_conventions.T1template);
+        sTimg = fullfile(SPMtool.toolPath,aap.directory_conventions.T1template);
         if ~exist(sTimg,'file')
             % perhaps not  must check this way around because exist produces
             % false positives with relative paths...
@@ -128,5 +128,6 @@ switch task
         
         % Structural image after BETting
         aap=aas_desc_outputs(aap,subj,'structural', Simg);
-        
+     case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

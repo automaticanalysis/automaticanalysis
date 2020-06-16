@@ -37,11 +37,11 @@ aap=aarecipe('aap_tasklist_fmri_connect.xml');
 % on the path
 spmhit = which('spm_spm');
 if any(spmhit)
-    assert(strcmp(fileparts(spmhit), aap.directory_conventions.spmdir), ...
-        'spm on path differs from aap.directory_conventions.spmdir');
+    assert(strcmp(fileparts(spmhit), aap.directory_conventions.toolboxes.spm.dir), ...
+        'spm on path differs from aap.directory_conventions.toolboxes.spm.dir');
 else
-    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.spmdir);
-    addpath(aap.directory_conventions.spmdir);
+    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.toolboxes.spm.dir);
+    addpath(aap.directory_conventions.toolboxes.spm.dir);
 end
 
 % Modify standard recipe module selection here if you'd like
