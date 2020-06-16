@@ -6,6 +6,8 @@ switch task
     case 'report'
         
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+       
         % Settings
         srcstream = aas_getstreams(aap,'input');
         FWHM = 0;
@@ -32,7 +34,7 @@ switch task
                     gunzip(struct,fullfile(localroot,aap.directory_conventions.structdirname)); 
                     struct = fullfile(fullfile(localroot,aap.directory_conventions.structdirname),'MNI152_T1_1mm.nii');
                 else % use SPM's
-                    struct = fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template);
+                    struct = fullfile(SPMtool.toolPath,aap.directory_conventions.T1template);
                     copyfile(struct,fullfile(localroot,aap.directory_conventions.structdirname));
                     struct = spm_file(struct,'path',fullfile(localroot,aap.directory_conventions.structdirname));
                 end
@@ -84,4 +86,6 @@ switch task
             end
             aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,[srcstream{i} '_FS'],char(srcwfs));
         end
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

@@ -6,6 +6,8 @@ switch task
     case 'report'
         
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+
         streams=aap.tasklist.currenttask.inputstreams.stream;
         
         % Images to smooth (1st stream)
@@ -42,7 +44,7 @@ switch task
                 thr = 1;
                 
             otherwise
-                mask = spm_select('FPListRec',aap.directory_conventions.spmdir,'brainmask.nii');
+                mask = spm_select('FPListRec',SPMtool.toolPath,'brainmask.nii');
         end
         spm_mask(mask,P,thr);
         P = spm_file(P,'prefix','m');
@@ -66,10 +68,11 @@ switch task
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],streams{1},outputfns);
         
     case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 
 
 

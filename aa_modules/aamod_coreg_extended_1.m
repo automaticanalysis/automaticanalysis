@@ -8,6 +8,7 @@ resp='';
 
 switch task
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
 
         flags = aap.spm.defaults.coreg;
         if isfield(aap.tasklist.currenttask.settings,'eoptions')
@@ -23,11 +24,11 @@ switch task
         % Get the T1 template
         sTimg = aap.directory_conventions.T1template;
         if ~exist(sTimg,'file') % try in SPM
-            if sTimg(1) ~= '/', sTimg = fullfile(aap.directory_conventions.spmdir,sTimg); end
+            if sTimg(1) ~= '/', sTimg = fullfile(SPMtool.toolPath,sTimg); end
         else
             sTimg = which(sTimg);
         end
-        if ~exist(sTimg,'file'),
+        if ~exist(sTimg,'file')
             aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
         end  
                
@@ -63,6 +64,6 @@ switch task
         
         aap = aas_desc_outputs(aap,subj,'structural',Simg);
         aap = aas_desc_outputs(aap, subj,'t1totemplate_xfm',fn);
-        
-      
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

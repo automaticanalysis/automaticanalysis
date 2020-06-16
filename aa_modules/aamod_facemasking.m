@@ -5,6 +5,8 @@ switch task
     case 'report'
     case 'doit'
         % init
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+       
         indices = cell2mat(varargin);        
         streams=aas_getstreams(aap,'input');
         
@@ -18,7 +20,7 @@ switch task
         
         % Reslice input image
         % - resize template
-        tmpl = fullfile(aap.directory_conventions.spmdir, aap.directory_conventions.T1template);
+        tmpl = fullfile(SPMtool.toolPath, aap.directory_conventions.T1template);
         copyfile(tmpl,spm_file(tmpl,'path',wdir))
         [junk,res] = spm_get_bbox(infname);
         resize_img(spm_file(tmpl,'path',wdir), abs(res), [nan nan nan; nan nan nan])        
@@ -54,6 +56,7 @@ switch task
         
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,indices,['defaced_' streams{1}],outfname);
     case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
         if ~strcmp(aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(1).sourcestagename,'aamod_coreg_extended_1')
             aas_log(aap,false,'WARNING: FaceMasking requires image to be coregistered into MNI space (e.g. aamod_coreg_extended_1)')
         end
