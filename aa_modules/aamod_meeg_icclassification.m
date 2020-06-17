@@ -4,10 +4,10 @@ resp='';
 
 switch task
     case 'report'
-        aap=aas_report_addimage(aap,subj,['diagnostic_' mfilename '.jpg']);
+        aap = aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '.jpg']));
         aap = aas_report_add(aap,subj,'<table><tr><th>Accepted</th><th>Rejected</th></tr><tr>');
         for sfx = {'accepted','rejected'}
-            aap = aas_report_add(aap,subj,'<td>');
+            aap = aas_report_add(aap,subj,'<td valign="top">');
             for fn = cellstr(spm_select('FPList',aas_getsesspath(aap,subj,sess),['^diagnostic_.*' sfx{1} '.*jpg$']))'
                 aap=aas_report_addimage(aap,subj,fn{1});
             end
