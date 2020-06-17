@@ -17,7 +17,6 @@ switch task
         [junk, EL] = aas_cache_get(aap,'eeglab');
 
         FT.load;
-        addpath(fullfile(FT.toolPath,'external','eeglab'));
         
         %% Run
         cfg = [];
@@ -48,7 +47,7 @@ switch task
         %% Load into EEGLAB
         EL.load;
         
-        EEG = fieldtrip2eeglab(dat.hdr, dat.trial{1}, events);
+        EEG = pop_fileio(dat.hdr, dat.trial{1}, events);
                 
         % diagnostics
         diagpath = fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '_filtered.jpg']);
