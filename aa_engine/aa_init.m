@@ -32,12 +32,12 @@ end
 
 % Set UTC time function
 if exist('utc_time','file')
-    utc_time = @utc_time;
+    utime = @utc_time;
 else
     aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
-    utc_time = @java.lang.System.currentTimeMillis;
+    utime = @java.lang.System.currentTimeMillis;
 end
-aas_cache_put(aap,'utc_time',utc_time,'utils');
+aas_cache_put(aap,'utc_time',utime,'utils');
 
 %% Set Paths
 aas_cache_put(aap,'bcp_path',path,'system');
