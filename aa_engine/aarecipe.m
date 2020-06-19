@@ -84,9 +84,9 @@ if ~exist(defaultparameters,'file')
     end
 end
 
-aap = xml_read(defaultparameters,struct('ReadAttr',1));
-aap = processattributes(aap);
-aap.schema = xml_read(defaultparameters);
+schema = xml_read(defaultparameters);
+aap = processattributes(schema);
+aap.schema = schema;
 
 % And now load up task list
 if exist('tasklistxml','var')
@@ -165,6 +165,7 @@ if isstruct(node)
                         node = char(node);
 % TODO
 %                     case {'dir_list','optionlist'}
+%                     case {'structarray'}
 %                     case {'intarray' 'rgb'}
 %                     case {'double'}
 %                     case {'int'}

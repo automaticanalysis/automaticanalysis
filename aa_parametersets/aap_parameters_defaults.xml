@@ -210,17 +210,17 @@
             <specialseries desc='special series session number in raw data' ui='int'/>
             <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
         </subjects>
-        <sessions desc='Functional sessions'>
+        <sessions desc='Functional sessions' ui='structarray'>
             <name desc='Session name' ui='dir_part'/>
         </sessions>
-        <diffusion_sessions desc='Diffusion sessions'>
+        <diffusion_sessions desc='Diffusion sessions' ui='structarray'>
             <name desc='Diffusion session name' ui='dir_part'/>
         </diffusion_sessions>
-        <meg_sessions desc='MEG sessions'>
+        <meg_sessions desc='MEG sessions' ui='structarray'>
             <name desc='MEG session name' ui='dir_part'/>
         </meg_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
-        <special_sessions desc='Special sessions'>
+        <special_sessions desc='Special sessions' ui='structarray'>
             <name desc='Special session name (used to determine stream name and folder name)' ui='dir_part'/>
         </special_sessions>        
     </acq_details>
