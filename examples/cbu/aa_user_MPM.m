@@ -24,7 +24,8 @@ if any(spmhit)
         'spm on path differs from aap.directory_conventions.toolboxes.spm.dir');
 else
     fprintf('adding spmdir to path: %s\n', aap.directory_conventions.toolboxes.spm.dir);
-    addpath(aap.directory_conventions.toolboxes.spm.dir);
+    SPM = spmClass(aap.directory_conventions.toolboxes.spm.dir);
+    SPM.load;
 end
 
 SUBJ = {...
