@@ -142,6 +142,7 @@ if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conv
             if isfield(TBX,'extraparameters')
                 for p = fieldnames(TBX.extraparameters)
                     val = TBX.extraparameters.(p{1});
+                    if isempty(val), continue; end
                     if ischar(val) && contains(val,':'), val = strsplit(val,':'); end
                     params{end+1} = p{1};
                     params{end+1} = val;
