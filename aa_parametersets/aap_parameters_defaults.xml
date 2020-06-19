@@ -13,7 +13,7 @@
         <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
         <subject_directory_names desc='List of predefined subject names' ui='custom'></subject_directory_names>
         <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
-        <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
+        <selectechonumbers desc='Which echo numbers?' ui='intarray' range='[1 Inf]'>0</selectechonumbers>
         <reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
         <stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
         <stats_ppi desc='Directory for single subject PPI statistics' ui='dir'>PPI</stats_ppi>
@@ -34,18 +34,19 @@
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
         <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
         <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-            <spm><dir></dir>
+            <spm>
+                <dir ui='dir'></dir>
                 <extraparameters>
                     <doKeepInPath>1</doKeepInPath>
                 </extraparameters>
             </spm>
             <eeglab>
-                <dir></dir>
+                <dir ui='dir'></dir>
                 <extraparameters>
                     <requiredPlugins></requiredPlugins>
                 </extraparameters>
             </eeglab>
-            <fieldtrip><dir></dir></fieldtrip>
+            <fieldtrip><dir ui='dir'></dir></fieldtrip>
         </toolboxes>
         <linuxshell desc='Linux shell used to run linux commands' ui='text'></linuxshell>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
@@ -209,17 +210,17 @@
             <specialseries desc='special series session number in raw data' ui='int'/>
             <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
         </subjects>
-        <sessions desc='Functional sessions' ui='intarray'>
+        <sessions desc='Functional sessions'>
             <name desc='Session name' ui='dir_part'/>
         </sessions>
-        <diffusion_sessions desc='Diffusion sessions' ui='intarray'>
+        <diffusion_sessions desc='Diffusion sessions'>
             <name desc='Diffusion session name' ui='dir_part'/>
         </diffusion_sessions>
-        <meg_sessions desc='MEG sessions' ui='intarray'>
+        <meg_sessions desc='MEG sessions'>
             <name desc='MEG session name' ui='dir_part'/>
         </meg_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
-        <special_sessions desc='Special sessions' ui='intarray'>
+        <special_sessions desc='Special sessions'>
             <name desc='Special session name (used to determine stream name and folder name)' ui='dir_part'/>
         </special_sessions>        
     </acq_details>

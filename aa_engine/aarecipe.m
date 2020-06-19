@@ -84,8 +84,9 @@ if ~exist(defaultparameters,'file')
     end
 end
 
-aap=xml_read(defaultparameters,Pref);
-aap.schema=xml_read(defaultparameters);
+aap = xml_read(defaultparameters,struct('ReadAttr',1));
+aap = processattributes(aap);
+aap.schema = xml_read(defaultparameters);
 
 % And now load up task list
 if exist('tasklistxml','var')
@@ -149,6 +150,36 @@ end
 aap.aap_beforeuserchanges=[];
 aap.aap_beforeuserchanges=aap;
 
+end
+
+%% Recursively process nodes
+function node = processattributes(node)
+if isstruct(node)
+    if isfield(node,'ATTRIBUTE')
+        if isfield(node,'CONTENT')
+            attr = node.ATTRIBUTE;
+            node = node.CONTENT;
+            if isfield(attr,'ui')
+                switch attr.ui
+                    case {'text' 'dir' 'dir_allowwildcards' 'dir_part_allowwildcards' 'dir_part' 'file'}
+                        node = char(node);
+% TODO
+%                     case {'dir_list','optionlist'}
+%                     case {'intarray' 'rgb'}
+%                     case {'double'}
+%                     case {'int'}
+%                     case {'yesno'}
+                end
+            end
+            return
+        else
+            node = rmfield(node,'ATTRIBUTE');
+        end
+    end
+    for f = fieldnames(node)'
+        node.(f{1}) = processattributes(node.(f{1}));
+    end
+end
 end
 
 %% Recursively process branches

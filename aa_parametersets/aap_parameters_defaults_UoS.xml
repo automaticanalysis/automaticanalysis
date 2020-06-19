@@ -11,7 +11,6 @@
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
-            <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
             <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
             <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
@@ -23,20 +22,20 @@
             <dicomfilter ui='text'>*.IMA</dicomfilter>
             <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
                 <spm>
-                    <dir>/users/psychology01/software/spm12</dir>
+                    <dir ui='dir'>/users/psychology01/software/spm12</dir>
                     <extraparameters>
                         <doKeepInPath>1</doKeepInPath>
                     </extraparameters>
                 </spm>
                 <eeglab>
-                    <dir>/users/psychology01/software/eeglab</dir>
+                    <dir ui='dir'>/users/psychology01/software/eeglab</dir>
                     <extraparameters>
                         <doAddToPath>1</doAddToPath>
                         <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
                     </extraparameters>
                 </eeglab>
                 <fieldtrip>
-                    <dir>/users/psychology01/software/fieldtrip</dir>
+                    <dir ui='dir'>/users/psychology01/software/fieldtrip</dir>
                 </fieldtrip>
             </toolboxes>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
