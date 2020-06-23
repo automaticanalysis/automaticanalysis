@@ -47,10 +47,9 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 
 global BIDSsettings;
 
-oldpath = path;
 % we need spm_select here...
-addpath(aap.directory_conventions.toolboxes.spm.dir);
-
+SPMtool = spmClass(aap.directory_conventions.toolboxes.spm.dir);
+SPMtool.load;
 
 if ~exist('sessnames','var') || isempty(sessnames)
     sessnames = [];
@@ -156,7 +155,7 @@ end
 
 % take SPM off the path again (since the user might end up wanting a different SPM for
 % actual data analysis)
-path(oldpath);
+SPMtool.unload;
 
 end
 
