@@ -1,8 +1,12 @@
 function aap=aa_doprocessing_onetask(aap,task,modulenum,indices,gaaworker)
 
 global aaworker
+global aacache
 if nargin == 5 % aaworker passed
     aaworker = gaaworker;
+end
+if isfield(aaworker,'aacache')
+   aacache = aaworker.aacache; 
 end
 
 aaworker.modulestarttime=now;
