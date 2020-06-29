@@ -21,21 +21,13 @@
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
             <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
-            <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-                <spm>
-                    <dir ui='dir'>/usr/local/apps/spm12</dir>
-                    <extraparameters>
-                        <doKeepInPath>1</doKeepInPath>
-                    </extraparameters>
-                </spm>
-                <eeglab>
-                    <dir ui='dir'></dir>
-                    <extraparameters>
-                        <requiredPlugins></requiredPlugins>
-                    </extraparameters>
-                </eeglab>
-                <fieldtrip><dir ui='dir'></dir></fieldtrip>
-            </toolboxes>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/usr/local/apps/spm12</dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/fsl/fsl-6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/config/fsl_bash 6.0.1</fslsetup>

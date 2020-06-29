@@ -20,24 +20,24 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-                <spm>
-                    <dir ui='dir'>/users/psychology01/software/spm12</dir>
-                    <extraparameters>
-                        <doKeepInPath>1</doKeepInPath>
-                    </extraparameters>
-                </spm>
-                <eeglab>
-                    <dir ui='dir'>/users/psychology01/software/eeglab</dir>
-                    <extraparameters>
-                        <doAddToPath>1</doAddToPath>
-                        <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
-                    </extraparameters>
-                </eeglab>
-                <fieldtrip>
-                    <dir ui='dir'>/users/psychology01/software/fieldtrip</dir>
-                </fieldtrip>
-            </toolboxes>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/users/psychology01/software/spm12</dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+                <dir ui='dir'>/users/psychology01/software/eeglab</dir>
+                <extraparameters>
+                    <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                </extraparameters>
+            </toolbox>            
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fieldtrip</name>
+                <dir ui='dir'>/users/psychology01/software/fieldtrip</dir>
+            </toolbox> 
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_module</fslsetup>

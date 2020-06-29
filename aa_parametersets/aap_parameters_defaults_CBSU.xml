@@ -23,21 +23,20 @@
             <dicomfilter ui='text'>*.dcm</dicomfilter>
             <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'>meg%02d_%04d*</megsubjectoutputformat>
             <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir">/imaging/local/software/spm_toolbox/vbm8:/imaging/local/software/spm_toolbox/hMRI</matlabtoolsdir>
-            <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-                <spm>
-                    <dir ui='dir'>/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7487</dir>
-                    <extraparameters>
-                        <doKeepInPath>1</doKeepInPath>
-                    </extraparameters>
-                </spm>
-                <eeglab>
-                    <dir ui='dir'>/imaging/local/software/spm_toolbox/eeglab/eeglab_v14.1.1</dir>
-                    <extraparameters>
-                        <requiredPlugins></requiredPlugins>
-                    </extraparameters>
-                </eeglab>
-                <fieldtrip><dir ui='dir'></dir></fieldtrip>
-            </toolboxes>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7487</dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+                <dir ui='dir'>/imaging/local/software/spm_toolbox/eeglab/eeglab_v14.1.1</dir>
+                <extraparameters>
+                    <requiredPlugins></requiredPlugins>
+                </extraparameters>
+            </toolbox>            
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.8/x86_64/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh v5.0.8</fslsetup>

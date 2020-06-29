@@ -178,7 +178,7 @@ if isstruct(node)
         end
     end
     for f = fieldnames(node)'
-        node.(f{1}) = processattributes(node.(f{1}));
+        node.(f{1}) = cell2mat(arrayfun(@(x) processattributes(x), node.(f{1}), 'UniformOutput', false)); % deal with arrays
     end
 end
 end

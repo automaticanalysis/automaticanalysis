@@ -27,13 +27,14 @@ aap=aarecipe('aap_tasklist_diffusion_with_topup.xml');
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path
 spmhit = which('spm_spm');
+spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir;
 if any(spmhit)
-    assert(strcmp(fileparts(spmhit), aap.directory_conventions.toolboxes.spm.dir), ...
-        'spm on path differs from aap.directory_conventions.toolboxes.spm.dir');
+    assert(strcmp(fileparts(spmhit), spmdir), ...
+        'spm on path differs from that in aap.directory_conventions');
 else
-    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.toolboxes.spm.dir);
-    SPM = spmClass(aap.directory_conventions.toolboxes.spm.dir);
-    SPM.load;
+    fprintf('adding spmdir to path: %s\n', spmdir);
+    SPMtool = spmClass(spmdir);
+    SPMtool.load;
 end
 
 aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','normalised_white', 'input');

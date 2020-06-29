@@ -33,21 +33,20 @@
         <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
         <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
-        <toolboxes desc="Toolbox with implemented interfaces in extrafunctions/toolboxes" ui='custom'>
-            <spm>
-                <dir ui='dir'></dir>
-                <extraparameters>
-                    <doKeepInPath>1</doKeepInPath>
-                </extraparameters>
-            </spm>
-            <eeglab>
-                <dir ui='dir'></dir>
-                <extraparameters>
-                    <requiredPlugins></requiredPlugins>
-                </extraparameters>
-            </eeglab>
-            <fieldtrip><dir ui='dir'></dir></fieldtrip>
-        </toolboxes>
+        <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+            <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+            <dir ui='dir'></dir>
+            <extraparameters>
+                <doKeepInPath>1</doKeepInPath>
+            </extraparameters>
+        </toolbox>
+        <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+            <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+            <dir ui='dir'></dir>
+            <extraparameters>
+                <requiredPlugins></requiredPlugins>
+            </extraparameters>
+        </toolbox>
         <linuxshell desc='Linux shell used to run linux commands' ui='text'></linuxshell>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
