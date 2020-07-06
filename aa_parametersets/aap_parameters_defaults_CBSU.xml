@@ -42,10 +42,10 @@
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh v5.0.8</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/6.0.0/x86_64/</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/7.1.0/</freesurferdir>
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/6.0.0/x86_64/FreeSurferEnv.sh;</freesurferenvironment>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/7.1.0/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICAT/GroupICAT-v4.0b</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
@@ -59,7 +59,7 @@
             <poolprofile desc='Cluster Profile and (optional)  initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>CBU_Slurm_2018</poolprofile>
         </directory_conventions>
         <options>
-            <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>            
+            <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>5</maximumretry>
             <NIFTI4D desc="Use NIFTI-4D instead of NIFTI-3D" ui="yesno">1</NIFTI4D> 
             <wheretoprocess desc='where to do processing' options='localsingle|localparallel|aws|qsub' ui='optionlist'>qsub</wheretoprocess>
             <garbagecollection desc='Perform garbage collection after the analysis' ui='yesno'>1</garbagecollection>
