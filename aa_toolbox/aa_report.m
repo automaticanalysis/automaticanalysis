@@ -57,7 +57,7 @@ end
 has_motioncorrection = ~isempty(intersect(mfstages,{'aamod_realign' 'aamod_realignunwarp'}));
 has_registration = ~isempty(intersect(mfstages,{'aamod_norm_write' 'aamod_norm_write_dartel'}));
 has_contrast = ~isempty(intersect(mfstages,{'aamod_firstlevel_threshold'}));
-has_meegepochs = ~isempty(intersect(mfstages,{'aamod_meeg_converttofieldtrip'}));
+has_meegepochs = ~isempty(intersect(mfstages,{'aamod_meeg_epochs'}));
 
 % Main HTLMs
 if (isfield(aap.directory_conventions,'reportname'))
