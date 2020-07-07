@@ -35,7 +35,7 @@ classdef fieldtripClass < toolboxClass
             close@toolboxClass(obj)
         end        
         
-        function addFieldtripToolbox(obj,toolbox)
+        function addExternal(obj,toolbox)
             if obj.pStatus < obj.CONST_STATUS.loaded
                 warning('Fieldtrip is not loaded')
                 return
@@ -59,7 +59,7 @@ classdef fieldtripClass < toolboxClass
             end
         end
         
-        function rmFieldtripToolbox(obj,toolbox)
+        function rmExternal(obj,toolbox)
             indtbp = cellfun(@(x) ~isempty(strfind(x,toolbox)), obj.toolInPath);
             p = obj.toolInPath(indtbp);
             rmpath(sprintf(['%s' pathsep],p{:}))

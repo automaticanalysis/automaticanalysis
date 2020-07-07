@@ -23,7 +23,7 @@ switch task
     case 'doit'
         [junk, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
-        FT.addFieldtripToolbox('spm12');
+        FT.addExternal('spm12');
         
         diag = aas_getsetting(aap,'diagnostics');
         
@@ -224,7 +224,7 @@ switch task
             end
         end
         
-        FT.rmFieldtripToolbox('spm12');
+        FT.rmExternal('spm12');
         FT.unload;
     case 'checkrequirements'
         if ~aas_cache_get(aap,'eeglab'), aas_log(aap,false,'EEGLAB is not found -> You will not be able process EEGLAB data'); end
