@@ -52,8 +52,8 @@ classdef toolboxClass < handle
         function load(obj,keepWorkspace)
             if nargin < 2, keepWorkspace = false; end
             if obj.pStatus < obj.CONST_STATUS.loaded
-                p = split(path,pathsep);
-                obj.toolInPath = p(cellfun(@(x) contains(x,obj.toolPath), p));
+                p = split(path,pathsep);                
+                obj.toolInPath = p(cellfun(@(x) ~isempty(strfind(x,obj.toolPath)), p));
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
             for v = fieldnames(obj.workspace)'

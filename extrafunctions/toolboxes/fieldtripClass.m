@@ -34,5 +34,36 @@ classdef fieldtripClass < toolboxClass
             clear ft_default;
             close@toolboxClass(obj)
         end        
+        
+        function addFieldtripToolbox(obj,toolbox)
+            if obj.pStatus < obj.CONST_STATUS.loaded
+                warning('Fieldtrip is not loaded')
+                return
+            end
+            tbpath = '';
+            lastwarn('')
+            ft_hastoolbox(toolbox,1);
+            if ~isempty(strfind(lastwarn,toolbox))
+                tbpath = strsplit(lastwarn); tbpath = tbpath{2};
+            end
+            p = split(path,pathsep);                
+            obj.toolInPath = vertcat(obj.toolInPath, p(cellfun(@(x) ~isempty(strfind(x,tbpath)), p)));
+            
+            if ~isempty(strfind(toolbox,'spm'))
+                spmVer = spm('ver'); 
+                global ft_default
+                ft_default.trackcallinfo = 'no';
+                ft_default.showcallinfo = 'no';
+                if ~isempty(spmVer), ft_default.spmversion = lower(spmVer); end
+                fprintf('INFO: SPM version %s is set\n',spmVer);
+            end
+        end
+        
+        function rmFieldtripToolbox(obj,toolbox)
+            indtbp = cellfun(@(x) ~isempty(strfind(x,toolbox)), obj.toolInPath);
+            p = obj.toolInPath(indtbp);
+            rmpath(sprintf(['%s' pathsep],p{:}))
+            obj.toolInPath(indtbp) = [];
+        end
     end
 end

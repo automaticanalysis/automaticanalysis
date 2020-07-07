@@ -34,7 +34,8 @@ classdef eeglabClass < toolboxClass
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
         
-        function load(obj)
+        function load(obj,keepWorkspace)
+            if nargin < 2, keepWorkspace = false; end
             addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
@@ -50,7 +51,7 @@ classdef eeglabClass < toolboxClass
             end
             if is_new_plugin, obj.load; end
             
-            load@toolboxClass(obj)
+            load@toolboxClass(obj,keepWorkspace)
         end
         
         function val = get.dipfitPath(obj)
