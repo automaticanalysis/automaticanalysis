@@ -20,6 +20,7 @@ classdef eeglabClass < toolboxClass
             defaultKeepGUI = false;
             
             argParse = inputParser;
+            argParse.addRequired('name',@ischar);
             argParse.addRequired('path',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
@@ -29,7 +30,7 @@ classdef eeglabClass < toolboxClass
             
             vars = {'ALLCOM' 'ALLEEG' 'CURRENTSET' 'CURRENTSTUDY' 'eeglabUpdater' 'globalvars' 'LASTCOM' 'PLUGINLIST' 'STUDY'};
             
-            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
