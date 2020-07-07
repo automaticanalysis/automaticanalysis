@@ -16,6 +16,7 @@ SPM.load;
 EL = eeglabClass(aap.directory_conventions.toolboxes.eeglab.dir,'requiredPlugins',strsplit(aap.directory_conventions.toolboxes.eeglab.extraparameters.requiredPlugins,':'));
 EL.load;
 CHANNELFILE = fullfile(EL.dipfitPath,'standard_BESA','standard-10-5-cap385.elp');
+MRIFILE = fullfile(EL.dipfitPath,'standard_BEM','standard_mri.mat');
 EL.close;
 
 % SITE-SPECIFIC CONFIGURATION:
@@ -31,6 +32,7 @@ aap.directory_conventions.analysisid = 'lemon';
 
 % Pipeline customisation
 aap = aas_addinitialstream(aap,'channellayout',{CHANNELFILE});
+aap = aas_addinitialstream(aap,'structural',{MRIFILE});
 
 aap.tasksettings.aamod_meeg_converttoeeglab.removechannel = 'VEOG';
 aap.tasksettings.aamod_meeg_converttoeeglab.downsample = 250;
@@ -65,13 +67,12 @@ aap.tasksettings.aamod_meeg_ica.options.AMICA.rejsig = 3;
 
 aap.tasksettings.aamod_meeg_dipfit.transformation = CHANNELFILE;
 aap.tasksettings.aamod_meeg_dipfit.volumeCondutionModel = fullfile('standard_BESA','standard_BESA.mat');
-aap.tasksettings.aamod_meeg_dipfit.mri = fullfile('standard_BEM','standard_mri.mat');
 aap.tasksettings.aamod_meeg_dipfit.rejectionThreshold = 100; % keep all
 aap.tasksettings.aamod_meeg_dipfit.constrainSymmetrical = 1;
 
 % Automatic IC rejection using ICLabel label probability (brain > 0.7) and and residual variance (< 0.15) from dipole fitting (if performed).
 aap.tasksettings.aamod_meeg_icclassification.method = 'ICLabel';
-aap.tasksettings.aamod_meeg_icclassification.criteria.probBrain = 0.7;
+aap.tasksettings.aamod_meeg_icclassification.criteria.prob = 'Brain>0.7';
 aap.tasksettings.aamod_meeg_icclassification.criteria.rv = 0.15;
 
 %% DATA

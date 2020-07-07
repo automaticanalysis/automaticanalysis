@@ -20,9 +20,7 @@ switch task
         volcondfile = aas_getsetting(aap,'volumeCondutionModel');
         if ~exist(volcondfile,'file'), volcondfile = fullfile(EL.dipfitPath,volcondfile); end
         if ~exist(volcondfile,'file'), aas_log(aap,true,sprintf('Volume condition model %s not found',aas_getsetting(aap,'volumeCondutionModel'))); end
-        mrifile = aas_getsetting(aap,'mri');
-        if ~exist(mrifile,'file'), mrifile = fullfile(EL.dipfitPath,mrifile); end
-        if ~exist(mrifile,'file'), aas_log(aap,true,sprintf('MRI %s not found',aas_getsetting(aap,'mri'))); end
+        mrifile = aas_getfiles_bystream_multilevel(aap,'subject',subj,'structural');
         
         trans = aas_getsetting(aap,'transformation');
         if ischar(trans) % target channel location
