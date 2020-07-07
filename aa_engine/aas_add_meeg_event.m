@@ -11,6 +11,10 @@ function aap=aas_add_meeg_event(aap,modulename,subject,session,eventname,eventde
 %     argument 5 (eventname)    - conditionlabels or empty if provided in mat-file along with trl
 %     argument 6 (eventvalue)   - trl matrix or mat-file containing trl (and conditionlabels)
 %     argument 7 (trialshift)   - [] or unspecified
+% Op.3.: Segment data using onsets from data --> may multiple calls per subject/session
+%     argument 5 (eventname)    - 'segment-<segmentlabel>'
+%     argument 6 (eventvalue)   - '<eventvalue>:<eventvalue>' or [1x2] array of sample numbers
+%     argument 7 (trialshift)   - trlshift (must not be empty!!!)
 % If eventtype is empty (also in the module settings!), we assume there is only one eventtype
 
 % Regexp for number at the end of a module name, if present in format _%05d (e.g, _00001)
