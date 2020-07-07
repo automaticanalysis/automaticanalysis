@@ -26,6 +26,8 @@ classdef toolboxClass < handle
         
         workspace = struct
         
+        collections = struct('name',{},'path',{},'toolbox',{})
+        
         toolboxes = cell(1,0)
     end
     
@@ -178,6 +180,43 @@ classdef toolboxClass < handle
         end
         function unsetAutoLoad(obj)
             obj.autoLoad = false;
+        end
+        
+        %% collections
+         function addCollection(obj,collection)
+            if obj.pStatus < obj.CONST_STATUS.loaded
+                warning('toolbox is not loaded')
+                return
+            end
+            iC = strcmp(obj.collections.name,collection);
+            if ~any(iC)
+                warning('external %s not specified',collection);
+                return
+            end
+            for p = obj.collections(iC).path
+                currp = fullfile(obj.toolPath,strrep(p{1},'/',filesep));
+                addpath(currp);
+                obj.toolInPath = vertcat(obj.toolInPath,currp);
+            end
+            for t = obj.collections(iC).toolbox
+                obj.doToolbox(t{1},'load');
+            end
+        end
+        
+        function rmCollection(obj,collection)
+            iC = strcmp(obj.collections.name,collection);
+            if ~any(iC)
+                warning('external %s not specified',collection);
+                return
+            end
+            for p = obj.collections(iC).path
+                currp = fullfile(obj.toolPath,strrep(p{1},'/',filesep));
+                rmpath(currp);
+                obj.toolInPath(strcmp(obj.toolInPath,currp)) = [];
+            end
+            for t = obj.collections(iC).toolbox
+                obj.doToolbox(t{1},'unload');
+            end
         end
     end
 end
