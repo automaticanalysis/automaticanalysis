@@ -26,9 +26,9 @@ switch task
             aap.acq_details.subjects(subj).meegseriesnumbers{d}{sess} = 'empty_room.fif';
         end
         
-        megfile = fullfile(srcdir,meegser);
+        meegfile = fullfile(srcdir,meegser);
         
-        if ~exist(megfile,'file')
+        if ~exist(meegfile,'file')
             aas_log(aap,1,sprintf('ERROR: Subject %s has no session %s!',...
                 aap.acq_details.subjects(subj).meegname{d},...
                 meegser));
