@@ -135,6 +135,10 @@ classdef toolboxClass < handle
         
         %% sub-toolboxes
         function addToolbox(obj,tb)
+            if isempty(tb.name)
+                warning('sub-toolbox MUST have a name');
+                return
+            end
             isTb = cellfun(@(t) strcmp(tb.name,t.name), obj.toolboxes);
             if isTb
                 warning('toolbox %s is already added as a sub-toolbox', tb.name);

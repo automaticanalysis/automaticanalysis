@@ -13,15 +13,15 @@ classdef spmClass < toolboxClass
             defaultKeepInPath = false;
             
             argParse = inputParser;
-            argParse.addRequired('name',@ischar);
             argParse.addRequired('path',@ischar);
+            argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
             obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,{});
             
-            obj.addToolbox(fieldtripClass('fieldtrip',fullfile(obj.toolPath,'external','fieldtrip')));
+            obj.addToolbox(fieldtripClass(fullfile(obj.toolPath,'external','fieldtrip'),'name','fieldtrip'));
         end
         
         function load(obj)

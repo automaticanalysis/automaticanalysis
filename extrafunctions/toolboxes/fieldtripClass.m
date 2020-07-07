@@ -5,8 +5,8 @@ classdef fieldtripClass < toolboxClass
             defaultKeepInPath = false;
             
             argParse = inputParser;
-            argParse.addRequired('name',@ischar);
             argParse.addRequired('path',@ischar);
+            argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
