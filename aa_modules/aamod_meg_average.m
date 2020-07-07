@@ -7,6 +7,9 @@ switch task
         
     case 'doit'
         %% Initialise
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.addCollection('meeg');
+        
         switch aap.tasklist.currenttask.domain
             case 'subject'
                 localroot = aas_getsubjpath(aap,varargin{1});
@@ -37,5 +40,11 @@ switch task
         outfname = fullfile(localroot,[S.prefix basename(infname)]); % specifying output filestem
         fname(D,[outfname '.mat']);
         D.save;
+
+        SPMtool.rmCollection('meeg');
+
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meg',char([outfname '.dat'],[outfname '.mat']));        
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
+end
 end

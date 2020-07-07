@@ -5,6 +5,9 @@ resp='';
 
 switch task
     case 'report'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.addCollection('meeg');
+        
         FNUM = 10;  % To avoid too many figures!
         load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica','output'));
         infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
@@ -75,11 +78,13 @@ switch task
                 aap = aas_report_addimage(aap,subj,fname_tc);
                 aap = aas_report_addimage(aap,subj,fname_top);
             end
-            
         end
-
+        SPMtool.rmCollection('meeg');
     case 'doit'
         %% Initialise
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.addCollection('meeg');
+        
         % clear previous diagnostics
         delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_*'));
         
@@ -339,6 +344,8 @@ switch task
         S.prefix           = 'M';
         D = spm_eeg_montage(S);
         
+        SPMtool.rmCollection('meeg');
+        
         %% Outputs
         sessdir = aas_getsesspath(aap,subj,sess);
         outfname = fullfile(sessdir,[S.prefix basename(infname_meg) '_ICA']); % specifying output filestem
@@ -347,4 +354,7 @@ switch task
         
         outfname = [S.prefix basename(infname_meg)];
         aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
+end
 end
