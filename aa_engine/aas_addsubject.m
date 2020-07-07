@@ -35,9 +35,9 @@ function aap = aas_addsubject(aap, varargin)
 %                   two series of single-echo EPI: [5 10]
 %                   two series of single-echo EPI and one series of multi-echo EPI with 5 echos: {5 10 15:19}
 %               - for NIfTI: cell array containing one or more
-%                   for structural: string containing a full or relative path (from a single rawdatadir)
-%                   for 4D NIfTI: string containing a full or relative path (from a single rawdatadir)
-%                   for whole-brain EPI: string containing a full or relative path (from a single rawdatadir). Can be specified only after fMRI series.
+%                   for structural: string containing a full or relative path (from the subject's dir)
+%                   for 4D NIfTI: string containing a full or relative path (from the subject's dir)
+%                   for whole-brain EPI: string containing a full or relative path (from the subject's dir). Can be specified only after fMRI series.
 %                   for 3D NIfTI: cell array (i.e. nested) of strings of full path
 %                 Strings can be replaced by structures with fields 'fname' (path to image) and 'hdr' (path to header) to specify metadata.
 %               - for MEEG: full or relative filename of the acquisition file in the subject folder
@@ -155,10 +155,10 @@ try
     if iscell(data) && numel(data) == 2 % MEEG
         thissubj.meegname{iMEEGData}=data{1};
         thissubj.mriname{iMRIData}=data{2};
-        if isempty(name), name = aas_meegname2subjname(aap,sprintf(aap.directory_conventions.meegsubjectoutputformat,thissubj.meegname{1})); end
+        if isempty(name), name = aas_meegname2subjname(aap,thissubj.meegname{1}); end
     else % MRI
         thissubj.mriname{iMRIData}=data;
-        if isempty(name), name = aas_mriname2subjname(aap,sprintf(aap.directory_conventions.subjectoutputformat,thissubj.mriname{1})); end
+        if isempty(name), name = aas_mriname2subjname(aap,thissubj.mriname{1}); end
     end
 catch
     aas_log(aap,true,'In aas_addsubject, name is expected to be either single string for MRI, or a cell of two for MEEG written like this {''meegname'',''mriname''}.');

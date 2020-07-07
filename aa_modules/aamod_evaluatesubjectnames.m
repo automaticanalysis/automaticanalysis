@@ -52,7 +52,7 @@ switch task
                     end
                 end
                 if isMEEG
-                    for m = 1:numel(aap.acq_details.subjects(subj).mriname)
+                    for m = 1:numel(aap.acq_details.subjects(subj).meegname)
                         s = meeg_findvol(aap,aap.acq_details.subjects(subj).meegname{m});
                         if isempty(s)
                             if isempty(cell2mat(aap.acq_details.subjects(subj).mriname)) || all(strcmp(aap.acq_details.subjects(subj).mriname,'missing'))
