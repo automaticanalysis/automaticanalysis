@@ -84,7 +84,7 @@ if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
     oldspmdefaults = aap.spm.defaults;
 end
 
-SPM = spmClass('spm',SPMDIR,'doAddToPath',true,'doKeepInPath',doKeepInPath);
+SPM = spmClass(SPMDIR,'doAddToPath',true,'doKeepInPath',doKeepInPath);
 SPM.load;
 aas_cache_put(aap,'spm',SPM);
 
@@ -128,7 +128,7 @@ if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conv
                     params{end+1} = val;
                 end
             end
-            T = constr(t{1},TBX.dir,params{:});
+            T = constr(TBX.dir,params{:});
             aas_cache_put(aap,t{1},T);
         end
     end
