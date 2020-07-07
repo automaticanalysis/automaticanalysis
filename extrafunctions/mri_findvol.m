@@ -8,8 +8,9 @@
 %
 % 05/17 [MSJ] added a try/catch to handle empty directory and OS X .DS_Store weirdness
 
-function strSubj = mri_findvol(aap,subjpath,fp)
+function strSubj = mri_findvol(aap,subjpath,fp,probe)
 
+if nargin < 4, probe = false; end
 if nargin < 3, fp = false; end
 
-strSubj = findvol(aap,'mri',subjpath,'',fp);
+strSubj = findvol(aap,'mri',subjpath,'',fp,probe);

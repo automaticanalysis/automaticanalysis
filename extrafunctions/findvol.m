@@ -1,14 +1,13 @@
 % volunteer locator
+%   fdate - return only subfolder of specific date
 %   fp - return fullpath
+%   probe - return empty if none found and do not throw error
 %
 % 90952 --> CBU090952_MR09032/20090828_131456
-% Tibor Auer MRC CBU Cambridge 2012-2013
+% Tibor Auer MRC CBU Cambridge 2012-2020
 %
-% CHANGE HISTORY
-%
-% 05/17 [MSJ] added a try/catch to handle empty directory and OS X .DS_Store weirdness
 
-function strSubj = findvol(aap,modality,subjpath,fdate,fp)
+function strSubj = findvol(aap,modality,subjpath,fdate,fp,probe)
 
 DTFORMAT = {'yymmdd' 'yyyymmdd_HHMMSS'};
 
@@ -51,7 +50,7 @@ for i = 1:numel(SEARCHPATH)
 end
 
 if ~isFound
-    aas_log(aap,true,sprintf('Subject %s* not found',subjpath));
+    aas_log(aap,~probe,sprintf('Subject %s* not found',subjpath));
     strSubj = '';
     return;
 end
@@ -67,8 +66,10 @@ strSubjDir = spm_select('List',fullfile(SEARCHPATH{i},strSubj),'dir','^[a-zA-Z0-
 % if there is no subdirectory
 if isempty(strSubjDir), strSubjDir = spm_select('List',fullfile(SEARCHPATH{i},strSubj),'^[a-zA-Z0-9]*'); end
 if isempty(strSubjDir)
-    aas_log(aap,true,sprintf('nothing found for path %s',...
+    aas_log(aap,~probe,sprintf('nothing found for path %s',...
         fullfile(SEARCHPATH{i},strSubj)));
+    strSubj = '';
+    return;
 end
 
 % handle CBU-style sub-directories with date formats
@@ -77,7 +78,7 @@ des = cellfun(@(x) datenum_which(x,DTFORMAT),strSubjDir);
 
 if ~any(des)
     if ~isempty(fdate) % subfolder of specific date required
-        aas_log(aap,false,sprintf('Subject %s* on date %s not found',subjpath,fdate));
+        aas_log(aap,~probe,sprintf('Subject %s* on date %s not found',subjpath,fdate));
         strSubj = '';
         return;
     else % no sub-folder required
@@ -89,7 +90,7 @@ else
         [junk,idf] = datenum_which(testDir{1},DTFORMAT);
         ind = find(des == datenum(fdate,DTFORMAT{idf}),1,'first'); % first matching subfolder (we do not even expect more)
         if isempty(ind)
-            aas_log(aap,false,sprintf('Subject %s* on date %s not found',subjpath,fdate));
+            aas_log(aap,~probe,sprintf('Subject %s* on date %s not found',subjpath,fdate));
             strSubj = '';
             return;
         else
