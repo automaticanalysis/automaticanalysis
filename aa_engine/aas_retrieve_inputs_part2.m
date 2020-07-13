@@ -125,7 +125,7 @@ while any(depnotdone)
                                     %relativepath_src_from_dest=relativepath(src,newpth);
                                     oldpth=newpth;
                                 end;
-                                if (streamfiles(depind).ismodified)
+                                if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
                                     cmd=['cd ' streamfiles(depind).src '; rsync -t ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
                                 else
                                     % This is a hard link, not a symlink. This
