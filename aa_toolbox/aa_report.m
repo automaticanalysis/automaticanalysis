@@ -97,12 +97,11 @@ for k=1:numel(stages)
     curr_aap = aas_setcurrenttask(aap,k);
     domain = curr_aap.tasklist.currenttask.domain;
     
-    % mfile_alias
-    if isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor)
-        xml = xml_read([aap.tasklist.main.module(k).aliasfor '.xml']);
-    else
-        xml = xml_read([stages{k} '.xml']);
+    xmlfn = [stages{k} '.xml'];
+    if ~exist(xmlfn,'file') && isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor) % mfile_alias
+        xmlfn = [aap.tasklist.main.module(k).aliasfor '.xml'];
     end
+    xml = xml_read(xmlfn);
     mfile_alias = stages{k};
     if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
