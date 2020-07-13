@@ -56,6 +56,7 @@ data.dimord = strjoin(dims(perm(2:end)),'_');
 % calculate
 for x = 1:size(dat,2)
     for y = 1:size(dat,3)
+        if any(isnan(dat(:,x,y))), continue; end
         ts = dat(soi(1):soi(2),x,y);
         [junk,ord] = sort(ts(nb+1:end-nb),'descend'); ord = ord+nb;
         for p = ord'

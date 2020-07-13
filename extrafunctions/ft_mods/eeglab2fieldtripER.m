@@ -58,4 +58,5 @@ trl = round(ft_trialfun_general(trlcfg));
 data = ft_redefinetrial(struct('trl',trl),data);
 
 % clear path
+ft_warning('removing %s toolbox from your MATLAB path',tbpath)
 rmpath(tbpath)
