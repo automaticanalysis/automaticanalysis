@@ -253,7 +253,7 @@ switch task
         % baseline correction
         baswin = aas_getsetting(aap,'baselinewindow');
         if ~isempty(baswin)
-            if isnumeric(baswin), baswin = baswin+eventdef(1).trlshift; end % convert to seconds
+            if isnumeric(baswin), baswin = baswin+eventdef(1).trlshift; end
         end
         
         datafn = {};

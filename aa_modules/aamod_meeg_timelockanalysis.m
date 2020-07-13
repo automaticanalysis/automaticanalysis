@@ -156,11 +156,9 @@ switch task
                 % contarst events
                 cfg = combinecfg; 
                 cfg.weights = m.event.weights;
-                timelockCon = ft_combine(cfg,conEvents{:});
-                meeg_diagnostics_ER(timelockModel,diag,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
+                timelock = ft_combine(cfg,conEvents{:});
+                meeg_diagnostics_ER(timelock,diag,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
   
-                timelock.contrast = timelockCon;
-                
                 % save/update output
                 timelockFn = fullfile(aas_getsesspath(aap,subj,sess),['timelock_' m.name '.mat']);
                 save(timelockFn,'timelock');
@@ -174,7 +172,7 @@ switch task
                 outputFn{end+1} = timelockFn;
                 aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],'timelock',outputFn);
                 
-                conSessions{sess} = timelock.contrast;                 
+                conSessions{sess} = timelock;
             end            
             if any(cellfun(@(x) isempty(x), conSessions)), continue; end
             
@@ -182,7 +180,7 @@ switch task
             cfg = combinecfg; 
             cfg.weights = m.session.weights;
             timelock = ft_combine(cfg,conSessions{:});
-            meeg_diagnostics_ER(timelockModel,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
+            meeg_diagnostics_ER(timelock,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
             
             % save/update output
             timelockFn = fullfile(aas_getsubjpath(aap,subj),['timelock_' m.name '.mat']);
