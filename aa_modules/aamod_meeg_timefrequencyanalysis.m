@@ -52,8 +52,6 @@ switch task
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
         if ~any(subjmatches), aas_log(aap,true,['No trialmodel specification found for ' aas_getsubjdesc(aap,subj)]); end
-        peakdefs = aas_getsetting(aap,'peakdef');
-        peakdefs = peakdefs(strcmp(aap.acq_details.subjects(subj).subjname,{peakdefs.subject}));
         
         combinecfg = [];
         combinecfg.parameter = 'powspctrm';
@@ -225,33 +223,6 @@ switch task
             end
             outputFn{end+1} = timefreqFn;
             aap = aas_desc_outputs(aap,'subject',subj,'timefreq',outputFn);
-            
-            % detect peak
-            if ~isempty(peakdefs)
-                trialmatches = arrayfun(@(x) any(strcmp(x.trial,m.name)), peakdefs);
-                if any(trialmatches)
-                    for p = peakdefs(trialmatches).peakdef
-                        cfg = [];
-                        cfg.parameter = 'powspctrm';
-                        cfg.inflection = p.direction;
-                        cfg.latency = p.toi/1000;
-                        cfg.neighbourwidth = aas_getsetting(aap,'peakneighbours')/1000;
-                        peak = ft_detectpeak(cfg,timefreq);
-                        
-                        peakFn = fullfile(aas_getsubjpath(aap,subj),['peak_' m.name '_' p.name '.mat']);
-                        save(peakFn,'peak');
-                        
-                        % append to stream
-                        outputFn = {};
-                        outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'peak');
-                        if exist(outstreamFn,'file')
-                            outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'peak','output'));
-                        end
-                        outputFn{end+1} = peakFn;
-                        aap = aas_desc_outputs(aap,'subject',subj,'peak',outputFn);
-                    end
-                end
-            end
         end
         
         FT.rmExternal('spm12');

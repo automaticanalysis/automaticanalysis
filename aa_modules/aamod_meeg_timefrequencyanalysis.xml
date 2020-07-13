@@ -29,17 +29,6 @@
                 </model>
             </trialmodel>
             
-            <peakneighbours desc='width of neighbouring samples to compare the peak to, in milliseconds'>20</peakneighbours>
-            <peakdef>
-                <subject></subject>
-                <trial></trial>
-                <peakdef>
-                    <name></name>
-                    <direction></direction>
-                    <toi></toi>
-                </peakdef>
-            </peakdef>
-            
             <inputstreams>
                 <stream>meeg</stream>
             </inputstreams>
