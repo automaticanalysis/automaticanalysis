@@ -11,11 +11,32 @@
             <removechannel desc='channel(s) to remove (multiple channels are specified as colon-seperated-list)'>EOG</removechannel>
             <downsample desc='sampling frequency in Hz to downsample to'></downsample>
             
+            <!-- 
+            subject can be specified as cell array of strings or '*' (for all)
+            event can be a single event or a 1xN array indicating events in the event list
+            valid operation is
+                'remove' - remove
+                'keep' - remove all others
+                'unique:first' - keep only first of consecutive events
+                'unique:last' - keep only last of consecutive events
+                'rename:<new type>' - rename event(s) to <new type>
+                'iterate' - add suffix to recurring event to indicate the number of occurrence
+                'insert:[<array of indices>] - insert event before the locations specified by <array of indices> with timings of the events at the locations'
+            -->
+            <toEdit>
+                <subject desc='Subject name'></subject>
+                <session desc='Session name'></session>
+                <event desc='edit events, can be a list of structures applied in order'>
+                    <type desc='specfify event to operate on, can be regular expression'></type>
+                    <operation desc='specify operation'></operation>
+                </event>
+            </toEdit>
+            
             <inputstreams>
                 <stream>channellayout</stream>
                 <stream>meeg</stream>                
             </inputstreams>
-
+            
             <outputstreams>
                 <stream>meeg</stream>
             </outputstreams>
@@ -24,7 +45,7 @@
                 <freqrange desc='frequency range for display, specified as [minFreq maxFreq] in Hz'></freqrange>
                 <freq desc='frequency-of-interest specified in Hz for topological plot (can also be list)'></freq>
             </diagnostics>
-                
+            
         </currenttask>
     </tasklist>
 </aap>

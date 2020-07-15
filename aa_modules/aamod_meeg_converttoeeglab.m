@@ -47,7 +47,87 @@ switch task
             sRate = aas_getsetting(aap,'downsample');
             if sRate ~= EEG.srate, EEG = pop_resample( EEG, aas_getsetting(aap,'downsample')); end
         end
-                
+        
+        % edit
+        % - specify operations
+        toEditsetting = aas_getsetting(aap,'toEdit');
+        toEditsubj = toEditsetting(...
+            cellfun(@(x) any(strcmp(x,aas_getsubjname(aap,subj))),{toEditsetting.subject}) | ...
+            strcmp({toEditsetting.subject},'*')...
+            );        
+        toEdit = struct('type',{},'operation',{});
+        for s = 1:numel(toEditsubj)
+            sessnames = regexp(toEditsubj(s).session,':','split');
+            if any(strcmp(sessnames,aas_getsessname(aap,sess))) || sessnames{1} == '*'
+                toEdit = horzcat(toEdit,toEditsubj(s).event);
+            end
+        end
+        
+        % - do it
+        if ~isempty(toEdit)
+            for e = toEdit
+                if ischar(e.type)
+                    ind = ~cellfun(@isempty, regexp({EEG.event.type},e.type));
+                elseif isnumeric(e.type)
+                    ind = e.type;
+                end
+                op = strsplit(e.operation,':');
+                if ~any(ind) && ~strcmp(op{1},'insert'), continue; end
+                switch op{1}
+                    case 'remove'
+                        EEG.event(ind) = [];
+                        EEG.urevent(ind) = [];
+                    case 'keep'
+                        EEG.event = EEG.event(ind);
+                        EEG.urevent = EEG.urevent(ind);
+                    case 'rename'
+                        for i = find(ind)
+                            EEG.event(i).type = op{2};
+                            EEG.urevent(i).type = op{2};
+                        end
+                    case 'unique'
+                        ex = [];
+                        switch op{2}
+                            case 'first'
+                                for i = 2:numel(ind)
+                                    if ind(i) && ind(i-1), ex(end+1) = i; end
+                                end
+                            case 'last'
+                                for i = 1:numel(ind)-1
+                                    if ind(i) && ind(i+1), ex(end+1) = i; end
+                                end
+                        end
+                        EEG.event(ex) = [];
+                        EEG.urevent(ex) = [];
+                    case 'iterate'
+                        ind = cumsum(ind).*ind;
+                        for i = find(ind)
+                            EEG.event(i).type = sprintf('%s%02d',EEG.event(i).type,ind(i));
+                            EEG.urevent(i).type = sprintf('%s%02d',EEG.urevent(i).type,ind(i));
+                        end
+                    case 'insert'
+                        loc = str2num(op{2});
+                        newE = EEG.event(loc);
+                        for i = 1:numel(newE)
+                            newE(i).type = e.type;
+                        end
+                        events = EEG.event(1:loc(1)-1);
+                        for i = 1:numel(loc)-1
+                            events = [events newE(i) EEG.event(loc(i):loc(i+1)-1)];
+                        end
+                        if isempty(i), i = 0; end
+                        events = [events newE(i+1) EEG.event(loc(i+1):end)];
+                        EEG.event = events;
+                        EEG.urevent = rmfield(events,'urevent');
+                    otherwise
+                        aas_log(aap,false,sprintf('Operation %s not yet implemented',op{1}));
+                end
+            end
+            for i = 1:numel(EEG.event)
+                EEG.event(i).urevent = i;
+            end
+        end
+
         % diagnostics
         diagpath = fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '_raw.jpg']);
         meeg_diagnostics_continuous(EEG,aas_getsetting(aap,'diagnostics'),'Raw',diagpath);
