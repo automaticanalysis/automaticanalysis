@@ -53,7 +53,7 @@ if ~exist(defaultparameters,'file')
     seedparam = fullfile(rootpath, seedparam);
     
     % initialise the save dialogue in the current aap.acq_details.root if specified
-    xml=xml_read(seedparam,Pref);
+    xml=xml_read(seedparam);
     configdir = fullfile(getenv('HOME'),'.aa');
     % generate new parameters file N.B.: in networks with shared resources
     % average user may not be able to write into aa_paremetersets
@@ -62,7 +62,7 @@ if ~exist(defaultparameters,'file')
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
     
-    analysisroot = aas_expandpathbyvars(xml.acq_details.root);
+    analysisroot = aas_expandpathbyvars(xml.acq_details.root.CONTENT);
     aas_makedir([], analysisroot);
     analysisroot = userinput('uigetdir',analysisroot,'Location of analyses by default','GUI',isGUI);
     
