@@ -55,6 +55,22 @@ trlcfg.trialdef.prestim    = -data.time{1}(1); % in seconds
 trlcfg.trialdef.poststim   = data.time{1}(end)+1/data.fsample; % in seconds
 trlcfg.event = events;
 trl = round(ft_trialfun_general(trlcfg));
+assert(numel(EEG.epoch)==size(data.trialinfo,1),'numel(EEG.epoch) size(data.trialinfo,1) do to match');
+if isnumeric(EEG.event(1).type)
+    evcompfun = @eq;
+elseif ischar(EEG.event(1).type)
+    evcompfun = @strcmp;
+end
+indE = [];
+for e = 1:numel(EEG.epoch)
+    evmatch = evcompfun(EEG.epoch(e).eventtype,data.trialinfo{e,2}{1}); evmatch = evmatch(evmatch);
+    if sum(evmatch) > 1
+        ft_warning('overlap detected in epoch #%d',e)
+        evmatch(2:end) = false;
+    end
+    indE = [indE evmatch];
+end
+trl = trl(logical(indE),:);
 data = ft_redefinetrial(struct('trl',trl),data);
 
 % clear path
