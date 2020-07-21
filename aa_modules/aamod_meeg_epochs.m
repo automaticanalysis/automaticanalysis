@@ -240,7 +240,9 @@ switch task
         end
         
         % timewindow
-        timewindow = (aas_getsetting(aap,'timewindow')+eventdef(1).trlshift)/1000; % in seconds (assume same trlshift for each event)
+        if ~isempty(eventdef)
+            timewindow = (aas_getsetting(aap,'timewindow')+eventdef(1).trlshift)/1000; % in seconds (assume same trlshift for each event)
+        end
         
         % data rejection, correct events if rejection happens together with an event
         eventRejection = aas_getsetting(aap,'rejectionevent');
@@ -248,6 +250,7 @@ switch task
         % generate segemnt definition for the whole dataset if none exists
         if isempty(segmentdef)
             segmentdef.eventvalue = 'begin:end';
+            segmentdef.trlshift = [2 -2];
         end
         
         % baseline correction
@@ -277,8 +280,11 @@ switch task
                 else, segRangeEvenInd(2) = find(strcmp({EEG.event.type},segevs{2})); end
             end
             
+            % segment latency
+            segShift = segmentdef(seg).trlshift/1000*EEG.srate;
+            
             % segment data
-            segEEG = pop_select(EEG,'point',[EEG.event(segRangeEvenInd(1)).latency+2 EEG.event(segRangeEvenInd(2)).latency-2]);
+            segEEG = pop_select(EEG,'point',[EEG.event(segRangeEvenInd(1)).latency+segShift(1) EEG.event(segRangeEvenInd(2)).latency+segShift(2)]);
             if isempty(EEG.event(segRangeEvenInd(1)).urevent), segRangeEvenInd(1) = find(~strcmp({EEG.event.type},eventRejection),1,'first'); end
             if isempty(EEG.event(segRangeEvenInd(2)).urevent), segRangeEvenInd(2) = find(~strcmp({EEG.event.type},eventRejection),1,'last'); end
             segEEG.urevent = segEEG.urevent(EEG.event(segRangeEvenInd(1)).urevent:EEG.event(segRangeEvenInd(2)).urevent);
@@ -287,11 +293,24 @@ switch task
             end
             
             % epoch
-            epochEEG = pop_epoch(segEEG,{eventdef.eventvalue},timewindow);
+            if ~isempty(eventdef)
+                epochEEG = pop_epoch(segEEG,{eventdef.eventvalue},timewindow);
+            else
+                epochEEG = segEEG;
+            end
                         
             % baseline correction
             if ~isempty(baswin)
-                epochEEG = pop_rmbase(epochEEG,baswin);
+                if isnumeric(baswin)
+                    epochEEG = pop_rmbase(epochEEG,baswin);
+                else
+                    switch baswin
+                        case 'all'
+                            epochEEG = pop_rmbase(epochEEG,[]);
+                        otherwise
+                            % NYI
+                    end
+                end
             end
 
             datafn{end+1} = fullfile(aas_getsesspath(aap,subj,sess),sprintf('epochs%s_seg-%d.set',condfn,seg));

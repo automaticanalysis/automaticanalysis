@@ -53,6 +53,14 @@ else
     event.eventvalue = eventdef;
 end
 
+% segment definition
+if find(strcmp(strsplit(event.conditionlabel,'-'),'segment'),1,'first') == 1
+    if numel(event.trlshift) < 2 || ~any(event.trlshift)
+        aas_log(aap,false,'Segment definition requires trialshift specified as 1x2 array of non-zero values -> default [2 -2] will be applied');
+        event.trlshift = [2 -2];
+    end    
+end
+
 % find models that corresponds and add events if they exist
 for m = 1 : length(moduleindex)
     
