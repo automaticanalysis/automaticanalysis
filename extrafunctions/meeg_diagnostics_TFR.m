@@ -134,6 +134,11 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
             end
             
             for e = 1:numel(tfr)
+                if all(cfgtopo.xlim < min(tfr{e}.time)) || all(cfgtopo.xlim > max(tfr{e}.time)) ||...
+                        all(cfgtopo.ylim < min(tfr{e}.freq)) || all(cfgtopo.ylim > max(tfr{e}.freq))
+                    warning('no data within the range')
+                    continue
+                end
                 tmpdat = ft_selectdata(struct('latency',cfgtopo.xlim,'frequency',cfgtopo.ylim),tfr{e});
                 if all(isnan(tmpdat.powspctrm(:))), continue; end % skip empty data
                 
@@ -154,7 +159,9 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
         cbs = findall(fig,'type','ColorBar');
         axs = findall(fig,'type','Axes');
         dPos = cbs(1).Position.*[0 0 0.25 0.25];
-        dPos(1) = (-(diff(arrayfun(@(x) x.Position(1), axs(1:2))))-axs(1).Position(3))/2;
+        if numel(axs) > 1
+            dPos(1) = (-(diff(arrayfun(@(x) x.Position(1), axs(1:2))))-axs(1).Position(3))/2;
+        end
         for c = cbs'
             c.YAxisLocation = 'left';
             c.Location = 'manual';
