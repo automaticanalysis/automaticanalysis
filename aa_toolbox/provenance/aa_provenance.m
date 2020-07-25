@@ -7,6 +7,8 @@ classdef aa_provenance < handle
         pp
         p
 		isvalid = false
+        
+        donotcheckinput = false
     end
     
     properties (Hidden, SetAccess = private)
@@ -204,7 +206,7 @@ classdef aa_provenance < handle
             [prid_module, id] = obj.Module(idname,idattr);
             
             % Input(s)
-            if checkinput
+            if ~obj.donotcheckinput && checkinput
                 [inputs, inputattrs] = aas_getstreams(obj.IDs{id}.aap,'input');
                 for i = 1:numel(inputs)
                     istream = inputs{i};

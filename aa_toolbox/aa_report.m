@@ -28,8 +28,13 @@ end
 
 aa_init(aap);
 
+allstages = {aap.tasklist.main.module.name};
+
 if ~exist('stages','var')
-    stages={aap.tasklist.main.module.name};
+    stages=allstages;
+    provnoinput = false;
+else
+    provnoinput = true;    
 end
 
 if isfield(aap,'report'), aap = rmfield(aap,'report'); end
@@ -39,8 +44,8 @@ aap.report.dependency={};
 aap.internal.total=0;
 aap.internal.stagesnotdone=0;
 
-% Provenance
 aap.prov = aa_provenance(aap);
+aap.prov.donotcheckinput = provnoinput;
 
 % Flags for special reports
 % - collect module executables
@@ -91,32 +96,35 @@ if has_meegepochs, aap = aas_report_add(aap,'er','HEAD=MEEG epoch summary'); end
 
 aap.report.fbase = basename(aap.report.html_main.fname);
 
-for k=1:numel(stages)
-    fprintf('Fetching report for %s...\n',stages{k});
-    % domain
+for s=1:numel(stages)
+    k = find(strcmp(allstages,stages{s}));
+    if numel(k) > 1
+        if (s == 1) || ~strcmp(curr_aap.tasklist.currenttask.name(1:end-6),stages{s})
+            k = k(1);
+        else
+            k = k(curr_aap.tasklist.currenttask.index+1);
+        end
+    end
     curr_aap = aas_setcurrenttask(aap,k);
+    fprintf('Fetching report for %s...\n',curr_aap.tasklist.currenttask.name);
+
     domain = curr_aap.tasklist.currenttask.domain;
     
-    xmlfn = [stages{k} '.xml'];
+    xmlfn = [stages{s} '.xml'];
     if ~exist(xmlfn,'file') && isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor) % mfile_alias
         xmlfn = [aap.tasklist.main.module(k).aliasfor '.xml'];
     end
     xml = xml_read(xmlfn);
-    mfile_alias = stages{k};
+    mfile_alias = stages{s};
     if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
     if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
         
-    % Switch for stage
-    all_stage = cell_index(stages, stages{k});
-    istage = cell_index({aap.tasklist.main.module.name}, stages{k});
-    istage = istage(all_stage==k);
-    
     % add provenance
-    if aap.prov.isvalid, aap.prov.addModule(istage); end
+    if aap.prov.isvalid, aap.prov.addModule(k); end
     
     % Skip stages of unknown domain - most like aamod_importfilesasstream
     if ~strcmp(domain,'[unknown]')
-        stagerepname = stages{k};
+        stagerepname = stages{s};
         if ~isempty(aap.tasklist.main.module(k).extraparameters)
             stagerepname = [stagerepname aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix];
         end
