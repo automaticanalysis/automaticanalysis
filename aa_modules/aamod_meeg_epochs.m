@@ -29,7 +29,14 @@ switch task
             EEG = pop_loadset(outfname{d});
             seg(d).trialinfo = zeros(numel(EEG.epoch),1);
             seg(d).ursamplenum = zeros(numel(EEG.epoch),2); % combined, specific
-            allevents = unique(arrayfun(@(x) x.eventtype{(cell2mat(x.eventlatency) == 0)}, EEG.epoch, 'UniformOutput', false));
+            cellevlat = arrayfun(@(x) iscell(x.eventlatency), EEG.epoch);
+            if all(cellevlat)
+                allevents = unique(arrayfun(@(x) x.eventtype{(cell2mat(x.eventlatency) == 0)}, EEG.epoch, 'UniformOutput', false));
+            elseif ~any(cellevlat) % all epochs are single events
+                allevents = unique({EEG.epoch.eventtype});
+            else
+                aas_log(aap,true,'unexpected epoch definition')
+            end
             for e = 1:numel(EEG.epoch)
                 inde = cell2mat(EEG.epoch(e).eventlatency) == 0;
                 eventtype = EEG.epoch(e).eventtype{inde};
