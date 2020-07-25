@@ -45,7 +45,7 @@ switch task
         tfacfg.t_ftimwin   = tfa.twoicps./tfacfg.foi;
         tfacfg.tapsmofrq   = tfa.spectralsmoothing*tfacfg.foi;
         tfacfg.toi         = tfa.toi/1000;
-        tfacfg.keeptrials  = 'no';        
+        tfacfg.keeptrials  = 'no';
         
         % baseline correction
         baswin = aas_getsetting(aap,'baselinewindow');
@@ -105,13 +105,12 @@ switch task
                                 aas_log(aap,false,sprintf('WARNING: segment # %d has no trial --> skipped',seg));
                                 continue; 
                             end
-                            EL.unload;
                             FT.reload;                            
                             data(seg) = eeglab2fieldtripER(EEG);
+                            EL.unload; % FieldTrip's eeglab toolbox is incomplete
                     end
                 end
                 data(cellfun(@isempty, {data.trial})) = []; % remove skipped segments
-                if isfield(data,'ursamplenum'), data = rmfield(data,'ursamplenum'); end
                 
                 % process events
                 kvs = regexp(spm_file(meegfn{1},'basename'),'[A-Z]+-[0-9]+','match');
@@ -130,6 +129,10 @@ switch task
                         cfg.trials = find(data(i).trialinfo==trialinfo);
                         if isempty(cfg.trials), continue; end
                         tf{end+1} = ft_freqanalysis(cfg, data(i));
+                        if isempty(cfg.toi) % whole trial
+                            cfg.toi = (data(1).time{1}(1)+data(1).time{1}(end))/2; % centre
+                            cfg.t_ftimwin = (data(i).time{1}(end)-data(i).time{1}(1))*ones(1,numel(cfg.foi));
+                        end
                         % baseline correction
                         if ~isempty(baswin), tf{end} = ft_freqbaseline(bccfg,tf{end}); end
                         if aas_getsetting(aap,'weightedaveraging')
@@ -146,14 +149,43 @@ switch task
                     timefreqMain = ft_combine(cfg,tf{:});
                     
                     diagFn = fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '_' eventLabel]);
-                    if ~exist([diagFn '_multiplot.jpg'],'file')
+                    if ~(ischar(m.samplevector) && strcmp(m.samplevector,'cont')) &&... % not for continuous 
+                        ~exist([diagFn '_multiplot.jpg'],'file')
                         meeg_diagnostics_TFR(timefreqMain,diag,eventLabel,diagFn);
                     end
                     
                     % trialmodel
                     timefreqModel = timefreqMain;
-                    if ischar(m.samplevector) && strcmp(m.samplevector,'avg') % average - it is done
-                        % do nothing
+                    if ischar(m.samplevector)
+                        switch m.samplevector
+                            case 'avg' % average - it is done
+                            % do nothing
+                            case 'cont' % continuously sampled data
+                                clear tf
+                                for i = 1:numel(data)
+                                    cfg = keepfields(tfacfg,{'pad','output','foi'});
+                                    cfg.method = 'mtmfft';
+                                    cfg.taper = 'hanning';
+                                    cfg.trials = find(data(i).trialinfo==trialinfo);
+                                    cfg.keeptrials = 'yes';
+                                    tmptfr = ft_freqanalysis(cfg, data(i));
+                                    
+                                    % convert trials to time
+                                    tf{i}           = tmptfr;
+                                    tf{i}.powspctrm = permute(tmptfr.powspctrm, [2, 3, 1]);
+                                    tf{i}.dimord    = 'chan_freq_time'; % it used to be 'rpt_chan_freq'
+                                    if isfield(data(i),'ureventinfo')
+                                        tf{i}.time      = data(i).ureventinfo.latency(cfg.trials);
+                                    else
+                                        aas_log(aap,false,'WARNING: original eventinfo (ureventinfo) is not available -> sampleinfo will be used')
+                                        tf{i}.time = data(i).sampleinfo(cfg.trials,1)/data(i).fsample;
+                                    end
+                                end
+                                cfg = combinecfg;
+                                cfg.normalise = 'yes';
+                                cfg.weights = weights;
+                                timefreqModel = ft_combine(cfg,tf{:});
+                        end
                     else
                         clear tf
                         for i = 1:numel(data)

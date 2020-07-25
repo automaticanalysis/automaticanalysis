@@ -17,7 +17,8 @@
 %   - samplevector containing the weights for each sample points
 %       - function handle to a function converting sample point to weight. E.g. @(x) ones(1,numel(x)) for an average (i.e. weight = 1 for all sample)
 %       - pre-specified string
-%           - 'all' - average
+%           - 'avg' - average
+%           - 'cont' - contrinuous
 %   - modelname: string label for trialmodel 
 %       MUST be unique within- and across-sessions!
 %       MUST NOT contain whitespace, underscore, dash or other character not valid for variable name!
