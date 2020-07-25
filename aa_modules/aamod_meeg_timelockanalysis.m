@@ -76,7 +76,6 @@ switch task
                             data(seg) = eeglab2fieldtripER(EEG);
                     end
                 end
-                if isfield(data,'ursamplenum'), data = rmfield(data,'ursamplenum'); end
                 
                 % process events
                 kvs = regexp(spm_file(meegfn{1},'basename'),'[A-Z]+-[0-9]+','match');

@@ -62,16 +62,39 @@ elseif ischar(EEG.event(1).type)
     evcompfun = @strcmp;
 end
 indE = [];
+ureventinfo = zeros(0,3);
+evs = unique(data.trialinfo.type);
 for e = 1:numel(EEG.epoch)
-    evmatch = evcompfun(EEG.epoch(e).eventtype,data.trialinfo{e,2}{1}); evmatch = evmatch(evmatch);
-    if sum(evmatch) > 1
-        ft_warning('overlap detected in epoch #%d',e)
-        evmatch(2:end) = false;
+    if numel(EEG.epoch(e).event) == 1
+        evmatch = 1;
+        if iscell(EEG.epoch(e).eventurevent)
+            indUrE = EEG.epoch(e).eventurevent{evmatch};
+        else
+            indUrE = EEG.epoch(e).eventurevent(evmatch);
+        end
+        if iscell(EEG.epoch(e).eventurevent)
+            currE = EEG.epoch(e).eventtype{evmatch};
+        else
+            currE = EEG.epoch(e).eventtype;
+        end
+    else
+        evmatch = evcompfun(EEG.epoch(e).eventtype,data.trialinfo{e,2}{1}); evmatch = evmatch(evmatch);
+        if sum(evmatch) > 1
+            ft_warning('overlap detected in epoch #%d',e)
+            evmatch(2:end) = false;
+        end
+        indUrE = EEG.epoch(e).eventurevent{evmatch};
+        currE = EEG.epoch(e).eventtype{evmatch};
     end
     indE = [indE evmatch];
+    urevents = EEG.urevent(1:indUrE);
+    evIndUnique = sum(strcmp({urevents.type}, currE));
+    evIndAll = sum(cellfun(@(x) any(strcmp(evs,x)), {urevents.type}));
+    ureventinfo(e,:) = [evIndUnique evIndAll round(urevents(end).latency)/EEG.srate];
 end
 trl = trl(logical(indE),:);
 data = ft_redefinetrial(struct('trl',trl),data);
+data.ureventinfo = array2table(ureventinfo,'VariableNames',{'eventnum' 'eventnum_all' 'latency'});
 
 % clear path
 ft_warning('removing %s toolbox from your MATLAB path',tbpath)
