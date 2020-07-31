@@ -9,6 +9,7 @@ function [aap,resp] = aamod_scrub_epis(aap, task, subj, sess)
 %
 % Revision History
 %
+% summer 2020 [MSJ] -- added task timing plot
 % winter 2018 [MSJ] -- absorb aamod_listspike 
 % spring 2018 [MSJ] -- new
 %
@@ -100,7 +101,14 @@ switch task
 				temp = aas_getfiles_bystream(aap, 'metric_thresholds');
 				temp = load(temp);
 				metric_thresholds = temp.metric_thresholds;
-			end
+            end
+  
+            if (aas_stream_has_contents(aap, 'GLOBALMEAN'))
+                temp = aas_getfiles_bystream(aap, subj, sess, 'GLOBALMEAN');
+                temp = load(temp);
+                GLOBALMEAN = temp.GLOBALMEAN;
+            end
+
 			
 			% unfortunately, there's lots of opportunity for error here and not much we can do about it...
 			
@@ -172,32 +180,95 @@ switch task
 			else
 				keeperlist = [ keeperlist index ];
 			end
-		end
-		
+        end		
   
-        %  diagnostic images  ---------------------------------------------
-				
-		if (strcmp(aap.options.wheretoprocess, 'localsingle'))
-			% centering trick only works if not cluster
-			h = figure('Position',[0 0 500 100], 'Visible', 'off', 'MenuBar', 'none');
-			movegui(h, 'center');
-			set(h, 'Visible', 'on');
+        %  diagnostic bargraphs  -------------------------------------------------------------------------------------------
+				        
+        if (strcmp(aap.options.wheretoprocess, 'localsingle'))
+            % centering trick only works if not cluster
+            hf = figure('Position',[0 0 900 200], 'Color', [1 1 1],'NumberTitle','off', 'Visible', 'off', 'MenuBar', 'none');
+            movegui(hf, 'center');
+            set(hf, 'Visible', 'on');
 		else
-			h = figure('Position',[0 0 500 100],'MenuBar','none');
-		end
-		master_scrub_indicator = [ master_scrub_indicator ; 0 ]; % for pcolor weirdness
-		master_scrub_indicator = [ master_scrub_indicator' ; master_scrub_indicator' ];
-		pcolor(master_scrub_indicator);
-		axis off; colormap('flag');
-		title(strrep([ aas_getsubjname(aap,subj) '/' aas_getsessname(aap,sess) ],'_','-'));
-		set(h,'Renderer','opengl');
-		set(findall(h,'Type','text'),'FontUnits','normalized');
-		fname = fullfile(session_path, 'keeplist.jpg');
-		print(h, '-djpeg', '-r150', fname);
-		close(h);
+			hf = figure('Position',[0 0 900 200],'Color', [1 1 1], 'NumberTitle','off','MenuBar','none');
+        end
+        
+        % bargraph settings
+        
+        bw = 0.95; % barwidth (0.8 = default; 1 = no overlap)
+        bg = ones(size(master_scrub_indicator));
+        
+        % get TR from the epi header to convert event timing to frame #
+        %
+        % note we also need to know if timing is in secs or frames and
+        % that info is only defined in SPM.xBF.UNITS which we can't access. 
+        % Ergo, we added a setting to the header.
+        
+        if strcmp(aap.tasklist.currenttask.settings.xBFUNITS,'secs')
+            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
+            TR = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+        else
+            TR = 1;
+        end
+        
+        % if there is no model defined, t_t_d will return empty event_names
 
-		% (there's more diag images from aamod_listspikes we could include here ) 
-		
+        [ event_names, frameseries ] = task_timing_data(aap, subj, sess, numvol, TR);
+
+
+        if (isempty(event_names))
+
+            bh = bar(bg,bw);
+            set(bh,'FaceColor',[0.7 0 0]);
+            hold on;
+            bar(master_scrub_indicator,bw,'k');
+            axis tight; axis off;
+            title(strrep([ aas_getsubjname(aap,subj) '/' aas_getsessname(aap,sess) ],'_','-'));
+
+        else
+
+            subplot(2,1,1);
+            bh = bar(bg,bw);
+            set(bh,'FaceColor',[0.7 0 0]);
+            hold on;
+            bar(master_scrub_indicator,bw,'k');
+            axis tight; axis off;
+            title(strrep([ aas_getsubjname(aap,subj) '/' aas_getsessname(aap,sess) ],'_','-'),'FontName','Helvetica', 'FontSize', 12);
+
+            subplot(2,1,2)
+
+            clist = [ 'r', 'g', 'b', 'c', 'm', 'y', 'k' ];
+            cvals = 0.8 * [ 1 0 0 ; 0 1 0; 0 0 1; 0 1 1 ; 1 0 1; 1 1 0; 1 1 1 ];
+            title_string = cell(numel(event_names),1);
+
+            for index = 1:numel(event_names)
+                bh = bar(frameseries(index,:),bw,clist(mod(index,length(clist))));
+                set(bh,'FaceColor',cvals(index,:));
+                taskloss = round(100 * dot(frameseries(index,:),master_scrub_indicator) / sum(frameseries(index,:)));
+                title_string{index} = sprintf('%s(%s) %d%%     ', strrep(event_names{index},'_','-'), clist(mod(index,length(clist))), taskloss);
+                hold on;
+            end
+
+            set(bh(1),'ShowBaseLine','off');
+            axis tight;
+            % this works better than axis off
+            bh.Parent.YTick = []; bh.Parent.XTick = [];
+
+            
+            fsize = 12;
+            if (numel(event_names) > 3); fsize=10; end
+            if (numel(event_names) > 5); fsize=8; end
+                
+            title(sprintf('%s',title_string{:}),'FontName','Helvetica', 'FontSize', fsize);
+
+        end    
+        
+   		set(hf,'Renderer','opengl');
+		set(findall(hf,'Type','text'),'FontUnits','normalized');
+		fname = fullfile(session_path, 'keeplist.jpg');
+		print(hf, '-djpeg', '-r150', fname);
+		close(hf);      
+        		
         %  desc -----------------------------------------------------------
 		
 		% save the scrub and keeper lists. These are just a list of integers.
@@ -237,3 +308,96 @@ switch task
 		
 		
 end
+
+end
+
+
+
+% ---------------------------------------------------------------------------------------
+% task_timing_data
+% ---------------------------------------------------------------------------------------
+
+function [ event_names, frameseries ] = task_timing_data(aap, subj, sess, nframes, TR)
+
+% generate a task timing plot (TTP) for subject subj / session sess
+
+% extract task timing data from aap struct for subject subj / session sess
+
+% a "frameseries" is just a time series expressed as binary in frames
+% (e.g., [ 4 5 6 ] => [ 0 0 0 1 1 1 0 0 0 0], assuming 10 frames)
+
+event_names = [];
+frameseries = [];
+
+% must have firstlevel model settings -- bail if no
+
+if (~isfield(aap.tasksettings,'aamod_firstlevel_model')) return; end
+if (~isfield(aap.tasksettings.aamod_firstlevel_model, 'model')) return; end
+    
+model = aap.tasksettings.aamod_firstlevel_model.model;   
+
+% we can't assume model struct is in the same order as subjects and
+% sessions (i.e. model(subj) may not be correct) -- it depends on
+% how aas_addevents were ordered -- so loop over all entries 
+% and process matches (guess: there will only be one match because
+% addevent collects all info for one subj/sess in one entry)
+
+subject_name = aap.acq_details.subjects(subj).subjname;
+session_name = aas_getsessname(aap,sess);
+
+for mindex = 1:numel(model)
+        
+    if (strcmp(model(mindex).subject,subject_name) && strcmp(model(mindex).session, session_name))
+        
+        % we have a match
+   
+        event_list = model(mindex).event;
+
+        % event_list will contain all event types (e.g., finger, foot, lips)
+        % for this subject/session -- generate a frameseries for each one
+        
+        nevents = numel(event_list);
+        
+        event_names = cell(nevents,1); % for plot legend, etc
+        frameseries = zeros(nevents,nframes);
+        
+        % extract timing data for events -- note TR conversion to frames
+        
+        for eindex = 1:numel(event_list)
+            
+            this_event = event_list(eindex);
+            
+            event_names{eindex} = this_event.name;           
+            event_onsets = round(this_event.ons/TR);
+            event_durations = round(this_event.dur/TR);      
+           
+            % fill frameseries by extending onsets by durations
+            
+            temp = zeros(1,nframes);
+             
+            for oindex = 1:numel(event_onsets)
+                istart = event_onsets(oindex);
+                if (istart==0);istart=1;end
+                iend = istart + event_durations(oindex) - 1;
+                if (iend<istart);iend=istart;end
+                temp(istart:iend) = 1;
+            end
+            
+            temp = temp(1:nframes); % in case last event ran over...
+            
+            frameseries(eindex,:) = temp;
+
+        end
+        
+        % guess: we can return now -- there is only entry per subj/sess
+            
+        return;
+ 
+    end
+    
+end
+
+end
+            
+            
+            

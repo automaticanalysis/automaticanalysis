@@ -485,6 +485,7 @@ if ~isempty(hdrfname{1})
     info = loadjson_multi(hdrfname);
     if isfield(info,'TaskName')
         taskname = info.TaskName;
+        % PROTECT AGAINST EXTRANEOUS WHITESPACE
 %         taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
 %         taskname = strcat(taskname{:});
         if ~isempty(strfind(basename(sesspath),'ses-'))
@@ -524,7 +525,10 @@ function LIST = tsvread(fname)
 filestr = fileread(fname);
 nLines = sum(double(filestr)==10);
 LIST = textscan(filestr,'%s','Delimiter','\t');
-LIST = reshape(LIST{1},[],nLines)';
+LIST = LIST{1};
+% protect against extraneous whitespace in the tsv:
+LIST = LIST(~cellfun(@isempty,LIST));
+LIST = reshape(LIST,[],nLines)';
 end
 
 function str = strrep_multi(str, old, new)

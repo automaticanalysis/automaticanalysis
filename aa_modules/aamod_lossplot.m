@@ -58,7 +58,7 @@ switch task
 			if (strcmp(aap.options.wheretoprocess, 'localsingle'))
 
 				h = figure(	'Units','points',...
-							'Position',[0 0 800 800],...
+							'Position',[0 0 700 800],...
 							'Visible', 'off',...
 							'Color', [1 1 1],...
 							'Toolbar','none',...
@@ -71,12 +71,13 @@ switch task
 			else
 
 				h = figure(	'Units','points',...
-							'Position',[0 0 800 800],...
+							'Position',[0 0 700 800],...
 							'Visible', 'on',...
 							'Color', [1 1 1],...
 							'Toolbar','none',...
 							'NumberTitle','off',...
 							'MenuBar','none' );
+                        
 			end	
 
 
@@ -95,7 +96,8 @@ switch task
 				end
 				
 				metric_values = quantile(subject_data, quantiles_to_plot);
-				plot(metric_values, 100*(1-quantiles_to_plot), 'b', 'LineWidth', 1);
+				plot(metric_values, 100*(1-quantiles_to_plot), 'Color', [17/255 30/255 108/255], 'LineWidth', 1);      
+                
 				hold on;
 
 				metric_subject_values(subj,:) = metric_values;
@@ -103,8 +105,7 @@ switch task
 			end
 			
 			metric_mean_values = mean(metric_subject_values,1);
-			
- 			plot(metric_mean_values, 100*(1-quantiles_to_plot),'k', 'LineWidth', 4);
+ 			plot(metric_mean_values, 100*(1-quantiles_to_plot),'k', 'LineWidth', 4);          
 					
 			% reference lines at 1%, 2% etc. TOI
 						
@@ -124,55 +125,71 @@ switch task
 				hline = refline([0 text_y]);
 				hline.Color = [0.8 0.8 0.8]; hline.LineWidth = 1;
 				
-				text(text_x, text_y+os(tindex), num2str(threshold_values(tindex),'%.3g'),'FontName', 'Helvetica', 'FontSize', 14, 'Color', [0.8 0.8 0.8]);
+				text(text_x, text_y+os(tindex), num2str(threshold_values(tindex),'%.2f'),'FontName', 'Helvetica', 'FontSize', 14, 'Color', [0.7 0.7 0.7]);
 				
 			end
 					
-			ylabel('data loss (%)');
-			xlabel(metric_name);
-			title([ metric_name ' vs. data loss (n = ' num2str(nsub) ')']);
-			
-			set(gca,'FontName','Helvetica','FontWeight','bold','FontSize',16,'LineWidth',2);
-			
+			ylabel('estimated frame loss (%)  ','FontName','Helvetica','FontSize',18);
+			xlabel([ metric_name ' '],'FontName','Helvetica','FontSize',18);
+			title([ metric_name ' vs. frame loss (n = ' num2str(nsub) ')   '],'FontName','Helvetica','FontSize',18);
+            
+			set(gca,'LineWidth',2);
+            
+			% save threshold values for this metric for later stream output					
+			% fieldnames must match TOI = [ 1.0 2.0 5.0 10.0 20.0 40.0 ];
+            			
+			metric_thresholds.(metric_name).onepercent		= threshold_values(1);
+			metric_thresholds.(metric_name).twopercent		= threshold_values(2);
+			metric_thresholds.(metric_name).fivepercent		= threshold_values(3);
+			metric_thresholds.(metric_name).tenpercent		= threshold_values(4);
+			metric_thresholds.(metric_name).twentypercent	= threshold_values(5);
+			metric_thresholds.(metric_name).fortypercent	= threshold_values(6);			                        
+ 
 			if (nsub > 1)
 
-				% boxplot the data losses across all subjects @ the mean threshold values
-
+                % inset boxplot of data losses across all subjects @ the mean threshold values
+                
 				boxdata = zeros(nsub,length(TOI));
-
+ 
 				for subj = 1:nsub
 					boxdata(subj,:) = interp1(metric_subject_values(subj,:), 100*(1-quantiles_to_plot), threshold_values);
 				end
 
-				axes('Position',[0.4 0.55 0.4 0.3]);
-				bp = boxplot(fliplr(boxdata),'Labels',num2str(fliplr(threshold_values)','%0.3g'),'LabelOrientation','inline');
-				a = axis; axis([a(1) a(2) 0 100 ]);
-				set(bp,{'linew'},{2});
-				set(findobj(gca,'Type','text'), 'FontSize', 14, 'HorizontalAlignment', 'center');
-				ylabel('data loss (%)');
-				title({['Data loss across all subjects at indicated threshold'];[' ']});
-				set(gca,'FontName','Helvetica','FontWeight','bold','FontSize',12,'LineWidth',2);
-				txt = findobj(gca,'Type','text');
-				set(txt, 'FontWeight', 'bold');
-				
-			end
+				axes('Position',[0.5 0.6 0.35 0.25]); 
+                                   
+                c = [17/255 30/255 108/255];
+                temp = num2str(fliplr(threshold_values)','%0.2f');
+ 				bp = boxplot(fliplr(boxdata),'MedianStyle','line','Widths',0.5,'Labels',temp,'Color','k','Symbol','o');
+
+                set(bp,{'linew'},{2})
+                                   
+ 				a = axis; axis([a(1) a(2) 0 100 ]);             
+ 				title({['Frame loss (%) across all subjects'],['(\bullet) actual mean frame loss']},'FontName','Helvetica','FontSize',12);
+
+                % add true frame loss % underneath plot
+                 
+                for tindex = 1:length(threshold_values)
+                    % thresholds are plotted in backwards order in boxplot
+                    true_frame_loss = metric_subject_values > threshold_values(length(threshold_values)-tindex+1);
+                    true_frame_loss = 100 * sum(true_frame_loss(:)) / length(true_frame_loss(:));
+                    % text position: xticks are [1 2 ... 6 ] ; offset by (fontsize/4,-fontsize)
+                    xoffset = 0.3;
+                    if (true_frame_loss < 10) xoffset = 0.25; end
+                    text(tindex-xoffset, -12, sprintf('(%3.1f)', true_frame_loss),'FontName','Helvetica','FontSize',12);
+                end
+
+                % tick label font size is controlled though axis FontSize property               
+                
+                set(gca,'FontSize',12,'LineWidth',2);             
+           
+ 				
+            end
 
 			fname = fullfile(aap.acq_details.root,[ 'threshold_' metric_name ]);
 			set(h,'Renderer','opengl');
 			set(findall(h,'Type','text'),'FontUnits','normalized');
 			print(h, '-djpeg', '-r150', fname);
             close(h);
-
-			% save threshold values for this metric for later stream output
-						
-			% fieldnames must match TOI = [ 1.0 2.0 5.0 10.0 20.0 40.0 ];
-			
-			metric_thresholds.(metric_name).onepercent		= threshold_values(1);
-			metric_thresholds.(metric_name).twopercent		= threshold_values(2);
-			metric_thresholds.(metric_name).fivepercent		= threshold_values(3);
-			metric_thresholds.(metric_name).tenpercent		= threshold_values(4);
-			metric_thresholds.(metric_name).twentypercent	= threshold_values(5);
-			metric_thresholds.(metric_name).fortypercent	= threshold_values(6);
 					
 		end % loop over metric_name
 		
