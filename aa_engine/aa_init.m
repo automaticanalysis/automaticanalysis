@@ -121,23 +121,7 @@ end
 if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
     for TBX = aap.directory_conventions.toolbox
         if strcmp(TBX.name,'spm'), continue; end
-        if ~exist([TBX.name 'Class'],'class')
-            aas_log(aap,false,sprintf('No interfaces for %s in extrafunctions/toolboxes',TBX.name));
-        else
-            constr = str2func([TBX.name 'Class']);
-            params = {};
-            if isfield(TBX,'extraparameters')
-                for p = fieldnames(TBX.extraparameters)
-                    val = TBX.extraparameters.(p{1});
-                    if isempty(val), continue; end
-                    if ischar(val) && contains(val,':'), val = strsplit(val,':'); end
-                    params{end+1} = p{1};
-                    params{end+1} = val;
-                end
-            end
-            T = constr(TBX.dir,params{:});
-            aas_cache_put(aap,TBX.name,T);
-        end
+        aas_cache_put(aap,TBX.name,aas_inittoolbox(aap,TBX.name));
     end
 end
 

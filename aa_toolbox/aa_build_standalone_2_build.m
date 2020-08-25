@@ -29,7 +29,7 @@ toolsdir = {''};
 if ~isempty(aap.directory_conventions.matlabtoolsdir)
     toolsdir = textscan(aap.directory_conventions.matlabtoolsdir,'%s','delimiter',':'); toolsdir = toolsdir{1};
 end
-spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir; 
+spmdir = aas_gettoolboxdir(aap,'spm');
 toolsdir = [spmdir, toolsdir',...
     {...
     aap.directory_conventions.eeglabdir,...
@@ -83,7 +83,7 @@ function prepare_spm(aap)
 % Prepare spm for deployment with aa
 % Based on Guillaume Flandin's spm_make_standalone.m v6416
 
-spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir;
+spmdir = aas_gettoolboxdir(aap,'spm');
 
 %==========================================================================
 %-Static listing of SPM toolboxes

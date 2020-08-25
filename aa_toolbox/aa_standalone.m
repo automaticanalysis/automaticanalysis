@@ -40,7 +40,7 @@ xml_aa = xml_read(fname_aa,struct('ReadAttr',0));
 aap = recursive_set(aap,xml_aa);
     
 % check path to T1 template --> the rest should work, too
-spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir;
+spmdir = aas_gettoolboxdir(aap,'spm');
 if exist(fullfile(spmdir,aap.directory_conventions.T1template),'file')
     aas_log(aap,false,['INFO: T1 template located in ' fullfile(spmdir,aap.directory_conventions.T1template)]);
 else

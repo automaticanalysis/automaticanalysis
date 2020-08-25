@@ -21,7 +21,7 @@ aap=aarecipe('aap_tasklist_fmri_multi.xml');
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path
 spmhit = which('spm_spm');
-spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir;
+spmdir = aas_gettoolboxdir(aap,'spm');
 if any(spmhit)
     assert(strcmp(fileparts(spmhit), spmdir), ...
         'spm on path differs from that in aap.directory_conventions');
