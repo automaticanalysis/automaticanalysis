@@ -11,6 +11,8 @@ resp='';
 
 switch task
     case 'report'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        
         if numel(cellstr(spm_select('List',aas_getstudypath(aap),'^diagnostic.*'))) < 2 % two images expected
             % group mask
             for subj = 1:numel(aap.acq_details.subjects)
@@ -26,7 +28,7 @@ switch task
             so = slover;
             so.figure = spm_figure('GetWin', 'SliceOverlay');
             
-            so.img.vol = spm_vol(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template));
+            so.img.vol = spm_vol(fullfile(SPMtool.toolPath,aap.directory_conventions.T1template));
             so.img.prop = 1;
             so.transform = 'axial';
             so = fill_defaults(so);
@@ -44,8 +46,8 @@ switch task
 
             % design
             fSPM = aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}); fSPM = deblank(fSPM(1,:)); %all models are the same (number of inputs may vary)
-            load(fSPM);            
-            spm_DesRep('DesOrth',SPM.xX);
+            dat = load(fSPM);
+            spm_DesRep('DesOrth',dat.SPM.xX);
             saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
             close all;
         end
@@ -55,8 +57,9 @@ switch task
             aap=aas_report_addimage(aap,[],fullfile(aas_getstudypath(aap),fdiag(d).name));
             aap = aas_report_add(aap,[],'</td></tr></table>');
         end
-        
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        
         nsub=length(aap.acq_details.subjects);
         aas_log(aap,false,sprintf('%d subjects',nsub));
         % New option to allow suffix to output file in extraparameters
@@ -64,7 +67,7 @@ switch task
             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
         else
             stats_suffix=[];
-        end;
+        end
         
         % And make analysis directory
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
@@ -90,7 +93,7 @@ switch task
 %                     end;
 %                 end;
 %             end;
-        end;
+        end
         %                phs = 1; conname='UF_S'
         allSPMs = {};
         allbetas = {};
@@ -102,7 +105,7 @@ switch task
                 % take out characters that don't go well in filenames...
                 conname = char(regexp(conname,'[a-zA-Z0-9_-]','match'))';
                 rfxdir = fullfile(rfxrootdir,conname);
-                if exist(rfxdir)~=7; mkdir(rfxrootdir,conname);end
+                if exist(rfxdir,'dir')~=7; mkdir(rfxrootdir,conname);end
                 cd(rfxdir);
                 
                 clear SPM
@@ -115,17 +118,17 @@ switch task
                 
                 for s=1:nsub
                     foundit=false;
-                    for fileind=1:size(confiles{s},1);
-                        [pth nme ext]=fileparts(confiles{s}(fileind,:));
+                    for fileind=1:size(confiles{s},1)
+                        [junk, nme]=fileparts(confiles{s}(fileind,:));
                         m = regexp(nme,sprintf('con_%04d',n));
                         if m
                             foundit=true;
                             break;
-                        end;
-                    end;
+                        end
+                    end
                     if (~foundit)
                         aas_log(aap,true,sprintf('Contrast %d not found in subject %s',n,aap.acq_details.subjects(s).subjname));
-                    end;
+                    end
                     SPM.xY.P{s}   = confiles{s}(fileind,:);
                     SPM.xY.VY(s)   = spm_vol(SPM.xY.P{s});
                 end
@@ -195,8 +198,8 @@ switch task
         aap=aas_desc_outputs(aap,'secondlevel_spm',char(allSPMs));
         aap=aas_desc_outputs(aap,'secondlevel_betas',char(allbetas));
     case 'checkrequirements'
-        
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end

@@ -49,6 +49,8 @@ switch task
         aap=aas_desc_outputs(aap,subjind,'defaced_structural',out);
         aap=aas_desc_outputs(aap,subjind,'defaced_mask',out_mask);
     case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
+
         tmp_face = fullfile(aap.directory_conventions.templatedir,'freesurfer_deface_face.gca');
         tmp_skull = fullfile(aap.directory_conventions.templatedir,'freesurfer_deface_talairach_mixed_with_skull.gca');
         if ~exist(tmp_face,'file') || ~exist(tmp_skull,'file')

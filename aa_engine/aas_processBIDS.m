@@ -47,6 +47,10 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 
 global BIDSsettings;
 
+% we need spm_select here...
+SPMtool = spmClass(aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir);
+SPMtool.load;
+
 if ~exist('sessnames','var') || isempty(sessnames)
     sessnames = [];
 end
@@ -58,7 +62,6 @@ end
 if ~exist('regcolumn','var') || isempty(regcolumn)
     regcolumn = 'trial_type';
 end
-
 
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
@@ -86,8 +89,6 @@ if isfield(aap.tasksettings,'aamod_firstlevel_model')
         aap.tasksettings.aamod_firstlevel_model(m).xBF.UNITS  ='secs';
     end
 end
-
-
 
 %% Process
 if BIDSsettings.combinemultiple
@@ -151,6 +152,11 @@ for p = [false true]
         end
     end
 end
+
+% take SPM off the path again (since the user might end up wanting a different SPM for
+% actual data analysis)
+SPMtool.unload;
+
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,7 +201,6 @@ else
     maxBIDSEventNameLength = Inf;
 end
 
-
 % locate first_level modules
 stagenumModel(1) = struct('name','aamod_firstlevel_model','ind',...
     find(strcmp({aap.tasklist.main.module.name},'aamod_firstlevel_model')));
@@ -226,7 +231,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
 	case '.'
         case structDIR
             if ~toAddData, continue; end
-            for sfx = {'T1w','T2w'}
+            for sfx = {'T1w','T2w'};
                 for image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))'
                     if isempty(image{1}), continue; end
                     hdrfname = retrieve_file(fullfile(sesspath,structDIR,[subjname '_' sfx{1},'.json']));
@@ -284,11 +289,11 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 ftype = jfname(ind+1:end);
                 switch ftype
                     case 'phasediff'
-                        fmap.hdr = loadjson(f{1});
-                        if isfield(fmap.hdr,'IntendedFor')
-                            fmap.hdr.session = get_taskname(sesspath,subjname,fmap.hdr.IntendedFor);
+                        fmap.hdr = {loadjson(f{1})};
+                        if isfield(fmap.hdr{1},'IntendedFor')
+                            fmap.session = cellstr(get_taskname(sesspath,subjname,fmap.hdr{1}.IntendedFor));
                         else
-                            fmap.hdr.session = '*';
+                            fmap.session = '*';
                         end
                         fmap.fname = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[strrep(jfname,ftype,'') '.*.nii.gz']));
                     case 'phase1'
@@ -311,7 +316,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     % use startsWith() instead:
                     thits = find(startsWith(tasks,t{1}));
                     if all(thits)==0
-                        aas_log(aap,true,sprintf('could not find task %s',t{1}));
+                        aas_log(aap,true,'could not find task %s',t{1});
                     end
                     outepi = [outepi allepi(thits)];
                 end
@@ -349,11 +354,11 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 end
                 
                 % Model
-                
+                        
                 if (omitBIDSmodeling)                    
                     aas_log(aap,false,sprintf('INFO: Omitting addevent in aas_processBIDS (change in aap.acq_details.omitBIDSmodeling)'));
                 else
-                
+
                     for thisstage = stagenumModel
                         if any(thisstage.ind)
                             iModel = [];
@@ -375,18 +380,18 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 EVENTS = tsvread(eventfname);
                                 iName = cell_index(EVENTS(1,:),regcolumn);
                                 iOns = cell_index(EVENTS(1,:),'onset');
-                                iDur = cell_index(EVENTS(1,:),'duration');                        
+                                iDur = cell_index(EVENTS(1,:),'duration');
                                 if (stripBIDSEventNames)
                                     EVENTS(2:end,iName) = regexprep(EVENTS(2:end,iName),'[^a-zA-Z0-9]','');
                                 end                         
-                                names = unique(EVENTS(2:end,iName));           
+                                names = unique(EVENTS(2:end,iName));
                                 onsets = cell(numel(names),1);
                                 durations = cell(numel(names),1);
                                 for t = 2:size(EVENTS,1)
                                     iEV = strcmp(names,EVENTS{t,iName});
                                     onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
                                     durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
-                                end                                                    
+                                end
                                 if (convertBIDSEventsToUppercase)
                                     names = upper(names); 
                                 end
@@ -405,7 +410,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                             end
                         end
                     end
-                end                           
+                end
             end
         otherwise
             aas_log(aap,false,sprintf('NYI: Input %s is not supported',cf{1}));

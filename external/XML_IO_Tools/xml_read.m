@@ -25,6 +25,8 @@ function [tree, RootName, DOMnode] = xml_read(xmlfile, Pref)
 %      allowed. Can be used to speed up the function by prunning the tree.
 %    Pref.RootOnly - default true - output variable 'tree' corresponds to
 %      xml file root element, otherwise it correspond to the whole file.
+%    Perf.ItemID   - default 'name' - name of the field identifying items,
+%      Used for matching array items during updating.
 % OUTPUT:
 %  tree         tree of structs and/or cell arrays corresponding to xml file
 %  RootName     XML tag name used for root (top level) node.
@@ -68,13 +70,14 @@ function [tree, RootName, DOMnode] = xml_read(xmlfile, Pref)
 %   xml_write, xmlread, xmlwrite
 %
 % Written by Jarek Tuszynski, SAIC, jaroslaw.w.tuszynski_at_saic.com
+% Modified by Tibor Auer, tiborauer, tibor.auer@gmail.com
 % References:
 %  - Function inspired by Example 3 found in xmlread function.
 %  - Output data structures inspired by xml_toolbox structures.
 %
 % RC 13/2/2010 - took out date conversion option in str2var as this
 % erroneously leaves 3-double vectors as strings
-%
+% RC 29/06/2020 - add support for XML arrays
 
 %% default preferences
 DPref.ItemName  = 'item'; % name of a special tag used to itemize cell arrays
@@ -84,6 +87,7 @@ DPref.Str2Num   = true;   % convert strings that look like numbers to numbers
 DPref.NoCells   = true;   % force output to have no cell arrays
 DPref.NumLevels = 1e10;   % number of recurence levels
 RootOnly        = true;   % return root node  with no top level special nodes
+DPref.ItemID    = 'name'; % name of the field identifying items
 Debug           = false;  % show specific errors (true) or general (false)?
 tree            = [];
 RootName        = [];
@@ -104,6 +108,7 @@ if (nargin>1)
   if (isfield(Pref, 'ReadAttr' )), DPref.ReadAttr  = Pref.ReadAttr;  end
   if (isfield(Pref, 'ReadSpec' )), DPref.ReadSpec  = Pref.ReadSpec;  end
   if (isfield(Pref, 'RootOnly' )), RootOnly        = Pref.RootOnly;  end
+  if (isfield(Pref, 'ItemID' )),   DPref.ItemID    = Pref.ItemID;  end
   if (isfield(Pref, 'Debug'    )), Debug           = Pref.Debug   ;  end
 end
 
@@ -120,8 +125,8 @@ if (ischar(xmlfile)) % if xmlfile is a string
   else
     try
       DOMnode = xmlread(xmlfile,p);
-    catch
-      error('Failed to read XML file %s.',xmlfile);
+    catch E
+      error('Failed to read XML file %s: %s.',xmlfile, E.message);
     end
   end
   Node = DOMnode.getFirstChild;
@@ -187,7 +192,7 @@ if (~isempty(GlobalTextNodes))
   RootName = GlobalTextNodes;
 end
 
-tree = expand_tree(tree);
+tree = expand_tree(tree,DPref);
 if isfield(tree,'ATTRIBUTE'), tree = rmfield(tree,'ATTRIBUTE'); end
 
 %% =======================================================================
@@ -435,10 +440,10 @@ end
 %% =======================================================================
 %  === expand_tree Function =================================================
 %  =======================================================================
-function otree = expand_tree(itree)
+function otree = expand_tree(itree,Pref)
 if isfield(itree,'local') % locals used
-    otree = expand_tree(itree.aap);
-    otree = mergeStructs(otree,itree.local);
+    otree = expand_tree(itree.aap,Pref);
+    otree = mergeStructs(otree,itree.local,Pref);
 else
     otree = itree;
 end
@@ -446,14 +451,35 @@ end
 %% =======================================================================
 %  === mergeStructs Function =================================================
 %  =======================================================================
-function res = mergeStructs(x,y)
+function res = mergeStructs(x,y,Pref)
 % From: http://stackoverflow.com/a/6271161
 if isstruct(x) && isstruct(y)
     res = x;
+    
+    if numel(res) > 1 % orig is array
+        for yitem = 1:numel(y) % for each new item
+            % look for corresponding item (i.e. any matching)
+            if ~isfield(res,Pref.ItemID) || ~isfield(y,Pref.ItemID), error('ARRAY ERROR: Field %s as specified in Pref.ItemID not found.', Pref.ItemID); end
+            if isstruct(res(1).(Pref.ItemID)) % attributes
+                xIDs = arrayfun(@(item) item.(Pref.ItemID).CONTENT, res, 'UniformOutput', false);
+                yID = y(yitem).(Pref.ItemID).CONTENT;
+            else
+                xIDs = {res.(Pref.ItemID)};
+            end
+            itemmatch = strcmp(xIDs,yID);
+            if any(itemmatch) % update
+                res(itemmatch) = mergeStructs(res(itemmatch),y(yitem),Pref);
+            else % append
+                res(end+1) = y(yitem);
+            end
+        end
+        return
+    end
+
     names = fieldnames(y);
     for fnum = 1:numel(names)
         if isfield(x,names{fnum})
-            res.(names{fnum}) = mergeStructs(x.(names{fnum}),y.(names{fnum}));
+            res.(names{fnum}) = mergeStructs(x.(names{fnum}),y.(names{fnum}),Pref);
         else
             res.(names{fnum}) = y.(names{fnum});
         end

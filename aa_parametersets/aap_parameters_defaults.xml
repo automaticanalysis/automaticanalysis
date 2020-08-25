@@ -13,7 +13,7 @@
         <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
         <subject_directory_names desc='List of predefined subject names' ui='custom'></subject_directory_names>
         <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
-        <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
+        <selectechonumbers desc='Which echo numbers?' ui='intarray' range='[1 Inf]'>0</selectechonumbers>
         <reportname desc='Name of output from aa_report' ui='file' ext='.htm'>report.htm</reportname>
         <stats_singlesubj desc='Directory for single subject statistics' ui='dir'>stats</stats_singlesubj>
         <stats_ppi desc='Directory for single subject PPI statistics' ui='dir'>PPI</stats_ppi>
@@ -32,8 +32,21 @@
         <dicomfilter ui='text'>*.dcm</dicomfilter>
         <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
-        <spmdir desc="Path(s) to SPM software (>SPM12 r6470 required)" ui="dir"></spmdir>		
-        <spmtoolsdir desc="Path(s) to SPM tools (colon separated list)" ui="dir"></spmtoolsdir>
+        <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
+        <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+            <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+            <dir ui='dir'></dir>
+            <extraparameters>
+                <doKeepInPath>1</doKeepInPath>
+            </extraparameters>
+        </toolbox>
+        <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+            <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+            <dir ui='dir'></dir>
+            <extraparameters>
+                <requiredPlugins></requiredPlugins>
+            </extraparameters>
+        </toolbox>
         <linuxshell desc='Linux shell used to run linux commands' ui='text'></linuxshell>
         <fsldir desc='Path to fsl' ui='dir'>/usr/share/fsl/5.0</fsldir>
         <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'></fslsetup>
@@ -44,13 +57,11 @@
         <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
         <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'></freesurferenvironment>
         <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
-        <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
         <GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
         <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
         <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
-        <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
         <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'></BrainWaveletdir>
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
@@ -198,17 +209,17 @@
             <specialseries desc='special series session number in raw data' ui='int'/>
             <ignoreseries desc='series to be ignored when automatically scanning raw data' ui='int'/>
         </subjects>
-        <sessions desc='Functional sessions' ui='intarray'>
+        <sessions desc='Functional sessions' ui='structarray'>
             <name desc='Session name' ui='dir_part'/>
         </sessions>
-        <diffusion_sessions desc='Diffusion sessions' ui='intarray'>
+        <diffusion_sessions desc='Diffusion sessions' ui='structarray'>
             <name desc='Diffusion session name' ui='dir_part'/>
         </diffusion_sessions>
-        <meg_sessions desc='MEG sessions' ui='intarray'>
+        <meg_sessions desc='MEG sessions' ui='structarray'>
             <name desc='MEG session name' ui='dir_part'/>
         </meg_sessions>
         <selected_sessions desc='Allows subselection of a subset of series, usually during branching' ui='intarray'/>
-        <special_sessions desc='Special sessions' ui='intarray'>
+        <special_sessions desc='Special sessions' ui='structarray'>
             <name desc='Special session name (used to determine stream name and folder name)' ui='dir_part'/>
         </special_sessions>        
     </acq_details>

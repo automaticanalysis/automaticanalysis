@@ -17,6 +17,8 @@ switch task
     case 'report'
         resp = 'Get statistics on segmented structural images.';
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        
         streams = aas_getstreams(aap,'input');
         S.parts.desc = {'1=grey matter','2=white matter','3=csf'};
         
@@ -39,7 +41,7 @@ switch task
         if aas_stream_has_contents(aap, subjind, 'seg8')
             job.matfiles = {aas_getfiles_bystream(aap,subjind,'seg8')};
             job.tmax = 3;
-            job.mask = {fullfile(aap.directory_conventions.spmdir,'tpm','mask_ICV.nii,1')};
+            job.mask = {fullfile(SPMtool.toolPath,'tpm','mask_ICV.nii,1')};
             job.outf = '';
 
             out = spm_run_tissue_volumes('exec', job);
@@ -51,4 +53,6 @@ switch task
         outfile = fullfile(fileparts(img), 'structuralstats.mat');
         save(outfile, 'S');
         aap = aas_desc_outputs(aap, subjind, 'structuralstats', outfile);
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

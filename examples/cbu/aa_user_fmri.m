@@ -18,6 +18,19 @@ aa_ver5
 %  Default recipe with model
 aap=aarecipe('aap_tasklist_fmri.xml');
 
+% this example uses SPM tools in the user script, so we have to ensure SPM is
+% on the path
+spmhit = which('spm_spm');
+spmdir = aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir;
+if any(spmhit)
+    assert(strcmp(fileparts(spmhit), spmdir), ...
+        'spm on path differs from that in aap.directory_conventions');
+else
+    fprintf('adding spmdir to path: %s\n', spmdir);
+    SPMtool = spmClass(spmdir);
+    SPMtool.load;
+end
+
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; %'qsub'; % queuing system			% typical value localsingle
 aap.options.autoidentifyfieldmaps = 1;

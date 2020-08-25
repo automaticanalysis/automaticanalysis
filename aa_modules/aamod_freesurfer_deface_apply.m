@@ -24,6 +24,8 @@ switch task
         
         % Now describe outputs
         aap=aas_desc_outputs(aap,subjind,['defaced_' wstream],out);
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end
 end
 

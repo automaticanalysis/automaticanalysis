@@ -73,7 +73,12 @@ switch task
         if ~isfield(job.data,'precalcfieldmap')
             try % Fieldmap EchoTimes
                 FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,domain,[subj,sess],'fieldmap_dicom_header'));
-                tes = sort(unique(cellfun(@(x) x.volumeTE,FM_DICOMHEADERS.dcmhdr)),'ascend')*1000; % in ms
+                assert(numel(FM_DICOMHEADERS.dcmhdr{1})==1, 'unexpected input'); % one header per cell expected
+                if all(isfield(FM_DICOMHEADERS.dcmhdr{1},{'EchoTime1' 'EchoTime2'})) % BIDS
+                    tes = [FM_DICOMHEADERS.dcmhdr{1}.EchoTime1,FM_DICOMHEADERS.dcmhdr{1}.EchoTime2]*1000; % in ms
+                else
+                    tes = sort(unique(cellfun(@(x) x.volumeTE,FM_DICOMHEADERS.dcmhdr)),'ascend')*1000; % in ms
+                end
                 if numel(tes) ~= 2, tes = sort(unique(cellfun(@(x) x.EchoTime,FM_DICOMHEADERS.dcmhdr)),'ascend'); end % try original (backward compatibility)
                 if numel(tes) ~= 2, aas_log(aap,true,'Inappropriate fieldmap header!'); end
                 job.defaults.defaultsval.et = tes;

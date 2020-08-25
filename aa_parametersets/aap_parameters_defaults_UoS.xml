@@ -11,7 +11,6 @@
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
-            <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
             <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
             <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
@@ -21,11 +20,27 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/users/ta0015/software/spm12</spmdir>
-            <spmtoolsdir desc='Path(s) to SPM tools  (colon separated list)' ui='dir'></spmtoolsdir>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/users/psychology01/software/spm12</dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+                <dir ui='dir'>/users/psychology01/software/eeglab</dir>
+                <extraparameters>
+                    <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                </extraparameters>
+            </toolbox>            
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fieldtrip</name>
+                <dir ui='dir'>/users/psychology01/software/fieldtrip</dir>
+            </toolbox> 
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/ta0015/software/config/fsl_module</fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_module</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/opt/pkg/apps/freesurfer/6.0.0</freesurferdir>        
@@ -33,12 +48,12 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/opt/pkg/apps/freesurfer/6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
-            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/ta0015/software/GroupICATv4.0b</GIFTdir>
-            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/ta0015/software/dcmtk</DCMTKdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/ta0015/software/BrainWavelet</BrainWaveletdir>
-            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/ta0015/software/FaceMasking</FaceMaskingdir>
+            <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/psychology01/software/GroupICATv4.0b</GIFTdir>
+            <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/psychology01/software/dcmtk</DCMTKdir>
+            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/psychology01/software/BrainWavelet</BrainWaveletdir>
+            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/psychology01/software/FaceMasking</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
-            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/ta0015/software/config/Slurm.settings</poolprofile>
+            <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>/users/psychology01/software/config/Slurm.settings</poolprofile>
 		<mailerserver desc='E-mail address and password (colon-sepertated) for the mailer account for sending notifications' ui='text'>aamailer.uos@gmail.com:aam4il3r#</mailerserver>
         </directory_conventions>
         <options>

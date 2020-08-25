@@ -59,6 +59,8 @@ classdef aaq_qsub_nonDCS < aaq_qsub
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             global aacache
+            aaworker.aacache = aacache;
+            [s, reqpath] = aas_cache_get(obj.aap,'reqpath','system');
             % Let's store all our qsub thingies in one particular directory
             aas_makedir(obj.aap,fullfile(aaworker.parmpath,'qsub'));
 
@@ -81,7 +83,7 @@ classdef aaq_qsub_nonDCS < aaq_qsub
                 
                 taskName = obj.aap.tasklist.main.module(job.k).name;
                 Job = obj.pool.addJob;
-                Job.AdditionalPaths = aacache.path.reqpath;
+                Job.AdditionalPaths = reqpath;
                 Job.addTask(taskName,@aa_doprocessing_onetask,{obj.aap,job.task,job.k,job.indices,aaworker});
                 Job.Submit;
             else
