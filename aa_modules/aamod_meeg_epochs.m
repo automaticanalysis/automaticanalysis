@@ -5,8 +5,7 @@ resp='';
 switch task
     case 'report'
         [junk, EL] = aas_cache_get(aap,'eeglab');
-        if subj == 1, EL.load;
-        else, EL.reload; end
+        [junk, FT] = aas_cache_get(aap,'fieldtrip');
         
         MAXNTRIAL=1000; % do not expect more than 1000 trials
         
@@ -24,39 +23,29 @@ switch task
         
         %% Individual
         % plot
-        sfxPlot = {'combined' 'specific'};
+        sfxPlot = {'specific' 'combined'};
+
+        if subj == 1, EL.load;
+        else, EL.reload; end
         for d = 1:numel(outfname)
-            EEG = pop_loadset(outfname{d});
-            seg(d).trialinfo = zeros(numel(EEG.epoch),1);
-            seg(d).ursamplenum = zeros(numel(EEG.epoch),2); % combined, specific
-            cellevlat = arrayfun(@(x) iscell(x.eventlatency), EEG.epoch);
-            if all(cellevlat)
-                allevents = unique(arrayfun(@(x) x.eventtype{(cell2mat(x.eventlatency) == 0)}, EEG.epoch, 'UniformOutput', false));
-            elseif ~any(cellevlat) % all epochs are single events
-                allevents = unique({EEG.epoch.eventtype});
-            else
-                aas_log(aap,true,'unexpected epoch definition')
-            end
-            for e = 1:numel(EEG.epoch)
-                inde = cell2mat(EEG.epoch(e).eventlatency) == 0;
-                eventtype = EEG.epoch(e).eventtype{inde};
-                eventurevent = EEG.epoch(e).eventurevent{inde};
-                eventcount = cellfun(@(x) sum(strcmp({EEG.urevent(1:eventurevent).type},x)), allevents);
-                seg(d).trialinfo(e) = get_eventvalue(eventtype);
-                seg(d).ursamplenum(e,1) = sum(eventcount); % combined
-                seg(d).ursamplenum(e,2) = eventcount(strcmp(allevents,eventtype)); % specific
-            end
+            EEG(d) = pop_loadset(outfname{d});            
         end
-        
-        
-        for t = 1:2 % combined and specific trialnumber
+        if subj == 1, FT.load;
+        else, FT.reload; end
+        for d = 1:numel(outfname)
+            seg(d) = eeglab2fieldtripER(EEG(d));
+        end
+        FT.unload;
+        EL.unload;
+
+        for t = 1:2 % specific and combined trialnumber
             trl = nan(numel(outfname),MAXNTRIAL,numel(conds));
             for d = 1:numel(outfname)
                 for c = 1:numel(conds)
-                    trl(d,seg(d).ursamplenum(seg(d).trialinfo == condnum(c),t),c) = -d;
+                    trl(d,table2array(seg(d).ureventinfo(seg(d).trialinfo == condnum(c),t)),c) = -d;
                 end
             end
-            isTrial = squeeze(sum(isnan(trl)))<size(trl,1);
+            isTrial = squeeze(sum(isnan(trl),3))<size(trl,1);
             if find(size(isTrial) == MAXNTRIAL) == 2, isTrial = isTrial'; end % make sure it is column
             ntrl = find(sum(isTrial,2),1,'last');
             trl = trl(:,1:ntrl,:);
@@ -88,12 +77,8 @@ switch task
         for d = 1:numel(outfname)
             aap = aas_report_add(aap,subj,'<tr>');
             aap = aas_report_add(aap,subj,sprintf('<td>%s</td>',spm_file(outfname{d},'basename')));
-            EEG = pop_loadset(outfname{d});
             for c = 1:numel(conds)
-                condcount(d,c) = sum(arrayfun(@(x) any(...
-                    (cell2mat(x.eventlatency) == 0) & ...
-                    (get_eventvalue(x.eventtype) == condnum(c))...
-                    ), EEG.epoch));
+                condcount(d,c) = sum(aap.report.aamod_meeg_epochs.trl{1}(subj,sess,c,:));
                 aap = aas_report_add(aap,subj,sprintf('<td>%d</td>',condcount(d,c)));
             end
             aap = aas_report_add(aap,subj,'</tr>');
@@ -191,7 +176,7 @@ switch task
             
             if sess == lastSess, aap = aas_report_add(aap,'er','</tr></table>'); end
         end
-        EL.unload;
+
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
@@ -331,6 +316,7 @@ switch task
     case 'checkrequirements'
         if ~aas_cache_get(aap,'eeglab'), aas_log(aap,true,'EEGLAB is not found'); end
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
+        if ~aas_cache_get(aap,'fieldtrip'), aas_log(aap,true,'FieldTrip is not found'); end
 end
 end
 
