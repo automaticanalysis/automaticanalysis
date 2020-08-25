@@ -24,7 +24,7 @@ if isfield(tfr{1},'stat')
     stat = tfr{1}.stat;
     tfr{1} = rmfield(tfr{1},'stat');
     if strcmp(stat.cfg.correctm,'cluster')
-        if isfield(stat,'posclusters')
+        if isfield(stat,'posclusters') && ~isempty(stat.posclusters)
             pos_cluster_pvals = [stat.posclusters(:).prob];
             pos_signif_clust = find(pos_cluster_pvals < stat.cfg.alpha);
             pos = ismember(stat.posclusterslabelmat, pos_signif_clust);
@@ -32,7 +32,7 @@ if isfield(tfr{1},'stat')
             pos = stat.mask*0;
         end
         
-        if isfield(stat,'posclusters')
+        if isfield(stat,'negclusters') && ~isempty(stat.negclusters)
             neg_cluster_pvals = [stat.negclusters(:).prob];
             neg_signif_clust = find(neg_cluster_pvals < stat.cfg.alpha);
             neg = ismember(stat.negclusterslabelmat, neg_signif_clust);
@@ -45,7 +45,7 @@ if isfield(tfr{1},'stat')
     end
     tfr{1}.mask = stat.mask;
     cfgmulti.maskparameter = 'mask';
-    cfgmulti.maskstyle = 'box';
+    cfgmulti.maskstyle = 'opacity';
     cfgtopo.highlight = 'on';
     [iLabER,iLabStat] = match_str(tfr{1}.label, stat.label);
     if isfield(diag,'topohighlight')
