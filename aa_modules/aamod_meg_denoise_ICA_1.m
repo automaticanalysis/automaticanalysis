@@ -11,13 +11,20 @@ switch task
         EL.load;
         
         %% Initialise
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.doToolbox('fieldtrip','load');
+        SPMtool.addExternal('meeg');
+        [s,EL] = aas_cache_get(aap,'eeglab');
+        if ~s, aas_log(aap,true,'EEGLAB not found'); end
+        EL.load;
+        
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = basename(infname(1,:));
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = basename(infname(1,:));
         outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
         
         %% Not sure if bit below is needed?
 %         if aas_stream_has_contents(aap,[subj sess],'meg_ica')
-%             ICA0 = load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica'));
+%             ICA0 = load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica'));
 %             ICA = struct(...
 %                 'weights',ICA0.ica.weights, ...
 %                 'compvars',ICA0.ica.compvars ...
@@ -61,8 +68,12 @@ switch task
         end
         
         EL.unload;
-        
+        SPMtool.rmExternal('meeg');
+        SPMtool.doToolbox('fieldtrip','unload')
+
         %% Outputs
         save(outfname,'ica');
         aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

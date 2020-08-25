@@ -26,8 +26,8 @@ classdef aas_qsubViewerClass < QueueViewerClass
                     end      
                 case'DWI'
                     field_sess = 'diffusion_sessions';
-                case 'MEG'
-                    field_sess = 'meg_sessions';
+                case { 'MEEG' 'MEG' 'EEG' }
+                    field_sess = 'meeg_sessions';
             end
             if numel(indices) == 0, indicesstr = 'study';
             else

@@ -1,4 +1,4 @@
-function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventdef,trialshift)
+function aap=aas_add_meeg_event(aap,modulename,subject,session,eventname,eventdef,trialshift)
 % Op.1a.: Using onsets from data --> may multiple calls per subject/session
 %     argument 5 (eventname)    - conditionlabel
 %     argument 6 (eventvalue)   - eventvalue
@@ -11,6 +11,11 @@ function aap=aas_add_meg_event(aap,modulename,subject,session,eventname,eventdef
 %     argument 5 (eventname)    - conditionlabels or empty if provided in mat-file along with trl
 %     argument 6 (eventvalue)   - trl matrix or mat-file containing trl (and conditionlabels)
 %     argument 7 (trialshift)   - [] or unspecified
+% Op.3.: Segment data using onsets from data --> may multiple calls per subject/session
+%     argument 5 (eventname)    - 'segment-<segmentlabel>'
+%     argument 6 (eventvalue)   - '<eventvalue>:<eventvalue>' or [1x2] array of sample numbers
+%     argument 7 (trialshift)   - trlshift (must not be empty!!!)
+% If eventtype is empty (also in the module settings!), we assume there is only one eventtype
 
 % Regexp for number at the end of a module name, if present in format _%05d (e.g, _00001)
 m1 = regexp(modulename, '_\d{5,5}$');
@@ -46,6 +51,14 @@ if iscell(eventdef) % specify eventtype
     event.eventvalue = eventdef{2};
 else
     event.eventvalue = eventdef;
+end
+
+% segment definition
+if find(strcmp(strsplit(event.conditionlabel,'-'),'segment'),1,'first') == 1
+    if numel(event.trlshift) < 2 || ~any(event.trlshift)
+        aas_log(aap,false,'Segment definition requires trialshift specified as 1x2 array of non-zero values -> default [2 -2] will be applied');
+        event.trlshift = [2 -2];
+    end    
 end
 
 % find models that corresponds and add events if they exist

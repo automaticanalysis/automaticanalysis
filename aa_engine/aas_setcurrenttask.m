@@ -38,9 +38,9 @@ if ~isempty(varargin) && isnumeric(varargin{1})
             case {'MTI' 'ASL'}
                 aap.spm.defaults.modality = 'FMRI';
                 sessions = aap.acq_details.special_sessions;
-            case 'MEG'
+            case {'MEEG' 'MEG' 'EEG'}
                 aap.spm.defaults.modality = 'EEG';
-                sessions = aap.acq_details.meg_sessions;
+                sessions = aap.acq_details.meeg_sessions;
             otherwise
                 aap.spm.defaults.modality = modality;
                 sessions = aap.acq_details.sessions;

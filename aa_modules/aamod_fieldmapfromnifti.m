@@ -26,9 +26,10 @@ switch task
         niftifile = niftistruct.fname; % checks first only
         hdrfile = niftistruct.hdr;
         if ~exist(niftifile{1},'file')
-            niftisearchpth=aas_findvol(aap,'');
+            niftisearchpth=aas_findvol(aap,subj);
             if ~isempty(niftisearchpth)
-                niftifile = spm_file(niftifile,'path',niftisearchpth);
+                niftifile = cell_fullfile(niftisearchpth,niftifile);
+                if ~exist(niftifile{1},'file'), aas_log(aap,true,['ERROR: image ' niftifile{1} ' not found']); end
                 if ischar(hdrfile), hdrfile = spm_file(hdrfile,'path',niftisearchpth); end
             end
         end
@@ -84,4 +85,14 @@ switch task
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
+end
+end
+
+function fullfilepaths=cell_fullfile(basepath,filepaths)
+% Like full file, except that input filepaths is a cell array. basepath is
+% prepended (using fullfile) to every item in filepaths. Result is a cell
+% array
+for fileind=1:length(filepaths)
+    fullfilepaths{fileind}=fullfile(basepath,filepaths{fileind});
+end
 end

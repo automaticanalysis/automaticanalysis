@@ -32,12 +32,12 @@ end
 
 % Set UTC time function
 if exist('utc_time','file')
-    utime = @utc_time;
+    utc_timeFunc = @utc_time;
 else
     aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
-    utime = @java.lang.System.currentTimeMillis;
+    utc_timeFunc = @java.lang.System.currentTimeMillis;
 end
-aas_cache_put(aap,'utc_time',utime,'utils');
+aas_cache_put(aap,'utc_time',utc_timeFunc,'utils');
 
 %% Set Paths
 aas_cache_put(aap,'bcp_path',path,'system');
@@ -46,7 +46,7 @@ aas_cache_put(aap,'bcp_shellpath',getenv('PATH'),'system');
 % Path for SPM
 SPMDIR = '';
 doKeepInPath = true;
-% backward compatibility
+% - backward compatibility
 if isfield(aap.directory_conventions,'spmdir') && ~isempty(aap.directory_conventions.spmdir)
     SPMDIR = aap.directory_conventions.spmdir;
 end
@@ -58,7 +58,7 @@ if isfield(aap.directory_conventions,'toolbox')
         doKeepInPath = aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath;
     end
 end
-% path
+% - path
 if isempty(SPMDIR)
     if isempty(which('spm'))
         aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set in aap.directory_conventions.toolbox');
@@ -67,12 +67,12 @@ if isempty(SPMDIR)
         doKeepInPath = true;
     end
 end
-% deployed
+% - deployed
 if isdeployed
     SPMDIR = spm('Dir');
     doKeepInPath = true;
 end
-% reset
+% - reset
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
 if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
     aap.directory_conventions.toolbox(tbxInd).name = 'spm';
@@ -80,11 +80,11 @@ if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
     aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath = 1;
 end
 
-% by setting this environment variable it becomes possible to define other
-% paths relative to $SPMDIR in defaults files and task lists
+% - by setting this environment variable it becomes possible to define other
+%   paths relative to $SPMDIR in defaults files and task lists
 setenv('SPMDIR',SPMDIR);
 
-% expand shell paths (before SPM so SPM can be in e.g. home directory)
+% - expand shell paths (before SPM so SPM can be in e.g. home directory)
 aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
 
 if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
@@ -112,29 +112,10 @@ if exist('oldspmdefaults', 'var')
 end
 aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
 
-% Path for SPM MEG/EEG
-addpath(fullfile(spm('Dir'),'external','fieldtrip'));
-global ft_default; ft_default = [];
-ft_defaults;
-global ft_default
-ft_default.trackcallinfo = 'no';
-ft_default.showcallinfo = 'no';
-addpath(...
-    fullfile(spm('Dir'),'external','bemcp'),...
-    fullfile(spm('Dir'),'external','ctf'),...
-    fullfile(spm('Dir'),'external','eeprobe'),...
-    fullfile(spm('Dir'),'external','mne'),...
-    fullfile(spm('Dir'),'external','yokogawa_meg_reader'),...
-    fullfile(spm('Dir'),'toolbox', 'dcm_meeg'),...
-    fullfile(spm('Dir'),'toolbox', 'spectral'),...
-    fullfile(spm('Dir'),'toolbox', 'Neural_Models'),...
-    fullfile(spm('Dir'),'toolbox', 'MEEGtools'));
-
-% Path fore matlabtools
+% Path for matlabtools
 if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
     addpath(strrep(aap.directory_conventions.matlabtoolsdir,':',pathsep))
 end
-
 
 % Toolboxes
 if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
@@ -157,6 +138,14 @@ if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conven
             T = constr(TBX.dir,params{:});
             aas_cache_put(aap,TBX.name,T);
         end
+    end
+end
+
+% MNE
+if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
+    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
+        addpath(aap.directory_conventions.mnedir,'matlab','toolbox');
+        addpath(aap.directory_conventions.mnedir,'matlab','examples');
     end
 end
 
@@ -247,9 +236,9 @@ end
 
 % MNE
 if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
-    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
-        reqpath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','toolbox');
-        reqpath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','examples');
+    p_ind = cell_index(p,aap.directory_conventions.mnedir);
+    for ip = p_ind
+        reqpath{end+1} = p{ip};
     end
 end
 

@@ -1,6 +1,6 @@
 % Automatic analysis - Entry point for standalone version. 
 %
-% FORMAT function aa_standalone(fname_config, fname_tasklist, fname_aa [, 'mridatadir', <dir>][, 'megdatadir', <dir>][, 'connection', <dir>][, 'anadir', <dir>][, 'subj', <subject indices>])
+% FORMAT function aa_standalone(fname_config, fname_tasklist, fname_aa [, 'mridatadir', <dir>][, 'meegdatadir', <dir>][, 'connection', <dir>][, 'anadir', <dir>][, 'subj', <subject indices>])
 %   Compulsory arguments:
 %       - fname_config: aa parameters (XML file)
 %       - fname_tasklist: aa tasklist (XML file)
@@ -12,7 +12,7 @@
 %               - input.isBIDS
 %   Optional arguments:
 %       - 'mridatadir', <dir>: Directory to find raw MRI data (<dir> can be a colon separated list)
-%       - 'megdatadir', <dir>: Directory to find raw MEG data
+%       - 'meegdatadir', <dir>: Directory to find raw MEEG data
 %       - 'connection', <dir>: Directory of a processed pipeline to connect to. If <dir> is a colon separated list (with two elements), then
 %            first element is the directory of the the pipeline to connect to
 %            second elements is the name of the latest stage to connect to
@@ -29,7 +29,7 @@ aap=aarecipe(fname_config,fname_tasklist);
 %% Optiona arguments
 args = vargParser(varargin);
 if isfield(args,'mridatadir'), aap.directory_conventions.rawdatadir = args.mridatadir; end % data
-if isfield(args,'megdatadir'), aap.directory_conventions.rawmegdatadir = args.megdatadir; end % data
+if isfield(args,'meegdatadir'), aap.directory_conventions.rawmeegdatadir = args.meegdatadir; end % data
 if isfield(args,'anadir') % output
     aap.acq_details.root = args.anadir; 
     aap.directory_conventions.analysisid = 'automaticanalysis'; 

@@ -7,10 +7,12 @@ switch task
         
     case 'doit'
         %% Initialise
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.addCollection('meeg');
 
         sessdir = aas_getsesspath(aap,subj,sess);
         inputstreams = aas_getstreams(aap,'input');
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],inputstreams{2});        
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],inputstreams{2});        
         outfname = fullfile(sessdir,['spm12_' basename(infname)]); % specifying output filestem
         
         chan=load(aas_getfiles_bystream(aap,'channellabels'));
@@ -51,7 +53,10 @@ switch task
             D.save
         end
         
+        SPMtool.rmCollection('meeg');
+
         %% Outputs
         aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        
-
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

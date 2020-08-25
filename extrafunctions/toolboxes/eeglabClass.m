@@ -21,6 +21,7 @@ classdef eeglabClass < toolboxClass
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
+            argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
@@ -29,12 +30,13 @@ classdef eeglabClass < toolboxClass
             
             vars = {'ALLCOM' 'ALLEEG' 'CURRENTSET' 'CURRENTSTUDY' 'eeglabUpdater' 'globalvars' 'LASTCOM' 'PLUGINLIST' 'STUDY'};
             
-            obj = obj@toolboxClass(argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end
         
-        function load(obj)
+        function load(obj,keepWorkspace)
+            if nargin < 2, keepWorkspace = false; end
             addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
@@ -50,7 +52,7 @@ classdef eeglabClass < toolboxClass
             end
             if is_new_plugin, obj.load; end
             
-            load@toolboxClass(obj)
+            load@toolboxClass(obj,keepWorkspace)
         end
         
         function val = get.dipfitPath(obj)

@@ -6,7 +6,7 @@
         <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
         <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
         <rawdatadir desc='Directory to find raw MRI data' ui='dir_list'>$HOME/aa/raw:/data:$HOME/data</rawdatadir>
-        <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'>$HOME/aa/megraw:/megdata:$HOME/megdata</rawmegdatadir>
+        <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>$HOME/aa/megraw:/megdata:$HOME/megdata</rawmeegdatadir>
         <T1template desc='Location of T1 template, now relative to SPM path' ui='dir'>toolbox/OldNorm/T1.nii</T1template>
         <Render desc='Location of Single subject render mash' ui='dir'>rend/render_single_subj.mat</Render>
         <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fCBU</rawdataafterconversionprefix>
@@ -30,7 +30,7 @@
         <protocol_structural ui='text'>MPRAGE</protocol_structural>
         <protocol_t2 ui='text'>t2_spc</protocol_t2>
         <dicomfilter ui='text'>*.dcm</dicomfilter>
-        <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</megsubjectoutputformat>
+        <meegsubjectoutputformat desc='sprintf formatting string to get subject directory from number - at CBU meg*_%04d*' ui='text'>meg*_%04d*</meegsubjectoutputformat>
         <dicom_converter desc='Path to custom dicom converter MATLAB function and optional arguments (all separated with commas)' ui='text'></dicom_converter>
         <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
         <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
@@ -77,7 +77,7 @@
                         <searchlight_package desc='A searchlight' ui='custom'/>
                         <splitsession_cv_fold desc='Split session cross validation fold' ui='custom'></splitsession_cv_fold>
                     </session>
-                    <meg_session desc='MEG acquisition' ui='custom'></meg_session>                        
+                    <meeg_session desc='MEEG acquisition' ui='custom'></meeg_session>                        
                     <diffusion_session desc='Diffusion acquisition' ui='custom'>
                         <diffusion_session_phaseencode_direction desc='Diffusion phase encoding direction' ui='custom'></diffusion_session_phaseencode_direction>
                     </diffusion_session>                        
@@ -112,6 +112,7 @@
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>1</NIFTI4D>
+        <hardlinks desc='Allow hardlinks during retrieving inputs' ui='yesno'>1</hardlinks>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
         <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>
@@ -198,12 +199,12 @@
         <subjects>
             <subjname desc='Subject foldername' ui='dir'/>
             <mriname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
-            <megname desc='Subject MRI filename' ui='dir_part_allowwildcards'/>
+            <meegname desc='Subject MEEG filename' ui='dir_part_allowwildcards'/>
             <structural desc='Session number or filename for structural' ui='int'/>
             <wholebrain_epi desc='Session number or filename for wholebrain EPI (for partial volume EPI)' ui='int'/>
             <fieldmaps desc='Session numbers or filename for fieldmaps' ui='intarray'/>
             <seriesnumbers desc='Session numbers or filename for EPI' ui='intarray' />
-            <megseriesnumbers desc='Session numbers for MEG' ui='intarray' />           
+            <meegseriesnumbers desc='Session numbers for MEEG' ui='intarray' />           
             <diffusion_seriesnumbers desc='Session numbers for diffusion data' ui='intarray' />
             <tmaps desc='Real time t maps session number in raw data' ui='int'/>
             <specialseries desc='special series session number in raw data' ui='int'/>

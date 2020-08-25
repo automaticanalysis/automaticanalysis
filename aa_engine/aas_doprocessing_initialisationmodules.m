@@ -34,6 +34,6 @@ for k=1:length(aap.tasklist.initialisation.module)
     end;
     if strcmp(stagename,'aamod_evaluatesubjectnames')  % evaluated subjectnames assumed
         aap.directory_conventions.subjectoutputformat = '%s';
-        aap.directory_conventions.megsubjectoutputformat = '%s';
+        aap.directory_conventions.meegsubjectoutputformat = '%s';
     end
 end;

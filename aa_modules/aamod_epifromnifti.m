@@ -38,10 +38,11 @@ switch task
         headerfile = headerFn;
         niftifile = imageFn;
         if ~iscell(niftifile), niftifile = {niftifile}; end % 4D-NIFTI
-        if ~exist(niftifile{1},'file') % assume path realtive to (first) rawdatadir
-            niftisearchpth=aas_findvol(aap,'');
+        if ~exist(niftifile{1},'file') % assume path realtive to the subject's dir
+            niftisearchpth=aas_findvol(aap,subj);
             if ~isempty(niftisearchpth)
                 niftifile = cell_fullfile(niftisearchpth,niftifile);
+                if ~exist(niftifile{1},'file'), aas_log(aap,true,['ERROR: image ' niftifile{1} ' not found']); end
                 if ~isempty(headerFn)
                     headerfile = fullfile(niftisearchpth,headerFn);
                 end
