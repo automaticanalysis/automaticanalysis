@@ -50,10 +50,13 @@ doKeepInPath = true;
 if isfield(aap.directory_conventions,'spmdir') && ~isempty(aap.directory_conventions.spmdir)
     SPMDIR = aap.directory_conventions.spmdir;
 end
-% - toolboxes
-if isfield(aap.directory_conventions,'toolboxes') && isfield(aap.directory_conventions.toolboxes,'spm')
-    SPMDIR = aap.directory_conventions.toolboxes.spm.dir;
-    doKeepInPath = aap.directory_conventions.toolboxes.spm.extraparameters.doKeepInPath;
+% toolboxes
+if isfield(aap.directory_conventions,'toolbox')
+    tbxInd = strcmp({aap.directory_conventions.toolbox.name},'spm');
+    if any(tbxInd)
+        SPMDIR = aap.directory_conventions.toolbox(tbxInd).dir;
+        doKeepInPath = aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath;
+    end
 end
 % - path
 if isempty(SPMDIR)
@@ -71,7 +74,11 @@ if isdeployed
 end
 % - reset
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
-if isfield(aap.directory_conventions,'toolboxes') && isfield(aap.directory_conventions.toolboxes,'spm'), aap.directory_conventions.toolboxes.spm.dir = SPMDIR; end
+if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
+    aap.directory_conventions.toolbox(tbxInd).name = 'spm';
+    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR; 
+    aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath = 1;
+end
 
 % - by setting this environment variable it becomes possible to define other
 %   paths relative to $SPMDIR in defaults files and task lists
@@ -111,25 +118,25 @@ if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory
 end
 
 % Toolboxes
-if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conventions.toolboxes)
-    for t = fieldnames(aap.directory_conventions.toolboxes)'
-        if strcmp(t{1},'spm'), continue; end
-        if ~exist([t{1} 'Class'],'class')
-            aas_log(aap,false,sprintf('No interfaces for %s in extrafunctions/toolboxes',f{1}));
+if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
+    for TBX = aap.directory_conventions.toolbox
+        if strcmp(TBX.name,'spm'), continue; end
+        if ~exist([TBX.name 'Class'],'class')
+            aas_log(aap,false,sprintf('No interfaces for %s in extrafunctions/toolboxes',TBX.name));
         else
-            TBX = aap.directory_conventions.toolboxes.(t{1});
-            constr = str2func([t{1} 'Class']);
+            constr = str2func([TBX.name 'Class']);
             params = {};
             if isfield(TBX,'extraparameters')
                 for p = fieldnames(TBX.extraparameters)
                     val = TBX.extraparameters.(p{1});
+                    if isempty(val), continue; end
                     if ischar(val) && contains(val,':'), val = strsplit(val,':'); end
                     params{end+1} = p{1};
                     params{end+1} = val;
                 end
             end
             T = constr(TBX.dir,params{:});
-            aas_cache_put(aap,t{1},T);
+            aas_cache_put(aap,TBX.name,T);
         end
     end
 end
@@ -219,9 +226,8 @@ if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory
 end
 
 % Toolboxes
-if isfield(aap.directory_conventions,'toolboxes') && isstruct(aap.directory_conventions.toolboxes)
-    for t = fieldnames(aap.directory_conventions.toolboxes)'
-        TBX = aap.directory_conventions.toolboxes.(t{1});
+if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
+    for TBX = aap.directory_conventions.toolbox
         if isfield(TBX,'extraparameters') && isfield(TBX.extraparameters,'doAddToPath') && TBX.extraparameters.doAddToPath
             reqpath{end+1} = TBX.dir;
         end

@@ -73,9 +73,9 @@ switch task
         if ~isfield(job.data,'precalcfieldmap')
             try % Fieldmap EchoTimes
                 FM_DICOMHEADERS=load(aas_getfiles_bystream(aap,domain,[subj,sess],'fieldmap_dicom_header'));
-                if iscell(FM_DICOMHEADERS.dcmhdr)
-                    assert(numel(FM_DICOMHEADERS.dcmhdr{1,1})==1, 'unexpected input');
-                    tes = [FM_DICOMHEADERS.dcmhdr{1,1}.EchoTime1*1000,FM_DICOMHEADERS.dcmhdr{1,1}.EchoTime2*1000]; % in ms
+                assert(numel(FM_DICOMHEADERS.dcmhdr{1})==1, 'unexpected input'); % one header per cell expected
+                if all(isfield(FM_DICOMHEADERS.dcmhdr{1},{'EchoTime1' 'EchoTime2'})) % BIDS
+                    tes = [FM_DICOMHEADERS.dcmhdr{1}.EchoTime1,FM_DICOMHEADERS.dcmhdr{1}.EchoTime2]*1000; % in ms
                 else
                     tes = sort(unique(cellfun(@(x) x.volumeTE,FM_DICOMHEADERS.dcmhdr)),'ascend')*1000; % in ms
                 end

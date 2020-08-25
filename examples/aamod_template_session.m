@@ -27,6 +27,8 @@ switch task
             aap = aas_report_add(aap,subj,'</td></tr></table>');
         end
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.load;
         
         streams=aas_getstreams(aap,'input');
         
@@ -45,9 +47,9 @@ switch task
             % Describe outputs
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],streams{streamind},outputfnames);
             
-        end;
+        end
     case 'checkrequirements'
-        
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end

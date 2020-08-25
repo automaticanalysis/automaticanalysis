@@ -6,6 +6,10 @@ switch task
     case 'report'
         
     case 'doit'
+        [s,EL] = aas_cache_get(aap,'eeglab');
+        if ~s, aas_log(aap,true,'EEGLAB not found'); end
+        EL.load;
+        
         %% Initialise
         [junk, SPMtool] = aas_cache_get(aap,'spm');
         SPMtool.doToolbox('fieldtrip','load');
@@ -48,12 +52,12 @@ switch task
                 actual_PCA_dim = PCA_dim;
             end
             try
-                if ~isempty(Rseed) && exist('rik_runica','file')              
-                    [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
-                else
+%                 if ~isempty(Rseed) && exist('rik_runica','file')              
+%                     [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
+%                 else
                     if ~isempty(Rseed), aas_log(aap,false,'WARNING: Random seed requested but no facility with standard runica?'); end
                     [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800); % will give different answer each time run
-                end
+%                 end
                 ica{n}.weights = weights;
                 ica{n}.chans = chans;
                 ica{n}.compvars = compvars;
