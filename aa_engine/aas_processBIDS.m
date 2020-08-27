@@ -405,7 +405,21 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                         if (strcmpi(names{e},'null') && omitNullBIDSEvents)
                                             continue;
                                         end
-                                        aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
+ 
+                                        % if numdummies EV adjustment creates any events
+                                        % w/ onset < 0 don't add them (they crash SPM)
+                                        adjusted_onsets = onsets{e}-numdummies*TR;
+                                        selector = find(adjusted_onsets>=0);
+                                        if (isempty(selector))
+                                            aas_log(aap,false,sprintf('WARNING: No events of type %s survive numdummies onset correction\n',names{e}));
+                                            continue;
+                                        else
+                                            adjusted_onsets = adjusted_onsets(selector);
+                                            temp = durations{e};
+                                            adjusted_onset_durations = temp(selector);
+                                            aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},adjusted_onsets,adjusted_onset_durations);
+                                        end
+
                                     end
                                 end
                             end

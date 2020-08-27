@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='rescale an epi (voxelwise, across time)' modality='MRI'>
+
+        <keywords>rescale mode1000 fslmaths</keywords>
+        
+        <permanenceofoutput>2</permanenceofoutput>
+        
+        <!-- if no scale is provided, mode1000 scaling is performed -->
+        
+        <scale></scale>
+        
+        <!-- output data type (see fslmaths). Possible values: char short int float double input -->
+        <!-- default is float; int will result in smaller files but may cause rounding problems -->
+        <!-- (note the "input" option is broken in fsl 6.0.1) -->
+      
+        <odt>float</odt>
+
+        <!-- we don't 'modify' epi; we create a new epi and reassign the streamname -->
+
+        <inputstreams>
+            <stream ismodified='0'>epi</stream>
+        </inputstreams>
+
+        <outputstreams>
+            <stream>epi</stream>
+        </outputstreams>
+			
+        </currenttask>
+    </tasklist> 
+</aap>
+

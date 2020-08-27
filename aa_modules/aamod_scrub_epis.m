@@ -9,6 +9,7 @@ function [aap,resp] = aamod_scrub_epis(aap, task, subj, sess)
 %
 % Revision History
 %
+% 08/2020 [MSJ] - fix possible PCT race error
 % summer 2020 [MSJ] -- added task timing plot
 % winter 2018 [MSJ] -- absorb aamod_listspike 
 % spring 2018 [MSJ] -- new
@@ -98,9 +99,27 @@ switch task
 			end
 			
 			if (aas_stream_has_contents(aap, 'metric_thresholds'))
+                
 				temp = aas_getfiles_bystream(aap, 'metric_thresholds');
+                
+                % there's a weird random bug when using the PCT that a_g_b
+                % sometimes returns an empty file for metric_thresholds
+                % even though it's copied to the working directory properly.
+                % Maybe a race condition? Anyway, pause and reload seems to
+                % workaround the problem:
+                
+                if (~exist(temp,'file'))
+
+                    aas_log(aap, false, sprintf('***** CANNOT FIND %s. Hail Mary pause ****** \n', temp));
+                    unix('touch /Users/peellelab/SCRUB_EPI_FILE_FAIL.txt');
+                    pause(1);
+                    temp = aas_getfiles_bystream(aap, 'metric_thresholds');
+
+                end        
+                
 				temp = load(temp);
 				metric_thresholds = temp.metric_thresholds;
+                
             end
   
             if (aas_stream_has_contents(aap, 'GLOBALMEAN'))

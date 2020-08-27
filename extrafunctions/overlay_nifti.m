@@ -26,8 +26,8 @@ function [ errflag,errstring ] = overlay_nifti(nii_fname, template_fname, render
 % EXAMPLE USAGE:
 %
 %  nii_fname = 'thrT_0001.nii';
-%  template_fname = '/Applications/MATLAB_R2016b.app/toolbox/spm12/toolbox/OldNorm/T1.nii';
-%  render_fname = '/Applications/MATLAB_R2016b.app/toolbox/spm12/rend/render_single_subj.mat';
+%  template_fname = '/Applications/spm12/toolbox/OldNorm/T1.nii';
+%  render_fname = '/Applications/spm12/rend/render_single_subj.mat';
 %
 % NOTES
 %
@@ -46,6 +46,7 @@ function [ errflag,errstring ] = overlay_nifti(nii_fname, template_fname, render
 %
 % CHANGE HISTORY
 %
+% 08/2020 [msj] - change default brightness from 0.5 to 0.2
 % 10/2019 [MSJ] - modified to handle up to three nii
 % 09/2019 [MSJ] - new
 %
@@ -126,7 +127,9 @@ end
 
 
 if (nargin < 6)
-    brightness = 0.5;
+%     brightness = 0.5;
+    % this better for multiple map overlap
+    brightness = 0.2;
 end
 
 

@@ -150,9 +150,12 @@ switch task
                 % inset boxplot of data losses across all subjects @ the mean threshold values
                 
 				boxdata = zeros(nsub,length(TOI));
- 
+              
 				for subj = 1:nsub
-					boxdata(subj,:) = interp1(metric_subject_values(subj,:), 100*(1-quantiles_to_plot), threshold_values);
+                    temp = metric_subject_values(subj,:);
+                    % we improve interp1 performance by adding a little noise to the data
+                    temp = temp + rand(size(temp)) * max(temp) * 0.001;
+					boxdata(subj,:) = interp1(temp, 100*(1-quantiles_to_plot), threshold_values);
 				end
 
 				axes('Position',[0.5 0.6 0.35 0.25]); 
@@ -164,7 +167,7 @@ switch task
                 set(bp,{'linew'},{2})
                                    
  				a = axis; axis([a(1) a(2) 0 100 ]);             
- 				title({['Frame loss (%) across all subjects'],['(\bullet) actual mean frame loss']},'FontName','Helvetica','FontSize',12);
+ 				title({['% Frame loss across all subjects'],['(\bullet) = true mean frame loss']},'FontName','Helvetica','FontSize',12);
 
                 % add true frame loss % underneath plot
                  
