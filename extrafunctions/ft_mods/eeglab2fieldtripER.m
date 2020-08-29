@@ -46,6 +46,16 @@ if ~isempty(EEG.dipfit)
 else
     data = eeglab2fieldtrip(EEG,'preprocessing', 'none');
 end
+if ~isfield(data,'trialinfo') % sinlge epoch
+    ev = EEG.event([EEG.event.latency] == find(EEG.times==0));
+    data.trialinfo = struct2table(keepfields(ev,{'duration','type'}));
+    data.trialinfo.type = cellstr(data.trialinfo.type);
+    EEG.epoch.event = 1:numel(EEG.event);
+    EEG.epoch.eventtype = {EEG.event.type};
+    EEG.epoch.eventduration = {EEG.event.duration};
+    EEG.epoch.eventlatency = {EEG.event.latency};
+    EEG.epoch.eventurevent = {EEG.event.urevent};
+end
 
 trlcfg                     = [];
 trlcfg.hdr                 = hdr;
@@ -78,7 +88,7 @@ for e = 1:numel(EEG.epoch)
             currE = EEG.epoch(e).eventtype;
         end
     else
-        evmatch = evcompfun(EEG.epoch(e).eventtype,data.trialinfo{e,2}{1}); evmatch = evmatch(evmatch);
+        evmatch = evcompfun(EEG.epoch(e).eventtype,data.trialinfo.type{e}); evmatch = find(evmatch);
         if sum(evmatch) > 1
             ft_warning('overlap detected in epoch #%d',e)
             evmatch(2:end) = false;

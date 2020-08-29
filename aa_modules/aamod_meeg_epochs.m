@@ -30,13 +30,16 @@ switch task
         for d = 1:numel(outfname)
             EEG(d) = pop_loadset(outfname{d});            
         end
+        EL.unload;
         if subj == 1, FT.load;
         else, FT.reload; end
         for d = 1:numel(outfname)
+            % remove unwanted events because they may confound the conversion
+            EOI = arrayfun(@(x) any(condnum==x), cellfun(@(x) get_eventvalue(x), {EEG.event.type}));
+            EEG.event(~EOI) = [];
             seg(d) = eeglab2fieldtripER(EEG(d));
         end
-        FT.unload;
-        EL.unload;
+        FT.unload;        
 
         for t = 1:2 % specific and combined trialnumber
             trl = nan(numel(outfname),MAXNTRIAL,numel(conds));
@@ -45,7 +48,7 @@ switch task
                     trl(d,table2array(seg(d).ureventinfo(seg(d).trialinfo == condnum(c),t)),c) = -d;
                 end
             end
-            isTrial = squeeze(sum(isnan(trl),3))<size(trl,1);
+            isTrial = squeeze(sum(isnan(trl),1))<size(trl,1);
             if find(size(isTrial) == MAXNTRIAL) == 2, isTrial = isTrial'; end % make sure it is column
             ntrl = find(sum(isTrial,2),1,'last');
             trl = trl(:,1:ntrl,:);
