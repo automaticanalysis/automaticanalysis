@@ -28,14 +28,15 @@ end
 
 aa_init(aap);
 
-allstages = {aap.tasklist.main.module.name};
-
+% stages to report
+allstages = arrayfun(@(x) aas_getstagetag(aap,x), 1:numel(aap.tasklist.main.module), 'UniformOutput', false);
 if ~exist('stages','var')
     stages=allstages;
     provnoinput = false;
 else
     provnoinput = true;    
 end
+stageindices = cellfun(@(x) aas_getmoduleindexfromtag(aap,x), stages);
 
 if isfield(aap,'report'), aap = rmfield(aap,'report'); end
 aap.report.numdependencies=0;
@@ -49,13 +50,14 @@ aap.prov.donotcheckinput = provnoinput;
 
 % Flags for special reports
 % - collect module executables
-mfstages = stages;
-for m = 1:numel(mfstages)
-    if ~exist(mfstages{m},'file')
-        if ~isempty(aap.tasklist.main.module(m).aliasfor)
-            mfstages{m} = aap.tasklist.main.module(m).aliasfor;
+mfstages = repmat({''},1,max(stageindices));
+for s = stageindices
+    mfstages{s} = aap.tasklist.main.module(s).name;
+    if ~exist(mfstages{s},'file')
+        if ~isempty(aap.tasklist.main.module(s).aliasfor)
+            mfstages{s} = aap.tasklist.main.module(s).aliasfor;
         else
-            mfstages{m} = aap.schema.tasksettings.(mfstages{m}).ATTRIBUTE.mfile_alias;
+            mfstages{s} = aap.schema.tasksettings.(mfstages{s})(1).ATTRIBUTE.mfile_alias;
         end
     end
 end
@@ -82,7 +84,7 @@ end
 if has_meegepochs, aap.report.html_er.fname = strrep(aap.report.html_main.fname,'.htm','_er.htm'); end
 
 % Initialize HTLMs
-copyfile(fullfile(aap.internal.aappath,'aa_toolbox','aa_styles.css'),fullfile(studyroot,'aa_styles.css'));
+copyfile(fullfile(aap.internal.aappath,'aa_tools','aa_styles.css'),fullfile(studyroot,'aa_styles.css'));
 aap = aas_report_add(aap,[],'HEAD=aa Report');
 aap = aas_report_add(aap,0,'HEAD=Subjects');
 if ~exist(aap.report.subdir,'dir'), mkdir(aap.report.subdir); end
@@ -96,35 +98,25 @@ if has_meegepochs, aap = aas_report_add(aap,'er','HEAD=MEEG epoch summary'); end
 
 aap.report.fbase = basename(aap.report.html_main.fname);
 
-for s=1:numel(stages)
-    k = find(strcmp(allstages,stages{s}));
-    if numel(k) > 1
-        if (s == 1) || ~strcmp(curr_aap.tasklist.currenttask.name(1:end-6),stages{s})
-            k = k(1);
-        else
-            k = k(curr_aap.tasklist.currenttask.index+1);
-        end
-    end
+for k = stageindices
     curr_aap = aas_setcurrenttask(aap,k);
     fprintf('Fetching report for %s...\n',curr_aap.tasklist.currenttask.name);
 
     domain = curr_aap.tasklist.currenttask.domain;
     
-    xmlfn = [stages{s} '.xml'];
+    xmlfn = [allstages{k}(1:end-6) '.xml'];
     if ~exist(xmlfn,'file') && isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor) % mfile_alias
         xmlfn = [aap.tasklist.main.module(k).aliasfor '.xml'];
     end
     xml = xml_read(xmlfn);
-    mfile_alias = stages{s};
-    if ~exist(mfile_alias,'file'), mfile_alias = aap.tasklist.main.module(k).aliasfor; end
-    if ~exist(mfile_alias,'file'), mfile_alias = xml.tasklist.currenttask.ATTRIBUTE.mfile_alias; end
+    mfile_alias = mfstages{k};
         
     % add provenance
     if aap.prov.isvalid, aap.prov.addModule(k); end
     
     % Skip stages of unknown domain - most like aamod_importfilesasstream
     if ~strcmp(domain,'[unknown]')
-        stagerepname = stages{s};
+        stagerepname = allstages{k};
         if ~isempty(aap.tasklist.main.module(k).extraparameters)
             stagerepname = [stagerepname aap.tasklist.main.module(k).extraparameters.aap.directory_conventions.analysisid_suffix];
         end
