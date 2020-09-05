@@ -9,6 +9,8 @@
             </qsub>
             
             <timefrequencyanalysis>
+                <method desc='methods of calculating the spectra' options='mtmconvol|mtmfft' ui='optionlist'></method>
+                <taper options='dpss|hanning' ui='optionlist'></taper>
                 <foi desc='frequencies of interest specified as [1xN1] for individual FOIs'></foi>
                 <toi desc='the times on which the analysis windows should be centered, specified as [1xN2] in milliseconds'></toi>
                 <twoicps desc='width of the analysis window-of-interest specified in cycle-per-sample (i.e. decreasing with frequencies of interest)'></twoicps>

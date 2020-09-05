@@ -36,15 +36,12 @@ switch task
         FT.addExternal('spm12');
         
         tfa = aas_getsetting(aap,'timefrequencyanalysis');
-        tfacfg = [];
+        tfacfg = keepfields(tfa,{'method','taper','foi'});
         tfacfg.pad         = 'nextpow2';
         tfacfg.output      = 'pow';
-        tfacfg.method      = 'mtmconvol';
-        tfacfg.taper       = 'dpss';
-        tfacfg.foi         = tfa.foi;
-        tfacfg.t_ftimwin   = tfa.twoicps./tfacfg.foi;
-        tfacfg.tapsmofrq   = tfa.spectralsmoothing*tfacfg.foi;
-        tfacfg.toi         = tfa.toi/1000;
+        if ~isempty(tfa.twoicps), tfacfg.t_ftimwin = tfa.twoicps./tfacfg.foi; end
+        if ~isempty(tfa.spectralsmoothing), tfacfg.tapsmofrq = tfa.spectralsmoothing*tfacfg.foi; end
+        if ~isempty(tfa.toi) && isnumeric(tfa.toi), tfacfg.toi = tfa.toi/1000; end        
         tfacfg.keeptrials  = 'no';
         
         % baseline correction
@@ -106,7 +103,7 @@ switch task
                                 continue; 
                             end
                             FT.reload;                            
-                            data(seg) = eeglab2fieldtripER(EEG);
+                            data(seg) = eeglab2fieldtripER(EEG,'reorient',1);
                             EL.unload; % FieldTrip's eeglab toolbox is incomplete
                     end
                 end
@@ -128,11 +125,11 @@ switch task
                         cfg = tfacfg;
                         cfg.trials = find(data(i).trialinfo==trialinfo);
                         if isempty(cfg.trials), continue; end
-                        tf{end+1} = ft_freqanalysis(cfg, data(i));
-                        if isempty(cfg.toi) % whole trial
+                        if isfield(cfg,'toi') && ischar(cfg.toi) && strcmp(cfg.toi,'all') % whole trial
                             cfg.toi = (data(1).time{1}(1)+data(1).time{1}(end))/2; % centre
                             cfg.t_ftimwin = (data(i).time{1}(end)-data(i).time{1}(1))*ones(1,numel(cfg.foi));
                         end
+                        tf{end+1} = ft_freqanalysis(cfg, data(i));
                         % baseline correction
                         if ~isempty(baswin), tf{end} = ft_freqbaseline(bccfg,tf{end}); end
                         if aas_getsetting(aap,'weightedaveraging')
