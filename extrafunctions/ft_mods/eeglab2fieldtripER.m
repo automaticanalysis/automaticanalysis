@@ -1,14 +1,17 @@
-function data = eeglab2fieldtripER(EEG)
+function data = eeglab2fieldtripER(EEG,varargin)
 % eeglab2fieldtripER() - This function converts epoched EEGLAB datasets to Fieldtrip.
 %
 % Usage:
-%  >> data = eeglab2fieldtripER( EEG );
+%  >> data = eeglab2fieldtripER( EEG, 'key', 'val' ... );
 %
 % Inputs:
-%   EEG       - [struct] EEGLAB structure
+%   EEG         - [struct] EEGLAB structure
+%
+% Optional inputs (key-value pairs):
+%   'reorient'  - detect electrode positions, and reorient e.g. swapped axes (default = 0) (experimental!)
 %
 % Outputs:
-%   data      - FIELDTRIP data structure
+%   data        - FIELDTRIP data structure
 %
 % Author: Tibor Auer, University of Surrey, June, 2020.
 
@@ -28,6 +31,15 @@ function data = eeglab2fieldtripER(EEG)
 % along with this program; if not, write to the Free Software
 % Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
+cfg = [];
+if nargin > 1
+    if mod(numel(varargin),2) || ~all(cellfun(@ischar, varargin(1:2:end)))
+        ft_error('wrong argumentation');
+    end
+    cfg = struct(varargin{:});
+end
+cfg.reorient = ft_getopt(cfg, 'reorient', 0);
+
 EEGLABFILE = fullfile(EEG.filepath,EEG.filename);
 
 % add eeglab ft toolbox if needed
@@ -46,6 +58,7 @@ if ~isempty(EEG.dipfit)
 else
     data = eeglab2fieldtrip(EEG,'preprocessing', 'none');
 end
+
 if ~isfield(data,'trialinfo') % sinlge epoch
     ev = EEG.event([EEG.event.latency] == find(EEG.times==0));
     data.trialinfo = struct2table(keepfields(ev,{'duration','type'}));
@@ -105,6 +118,19 @@ end
 trl = trl(logical(indE),:);
 data = ft_redefinetrial(struct('trl',trl),data);
 data.ureventinfo = array2table(ureventinfo,'VariableNames',{'eventnum' 'eventnum_all' 'latency'});
+
+if cfg.reorient
+    chind = cellfun(@(x) find([1 strcmp(data.elec.label,x)],1,'last'), {'Fz' 'Cz' 'Oz'})-1;
+    if sum(chind~=0) < 2 || ~chind(1)
+        ft_warning('Fz and at least one of Cz and Oz must be defined for automatic detection of orientation');
+    else
+        chind(chind==0) = [];
+        EXP_VO = [1 3 2]; % expected order variance -> this should be 1 3 2
+        [junk,so] = sort(std(data.elec.elecpos(chind,:))); %
+        data.elec.elecpos(:,1:3) = data.elec.elecpos(:,so(EXP_VO));
+        data.elec.chanpos(:,1:3) = data.elec.chanpos(:,so(EXP_VO));
+    end
+end
 
 % clear path
 ft_warning('removing %s toolbox from your MATLAB path',tbpath)

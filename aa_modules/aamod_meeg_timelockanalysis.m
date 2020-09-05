@@ -73,7 +73,7 @@ switch task
                             EEG = pop_loadset(meegfn{seg});
                             EL.unload;
                             FT.reload;                            
-                            data(seg) = eeglab2fieldtripER(EEG);
+                            data(seg) = eeglab2fieldtripER(EEG,'reorient',1);
                     end
                 end
                 
