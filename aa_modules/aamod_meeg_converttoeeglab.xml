@@ -13,15 +13,18 @@
             
             <!-- 
             subject can be specified as cell array of strings or '*' (for all)
-            event can be a single event or a 1xN array indicating events in the event list
-            valid operation is
-                'remove' - remove
-                'keep' - remove all others
-                'unique:first' - keep only first of consecutive events
-                'unique:last' - keep only last of consecutive events
-                'rename:<new type>' - rename event(s) to <new type>
-                'iterate' - add suffix to recurring event to indicate the number of occurrence
-                'insert:[<array of indices>] - insert event before the locations specified by <array of indices> with timings of the events at the locations'
+            to modify events or data
+                event can be a single event or a 1xN array indicating events in the event list
+                valid operations are
+                    'remove' - remove
+                    'keep' - remove all others
+                    'unique:first' - keep only first of consecutive events
+                    'unique:last' - keep only last of consecutive events
+                    'rename:<new type>' - rename event(s) to <new type>
+                    'iterate' - add suffix to recurring event to indicate the number of occurrence
+                    'insert:[<array of indices>] - insert event before the locations specified by <array of indices> with timings of the events at the locations'
+                    'ignorebefore' - remove heading data before the first occurence (excluding the event)
+                    'ignoreafter' - remove trailig data after the last occurence (including the event)
             -->
             <toEdit>
                 <subject desc='Subject name'></subject>
