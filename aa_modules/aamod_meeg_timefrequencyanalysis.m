@@ -20,10 +20,11 @@ switch task
             for m = models
                 aap = aas_report_add(aap,subj,'<td>');
                 if ischar(b{1})
-                    aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' b{1} '.jpg']));
+                    fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' b{1} '.jpg']);
                 else
-                    aap=aas_report_addimage(aap,subj,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_topoplot_freq-' sprintf('%1.2f-%1.2f',b{1}) '.jpg']));
+                    fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_topoplot_freq-' sprintf('%1.2f-%1.2f',b{1}) '.jpg']);
                 end
+                if exist(fnimg,'file'), aap=aas_report_addimage(aap,subj,fnimg); end
                 aap = aas_report_add(aap,subj,'</td>');
             end
             aap = aas_report_add(aap,subj,'</tr>');
