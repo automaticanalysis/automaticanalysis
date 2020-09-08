@@ -35,8 +35,8 @@ switch task
         else, FT.reload; end
         for d = 1:numel(outfname)
             % remove unwanted events because they may confound the conversion
-            EOI = arrayfun(@(x) any(condnum==x), cellfun(@(x) get_eventvalue(x), {EEG.event.type}));
-            EEG.event(~EOI) = [];
+            EOI = arrayfun(@(x) any(condnum==x), cellfun(@(x) get_eventvalue(x), {EEG(d).event.type}));
+            EEG(d).event(~EOI) = [];
             seg(d) = eeglab2fieldtripER(EEG(d));
         end
         FT.unload;        
@@ -81,7 +81,7 @@ switch task
             aap = aas_report_add(aap,subj,'<tr>');
             aap = aas_report_add(aap,subj,sprintf('<td>%s</td>',spm_file(outfname{d},'basename')));
             for c = 1:numel(conds)
-                condcount(d,c) = sum(aap.report.aamod_meeg_epochs.trl{1}(subj,sess,c,:));
+                condcount(d,c) = sum(aap.report.aamod_meeg_epochs.trl{1}(subj,sess,d,:,c));
                 aap = aas_report_add(aap,subj,sprintf('<td>%d</td>',condcount(d,c)));
             end
             aap = aas_report_add(aap,subj,'</tr>');
@@ -192,8 +192,12 @@ switch task
         EEG = pop_loadset(EEGLABFILE);
        
         % save original timevector
-        urtime = nan(1,length(EEG.etc.clean_sample_mask));
-        urtime(EEG.etc.clean_sample_mask) = 1;
+        if isfield(EEG.etc,'clean_sample_mask')
+            urtime = nan(1,length(EEG.etc.clean_sample_mask));
+            urtime(EEG.etc.clean_sample_mask) = 1;
+        else
+            urtime = ones(1,EEG.pnts);
+        end
         
         % Conditions
         conditions = aas_getsetting(aap,'condition');
