@@ -55,14 +55,20 @@ if isfield(tfr{1},'stat')
     end
 end
 
-if numel(tfr{1}.time) > 1
-    if numel(tfr{1}.label) == 1 % single channel data
+if isfield(tfr{1},'time') && numel(tfr{1}.time) > 1
+    ptfr = tfr;
+    if numel(ptfr) > 1
+        ptfr = {ft_math(struct('parameter','powspctrm','operation','subtract'),ptfr{:})};
+        if isfield(tfr{1},'mask'), ptfr{1}.mask = tfr{1}.mask; end
+        cfgmulti.zlim = prctile(ptfr{1}.powspctrm,[1 99],'all');
+    end
+    if numel(ptfr{1}.label) == 1 % single channel data
         cfgmulti.linewidth = 2;
-        ft_singleplotTFR(cfgmulti, tfr{:});
+        ft_singleplotTFR(cfgmulti, ptfr{:});
         diag.videotwoi =  [];
         diag.snapshottwoi = [];
     else
-        ft_multiplotTFR(cfgmulti, tfr{:});
+        ft_multiplotTFR(cfgmulti, ptfr{:});
     end
     set(gcf,'Name',figtitle);
     if nargin >= 4 
@@ -75,6 +81,9 @@ if numel(tfr{1}.time) > 1
     end
 else
     diag.videotwoi =  [];
+    for t = 1:numel(tfr)
+        if ~isfield(tfr{t},'time'), tfr{t}.time = 0; end
+    end
     diag.snapshottwoi = [tfr{1}.time tfr{1}.time]*1000;
 end
 
@@ -82,7 +91,7 @@ if numel(tfr) > 1
     labels = arrayfun(@(x) sprintf('group #%d',x),1:numel(tfr),'UniformOutput',false);
     if exist('stat','var')
         tfr = [tfr(1) tfr];
-        tfr{1}.avg = stat.stat;
+        tfr{1}.powspctrm = stat.stat;
         labels = [{'stat'} labels];
     end
 else
@@ -97,7 +106,11 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
     alldat = cellfun(@(x) x.powspctrm, tfr(indTFR), 'UniformOutput', false);
     alldat = vertcat(alldat{:});
     if numel(tfr{1}.time) > 1 || numel(tfr{1}.freq) > 1 % smooth multiD data
-        zlimSmooth = mean(diff(diag.snapshottwoi'))/1000*1/mean(diff(tfr{1}.time))*3; % increase the size for the gaussian kernel
+        if numel(tfr{1}.time) > 1 % along time
+            zlimSmooth = mean(diff(diag.snapshottwoi'))/1000*1/mean(diff(tfr{1}.time))*3; % increase the size for the gaussian kernel
+        else % along frequencies
+            zlimSmooth = mean(diff(diag.snapshotfwoi'))/mean(diff(tfr{1}.freq))*3; % increase the size for the gaussian kernel
+        end        
         alldat = arrayfun(@(x) smoothdata(alldat(x,:,:),'gaussian',zlimSmooth),1:size(alldat,1),'UniformOutput',false);
         alldat = horzcat(alldat{:});
     end
@@ -125,11 +138,13 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
                 if tfr{1}.time(sampStart)+TOL < cfgtopo.xlim(1), sampStart=sampStart+1; end
                 [junk, sampEnd] = min(abs(tfr{1}.time - cfgtopo.xlim(2)));
                 if tfr{1}.time(sampEnd)-TOL > cfgtopo.xlim(2), sampEnd=sampEnd+1; end
+                freqStart = find(stat.freq > cfgtopo.ylim(1),1,'first');
+                freqEnd = find(stat.freq < cfgtopo.ylim(2),1,'last');
                 
                 pos_int = zeros(numel(tfr{1}.label),1);
                 neg_int = zeros(numel(tfr{1}.label),1);
-                pos_int(iLabER) = topoHighlightFun(pos(iLabStat, sampStart:sampEnd), 2);
-                neg_int(iLabER) = topoHighlightFun(neg(iLabStat, sampStart:sampEnd), 2);
+                pos_int(iLabER) = topoHighlightFun(squeeze(sum(pos(iLabStat, freqStart:freqEnd, sampStart:sampEnd),2)), 2);
+                neg_int(iLabER) = topoHighlightFun(squeeze(sum(neg(iLabStat, freqStart:freqEnd, sampStart:sampEnd),2)), 2);
                 cfgtopo.highlightchannel = find(pos_int | neg_int);
             end
             
@@ -144,8 +159,8 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
                 
                 cfgtopo.colorbar = 'no';
                 if strcmp(labels{e},'stat')
-                    cfgtopo.zlim = [min(tfr{e}.avg(:)) max(tfr{e}.avg(:))];
-                    if ~cbOn, cfgtopo.colorbar = 'West'; cbOn = true; end
+                    cfgtopo.zlim = [min(tfr{e}.powspctrm(:)) max(tfr{e}.powspctrm(:))];
+                    cfgtopo.colorbar = 'West';
                 else
                     cfgtopo.zlim = zlim;
                     if ~cbOn && (isempty(labels{e}) || strcmp(labels{e},'group #1')), cfgtopo.colorbar = 'West'; cbOn = true; end
