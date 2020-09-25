@@ -78,13 +78,14 @@ end
 
 if numel(er) > 1
     labels = arrayfun(@(x) sprintf('group #%d',x),1:numel(er),'UniformOutput',false);
-    if exist('stat','var')
-        er = [er(1) er];
-        er{1}.avg = stat.stat;
-        labels = [{'stat'} labels];
-    end
 else
     labels = {''};
+end
+
+if exist('stat','var')
+    er = [er(1) er];
+    er{1}.avg = stat.stat;
+    labels = [{'stat'} labels];
 end
     
 if ~isempty(diag.snapshottwoi)

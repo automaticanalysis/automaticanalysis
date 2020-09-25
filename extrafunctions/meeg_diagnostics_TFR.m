@@ -89,13 +89,14 @@ end
 
 if numel(tfr) > 1
     labels = arrayfun(@(x) sprintf('group #%d',x),1:numel(tfr),'UniformOutput',false);
-    if exist('stat','var')
-        tfr = [tfr(1) tfr];
-        tfr{1}.powspctrm = stat.stat;
-        labels = [{'stat'} labels];
-    end
 else
     labels = {''};
+end
+
+if exist('stat','var')
+    tfr = [tfr(1) tfr];
+    tfr{1}.powspctrm = stat.stat;
+    labels = [{'stat'} labels];
 end
     
 if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
