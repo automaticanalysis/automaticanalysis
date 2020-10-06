@@ -233,19 +233,33 @@ switch task
 
         % Find filenames ('c' imgs, y_ params named after diff channels?):
         for c=1:length(channels)
-            [pth nm ext] = fileparts(img{c});
-            if exist(fullfile(pth,['y_' nm ext]),'file');
+            [pth, nm, ext] = fileparts(img{c});
+            if exist(fullfile(pth,['y_' nm ext]),'file')
                 normparamfn=fullfile(pth,['y_' nm ext]);
                 invparamfn=fullfile(pth,['iy_' nm ext]);
             end
-            if exist(fullfile(pth,['c1' nm ext]),'file');
-                c_img=img{c};
+        end
+        
+        [pth, nm, ext] = fileparts(img{c});
+        if ~isempty(aas_getsetting(aap,'combine'))
+            w = aas_getsetting(aap,'combine');
+            V = spm_vol(img{c});
+            mask = false(V.dim);
+            for t = 1:numel(w)
+                if ~w(t), continue; end
+                aas_log(aap,false,sprintf('INFO: reading c%d%s', t, [nm ext]))
+                tmask = spm_read_vols(spm_vol(fullfile(pth, sprintf('c%d%s', t, [nm ext]))));
+                mask = mask | (tmask >= w(t));
             end
+            Y = spm_read_vols(V).*mask;
+            V.fname = spm_file(V.fname,'prefix','c');
+            spm_write_vol(V,Y);
+            img{c} = V.fname;
         end
         
         % Apply deformation field to native structural? (jt 05/Jul/2012):
-        if aap.tasklist.currenttask.settings.writenormimg
-            opts = aap.tasklist.currenttask.settings.writenorm;
+        if aas_getsetting(aap,'writenormimg')
+            opts = aas_getsetting(aap,'writenorm');
             for c=1:length(channels)
                 aas_log(aap,false,'Applying normalisation parameters to input image(s)...');
                 clear djob ojob
@@ -277,8 +291,6 @@ switch task
         end
 
         %% describe outputs
-
-        [pth nm ext] = fileparts(c_img);
         seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));
         aap = aas_desc_outputs(aap, subjind, 'seg8', seg8fn);
 
@@ -290,14 +302,25 @@ switch task
             aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{tissind}), fullfile(pth, sprintf('m%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));
         end
         
+        pfx = '';
+        if ~isempty(aas_getsetting(aap,'combine'))
+            pfx = 'c';
+            if ~aas_getsetting(aap,'writenormimg')
+                outstreams = aas_getstreams(aap,'input');
+                for c=1:length(channels)
+                    aap = aas_desc_outputs(aap, subjind, outstreams{c}, spm_file(aas_getfiles_bystream(aap,'subject',subjind,outstreams{c}),'prefix',pfx));
+                end
+            end
+        end
+        
         % If user chose to write out normalised input image(s) (jt 05/Jul/2012)
-        if aap.tasklist.currenttask.settings.writenormimg 
-            pfx = aap.spm.defaults.normalise.write.prefix;
+        if aas_getsetting(aap,'writenormimg')
+            pfx = [aap.spm.defaults.normalise.write.prefix pfx];
             if strcmp(opts.method,'push') && opts.preserve, pfx = ['m' pfx]; end
             if sum(opts.fwhm.^2)~=0, pfx = ['s' pfx]; end
-            outstreams = aas_getstreams(aap,'output');
+            outstreams = aas_getstreams(aap,'input');
             for c=1:length(channels)
-                aap = aas_desc_outputs(aap, subjind, outstreams{c}, fullfile(pth, sprintf('%s%s', pfx,[nm ext])));
+                aap = aas_desc_outputs(aap, subjind, outstreams{c}, spm_file(aas_getfiles_bystream(aap,'subject',subjind,outstreams{c}),'prefix',pfx));
             end
         end
         
@@ -315,7 +338,7 @@ switch task
         end
     case 'checkrequirements'
         %% Adjust outstream
-        if ~aap.tasklist.currenttask.settings.writenormimg 
+        if ~aas_getsetting(aap,'writenormimg') && isempty(aas_getsetting(aap,'combine'))
             for out = aap.tasklist.currenttask.settings.inputstreams.stream
                 if any(strcmp(aas_getstreams(aap,'output'),out{1}))
                     aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{1},[],'output');
