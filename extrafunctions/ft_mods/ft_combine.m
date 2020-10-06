@@ -2,7 +2,7 @@ function out = ft_combine(cfg,varargin)
 % FT_COMBINE combines FieldTrip data structures based on weights
 %
 % You can specify the following configuration options:
-%   cfg.parameter = string indicating which parameter to analyse. default is set to 'avg', if it is present in the data
+%   cfg.parameter = string or cell-array indicating which parameter(s) to compute. default is set to 'avg', if it is present in the data
 %   cfg.weights   = 1xN array of weights, where N = number of inputs (default = ones(1,N))
 %   cfg.normalise = 'no' or 'yes'  normalise weights (default = 'no')
 
@@ -15,6 +15,9 @@ cfg.parameter = ft_getopt(cfg, 'parameter', 'avg');
 cfg.weights = ft_getopt(cfg, 'weights', ones(1,numel(varargin)));
 cfg.normalise = ft_getopt(cfg, 'normalise', 'no');
 
+if ~iscell(cfg.parameter)
+  cfg.parameter = {cfg.parameter};
+end
 if strcmp(cfg.normalise,'yes')
     cfg.weights(cfg.weights>0) = cfg.weights(cfg.weights>0)/sum(cfg.weights(cfg.weights>0));
     cfg.weights(cfg.weights<0) = -cfg.weights(cfg.weights<0)/sum(cfg.weights(cfg.weights<0));
@@ -22,16 +25,21 @@ end
 weights = cfg.weights;
 
 data = varargin;
-cfg = keepfields(cfg,'parameter'); cfg.operation = 'multiply';
+wout = data;
 for i = 1:numel(data) 
-    cfg.scalar = weights(i);
-    out{i} = ft_math(cfg,data{i});
+    for p = cfg.parameter
+        tmp = ft_math(struct('parameter',p{1},'operation','multiply','scalar',weights(i)),data{i});
+        wout{i}.(p{1}) = tmp.(p{1});
+    end
 end
 
-if numel(out) > 1
-    cfg = keepfields(cfg,'parameter'); cfg.operation = 'add';
-    out = ft_math(cfg,out{:});
+if numel(wout) > 1
+    out = data{1};
+    for p = cfg.parameter
+        tmp = ft_math(struct('parameter',p{1},'operation','add'),wout{:});
+        out.(p{1}) = tmp.(p{1});
+    end
 else
-    out = out{1};
+    out = wout{1};
 end
 end
