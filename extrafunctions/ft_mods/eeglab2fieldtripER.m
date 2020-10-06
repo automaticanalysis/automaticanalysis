@@ -120,6 +120,7 @@ data = ft_redefinetrial(struct('trl',trl),data);
 data.ureventinfo = array2table(ureventinfo,'VariableNames',{'eventnum' 'eventnum_all' 'latency'});
 
 if cfg.reorient
+    % check axes order
     chind = cellfun(@(x) find([1 strcmp(data.elec.label,x)],1,'last'), {'Fz' 'Cz' 'Oz'})-1;
     if sum(chind~=0) < 2 || ~chind(1)
         ft_warning('Fz and at least one of Cz and Oz must be defined for automatic detection of orientation');
@@ -129,6 +130,17 @@ if cfg.reorient
         [junk,so] = sort(std(data.elec.elecpos(chind,:))); %
         data.elec.elecpos(:,1:3) = data.elec.elecpos(:,so(EXP_VO));
         data.elec.chanpos(:,1:3) = data.elec.chanpos(:,so(EXP_VO));
+    end
+    % check axes direction
+    % - L-R
+    chind = cellfun(@(x) find([1 strcmp(data.elec.label,x)],1,'last'), {'C3' 'C4'})-1;
+    if sum(chind~=0) < 2
+        ft_warning('both C3 and C4 must be defined for automatic detection of orientation');
+    else
+        if diff(data.elec.elecpos(chind,1)) < 0 % L-R
+            data.elec.elecpos(:,1) = -data.elec.elecpos(:,1);
+            data.elec.chanpos(:,1) = -data.elec.chanpos(:,1);
+        end
     end
 end
 
