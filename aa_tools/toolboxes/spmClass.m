@@ -1,4 +1,8 @@
 classdef spmClass < toolboxClass
+    properties (Access = protected)
+        hGUI = []% GUI handles
+    end
+    
     methods
         function obj = spmClass(path,varargin)
             defaultAddToPath = false;

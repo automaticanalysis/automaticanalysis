@@ -1,4 +1,8 @@
 classdef fieldtripClass < toolboxClass
+    properties (Access = protected)
+        hGUI = []% GUI handles
+    end
+    
     methods
         function obj = fieldtripClass(path,varargin)
             defaultAddToPath = false;

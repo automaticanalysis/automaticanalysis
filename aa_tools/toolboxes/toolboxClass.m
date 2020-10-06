@@ -22,13 +22,15 @@ classdef toolboxClass < handle
         
         toolInPath = {}
         
-        hGUI % GUI handles
-        
         workspace = struct
         
         collections = struct('name',{},'path',{},'toolbox',{})
         
         toolboxes = cell(1,0)
+    end
+    
+    properties (Access = protected, Abstract)
+        hGUI % GUI handles
     end
     
     methods

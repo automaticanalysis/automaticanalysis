@@ -1,4 +1,8 @@
 classdef mvpaligthClass < toolboxClass
+    properties (Access = protected)
+        hGUI = []% GUI handles
+    end
+    
     methods
         function obj = mvpaligthClass(path,varargin)
             defaultAddToPath = false;

@@ -8,6 +8,10 @@ classdef eeglabClass < toolboxClass
         plugins = []
     end
     
+    properties (Access = protected, Dependent)
+        hGUI% GUI handles
+    end
+    
     properties (Dependent)
         dipfitPath
     end
@@ -40,7 +44,6 @@ classdef eeglabClass < toolboxClass
             addpath(obj.toolPath);
             is_new_plugin = false;
             eeglab;
-            obj.hGUI = gcf;
             if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
             
@@ -53,6 +56,13 @@ classdef eeglabClass < toolboxClass
             if is_new_plugin, obj.load; end
             
             load@toolboxClass(obj,keepWorkspace)
+        end
+        
+        function val = get.hGUI(obj)
+            if ~obj.showGUI, val = [];
+            else
+                val = findall(allchild(0),'Flat','Tag','EEGLAB');
+            end
         end
         
         function val = get.dipfitPath(obj)
