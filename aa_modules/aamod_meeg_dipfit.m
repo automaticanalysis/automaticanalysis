@@ -21,6 +21,8 @@ switch task
         if ~exist(volcondfile,'file'), volcondfile = fullfile(EL.dipfitPath,volcondfile); end
         if ~exist(volcondfile,'file'), aas_log(aap,true,sprintf('Volume condition model %s not found',aas_getsetting(aap,'volumeCondutionModel'))); end
         mrifile = aas_getfiles_bystream_multilevel(aap,'subject',subj,'structural');
+        mri = ft_read_mri(mrifile,'dataformat','nifti_spm');
+        mri.anatomy = mri.anatomy/max(mri.anatomy(:));
         
         trans = aas_getsetting(aap,'transformation');
         if ischar(trans) % target channel location
@@ -51,7 +53,7 @@ switch task
         if aas_getsetting(aap,'constrainSymmetrical'), EEG = fitTwoDipoles(EEG, 'LRR', 35); end
         
         % plot dipoles
-        pop_dipplot( EEG, 1:numel(EEG.dipfit.model) ,'mri',mrifile,'normlen','on','view',[1,-1,1],'gui','off');
+        pop_dipplot( EEG, 1:numel(EEG.dipfit.model) ,'mri',mri,'normlen','on','view',[-1,-1,1],'gui','off');
         set(gcf,'PaperPositionMode','auto');
         print(gcf,'-noui',fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '.jpg']),'-djpeg','-r150');
         close(gcf);
