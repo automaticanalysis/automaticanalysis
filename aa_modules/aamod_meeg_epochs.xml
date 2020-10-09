@@ -12,7 +12,7 @@
 
             <baselinewindow desc="specify baseline as [begin end] in milliseconds for baseline correction, can be 'all' for the whole epoch"></baselinewindow>
             
-            <rejectionevent desc='eventvalue used to indicate rejection of data'></rejectionevent>
+            <rejectionevent desc='eventvalue used to indicate rejection of data'>boundary</rejectionevent>
             
             <eventtype></eventtype>
             <condition>
