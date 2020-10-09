@@ -39,7 +39,7 @@ switch task
         tfa = aas_getsetting(aap,'timefrequencyanalysis');
         tfacfg = keepfields(tfa,{'method','taper','foi'});
         tfacfg.pad         = 'nextpow2';
-        tfacfg.output      = 'pow';
+        tfacfg.output      = 'powandcsd';
         if ~isempty(tfa.twoicps), tfacfg.t_ftimwin = tfa.twoicps./tfacfg.foi; end
         if ~isempty(tfa.spectralsmoothing), tfacfg.tapsmofrq = tfa.spectralsmoothing*tfacfg.foi; end
         if ~isempty(tfa.toi) && isnumeric(tfa.toi), tfacfg.toi = tfa.toi/1000; end        
@@ -53,7 +53,7 @@ switch task
         bccfg = [];
         bccfg.baseline     = baswin;
         bccfg.baselinetype = 'relative';
-        bccfg.parameter    = 'powspctrm';
+        bccfg.parameter    = {'powspctrm' 'crsspctrm'};
         
         diag = aas_getsetting(aap,'diagnostics');
         
@@ -62,7 +62,7 @@ switch task
         if ~any(subjmatches), aas_log(aap,true,['No trialmodel specification found for ' aas_getsubjdesc(aap,subj)]); end
         
         combinecfg = [];
-        combinecfg.parameter = 'powspctrm';
+        combinecfg.parameter = {'powspctrm' 'crsspctrm'};
         combinecfg.normalise = 'no';
         
         for m = models(subjmatches).model
@@ -132,7 +132,11 @@ switch task
                         end
                         tf{end+1} = ft_freqanalysis(cfg, data(i));
                         % baseline correction
-                        if ~isempty(baswin), tf{end} = ft_freqbaseline(bccfg,tf{end}); end
+                        if ~isempty(baswin)
+                            lbc = tf{end}.labelcmb;
+                            tf{end} = ft_freqbaseline(bccfg,tf{end}); 
+                            tf{end}.labelcmb = lbc;
+                        end
                         if aas_getsetting(aap,'weightedaveraging')
                             weights(end+1) = numel(cfg.trials);
                         else
