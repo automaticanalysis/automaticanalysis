@@ -51,7 +51,7 @@ switch task
         cfg.feedback    = 'yes';
         dat = load(allFnTL{1}{1});
         neighbours = ft_prepare_neighbours(cfg, dat.(char(fieldnames(dat))));
-        set(gcf,'position',[0,0,1080 1080]);
+        set(gcf,'position',[0,0,720 720]);
         set(gcf,'PaperPositionMode','auto');
         print(gcf,'-noui',fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours']),'-djpeg','-r300');
         close(gcf);
