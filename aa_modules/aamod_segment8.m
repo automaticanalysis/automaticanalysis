@@ -294,8 +294,15 @@ switch task
         seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));
         aap = aas_desc_outputs(aap, subjind, 'seg8', seg8fn);
 
-        tiss={'grey','white','csf'};
-        for tissind=1:3
+        switch spm('ver')
+            case 'SPM8'
+                tiss={'grey','white','csf'};
+            case {'SPM12b' 'SPM12'}
+                tiss={'grey','white','csf','skull','scalp','air'};
+        end
+        
+        
+        for tissind=1:numel(tiss)
             aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{tissind}), fullfile(pth, sprintf('c%d%s', tissind, [nm ext])));
             aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{tissind}), fullfile(pth, sprintf('rc%d%s', tissind, [nm ext])));
             aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{tissind}), fullfile(pth, sprintf('%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));

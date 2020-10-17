@@ -45,18 +45,30 @@
                 <stream>native_grey</stream>
                 <stream>native_white</stream>
                 <stream>native_csf</stream>
-
+                <stream>native_skull</stream>
+                <stream>native_scalp</stream>
+                <stream>native_air</stream>
+             
                 <stream>dartelimported_grey</stream>
                 <stream>dartelimported_white</stream>
                 <stream>dartelimported_csf</stream>
+                <stream>dartelimported_skull</stream>
+                <stream>dartelimported_scalp</stream>
+                <stream>dartelimported_air</stream>
 
                 <stream>normalised_density_grey</stream>
                 <stream>normalised_density_white</stream>
                 <stream>normalised_density_csf</stream>
+                <stream>normalised_density_skull</stream>
+                <stream>normalised_density_scalp</stream>
+                <stream>normalised_density_air</stream>
 
                 <stream>normalised_volume_grey</stream>
                 <stream>normalised_volume_white</stream>
                 <stream>normalised_volume_csf</stream>                
+                <stream>normalised_volume_skull</stream>
+                <stream>normalised_volume_scalp</stream>
+                <stream>normalised_volume_air</stream>
             </outputstreams>
         </currenttask>
     </tasklist> 
