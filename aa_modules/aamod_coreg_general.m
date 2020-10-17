@@ -57,10 +57,10 @@ switch task
             end
         end
         if isfield(aap.tasklist.currenttask.settings,'roptions')
-            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            fields = fieldnames(aap.tasklist.currenttask.settings.roptions);
             for f = 1:numel(fields)
-                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
-                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                if ~isempty(aap.tasklist.currenttask.settings.roptions.(fields{f}))
+                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.roptions.(fields{f});
                 end
             end
         end

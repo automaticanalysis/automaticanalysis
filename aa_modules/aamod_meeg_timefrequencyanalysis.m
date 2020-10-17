@@ -175,6 +175,7 @@ switch task
                                     % convert trials to time
                                     tf{i}           = tmptfr;
                                     tf{i}.powspctrm = permute(tmptfr.powspctrm, [2, 3, 1]);
+                                    tf{i}.crsspctrm = permute(tmptfr.crsspctrm, [2, 3, 1]);
                                     tf{i}.dimord    = 'chan_freq_time'; % it used to be 'rpt_chan_freq'
                                     if isfield(data(i),'ureventinfo')
                                         tf{i}.time      = data(i).ureventinfo.latency(cfg.trials);
