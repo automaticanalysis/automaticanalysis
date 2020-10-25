@@ -19,6 +19,7 @@
 %       - pre-specified string
 %           - 'avg' - average
 %           - 'cont' - contrinuous
+%           - 'segmentavg' - average within segments and turn averages into continuous 
 %   - modelname: string label for trialmodel 
 %       MUST be unique within- and across-sessions!
 %       MUST NOT contain whitespace, underscore, dash or other character not valid for variable name!

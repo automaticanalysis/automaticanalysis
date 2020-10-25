@@ -188,6 +188,17 @@ switch task
                                 cfg.normalise = 'yes';
                                 cfg.weights = weights;
                                 timefreqModel = ft_combine(cfg,tf{:});
+                            case 'segmentavg'
+                                timefreqModel.dimord    = 'chan_freq_time';
+                                if isfield(data(1),'ureventinfo')
+                                    timefreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
+                                else
+                                    aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
+                                end
+                                dat = cellfun(@(x) x.powspctrm, tf, 'UniformOutput', false);
+                                timefreqModel.powspctrm = cat(3,dat{:});
+                                dat = cellfun(@(x) x.crsspctrm, tf, 'UniformOutput', false);
+                                timefreqModel.crsspctrm = cat(3,dat{:});
                         end
                     else
                         clear tf
