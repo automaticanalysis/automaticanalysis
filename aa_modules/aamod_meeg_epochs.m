@@ -352,23 +352,31 @@ urtime(EEG.etc.clean_sample_mask) = 1;
 
 nRej = 0;
 ure.latency = round(ure.latency);
-if isnan(urtime(ure.latency)) && ~isnan(urtime(ure.latency-1)), nRej = nRej + 1; end
-
-urtime(ure.latency) = 2;
-
-for t = 1:ure.latency
-    if isnan(urtime(t))
-        if t == 1 || ~isnan(urtime(t-1)), nRej = nRej + 1; end
+if ure.latency == 1
+    e = EEG.event(1);
+    e.type = ure.type;
+    e.latency = 1;
+    e.duration = 0;
+    e.urevent = indUre;
+    EEG.event = [e EEG.event];
+else
+    if isnan(urtime(ure.latency)) && ~isnan(urtime(ure.latency-1)), nRej = nRej + 1; end
+    
+    urtime(ure.latency) = 2;
+    
+    for t = 1:ure.latency
+        if isnan(urtime(t))
+            if t == 1 || ~isnan(urtime(t-1)), nRej = nRej + 1; end
+        end
     end
+    
+    indRej = find(strcmp({EEG.event.type},eventRejection));
+    corrOffset = sum(isnan(urtime(1:ure.latency)));
+    e = EEG.event(indRej(nRej));
+    e.type = ure.type;
+    e.latency = ure.latency - corrOffset;
+    e.duration = 0;
+    e.urevent = indUre;
+    EEG.event = [EEG.event(1:indRej(nRej)) e EEG.event(indRej(nRej)+1:end)];
 end
-
-indRej = find(strcmp({EEG.event.type},eventRejection));
-prevRej = [EEG.event(indRej(1:nRej))];
-corrOffset = sum([prevRej.duration]);
-e = EEG.event(indRej(nRej));
-e.type = ure.type;
-e.latency = ure.latency - corrOffset;
-e.duration = 0;
-e.urevent = indUre;
-EEG.event = [EEG.event(1:indRej(nRej)) e EEG.event(indRej(nRej)+1:end)];
 end
