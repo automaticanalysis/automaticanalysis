@@ -38,6 +38,7 @@ switch task
         
         tfa = aas_getsetting(aap,'timefrequencyanalysis');
         tfacfg = keepfields(tfa,{'method','taper','foi'});
+        tfacfg.precision = 'single';
         tfacfg.pad         = 'nextpow2';
         tfacfg.output      = 'powandcsd';
         if ~isempty(tfa.twoicps), tfacfg.t_ftimwin = tfa.twoicps./tfacfg.foi; end
@@ -89,7 +90,7 @@ switch task
                     switch filetype
                         case 'fieldtrip'
                             dat = load(meegfn{seg});
-                            data(seg) = dat.data;
+                            data(seg) = ft_struct2single(dat.data);
                         case 'eeglab'
                             FT.unload;
                             if seg == 1
@@ -104,7 +105,7 @@ switch task
                                 continue; 
                             end
                             FT.reload;                            
-                            data(seg) = eeglab2fieldtripER(EEG,'reorient',1);
+                            data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));
                             EL.unload; % FieldTrip's eeglab toolbox is incomplete
                     end
                 end
@@ -165,7 +166,7 @@ switch task
                             case 'cont' % continuously sampled data
                                 clear tf
                                 for i = 1:numel(data)
-                                    cfg = keepfields(tfacfg,{'pad','output','foi'});
+                                    cfg = keepfields(tfacfg,{'precision','pad','output','foi'});
                                     cfg.method = 'mtmfft';
                                     cfg.taper = 'hanning';
                                     cfg.trials = find(data(i).trialinfo==trialinfo);
@@ -268,6 +269,7 @@ switch task
             meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
             
             % save/update output
+            timefreq.cfg = []; % remove provenance to save space
             timefreqFn = fullfile(aas_getsubjpath(aap,subj),['timefreq_' m.name '.mat']);
             save(timefreqFn,'timefreq');
             

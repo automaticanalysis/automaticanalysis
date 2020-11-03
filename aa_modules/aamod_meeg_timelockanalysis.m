@@ -182,6 +182,7 @@ switch task
             meeg_diagnostics_ER(timelock,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
             
             % save/update output
+            timelock.cfg = []; % remove provenance to save space
             timelockFn = fullfile(aas_getsubjpath(aap,subj),['timelock_' m.name '.mat']);
             save(timelockFn,'timelock');
             
@@ -205,6 +206,7 @@ switch task
                         cfg.neighbourwidth = aas_getsetting(aap,'peakneighbours')/1000;
                         peak = ft_detectpeak(cfg,timelock);
                         
+                        peak.cfg = []; % remove provenance to save space
                         peakFn = fullfile(aas_getsubjpath(aap,subj),['peak_' m.name '_' p.name '.mat']);
                         save(peakFn,'peak');
                         
