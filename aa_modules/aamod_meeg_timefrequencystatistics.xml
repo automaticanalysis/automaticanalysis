@@ -43,6 +43,7 @@
                 <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
                 <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
+                <view desc='viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI'>RAS</view>
             </diagnostics>
         </currenttask>
     </tasklist>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Prepare headmodel' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+
+            <segmentation>
+                <threshold desc='thresholding segmentation, value lower than 1 means probability, value higher than 1 means percentile' ui='optionlist' options='zero|exclusive|[value(s)]'>exclusive</threshold>
+                <scalpthreshold desc='re-threshold scalp, value lower than 1 means probability, value higher than 1 means percentile'>50</scalpthreshold>
+                <smoothing desc='the FWHM in voxels, 0 means no smoothing'>0</smoothing>
+            </segmentation>
+                
+            <method desc='headmodel method' options='singlesphere|concentricspheres|dipoli|simbio'>simbio</method>
+
+            <options desc='method-specific options'>
+                <singlesphere desc='analytical single sphere model'>
+                    <tissue desc='segmentation used' options='brain|scalp'>scalp</tissue>
+                </singlesphere>
+                <concentricspheres desc='analytical concentric sphere model with up to 4 spheres'>
+                    <tissue desc='tissue segmentation(s) used, colon-seperated-list with up to 4'>brain:skull:scalp</tissue>
+                    <order desc='number of iterations in series expansion'>60</order>
+                </concentricspheres>
+                <dipoli>
+                    <tissue desc='tissue segmentation(s) used, colon-seperated-list'>brain:skull:scalp</tissue>
+                </dipoli>
+                <simbio>
+                    <tissue desc='tissue segmentation(s) used, colon-seperated-list'>gray:white:csf:skull:scalp</tissue>
+                    <downsample desc='reduce resolution by this factor to spare memory, 1 means same resolution'>1</downsample>
+                    <meshshift>0.3</meshshift>
+                    <conductivity desc='assumed conductivity of tissue segmentation(s)'>0.33 0.14 1.79 0.01 0.43</conductivity>
+                </simbio>
+            </options>
+            
+            <inputstreams>
+                <stream>structural</stream>
+                <stream isessential="0">aamod_segment8_00001.structural</stream>
+                <stream isessential="0">native_grey</stream>
+                <stream isessential="0">native_white</stream>
+                <stream isessential="0">native_csf</stream>
+                <stream isessential="0">native_skull</stream>
+                <stream isessential="0">native_scalp</stream>
+                <stream isessential="0">native_air</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>headmodel</stream>
+                <stream>segmentation</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

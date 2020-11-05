@@ -49,12 +49,16 @@ switch task
         cfg = [];
         cfg.method      = 'triangulation'; 
         cfg.feedback    = 'yes';
-        dat = load(allFnTL{1}{1});
-        neighbours = ft_prepare_neighbours(cfg, dat.(char(fieldnames(dat))));
-        set(gcf,'position',[0,0,720 720]);
-        set(gcf,'PaperPositionMode','auto');
-        print(gcf,'-noui',fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours']),'-djpeg','-r300');
-        close(gcf);
+        dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat)));
+        if ~ft_datatype(data,'source')
+            neighbours = ft_prepare_neighbours(cfg, data);
+            set(gcf,'position',[0,0,720 720]);
+            set(gcf,'PaperPositionMode','auto');
+            print(gcf,'-noui',fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours']),'-djpeg','-r300');
+            close(gcf);
+        else
+            neighbours = [];
+        end
         
         thr = aas_getsetting(aap,'threshold');
         statcfg = [];
@@ -74,6 +78,15 @@ switch task
                 fdiag = @meeg_diagnostics_TFR;
                 avglat = 'toilim';
         end
+        if ft_datatype(data,'source')
+            switch inpstreams{1}
+            case 'timefreq'
+                statcfg.parameter   = 'pow';
+            end
+            fstat = @ft_sourcestatistics;
+            fgrandavg = @ft_sourcegrandaverage;
+            fdiag = @meeg_diagnostics_source;
+        end
         statcfg.alpha       = thr.p;
         statcfg.tail        = 0; % two-tailed
         statcfg.correcttail = 'prob';
@@ -90,7 +103,9 @@ switch task
         avgcfg.(avglat)   = 'all';
                 
         statplotcfg = aas_getsetting(aap,'diagnostics');
-        statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        if ~ft_datatype(data,'source')
+            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
         for m = models
@@ -148,14 +163,15 @@ switch task
                             end
                             dat.time = round(dat.time/roundtime)*roundtime; % round timing
                         end
-                        allInp{end+1} = dat;
+                        dat.cfg = keepfields(dat.cfg,'included'); % remove provenance to save space
+                        allInp{end+1} = ft_struct2single(dat);
                         subjmodel(end+1) = subj;
                     end
                 end
             end
             
-            if isfield(dat,'time')
-                % select only overlapping timepoints
+            if isfield(allInp{1},'time')
+                aas_log(aap,false,'INFO: selecting overlapping timepoints');
                 % - identify overlapping latencies
                 allLatencies = cellfun(@(x) x.time, allInp,'UniformOutput',false);
                 allLatencies = unique(horzcat(allLatencies{:}));
@@ -188,20 +204,30 @@ switch task
                 allTime = find(sum(allTime)==size(allTime,1));
                 
                 % - select timepoints
-                dimTime = find(strcmp(strsplit(allInp{1}.dimord,'_'),'time'));
-                if ndims(allInp{i}.(statcfg.parameter)) ~= dimTime
-                    ass_log(aap,true,'time is assumed to be the last dimension')
+                if isfield(allInp{1},'dimord')
+                    dimord = allInp{1}.dimord;
+                    par = {statcfg.parameter};
+                elseif isfield(allInp{1}.avg,'dimord')
+                    dimord = allInp{1}.avg.dimord;
+                    par = {'avg' statcfg.parameter};
+                else
+                    aas_log(aap,true,'no dimension information found');
+                end
+                dimTime = find(strcmp(strsplit(dimord,'_'),'time'));
+                if ndims(getfield(allInp{i}, par{:})) ~= dimTime
+                    aas_log(aap,true,'time is assumed to be the last dimension')
                 end
 
                 for i = 1:numel(allInp)
                     allInp{i}.time = allInp{i}.time(allTime);
+                    dat = getfield(allInp{i}, par{:});
                     switch dimTime
                         case 1
-                            allInp{i}.(statcfg.parameter) = allInp{i}.(statcfg.parameter)(allTime);
+                            allInp{i} = setfield(allInp{i}, par{:}, dat(allTime));
                         case 2
-                            allInp{i}.(statcfg.parameter) = allInp{i}.(statcfg.parameter)(:,allTime);
+                            allInp{i} = setfield(allInp{i}, par{:}, dat(:,allTime));
                         case 3
-                            allInp{i}.(statcfg.parameter) = allInp{i}.(statcfg.parameter)(:,:,allTime);
+                            allInp{i} = setfield(allInp{i}, par{:}, dat(:,:,allTime));
                         otherwise
                             ass_log(aap,true,'More than three dimensions are not supported')
                     end
@@ -210,9 +236,38 @@ switch task
                 end
                 
                 if strcmp(aas_getsetting(aap,'selectoverlappingdata.time'),'ignore') && ~isempty(pcfg.snapshottwoi) % equally divide trials
-                    step = (max(allInp{i}.time) - min(allInp{i}.time))/pcfg.snapshottwoi;
+                    step = (max(allInp{i}.time) - min(allInp{i}.time))/size(pcfg.snapshottwoi,1);
                     pcfg.snapshottwoi = [min(allInp{i}.time):step:(max(allInp{i}.time)-step)]'*1000;
                     pcfg.snapshottwoi(:,2) = pcfg.snapshottwoi(:,1)+step*1000;
+                end
+            end
+            
+            if isfield(allInp{1},'pos')
+                aas_log(aap,false,'INFO: selecting overlapping positions');
+                posJoint = all(cell2mat(cellfun(@(x) reshape(x.cfg.included,[],1), allInp, 'UniformOutput', false)),2);
+                allPos = zeros(sum(posJoint),3,numel(allInp));
+                for i = 1:numel(allInp)
+                    clear dat;
+                    dat = allInp{i};
+                    toExcl = false(1,size(dat.pos,1));
+                    for p = find(reshape(dat.cfg.included,[],1) & ~posJoint)'
+                        toExcl(sum(dat.cfg.included(1:p))) = true;
+                    end
+                    dat.pos(toExcl,:) = [];
+                    dat.inside(toExcl,:) = [];
+                    dat.avg.(cfg{1}.parameter)(toExcl,:,:) = [];
+                    dat.avg.ori(toExcl) = [];
+                    if isfield(dat,'tri')
+                        [trind, trelem] = ndgrid(1:size(dat.tri,1),1:size(dat.tri,2)); trind = transpose(trind); trelem = transpose(trelem);
+                        indtri = logical(sum(arrayfun(@(x,y) any(dat.tri(x,y)==find(toExcl)), trind, trelem)));
+                        dat.tri = arrayfun(@(x,y) dat.tri(x,y)-sum(toExcl(1:dat.tri(x,y))), trind, trelem)';
+                        dat.tri(indtri,:) = [];
+                    end
+                    allPos(:,:,i) = dat.pos;
+                    allInp{i} = dat;
+                end
+                for i = 1:numel(allInp)
+                    allInp{i}.pos = mean(allPos,3);
                 end
             end
             
@@ -264,7 +319,7 @@ switch task
                         continue;
                     end
             end
-            if ~isfield(dat,'time')
+            if ~isfield(allInp{1},'time')
                 cfg{1}.latency = 'all';
                 cfg{1}.correctm = thr.correctiontimepoint;
             end
@@ -296,15 +351,17 @@ switch task
                 if numel(unique(m.groupmodel)) <= 2
                     for g = unique(m.groupmodel)
                         groupStat{end+1} = fgrandavg(avgcfg, allInp{cfg{c}.design(1,:)==g});
+                        if isfield(allInp{1},'tri'), groupStat{end}.tri = allInp{1}.tri; end
                     end
                 else
                     groupStat{1} = fgrandavg(avgcfg, allInp{:});
+                    if isfield(allInp{1},'tri'), groupStat{1}.tri = allInp{1}.tri; end
                 end
                 groupStat{1}.stat = stat;
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);
-                statFn = [statFn '.mat'];
+                statFn = fullfile(aas_getstudypath(aap),[m.name '_' cfg{c}.correctm '.mat']);
                 save(statFn,'groupStat');
                 
                 % append to stream
