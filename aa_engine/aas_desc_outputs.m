@@ -24,7 +24,7 @@ if isstruct(streamname), streamname = streamname.CONTENT; end
 pos=find(streamname=='.');
 if (~isempty(pos))
     streamname=streamname(pos(end)+1:end);
-end;
+end
 outputs=varargin{end};
 streamnme=sprintf('stream_%s_outputfrom_%s.txt',streamname,aap.tasklist.currenttask.name);
 
@@ -39,7 +39,7 @@ switch(nargin)
     case 4
         i=varargin{1};
         localroot=aas_getsubjpath(aap,i);
-        [pth nme ext]=fileparts(localroot);
+        [pth, nme, ext]=fileparts(localroot);
         streamdesc=sprintf(' %s ',[nme ext]);
     case 5
         if ischar(varargin{1})
@@ -49,38 +49,42 @@ switch(nargin)
             i=varargin{1};
             j=varargin{2};
             localroot=aas_getsesspath(aap,i,j);
-            [pth nme1 ext1]=fileparts(localroot);
-            [pth nme2 ext2]=fileparts(pth);
+            [pth, nme1, ext1]=fileparts(localroot);
+            [pth, nme2, ext2]=fileparts(pth);
             streamdesc=sprintf(' %s %s ',[nme2 ext2],[nme1 ext1]);
-        end;
-end;
+        end
+end
+% make sure the path is canonical
+localroot = readlink(localroot);
 
 osd.desc=streamdesc;
 
 % If outputs provided as cell array, reformat
-if iscell(outputs), outputs=char(outputs); end;
+if iscell(outputs), outputs=char(outputs); end
 
 osd.numoutputs=size(outputs,1);
 
 
 descriptor=fullfile(localroot,streamnme);
 
-
 % Trim absolute path if it has been provided
 trimmedoutputs={};
 for d=1:size(outputs,1)
     fle=outputs(d,:);
-    if (length(fle)>length(localroot) && strcmp(fle(1:length(localroot)),localroot))
-        fle=fle(length(localroot)+1:end);
-        if (fle(1)==filesep)
-            fle=fle(2:end);
-        end;
-    end;
+    if fle(1) == '/' % absolut path
+        fle = readlink(fle); % make sure that the path is canonical
+        if (length(fle)>length(localroot) && strcmp(fle(1:length(localroot)),localroot))
+            fle=fle(length(localroot)+1:end);
+            if (fle(1)==filesep)
+                fle=fle(2:end);
+            end
+        end
+    end
     trimmedoutputs{d}=deblank(fle);
-end;
+end
 
 % Calculate MD5
-[aap md5_base64]=aas_md5(aap,trimmedoutputs,localroot);
+[aap, md5_base64]=aas_md5(aap,trimmedoutputs,localroot);
 
 % Alert archiving system to new data if it is at work here
 dotpath=fullfile(localroot,['.' streamnme(1:end-4)]);
@@ -89,14 +93,14 @@ if exist(dotpath,'dir')
     lclfid=fopen(localchangelog,'a');
     fprintf(lclfid,'%s\tSTREAM REWRITTEN BY aa\n',datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'));
     fclose(lclfid);
-end;
+end
 
 % Write stream descriptor
 fid=fopen(descriptor,'w');
 fprintf(fid,'MD5\t%s\n',md5_base64);
 for d=1:length(trimmedoutputs)
     fprintf(fid,'%s\n',trimmedoutputs{d});
-end;
+end
 fclose(fid);
 
 
@@ -115,7 +119,7 @@ switch(aap.directory_conventions.remotefilesystem)
                 i=varargin{1};
                 j=varargin{2};
                 s3root=aas_getsesspath(aap,i,j,'s3');
-        end;
+        end
         s3_copyto_filelist(aap,localroot,streamnme,aaworker.bucket,s3root);
         s3_copyto_filelist(aap,localroot,trimmedoutputs,aaworker.bucket,s3root);
         attr=[];
@@ -130,7 +134,7 @@ switch(aap.directory_conventions.remotefilesystem)
 
         osd.s3root=s3root;
         aaworker.outputstreams=[aaworker.outputstreams osd];
-end;
+end
 
 
 aas_log(aap,false,sprintf(' output stream %s %s written with %d file(s)',streamname,streamdesc,size(outputs,1)),aap.gui_controls.colours.outputstreams);
