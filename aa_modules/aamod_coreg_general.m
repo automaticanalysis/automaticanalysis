@@ -14,13 +14,11 @@ switch task
         
         % Process streams
         inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
-        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
-        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
         tInd = 1;
         while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
             tInd = tInd + 1;
         end
-        targetimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
+        targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
         
         srcstream = textscan(inpstream{tInd+1},'%s','delimiter','.'); srcstream = srcstream{1}{end};
         
@@ -72,7 +70,7 @@ switch task
         % Process streams
         inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
         outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
-        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
+        if ~iscell(outpstream), outpstream = cellstr(outpstream); end
         
         % Get target image:        
         tInd = 1;
