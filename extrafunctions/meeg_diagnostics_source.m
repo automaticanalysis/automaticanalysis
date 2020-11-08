@@ -148,7 +148,7 @@ for f = 1:size(diag.snapshotfwoi,1)
     if nargin >= 4
         set(fig,'Position',[0,0,1080 1080]);
         set(fig,'PaperPositionMode','auto');
-        print(fig,'-noui',sprintf('%s_freq-%1.2f-%1.2f.jpg',savepath,diag.snapshotfwoi(f,:)),'-djpeg','-r300');
+        print(fig,'-noui',sprintf('%s_source_freq-%1.2f-%1.2f.jpg',savepath,diag.snapshotfwoi(f,:)),'-djpeg','-r300');
         close(fig);
     else
         h(f) = fig;
