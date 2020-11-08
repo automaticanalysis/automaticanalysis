@@ -37,14 +37,10 @@ if ~isempty(maskVol)
 end
 
 % get basic info
-nBF = size(SPM.xBF.bf,2);
-expBF = false(1,numel(SPM.xX.name));
-for b = 2:nBF
-    expBF = expBF | cellfun(@(x) ~isempty(regexp(x,sprintf('.*\\(%d\\)$',b))), SPM.xX.name);
-end
-origEVs = SPM.xX.name(~expBF);
-origX = SPM.xX.X(:,~expBF);
-D = D(~expBF);
+expPoly = cellfun(@(x) ~isempty(regexp(x,'.*\^[2-9]\*.*')), SPM.xX.name);
+origEVs = SPM.xX.name(~expPoly);
+origX = SPM.xX.X(:,~expPoly);
+D = D(~expPoly);
 
 %% INTEREST AND NUISANCE COLUMNS...
 SPMinterest = origEVs(SPM.xX.iC);
