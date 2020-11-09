@@ -27,16 +27,21 @@ switch task
             inds = 1:length(streams);
         end
         % determine normalised struct
-        struct = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
-        sname = basename(struct);
-        struct = struct((sname(:,1)=='w') | (sname(:,2)=='w'),:);
+        structdiag = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
+        sname = basename(structdiag);
+        structdiag = structdiag((sname(:,1)=='w') | (sname(:,2)=='w'),:);
+        if isempty(structdiag) % probably due to structural input-output
+            structdiag = aap.directory_conventions.T1template;
+            if ~exist(structdiag,'file'), structdiag = fullfile(spm('Dir'),structdiag); end
+            structdiag = which(structdiag);
+        end
         for streamind = inds
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
             streamfn = streamfn(1,:);
             streamfn = strtok_ptrn(basename(streamfn),'-0');
             fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
             if ~exist(fullfile(localpath,fn),'file')
-                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},structdiag);
             end
             % Single-subject
             fdiag = dir(fullfile(localpath,'diagnostic_*.jpg'));
@@ -145,12 +150,12 @@ switch task
             
             % describe outputs with diagnostic
             % determine normalised struct
-            struct = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
-            sname = basename(struct);
-            struct = struct((sname(:,1)=='w'),:);
+            structdiag = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
+            sname = basename(structdiag);
+            structdiag = structdiag((sname(:,1)=='w'),:);
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},wimgs);
             if strcmp(aap.options.wheretoprocess,'localsingle') && any(strcmp(streams, 'structural'))
-                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},struct);
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},structdiag);
             end
         end
         
