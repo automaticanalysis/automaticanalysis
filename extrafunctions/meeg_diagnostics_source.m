@@ -118,7 +118,9 @@ for f = 1:size(diag.snapshotfwoi,1)
                 if ~isfield(sourcePlot,'mask')
                     mask = abs(sourcePlot.avg.(cfgdiag.funparameter)); mask = mask./max(mask);
                     sourcePlot.mask = mask;
-                end                
+                else % stats
+                    if ~any(sourcePlot.mask(:)), title(sprintf('%s\nns.',strTitle)); end
+                end
                 
                 cfg = cfgdiag;
                 cfg.funcolormap = cmap{s};

@@ -5,10 +5,13 @@ resp='';
 
 switch task
     case 'report'
-        RES = {'multiplot.jpg', 'topoplot.jpg', 'topoplot.avi'};
+        RES = {'multiplot.*jpg', 'topoplot.*jpg', 'topoplot.*avi', 'source.*jpg'};
         
-        aap = aas_report_add(aap,[],'<h3>Electrode neighbourhood</h3>');
-        aap = aas_report_addimage(aap,[],fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours.jpg']));
+        fn = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours.jpg']);
+        if exist(fn,'file')
+            aap = aas_report_add(aap,[],'<h3>Electrode neighbourhood</h3>');
+            aap = aas_report_addimage(aap,[],fn);
+        end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
         
@@ -22,8 +25,8 @@ switch task
             savepath = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);
             res = cellstr(spm_select('FPList',spm_file(savepath,'path'),['^' spm_file(savepath,'basename') '_.*']));
             for r = RES
-                ind = cell_index(res,r{1});
-                if ind
+                ind = find(cellfun(@(x) ~isempty(regexp(x,r{1},'once')), res))';
+                if ~isempty(ind)
                     for i = ind % peaks have multiple hit (amp+lat)
                         aap = aas_report_addimage(aap,[],res{i});
                     end
