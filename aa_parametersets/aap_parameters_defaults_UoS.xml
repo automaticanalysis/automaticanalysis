@@ -44,14 +44,14 @@
                 </extraparameters>
             </toolbox> 
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.1</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_module</fslsetup>
+            <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.3-py/FSL</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_bash</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/opt/pkg/apps/freesurfer/6.0.0</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/opt/pkg/apps/freesurfer/7.1.0</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/opt/pkg/apps/freesurfer/6.0.0/FreeSurferEnv.sh;</freesurferenvironment>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/opt/pkg/apps/freesurfer/7.1.0/FreeSurferEnv.sh;</freesurferenvironment>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/psychology01/software/GroupICATv4.0b</GIFTdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/psychology01/software/dcmtk</DCMTKdir>
