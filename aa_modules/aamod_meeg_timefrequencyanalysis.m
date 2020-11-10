@@ -108,6 +108,36 @@ switch task
                             data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));
                             EL.unload; % FieldTrip's eeglab toolbox is incomplete
                     end
+                    
+                    % select data
+                    if isfield(data(seg),'ureventinfo')
+                        if ~isempty(aas_getsetting(aap,'ignorebefore'))
+                            lim = aas_getsetting(aap,'ignorebefore');
+                            field = 'eventnum_all';
+                            if lim < 0
+                                lim = -lim;
+                                field = 'eventnum';
+                            end
+                            toremove = data(seg).ureventinfo.(field) < lim;
+                        end
+                        if ~isempty(aas_getsetting(aap,'ignoreafter'))
+                            lim = aas_getsetting(aap,'ignoreafter');
+                            field = 'eventnum_all';
+                            if lim < 0
+                                lim = -lim;
+                                field = 'eventnum';
+                            end
+                            toremove = data(seg).ureventinfo.(field) > lim;
+                        end
+                        
+                        if any(toremove)
+                            cfg = [];
+                            cfg.trials = ~toremove;
+                            data(seg) = ft_selectdata(cfg,data(seg));
+                        end
+                    else
+                        aas_log(aap,false,'WARNING: original eventinfo (ureventinfo) is not available -> ignorebefore and ignoreafter will be ignored')
+                    end
                 end
                 data(cellfun(@isempty, {data.trial})) = []; % remove skipped segments
                 

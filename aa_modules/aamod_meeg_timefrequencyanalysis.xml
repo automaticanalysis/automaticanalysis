@@ -21,6 +21,9 @@
 
             <baselinewindow desc='specify baseline as [begin end] in milliseconds for baseline correction, specify "all" for the complete trial'></baselinewindow>
             
+            <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
+            <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
+            
             <trialmodel desc='modelling trials'>
                 <subject></subject>
                 <model>
