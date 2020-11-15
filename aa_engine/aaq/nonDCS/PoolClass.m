@@ -59,8 +59,12 @@ classdef PoolClass < handle
             
             switch obj.Type
                 case 'Slurm'
-                    obj.initialSubmitArguments = strcat(obj.initialSubmitArguments,pool.SubmitArguments);
-                    obj.SubmitArguments = pool.ResourceTemplate;
+                    obj.initialSubmitArguments = obj.initialSubmitArguments;
+                    if isprop(pool,'ResourceTemplate')
+                        obj.SubmitArguments = pool.ResourceTemplate;
+                    else
+                        obj.SubmitArguments = pool.SubmitArguments;
+                    end
                     datWT = sscanf(regexp(obj.SubmitArguments,'-t [0-9]*','once','match'),'-t %d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'--mem=[0-9]*[MGT]{1}','once','match'),'--mem=%d%c');
                     obj.getSubmitStringFcn = @(Job) sprintf( 'sbatch %s -J %s -o "%s" -e "%s" "%s"', ...
@@ -69,8 +73,12 @@ classdef PoolClass < handle
                     obj.getJobStateFcn = @(SchedulerID) Slurm_getJobState(SchedulerID);
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('scancel %d',SchedulerID);
                 case 'Torque'
-                    obj.initialSubmitArguments = strcat(obj.initialSubmitArguments,pool.SubmitArguments);
-                    obj.SubmitArguments = pool.ResourceTemplate;
+                    obj.initialSubmitArguments = obj.initialSubmitArguments;
+                    if isprop(pool,'ResourceTemplate')
+                        obj.SubmitArguments = pool.ResourceTemplate;
+                    else
+                        obj.SubmitArguments = pool.SubmitArguments;
+                    end
                     datWT = sscanf(regexp(obj.SubmitArguments,'walltime=[0-9]*','once','match'),'walltime=%d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'mem=[0-9]*','once','match'),'mem=%d');
                     obj.getSubmitStringFcn = @(Job) sprintf( 'qsub %s -N %s -j oe -o "%s" "%s"', ...
