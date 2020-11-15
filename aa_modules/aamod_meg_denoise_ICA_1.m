@@ -13,7 +13,7 @@ switch task
         %% Initialise
         [junk, SPMtool] = aas_cache_get(aap,'spm');
         SPMtool.doToolbox('fieldtrip','load');
-        SPMtool.addExternal('meeg');
+        SPMtool.addCollection('meeg');
         [s,EL] = aas_cache_get(aap,'eeglab');
         if ~s, aas_log(aap,true,'EEGLAB not found'); end
         EL.load;
@@ -68,7 +68,7 @@ switch task
         end
         
         EL.unload;
-        SPMtool.rmExternal('meeg');
+        SPMtool.rmCollection('meeg');
         SPMtool.doToolbox('fieldtrip','unload')
 
         %% Outputs

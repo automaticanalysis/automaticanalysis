@@ -70,7 +70,7 @@ switch task
                     in.ParentAxes = axes('parent',f); in.f = f;
                     spm_eeg_plotScalpData(iw(:,ii),D.coor2D(chans{m}),D.chanlabels(chans{m}),in);
                     title(sprintf('Modality %s, IC %d topography (maximally correlated reference %s)',in.type,ii,ref_type{mr}));
-                    print('-djpeg',figure(f),'-r150',fname_top)
+                    print('-djpeg',f,'-r150',fname_top)
                     set(f,'DeleteFcn',[]);
                     close(f)
                 end
