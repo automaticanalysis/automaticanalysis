@@ -46,11 +46,13 @@ switch task
             aap = aas_report_add(aap,subjind,'<table><tr><td>');
             imgpath = fullfile(aas_getsubjpath(aap,subjind),fdiag(d).name);
             aap=aas_report_addimage(aap,subjind,imgpath);
-            [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+            [p, f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
             if exist(avipath,'file'), aap=aas_report_addimage(aap,subjind,avipath); end
             aap = aas_report_add(aap,subjind,'</td></tr></table>');
         end
     case 'doit'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.load;
 
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % options
@@ -160,25 +162,22 @@ switch task
             aas_log(aap, false, sprintf('Found %s image: %s\n',channels{c},img{c}));
         end
         
-        % For filenames:
-        [pth, nm, ext] = fileparts(img{1});
-
         % Initial estimate of rigid-body rotation for 32-channel coil (jt 05/Jul/2012)
         StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
         ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
         fnames=setdiff(fieldnames(aap.tasklist.currenttask.settings.affinestartingestimate),'COMMENT');
         for fieldind=1:length(fnames)
             % Which element in StartingParameters does this refer to?
-        	whichitem=find([strcmp(fnames{fieldind},ParameterFields)]);
+        	whichitem=find(strcmp(fnames{fieldind},ParameterFields));
             % Generate a helpful error if it isn't recognised
             if (isempty(whichitem))
                 err=sprintf('Unexpected field %s in header file aamod_segment8.xml - expected one of ',fnames{fieldind});
                 err=[err sprintf('%s\t',ParameterFields)];
                 aas_log(aap,true,err);
-            end;
+            end
             % Put this in its place
             StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
-        end;
+        end
             
         % Initial transform estimate to be passed to spm_preproc_run:
         StartingAffine = spm_matrix(StartingParameters);
@@ -189,7 +188,7 @@ switch task
 
         tpm_nam = cfg.tpm;
         ngaus   = cfg.ngaus;
-        nval    = {[1 0],[1 0],[1 0],[1 0],[1 0],[0 0]};
+        %nval    = {[1 0],[1 0],[1 0],[1 0],[1 0],[0 0]};
         for k=1:length(ngaus)
             tissue(k).tpm    = [tpm_nam ',' num2str(k)]; % assign the tpm map
             tissue(k).ngaus  = ngaus(k);  % and the number of gaussians
@@ -229,32 +228,30 @@ switch task
         aas_log(aap,false,sprintf('Starting to run segment8 job (%s)...', datestr(now, 'yyyy-mm-dd HH:MM')));
         spm_preproc_run(job);
         aas_log(aap,false,sprintf('\bDone in %.1f hours.', toc/60/60));
-                
+            
+        % deformation fields (only one - named after the first channel)
+        normparamfn = spm_file(img{1},'prefix','y_');
+        invparamfn = spm_file(img{1},'prefix','iy_');
+        seg8fn = spm_file(img{1},'suffix','_seg8','ext','mat');
 
-        % Find filenames ('c' imgs, y_ params named after diff channels?):
-        for c=1:length(channels)
-            [pth, nm, ext] = fileparts(img{c});
-            if exist(fullfile(pth,['y_' nm ext]),'file')
-                normparamfn=fullfile(pth,['y_' nm ext]);
-                invparamfn=fullfile(pth,['iy_' nm ext]);
-            end
-        end
-        
-        [pth, nm, ext] = fileparts(img{c});
+        origimg = img{1};
         if ~isempty(aas_getsetting(aap,'combine'))
-            w = aas_getsetting(aap,'combine');
-            V = spm_vol(img{c});
-            mask = false(V.dim);
-            for t = 1:numel(w)
-                if ~w(t), continue; end
-                aas_log(aap,false,sprintf('INFO: reading c%d%s', t, [nm ext]))
-                tmask = spm_read_vols(spm_vol(fullfile(pth, sprintf('c%d%s', t, [nm ext]))));
-                mask = mask | (tmask >= w(t));
+            for c=1:length(channels)
+                w = aas_getsetting(aap,'combine');
+                V = spm_vol(img{c});
+                mask = false(V.dim);
+                for t = 1:numel(w)
+                    if ~w(t), continue; end
+                    fname = spm_file(origimg,'prefix',sprintf('c%d',t));
+                    aas_log(aap,false,sprintf('INFO: reading %s', spm_file(fname,'basename')))
+                    tmask = spm_read_vols(spm_vol(fname));
+                    mask = mask | (tmask >= w(t));
+                end
+                Y = spm_read_vols(V).*mask;
+                V.fname = spm_file(V.fname,'prefix','c');
+                spm_write_vol(V,Y);
+                img{c} = V.fname;
             end
-            Y = spm_read_vols(V).*mask;
-            V.fname = spm_file(V.fname,'prefix','c');
-            spm_write_vol(V,Y);
-            img{c} = V.fname;
         end
         
         % Apply deformation field to native structural? (jt 05/Jul/2012):
@@ -285,13 +282,12 @@ switch task
                     otherwise
                         aas_log(aap, 1, sprintf('%s requires SPM8 or later.', mfilename));
                 end
-                dout = spm_func_def(djob);
+                spm_func_def(djob);
                 aas_log(aap,false,'\b Done.');
             end
         end
 
         %% describe outputs
-        seg8fn = fullfile(pth, sprintf('%s_seg8.mat', nm));
         aap = aas_desc_outputs(aap, subjind, 'seg8', seg8fn);
 
         switch spm('ver')
@@ -300,13 +296,14 @@ switch task
             case {'SPM12b' 'SPM12'}
                 tiss={'grey','white','csf','skull','scalp','air'};
         end
-        
-        
-        for tissind=1:numel(tiss)
-            aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{tissind}), fullfile(pth, sprintf('c%d%s', tissind, [nm ext])));
-            aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{tissind}), fullfile(pth, sprintf('rc%d%s', tissind, [nm ext])));
-            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{tissind}), fullfile(pth, sprintf('%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));
-            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{tissind}), fullfile(pth, sprintf('m%sc%d%s', aap.spm.defaults.normalise.write.prefix, tissind, [nm ext])));
+                
+        for t=1:numel(tiss)
+            aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{t}), spm_file(origimg,'prefix',sprintf('c%d',t)));
+            aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{t}), spm_file(origimg,'prefix',sprintf('rc%d',t)));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_density_%s', tiss{t}), ...
+                spm_file(origimg,'prefix',sprintf('%sc%d',aap.spm.defaults.normalise.write.prefix,t)));
+            aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{t}), ...
+                spm_file(origimg,'prefix',sprintf('m%sc%d',aap.spm.defaults.normalise.write.prefix,t)));
         end
         
         pfx = '';
@@ -344,6 +341,7 @@ switch task
             diag(aap,subjind);
         end
     case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
         %% Adjust outstream
         if ~aas_getsetting(aap,'writenormimg') && isempty(aas_getsetting(aap,'combine'))
             for out = aap.tasklist.currenttask.settings.inputstreams.stream
@@ -380,7 +378,7 @@ end
 
 spm_orthviews('reposition', [0 0 0])
 
-try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
+try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end
 set(f,'Renderer','zbuffer');
 print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
@@ -396,7 +394,7 @@ for r = 1:size(outNSeg,1)
 end
 spm_orthviews('reposition', [0 0 0])
 
-try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end;
+try f = spm_figure('FindWin', 'Graphics'); catch; f = figure(1); end
 set(f,'Renderer','zbuffer');
 print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_W_blob.jpg']));
@@ -408,7 +406,7 @@ Pthresh = 0.95;
 
 ROIdata = roi2hist(Simg, outSeg, Pthresh);
 
-[h, pv, ci, stats] = ttest2(ROIdata{2}, ROIdata{1});
+[junk, pv, junk, stats] = ttest2(ROIdata{2}, ROIdata{1});
 
 title(sprintf('GM vs WM... T(%d) = %0.2f, p = %1.4f', stats.df, stats.tstat, pv))
 
