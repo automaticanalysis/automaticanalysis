@@ -53,10 +53,10 @@
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/imaging/local/linux/config/fsl_csh v5.0.11</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>csh</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/7.1.0/</freesurferdir>
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/imaging/local/software/freesurfer/7.1.1/</freesurferdir>
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/7.1.0/FreeSurferEnv.sh;</freesurferenvironment>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/imaging/local/software/freesurfer/7.1.1/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'>/hpc-software/neuromag</neuromagdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/imaging/local/software/spm_toolbox/GroupICAT/GroupICAT-v4.0b</GIFTdir>
             <condorwrapper desc='Command to run a job within condor' ui='dir'>/home/rcusack/cn_user/camneuro_compiled/release-beta-0.0/compiled/run_condor_process_jobq_quietly.sh</condorwrapper>
