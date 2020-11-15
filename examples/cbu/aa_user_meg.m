@@ -14,6 +14,8 @@ aa_ver5
 
 %% RECIPE:
 aap = aarecipe('aap_tasklist_meg.xml');
+SPM = aas_inittoolbox(aap,'spm');
+SPM.load;
 
 % SITE-SPECIFIC CONFIGURATION:
 aap.options.wheretoprocess='qsub'; % queuing system			% typical value localsingle or qsub
