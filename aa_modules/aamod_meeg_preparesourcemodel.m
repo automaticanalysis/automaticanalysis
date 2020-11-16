@@ -51,7 +51,7 @@ switch task
                 sourcemodel   = ft_prepare_sourcemodel(cfg);
                 
             case 'corticalsheet'
-                aas_runFScommand(aap,sprintf('export PATH=$PATH:/users/psychology01/software/HCP-workbench/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',FT.toolPath,...
+                aas_runFScommand(aap,sprintf('export PATH=$PATH:%s/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',WB.toolPath, FT.toolPath,...
                     aas_getstudypath(aap),aas_getsubjname(aap,subj),...
                     fullfile(WB.templateDir,'standard_mesh_atlases')));
                 resPerHemi = sscanf(aas_getsetting(aap,'options.corticalsheet.resolution'),'%dk')/2;
@@ -74,7 +74,13 @@ switch task
 
         FT.unload;
     case 'checkrequirements'
-        if ~aas_cache_get(aap,'fieldtrip'), aas_log(aap,true,'FieldTrip is not found'); end
-        if ~aas_cache_get(aap,'hcpwb'), aas_log(aap,false,'HCP Workbench is not found -> corticalsheet is not available'); end
+        [s, FT] = aas_cache_get(aap,'fieldtrip');
+        if ~s, aas_log(aap,true,'FieldTrip is not found'); end
+        [s, WB] = aas_cache_get(aap,'hcpwb');
+        if ~s, aas_log(aap,false,'HCP Workbench is not found -> corticalsheet is not available'); end
+        if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,false,'templates for HCP Workbench are not found -> corticalsheet is not available'); 
+        else
+            aas_log(aap,false,sprintf('WARNING: if you want to use cotricalsheet, make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+        end
 end
 end
