@@ -262,7 +262,7 @@ switch task
                 clear djob ojob
                 ojob.ofname = '';
                 ojob.fnames{1} = img{c};
-                ojob.savedir.saveusr{1} = pth;
+                ojob.savedir.saveusr{1} = spm_file(origimg,'path');
                 ojob.interp = 1;
                 switch spm('ver')
                     case 'SPM8'
