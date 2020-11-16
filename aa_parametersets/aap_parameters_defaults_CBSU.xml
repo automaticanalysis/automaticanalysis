@@ -45,7 +45,7 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>hcpwb</name>
                 <dir ui='dir'>/imaging/local/software/workbench/v1.3.2</dir>
                 <extraparameters>
-                    <templateDir>/users/psychology01/software/HCP-workbench/templates</templateDir>
+                    <templateDir>/imaging/local/software/workbench/templates</templateDir>
                 </extraparameters>
             </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
