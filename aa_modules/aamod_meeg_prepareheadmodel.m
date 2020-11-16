@@ -128,7 +128,13 @@ switch task
         end        
         if aas_getsetting(aap,'segmentation.scalpthreshold')
             thr = aas_getsetting(aap,'segmentation.scalpthreshold');
-            if thr > 1, thr = prctile(scalp(scalp>0),thr,'Method','exact'); end
+            if thr > 1
+                try
+                    thr = prctile(scalp(scalp>0),thr,'Method','exact'); 
+                catch
+                    thr = prctile(scalp(scalp>0),thr); 
+                end
+            end
             seg.softtissue = scalp > thr;
         end
         
