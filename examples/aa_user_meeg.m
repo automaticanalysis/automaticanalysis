@@ -6,7 +6,7 @@
 clear;
 aa_ver5
 
-SUBJS = [10002 10004 10005 10006];
+SUBJS = [10004 10005 10007 10010];
 
 %% RECIPE
 aap = aarecipe('aap_tasklist_meeg.xml');
@@ -36,7 +36,8 @@ aap.directory_conventions.analysisid = 'lemon';
 
 % Pipeline customisation
 aap = aas_addinitialstream(aap,'channellayout',{CHANNELFILE});
-aap = aas_addinitialstream(aap,'MNI_1mm',{'/users/psychology01/software/standard/MNI152_T1_1mm.nii'});
+aap = aas_addinitialstream(aap,'MNI_1mm',{MRIFILE});
+aap.tasksettings.aamod_importfilesasstream(2).unzip = 'gunzip';
 
 aap.tasksettings.aamod_structuralfromnifti.sfxformodality = 'T1w'; % suffix for structural
 aap.tasksettings.aamod_segment8.combine = [0.05 0.05 0.05 0.05 0.5 0];
@@ -132,7 +133,8 @@ for b = 1:2
 end
 aap.tasksettings.aamod_meeg_timefrequencystatistics(2).selectoverlappingdata.subjects = 'auto';
 aap.tasksettings.aamod_meeg_timefrequencystatistics(2).selectoverlappingdata.time = 'ignore';
-aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.snapshottwoi = size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1);
+indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
+aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.snapshottwoi = [indtime-100 indtime+100];
 for b = 1:2
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.target = 'scalp';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.method = 'spherefit';
