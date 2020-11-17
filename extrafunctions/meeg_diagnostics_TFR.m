@@ -13,7 +13,12 @@ dispcfg.marker = 'labels';
 dispcfg.interactive = 'no';
 dispcfg.showoutline = 'yes';
 dispcfg.comment = 'no';
-dispcfg.zlim = [0 prctile(cell2mat(cellfun(@(x) x.powspctrm, tfr, 'UniformOutput', false)),99,'all')]; % max colour at 99 percentile of all data
+try
+    dispcfg.zlim = [0 prctile(cell2mat(cellfun(@(x) x.powspctrm, tfr, 'UniformOutput', false)),99,'all')]; % max colour at 99 percentile of all data
+catch
+    allpow = cell2mat(cellfun(@(x) x.powspctrm, tfr, 'UniformOutput', false));
+    dispcfg.zlim = [0 prctile(allpow(:),99)]; % max colour at 99 percentile of all data
+end
 dispcfg.colorbar = 'yes';
 
 cfgmulti = dispcfg;
@@ -60,7 +65,7 @@ if isfield(tfr{1},'time') && numel(tfr{1}.time) > 1
     if numel(ptfr) > 1
         ptfr = {ft_math(struct('parameter','powspctrm','operation','subtract'),ptfr{:})};
         if isfield(tfr{1},'mask'), ptfr{1}.mask = tfr{1}.mask; end
-        cfgmulti.zlim = prctile(ptfr{1}.powspctrm,[1 99],'all');
+        cfgmulti.zlim = prctile(ptfr{1}.powspctrm(:),[1 99]);
     end
     if numel(ptfr{1}.label) == 1 % single channel data
         cfgmulti.linewidth = 2;
@@ -115,7 +120,7 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
         alldat = arrayfun(@(x) smoothdata(alldat(x,:,:),'gaussian',zlimSmooth),1:size(alldat,1),'UniformOutput',false);
         alldat = horzcat(alldat{:});
     end
-    zlim = prctile(alldat,[1 99],'all');
+    zlim = prctile(alldat(:),[1 99]);
    
     for f = 1:size(diag.snapshotfwoi,1)
         cfgtopo.ylim = diag.snapshotfwoi(f,:);
@@ -160,7 +165,7 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
                 
                 cfgtopo.colorbar = 'no';
                 if strcmp(labels{e},'stat')
-                    cfgtopo.zlim = [min(tfr{e}.powspctrm(:)) max(tfr{e}.powspctrm(:))];
+                    cfgtopo.zlim = prctile(tfr{e}.powspctrm(:),[1 99]);
                     cfgtopo.colorbar = 'West';
                 else
                     cfgtopo.zlim = zlim;

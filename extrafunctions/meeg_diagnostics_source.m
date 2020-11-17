@@ -67,10 +67,12 @@ if isfield(source{1},'dim')
 end
 
 for s = 1:numel(source)
-    minval(s) = min(source{s}.avg.(cfgdiag.funparameter)(:));
-    maxval(s) = max(source{s}.avg.(cfgdiag.funparameter)(:));
+    minval(s) = prctile(source{s}.avg.(cfgdiag.funparameter)(:),1);
+    maxval(s) = prctile(source{s}.avg.(cfgdiag.funparameter)(:),99);
     % colormap for surface
-    if (minval(s) < 0) && (maxval(s) > 0), cmap{s} = [winter; hot];
+    if (minval(s) < 0) && (maxval(s) > 0)
+        r = maxval(s)/-minval(s);
+        cmap{s} = [winter(64); hot(round(r*64))];
     elseif minval(s) < 0, cmap{s} = winter;
     else, cmap{s} = hot;
     end
@@ -139,7 +141,7 @@ for f = 1:size(diag.snapshotfwoi,1)
                 set(p, 'Tag', 'jk', 'Visible', 0);
                 set(p, 'Tag', 'ij', 'Visible', 0);
                 set(get(p,'Title'), 'Visible', 1);
-                colormap(p,colormap(gca));
+                colormap(p,cmap{s});
                 colorbar(p);
                 close(gcf);
             end
