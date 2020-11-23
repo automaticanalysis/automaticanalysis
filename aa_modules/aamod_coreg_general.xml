@@ -12,7 +12,7 @@
             <PVE desc='Binarization threshold = 0-1' ui='double'></PVE>
             
             <inputstreams>
-                <stream isrenameable='1'>reference</stream>
+                <stream diagnostic='1' isrenameable='1'>reference</stream>
                 <stream isrenameable='1'>input</stream> <!-- this one coreg'ed to previous -->
             </inputstreams>
             

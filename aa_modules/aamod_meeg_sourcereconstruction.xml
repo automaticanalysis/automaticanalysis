@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Source Reconstruction' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.3</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+
+            <method desc='source reconstruction method' ui='optionlist' options='eloreta'>eloreta</method>
+
+            <options desc='method-specific options'>
+                <eloreta>
+                    <normalize>yes</normalize>
+                </eloreta>
+            </options>
+            
+            <realignelectrodes>
+                <method desc='method to realign electrodes, spherefit does not correct for rotations and requires MATLAB Computer Vision Toolbox' ui='optionlist' options='fieldtrip|spherefit'>fieldtrip</method>
+                <target desc='target mesh for the realignment of electrodes' ui='optionlist' options='scalp'>scalp</target>
+                <projecttotarget desc='refine realignment by projecting the electrodes to the target'>1</projecttotarget>
+            </realignelectrodes>
+            
+            <inputstreams>
+                <stream>timefreq</stream>
+                <stream>headmodel</stream>
+                <stream>sourcemodel</stream>
+                <stream>structural</stream>
+                <stream>segmentation</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>timefreq</stream>
+            </outputstreams>
+            
+            <diagnostics>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
+                <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+                <view desc='viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI'>RAS</view>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>

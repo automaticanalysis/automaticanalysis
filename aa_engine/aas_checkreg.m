@@ -76,7 +76,7 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
                 end
         end
         aas_checkreg_avi(aap, index, 0, ['_' strtok_ptrn(basename(image{1}(i,:)),'-0')]);
-        close(1); clear global st;
+        close(spm_figure('GetWin','Graphics')); clear global st;
     end
     if i > 1
         % Summary
@@ -87,7 +87,7 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
             spm_orthviews('addcolouredimage',1,image{1}(i,:), OVERcolours(i,:))
         end
         aas_checkreg_avi(aap, index, 0,'_summary');
-        close(1);
+        close(spm_figure('GetWin','Graphics'));
     end
 end
 

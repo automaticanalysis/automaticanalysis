@@ -11,6 +11,8 @@
             
             <permanenceofoutput>1</permanenceofoutput>
             
+            <unzip desc='unzip data with this approach, empty means no unzip' options='|gunzip' ui='optionlist'></unzip>
+            
             <match></match>
             <!-- For example, if executed at session domain, contains
             <match><subject>XXX</subject><session>1</session><filenames>/my/file</filenames>

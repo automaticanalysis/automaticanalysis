@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' mfile_alias='aamod_slicetiming' desc='SPM slice timing' modality='MRI'>
+        <currenttask domain='session' desc='SPM slice timing' modality='MRI'>
             
             <qsub>
                 <timeBase>0.3</timeBase>

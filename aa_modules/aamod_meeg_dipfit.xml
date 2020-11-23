@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meeg_session' desc='Run DIPFIT on MEEG data' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <transformation desc='transformation to standard electrode positions' options='array of 9 transformation parameters|channel location of the target'></transformation>
+            <volumeCondutionModel desc='head model (MAT file with "vol" variable) compatible with the Fieldtrip (can be relative to the dipfit plugin)'></volumeCondutionModel>
+            
+            <rejectionThreshold desc='rejection threshold in residual variance'></rejectionThreshold>
+            
+            <constrainSymmetrical desc='estimate symmetrically constrained bilateral dipoles'>0</constrainSymmetrical>
+            
+            <inputstreams>
+                <stream>channellayout</stream>
+                <stream>meeg</stream>                
+                <stream desc='MRI image in MNI space'>structural</stream>
+            </inputstreams>
+
+            <outputstreams>
+                <stream>meeg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

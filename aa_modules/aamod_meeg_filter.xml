@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meeg_session' desc='Filter MEEG data by means of FieldTrip' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.25</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <lpfreq desc='lowpass  frequency in Hz'></lpfreq>
+            <hpfreq desc='highpass  frequency in Hz'></hpfreq>
+            <bpfreq desc='bandpass  frequency range, specified as [lowFreq highFreq] in Hz'></bpfreq>
+            <bsfreq desc='bandstop  frequency range, specified as [lowFreq highFreq] in Hz (or as Nx2 matrix for notch filter)'></bsfreq>
+            <dftfreq desc='line noise frequencies in Hz for discrete fourier transform filter (can also be a list of harmonics)'></dftfreq>
+            <dftreplace desc='method, "zero" implies DFT filter, "neighbour" implies spectrum interpolation' options='zero|neighbour'>neighbour</dftreplace>            
+            <dftbandwidth desc='bandwidth of line noise frequencies in Hz (can be specified as single value or one value for each dftfreq)'>1</dftbandwidth>
+            <dftneighbourwidth desc='bandwidth of frequencies neighbouring line noise frequencies, applies to spectrum interpolation, in Hz (can be specified as single value or one value for each dftfreq)'>2</dftneighbourwidth>
+            <medianfilter desc='jump preserving median filter'>0</medianfilter>
+                        
+            <inputstreams>
+                <stream>meeg</stream>                
+            </inputstreams>
+
+            <outputstreams>
+                <stream>meeg</stream>                
+            </outputstreams>
+            
+            <diagnostics>
+                <freqrange desc='frequency range for display, specified as [minFreq maxFreq] in Hz'></freqrange>
+                <freq desc='frequency-of-interest specified in Hz for topological plot (can also be list)'></freq>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>

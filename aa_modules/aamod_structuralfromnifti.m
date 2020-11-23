@@ -47,11 +47,12 @@ switch task
                 
                 %% Image
                 if ~exist(niftifile,'file')
-                    niftisearchpth=aas_findvol(aap,'');
+                    niftisearchpth=aas_findvol(aap,subj);
                     if ~isempty(niftisearchpth)
                         niftifile = fullfile(niftisearchpth,niftifile);
+                        if ~exist(niftifile,'file'), aas_log(aap,true,['ERROR: image ' niftifile ' not found']); end
                     end
-                end
+                end                
                 comp = false;
                 if strcmp(spm_file(niftifile,'Ext'),'gz')
                     comp = true;
