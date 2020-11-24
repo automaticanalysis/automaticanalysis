@@ -11,7 +11,7 @@ function aap = aas_addsubject(aap, varargin)
 % aap           - aap structure with parameters and tasklist
 % data          - subject foldername within database. 
 %                   - for MRI: a single entry according to aap.directory_conventions.subjectoutputformat
-%                   - for MEG: it is a cell array of two entries according to aap.directory_conventions.megsubjectoutputformat (1st entry for MEG data)
+%                   - for MEEG: it is a cell array of two entries according to aap.directory_conventions.meegsubjectoutputformat (1st entry for MEEG data)
 %                     and aap.directory_conventions.subjectoutputformat (2nd entry for MRI data). When MRI data is not analysed, the 2nd entry must be 
 %                     an empty array.
 %
@@ -29,18 +29,18 @@ function aap = aas_addsubject(aap, varargin)
 %
 %
 % FORMAT function aap = aas_addsubject(___,'functional',series)
-% Specify functional (fMRI/MEG) data.
+% Specify functional (fMRI/MEEG) data.
 %
 % series        - for DICOM: array of series number(s) of EPIs. E.g.: 
 %                   two series of single-echo EPI: [5 10]
 %                   two series of single-echo EPI and one series of multi-echo EPI with 5 echos: {5 10 15:19}
 %               - for NIfTI: cell array containing one or more
-%                   for structural: string containing a full or relative path (from a single rawdatadir)
-%                   for 4D NIfTI: string containing a full or relative path (from a single rawdatadir)
-%                   for whole-brain EPI: string containing a full or relative path (from a single rawdatadir). Can be specified only after fMRI series.
+%                   for structural: string containing a full or relative path (from the subject's dir)
+%                   for 4D NIfTI: string containing a full or relative path (from the subject's dir)
+%                   for whole-brain EPI: string containing a full or relative path (from the subject's dir). Can be specified only after fMRI series.
 %                   for 3D NIfTI: cell array (i.e. nested) of strings of full path
 %                 Strings can be replaced by structures with fields 'fname' (path to image) and 'hdr' (path to header) to specify metadata.
-%               - for MEG: full or relative filename of the *.fif file in the subject folder
+%               - for MEEG: full or relative filename of the acquisition file in the subject folder
 % Series have to be specified in the same order as the corresponding sessions have been added in the UMS. Missing series can be specified either with "0" (for numerical array input) or with "[]" (for cell array input).
 %
 %
@@ -81,7 +81,7 @@ function aap = aas_addsubject(aap, varargin)
 
 %% Parse
 iMRIData = 1; % new subject
-iMEGData = 1;
+iMEEGData = 1;
 if isempty(aap.acq_details.subjects(end).subjname)
     subjind = 1;
 else
@@ -143,7 +143,7 @@ if ~isempty(name) && ~isempty(aap.acq_details.subjects(1).subjname)
         subjind = subjserach; 
         thissubj = aap.acq_details.subjects(subjind);
         iMRIData = numel(thissubj.mriname)+1;
-        iMEGData = numel(thissubj.megname)+1;
+        iMEEGData = numel(thissubj.meegname)+1;
         for field=fields'
             thissubj.(field{1}){end+1}=[];
         end
@@ -152,16 +152,16 @@ end
 
 %% Data
 try
-    if iscell(data) && numel(data) == 2 % MEG
-        thissubj.megname{iMEGData}=data{1};
+    if iscell(data) && numel(data) == 2 % MEEG
+        thissubj.meegname{iMEEGData}=data{1};
         thissubj.mriname{iMRIData}=data{2};
-        if isempty(name), name = aas_megname2subjname(aap,sprintf(aap.directory_conventions.megsubjectoutputformat,thissubj.megname{1})); end
+        if isempty(name), name = aas_meegname2subjname(aap,thissubj.meegname{1}); end
     else % MRI
         thissubj.mriname{iMRIData}=data;
-        if isempty(name), name = aas_mriname2subjname(aap,sprintf(aap.directory_conventions.subjectoutputformat,thissubj.mriname{1})); end
+        if isempty(name), name = aas_mriname2subjname(aap,thissubj.mriname{1}); end
     end
 catch
-    aas_log(aap,true,'In aas_addsubject, name is expected to be either single string for MRI, or a cell of two for MEG written like this {''megname'',''mriname''}.');
+    aas_log(aap,true,'In aas_addsubject, name is expected to be either single string for MRI, or a cell of two for MEEG written like this {''meegname'',''mriname''}.');
 end
 
 thissubj.subjname = name;
@@ -171,14 +171,14 @@ if isfield(args,'functional') && ~isempty(args.functional)
     if isnumeric(args.functional) || isnumeric(args.functional{1}) % DICOM series number --> MRI
         thissubj.seriesnumbers{iMRIData}=args.functional;
     else
-        fMRI = {}; MEG = {};
+        fMRI = {}; MEEG = {};
         fMRIdim = [];
         for s = 1:numel(args.functional)
             if iscell(args.functional{s}) % multiple 3D files
                 fMRI{end+1} = args.functional{s};
             elseif isempty(args.functional{s}) % missing series
                 fMRI{end+1} = [];
-                MEG{end+1} = [];
+                MEEG{end+1} = [];
             elseif ischar(args.functional{s}) ||... % NIfTI file
                     isstruct(args.functional{s})    % hdr+fname
                 % Get filename
@@ -193,14 +193,14 @@ if isfield(args,'functional') && ~isempty(args.functional)
                     fname = args.functional{s};
                 end
                 
-                % - try in rawmegdatadir
+                % - try in rawmeegdatadir
                 if ~exist(fname,'file')
-                    if ~isempty(thissubj.megname{iMEGData})
+                    if ~isempty(thissubj.meegname{iMEEGData})
                         tmpaap = aap;
-                        tmpaap.directory_conventions.megsubjectoutputformat = '%s';
-                        if exist(fullfile(meg_findvol(aap,thissubj.megname{iMEGData},'fp'),fname),'file') ||...
-                                ~isempty(meg_findvol(tmpaap,fname)) % try empty room
-                            MEG{end+1} = fname;
+                        tmpaap.directory_conventions.meegsubjectoutputformat = '%s';
+                        if exist(fullfile(meeg_findvol(aap,thissubj.meegname{iMEEGData},'fullpath',true),fname),'file') ||...
+                                ~isempty(meeg_findvol(tmpaap,fname)) % try empty room
+                            MEEG{end+1} = fname;
                             continue;
                         end
                     end
@@ -212,7 +212,7 @@ if isfield(args,'functional') && ~isempty(args.functional)
                 
                 % Sort
                 if strcmp(spm_file(fname,'ext'),'fif')
-                     MEG{end+1} = fname;
+                     MEEG{end+1} = fname;
                      continue;
                 end
                 
@@ -234,8 +234,8 @@ if isfield(args,'functional') && ~isempty(args.functional)
         if ~isempty(fMRI) && any(cellfun(@(x) ~isempty(x), fMRI))
             thissubj.seriesnumbers{iMRIData}=fMRI;
         end
-        if ~isempty(MEG) && any(cellfun(@(x) ~isempty(x), MEG))
-            thissubj.megseriesnumbers{iMEGData}=MEG;
+        if ~isempty(MEEG) && any(cellfun(@(x) ~isempty(x), MEEG))
+            thissubj.meegseriesnumbers{iMEEGData}=MEEG;
         end
     end
 end

@@ -48,7 +48,7 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 global BIDSsettings;
 
 % we need spm_select here...
-SPMtool = spmClass(aap.directory_conventions.toolbox(strcmp({aap.directory_conventions.toolbox.name},'spm')).dir);
+SPMtool = aas_inittoolbox(aap,'spm');
 SPMtool.load;
 
 if ~exist('sessnames','var') || isempty(sessnames)

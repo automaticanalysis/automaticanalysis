@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='ERP/ERF calculation' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
+            
+            <trialmodel desc='modelling trials'>
+                <subject></subject>
+                <model>
+                    <name></name>
+                    <session></session>
+                    <event></event>
+                    <samplevector></samplevector>
+                </model>
+            </trialmodel>
+            
+            <peakneighbours desc='width of neighbouring samples to compare the peak to, in milliseconds'>20</peakneighbours>
+            <peakdef>
+                <subject></subject>
+                <trial></trial>
+                <peakdef>
+                    <name></name>
+                    <direction></direction>
+                    <toi></toi>
+                </peakdef>
+            </peakdef>
+            
+            <inputstreams>
+                <stream>meeg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>timelock</stream>
+                <stream>peak</stream>
+            </outputstreams>
+            
+            <diagnostics>
+                <videotwoi desc='width of the timewindow-of-interest (for each frame) specified in milliseconds (none for no video)'></videotwoi>
+                <snapshottwoi desc='timewindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>

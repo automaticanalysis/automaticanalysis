@@ -65,7 +65,11 @@ classdef aaq_qsub<aaq
                     switch class(obj.pool)
                         case 'parallel.cluster.Slurm'
                             aas_log(obj.aap,false,'INFO: pool Slurm is detected');
-                            obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG, -t %d', aaparallel.memory,aaparallel.walltime*60);
+                            if isprop(obj.pool,'ResourceTemplate')
+                                obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
+                            else
+                                obj.pool.SubmitArguments = sprintf('--mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
+                            end
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' --constraint=maxfilter';

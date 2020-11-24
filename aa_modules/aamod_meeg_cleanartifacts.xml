@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meeg_session' desc='Clean MEEG artifacts using EEGLAB clean_rawdata' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <criteria desc='plugin parameters with its defaults'>
+                <Highpass desc='"off" or transition band for the initial high-pass filter in Hz'></Highpass>
+                
+                <!-- channel criteria -->
+                <LineNoiseCriterion desc='"off" or abnormal line noise (in SD)'></LineNoiseCriterion>
+                <FlatlineCriterion desc='maximum tolerated flatline duration in seconds'></FlatlineCriterion>
+                <ChannelCriterion desc='minimum channel correlation'></ChannelCriterion>
+                
+                <!-- window criteria -->
+                <BurstCriterion desc='threshold (in SD) for bursts (via Artifact Subspace Reconstruction'></BurstCriterion>
+                <Distance desc='distance measure used in Artifact Subspace Reconstruction' options='euclidian|riemannian'></Distance>
+                <BurstRejection desc='reject burst instead of correcting using Artifact Subspace Reconstruction'></BurstRejection>
+                <WindowCriterion desc='threshold (in % of channels) for window removal'></WindowCriterion>
+            </criteria>
+            
+            <interpolate desc='interpolate removed channels' options='off|invdist|spherical|spacetime'>off</interpolate>
+            
+            <inputstreams>
+                <stream>meeg</stream>                
+            </inputstreams>
+
+            <outputstreams>
+                <stream>meeg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

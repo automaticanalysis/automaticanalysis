@@ -14,6 +14,7 @@
             <reg desc='regularization'>.001</reg>
             <mrf desc='Markov Random Field argument'>1</mrf>
             <cleanup desc='Extracting the brain from segmented images'>0</cleanup>
+            <combine desc='Extract image from an OR combination of tissue probabilities, [1x6] array of thresholds, negative threshold means upper threshold, zero means exclusion'></combine>
 			<ngaus desc='Number of gaussians for tissue classes'>2 2 2 3 4 2</ngaus>
 			<writebiascorrected desc='write out bias field or corrected image?'>0 0</writebiascorrected>
 			<writedeffields desc='write out deformation fields [forward inverse]?'>1 1</writedeffields>
@@ -44,18 +45,30 @@
                 <stream>native_grey</stream>
                 <stream>native_white</stream>
                 <stream>native_csf</stream>
-
+                <stream>native_skull</stream>
+                <stream>native_scalp</stream>
+                <stream>native_air</stream>
+             
                 <stream>dartelimported_grey</stream>
                 <stream>dartelimported_white</stream>
                 <stream>dartelimported_csf</stream>
+                <stream>dartelimported_skull</stream>
+                <stream>dartelimported_scalp</stream>
+                <stream>dartelimported_air</stream>
 
                 <stream>normalised_density_grey</stream>
                 <stream>normalised_density_white</stream>
                 <stream>normalised_density_csf</stream>
+                <stream>normalised_density_skull</stream>
+                <stream>normalised_density_scalp</stream>
+                <stream>normalised_density_air</stream>
 
                 <stream>normalised_volume_grey</stream>
                 <stream>normalised_volume_white</stream>
                 <stream>normalised_volume_csf</stream>                
+                <stream>normalised_volume_skull</stream>
+                <stream>normalised_volume_scalp</stream>
+                <stream>normalised_volume_air</stream>
             </outputstreams>
         </currenttask>
     </tasklist> 

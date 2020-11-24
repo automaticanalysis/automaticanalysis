@@ -8,7 +8,7 @@
 % formats are:
 %  0 = use directory_conventions.subject_directory_names (trimmed version produced by
 %   evaluate subject names
-%  1 = from data by trimming mriname or megname
+%  1 = from data by trimming mriname or meegname
 %  2 = use S01, S02, S03...
 %  3 = manual
 %

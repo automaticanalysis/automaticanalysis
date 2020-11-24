@@ -1,12 +1,12 @@
 function nme=aas_getsubjdesc(aap,i)
 
 nme='';
-for d = 1:numel(aap.acq_details.subjects(i).megname)
-    if ~isempty(aap.acq_details.subjects(i).megname{d})
-        if isnumeric(aap.acq_details.subjects(i).megname{d})
-            nme=[nme '; MEG:' num2str(aap.acq_details.subjects(i).megname{d})];
+for d = 1:numel(aap.acq_details.subjects(i).meegname)
+    if ~isempty(aap.acq_details.subjects(i).meegname{d})
+        if isnumeric(aap.acq_details.subjects(i).meegname{d})
+            nme=[nme '; MEEG:' num2str(aap.acq_details.subjects(i).meegname{d})];
         else
-            nme=[nme '; MEG:' aap.acq_details.subjects(i).megname{d}];
+            nme=[nme '; MEEG:' aap.acq_details.subjects(i).meegname{d}];
         end
     end
 end

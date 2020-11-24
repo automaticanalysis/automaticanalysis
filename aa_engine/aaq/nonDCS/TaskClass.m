@@ -46,6 +46,8 @@ classdef TaskClass < handle
             obj.ErrorFile = fullfile(obj.Folder,'error.mat');
             
             % assemble command
+            pathCommand = '';
+            varCommand = '';
             Command = func2str(varargin{1});
             if nargin < 4
                 userVariable = [];                
@@ -60,13 +62,13 @@ classdef TaskClass < handle
             end                        
             if ~isempty(obj.Parent.AdditionalPaths)
                 userVariable.reqpath = obj.Parent.AdditionalPaths;
-                Command = sprintf('addpath(reqpath{:}); %s',Command);
+                pathCommand = sprintf('load(''%s'',''reqpath'');addpath(reqpath{:});',fullfile(obj.Folder,'data.mat'));
             end            
             if ~isempty(userVariable)
                 save(fullfile(obj.Folder,'data.mat'),'-struct','userVariable');
-                Command = sprintf('load(''%s''); %s',fullfile(obj.Folder,'data.mat'),Command);
+                varCommand = sprintf('load(''%s'',''-regexp'',''arg[0-9]'');',fullfile(obj.Folder,'data.mat'));
             end            
-            Command(end+1) = ';';
+            Command = [pathCommand, varCommand, Command ';'];
             
             % create script
             fid = fopen(obj.ShellFile,'w');         

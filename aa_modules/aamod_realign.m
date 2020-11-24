@@ -78,17 +78,38 @@ switch task
 		% Summary in case of more subjects [TA]
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject            
             meas = {'Trans - x','Trans - y','Trans - z','Pitch','Roll','Yaw'};
+            
+            stagerepname = aap.tasklist.currenttask.name;
+            if ~isempty(aap.tasklist.currenttask.extraparameters)
+                stagerepname = [stagerepname aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix];
+            end
+            aap = aas_report_add(aap,'moco',['<h2>Stage: ' stagerepname '</h2>']);
+            aap = aas_report_add(aap,'moco','<table><tr>');
+            
             for sess=aap.report.(mfilename).selected_sessions
 				fn = fullfile(aas_getstudypath(aap),['diagnostic_aamod_realign_' aap.acq_details.sessions(sess).name '.jpg']);
                 
                 mvmax = squeeze(aap.report.(mfilename).mvmax(:,sess,:));
-                f = figure; boxplot(mvmax,'label',meas);
+                
+                jitter = 0.1; % jitter around position
+                jitter = (...
+                    1+(rand(size(mvmax))-0.5) .* ...
+                    repmat(jitter*2./[1:size(mvmax,2)],size(mvmax,1),1)...
+                    ) .* ...
+                    repmat([1:size(mvmax,2)],size(mvmax,1),1);
+                
+                f = figure; hold on;
+                boxplot(mvmax,'label',meas);
+                for s = 1:size(mvmax,2)
+                    scatter(jitter(:,s),mvmax(:,s),'k','filled','MarkerFaceAlpha',0.4);
+                end
+                
                 boxValPlot = getappdata(getappdata(gca,'boxplothandle'),'boxvalplot');
                 set(f,'Renderer','zbuffer');
                 if ~exist(fn,'file'), print(f,'-djpeg','-r150',fn); end
                 close(f);
                 
-                aap = aas_report_add(aap,'moco','<td>');
+                aap = aas_report_add(aap,'moco','<td valign="top">');
                 aap = aas_report_add(aap,'moco',['<h3>Session: ' aap.acq_details.sessions(sess).name '</h3>']);
                 aap=aas_report_addimage(aap,'moco',fn);
                 
@@ -103,6 +124,7 @@ switch task
                 
                 aap = aas_report_add(aap,'moco','</td>');
             end
+            aap = aas_report_add(aap,'moco','</tr></table>');
         elseif numel(aap.acq_details.subjects) == 1
             aap = aas_report_add(aap,'moco','<h4>No summary is generated: there is only one subject in the pipeline</h4>');
         end

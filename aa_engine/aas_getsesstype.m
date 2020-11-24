@@ -14,7 +14,9 @@ if isempty(modality)
     if strfind(aap.tasklist.currenttask.name,'_diffusion'), modality = 'DWI'; end
     if strfind(aap.tasklist.currenttask.name,'_MTI'), modality = 'X'; end
     if strfind(aap.tasklist.currenttask.name,'_ASL'), modality = 'X'; end
+    if strfind(aap.tasklist.currenttask.name,'_meeg'), modality = 'MEEG'; end
     if strfind(aap.tasklist.currenttask.name,'_meg'), modality = 'MEG'; end
+    if strfind(aap.tasklist.currenttask.name,'_eeg'), modality = 'EEG'; end
 end
 
 % default
@@ -29,8 +31,8 @@ switch modality
         session = 'session';
     case 'DWI'
         session = 'diffusion_session';
-    case {'MEG' 'EEG'}
-        session = 'meg_session';
+    case {'MEEG' 'MEG' 'EEG'}
+        session = 'meeg_session';
     case 'X'
         session = 'special_session';
 end

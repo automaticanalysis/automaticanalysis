@@ -18,7 +18,7 @@ switch (domain)
     case 'diffusion_session_probtrackx'
         directory=sprintf('probtrackx_%d',index);
 
-    case {'session' 'diffusion_session' 'special_session' 'meg_session'}
+    case {'session' 'diffusion_session' 'special_session' 'meeg_session'}
         directory=aap.acq_details.([domain 's'])(index).name;
         
     case 'isc_session'
