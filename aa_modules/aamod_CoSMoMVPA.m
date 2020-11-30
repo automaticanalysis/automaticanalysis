@@ -28,39 +28,45 @@ switch task
         %% Prepare data
         TASKS = textscan(aas_getsetting(aap,'tasks'),'%s','Delimiter',':'); TASKS = TASKS{1}';
         
-        RSAROOT = fullfile(aas_getsubjpath(aap,subj),'RSA');
-        aas_makedir(aap,RSAROOT);
+        TASKROOT = fullfile(aas_getsubjpath(aap,subj),'CoSMo');
+        aas_makedir(aap,TASKROOT);
         
         inps = aas_getstreams(aap,'input');
         inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
-        struct_fn = aas_getfiles_bystream(aap,'subject',subj,inps{1});
+        %struct_fn = aas_getfiles_bystream(aap,'subject',subj,inps{1});
         
         fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'mask')),'UniformOutput',false);
-        fnSPM = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cellfun(@(x) ~isempty(regexp(x,'firstlevel_spm$', 'once')), inps)),'UniformOutput',false);
-        fnTmaps = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'firstlevel_spmts')),'UniformOutput',false);
+        fnSPM = aas_getfiles_bystream(aap,'subject',subj,'firstlevel_spm');
+        fnTmaps = cellstr(aas_getfiles_bystream(aap,'subject',subj,'firstlevel_spmts'));
         
         if numel(fnMask) > 1
-            brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(RSAROOT,'brain_mask.nii'),'min(X)',{1});
+            brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(TASKROOT,'brain_mask.nii'),'min(X)',{1});
+            fnMask = brain_mask.fname;
         else
-            brain_mask.fname = char(fnMask);
+            fnMask = char(fnMask);
         end
+        dat = load(fnSPM);
+        firstlevelSPM = dat.SPM;
         
-        ITEMS = aas_getsetting(aap,'itemList');
-        fnT = {};
-        for run = 1:numel(fnSPM)
-            load(fnSPM{run});
-            conNames = {SPM.xCon.name}';
-            for it = 1:numel(ITEMS)
-                ITEMS{it} = cellstr(ITEMS{it});
-                fnT{end+1} = fnTmaps{run}(sum(cellfun(@(x) cell_index(conNames,x), ITEMS{it})),:);
-            end
+        ITEMS = cellfun(@cellstr, aas_getsetting(aap,'itemList'),'UniformOutput', false);
+        indTmaps = [];
+        inpdep = aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream;
+        firstlevelaap = aas_setcurrenttask(aap, inpdep(strcmp({inpdep.name},'firstlevel_spm')).sourcenumber);
+        consubj = aas_getsetting(firstlevelaap,'contrasts',find(arrayfun(@(x) strcmp(x.subject,aas_getsubjname(aap,subj)),aas_getsetting(firstlevelaap,'contrasts'))));
+        consubj = consubj.con;
+        for sess = aap.acq_details.selected_sessions
+            consess = consubj(arrayfun(@(x) strcmp(x.session.names{1},aap.acq_details.sessions(sess).name),consubj));
+            consessnames = cellfun(@(x) strrep(x,['_' aap.acq_details.sessions(sess).name],''),{consess.name},'UniformOutput', false);
+            cons = consess(cellfun(@(i) cell2mat(cellfun(@(ii) find(strcmp(consessnames,ii)), i,'UniformOutput', false)), ITEMS));
+            indTmaps = [indTmaps cellfun(@(x) find(strcmp({firstlevelSPM.xCon.name},x)), {cons.name})];
         end
-        spm_file_merge(fnT,fullfile(RSAROOT,'glm_T_stats_perrun.nii'));
+        spm_file_merge(fnTmaps(indTmaps),fullfile(TASKROOT,'glm_T_stats_perrun.nii'));
+        fnTstats = fullfile(TASKROOT,'glm_T_stats_perrun.nii');
+        nSess = numel(aap.acq_details.selected_sessions);
         
         %% Initialise Cosmo
-        oldPath = path;
-        cosmo_set_path
-        cosmo_check_external('-tic');
+        [junk, MVPA] = aas_cache_get(aap,'cosmomvpa');
+        MVPA.load;
         
         if cell_index(TASKS, 'RSA') && isempty(aas_getsetting(aap,'bsMatrix')), TASKS(cell_index(TASKS, 'RSA')) = []; end
         
@@ -68,16 +74,34 @@ switch task
             % Data
             switch t{1}
                 case 'RSA'
-                    ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
-                        'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))');
+                    try
+                        ds=cosmo_fmri_dataset(fnTstats,'mask',fnMask,...
+                            'targets',repmat(1:numel(ITEMS),1,nSess)');
+                    catch E
+                        if ~isempty(strfind(E.message,'sform and qform in the NIfTI header differ'))
+                            ds=cosmo_fmri_dataset(fix_qform(fnTstats),'mask',fix_qform(fnMask),...
+                                'targets',repmat(1:numel(ITEMS),1,nSess)');
+                        else
+                            aas_log(aap,true,E.message)
+                        end
+                    end
                     ds=cosmo_fx(ds, @(x)mean(x,1), 'targets', 1);
                     ds.sa.labels=cellfun(@(x) x{1}, ITEMS, 'UniformOutput', false)';
                     ds.sa.set=(1:numel(ITEMS))';
                 case 'C'
-                    ds=cosmo_fmri_dataset(fullfile(RSAROOT,'glm_T_stats_perrun.nii'),'mask',brain_mask.fname,...
-                        'targets',repmat(1:numel(ITEMS),1,numel(fnSPM))','chunks',floor(((1:numel(ITEMS)*numel(fnSPM))-1)/numel(ITEMS))+1);
-                    ds.sa.labels=cellfun(@(x) x{1}, repmat(ITEMS,1,numel(fnSPM)), 'UniformOutput', false)';
-                    ds.sa.set=repmat((1:numel(ITEMS))',numel(fnSPM),1);
+                    try
+                        ds=cosmo_fmri_dataset(fnTstats,'mask',fnMask,...
+                            'targets',repmat(1:numel(ITEMS),1,nSess)','chunks',floor(((1:numel(ITEMS)*nSess)-1)/numel(ITEMS))+1);
+                    catch E
+                        if ~isempty(strfind(E.message,'sform and qform in the NIfTI header differ'))
+                            ds=cosmo_fmri_dataset(fix_qform(fnTstats),'mask',fix_qform(fnMask),...
+                                'targets',repmat(1:numel(ITEMS),1,nSess)','chunks',floor(((1:numel(ITEMS)*nSess)-1)/numel(ITEMS))+1);
+                        else
+                            aas_log(aap,true,E.message)
+                        end
+                    end
+                    ds.sa.labels=cellfun(@(x) x{1}, repmat(ITEMS,1,nSess), 'UniformOutput', false)';
+                    ds.sa.set=repmat((1:numel(ITEMS))',nSess,1);
             end            
             
             % Data            
@@ -104,32 +128,67 @@ switch task
             %% Info
             aas_log(aap,false,'INFO:Dataset input:'); cosmo_disp(ds);
             aas_log(aap,false,'INFO:Searchlight neighborhood definition:'); cosmo_disp(nbrhood);
-            aas_log(aap,false,'INFO:Target DSM:'); disp(target_dsm);
+            if cell_index(TASKS, 'RSA'), aas_log(aap,false,'INFO:Target DSM:'); disp(target_dsm); end
             
             %         imagesc(target_dsm)
             %         set(gca,'XTick',1:size(ds.samples,1),'XTickLabel',ds.sa.labels,...
             %             'YTick',1:size(ds.samples,1),'YTickLabel',ds.sa.labels)
             
             %% Run
-            ds_rsm_behav=cosmo_searchlight(ds,nbrhood,measure,measure_args);
+            cosmo=cosmo_searchlight(ds,nbrhood,measure,measure_args);
             
             %         cosmo_plot_slices(ds_rsm_behav);
             
             % store results
-            rsa_fn=fullfile(RSAROOT,[t{1} 'map.nii']);
-            cosmo_map2fmri(ds_rsm_behav,rsa_fn);
+            cosmo_fn=fullfile(TASKROOT,[t{1} 'map.nii']);
+            cosmo_map2fmri(cosmo,cosmo_fn);
             
             %% Cleanup
-            path(oldPath);
+            MVPA.unload;
             
-            aap=aas_desc_outputs(aap,'subject',subj,[t{1} 'map'],rsa_fn);
+            aap=aas_desc_outputs(aap,'subject',subj,[t{1} 'map'],cosmo_fn);
         end
     case 'checkrequirements'
-        
-    otherwise
-        if isempty(which('cosmo_set_path')), aas_log(aap,true,sprintf('CoSMoMVPA cannot be found!\n Make sure you add <CoSMoMVPA directory>/mvpa to aap.directory_conventions.spmtoolsdir.')); end
-        reqInps = {'firstlevel_brainmask' 'firstlevel_spm' 'firstlevel_spmts'};
+        if ~aas_cache_get(aap,'cosmomvpa'), aas_log(aap,true,'CoSMoMVPA is not found'); end
+        reqInps = {'mask' 'firstlevel_spm' 'firstlevel_spmts'};
         inps = aas_getstreams(aap,'input');
         missingInps = reqInps(cellfun(@(x) ~any(cell_index(inps,x)), reqInps));
         if ~isempty(missingInps), aas_log(aap,true,['Inputs not specified:' sprintf(' %s',missingInps{:})]); end
+end
+end
+
+%% UTILS 
+function val = check_qform(fnInput)
+% Based on Chris Rorden's script in https://github.com/rordenlab/spmScripts at 25/11/2020
+
+qOffsetBytes = 252;
+
+fid = fopen(fnInput);
+fseek(fid,qOffsetBytes,'bof');
+qform_code = fread(fid,1,'int16');
+fclose(fid);
+val = qform_code ~= 0;
+end
+
+function fnOutput = fix_qform (fnInput)
+% set qform to zero https://nifti.nimh.nih.gov/pub/dist/src/niftilib/nifti1.h
+% Based on Chris Rorden's script in https://github.com/rordenlab/spmScripts at 25/11/2020
+qOffsetBytes = 252;
+fnOutput = spm_file(fnInput,'prefix','z');
+
+%create copy of image
+copyfile(fnInput,fnOutput);
+
+% modify qform
+% - read file
+fid = fopen(fnInput);
+[data,count]=fread(fid, 'uint8');
+fclose(fid);
+% - modify both bytes of 16-bit qform_code
+data(qOffsetBytes) = 0;
+data(qOffsetBytes+1) = 0;
+% - write file
+fid = fopen(fnOutput,'w');
+fwrite(fid,data);
+fclose(fid);
 end
