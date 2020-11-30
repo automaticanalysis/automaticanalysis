@@ -1,5 +1,5 @@
 function [fig, vRange] = map_overlay(bg_img, s_img, axis, slices)
-
+vRange = [-Inf Inf];
 if isempty(bg_img), bg_img = fullfile(spm('Dir'),'toolbox','OldNorm','T1.nii'); end
 if isempty(axis), axis = 'axial'; end
 

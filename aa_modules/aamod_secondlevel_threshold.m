@@ -53,11 +53,11 @@ switch task
                 % Group Mean (F), Mean Activation (>T), and Mean Deactivation (<T)
                 
                 f{1} = fullfile(aas_getstudypath(aap),...
-                    sprintf('diagnostic_%s_%s_overlay_0.jpg', cname1, cname2));
+                    sprintf('diagnostic_%s_%s_overlay_3_001.jpg', cname1, cname2));
                 
                 if exist(f{1},'file')
                     
-                    tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
+                    tstat = dlmread(strrep(f{1},'_overlay_3_001.jpg','.txt'));
                     
                     f{2} = fullfile(aas_getstudypath(aap),...
                         sprintf('diagnostic_%s_%s_render.jpg', cname1, cname2));
@@ -258,20 +258,27 @@ switch task
                 spm_write_vol(V,Yepi);
                 
                 % Overlay
-                % - edgees of activation (in mm)
+                % - edges of activation (in mm)
                 slims = ones(4,2);
                 sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
-                slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+                if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
+                else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
                 sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
-                slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+                if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
+                else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
                 sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
-                slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+                if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
+                else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                % - convert to mm
                 slims = sort(V.mat*slims,2);
+                % - extend if too narrow (min. 50mm)
+                slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
                 
                 % - draw
                 axis = {'sagittal','coronal','axial'};
                 for a = 1:3
-                    [fig, v] = map_overlay(tmpfile,{V.fname},axis{a},slims(a,1):nSl:slims(a,2));
+                    if ~no_sig_voxels, stat_fname = {V.fname}; else, stat_fname = {}; end
+                    [fig, v] = map_overlay(tmpfile,stat_fname,axis{a},slims(a,1):nSl:slims(a,2));
                     if (~isempty(aap.tasklist.currenttask.settings.description))
                         annotation('textbox',[0 0.5 0.5 0.5],'String',aap.tasklist.currenttask.settings.description,'FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                     end
@@ -288,8 +295,8 @@ switch task
                     % any spaces for underscores bc spaces in filesnames is asking for
                     % Unix trouble [MSJ]
                     cname2 = SPM.xCon(c).name; cname2 = strrep(cname2, ' ', '_');
-                    fnsl(a,:) = fullfile(localroot, sprintf('diagnostic_%s_%s_overlay_%d.jpg', cname1, cname2, a));
-                    spm_print(deblank(fnsl(a,:)),fig,'jpg')
+                    fnsl{a} = fullfile(localroot, sprintf('diagnostic_%s_%s_overlay_%d.jpg', cname1, cname2, a));
+                    spm_print(fnsl{a},fig,'jpg')
                 end
                 
                 dlmwrite(fullfile(localroot, sprintf('diagnostic_%s_%s.txt', cname1, cname2)),[min(v(v~=0)), max(v)]);
@@ -332,8 +339,8 @@ switch task
                 
                 % Outputs
                 if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
-                for f = 1:size(fnsl,1)
-                    if exist(fnsl(f,:),'file'), Outputs.sl = strvcat(Outputs.sl, fnsl(f,:)); end
+                for f = 1:numel(fnsl)
+                    if exist(fnsl{f},'file'), Outputs.sl = strvcat(Outputs.sl, fnsl{f}); end
                 end
                 if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
                 clear fnsl
@@ -355,24 +362,3 @@ switch task
 end
 
 end
-
-%% UTILS
-
-function fo = img_rot90(fi)
-for i = 1:size(fi,3)
-    fo(:,:,i) = rot90(fi(:,:,i),1);
-end
-end
-
-function fo = img_tr(fi,toDo)
-if nargin < 2, toDo = true; end
-if toDo
-    nslice = size(fi,3);
-    for i = 1:nslice
-        fo(:,:,i) = fliplr(rot90(fi(:,:,i),1));
-    end
-else
-    fo = fi;
-end
-end
-

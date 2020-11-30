@@ -60,7 +60,7 @@ switch task
             aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',conInd,conName));
             
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
-                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',conInd,conName));
+                sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_3_001.jpg',conInd,conName));
             
             % older versions didn't create overlay/renders if no voxels
             % survived thresholding, ergo the check here. We now create
@@ -69,7 +69,7 @@ switch task
             
             if exist(f{1},'file')
                 
-                tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
+                tstat = dlmread(strrep(f{1},'_overlay_3_001.jpg','.txt'));
                 
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',conInd,conName));
@@ -166,7 +166,7 @@ switch task
                 % the correct location in aap.dir_con.T1template if it's not empty
                 
                 tmpfile = 'toolbox/OldNorm/T1.nii';
-                if ~isempty(aap.directory_conventions.T1template) tmpfile = aap.directory_conventions.T1template; end
+                if ~isempty(aap.directory_conventions.T1template), tmpfile = aap.directory_conventions.T1template; end
                 if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
                 
                 if ~exist(tmpfile,'file')
@@ -251,7 +251,7 @@ switch task
                 Q     = [];
                 for i = 1:max(A)
                     j = find(A == i);
-                    if length(j) >= k;
+                    if length(j) >= k
                         Q = [Q j];
                     end
                 end
@@ -272,21 +272,28 @@ switch task
             spm_write_vol(V,Yepi);
             
             % Overlay
-            % - edgees of activation (in mm)
+            % - edges of activation
             slims = ones(4,2);
             sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
-            slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+            if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
+            else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
             sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
-            slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+            if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
+            else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
             sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
-            slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')];
+            if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
+            else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+            % - convert to mm
             slims = sort(V.mat*slims,2);
+            % - extend if too narrow (min. 50mm)
+            slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
 
             % - draw
             axis = {'sagittal','coronal','axial'};
             for a = 1:3
-                [fig, v] = map_overlay(tmpfile,{V.fname},axis{a},slims(a,1):nSl:slims(a,2));
-                fnsl(a,:) = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,conName,a));
+                if ~no_sig_voxels, stat_fname = {V.fname}; else, stat_fname = {}; end
+                [fig, v] = map_overlay(tmpfile,stat_fname,axis{a},slims(a,1):nSl:slims(a,2));
+                fnsl{a} = fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_%d.jpg',c,conName,a));
                 
                 if (~isempty(aap.tasklist.currenttask.settings.description))
                     annotation('textbox',[0 0.5 0.5 0.5],'String',aap.tasklist.currenttask.settings.description,'FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
@@ -296,7 +303,7 @@ switch task
                     annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                 end
                 
-                spm_print(deblank(fnsl(a,:)),fig,'jpg')
+                spm_print(fnsl{a},fig,'jpg')
             end
             
             dlmwrite(fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s.txt',c,conName)),[min(v(v~=0)), max(v)]);
@@ -348,8 +355,8 @@ switch task
             % Outputs
             
             if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
-            for f = 1:size(fnsl,1)
-                if exist(fnsl(f,:),'file'), Outputs.sl = strvcat(Outputs.sl, fnsl(f,:)); end
+            for f = 1:numel(fnsl)
+                if exist(fnsl{f},'file'), Outputs.sl = strvcat(Outputs.sl, fnsl{f}); end
             end
             if exist(fn3d,'file'), Outputs.Rend = strvcat(Outputs.Rend, fn3d); end
             
@@ -369,24 +376,4 @@ switch task
         aas_log(aap,1,sprintf('Unknown task %s',task));
 end
 
-end
-
-%% UTILS
-
-function fo = img_rot90(fi)
-for i = 1:size(fi,3)
-    fo(:,:,i) = rot90(fi(:,:,i),1);
-end
-end
-
-function fo = img_tr(fi,toDo)
-if nargin < 2, toDo = true; end
-if toDo
-    nslice = size(fi,3);
-    for i = 1:nslice
-        fo(:,:,i) = fliplr(rot90(fi(:,:,i),1));
-    end
-else
-    fo = fi;
-end
 end
