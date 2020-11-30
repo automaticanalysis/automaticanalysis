@@ -18,7 +18,7 @@
 			
             <overlay>
                <transparency>0</transparency>
-               <nth_slice>3</nth_slice>
+               <nth_slice desc='in mm'>3</nth_slice>
                <template>SPMT1</template>  <!-- averaged_structurals/SPMT1 -->
            </overlay>
             
