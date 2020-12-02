@@ -52,6 +52,7 @@ classdef PoolClass < handle
             % initialSubmitArguments - Submission string specifying resources other than memory and waltime. Can be empty.
             if nargin >= 2, obj.initialSubmitArguments = initialSubmitArguments; end
             if nargin >= 3, obj.initialConfiguration = initialConfiguration; end           
+            if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments = [' ' obj.initialSubmitArguments]; end
             
             obj.Type = pool.Type;
             obj.JobStorageLocation = pool.JobStorageLocation;
@@ -59,11 +60,11 @@ classdef PoolClass < handle
             
             switch obj.Type
                 case 'Slurm'
-                    obj.initialSubmitArguments = obj.initialSubmitArguments;
+                    obj.SubmitArguments = obj.initialSubmitArguments;
                     if isprop(pool,'ResourceTemplate')
-                        obj.SubmitArguments = pool.ResourceTemplate;
+                        obj.SubmitArguments = [obj.SubmitArguments ' ' pool.ResourceTemplate];
                     else
-                        obj.SubmitArguments = pool.SubmitArguments;
+                        obj.SubmitArguments = [obj.SubmitArguments ' ' pool.SubmitArguments];
                     end
                     datWT = sscanf(regexp(obj.SubmitArguments,'-t [0-9]*','once','match'),'-t %d');
                     datMem = sscanf(regexp(obj.SubmitArguments,'--mem=[0-9]*[MGT]{1}','once','match'),'--mem=%d%c');
@@ -73,7 +74,7 @@ classdef PoolClass < handle
                     obj.getJobStateFcn = @(SchedulerID) Slurm_getJobState(SchedulerID);
                     obj.getJobDeleteStringFcn = @(SchedulerID) sprintf('scancel %d',SchedulerID);
                 case 'Torque'
-                    obj.initialSubmitArguments = obj.initialSubmitArguments;
+                    obj.SubmitArguments = obj.initialSubmitArguments;
                     if isprop(pool,'ResourceTemplate')
                         obj.SubmitArguments = pool.ResourceTemplate;
                     else
