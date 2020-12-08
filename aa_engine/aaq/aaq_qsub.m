@@ -1,11 +1,40 @@
+% ** aa queue processor running independent jobs and tasks on a parallel 
+% cluster using createJob, createTask and related constructs. Overview of
+% the methods:
+%   [init]: looks for pool profile, initializes parcluster (if pool
+%   profile found)
+%   close: nomen est omen
+%   runall: function running all jobs on queue
+%   QVUpdate, QVClose - update/close queue viewer
+%   pool_args: only used in qsub_q_job; constructs arguments to be
+%   submitted to schedulers
+%   qsub_q_job: only used once in add_from_jobqueue; if pool exists,
+%   creates Job in the pool and task in the job, otherwise calls
+%   aa_doprocessing_onetask
+%   add_from_jobqueue: used once in runall; adds job to queue
+%   remove_from_jobqueue: removes job from jobqueue, possibly initiating a
+%   retry
+%   job_monitor: gathers job info from the job scheduler; used in and
+%   outside of job_monitor_loop
+%   job_monitor_loop: gathers job info from the job scheduler
+% 
+% So, the sequence of method/function calls causing execution of a module's
+% code is 
+% runall > add_from_jobqueue > qsub_q_job > createJob, createTask | aa_doprocessing_onetask
+% 
+% Note: all comments and comment blocks preceded by ** were and will still
+% be added by Harald Hentschke starting in December 2020. They are meant as
+% temporary aids in the process of exploring and refactoring aa, and may be
+% purged or condensed once development work is finished.
+
 classdef aaq_qsub<aaq
     properties
         pool = []
         QV = []
     end
+    
     properties (Hidden)
         poolConf = cell(1,3)
-        
         jobnotrun = []
         jobinfo = struct(...
             'InputArguments',{},...
@@ -23,14 +52,13 @@ classdef aaq_qsub<aaq
             )
         jobretries = []
         waitforalljobs
-        
         % ensure resources (e.g. MAXFILTER license)
         initialSubmitArguments
         newGenericVersion % with AdditionalProperties
-        
         refresh_waitforjob
         refresh_waitforworker
     end
+    
     methods
         function [obj]=aaq_qsub(aap)
             obj = obj@aaq(aap);
@@ -112,6 +140,7 @@ classdef aaq_qsub<aaq
                     end
                 else
                     obj.pool = parcluster('local');
+                    % ** TODO: why explicit number here?
                     aaparallel.numberofworkers=12;
                 end
                 obj.pool.NumWorkers = aaparallel.numberofworkers;
@@ -123,6 +152,7 @@ classdef aaq_qsub<aaq
             end
         end
         
+        % =================================================================
         function close(obj)
             if ~isempty(obj.pool)
                 for j = numel(obj.pool.Jobs):-1:1
@@ -132,10 +162,10 @@ classdef aaq_qsub<aaq
             close@aaq(obj);
         end
         
-        %% Queue jobs on Qsub:
+        % =================================================================
+        % Queue jobs on Qsub:
         %  Queue job
         %  Watch output files
-        
         % Run all tasks on the queue
         function [obj]=runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
             obj.waitforalljobs = waitforalljobs;
@@ -160,32 +190,44 @@ classdef aaq_qsub<aaq
                     obj.waitforalljobs = true;
                 end
             end
-            
             jobqueuelimit = obj.aap.options.aaparallel.numberofworkers;
             printswitches.jobsinq = true; % switches for turning on and off messages
             
+            % ** Outermost loop: add jobs to the queue until condition for
+            % breaking the loop is met or all jobs/tasks have been
+            % accomplished. Realize that due to the inner 'for' loop
+            % initially several jobs may be started at once, but that in
+            % general the number of jobs started per run of the while loop
+            % is highly variable, depending on the status of previously
+            % started jobs and their interdependency
             while any(obj.jobnotrun) || (obj.waitforalljobs && ~isempty(obj.jobinfo))
                 % Lets not overload the filesystem
                 pause(0.1);
-                
                 pool_length = length(obj.pool.Jobs);
                 nfreeworkers = jobqueuelimit - pool_length;
                 
                 % Only run if there are free workers, otherwise display
                 % message that no workers are available
+                % ** ditto
                 if nfreeworkers > 0
-                    printswitches.nofreeworkers = true; % reset the display command
+                    % reset the display command
+                    printswitches.nofreeworkers = true; 
                     % Find how many free workers available, then allocate next
                     % batch. Skip section if there are no jobs to run.
                     if any(obj.jobnotrun)
                         if printswitches.jobsinq
                             aas_log(obj.aap, false, sprintf('Jobs in aa queue: %d\n', sum(obj.jobnotrun)))
-                            printswitches.jobsinq = false; % Don't display again unless queue length changes
+                            % Don't display again unless queue length changes
+                            printswitches.jobsinq = false; 
                         end
                         runjobs = shiftdim(find(obj.jobnotrun))';
                         nfreeworkers = min([nfreeworkers, length(runjobs)]);
                         runjobs = runjobs(1:nfreeworkers);
                         readytorunall = true(size(runjobs));
+                        
+                        % ** loop through all 'runjobs', see whether they
+                        % are ready to run, and if so, run (by adding to
+                        % the queue)
                         for i = runjobs
                             rtrind = runjobs == i; % index for readytorunall
                             if (obj.jobnotrun(i))
@@ -200,6 +242,9 @@ classdef aaq_qsub<aaq
                                 if readytorunall(rtrind)
                                     % Add the job to the queue, and create
                                     % the job info in obj.jobinfo
+                                    % ** Here, somewhat hidden from the uninitiated eye, is the
+                                    % instruction to run a module's code.
+                                    % Chain of calls: add_from_jobqueue > % qsub_q_job > createJob, createTask
                                     obj.add_from_jobqueue(i);
                                     printswitches.jobsinq = true;
                                 end
@@ -225,6 +270,8 @@ classdef aaq_qsub<aaq
                     obj.job_monitor_loop;
                 end
                 
+                % ** inspect status of the jobs submitted above, and update
+                % variables and GUI accordingly
                 idlist = [obj.jobinfo.JobID];
                 for id = idlist
                     JI = obj.jobinfo([obj.jobinfo.JobID] == id);
@@ -365,6 +412,7 @@ classdef aaq_qsub<aaq
             
         end
         
+        % =================================================================
         function obj = QVUpdate(obj)
             if obj.aap.options.aaworkerGUI
                 % queue viewer
@@ -384,6 +432,7 @@ classdef aaq_qsub<aaq
             end
         end
         
+        % =================================================================
         function obj = QVClose(obj)
             if obj.aap.options.aaworkerGUI
                 if ~isempty(obj.QV) && obj.QV.isvalid
@@ -394,6 +443,7 @@ classdef aaq_qsub<aaq
             end
         end
         
+        % =================================================================
         function obj = pool_args(obj,varargin)
             global aaparallel;
             memory = aaparallel.memory;
@@ -439,12 +489,12 @@ classdef aaq_qsub<aaq
             end
         end
         
-        
+        % =================================================================
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             global aacache
             aaworker.aacache = aacache;
-            [s, reqpath] = aas_cache_get(obj.aap,'reqpath','system');
+            [~, reqpath] = aas_cache_get(obj.aap,'reqpath','system');
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
@@ -469,10 +519,13 @@ classdef aaq_qsub<aaq
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
                 inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
-                if isprop(J,'AutoAttachFiles'), J.AutoAttachFiles = false; end
-                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] Make workers self-sufficient by passing
-                % them the aa paths. Users don't need to remember to update
-                % their own default paths (e.g. for a new aa version)
+                if isprop(J,'AutoAttachFiles')
+                    J.AutoAttachFiles = false; 
+                end
+                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] 
+                % Make workers self-sufficient by passing them the aa
+                % paths. Users don't need to remember to update their own
+                % default paths (e.g. for a new aa version)
                 if isprop(J,'AdditionalPaths')
                     J.AdditionalPaths = reqpath;
                 elseif isprop(J,'PathDependencies')
@@ -481,7 +534,8 @@ classdef aaq_qsub<aaq
                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
                 success = false;
                 retries = 0;
-                % Job submission can sometimes fail (server fault) (DP). Added rety to cope this this.
+                % Job submission can sometimes fail (server fault) (DP). 
+                % Added retry to cope with this.
                 while success == false
                     try
                         J.submit;
@@ -505,7 +559,7 @@ classdef aaq_qsub<aaq
             end
         end
         
-        
+        % =================================================================
         function obj = add_from_jobqueue(obj, i)
             global aaworker
             % Add a job to the queue
@@ -535,7 +589,7 @@ classdef aaq_qsub<aaq
                 if ~isempty(ji.jobname), break; end
             end
             
-            [junk, ji.jobpath]=aas_doneflag_getpath_bydomain(obj.aap,job.domain,job.indices,job.k);
+            [~, ji.jobpath]=aas_doneflag_getpath_bydomain(obj.aap,job.domain,job.indices,job.k);
             ji.JobID = latestjobid;
             ji.qi = i;
             ji.logfile = fullfile(obj.pool.JobStorageLocation, Task.Parent.Name, [Task.Name '.log']);
@@ -557,6 +611,7 @@ classdef aaq_qsub<aaq
                 ji.modulename, ji.JobID, ji.subjectinfo.subjname, obj.jobretries(i), length(obj.pool.Jobs)))
         end
         
+        % =================================================================
         function obj = remove_from_jobqueue(obj, ID, retry)
             % exact opposite of method add_from_jobqueue
             % Need to use JobID from obj.pool here instead of the jobqueue
@@ -582,13 +637,15 @@ classdef aaq_qsub<aaq
             % counter
             if retry
                 % Remove files from previous execution
-                if exist(ji.jobpath,'dir'), rmdir(ji.jobpath,'s'); end
-                
+                if exist(ji.jobpath,'dir')
+                    rmdir(ji.jobpath,'s'); 
+                end
                 % Add to jobqueue
                 obj.jobnotrun(ji.qi)=true;
             end
         end
         
+        % =================================================================
         function states = job_monitor(obj, printjobs)
             % This function gathers job information from the job scheduler.
             % This can be slow depending on the size of the pool.
@@ -641,7 +698,7 @@ classdef aaq_qsub<aaq
                                     pause(1);
                                 end
                                 if isobject(w)
-                                    [junk, txt] = system(sprintf('ssh %s top -p %d -bn1 | tail -2 | head -1 | awk ''{print $9}''',w.Host,w.ProcessId)); % 9th column of top output
+                                    [~, txt] = system(sprintf('ssh %s top -p %d -bn1 | tail -2 | head -1 | awk ''{print $9}''',w.Host,w.ProcessId)); % 9th column of top output
                                     obj.jobinfo(jobind).CPU = str2double(txt);
                                 else
                                     aas_log(obj.aap,false,sprintf('WARNING: Worker information of Job %d not found!',id));
@@ -685,6 +742,7 @@ classdef aaq_qsub<aaq
             obj.QVUpdate;
         end
         
+        % =================================================================
         function job_monitor_loop(obj)
             while true
                 states = obj.job_monitor(true); % states are also in e.g. obj.jobinfo(i).state
