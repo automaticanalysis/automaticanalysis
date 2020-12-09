@@ -140,8 +140,8 @@ classdef aaq_qsub<aaq
                     end
                 else
                     obj.pool = parcluster('local');
-                    % ** TODO: why explicit number here?
-                    aaparallel.numberofworkers=12;
+                    % ** no need to set any of aaparallel's values here as
+                    % this has been taken care of in aa_doprocessing
                 end
                 obj.pool.NumWorkers = aaparallel.numberofworkers;
                 obj.pool.JobStorageLocation = aaworker.parmpath;
