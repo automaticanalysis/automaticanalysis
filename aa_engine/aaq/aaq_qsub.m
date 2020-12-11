@@ -74,7 +74,9 @@ classdef aaq_qsub<aaq
                         conf{1}{3} = sprintf('%s:%s',conf{1}{3:end});
                         conf{1}(4:end) = [];
                     end
-                    for c = 1:numel(conf{1}), obj.poolConf(c) = conf{1}(c); end
+                    for c = 1:numel(conf{1})
+                        obj.poolConf(c) = conf{1}(c); 
+                    end
                     [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
 
                     profiles = parallel.clusterProfiles;
@@ -167,7 +169,7 @@ classdef aaq_qsub<aaq
         %  Queue job
         %  Watch output files
         % Run all tasks on the queue
-        function [obj]=runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
+        function runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
             obj.waitforalljobs = waitforalljobs;
             
             global aaworker
@@ -356,7 +358,9 @@ classdef aaq_qsub<aaq
                             else
                                 aas_log(obj.aap,true,'Time-related property of Task class not found!')
                             end
-                            if isempty(finishTime), continue; end
+                            if isempty(finishTime)
+                                continue
+                            end
                             msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
                                 JI.JobID,JI.modulename,JI.jobname,startTime,finishTime,aas_getTaskDuration(Task));
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
@@ -413,7 +417,7 @@ classdef aaq_qsub<aaq
         end
         
         % =================================================================
-        function obj = QVUpdate(obj)
+        function QVUpdate(obj)
             if obj.aap.options.aaworkerGUI
                 % queue viewer
                 if ~isempty(obj.pool)
@@ -426,14 +430,16 @@ classdef aaq_qsub<aaq
                         obj.QV.setAutoUpdate(false);
                     else
                         obj.QV.UpdateAtRate;
-                        if obj.waitforalljobs, obj.QV.Hold = false; end
+                        if obj.waitforalljobs
+                            obj.QV.Hold = false;
+                        end
                     end
                 end
             end
         end
         
         % =================================================================
-        function obj = QVClose(obj)
+        function QVClose(obj)
             if obj.aap.options.aaworkerGUI
                 if ~isempty(obj.QV) && obj.QV.isvalid
                     obj.QV.Close;
@@ -444,18 +450,24 @@ classdef aaq_qsub<aaq
         end
         
         % =================================================================
-        function obj = pool_args(obj,varargin)
+        function pool_args(obj,varargin)
             global aaparallel;
             memory = aaparallel.memory;
             walltime = aaparallel.walltime;
             
             for iarg = 1:numel(varargin)
-                if ~ischar(varargin{iarg}), continue; end
+                if ~ischar(varargin{iarg})
+                    continue; 
+                end
                 switch varargin{iarg}
                     case 'mem'
-                        if ~isempty(varargin{iarg+1}), memory = varargin{iarg+1}; end
+                        if ~isempty(varargin{iarg+1})
+                            memory = varargin{iarg+1}; 
+                        end
                     case 'walltime'
-                        if ~isempty(varargin{iarg+1}), walltime = varargin{iarg+1}; end
+                        if ~isempty(varargin{iarg+1})
+                            walltime = varargin{iarg+1}; 
+                        end
                 end
             end
             
@@ -490,7 +502,7 @@ classdef aaq_qsub<aaq
         end
         
         % =================================================================
-        function [obj]=qsub_q_job(obj,job)
+        function qsub_q_job(obj,job)
             global aaworker
             global aacache
             aaworker.aacache = aacache;
@@ -514,7 +526,7 @@ classdef aaq_qsub<aaq
                 % end
                 % end
                 % end
-                obj = obj.pool_args(qsubsettings{:});
+                obj.pool_args(qsubsettings{:});
                 J = createJob(obj.pool);
                 cj = @aa_doprocessing_onetask;
                 nrtn = 0;
@@ -560,7 +572,7 @@ classdef aaq_qsub<aaq
         end
         
         % =================================================================
-        function obj = add_from_jobqueue(obj, i)
+        function add_from_jobqueue(obj, i)
             global aaworker
             % Add a job to the queue
             job=obj.jobqueue(i);
@@ -586,7 +598,9 @@ classdef aaq_qsub<aaq
                     case 1
                         ji.jobname = aas_getsubjdesc(aap,job.indices(iind));
                 end
-                if ~isempty(ji.jobname), break; end
+                if ~isempty(ji.jobname)
+                    break; 
+                end
             end
             
             [~, ji.jobpath]=aas_doneflag_getpath_bydomain(obj.aap,job.domain,job.indices,job.k);
@@ -612,7 +626,7 @@ classdef aaq_qsub<aaq
         end
         
         % =================================================================
-        function obj = remove_from_jobqueue(obj, ID, retry)
+        function remove_from_jobqueue(obj, ID, retry)
             % exact opposite of method add_from_jobqueue
             % Need to use JobID from obj.pool here instead of the jobqueue
             % index (obj.jobinfo.qi), which is not unique if uncomplete jobs exist from
