@@ -60,12 +60,6 @@ switch task
         domain = aap.tasklist.currenttask.domain;
         [diagstream, mainstream, wbstream] = process_streams(aap);
         
-        % Get the T1 template
-        sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
-        if ~exist(sTimg, 'file')
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
-        end
-        
         % Check local structural
         Simg = aas_getfiles_bystream(aap,subj,'structural');
         if size(Simg,1) > 1
@@ -179,7 +173,22 @@ switch task
         end
         
     case 'checkrequirements'
-
+        in = aas_getstreams(aap,'input'); in(1:4) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
 end
 end
 
