@@ -1,42 +1,47 @@
-% ** aa queue processor running independent jobs and tasks on a parallel 
-% cluster using createJob, createTask and related constructs. Overview of
-% the methods:
-%   [init]: looks for pool profile, initializes parcluster (if pool
-%   profile found)
-%   close: nomen est omen
-%   runall: function running all jobs on queue
-%   QVUpdate, QVClose - update/close queue viewer
-%   pool_args: only used in qsub_q_job; constructs arguments to be
-%   submitted to schedulers
-%   qsub_q_job: only used once in add_from_jobqueue; if pool exists,
-%   creates Job in the pool and task in the job, otherwise calls
-%   aa_doprocessing_onetask
-%   add_from_jobqueue: used once in runall; adds job to queue
-%   remove_from_jobqueue: removes job from jobqueue, possibly initiating a
-%   retry
-%   job_monitor: gathers job info from the job scheduler; used in and
-%   outside of job_monitor_loop
-%   job_monitor_loop: gathers job info from the job scheduler
-% 
-% So, the sequence of method/function calls causing execution of a module's
-% code is 
-% runall > add_from_jobqueue > qsub_q_job > createJob, createTask | aa_doprocessing_onetask
-% 
-% Note: all comments and comment blocks preceded by ** were and will still
-% be added by Harald Hentschke starting in December 2020. They are meant as
-% temporary aids in the process of exploring and refactoring aa, and may be
-% purged or condensed once development work is finished.
-
 classdef aaq_qsub<aaq
-    properties
-        pool = []
-        QV = []
+    % aaq_qsub < aaq  Queue processor running independent jobs and tasks 
+    %                 on a parallel cluster
+    %
+    % The sequence of method/function calls triggering the execution of a
+    % module's code is
+    %
+    %   runall > add_from_jobqueue > qsub_q_job > ...
+    %       createJob, createTask | aa_doprocessing_onetask
+    % 
+    % aaq_qsub Properties (*inherited):
+    %   pool         - cluster object
+    %   QV           - instance of aas_qsubViewerClass (Queue viewer)
+    %   *aap         - struct
+    %   *isOpen      - logical, flag indicating whether Taskqueue is open
+    %   *fatalerrors - logical, flag indicating fatal error
+    %   *jobqueue    - struct array, composed of 'taskmasks'
+    %
+    % aaq_qsub Methods (*inherited):
+    %   close               - Cancel jobs in queue and call superclass' close
+    %   runall              - Run all jobs/tasks on the queue
+    %   QVUpdate            - Update queue viewer
+    %   QVClose             - Close queue viewer
+    %   pool_args           - Construct arguments to be submitted to schedulers
+    %   qsub_q_job          - Create Job in the pool and task in the job if pool exists, otherwise call aa_doprocessing_onetask
+    %   add_from_jobqueue   - Add job to queue by calling qsub_q_job and creating jobinfo
+    %   remove_from_jobqueue - Remove job from jobqueue, possibly initiating a retry
+    %   job_monitor         - Gather job info from the job scheduler
+    %   job_monitor_loop    - Run loop gathering job information from the job scheduler.
+    %   *save              - save self to file
+    %   *emptyqueue        - clear the task queue (set jobqueue to [])
+    %   *addtask           - add a task to the task queue
+    %   *allocate          - allocate a job from the task queue to a worker
+    %   *getjobdescription - return struct task
+    
+    properties   
+        pool = []   % cluster object
+        QV = []     % instance of aas_qsubViewerClass (Queue viewer)
     end
     
     properties (Hidden)
-        poolConf = cell(1,3)
-        jobnotrun = []
-        jobinfo = struct(...
+        poolConf = cell(1,3)        % cell, pool configuration as in xml parameter file
+        jobnotrun = []              % logical array, of same length as .jobqueue in which true indicates that the job has not run
+        jobinfo = struct(...        % struct, info on job
             'InputArguments',{},...
             'modulename',{},...
             'jobname',{},...
@@ -50,19 +55,19 @@ classdef aaq_qsub<aaq
             'CPU',{},...            
             'subjectinfo',{}...
             )
-        jobretries = []
-        waitforalljobs
-        % ensure resources (e.g. MAXFILTER license)
-        initialSubmitArguments
-        newGenericVersion % with AdditionalProperties
-        refresh_waitforjob
-        refresh_waitforworker
+        jobretries = []             % array, number of retries of job runs
+        waitforalljobs              % logical, indicates whether code shall wait until all jobs finished 
+        initialSubmitArguments      % char array, 2nd input arg to pool.SubmitArguments (ensures resources, e.g. MAXFILTER license)
+        newGenericVersion           % logical, true if pool.IndependentSubmitFcn is empty 
+        refresh_waitforjob          % - unused
+        refresh_waitforworker       % - unused
     end
     
     methods
         function [obj]=aaq_qsub(aap)
+            % Look for pool profile, initialize parcluster (if pool profile found)
             obj = obj@aaq(aap);
-            
+
             global aaworker;
             global aaparallel;
             
@@ -70,7 +75,8 @@ classdef aaq_qsub<aaq
                 if ~isempty(aap.directory_conventions.poolprofile)
                     % Parse configuration
                     conf = textscan(aap.directory_conventions.poolprofile,'%s','delimiter',':');
-                    if numel(conf{1}) > 3 % ":" in the initial configuration command
+                    % ":" in the initial configuration command
+                    if numel(conf{1}) > 3 
                         conf{1}{3} = sprintf('%s:%s',conf{1}{3:end});
                         conf{1}(4:end) = [];
                     end
@@ -156,6 +162,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function close(obj)
+            % Cancel jobs in queue and call superclass' close
             if ~isempty(obj.pool)
                 for j = numel(obj.pool.Jobs):-1:1
                     obj.pool.Jobs(j).cancel;
@@ -168,8 +175,8 @@ classdef aaq_qsub<aaq
         % Queue jobs on Qsub:
         %  Queue job
         %  Watch output files
-        % Run all tasks on the queue
         function runall(obj, dontcloseexistingworkers, waitforalljobs) %#ok<INUSL>
+            % Run all jobs/tasks on the queue
             obj.waitforalljobs = waitforalljobs;
             
             global aaworker
@@ -418,6 +425,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function QVUpdate(obj)
+            % Update queue viewer 
             if obj.aap.options.aaworkerGUI
                 % queue viewer
                 if ~isempty(obj.pool)
@@ -440,6 +448,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function QVClose(obj)
+            % Close queue viewer
             if obj.aap.options.aaworkerGUI
                 if ~isempty(obj.QV) && obj.QV.isvalid
                     obj.QV.Close;
@@ -451,6 +460,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function pool_args(obj,varargin)
+            
             global aaparallel;
             memory = aaparallel.memory;
             walltime = aaparallel.walltime;
@@ -503,6 +513,8 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function qsub_q_job(obj,job)
+            % Create Job in the pool and task in the job if pool exists,
+            % otherwise call aa_doprocessing_onetask
             global aaworker
             global aacache
             aaworker.aacache = aacache;
@@ -573,19 +585,25 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function add_from_jobqueue(obj, i)
+            % Add job to queue by calling qsub_q_job and creating jobinfo
             global aaworker
             % Add a job to the queue
             job=obj.jobqueue(i);
+            
+            % ** call qsub_q_job, which does the heavy lifting (createJob,
+            % createTask)
             obj.qsub_q_job(job);
             
-            % Create job info for referencing later
-            % (also clean up done jobs to prevent IDs occuring twice)
+            % -- Create struct ji, the job info for referencing later:
+            % - clean up done jobs to prevent IDs occuring twice
             latestjobid = max([obj.pool.Jobs.ID]);
             Task = obj.pool.Jobs([obj.pool.Jobs.ID] == latestjobid).Tasks;
-            if ~all(obj.jobnotrun(i)) % if any jobs have been run yet
-                obj.jobinfo([obj.jobinfo.JobID] == latestjobid) = []; % remove prev job with same ID
+            % if any jobs have been run yet...
+            if ~all(obj.jobnotrun(i)) 
+                % remove previous job with same ID
+                obj.jobinfo([obj.jobinfo.JobID] == latestjobid) = []; 
             end
-            
+            % - assemble ji 
             ji.InputArguments = {[], job.task, job.k, job.indices, aaworker};
             ji.modulename = obj.aap.tasklist.main.module(ji.InputArguments{3}).name;
             
@@ -618,6 +636,7 @@ classdef aaq_qsub<aaq
                 ji.subjectinfo = obj.aap.acq_details.subjects(job.indices(1));
             end
             
+            % - append ji to jobinfo 
             obj.jobinfo = [obj.jobinfo, ji];
             obj.jobnotrun(i) = false;
             obj.jobretries(i) = obj.jobretries(i) + 1;
@@ -627,10 +646,12 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function remove_from_jobqueue(obj, ID, retry)
+            % Remove job from jobqueue, possibly initiating a retry
+            
             % exact opposite of method add_from_jobqueue
             % Need to use JobID from obj.pool here instead of the jobqueue
-            % index (obj.jobinfo.qi), which is not unique if uncomplete jobs exist from
-            % previous modules
+            % index (obj.jobinfo.qi), which is not unique if uncomplete
+            % jobs exist from previous modules
             
             ind = [obj.jobinfo.JobID] == ID;
             ji = obj.jobinfo(ind); % get job info struct
@@ -661,7 +682,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function states = job_monitor(obj, printjobs)
-            % This function gathers job information from the job scheduler.
+            % Gather job information from the job scheduler.
             % This can be slow depending on the size of the pool.
             % INPUT
             % printjobs [true|false]: print job information to the screen.
@@ -758,6 +779,7 @@ classdef aaq_qsub<aaq
         
         % =================================================================
         function job_monitor_loop(obj)
+            % Run loop gathering job information from the job scheduler.
             while true
                 states = obj.job_monitor(true); % states are also in e.g. obj.jobinfo(i).state
                 if any(strcmp(states, 'finished')) || any(strcmp(states, 'error')) || any(strcmp(states, 'failed')) || any(strcmp(states, 'cancelled')) || any(strcmp(states, 'inactive'))

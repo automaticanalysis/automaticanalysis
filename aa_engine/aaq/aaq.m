@@ -1,40 +1,63 @@
 classdef aaq < handle
+    % aaq < handle  aa queue processor base class
+    %
+    % aaq Properties:
+    %   aap         - struct
+    %   isOpen      - logical, flag indicating whether Taskqueue is open
+    %   fatalerrors - logical, flag indicating fatal error
+    %   jobqueue    - struct array, composed of 'taskmasks' (input arg to
+    %                 method addtask)
+    % aaq Methods:
+    %   close             - close taskqueue (set .isOpen to false)
+    %   save              - save self to file
+    %   emptyqueue        - clear the task queue (set jobqueue to [])
+    %   addtask           - add a task to the task queue
+    %   allocate          - allocate a job from the task queue to a worker
+    %   getjobdescription - return struct task
+    %   runall            - sequentially call aa_doprocessing_onetask on all jobs in queue (no parallelism)
+
     properties
         aap
         isOpen      = false
-        fatalerrors = false % flag to indicate fatal error --> stop pipeline
+        fatalerrors = false 
         jobqueue    = []
     end
+    
     methods
         function obj=aaq(aap)
+            % If input arg aap is given, assign to property aap, and set isOpen to true
             if (exist('aap','var'))
                 obj.aap=aap;
             end
             obj.isOpen = true;
         end
         
+        % ==============================
         function close(obj)
+            % Close task queue (set isOpen property to false)
             aas_log(obj.aap,false,'Taskqueue is closed!');
             obj.isOpen = false;
         end
         
-        %%==============================
-        % Save self to a file
+        % ==============================
         function save(obj,fn)
+            % Save self to file
             jobqueue=obj.jobqueue;
             aap=obj.aap;
             save(fn,'jobqueue','aap')
         end
-        %%==============================
-        % Clear the task queue
+        
+        % ==============================
         function obj=emptyqueue(obj)
+            % Set jobqueue to []
             obj.jobqueue=[];
         end
         
-        %%==============================
-        % Add a task to the task queue
+        % ==============================
         function obj=addtask(obj,taskmask)
-            % Delete any to be completed firsts that have already been done
+            % Append element (taskmask) to jobqueue
+            
+            % Delete any to be completed first that have already been done
             tbcf={};
             for ind=1:length(taskmask.tobecompletedfirst)
                 if (~aas_doneflagexists(obj.aap,taskmask.tobecompletedfirst{ind}))
@@ -46,12 +69,12 @@ classdef aaq < handle
             obj.jobqueue=[obj.jobqueue,taskmask];
         end
         
-        %%==============================
-        % Allocate a job from the task queue to a worker
-        function [obj couldbeallocated]=allocate(obj,i,highmem)
+        % ==============================
+        function [obj, couldbeallocated]=allocate(obj,i,highmem)
+            % Allocate a job from the task queue to a worker
             global aaparallel;
             k=obj.jobqueue(i).k;
-            [stagepath stagename]=fileparts(obj.aap.tasklist.main.module(k).name);
+            [~, stagename]=fileparts(obj.aap.tasklist.main.module(k).name);
             try
                 specialrequirements=obj.aap.tasksettings.(stagename)(obj.aap.tasklist.main.module(k).index).specialrequirements;
                 %    specialrequirements={obj.aap.schema.tasksettings.(stagename)(obj.aap.tasklist.main.module(k).index).ATTRIBUTE.specialrequirements};
@@ -62,7 +85,6 @@ classdef aaq < handle
                 specialrequirements.highmemory=[];
                 specialrequirements.unlimit=[];
             end
-            
             
             [obj.aap, workerid]=aas_getboredworker(obj.aap,specialrequirements);
             
@@ -78,10 +100,9 @@ classdef aaq < handle
             end
         end
         
-        
-        %% =================================
-        % Get job description
+        % =================================
         function [obj,task]=getjobdescription(obj,i)
+            % Get job description
             k=obj.jobqueue(i).k;
             clear task;
             task.name='doprocessing';
@@ -97,10 +118,10 @@ classdef aaq < handle
             task.aap.acq_details.rootsuffix=obj.jobqueue(i).rootsuffix;
         end
         
-        %% The default, Mono threaded...
-        
-        % Run all tasks on the queue, single threaded
+        % =================================
+        % The default, Mono threaded...
         function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
+            % Run all tasks on the queue, single threaded
             global aaparallel
             
             njobs=length(obj.jobqueue);
@@ -117,8 +138,7 @@ classdef aaq < handle
        
     end
     
-    %% Utils
-    
+    % Utils
     methods (Hidden, Access = protected)
         function argout = SetArg(obj,argin,key,value)
             argout = argin;
