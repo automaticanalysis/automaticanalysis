@@ -45,7 +45,7 @@ if nargin < 5
     end
 end
 
-if isempty(p)
+if nargin < 2 || isempty(p)
     path = aas_getstudypath(aap);
 else
     if isnumeric(p)
@@ -120,19 +120,20 @@ if doVideo
         end
     end
 else % Just the ~FSL
-    for a = 1:3
-        pos(a) = slicesD(a,slicesInd(a));
-    end
-    spm_orthviews('reposition', pos);
-
-    spm_orthviews('context_menu','Xhairs','off');
-    for v = 1:nVols
-        for a = 1:3
-            fr = getframe(st.vols{v}.ax{a}.ax);
-            slicesImg{v}{a} = horzcat(slicesImg{v}{a}, fr.cdata);
+    for i_pos = 1:3
+        pos = slicesD(:,slicesInd(i_pos));
+        
+        spm_orthviews('reposition', pos);
+        
+        spm_orthviews('Xhairs','off');
+        for v = 1:nVols
+            for a = 1:3
+                fr = getframe(st.vols{v}.ax{a}.ax);
+                slicesImg{v}{a} = horzcat(slicesImg{v}{a}, fr.cdata);
+            end
         end
+        spm_orthviews('Xhairs','on');
     end
-    spm_orthviews('context_menu','Xhairs','on');
 end
 
 try
