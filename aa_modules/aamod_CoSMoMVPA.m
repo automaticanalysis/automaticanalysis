@@ -122,6 +122,7 @@ switch task
                     measure_args = aas_getsetting(aap,'Csettings');
                     measure_args.classifier = str2func(['cosmo_classify_' lower(measure_args.classifier)]);
                     measure_args.partitions = cosmo_balance_partitions(cosmo_nfold_partitioner(ds), ds);
+                    measure_args.output = 'balanced_accuracy';
                     measure=@cosmo_crossvalidation_measure;
             end  
             
