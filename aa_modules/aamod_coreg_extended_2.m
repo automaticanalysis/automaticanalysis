@@ -120,9 +120,9 @@ switch task
             
             % Coregister mean EPI to wholebrain EPI
             flags.estimate.cost_fun = 'ncc'; % whithin-modality
-            x2 = spm_coreg(spm_vol(deblank(WBimg)),spm_vol(WBimg),flags.estimate);
+            x2 = spm_coreg(spm_vol(deblank(WBimg)),spm_vol(mEPIimg),flags.estimate);
             % Set the new space for the mean EPI
-            spm_get_space(WBimg, spm_matrix(x2)\spm_get_space(WBimg));
+            spm_get_space(mEPIimg, spm_matrix(x2)\spm_get_space(mEPIimg));
             x = x1 + x2;
         else
             % Coregister mean EPI to structural
@@ -148,11 +148,18 @@ switch task
         for m = 1:numel(mainstream)
             if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
             EPIimg{m} = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream{m});
+            excl = [];
             for e = 1:size(EPIimg{m},1)
+                if ~strcmp(spm_file(EPIimg{m}(e,:),'ext'),'nii')
+                    aas_log(aap,false,sprintf('WARNING: file %s is not a NIfTI --> skipping',EPIimg{m}(e,:)));
+                    excl(end+1) = e;
+                    continue; 
+                end
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)
                 spm_get_space(deblank(EPIimg{m}(e,:)), MM);
             end
+            EPIimg{m}(excl,:) = [];
         end
         
         %% Describe the outputs and Diagnostics
