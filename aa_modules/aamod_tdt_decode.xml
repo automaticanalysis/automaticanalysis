@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='aa module for MVPA with The Decoding Toolbox' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
+            
+            <searchlight desc='spherical searchlight'>
+                <unit options='voxels|mm'>voxels</unit>
+                <radius>4</radius>
+            </searchlight>
+            
+            <measure desc='decoding_measure (multiple can be specified as colon-separeted list)' options='accuracy|sensitivity|specificity|balanced_accuracy|AUC|accuracy_minus_chance|sensitivity_minus_chance|specificity_minus_chance|balanced_accuracy_minus_chance|AUC_minus_chance' ui='optionlist'></measure>
+            
+            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
+            <inputstreams>
+                <stream isrenameable='1'>firstlevel_brainmask</stream>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_betas</stream>
+            </inputstreams>
+            
+            <outputstreams desc='streams will correspond to the measure(s)'>
+                <stream>settings</stream>
+                <stream>mask</stream>
+                <stream isrenameable='1'>result</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
