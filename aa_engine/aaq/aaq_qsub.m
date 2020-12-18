@@ -433,6 +433,7 @@ classdef aaq_qsub<aaq
                         return
                     end
                     if (isempty(obj.QV) || ~obj.QV.OnScreen) % not started or closed
+                        % ** create queue viewer class instance
                         obj.QV = aas_qsubViewerClass(obj);
                         obj.QV.Hold = true;
                         obj.QV.setAutoUpdate(false);
@@ -525,59 +526,93 @@ classdef aaq_qsub<aaq
             cd(qsubpath);
             % Submit the job
             if ~isempty(obj.pool)
-                % Check how much memory and time we should assign to the job
-                qsubsettings = {'mem',[],'walltime',[]};
-                % if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
-                % qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
-                % for f = fieldnames(qsub)'
-                % switch f{1}
-                % case 'memoryBase'
-                % qsubsettings{2} = qsub.memoryBase;
-                % case 'timeBase'
-                % qsubsettings{4} = qsub.timeBase;
-                % end
-                % end
-                % end
-                obj.pool_args(qsubsettings{:});
-                J = createJob(obj.pool);
-                cj = @aa_doprocessing_onetask;
-                nrtn = 0;
-                inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
-                if isprop(J,'AutoAttachFiles')
-                    J.AutoAttachFiles = false; 
-                end
-                % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12] 
-                % Make workers self-sufficient by passing them the aa
-                % paths. Users don't need to remember to update their own
-                % default paths (e.g. for a new aa version)
-                if isprop(J,'AdditionalPaths')
-                    J.AdditionalPaths = reqpath;
-                elseif isprop(J,'PathDependencies')
-                    J.PathDependencies = reqpath;
-                end
-                createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
-                success = false;
-                retries = 0;
-                % Job submission can sometimes fail (server fault) (DP). 
-                % Added retry to cope with this.
-                while success == false
-                    try
-                        J.submit;
-                        success = true;
-                    catch ME
-                        if retries > obj.aap.options.aaworkermaximumretry
-                            throw(ME)
-                        else
-                            retries = retries + 1;
-                            aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s | Retries: %d', ME.message, retries))
-                            pause(5)
-                        end
-                    end
-                end
-                % % State what the assigned number of hours and GB is...
-                % Naas_movParsot in use [TA]
-                % fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                % job.stagename, timReq./(60*60), memReq./(1024^3))
+                % New version (Dec 2020)
+                % Notes:
+                % 1. In the spirit of 'Innocent until proven guilty' we
+                % don't implement fallbacks for the case of unsuccessful
+                % submission of the batch job (we'd rather ensure
+                % beforehand that the parallel cluster is fully functional)
+                % 2. batch is likely not faster than direct calls to
+                % createJob and createTask as in the original
+                % implementation, but teh code is simpler
+                % 3. if AutoAttachFiles is true, code called by the
+                % batch function, namely
+                % (AbstractBatchHelper/iCalculateTaskDependencies)
+                % will spend an inordinate amout of time dealing
+                % with task dependencies (paths), so unless there
+                % is a compelling reason to do so, don't auto
+                % attach files
+                % 4. Matlab's interactive Job Monitor will not show
+                % the jobs unless the pool in which batch operates
+                % has been made the default
+                % 5. In contrast to the original implementation we don't
+                % capture the diary output - seems this is used nowhere
+                batch(obj.pool, @aa_doprocessing_onetask, 1, ...
+                    {obj.aap, job.task, job.k, job.indices, aaworker}, ...
+                    'AutoAttachFiles', false, ...
+                    'AutoAddClientPath', false, ...
+                    'AdditionalPaths', reqpath,...
+                    'CaptureDiary', false);
+                
+                
+                % Original implementation below (leaving it here for now)
+                % Notes:
+                % 1. The code lines revolving around qsubsettings are meant
+                % for a future version in which we can assign resources to
+                % jobs/tasks in an explicit way
+                %                 % Check how much memory and time we should assign to the job
+                %                 qsubsettings = {'mem',[],'walltime',[]};
+                %                 % if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
+                %                 % qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
+                %                 % for f = fieldnames(qsub)'
+                %                 % switch f{1}
+                %                 % case 'memoryBase'
+                %                 % qsubsettings{2} = qsub.memoryBase;
+                %                 % case 'timeBase'
+                %                 % qsubsettings{4} = qsub.timeBase;
+                %                 % end
+                %                 % end
+                %                 % end
+                %                 obj.pool_args(qsubsettings{:});
+                %                 J = createJob(obj.pool);
+                %                 cj = @aa_doprocessing_onetask;
+                %                 nrtn = 0;
+                %                 inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
+                %                 if isprop(J,'AutoAttachFiles')
+                %                     J.AutoAttachFiles = false;
+                %                 end
+                %                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12]
+                %                 % Make workers self-sufficient by passing them the aa
+                %                 % paths. Users don't need to remember to update their own
+                %                 % default paths (e.g. for a new aa version)
+                %                 if isprop(J,'AdditionalPaths')
+                %                     J.AdditionalPaths = reqpath;
+                %                 elseif isprop(J,'PathDependencies')
+                %                     J.PathDependencies = reqpath;
+                %                 end
+                %                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
+                %                 success = false;
+                %                 retries = 0;
+                %                 % Job submission can sometimes fail (server fault) (DP).
+                %                 % Added retry to cope with this.
+                %                 while success == false
+                %                     try
+                %                         J.submit;
+                %                         success = true;
+                %                     catch ME
+                %                         if retries > obj.aap.options.aaworkermaximumretry
+                %                             throw(ME)
+                %                         else
+                %                             retries = retries + 1;
+                %                             aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s | Retries: %d', ME.message, retries))
+                %                             pause(5)
+                %                         end
+                %                     end
+                %                 end
+                %                 % % State what the assigned number of hours and GB is...
+                %                 % Naas_movParsot in use [TA]
+                %                 % fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
+                %                 % job.stagename, timReq./(60*60), memReq./(1024^3))
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
