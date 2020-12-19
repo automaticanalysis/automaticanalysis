@@ -3,7 +3,9 @@ resp='';
 
 switch task
     case 'report'
-        dat = load(aas_getfiles_bystream(aap,'subject',subj,'settings')); output = dat.cfg.results.output;
+        output = strrep(aas_getstreams(aap,'output'),'permuted_','');
+        fncfg = cellstr(spm_select('FPList',spm_file(aas_getfiles_bystream(aap,'subject',subj,aas_getstreams(aap,'output',1)),'path'),'.*cfg.mat$'));
+        dat = load(fncfg{1});
         
         if subj == 1 % first subject
             for o = 1:numel(output)
