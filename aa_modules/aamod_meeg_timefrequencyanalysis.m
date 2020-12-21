@@ -111,6 +111,7 @@ switch task
                     
                     % select data
                     if isfield(data(seg),'ureventinfo')
+                        toremove = [];
                         if ~isempty(aas_getsetting(aap,'ignorebefore'))
                             lim = aas_getsetting(aap,'ignorebefore');
                             field = 'eventnum_all';

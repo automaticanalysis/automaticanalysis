@@ -140,12 +140,10 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
             
             if exist('stat','var')
                 % Get the index of each significant channel
-                [junk, sampStart] = min(abs(tfr{1}.time - cfgtopo.xlim(1)));
-                if tfr{1}.time(sampStart)+TOL < cfgtopo.xlim(1), sampStart=sampStart+1; end
-                [junk, sampEnd] = min(abs(tfr{1}.time - cfgtopo.xlim(2)));
-                if tfr{1}.time(sampEnd)-TOL > cfgtopo.xlim(2), sampEnd=sampEnd+1; end
-                freqStart = find(stat.freq > cfgtopo.ylim(1),1,'first');
-                freqEnd = find(stat.freq < cfgtopo.ylim(2),1,'last');
+                sampStart = find(tfr{1}.time >= cfgtopo.xlim(1),1,'first');
+                sampEnd = find(tfr{1}.time <= cfgtopo.xlim(2),1,'last');
+                freqStart = find(stat.freq >= cfgtopo.ylim(1),1,'first');
+                freqEnd = find(stat.freq <= cfgtopo.ylim(2),1,'last');
                 
                 pos_int = zeros(numel(tfr{1}.label),1);
                 neg_int = zeros(numel(tfr{1}.label),1);
