@@ -8,15 +8,16 @@ if ~iscell(tfr), tfr = {tfr}; end
 
 if ~isfield(diag,'layout'), diag.layout = ft_prepare_layout([],tfr{1}); end
 dispcfg = [];
+dispcfg.parameter = diag.parameter;
 dispcfg.layout = diag.layout;
 dispcfg.marker = 'labels';
 dispcfg.interactive = 'no';
 dispcfg.showoutline = 'yes';
 dispcfg.comment = 'no';
 try
-    dispcfg.zlim = [0 prctile(cell2mat(cellfun(@(x) x.powspctrm, tfr, 'UniformOutput', false)),99,'all')]; % max colour at 99 percentile of all data
+    dispcfg.zlim = [0 prctile(cell2mat(cellfun(@(x) x.(diag.parameter), tfr, 'UniformOutput', false)),99,'all')]; % max colour at 99 percentile of all data
 catch
-    allpow = cell2mat(cellfun(@(x) x.powspctrm, tfr, 'UniformOutput', false));
+    allpow = cell2mat(cellfun(@(x) x.(diag.parameter), tfr, 'UniformOutput', false));
     dispcfg.zlim = [0 prctile(allpow(:),99)]; % max colour at 99 percentile of all data
 end
 dispcfg.colorbar = 'yes';
@@ -63,9 +64,9 @@ end
 if isfield(tfr{1},'time') && numel(tfr{1}.time) > 1
     ptfr = tfr;
     if numel(ptfr) > 1
-        ptfr = {ft_math(struct('parameter','powspctrm','operation','subtract'),ptfr{:})};
+        ptfr = {ft_math(struct('parameter',diag.parameter,'operation','subtract'),ptfr{:})};
         if isfield(tfr{1},'mask'), ptfr{1}.mask = tfr{1}.mask; end
-        cfgmulti.zlim = prctile(ptfr{1}.powspctrm(:),[1 99]);
+        cfgmulti.zlim = prctile(ptfr{1}.(diag.parameter)(:),[1 99]);
     end
     if numel(ptfr{1}.label) == 1 % single channel data
         cfgmulti.linewidth = 2;
@@ -100,7 +101,7 @@ end
 
 if exist('stat','var')
     tfr = [tfr(1) tfr];
-    tfr{1}.powspctrm = stat.stat;
+    tfr{1}.(diag.parameter) = stat.stat;
     labels = [{'stat'} labels];
 end
     
@@ -109,7 +110,7 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
     if strcmp(labels{1},'stat'), indTFR = 2:numel(tfr); end
     
     % specify color scaling based on data
-    alldat = cellfun(@(x) x.powspctrm, tfr(indTFR), 'UniformOutput', false);
+    alldat = cellfun(@(x) x.(diag.parameter), tfr(indTFR), 'UniformOutput', false);
     alldat = vertcat(alldat{:});
     if numel(tfr{1}.time) > 1 || numel(tfr{1}.freq) > 1 % smooth multiD data
         if numel(tfr{1}.time) > 1 % along time
@@ -159,21 +160,33 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
                     continue
                 end
                 tmpdat = ft_selectdata(struct('latency',cfgtopo.xlim,'frequency',cfgtopo.ylim),tfr{e});
-                if all(isnan(tmpdat.powspctrm(:))), continue; end % skip empty data
+                if all(isnan(tmpdat.(diag.parameter)(:))), continue; end % skip empty data
                 
                 cfgtopo.colorbar = 'no';
                 if strcmp(labels{e},'stat')
-                    cfgtopo.zlim = prctile(tfr{e}.powspctrm(:),[1 99]);
+                    cfgtopo.zlim = prctile(tfr{e}.(diag.parameter)(:),[1 99]);
                     cfgtopo.colorbar = 'West';
                 else
                     cfgtopo.zlim = zlim;
                     if ~cbOn && (isempty(labels{e}) || strcmp(labels{e},'group #1')), cfgtopo.colorbar = 'West'; cbOn = true; end
                 end
-                subplot(rowPlot,colPlot,(t-1)*numel(tfr)+e);
+                if (cfgtopo.zlim(1) < 0) && (cfgtopo.zlim(2) > 0)
+                    r = cfgtopo.zlim(2)/-cfgtopo.zlim(1);
+                    cmaps{t,e} = [winter(64); hot(round(r*64))];
+                elseif cfgtopo.zlim(1) < 0, cmaps{t,e} = winter(64);
+                else, cmaps{t,e} = hot(64);
+                end
+                ax(t,e) = subplot(rowPlot,colPlot,(t-1)*numel(tfr)+e);
                 title(sprintf('%s %03d-%03d ms',labels{e},diag.snapshottwoi(t,:)));
                 ft_topoplotTFR(cfgtopo, tfr{e});
             end
         end
+        % Set colormaps
+        for t = 1:size(diag.snapshottwoi,1)
+            for e = 1:numel(tfr)
+                if ~isempty(cmaps{t,e}), colormap(ax(t,e),cmaps{t,e}); end
+            end
+        end        
         % Put colorbars between the axes
         cbs = findall(fig,'type','ColorBar');
         axs = findall(fig,'type','Axes');

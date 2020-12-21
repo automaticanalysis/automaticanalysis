@@ -26,6 +26,7 @@ switch task
         FT.addExternal('spm12');
         
         diag = aas_getsetting(aap,'diagnostics');
+        diag.parameter = 'avg';
         
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});

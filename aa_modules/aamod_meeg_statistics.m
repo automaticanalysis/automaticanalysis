@@ -71,15 +71,11 @@ switch task
             case 'timelock'
                 statcfg.parameter   = 'avg';
                 fstat = @ft_timelockstatistics;
-                fgrandavg = @ft_timelockgrandaverage;
                 fdiag = @meeg_diagnostics_ER;
-                avglat = 'latency';
             case 'timefreq'
                 statcfg.parameter   = 'powspctrm';
                 fstat = @ft_freqstatistics;
-                fgrandavg = @ft_freqgrandaverage;
                 fdiag = @meeg_diagnostics_TFR;
-                avglat = 'toilim';
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -87,7 +83,6 @@ switch task
                 statcfg.parameter   = 'pow';
             end
             fstat = @ft_sourcestatistics;
-            fgrandavg = @ft_sourcegrandaverage;
             fdiag = @meeg_diagnostics_source;
         end
         statcfg.alpha       = thr.p;
@@ -101,10 +96,6 @@ switch task
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
 
-        avgcfg = [];
-        avgcfg.channel   = 'all';
-        avgcfg.(avglat)   = 'all';
-                
         statplotcfg = aas_getsetting(aap,'diagnostics');
         if ~ft_datatype(data,'source')
             statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
@@ -342,8 +333,7 @@ switch task
                 
                 % plot
                 groupStat = {};
-                avgcfg.parameter = cfg{c}.parameter;
-                avgcfg.(avglat) = cfg{c}.latency;
+                avgcfg = keepfields(cfg{c},{'parameter','latency'});
                 if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
                     pcfg.snapshottwoi = pcfg.snapshottwoi(...
                         pcfg.snapshottwoi(:,1)/1000 >= stat.time(1) & ...
@@ -353,14 +343,13 @@ switch task
                 
                 if numel(unique(m.groupmodel)) <= 2
                     for g = unique(m.groupmodel)
-                        groupStat{end+1} = fgrandavg(avgcfg, allInp{cfg{c}.design(1,:)==g});
-                        if isfield(allInp{1},'tri'), groupStat{end}.tri = allInp{1}.tri; end
+                        groupStat{end+1} = ft_granddescriptives(avgcfg, allInp{cfg{c}.design(1,:)==g});
                     end
                 else
-                    groupStat{1} = fgrandavg(avgcfg, allInp{:});
-                    if isfield(allInp{1},'tri'), groupStat{1}.tri = allInp{1}.tri; end
+                    groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
                 end
                 groupStat{1}.stat = stat;
+                pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);

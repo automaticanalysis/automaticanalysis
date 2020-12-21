@@ -8,6 +8,7 @@ if ~iscell(er), er = {er}; end
 
 if ~isfield(diag,'layout'), diag.layout = ft_prepare_layout([],er{1}); end
 dispcfg = [];
+dispcfg.parameter = diag.parameter;
 dispcfg.layout = diag.layout;
 dispcfg.marker = 'labels';
 dispcfg.interactive = 'no';
@@ -53,6 +54,13 @@ if isfield(er{1},'stat')
     end
 end
 
+% add dummy time if none exist
+if ~isfield(er{1},'time')
+    for e = 1:numel(er)
+        er{e}.time = 0;
+    end
+end
+
 if numel(er{1}.time) > 1
     if numel(er{1}.label) == 1 % single channel data
         cfgmulti.linewidth = 2;
@@ -84,7 +92,7 @@ end
 
 if exist('stat','var')
     er = [er(1) er];
-    er{1}.avg = stat.stat;
+    er{1}.(diag.parameter) = stat.stat;
     labels = [{'stat'} labels];
 end
     
@@ -93,13 +101,13 @@ if ~isempty(diag.snapshottwoi)
     if strcmp(labels{1},'stat'), indER = 2:numel(er); end
     if numel(er{1}.time) > 1
         zlimSmooth = mean(diff(diag.snapshottwoi'))/1000*1/mean(diff(er{1}.time));    
-        alldat = cellfun(@(x) x.avg, er(indER), 'UniformOutput', false);
+        alldat = cellfun(@(x) x.(diag.parameter), er(indER), 'UniformOutput', false);
         alldat = vertcat(alldat{:});
         alldat = arrayfun(@(x) smooth(alldat(x,:),zlimSmooth),1:size(alldat,1),'UniformOutput',false);
         alldat = horzcat(alldat{:});
         zlim = [min(alldat(:)) max(alldat(:))];
     else
-        zlim = [min(cellfun(@(x) min(x.avg(:)),er(indER))) max(cellfun(@(x) max(x.avg(:)),er(indER)))];
+        zlim = [min(cellfun(@(x) min(x.(diag.parameter)(:)),er(indER))) max(cellfun(@(x) max(x.(diag.parameter)(:)),er(indER)))];
     end
     
     f = figure('Name',figtitle);
@@ -132,15 +140,27 @@ if ~isempty(diag.snapshottwoi)
         for e = 1:numel(er)
             cfgtopo.colorbar = 'no';
             if strcmp(labels{e},'stat')
-                cfgtopo.zlim = [min(er{e}.avg(:)) max(er{e}.avg(:))]; 
+                cfgtopo.zlim = [min(er{e}.(diag.parameter)(:)) max(er{e}.(diag.parameter)(:))]; 
                 if t == 1, cfgtopo.colorbar = 'West'; end
             else
                 cfgtopo.zlim = zlim;
                 if t == 1 && (isempty(labels{e}) || strcmp(labels{e},'group #1')), cfgtopo.colorbar = 'West'; end
             end
-            subplot(rowPlot,colPlot,(t-1)*numel(er)+e);
+            if (cfgtopo.zlim(1) < 0) && (cfgtopo.zlim(2) > 0)
+                r = cfgtopo.zlim(2)/-cfgtopo.zlim(1);
+                cmaps{t,e} = [winter(64); hot(round(r*64))];
+            elseif cfgtopo.zlim(1) < 0, cmaps{t,e} = winter(64);
+            else, cmaps{t,e} = hot(64);
+            end
+            ax(t,e) = subplot(rowPlot,colPlot,(t-1)*numel(er)+e);
             title(sprintf('%s %03d-%03d ms',labels{e},diag.snapshottwoi(t,:)));
             ft_topoplotER(cfgtopo, er{e});
+        end
+    end
+    % Set colormaps
+    for t = 1:size(diag.snapshottwoi,1)
+        for e = 1:numel(er)
+            if ~isempty(cmaps{t,e}), colormap(ax(t,e),cmaps{t,e}); end
         end
     end
     % Put colorbars between the axes
@@ -168,7 +188,7 @@ if ~isempty(diag.videotwoi) && (nargin >= 4)
     indER = 1:numel(er);
     if strcmp(labels{1},'stat'), indER = 2:numel(er); end
     zlimSmooth = dt*1/mean(diff(er{1}.time));
-    alldat = cellfun(@(x) x.avg, er(indER), 'UniformOutput', false);
+    alldat = cellfun(@(x) x.(diag.parameter), er(indER), 'UniformOutput', false);
     alldat = vertcat(alldat{:});
     alldat = arrayfun(@(x) smooth(alldat(x,:),zlimSmooth),1:size(alldat,1),'UniformOutput',false);
     alldat = horzcat(alldat{:});

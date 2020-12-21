@@ -57,6 +57,7 @@ switch task
         bccfg.parameter    = {'powspctrm' 'crsspctrm'};
         
         diag = aas_getsetting(aap,'diagnostics');
+        diag.parameter = 'powspctrm';
         
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
