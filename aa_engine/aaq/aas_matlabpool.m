@@ -1,21 +1,20 @@
+function out = aas_matlabpool(varargin)
 % AAS_MATLABPOOL performs actions on the current matlab pool:
-%   aas_matlabpool('getcurrent') returns the current pool object, which may
-%       be empty (no pool will be started)
-%   aas_matlabpool('isopen') returns a logical indicating whether a pool
-%       is open 
-%   aas_matlabpool('close') closes the current pool if it exists and
+%   out = aas_matlabpool('getcurrent') returns the current pool object,
+%       which may be empty (no pool will be started)
+%   out = aas_matlabpool('isopen') returns a logical indicating whether a 
+%       pool is open 
+%   out = aas_matlabpool('close') closes the current pool if it exists and
 %       returns an empty pool object
-%   aas_matlabpool(varargin) where varargin is none of the options above,
-%       calls parpool; varargin in this case must be a resource, or a
-%       poolsize, or both, plus name-value pairs (see parpool)
+%   out = aas_matlabpool(varargin) where varargin is none of the options 
+%       above, calls parpool; varargin in this case must be a resource, or 
+%       a poolsize, or both, plus name-value pairs (see parpool). The pool
+%       object will be returned.
 % 
 % If the request fails, [] will be returned.
 
-function out = aas_matlabpool(varargin)
-
 % default value upon failure
 out = [];
-
 try
     switch varargin{1}
         case 'getcurrent'

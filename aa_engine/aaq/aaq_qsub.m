@@ -22,7 +22,8 @@ classdef aaq_qsub<aaq
     %   QVUpdate            - Update queue viewer
     %   QVClose             - Close queue viewer
     %   pool_args           - Construct arguments to be submitted to schedulers
-    %   qsub_q_job          - Create Job in the pool and task in the job if pool exists, otherwise call aa_doprocessing_onetask
+    %   qsub_q_job          - Create Job in the pool and task in the job if pool exists, 
+    %                         otherwise call aa_doprocessing_onetask
     %   add_from_jobqueue   - Add job to queue by calling qsub_q_job and creating jobinfo
     %   remove_from_jobqueue - Remove job from jobqueue, possibly initiating a retry
     %   job_monitor         - Gather job info from the job scheduler
@@ -56,7 +57,7 @@ classdef aaq_qsub<aaq
             'subjectinfo',{}...
             )
         jobretries = []             % array, number of retries of job runs
-        waitforalljobs              % logical, indicates whether code shall wait until all jobs finished 
+        waitforalljobs              % logical, true indicating that job queue is fully built, false otherwise
         initialSubmitArguments      % char array, 2nd input arg to pool.SubmitArguments (ensures resources, e.g. MAXFILTER license)
         newGenericVersion           % logical, true if pool.IndependentSubmitFcn is empty 
         refresh_waitforjob          % - unused
@@ -534,7 +535,7 @@ classdef aaq_qsub<aaq
                 % beforehand that the parallel cluster is fully functional)
                 % 2. batch is likely not faster than direct calls to
                 % createJob and createTask as in the original
-                % implementation, but teh code is simpler
+                % implementation, but the code is simpler
                 % 3. if AutoAttachFiles is true, code called by the
                 % batch function, namely
                 % (AbstractBatchHelper/iCalculateTaskDependencies)
