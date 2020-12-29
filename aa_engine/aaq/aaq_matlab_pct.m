@@ -197,14 +197,12 @@ classdef aaq_matlab_pct<aaq
             % This method only acts when the queue is fully built
             if waitforalljobs
                 if ~isempty(obj.jobqueue)
-                    
-                    % Copy current value of aacache to the workers of the
-                    % current pool (necessary because workers invoked by
+                    % Copy current value of global variable aacache to
+                    % obj.aaworker (necessary because workers invoked by
                     % spmd have 'local copies of global variables',
                     % initiated with [])
                     global aacache
-                    parfevalOnAll(aas_matlabpool('getcurrent'), @copy_globals_to_workers, 0, aacache);
-                    
+                    obj.aaworker.aacache = aacache;
                     spmd
                         if labindex==1
                             obj.runall_spmd_master(waitforalljobs);
