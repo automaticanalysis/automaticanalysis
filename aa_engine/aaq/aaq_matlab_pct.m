@@ -374,11 +374,7 @@ classdef aaq_matlab_pct < aaq
             end
             
             if (obj.fatalerrors)
-                aas_log(obj.aap,false,'PARALLEL (matlab_pct): Fatal errors executing jobs. The errors were:','Errors');
-                for errind=1:length(errline)
-                    aas_log(obj.aap,false,[' ' errline{errind}],'Errors');
-                end
-                aas_log(obj.aap,true,'PARALLEL (matlab_pct): Terminating because of errors','Errors');
+                aas_log(obj.aap, true, 'PARALLEL (matlab_pct): Fatal errors executing jobs.','Errors');
             end
         end
         
