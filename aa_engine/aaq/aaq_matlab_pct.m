@@ -151,7 +151,7 @@ classdef aaq_matlab_pct < aaq
                             aas_log(aap,false,'INFO: Generic engine is detected');
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'walltime',obj.aaparallel.walltime);
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'memory',obj.aaparallel.memory);                            
-                        case 'Local'
+                        case 'parallel.cluster.Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');
                     end
                 else
@@ -159,6 +159,8 @@ classdef aaq_matlab_pct < aaq
                 end
                 P.NumWorkers = obj.aaparallel.numberofworkers;
                 P.JobStorageLocation = obj.aaworker.parmpath;
+                % Note that below we're possibly overriding the number of
+                % workers that may have been stored in a pool profile
                 C = aas_matlabpool(P,P.NumWorkers);
                 if ~isempty(C)
                     C.IdleTimeout = obj.aaparallel.walltime*60; 
@@ -169,7 +171,7 @@ classdef aaq_matlab_pct < aaq
 
         
         function close(obj)
-            % Closes matlabpool and invokes superclass' close function.
+            % Close matlabpool and invoke superclass' close function.
             if obj.doHandlePool
                 aas_matlabpool('close'); 
             end

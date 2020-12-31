@@ -143,7 +143,7 @@ classdef aaq_qsub<aaq
                                 obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
                             end
                             aaparallel.numberofworkers = 1;
-                        case 'Local'
+                        case 'parallel.cluster.Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');
                             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
                     end
@@ -152,6 +152,8 @@ classdef aaq_qsub<aaq
                     % ** no need to set any of aaparallel's values here as
                     % this has been taken care of in aa_doprocessing
                 end
+                % Note that we're possibly overriding the number of workers
+                % that may have been stored in a pool profile
                 obj.pool.NumWorkers = aaparallel.numberofworkers;
                 obj.pool.JobStorageLocation = aaworker.parmpath;
             catch ME
