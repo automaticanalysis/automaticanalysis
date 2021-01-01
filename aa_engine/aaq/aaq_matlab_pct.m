@@ -179,7 +179,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function obj=addtask(obj,taskmask)
+        function addtask(obj,taskmask)
             % Add a task to the task queue.
             % Adds to the parent class's method by scanning the
             % dependencies of the new module.
@@ -240,7 +240,7 @@ classdef aaq_matlab_pct < aaq
         end
 
         
-        function [obj]=runall(obj, ~, waitforalljobs)
+        function runall(obj, ~, waitforalljobs)
             % Run all jobs, using spmd.
             % This isn't really what we use it for - we actually set pass
             % messages between the modules to make a queue happen.
@@ -270,7 +270,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function [obj,messagesreceived]=receiveWorkerMessages(obj)
+        function messagesreceived=receiveWorkerMessages(obj)
             % Pull data from workers and process them.
             % This method is used exclusively by the master worker.
             tic
@@ -284,7 +284,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function [obj]=processWorkerMessage(obj,workerData,workerIndex)
+        function processWorkerMessage(obj,workerData,workerIndex)
             % Execute action implied by message from non-master worker.
             % Input arg 'workerData' is the data sent from any of the
             % non-master workers, see comments in the code.
@@ -331,7 +331,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function [obj]=runall_spmd_master(obj,waitforalljobs)
+        function runall_spmd_master(obj,waitforalljobs)
             % Master - sends jobs that are ready to workers
             obj.receiveWorkerMessages();
             itnum=0;
@@ -418,7 +418,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function [obj]=runall_spmd_worker(obj)
+        function runall_spmd_worker(obj)
             % Enter a loop probing whether other workers are ready to send
             % data ('hang around') and, once that is the case, either
             % spring into action by running aa_doprocessing_onetask, or
@@ -479,7 +479,7 @@ classdef aaq_matlab_pct < aaq
         end
         
         
-        function [obj]=waitforrealtime(obj)
+        function waitforrealtime(obj)
             % THREAD TO ROUTE INCOMING REALTIME DATA
             % Overview:
             %  A set of realtime modules (like aamod_realtime_wait_epi)
