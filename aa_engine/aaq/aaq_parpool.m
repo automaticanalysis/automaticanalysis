@@ -232,7 +232,7 @@ classdef aaq_parpool < aaq
                         % written to disk anyways, but may be required in
                         % the future (streamcache?). Also, fetchNext sets
                         % the 'Read' property of the future, so is useful
-                        % for checking the state of affairs. parfeval
+                        % for checking the state of affairs. fetchNext
                         % expects array of futures F to be completely
                         % parfeval'd, that is, all jobs must be different
                         % from 'unavailable', the default state upon
