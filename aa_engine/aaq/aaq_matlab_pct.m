@@ -92,7 +92,7 @@ classdef aaq_matlab_pct < aaq
     
     properties (Hidden)
         jobStudyPaths           = {} % cell array, actualised studypath (for each job)
-        isJobReadyToGo          = [] % logical array, true indicating ready to be processed (for each job)
+        jobReadyToGo            = [] % double array, indexes of jobs ready to be processed
         isJobNotRun             = [] % logical array, true indicating job has not run (for each job)
         jobDoneFlag             = {} % cell array, copy of taskmask.doneflag (for each job)
         isJobDoneFlag           = [] % logical array, true if doneflag file exists (for each job)
@@ -233,9 +233,9 @@ classdef aaq_matlab_pct < aaq
                 end
             end
             
-            % Add it to the isJobReadyToGo queue if appropriate
+            % Add it to the jobReadyToGo queue if appropriate
             if obj.numJobDepOn(job_ix)==0
-                obj.isJobReadyToGo=[obj.isJobReadyToGo job_ix];
+                obj.jobReadyToGo=[obj.jobReadyToGo job_ix];
             end
         end
 
@@ -321,7 +321,7 @@ classdef aaq_matlab_pct < aaq
                         deponmask=obj.jobDepOf{jobind}(depoflist);
                         obj.jobDepOn{deponmask}(obj.jobDepOn{deponmask}==jobind)=[];
                         obj.numJobDepOn(deponmask)=obj.numJobDepOn(deponmask)-1;
-                        obj.isJobReadyToGo=[obj.isJobReadyToGo deponmask(obj.numJobDepOn(deponmask)==0)];
+                        obj.jobReadyToGo=[obj.jobReadyToGo deponmask(obj.numJobDepOn(deponmask)==0)];
                     end
                 otherwise
                     % trigger an error for any other input, as this may
@@ -344,8 +344,8 @@ classdef aaq_matlab_pct < aaq
                 itnum=itnum+1;
                 
                 jobreadystart=tic;
-                jobreadylist=obj.isJobReadyToGo;
-                obj.isJobReadyToGo=[];
+                jobreadylist=obj.jobReadyToGo;
+                obj.jobReadyToGo=[];
                 obj.benchmark.jobreadystart=obj.benchmark.jobreadystart+toc(jobreadystart);
                 
                 for jobreadyind=length(jobreadylist):-1:1
