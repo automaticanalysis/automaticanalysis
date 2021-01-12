@@ -63,6 +63,11 @@ switch task
             neighbours = [];
         end
         
+        statplotcfg = aas_getsetting(aap,'diagnostics');
+        if ~ft_datatype(data,'source')
+            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        end
+        
         thr = aas_getsetting(aap,'threshold');
         statcfg = [];
         statcfg.channel   = 'all';
@@ -74,6 +79,7 @@ switch task
                 fdiag = @meeg_diagnostics_ER;
             case 'timefreq'
                 statcfg.parameter   = 'powspctrm';
+                statcfg.avgoverfreq = 'yes';
                 fstat = @ft_freqstatistics;
                 fdiag = @meeg_diagnostics_TFR;
         end
@@ -96,11 +102,6 @@ switch task
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
 
-        statplotcfg = aas_getsetting(aap,'diagnostics');
-        if ~ft_datatype(data,'source')
-            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
-        end
-        
         models = aas_getsetting(aap,'model'); models(1) = []; 
         for m = models
             savepath{1} = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);
@@ -317,13 +318,25 @@ switch task
                 cfg{1}.latency = 'all';
                 cfg{1}.correctm = thr.correctiontimepoint;
             end
-            if strcmp(inpType, 'peak')  % custom analysis and plotting
-                cfg{1}.parameter = 'amp';
-                savepath{2} = savepath{1};
-                savepath{1} = [savepath{1} '_amp'];
-                cfg{2} = cfg{1};
-                cfg{2}.parameter = 'lat';
-                savepath{2} = [savepath{2} '_lat'];
+            switch inpType
+                case 'timefreq' % separate analyses for each band
+                    fwoi = aas_getsetting(aap,'diagnostics.snapshotfwoi');
+                    if ~isempty(fwoi)
+                        for f = 1:size(fwoi,1)
+                            cfg{f} = cfg{1};
+                            cfg{f}.frequency = fwoi(f,:);
+                            savepath{f} = savepath{1};
+                        end
+                    else
+                        cfg{1}.frequency = 'all';
+                    end                    
+                case 'peak' % custom analysis and plotting
+                    cfg{1}.parameter = 'amp';
+                    savepath{2} = savepath{1};
+                    savepath{1} = [savepath{1} '_amp'];
+                    cfg{2} = cfg{1};
+                    cfg{2}.parameter = 'lat';
+                    savepath{2} = [savepath{2} '_lat'];
             end
             
             for c = 1:numel(cfg)
@@ -347,6 +360,11 @@ switch task
                     end
                 else
                     groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
+                end
+                if isfield(cfg{c},'frequency')
+                    groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
+                    pcfg.snapshotfwoi = cfg{c}.frequency;
+                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % hack to add suffix to statFn
                 end
                 groupStat{1}.stat = stat;
                 pcfg.parameter = cfg{c}.parameter;
