@@ -80,7 +80,7 @@ switch task
         if ~s, aas_log(aap,false,'HCP Workbench is not found -> corticalsheet is not available'); end
         if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,false,'templates for HCP Workbench are not found -> corticalsheet is not available'); 
         else
-            aas_log(aap,false,sprintf('WARNING: if you want to use cotricalsheet, make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+            aas_log(aap,false,sprintf('WARNING: if you want to use corticalsheet, make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
         end
 end
 end
