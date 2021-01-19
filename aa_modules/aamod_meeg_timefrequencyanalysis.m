@@ -105,9 +105,9 @@ switch task
                                 aas_log(aap,false,sprintf('WARNING: segment # %d has no trial --> skipped',seg));
                                 continue; 
                             end
+                            EL.unload;
                             FT.reload;                            
-                            data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));
-                            EL.unload; % FieldTrip's eeglab toolbox is incomplete
+                            data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));                            
                     end
                     
                     % select data
