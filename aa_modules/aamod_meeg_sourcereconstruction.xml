@@ -26,12 +26,12 @@
                 <stream>timefreq</stream>
                 <stream>headmodel</stream>
                 <stream>sourcemodel</stream>
-                <stream>structural</stream>
                 <stream>segmentation</stream>
             </inputstreams>
             
             <outputstreams>
                 <stream>timefreq</stream>
+                <stream>filter</stream>
             </outputstreams>
             
             <diagnostics>

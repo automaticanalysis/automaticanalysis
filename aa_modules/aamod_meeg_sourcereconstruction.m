@@ -11,14 +11,6 @@ switch task
         FT.addExternal('spm12');
         
         %% obtain inputs
-        mrifn = aas_getfiles_bystream(aap,'subject',subj,'structural');
-        if strcmp(spm_file(mrifn,'ext'),'mat')
-            dat = load(mrifn);
-            mri = dat.mri;
-        else
-            aas_log(aap,true,'structural MUST be a Fieldtrip "mri"')
-        end
-        
         dat = load(aas_getfiles_bystream(aap,'subject',subj,'segmentation'));
         seg = dat.seg;
         dat = load(aas_getfiles_bystream(aap,'subject',subj,'headmodel'));
@@ -164,6 +156,7 @@ switch task
                 cfg.method      = 'eloreta';
                 cfg.sourcemodel = sourcemodel;
                 cfg.headmodel   = headmodel;
+                cfg.keepfilter = 'yes';
                 cfg.normalize = settings.normalize;
         end
         
@@ -172,6 +165,8 @@ switch task
             dat.timefreq.elec = elec_final;
             timefreq     = ft_struct2single(ft_sourceanalysis(cfg, dat.timefreq));  % compute the source model
             timefreq.avg.dimord = strrep(dat.timefreq.dimord,'chan','pos');
+            if f == 1, filter = timefreq.avg.filter; end
+            timefreq.avg = rmfield(timefreq.avg,'filter');
             timefreq.cfg = []; % remove provenance to save space
             timefreq.cfg.included = reshape(~ind,[],1);
             save(outfnames{f},'timefreq')
@@ -179,6 +174,10 @@ switch task
 
         %% save outputs        
         aap = aas_desc_outputs(aap,'subject',subj,'timefreq',outfnames);
+        
+        outfname = fullfile(aas_getsubjpath(aap,subj),'filter.mat');
+        save(outfname,'filter');
+        aap = aas_desc_outputs(aap,'subject',subj,'filter',outfname);
 
         FT.rmExternal('spm12');
         FT.unload;
