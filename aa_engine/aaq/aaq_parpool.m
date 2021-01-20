@@ -4,9 +4,11 @@ classdef aaq_parpool < aaq
     % Matlab workers which are started and reserved via parpool prior to
     % any module computation.
     %
-    % The advantages compared to other queue processors are availability of
-    % workers at short latency (because Matlab processes don't need to be
-    % started up for each task), and guaranteed availability of workers.
+    % The advantages compared to other queue processors are in terms of the
+    % availability of workers:
+    %  i) short latency (because Matlab processes don't need to be started
+    %     up for each task)
+    % ii) Workers are reserved, so their availability is guaranteed
     %
     % Compared to other queue processors with parallelisation, aaq_parpool
     % features an alternative, faster computation of job dependencies,
@@ -19,9 +21,6 @@ classdef aaq_parpool < aaq
     % other environments in which blocking CPUs is not an issue.
 
     % TODO
-    % - code dealing with streamcache partly omitted from the present
-    % version as it seems to be part of a future, not yet implemented
-    % scheme for transferring streams in memory as opposed to via files
     % - implement queue viewer GUI here as in qsub
     
     properties
@@ -44,8 +43,6 @@ classdef aaq_parpool < aaq
         aaparallel              = [] % copy of global aaparallel struct
         workerstatus            = {} % cell array of chars indicating worker status (for each worker)
         
-        % real-time
-        realtime_deps           = [] % struct, dependencies of real-time jobs
         % Torque-only
         initialSubmitArguments  = '' % additional arguments to use when submitting jobs
         
@@ -125,8 +122,6 @@ classdef aaq_parpool < aaq
             % Adds to the parent class's method by scanning the
             % dependencies of the new module.
             obj=addtask@aaq(obj,taskmask);
-            % module_index is needed for dealing with real-time input only
-            module_index=obj.aap.tasklist.main.module(taskmask.k).index;
             job_ix=length(obj.jobqueue);
             obj.isJobNotRun(job_ix)=true;
             
@@ -141,19 +136,6 @@ classdef aaq_parpool < aaq
             obj.jobDoneFlag{job_ix}=taskmask.doneflag;
             obj.isJobDoneFlag(job_ix)=exist(taskmask.doneflag,'file');
             obj.jobStudyPaths{job_ix}=aas_getstudypath(obj.aap,taskmask.k);
-            
-            % Does this stage need realtime input?
-            if isfield(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE,'waitforrealtime_singlefile') && ~isempty(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE.waitforrealtime_singlefile)
-                [dcmfield, dcmfilter]=strtok(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE.waitforrealtime_singlefile,'=');
-                newrtd=struct('dcmfield',dcmfield,'dcmfilter',strtrim(dcmfilter(2:end)),'njob',job_ix,'eventtype','singlefile','satisfied',false);
-                if isempty(obj.realtime_deps)
-                    obj.realtime_deps=newrtd;
-                else
-                    obj.realtime_deps(end+1)=newrtd;
-                end
-                obj.jobDepOn{job_ix}=-length(obj.realtime_deps); % minus indicates realtime dependency
-                obj.numJobDepOn(job_ix)=1;
-            end
             
             % Go through each dependency of this task and find the index of
             % that
@@ -230,17 +212,18 @@ classdef aaq_parpool < aaq
                         % subset of parfeval'd results - which is currently
                         % not really needed in aa because all results are
                         % written to disk anyways, but may be required in
-                        % the future (streamcache?). Also, fetchNext sets
-                        % the 'Read' property of the future, so is useful
-                        % for checking the state of affairs. fetchNext
-                        % expects array of futures F to be completely
-                        % parfeval'd, that is, all jobs must be different
-                        % from 'unavailable', the default state upon
-                        % preallocation of F. Matlab will crash if that is
-                        % not the case. However, due to the dependencies
-                        % among jobs we have to submit them in succession
-                        % (this is what the dependency calculation is all
-                        % about). Hence, we cannot just
+                        % the future upon further development. Also,
+                        % fetchNext sets the 'Read' property of the future,
+                        % so is useful for checking the state of affairs.
+                        % fetchNext expects array of futures F to be
+                        % completely parfeval'd, that is, all jobs must be
+                        % different from 'unavailable', the default state
+                        % upon preallocation of F. Matlab will crash if
+                        % that is not the case. However, due to the
+                        % dependencies among jobs we cannot submit them all
+                        % at once but instead have to submit them in
+                        % succession (this is what the dependency
+                        % calculation is all about). Hence, we cannot just
                         %   fetchNext(F)
                         % but instead need to index the entries in F which
                         % are anything but 'unavailable'. Furthermore, and
@@ -285,15 +268,6 @@ classdef aaq_parpool < aaq
                                 obj.jobReadyToGo=[obj.jobReadyToGo, deponmask(obj.numJobDepOn(deponmask)==0)];
                             end
                         end
-                        
-                        % TODO: verify: the copying, sending, receiving and
-                        % appending of streamcache in aaq_matlab_pct may
-                        % have to be implemented in a different fashion,
-                        % heeding the order of jobs
-                        if isfield(obj.aap.internal,'streamcache') 
-                            warning('has streamcache')
-                        end
-                        
                         % canceled jobs will not change their isJobNotRun
                         % flag, so could potentially cause an infinite loop 
                         % (in case their non-completion did not trigger an
