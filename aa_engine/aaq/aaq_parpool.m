@@ -158,7 +158,7 @@ classdef aaq_parpool < aaq
             
             % Add it to the jobReadyToGo queue if appropriate
             if obj.numJobDepOn(job_ix)==0
-                obj.jobReadyToGo=[obj.jobReadyToGo job_ix];
+                obj.jobReadyToGo=[obj.jobReadyToGo, job_ix];
             end
         end
 
@@ -187,9 +187,9 @@ classdef aaq_parpool < aaq
                         % each time after a job has successfully finished
                         jobreadylist=obj.jobReadyToGo;
                         obj.jobReadyToGo=[];
-                        % TODO remove check once uniqueness is clarified
+                        % check uniqueness 
                         if numel(unique(jobreadylist)) ~= numel(jobreadylist)
-                            error('jobReadyToGo contains duplicates')
+                            aas_log(obj.aap, true, sprintf('ERROR:internal:jobReadyToGo contains duplicates'));
                         end
                         
                         for jix = jobreadylist(:)'
