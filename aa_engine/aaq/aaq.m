@@ -14,6 +14,7 @@ classdef aaq < handle
     %   addtask           - add a task to the task queue
     %   allocate          - allocate a job from the task queue to a worker
     %   getjobdescription - return struct task
+    %   jobqueue2table    - create jobTable from jobqueue
     %   runall            - sequentially call aa_doprocessing_onetask on all jobs in queue (no parallelism)
 
     properties
@@ -98,6 +99,22 @@ classdef aaq < handle
                 end
                 couldbeallocated=true;
             end
+        end
+        
+        % =================================
+        function jobTable = jobqueue2table(obj)
+            % Create table from ob.jobqueue and a few other variables 
+            % for inspection/debugging purposes
+            numJob = numel(obj.jobqueue);
+            jobTable = struct2table(obj.jobqueue);
+            % preallocate a few informative columns:
+            % - order in which jobs are executed (place this column
+            %   in first position)
+            jobTable.execorder = repmat(-1, [numJob, 1]);
+            jobTable = jobTable(:, [end, 1:end-1]);
+            % state (of job) and potential errors
+            jobTable.state = repmat({''}, [numJob, 1]);
+            jobTable.error = repmat({''}, [numJob, 1]);
         end
         
         % =================================
