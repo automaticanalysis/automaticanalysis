@@ -3,6 +3,9 @@ for supporting research at the MRC Cognition and Brain Science Unit. It
 is made available to the academic community in the hope that it may
 prove useful.
 
+[![Docker image available!](https://img.shields.io/badge/docker-bids%2Faa-brightgreen.svg?logo=docker&style=flat)](https://hub.docker.com/r/bids/aa/)
+[![manuscript](https://img.shields.io/badge/doi-10.3389%2Ffninf.2014.00090-brightgreen.svg?style=flat)](http://doi.org/10.3389/fninf.2014.00090)
+
 Definitions: aa means the Automatic Analysis software package and any
 associated documentation whether electronic or printed.
 
