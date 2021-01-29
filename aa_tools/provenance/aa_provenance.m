@@ -145,7 +145,7 @@ classdef aa_provenance < handle
                 obj.pp.bundle(obj.IDs{1}.id,obj.p);
                 serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.provn'));
                 serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.ttl'));
-%                 serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.json'));
+                serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.json'));
                 if ~unix('which dot')
                     try
                         serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.pdf'));
