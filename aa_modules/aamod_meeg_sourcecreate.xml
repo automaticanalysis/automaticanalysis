@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='*' desc='Create source data based on previous source reconstruction' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.25</memoryBase>
+            </qsub>
+            
+            <parameter desc='parameter to process, can be a cell-array of strings'></parameter>
+            
+            <inputstreams>
+                <stream>sourcefilter</stream>
+                <stream>leadfield</stream>                
+                <stream isrenameable='1'>input</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>output</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

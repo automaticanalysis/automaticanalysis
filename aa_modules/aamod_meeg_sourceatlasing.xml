@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='*' desc='Atlasing Source Reconstruction' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.25</memoryBase>
+            </qsub>
+            
+            <parameter desc='parameter to process, can be a cell-array of strings'></parameter>
+            
+            <options desc='method-specific options'>
+                <corticalsheet>
+                    <annotation desc='parcellation scheme' ui='optionlist' options='aparc|DKTatlas|a2009s'></annotation>
+                </corticalsheet>
+            </options>
+            
+            <inputstreams>
+                <stream isessential='0'>freesurfer</stream>
+                <stream isrenameable='1'>input</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>output</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
