@@ -13,9 +13,9 @@ switch task
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         
         % Process streams
-        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
+        inpstream = aas_getstreams(aap,'input');
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
+        while ~aas_stream_has_contents(aap,inpstream{tInd})
             tInd = tInd + 1;
         end
         targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
