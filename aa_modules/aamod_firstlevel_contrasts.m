@@ -11,7 +11,7 @@ resp='';
 
 switch task
     case 'report' % [TA]
-        if isempty(spm_select('List',aas_getsubjpath(aap,subj),'^diagnostic_.*jpg'))
+        if ~exist(fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename '.jpg']),'file')
             diag(aap,subj);
         end
         fdiag = dir(fullfile(aas_getsubjpath(aap,subj),'diagnostic_*.jpg'));
@@ -44,7 +44,7 @@ switch task
         settings = aap.tasklist.currenttask.settings;
         
         if settings.useaasessions
-            [nsess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+            [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
             subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
             sessnames = {aap.acq_details.sessions(:).name};
             selected_sessions = subjSessionI;
@@ -70,9 +70,9 @@ switch task
         if settings.eachagainstbaseline
             if isempty(contrasts), contrasts(1).subject = aas_getsubjname(aap,subj); end
             basev = zeros(1,numel(SPM.xX.name));
-            if any(cellfun(@(x) ~isempty(regexp(x,'.*constant$')), SPM.xX.name)), basev(end) = []; end
+            if any(cellfun(@(x) ~isempty(regexp(x,'.*constant$', 'once')), SPM.xX.name)), basev(end) = []; end
             for conind = 1:numel(SPM.xX.name)
-                if any(cellfun(@(x) ~isempty(regexp(SPM.xX.name{conind},sprintf('.*%s$',x))), {'x' 'y' 'z' 'r' 'p' 'j' 'constant'})), continue; end
+                if any(cellfun(@(x) ~isempty(regexp(SPM.xX.name{conind},sprintf('.*%s$',x), 'once')), {'x' 'y' 'z' 'r' 'p' 'j' 'constant'})), continue; end
                 newv = basev;
                 newv(conind) = 1;
                 contrasts.con(end+1)= struct(...
@@ -268,10 +268,7 @@ switch task
         end
         SPM = spm_contrasts(SPM);
         
-        % Efficiency based on Rik Henson's script [TA]
-        if settings.estimateefficiency && strcmp(aap.options.wheretoprocess,'localsingle')
-            diag(aap, subj, SPM); 
-        end
+        diag(aap, subj, SPM);
         
         % Describe outputs
         %  updated spm
@@ -283,15 +280,15 @@ switch task
         for filterind=1:length(filters)
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.nii']));
             betafns=[];
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.img']));
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             allbetas=dir(fullfile(anadir,[filters{filterind} '_*.hdr']));
-            for betaind=1:length(allbetas);
+            for betaind=1:length(allbetas)
                 betafns=strvcat(betafns,fullfile(anadir,allbetas(betaind).name));
             end
             aap=aas_desc_outputs(aap,subj,['firstlevel_' lower(filters{filterind}) 's'],betafns);
@@ -321,18 +318,20 @@ end
 
 % distribution
 cons = SPM.xCon; cons = cons([cons.STAT]=='T');
-for c = cons
-    h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
-    print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
-        ['diagnostic_aamod_firstlevel_contrast_dist_' strrep_multi(c.name,{' ' ':' '>'},{'' '_' '-'}) '.jpg'])); % "unconventional" characters 
-    close(h);
+if isempty(aas_getsetting(aap,'diagnostics.histogram')) || aas_getsetting(aap,'diagnostics.histogram')
+    for c = cons
+        h = img2hist(fullfile(SPM.swd, c.Vspm.fname), [], strrep(c.name,' ',''), 0.1);
+        print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), ...
+            ['diagnostic_' mfilename '_dist_' strrep_multi(c.name,{' ' ':' '>'},{'' '_' '-'}) '.jpg'])); % "unconventional" characters
+        close(h);
+    end
 end
 
 % efficiency
 X = SPM.xX.xKXs.X;
 iXX=inv(X'*X);
 
-[junk, nameCols] = strtok(SPM.xX.name(SPM.xX.iC),' ');
+[~, nameCols] = strtok(SPM.xX.name(SPM.xX.iC),' ');
 nameCols = strtok(nameCols,'*');
 nameCons = {SPM.xCon.name}';
 cons = {SPM.xCon.c};
@@ -376,17 +375,18 @@ set(gca,'FontSize',12,'FontWeight','Bold');
 hold on;
 cmap = colorcube(numel(cons));
 
-for conind = 1:numel(cons)        
-    barh(numel(cons) - conind + 1, log(effic(conind)), 'FaceColor',cmap(conind,:));
+if aas_getsetting(aap,'estimateefficiency')
+    for conind = 1:numel(cons)
+        barh(numel(cons) - conind + 1, log(effic(conind)), 'FaceColor',cmap(conind,:));
+    end
+    ylim([0.5 numel(cons)+0.5])
+    xlabel('Log Efficiency')
+    Xs = xlim;
+    efficiencyVals = create_grad(Xs(1),Xs(2),5);
+    set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
 end
 
-ylim([0.5 numel(cons)+0.5])
-xlabel('Log Efficiency')
-Xs = xlim;
-efficiencyVals = create_grad(Xs(1),Xs(2),5);
-set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
-
-fname = fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_contrast.jpg');
+fname = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename '.jpg']);
 set(h,'Renderer','zbuffer');
 print(h,'-djpeg','-r150',fname);
 close(h);

@@ -116,6 +116,10 @@ You must specify one or more contrasts here using one of the following formats
                 <stream>firstlevel_spmfs</stream>
             </outputstreams>
             
+            <diagnostics>
+                <histogram desc='create histogram(s) of the contrast estimates' ui='yesno'>1</histogram>
+            </diagnostics>
+            
         </currenttask>
     </tasklist>
 </aap>
