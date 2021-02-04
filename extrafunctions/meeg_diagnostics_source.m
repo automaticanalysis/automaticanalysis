@@ -72,12 +72,10 @@ for s = 1:numel(source)
     % colormap for surface
     if (minval(s) < 0) && (maxval(s) > 0)
         r = maxval(s)/-minval(s);
-        cmaphot = hot(round(1.25*r*64));
-        cmaps{s} = [winter(64); cmaphot(1:round(size(cmaphot,1)*0.8),:)];
-    elseif minval(s) < 0, cmaps{s} = winter;
+        cmaps{s} = [cmapcold(64); cmaphot(round(r*64))];
+    elseif minval(s) < 0, cmaps{s} = cmapcold(64);
     else
-        cmaphot = hot(round(1.25*64));
-        cmaps{s} = cmaphot(1:round(size(cmaphot,1)*0.8),:);
+        cmaps{s} = cmaphot(64);
     end
 end
 
@@ -160,4 +158,14 @@ for f = 1:size(diag.snapshotfwoi,1)
     else
         h(f) = fig;
     end
+end
+end
+
+%% Colormap functions
+function cmap = cmaphot(n)
+    cmap = [create_grad([1 1 1],[1 0 0],n);create_grad([1 0 0],[0.25 0 0],n)];
+end
+
+function cmap = cmapcold(n)
+    cmap = flipud([create_grad([1 1 1],[0 0 1],n);create_grad([0 0 1],[0 0 0.25],n)]);
 end

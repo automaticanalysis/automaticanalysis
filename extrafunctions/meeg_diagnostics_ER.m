@@ -148,12 +148,10 @@ if ~isempty(diag.snapshottwoi)
             end
             if (cfgtopo.zlim(1) < 0) && (cfgtopo.zlim(2) > 0)
                 r = cfgtopo.zlim(2)/-cfgtopo.zlim(1);
-                cmaphot = hot(round(1.25*r*64));
-                cmaps{t,e} = [winter(64); cmaphot(1:round(size(cmaphot,1)*0.8),:)];
-            elseif cfgtopo.zlim(1) < 0, cmaps{t,e} = winter(64);
+                cmaps{t,e} = [cmapcold(64); cmaphot(round(r*64))];
+            elseif cfgtopo.zlim(1) < 0, cmaps{t,e} = cmapcold(64);
             else
-                cmaphot = hot(round(1.25*64));
-                cmaps{t,e} = cmaphot(1:round(size(cmaphot,1)*0.8),:);
+                cmaps{t,e} = cmaphot(64);
             end
             ax(t,e) = subplot(rowPlot,colPlot,(t-1)*numel(er)+e);
             title(sprintf('%s %03d-%03d ms',labels{e},diag.snapshottwoi(t,:)));
@@ -252,3 +250,14 @@ if ~isempty(diag.videotwoi) && (nargin >= 4)
     close(aviObject);
     close(f);
 end
+end
+
+%% Colormap functions
+function cmap = cmaphot(n)
+    cmap = [create_grad([1 1 1],[1 0 0],n);create_grad([1 0 0],[0.25 0 0],n)];
+end
+
+function cmap = cmapcold(n)
+    cmap = flipud([create_grad([1 1 1],[0 0 1],n);create_grad([0 0 1],[0 0 0.25],n)]);
+end
+
