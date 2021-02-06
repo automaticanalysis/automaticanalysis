@@ -14,7 +14,9 @@ classdef aaq_parpool < aaq
     % features an alternative, faster computation of job dependencies,
     % which rather than relying on 'job done' flags in the form of files
     % written into each module's working directory, keeps track of jobs via
-    % variables within the client session's workspace.
+    % variables within the client session's workspace. For this to work, 
+    % the taskqueue needs to be fully built (in aa_doprocessing); this is
+    % checked by input arg 'waitforalljobs' of method runall.
     %
     % aaq_parpool lends itself to analyses with many tasks of little
     % complexity, and/or computations on individual multicore machines, or
@@ -74,6 +76,7 @@ classdef aaq_parpool < aaq
                         aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
                         P=parcluster(aap.directory_conventions.poolprofile);
                     end
+
                     switch class(P)
                         case 'parallel.cluster.Torque'
                             aas_log(aap,false,'INFO: Torque engine is detected');
