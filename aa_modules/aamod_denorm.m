@@ -15,12 +15,7 @@ switch task
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
-        images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, cell2mat(varargin), workstream));
-        regstreams = inpstreams(1:end-3); toRemove = [];
-        for i = 1:numel(regstreams)
-            if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),regstreams{i}), toRemove(end+1) = i; end
-        end
-        regstreams(toRemove) = [];
+        regstreams = inpstreams(contains(inpstreams,'meanepi'));
 
         streamfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),workstream,'output');
         streamfn = strtok_ptrn(basename(streamfn(1,:)),'-0');
