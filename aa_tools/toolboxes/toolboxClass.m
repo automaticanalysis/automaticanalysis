@@ -66,6 +66,10 @@ classdef toolboxClass < handle
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
             for v = fieldnames(obj.workspace)'
+                if ~any(strcmp(evalin('base','who'),v{1}))
+                    obj.workspace = rmfield(obj.workspace,v{1});
+                    continue;
+                end
                 obj.workspace.(v{1}) = evalin('base',v{1});
                 if ~keepWorkspace, evalin('base',['clear ' v{1}]); end
             end
