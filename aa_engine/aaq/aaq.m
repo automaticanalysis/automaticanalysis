@@ -106,7 +106,7 @@ classdef aaq < handle
             % Create table from ob.jobqueue and a few other variables 
             % for inspection/debugging purposes
             numJob = numel(obj.jobqueue);
-            jobTable = struct2table(obj.jobqueue);
+            jobTable = struct2table(obj.jobqueue, 'AsArray', true);
             % preallocate a few informative columns:
             % - order in which jobs are executed (place this column
             %   in first position)
