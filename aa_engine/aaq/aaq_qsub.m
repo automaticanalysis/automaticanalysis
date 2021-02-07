@@ -99,8 +99,9 @@ classdef aaq_qsub < aaq
                         aas_log(obj.aap,false,sprintf('INFO: pool profile %s found',poolprofile));
                     end
                     obj.pool=parcluster(poolprofile);
-                    % set up cluster object: Slurm | Torque | LSF | Generic | Local
-                    obj = aas_clustersetup(obj, aap);
+                    % set up cluster object (Slurm | Torque | LSF | Generic
+                    % | Local), changing aaparallel.numberofworkers
+                    obj = aas_clustersetup(obj, aap, true);
                 else
                     obj.pool = parcluster('local');
                     % ** no need to set any of aaparallel's values here as

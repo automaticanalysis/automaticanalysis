@@ -1,9 +1,8 @@
-function obj = aas_clustersetup(obj, aap)
+function obj = aas_clustersetup(obj, aap, doSetNumWorkers)
 % AAS_CLUSTERSETUP set up cluster object.
 % 
 % aas_clustersetup(obj, aap) sets up cluster object obj.pool (any of Slurm
 %   | Torque | LSF | Generic | Local).
-
 
 global aaparallel
 
@@ -22,7 +21,9 @@ switch class(obj.pool)
             obj.initialSubmitArguments = ' --constraint=maxfilter';
         end
         obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-        aaparallel.numberofworkers = 1;
+        if doSetNumWorkers
+            aaparallel.numberofworkers = 1;
+        end
     case 'parallel.cluster.Torque'
         obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
         if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
@@ -30,11 +31,15 @@ switch class(obj.pool)
             obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
         end
         obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-        aaparallel.numberofworkers = 1;
+        if doSetNumWorkers
+            aaparallel.numberofworkers = 1;
+        end
     case 'parallel.cluster.LSF'
         obj.pool.SubmitArguments = sprintf(' -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',aaparallel.walltime*60, aaparallel.memory*1000,aaparallel.memory*1000,aaparallel.walltime);
         obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
-        aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        if doSetNumWorkers
+            aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        end
     case 'parallel.cluster.Generic'
         obj.newGenericVersion = isempty(obj.pool.IndependentSubmitFcn);
         if obj.newGenericVersion
@@ -49,7 +54,11 @@ switch class(obj.pool)
             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
         end
-        aaparallel.numberofworkers = 1;
+        if doSetNumWorkers
+            aaparallel.numberofworkers = 1;
+        end
     case 'parallel.cluster.Local'
-        aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        if doSetNumWorkers
+            aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        end
 end

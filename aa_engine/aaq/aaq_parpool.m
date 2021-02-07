@@ -75,23 +75,9 @@ classdef aaq_parpool < aaq
                         aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
                         obj.pool=parcluster(aap.directory_conventions.poolprofile);
                     end
-
-                    switch class(obj.pool)
-                        case 'parallel.cluster.Torque'
-                            aas_log(aap,false,'INFO: Torque engine is detected');
-                            obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
-                            if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
-                                    ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
-                                obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
-                            end
-                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-                        case 'parallel.cluster.Generic'
-                            aas_log(aap,false,'INFO: Generic engine is detected');
-                            obj.pool.CommunicatingSubmitFcn = obj.SetArg(obj.pool.CommunicatingSubmitFcn,'walltime',aaparallel.walltime);
-                            obj.pool.CommunicatingSubmitFcn = obj.SetArg(obj.pool.CommunicatingSubmitFcn,'memory',aaparallel.memory);                            
-                        case 'parallel.cluster.Local'
-                            aas_log(obj.aap,false,'INFO: Local engine is detected');
-                    end
+                    % set up cluster object (Slurm | Torque | LSF | Generic
+                    % | Local) without changing aaparallel.numberofworkers
+                    obj = aas_clustersetup(obj, aap, false);
                 else
                     obj.pool = parcluster('local');
                 end
