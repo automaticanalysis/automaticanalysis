@@ -26,6 +26,7 @@ classdef aaq_parpool < aaq
     % - implement queue viewer GUI here as in qsub
     
     properties
+        pool            = [];    % cluster object
         doHandlePool    = false; % logical, true indicating that class handles parpool
         parpool_path    = [];    % subdirectory for storing job diaries (and possibly other parallel-pool-related files in the future)
         jobcount        = 0;     % counter for jobs in pipeline
@@ -68,37 +69,37 @@ classdef aaq_parpool < aaq
                         if isempty(ppfname)
                             aas_log(aap,true,sprintf('ERROR: settings for pool profile %s not found!',aap.directory_conventions.poolprofile));
                         else                            
-                            P=parcluster(parallel.importProfile(ppfname));
+                            obj.pool=parcluster(parallel.importProfile(ppfname));
                         end
                     else
                         aas_log(aap,false,sprintf('INFO: pool profile %s found',aap.directory_conventions.poolprofile));
-                        P=parcluster(aap.directory_conventions.poolprofile);
+                        obj.pool=parcluster(aap.directory_conventions.poolprofile);
                     end
 
-                    switch class(P)
+                    switch class(obj.pool)
                         case 'parallel.cluster.Torque'
                             aas_log(aap,false,'INFO: Torque engine is detected');
-                            P.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
+                            obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
                             end
-                            P.SubmitArguments = strcat(P.SubmitArguments,obj.initialSubmitArguments);
+                            obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
                         case 'parallel.cluster.Generic'
                             aas_log(aap,false,'INFO: Generic engine is detected');
-                            P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'walltime',aaparallel.walltime);
-                            P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'memory',aaparallel.memory);                            
+                            obj.pool.CommunicatingSubmitFcn = obj.SetArg(obj.pool.CommunicatingSubmitFcn,'walltime',aaparallel.walltime);
+                            obj.pool.CommunicatingSubmitFcn = obj.SetArg(obj.pool.CommunicatingSubmitFcn,'memory',aaparallel.memory);                            
                         case 'parallel.cluster.Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');
                     end
                 else
-                    P = parcluster('local');
+                    obj.pool = parcluster('local');
                 end
-                P.NumWorkers = aaparallel.numberofworkers;
-                P.JobStorageLocation = obj.aaworker.parmpath;
+                obj.pool.NumWorkers = aaparallel.numberofworkers;
+                obj.pool.JobStorageLocation = obj.aaworker.parmpath;
                 % Note that below we're possibly overriding the number of
                 % workers that may have been stored in a pool profile
-                C = aas_matlabpool(P,P.NumWorkers);
+                C = aas_matlabpool(obj.pool,obj.pool.NumWorkers);
                 if ~isempty(C)
                     C.IdleTimeout = aaparallel.walltime*60; 
                 end
