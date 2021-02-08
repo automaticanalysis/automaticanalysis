@@ -15,7 +15,7 @@
                     <resolution desc='distance between grid points' options='4|5|6|7point5|8|10'>10</resolution>
                 </grid>
                 <corticalsheet>
-                    <resolution desc='number of tessels' options='8k|16k|64k|328k'>8k</resolution>
+                    <resolution desc='number of tessels' options='2k|4k|8k|16k|64k|328k'>8k</resolution>
                 </corticalsheet>
             </options>
             

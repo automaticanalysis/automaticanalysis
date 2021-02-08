@@ -54,12 +54,36 @@ switch task
                 aas_runFScommand(aap,sprintf('export PATH=$PATH:%s/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',WB.toolPath, FT.toolPath,...
                     aas_getstudypath(aap),aas_getsubjname(aap,subj),...
                     fullfile(WB.templateDir,'standard_mesh_atlases')));
-                resPerHemi = sscanf(aas_getsetting(aap,'options.corticalsheet.resolution'),'%dk')/2;
+                resPerHemi = sscanf(aas_getsetting(aap,'options.corticalsheet.resolution'),'%dk')/2; downsample = 1;
+                if resPerHemi < 4 % create 4k meshes and downsample
+                    downsample = 4/resPerHemi;
+                    resPerHemi = 4;
+                end
                 sheetfn = fullfile(aas_getsubjpath(aap,subj),'workbench',sprintf('%s.L.midthickness.%dk_fs_LR.surf.gii',aas_getsubjname(aap,subj),resPerHemi));
                 if ~exist(sheetfn,'file'), aas_log(aap,true,'ft_postfreesurferscript failed'); end
                 sourcemodel = ft_read_headshape({sheetfn, strrep(sheetfn, '.L.', '.R.')});
                 sourcemodel.inside = sourcemodel.atlasroi>0;
-                sourcemodel = rmfield(sourcemodel, 'atlasroi');                
+                sourcemodel = rmfield(sourcemodel, 'atlasroi');
+                if downsample > 1 % run downsample if needed
+                    indpos = true(1,size(sourcemodel.pos,1)); 
+                    indpos(downsample:downsample:end) = false;
+                    
+                    origpos = sourcemodel.pos;
+                    for f = intersect(fieldnames(sourcemodel),{'pos' 'inside' 'sulc' 'curv' 'thickness' 'brainstructure'})'
+                        sourcemodel.(f{1})(indpos,:) = [];
+                    end
+                    
+                    % process tri
+                    % - resample nodes to nearest
+                    tri = arrayfun(@(x) dsearchn(sourcemodel.pos, origpos(x,:)),sourcemodel.tri(:));
+                    tri = reshape(tri,[],3);
+                    % - remove duplicates
+                    [~,ia] = unique(sort(tri,2),'stable','rows');
+                    tri = tri(ia,:);
+                    indtri = arrayfun(@(t) numel(unique(tri(t,:))) < 3, 1:size(tri,1));
+                    tri(indtri,:) = [];                    
+                    sourcemodel.tri = tri;
+                end
         end
         
         sourcemodel = ft_struct2single(sourcemodel);
