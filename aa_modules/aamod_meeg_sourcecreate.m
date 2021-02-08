@@ -53,25 +53,27 @@ switch task
         dat = load(aas_getfiles_bystream(aap,'subject',varargin{1},'leadfield')); source = keepfields(dat.sourcemodel,{'pos','tri','inside','included'});
         
         %% Run through inputs
-        doParallel = true;
-        aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
-        if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
-        try
-            cluster = parcluster(poolprofile);
-            if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
-            global aaworker;
-            wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
-            aas_makedir(aap,wdir);
-            cluster.JobStorageLocation = wdir;
-            nWorkers = min([cluster.NumWorkers numel(data)]);
-            pool = gcp('nocreate');
-            if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
-        catch E
-            aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
-            doParallel = false;
+        nWorkers = aas_getsetting(aap,'numberofworkers');
+        if nWorkers > 1
+            aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
+            if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
+            try
+                cluster = parcluster(poolprofile);
+                if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
+                global aaworker;
+                wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
+                aas_makedir(aap,wdir);
+                cluster.JobStorageLocation = wdir;
+                nWorkers = min([cluster.NumWorkers numel(data) nWorkers]);
+                pool = gcp('nocreate');
+                if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
+            catch E
+                aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
+                nWorkers = 0;
+            end
         end
         
-        if doParallel
+        if nWorkers > 1
             parfor i = 1:numel(data)
                 outputfnames{i} = spm_file(inputfnames{i},'prefix','source_','ext','mat');
                 create_sourcedata(data(i),cellstr(aas_getsetting(aap,'parameter')),filter,source,outputfnames{i});

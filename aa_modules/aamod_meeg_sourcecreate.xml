@@ -10,6 +10,8 @@
             
             <parameter desc='parameter to process, can be a cell-array of strings'></parameter>
             
+            <numberofworkers desc='number of parallel workers to run the task on segments, requires valid DCS/MPaS-based poolprofile and cluster allowing submission from worker nodes (0 or 1 means no parallelisation)'>0</numberofworkers>
+            
             <inputstreams>
                 <stream>sourcefilter</stream>
                 <stream>leadfield</stream>                
