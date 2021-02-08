@@ -6,8 +6,9 @@
 %   covariate applies
 % subject = subject for whom this model applies
 % session = session for which this applies
-% covarName = name of the covariate
-% covarVector = covariate vector, which should be as long as the session
+% covarName = name of the covariate. If it starts with PPI, the  it is considered to be a PPI specification and the covarVector MUST correspond to a
+% ppi name (see aamod_ppi_prepare).
+% covarVector = covariate vector, which should be as long as the session. In case of a PPI specification, it MUST correspond to a ppi name (see aamod_ppi_prepare).
 % HRF = do we want to convolve this covariate with the HRF? (0 - no; 1 - yes)
 % interest = is this covariate of interest, or a nuisa`  B nce covariate?
 

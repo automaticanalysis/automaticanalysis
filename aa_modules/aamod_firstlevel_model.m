@@ -34,25 +34,47 @@ switch task
         % the sessions that are common to this subject and selected_sessions
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-        numSess = numel(subjSessionI);
-
-        % Add PPI if exist
+        numSess = numel(subjSessionI);        
         modname = aap.tasklist.currenttask.name;
         modnameind = regexp(modname, '_\d{5,5}$');
         modindex = str2num(modname(modnameind+1:end));
+        
+        % Add PPI if exist
         for sess = subjSessionI
-            if aas_stream_has_contents(aap,subj,sess,'ppi')
-                load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
-                [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    'PPI',PPI.ppi,0,1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    ['Psych_' psych],PPI.P,0,1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    ['Phys_' phys],PPI.Y,0,1);
+            if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')
+                isDefPPI = true;
+                [defPPI, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
+                if isempty(defPPI)
+                    aas_log(aap,true,sprintf('WARNING: no PPI specification for %s',aas_getsubjdesc(aap,subj)));
+                    isDefPPI = false;
+                end
+                indDefPPI = cellfun(@(x) ~isempty(regexp(x,'^PPI.*', 'once')), {defPPI.covariate.name});
+                if ~any(indDefPPI)
+                    aas_log(aap,true,sprintf('WARNING: no PPI specification for %s',aas_getsubjdesc(aap,subj))); 
+                    isDefPPI = false;
+                end
+                if sum(indDefPPI) > 1
+                    aas_log(aap,true,sprintf('WARNING: more than 1 PPI specification for %s -> the first will be used',aas_getsubjdesc(aap,subj)));                     
+                    indDefPPI = find(indDefPPI,1,'first');
+                end
+                if isDefPPI
+                    defPPI = defPPI.covariate(indDefPPI);
+                    aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = []; % remove original definition
+                    
+                    PPIs = cellstr(aas_getfiles_bystream(aap,'session',[subj,sess],'ppi'));
+                    fnPPI = PPIs{contains(spm_file(PPIs,'basename'),defPPI.vector')};
+                    dat = load(fnPPI); PPI = dat.PPI;
+                    
+                    aap = aas_addcovariate(aap,modname,...
+                        aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                        defPPI.name,PPI.ppi,0,1);
+%                     aap = aas_addcovariate(aap,modname,...
+%                         aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+%                         ['Psych_' psych],PPI.P,0,1);
+                    aap = aas_addcovariate(aap,modname,...
+                        aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                        ['Phys_' PPI.xY.name],PPI.Y,0,1);
+                end
             end
         end
         % update current sesstings

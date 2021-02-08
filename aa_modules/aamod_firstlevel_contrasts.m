@@ -183,7 +183,8 @@ switch task
                                                 case 'p' % parametric
                                                     EVpttrn = sprintf('Sn(%d) %sx',find(selected_sessions==sess),deblank(cs{2}{e}));
                                             end
-                                            ind = cell_index(SPM.xX.name,EVpttrn);
+                                            ind = find(contains(SPM.xX.name,EVpttrn));
+                                            if isempty(ind), ind = find(contains(SPM.xX.name,EVpttrn(1:end-1))); end % covariates
                                             convec(cr,ind(cs{4}(e))) = sessforcon(sess)*cs{1}(e);
                                         end
                                     end
