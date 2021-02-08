@@ -297,9 +297,11 @@ classdef aaq_parpool < aaq
                                 ' - you may want to inspect variable jobTable in the base workspace'])
                             break
                         end
-                        % similarly, if all jobs are in either 'failed' or
-                        % 'finished' state, notify user and break the loop
-                        if all(contains({obj.FFuture.State}, {'finished', 'failed'}))
+                        % similarly, if at least one job is 'failed' and
+                        % the rest is 'finished', notify user and break the
+                        % loop
+                        if any(strcmp({obj.FFuture.State}, 'failed')) && ...
+                                all(contains({obj.FFuture.State}, {'finished', 'failed'}))
                             obj.jobtable2base(jobTable)
                             aas_log(obj.aap, false, ['WARNING: At least one job failed', ...
                                 ' - you may want to inspect variable jobTable in the base workspace'])
