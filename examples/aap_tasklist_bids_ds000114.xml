@@ -35,13 +35,13 @@
             <module><name>aamod_diffusion_extractnodif</name></module>
             <module><name>aamod_diffusion_bet</name></module>
             <module><name>aamod_diffusion_dtinlfit</name></module>
-            <module><name>aamod_diffusion_coreg_extended_2DTI</name></module>
-            <module><name>aamod_diffusion_norm_write_dartel_DTI</name></module>
+            <module><name>aamod_diffusion_coreg_extended_2_dti</name></module>
+            <module><name>aamod_diffusion_norm_write_dartel_dti</name></module>
             
             <!-- Functional -->
             <module><name>aamod_realign</name></module>
             <module><name>aamod_slicetiming</name></module>
-            <module><name>aamod_coreg_extended_2epi</name></module>
+            <module><name>aamod_coreg_extended_2_epi</name></module>
             <module><name>aamod_norm_write_dartel</name></module> 
             <module><name>aamod_smooth</name></module>
             <module><name>aamod_tsdiffana</name></module>
