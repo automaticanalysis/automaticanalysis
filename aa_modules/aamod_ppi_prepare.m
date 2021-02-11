@@ -24,7 +24,8 @@ switch task
             VOIs = cellstr(aas_getfiles_bystream(aap,'session',[subj sess],'vois'));
              
             %% Create PPI
-            for p = aas_getsetting(aap,'PPI')                
+            for p = aas_getsetting(aap,'PPI')
+                if isempty(p.name), continue; end % skip empty definition (usually the first)
                 fnVOI = VOIs{contains(spm_file(VOIs,'basename'),p.voiname) & strcmp(spm_file(VOIs,'ext'),'mat')};
                 
                 conspec = p.contrastspec;

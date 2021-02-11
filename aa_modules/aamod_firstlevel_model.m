@@ -42,38 +42,29 @@ switch task
         % Add PPI if exist
         for sess = subjSessionI
             if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')
-                isDefPPI = true;
-                [defPPI, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
-                if isempty(defPPI)
-                    aas_log(aap,true,sprintf('WARNING: no PPI specification for %s',aas_getsubjdesc(aap,subj)));
-                    isDefPPI = false;
-                end
-                indDefPPI = cellfun(@(x) ~isempty(regexp(x,'^PPI.*', 'once')), {defPPI.covariate.name});
-                if ~any(indDefPPI)
-                    aas_log(aap,true,sprintf('WARNING: no PPI specification for %s',aas_getsubjdesc(aap,subj))); 
-                    isDefPPI = false;
-                end
-                if sum(indDefPPI) > 1
-                    aas_log(aap,true,sprintf('WARNING: more than 1 PPI specification for %s -> the first will be used',aas_getsubjdesc(aap,subj)));                     
-                    indDefPPI = find(indDefPPI,1,'first');
-                end
-                if isDefPPI
-                    defPPI = defPPI.covariate(indDefPPI);
-                    aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = []; % remove original definition
-                    
+                [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
+                if ~isempty(defCov)
+                    covToRemove = [];
                     PPIs = cellstr(aas_getfiles_bystream(aap,'session',[subj,sess],'ppi'));
-                    fnPPI = PPIs{contains(spm_file(PPIs,'basename'),defPPI.vector')};
-                    dat = load(fnPPI); PPI = dat.PPI;
-                    
-                    aap = aas_addcovariate(aap,modname,...
-                        aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
-                        defPPI.name,PPI.ppi,0,1);
-%                     aap = aas_addcovariate(aap,modname,...
-%                         aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
-%                         ['Psych_' psych],PPI.P,0,1);
-                    aap = aas_addcovariate(aap,modname,...
-                        aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
-                        ['Phys_' PPI.xY.name],PPI.Y,0,1);
+                    for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                        defPPI = defCov.covariate(indDefPPI);
+                        covToRemove(end+1) = indDefPPI;
+                        fnPPI = PPIs{contains(spm_file(PPIs,'basename'),defPPI.vector')};
+                        dat = load(fnPPI); PPI = dat.PPI;                        
+
+                        if ~any(strcmp({aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate.name},['Phys_' PPI.xY.name]))
+                            aap = aas_addcovariate(aap,modname,...
+                                aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                                ['Phys_' PPI.xY.name],PPI.Y,0,1);
+                        end
+                        aap = aas_addcovariate(aap,modname,...
+                            aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                            strrep(defPPI.name,'ppidef_',''),PPI.ppi,0,1);
+                        %                     aap = aas_addcovariate(aap,modname,...
+                        %                         aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                        %                         ['Psych_' psych],PPI.P,0,1);
+                    end
+                    aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(covToRemove) = []; % remove original definition
                 end
             end
         end
@@ -217,12 +208,48 @@ switch task
             close(h.betas)
         end
     case 'checkrequirements'
+        %% Add PPI preparations (if needed)
+        [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+        modname = aap.tasklist.currenttask.name;
+        modnameind = regexp(modname, '_\d{5,5}$');
+        modindex = str2num(modname(modnameind+1:end));
+        
+        for sess = subjSessionI
+            if aas_stream_has_contents(aap,'ppi')
+                [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
+                if ~isempty(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                    ppiprepstage = aap.tasklist.main.module(aas_getsourcestage(aap,'aamod_ppi_prepare','ppi'));                        
+                    ppis = aap.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI;
+                    for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                        defPPI = defCov.covariate(indDefPPI).vector;
+                        
+                        if any(strcmp({ppis.name},defPPI.name)) % existing definition
+                            if ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).voiname,defPPI.voiname) || ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).contrastspec,defPPI.contrastspec)
+                                aas_log(aap,true,['ERROR: PPI ' defPPI.name ' with a different definition already exists']);
+                            end
+                        else
+                            ppis(end+1) = defPPI;
+                        end
+                        % update covariate
+                        cov = defCov.covariate(indDefPPI);
+                        cov.vector = defPPI.name';
+                        aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.aap_beforeuserchanges.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.internal.aap_initial.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                    end
+                    aap.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.aap_beforeuserchanges.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.internal.aap_initial.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;                    
+                end
+            end
+        end
+        
         %% Adjust outstream
         if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
             aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
             aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
         end
-
-    otherwise
-        aas_log(aap,1,sprintf('Unknown task %s',task));
 end
