@@ -79,7 +79,7 @@ switch class(obj.pool)
         %         end
         %         obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
         %         aaparallel.numberofworkers = 1;
-        obj.pool.SubmitArguments = sprintf('mem=%dGB, walltime=%d:00:00', mem, walltime);
+        obj.pool.SubmitArguments = sprintf('-l mem=%dGB, walltime=%d:00:00', mem, walltime);
         if isMaxFiltInTasklist && isNeuromagSpec
             % TODO: clarify whether/how NODESET should be eliminated
             obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
