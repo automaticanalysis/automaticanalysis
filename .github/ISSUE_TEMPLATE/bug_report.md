@@ -25,7 +25,7 @@ If applicable, add screenshots to help explain your problem.
 **Environment (please complete the following information):**
  - OS with version: [e.g. CentOS 7]
  - MATLAB version: [e.g. R2018b]
- - Relevnt toolboxes with version: [e.g. SPM12 r7771]
+ - Relevant toolboxes with version: [e.g. SPM12 r7771]
 Alternatively, you can provide the `aap` structure
 
 **Additional context**
