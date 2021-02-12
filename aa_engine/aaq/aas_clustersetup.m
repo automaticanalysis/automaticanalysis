@@ -1,4 +1,4 @@
-function obj = aas_clustersetup(obj, aap, doSetNumWorkers, NameValueArgs)
+function obj = aas_clustersetup(obj, aap, doSetNumWorkers, varargin)
 % AAS_CLUSTERSETUP set up cluster object.
 % 
 % aas_clustersetup(obj, aap, false) sets up cluster object obj.pool (any of
@@ -12,27 +12,20 @@ function obj = aas_clustersetup(obj, aap, doSetNumWorkers, NameValueArgs)
 % aas_clustersetup(..., 'walltime', 36) overrides aaparallel.walltime,
 %   using the specified value in hours.
 
-arguments
-    obj
-    aap struct
-    doSetNumWorkers logical
-    NameValueArgs.mem
-    NameValueArgs.walltime
-end
-
 global aaparallel
+
+mem = [];
+walltime = [];
+% deal with name-value input pairs
+pvpmod(varargin, {'mem', 'walltime'})
 
 % assign value to variables mem and walltime: if corresponding name-value
 % pair was specified, use the corresponding value, otherwise pick values of
 % globals
-if isfield(NameValueArgs, 'mem')
-    mem = NameValueArgs.mem;
-else
+if isempty(mem)
     mem = aaparallel.memory;
 end
-if isfield(NameValueArgs, 'walltime')
-    walltime = NameValueArgs.walltime;
-else
+if isempty(walltime)
     walltime = aaparallel.walltime;
 end
 
