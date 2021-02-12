@@ -1,0 +1,53 @@
+{
+  "creators": [
+    {
+      "affiliation": "University of Surrey",
+      "name": "Auer, Tibor",
+      "orcid": "0000-0001-5153-1424"
+    },
+    {
+      "affiliation": "MRC Cognition and Brain Sciences Unit",
+      "name": "Carlin, Johan",
+      "orcid": "0000-0003-0933-1239"
+    },
+    {
+      "affiliation": "Trinity College Dublin",
+      "name": "Cusack, Rhordi",
+      "orcid": "0000-0002-5234-7415"
+    },
+    {
+      "affiliation": "Curious AI",
+      "name": "Grabovetsky, Alejandro (Sasha) Vicente",
+      "orcid": ""
+    },
+    {
+      "affiliation": "MRC Cognition and Brain Sciences Unit",
+      "name": "Knights, Ethan",
+      "orcid": "0000-0001-6078-9160"
+    },    
+    {
+      "affiliation": "Washington University in Saint Louis",
+      "name": "Peelle, Jonathan",
+      "orcid": "0000-0001-9194-854X"
+    },
+    {
+      "affiliation": "MRC Cognition and Brain Sciences Unit",
+      "name": "Price, Darren",
+      "orcid": "0000-0002-4786-3976"
+    },
+    {
+      "affiliation": "Western University",
+      "name": "Wild, Conor",
+      "orcid": "0000-0002-4303-3537"
+    }
+  ],
+  "keywords": [
+    "neuroimaging",
+    "multimodal",
+    "MATLAB",
+    "workflow",
+    "pipeline"
+  ],
+  "license": "MIT License",
+  "upload_type": "software"
+}
