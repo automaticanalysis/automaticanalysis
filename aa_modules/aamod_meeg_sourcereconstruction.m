@@ -63,7 +63,7 @@ switch task
                 FT.unload;
                 [~, EL] = aas_cache_get(aap,'eeglab');
                 EL.load;
-                EEG = pop_loadset(infnames{1});
+                EEG = pop_loadset('filepath',spm_file(infnames{1},'path'),'filename',spm_file(infnames{1},'filename'));
                 EL.unload;
                 FT.reload;
                 data = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));

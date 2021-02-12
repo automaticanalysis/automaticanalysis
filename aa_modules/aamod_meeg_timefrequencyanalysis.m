@@ -101,7 +101,7 @@ switch task
                             else
                                 EL.reload;
                             end
-                            EEG = pop_loadset(meegfn{seg});
+                            EEG = pop_loadset('filepath',spm_file(meegfn{seg},'path'),'filename',spm_file(meegfn{seg},'filename'));
                             if isempty(EEG.epoch)
                                 aas_log(aap,false,sprintf('WARNING: segment # %d has no trial --> skipped',seg));
                                 continue; 

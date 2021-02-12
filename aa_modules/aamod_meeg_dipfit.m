@@ -12,10 +12,11 @@ switch task
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         EL.load;
         
-        EEG = pop_loadset(infname{strcmp(spm_file(infname,'ext'),'set')});
+        indfnEEG = strcmp(spm_file(infname,'ext'),'set');
+        EEG = pop_loadset('filepath',spm_file(infname{indfnEEG},'path'),'filename',spm_file(infname{indfnEEG},'filename'));
         
         volcondfile = aas_getsetting(aap,'volumeCondutionModel');
         if ~exist(volcondfile,'file'), volcondfile = fullfile(EL.dipfitPath,volcondfile); end
@@ -28,7 +29,7 @@ switch task
         if ischar(trans) % target channel location
             if ~exist(trans,'file'), trans = fullfile(EL.dipfitPath,trans); end
             if ~exist(trans,'file'), aas_log(aap,true,sprintf('Channel location of the target %s not found',aas_getsetting(aap,'transformation'))); end
-            [junk,trans] = coregister(EEG.chanlocs, trans, 'warp', 'auto', 'manual', 'off');
+            [~,trans] = coregister(EEG.chanlocs, trans, 'warp', 'auto', 'manual', 'off');
         end
         
         % dipole settings
@@ -60,7 +61,7 @@ switch task
         
         % save
         outfname = spm_file(infname,'prefix','dipfit_');
-        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{1},'basename'));
+        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{indfnEEG},'basename'));
 
         EL.unload;
                 
