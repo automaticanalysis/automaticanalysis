@@ -254,7 +254,8 @@ for mytasks = {'checkrequirements','doit'} %
         
         % find out whether this module needs to be executed once per study, subject or session
         domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
-        
+        if strcmp(domain,'*'), domain = 'study'; end % generic modules at checkrequirements -> run once 
+                        
         % Start setting up the descriptor for the parallel queue
         clear taskmask
         taskmask.domain=domain;

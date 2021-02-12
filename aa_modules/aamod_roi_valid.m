@@ -41,7 +41,6 @@ switch task
             ValidROI = struct();
             Nv       = [];
             Mm       = [];
-            ROIval   = [];
             
             sourcedomain = aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream(i).sourcedomain;
             if strcmp(sourcedomain,'subject')
@@ -54,28 +53,27 @@ switch task
             
             for p = procind
 
-                for subjind = 1:length(aap.acq_details.subjects),
+                for subjind = 1:length(aap.acq_details.subjects)
                     
                     % Load ROI file for subject/session:
                     indices = [subjind procind];
                     ROIfname = aas_getfiles_bystream(aap,sourcedomain,indices(indind),instream);
                     loaded = load(ROIfname); ROI = loaded.ROI;
                     % Get number of valid voxels in each ROI:
-                    Nv(subjind,:) = [ROI.Nvox];
+                    Nv(subjind,[ROI.ROIval]) = [ROI.Nvox];
                     mROI = arrayfun(@(x) mean(x.mean), ROI);
-                    Mm(subjind,:) = mROI;
+                    Mm(subjind,[ROI.ROIval]) = mROI;
                     
                 end
+                ROIval = find(any(Nv));
+                Nv = Nv(:,ROIval);
+                Mm = Mm(:,ROIval);
                 
-                [pth stem fext] = fileparts(ROIfname);
-                invalidroi = isnan(Mm) | Nv<AbsVoxThr;
-                ROIval = [ROI.ROIval];
-                Nr = length(ROIval);
-                
+                invalidroi = isnan(Mm) | Nv<AbsVoxThr;                
                 
                 % Remove bad subjects before removing ROIs:
                 
-                switch SubjRemoveStat,
+                switch SubjRemoveStat
                     case 'mode'
                         % Keep only if N(invalid) is mode or less:
                         scrit = mode(sum(invalidroi,2));
@@ -98,7 +96,7 @@ switch task
                 % Session Summary:
                 ValidROI(p).sessname          = aas_getsessname(aap,p);
                 ValidROI(p).ROIval            = ROIval(~r2ignore);
-                ValidROI(p).ROIind            = setdiff(1:length(ROI),find(r2ignore));
+                ValidROI(p).ROIind            = setdiff(1:numel(ROIval),find(r2ignore));
                 ValidROI(p).ROIind2ignore     = find(r2ignore);
                 ValidROI(p).Subjind           = setdiff(1:length(aap.acq_details.subjects),find(s2ignore));
                 ValidROI(p).Subjind2ignore    = find(s2ignore);
@@ -111,7 +109,7 @@ switch task
                 % plot imagesc:
                 %f=spm_figure('FindWin'); spm_figure('Clear',f);
                 %imagesc(invalidroi); colormap gray;
-                [pth,nm] = fileparts(ROIfname);
+                pth = fileparts(ROIfname);
                 ind=strfind(pth,'/');
                 ind=ind(end)-1; % remove subject, session
                 pth = pth(1:ind);

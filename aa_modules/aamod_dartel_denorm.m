@@ -26,6 +26,7 @@ switch task
         streamfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),workstream,'output');
         streamfn = strtok_ptrn(basename(streamfn(1,:)),'-0');
         fn = ['diagnostic_aas_checkreg_slices_' streamfn '_1.jpg'];
+        workstream = strsplit(workstream,'.'); workstream = workstream{end};
         if ~exist(fullfile(localpath,fn),'file')
             aas_checkreg(aap,domain,cell2mat(varargin),workstream,regstreams{end});
         end
@@ -44,7 +45,6 @@ switch task
         %% Preapre
         subj = varargin{1};
         domain = aap.tasklist.currenttask.domain;
-        localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, cell2mat(varargin), workstream));
@@ -80,8 +80,7 @@ switch task
         
         %% (Decoreg +) Reslice
         % flags
-        defaults = aap.spm.defaults;
-        flags = defaults.coreg.write;
+        flags = aap.spm.defaults.coreg.write;
         flags.interp = aap.tasklist.currenttask.settings.interp;
         flags.which = [1 0];
 

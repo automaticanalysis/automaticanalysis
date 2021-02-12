@@ -63,6 +63,11 @@ switch task
             neighbours = [];
         end
         
+        statplotcfg = aas_getsetting(aap,'diagnostics');
+        if ~ft_datatype(data,'source')
+            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        end
+        
         thr = aas_getsetting(aap,'threshold');
         statcfg = [];
         statcfg.channel   = 'all';
@@ -71,15 +76,12 @@ switch task
             case 'timelock'
                 statcfg.parameter   = 'avg';
                 fstat = @ft_timelockstatistics;
-                fgrandavg = @ft_timelockgrandaverage;
                 fdiag = @meeg_diagnostics_ER;
-                avglat = 'latency';
             case 'timefreq'
                 statcfg.parameter   = 'powspctrm';
+                statcfg.avgoverfreq = 'yes';
                 fstat = @ft_freqstatistics;
-                fgrandavg = @ft_freqgrandaverage;
                 fdiag = @meeg_diagnostics_TFR;
-                avglat = 'toilim';
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -87,7 +89,6 @@ switch task
                 statcfg.parameter   = 'pow';
             end
             fstat = @ft_sourcestatistics;
-            fgrandavg = @ft_sourcegrandaverage;
             fdiag = @meeg_diagnostics_source;
         end
         statcfg.alpha       = thr.p;
@@ -100,14 +101,22 @@ switch task
         statcfg.minnbchan           = thr.neighbours;      % minimal number of neighbouring channels
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
-
-        avgcfg = [];
-        avgcfg.channel   = 'all';
-        avgcfg.(avglat)   = 'all';
-                
-        statplotcfg = aas_getsetting(aap,'diagnostics');
-        if ~ft_datatype(data,'source')
-            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        
+        hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
+        if hashighressurface
+            fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
+            fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
+            grouphighressurface = ft_read_headshape(fnsurf);
+            for subj = 2:aas_getN_bydomain(aap,'subject')
+                fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',subj,'sourcesurface'));
+                fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};
+                mesh = ft_read_headshape(fnsurf);
+                grouphighressurface.pos = grouphighressurface.pos + mesh.pos;
+            end
+            grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
+            statplotcfg.surface = grouphighressurface;
+        else
+            statplotcfg = rmfield(statplotcfg,'surface');
         end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
@@ -326,13 +335,25 @@ switch task
                 cfg{1}.latency = 'all';
                 cfg{1}.correctm = thr.correctiontimepoint;
             end
-            if strcmp(inpType, 'peak')  % custom analysis and plotting
-                cfg{1}.parameter = 'amp';
-                savepath{2} = savepath{1};
-                savepath{1} = [savepath{1} '_amp'];
-                cfg{2} = cfg{1};
-                cfg{2}.parameter = 'lat';
-                savepath{2} = [savepath{2} '_lat'];
+            switch inpType
+                case 'timefreq' % separate analyses for each band
+                    fwoi = aas_getsetting(aap,'diagnostics.snapshotfwoi');
+                    if ~isempty(fwoi)
+                        for f = 1:size(fwoi,1)
+                            cfg{f} = cfg{1};
+                            cfg{f}.frequency = fwoi(f,:);
+                            savepath{f} = savepath{1};
+                        end
+                    else
+                        cfg{1}.frequency = 'all';
+                    end                    
+                case 'peak' % custom analysis and plotting
+                    cfg{1}.parameter = 'amp';
+                    savepath{2} = savepath{1};
+                    savepath{1} = [savepath{1} '_amp'];
+                    cfg{2} = cfg{1};
+                    cfg{2}.parameter = 'lat';
+                    savepath{2} = [savepath{2} '_lat'];
             end
             
             for c = 1:numel(cfg)
@@ -342,8 +363,7 @@ switch task
                 
                 % plot
                 groupStat = {};
-                avgcfg.parameter = cfg{c}.parameter;
-                avgcfg.(avglat) = cfg{c}.latency;
+                avgcfg = keepfields(cfg{c},{'parameter','latency'});
                 if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
                     pcfg.snapshottwoi = pcfg.snapshottwoi(...
                         pcfg.snapshottwoi(:,1)/1000 >= stat.time(1) & ...
@@ -353,14 +373,18 @@ switch task
                 
                 if numel(unique(m.groupmodel)) <= 2
                     for g = unique(m.groupmodel)
-                        groupStat{end+1} = fgrandavg(avgcfg, allInp{cfg{c}.design(1,:)==g});
-                        if isfield(allInp{1},'tri'), groupStat{end}.tri = allInp{1}.tri; end
+                        groupStat{end+1} = ft_granddescriptives(avgcfg, allInp{cfg{c}.design(1,:)==g});
                     end
                 else
-                    groupStat{1} = fgrandavg(avgcfg, allInp{:});
-                    if isfield(allInp{1},'tri'), groupStat{1}.tri = allInp{1}.tri; end
+                    groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
+                end
+                if isfield(cfg{c},'frequency')
+                    groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
+                    pcfg.snapshotfwoi = cfg{c}.frequency;
+                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % hack to add suffix to statFn
                 end
                 groupStat{1}.stat = stat;
+                pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);

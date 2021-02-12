@@ -23,15 +23,17 @@
             </realignelectrodes>
             
             <inputstreams>
-                <stream>timefreq</stream>
                 <stream>headmodel</stream>
                 <stream>sourcemodel</stream>
-                <stream>structural</stream>
                 <stream>segmentation</stream>
+                <stream isessential='0'>sensors</stream>
+                <stream isessential='0'>leadfield</stream>
+                <stream isessential='0'>sourcefilter</stream>
+                <stream isrenameable='1'>input</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>timefreq</stream>
+                <stream isrenameable='1'>output</stream>
             </outputstreams>
             
             <diagnostics>

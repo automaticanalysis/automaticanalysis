@@ -13,9 +13,9 @@ switch task
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         
         % Process streams
-        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
+        inpstream = aas_getstreams(aap,'input');
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
+        while ~aas_stream_has_contents(aap,inpstream{tInd})
             tInd = tInd + 1;
         end
         targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
@@ -168,5 +168,20 @@ switch task
         end
         
     case 'checkrequirements'
-
+        in = aas_getstreams(aap,'input'); in(1) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
 end

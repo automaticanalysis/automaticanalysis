@@ -49,7 +49,7 @@ switch task
                 aap = aas_report_add(aap,subj,'<table><tr><td>');
                 imgpath = fullfile(localpath,fdiag(d).name);
                 aap=aas_report_addimage(aap,subj,imgpath);
-                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                [p, f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
                 if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
@@ -139,12 +139,16 @@ switch task
             end
             
             % binarise if specified
-            if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
-                for e = 1:size(wimgs,1)
-                    inf = spm_vol(deblank(wimgs(e,:)));
-                    Y = spm_read_vols(inf);
-                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
-                    nifti_write(deblank(wimgs(e,:)),Y,'Binarized',inf)
+            if ~isempty(aas_getsetting(aap,'PVE'))
+                pve = aas_getsetting(aap,'PVE',streamind);
+                if pve
+                    for e = 1:size(wimgs,1)
+                        V = spm_vol(deblank(wimgs(e,:)));
+                        Y = spm_read_vols(V);
+                        for iv = 1:numel(V), V(iv).pinfo = [1 0 0]'; end
+                        Y = Y >= pve;
+                        nifti_write(deblank(wimgs(e,:)),Y,'Binarized',V)
+                    end
                 end
             end 
             
@@ -160,8 +164,24 @@ switch task
         end
         
     case 'checkrequirements'
+        in = aas_getstreams(aap,'input'); in(1:3) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end

@@ -4,7 +4,9 @@ resp='';
 
 switch task
     case 'report'
-        aap = aas_report_addimage(aap,subj,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '.jpg']));
+        for fnames = cellstr(spm_select('FPList',aas_getsesspath(aap,subj,sess),['^diagnostic_' mfilename '_[0-9]*.jpg$']))'
+            aap = aas_report_addimage(aap,subj,fnames{1});
+        end
         aap = aas_report_add(aap,subj,'<table><tr><th>Accepted</th><th>Rejected</th></tr><tr>');
         for sfx = {'accepted','rejected'}
             aap = aas_report_add(aap,subj,'<td valign="top">');
@@ -17,10 +19,11 @@ switch task
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         EL.load;
         
-        EEG = pop_loadset(infname{strcmp(spm_file(infname,'ext'),'set')});
+        indfnEEG = strcmp(spm_file(infname,'ext'),'set');
+        EEG = pop_loadset('filepath',spm_file(infname{indfnEEG},'path'),'filename',spm_file(infname{indfnEEG},'filename'));
         
         switch aas_getsetting(aap,'method')
             case 'ICLabel'
@@ -55,10 +58,13 @@ switch task
         
         
         pop_viewprops(EEG,0,1:size(EEG.icaweights,1),{},{},0,aas_getsetting(aap,'method'));
-        set(gcf,'position',[0,0,1080 1080]);
-        set(gcf,'PaperPositionMode','auto');
-        print(gcf,'-noui',fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s.jpg',mfilename)),'-djpeg','-r150');
-        close(gcf);
+        allfigs = get(groot, 'Children'); allfigs(~contains({allfigs.Name},'View components properties')) = [];
+        for f = 1:numel(allfigs)
+            set(allfigs(f),'position',[0,0,1080 1080]);
+            set(allfigs(f),'PaperPositionMode','auto');
+            print(allfigs(f),'-noui',fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_%s_%d.jpg',mfilename,f)),'-djpeg','-r150');
+            close(allfigs(f));
+        end
 
         
         % Plot rejected components
@@ -71,11 +77,13 @@ switch task
         end
         
         EEG = pop_subcomp(EEG, finalIcIdx, 0, 1);
-        EEG.etc.ic_classification.ICLabel.classifications = EEG.etc.ic_classification.ICLabel.classifications(finalIcIdx,:);
+        if size(EEG.etc.ic_classification.ICLabel.classifications,1) == size(EEG.icaweights,2) % EEGLAB <2021.0 does not adjust etc
+            EEG.etc.ic_classification.ICLabel.classifications = EEG.etc.ic_classification.ICLabel.classifications(finalIcIdx,:);
+        end
         
         % save
         outfname = spm_file(infname,'prefix','icclass_');
-        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{1},'basename'));
+        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{indfnEEG},'basename'));
 
         EL.unload;
                 

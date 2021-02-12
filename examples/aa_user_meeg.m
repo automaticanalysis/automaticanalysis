@@ -127,7 +127,8 @@ for b = 1:2
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics;
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.view = '';
 end
@@ -136,10 +137,11 @@ aap.tasksettings.aamod_meeg_timefrequencystatistics(2).selectoverlappingdata.tim
 indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
 aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.snapshottwoi = [indtime-100 indtime+100];
 for b = 1:2
+    aap = aas_renamestream(aap,sprintf('aamod_meeg_sourcereconstruction_%05d',b),'input','timefreq');
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.target = 'scalp';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.method = 'spherefit';
-    aap = aas_renamestream(aap,sprintf('aamod_meeg_sourcereconstruction_%05d',b),'structural','aamod_meeg_preparesourcemodel_00001.structural','input');
-    aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics = aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics;
+    aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics,...
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics.view = 'RPI';
 end
 for b = 3:4
@@ -147,7 +149,8 @@ for b = 3:4
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata = aap.tasksettings.aamod_meeg_timefrequencystatistics(b-2).selectoverlappingdata; % from aamod_meeg_timefrequencystatistics 1 and 2
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = aap.tasksettings.aamod_meeg_sourcereconstruction(b-2).diagnostics; % from aamod_meeg_sourcereconstruction 1 and 2
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
+        aap.tasksettings.aamod_meeg_sourcereconstruction(b-2).diagnostics); % from aamod_meeg_sourcereconstruction 1 and 2
 end
 
 %% DATA

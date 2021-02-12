@@ -7,13 +7,14 @@ switch task
         bands = aas_getsetting(aap,'diagnostics.snapshotfwoi'); bands = ['multiplot'; mat2cell(bands,ones(1,size(bands,1)))];
         models = strrep(spm_file(cellstr(aas_getfiles_bystream(aap,'subject',subj,'timefreq')),'basename'),'timefreq_','')';
         aap = aas_report_add(aap,subj,'<table id="data"><tr>');
+        aap = aas_report_add(aap,subj,'<th>Bands</th>');
         for m = models, aap = aas_report_add(aap,subj,['<th>Model: ' m{1} '</th>']); end
         aap = aas_report_add(aap,subj,'</tr>');
         
         for b = bands'
             aap = aas_report_add(aap,subj,'<tr>');
             if ischar(b{1})
-                aap = aas_report_add(aap,subj,['<td>' b{1} '</td']);
+                aap = aas_report_add(aap,subj,['<td>' b{1} '</td>']);
             else
                 aap = aas_report_add(aap,subj,sprintf('<td>%1.2f-%1.2f</td>',b{1}));
             end
@@ -57,6 +58,7 @@ switch task
         bccfg.parameter    = {'powspctrm' 'crsspctrm'};
         
         diag = aas_getsetting(aap,'diagnostics');
+        diag.parameter = 'powspctrm';
         
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
@@ -99,18 +101,19 @@ switch task
                             else
                                 EL.reload;
                             end
-                            EEG = pop_loadset(meegfn{seg});
+                            EEG = pop_loadset('filepath',spm_file(meegfn{seg},'path'),'filename',spm_file(meegfn{seg},'filename'));
                             if isempty(EEG.epoch)
                                 aas_log(aap,false,sprintf('WARNING: segment # %d has no trial --> skipped',seg));
                                 continue; 
                             end
+                            EL.unload;
                             FT.reload;                            
-                            data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));
-                            EL.unload; % FieldTrip's eeglab toolbox is incomplete
+                            data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));                            
                     end
                     
                     % select data
                     if isfield(data(seg),'ureventinfo')
+                        toremove = [];
                         if ~isempty(aas_getsetting(aap,'ignorebefore'))
                             lim = aas_getsetting(aap,'ignorebefore');
                             field = 'eventnum_all';

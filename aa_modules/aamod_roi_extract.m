@@ -63,8 +63,7 @@ switch task
             instream = in{1};            
             
             % Get data (assumes all data files are aligned)
-            Datafiles = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream);
-            pth = fileparts(Datafiles);
+            Datafiles = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream);
             VY = spm_vol(Datafiles);
             Yinv  = inv(VY(1).mat);
             [~, yXYZmm] = spm_read_vols(VY(1));
@@ -209,8 +208,9 @@ switch task
             spm_progress_bar('Clear');
             
             % Describe outputs:
+            instream = strsplit(instream,'.'); instream = instream{end};
             outstream = ['roidata_' instream];
-            outfile = fullfile(pth,['ROI_' instream '.mat']);
+            outfile = fullfile(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,[varargin{:}]),['ROI_' instream '.mat']);
             save(outfile,'ROI');
             aap = aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[varargin{:}],outstream,outfile);
         end
@@ -219,19 +219,15 @@ switch task
         inputstreams = aas_getstreams(aap,'input');
         % first input stream is the roi stream, all others are data
         inputstreams = inputstreams(2:end);
-        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
-        stageindex = sscanf(index,'_%05d');
-        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; 
-        if ~iscell(out)
-            out = {out};
-        end
+        out = aas_getstreams(aap,'output'); if ~iscell(out), out = {out}; end
         for s = 1:numel(inputstreams)
-            if ~strcmp(out{s},['roidata_' inputstreams{s}])
+            instream = strsplit(inputstreams{s},'.'); instream = instream{end};
+            if ~strcmp(out{s},['roidata_' instream])
                 aap = aas_renamestream(aap,...
                     aap.tasklist.currenttask.name,out{s},...
-                    ['roidata_' inputstreams{s}],'output');
+                    ['roidata_' instream],'output');
                 aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ...
-                    ' output stream: ''roidata_' inputstreams{s} '''']);
+                    ' output stream: ''roidata_' instream '''']);
             end            
         end        
 end

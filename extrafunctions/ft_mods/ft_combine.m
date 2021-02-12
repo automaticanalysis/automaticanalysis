@@ -25,21 +25,9 @@ end
 weights = cfg.weights;
 
 data = varargin;
-wout = data;
-for i = 1:numel(data) 
-    for p = cfg.parameter
-        tmp = ft_math(struct('parameter',p{1},'operation','multiply','scalar',weights(i)),data{i});
-        wout{i}.(p{1}) = tmp.(p{1});
-    end
-end
-
-if numel(wout) > 1
-    out = data{1};
-    for p = cfg.parameter
-        tmp = ft_math(struct('parameter',p{1},'operation','add'),wout{:});
-        out.(p{1}) = tmp.(p{1});
-    end
-else
-    out = wout{1};
+out = data{1};
+for p = cfg.parameter
+    dat = arrayfun(@(x) data{x}.(p{1})*weights(x),1:numel(data),'UniformOutput',false);
+    out.(p{1}) = sum(cat(ndims(dat{1})+1,dat{:}),ndims(dat{1})+1);
 end
 end
