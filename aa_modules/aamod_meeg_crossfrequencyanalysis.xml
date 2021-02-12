@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='TFR calculation' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.25</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+            
+            <timefrequencyanalysis>
+                <twoicps desc='width of the analysis window-of-interest specified in cycle-per-sample (i.e. decreasing with frequencies of interest)'></twoicps>
+            </timefrequencyanalysis>
+            
+            <crossfrequencyanalysis>
+                <method desc='methods of calculating the cross-spectral relationship' options='coh|plv|mvl|mi|pac' ui='optionlist'></method>
+                <chanphase desc='cell-array with selection of channels for the phase providing channels, if empty all channels will be used and chanamp will be ignored (i.e. within-channel CFA)'></chanphase>
+                <chanamp desc='cell-array with selection of channels for the amplitude providing channels, if empty chanphase will be used (i.e. within-channel CFA)'></chanamp>
+                <foiphase desc='frequencies of interest specified as [1xN1] for phase providing (low) FOIs'></foiphase>
+                <foiamp desc='frequencies of interest specified as [1xN2] for amplitude providing (high) FOIs'></foiamp>
+                <nphasebins desc="number of of bins within the 2 pi phase range to calculate PAC (for method='pac' only)"></nphasebins>
+            </crossfrequencyanalysis>
+
+            <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
+
+            <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
+            <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
+            
+            <trialmodel desc='modelling trials'>
+                <subject></subject>
+                <model>
+                    <name></name>
+                    <session></session>
+                    <event></event>
+                    <samplevector></samplevector>
+                </model>
+            </trialmodel>
+            
+            <inputstreams>
+                <stream>meeg</stream>
+                <stream isessential='0'>headmodel</stream>
+                <stream isessential='0'>sourcemodel</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>crossfreq</stream>
+            </outputstreams>
+            
+             <diagnostics>
+                <snapshottwoi desc='timewindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>
