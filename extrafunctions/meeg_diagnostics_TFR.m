@@ -173,7 +173,9 @@ if ~isempty(diag.snapshottwoi) && ~isempty(diag.snapshotfwoi)
                 end
                 if (cfgtopo.zlim(1) < 0) && (cfgtopo.zlim(2) > 0)
                     r = cfgtopo.zlim(2)/-cfgtopo.zlim(1);
-                    cmaps{t,e} = [cmapcold(64); cmaphot(round(r*64))];
+                    if r > 1, cmaps{t,e} = [cmapcold(round(64/r)); cmaphot(64)];
+                    else, cmaps{t,e} = [cmapcold(64); cmaphot(round(r*64))];
+                    end
                 elseif cfgtopo.zlim(1) < 0, cmaps{t,e} = cmapcold(64);
                 else
                     cmaps{t,e} = cmaphot(64);
@@ -213,10 +215,23 @@ end
 end
 
 %% Colormap functions
+function cmap = cmapbase
+[s, FT] = aas_cache_get([],'fieldtrip');
+if s
+    FT.load;
+    FT.addExternal('brewermap');
+    cmap = flipud(brewermap(128,'RdBu'));
+else
+    cmap = flipud([create_grad([0.4 0 0.1],[1 0 0],32);create_grad([1 0 0],[1 1 1],32);create_grad([1 1 1],[0 0 1],32);create_grad([0 0 1],[0 0.2 0.4],32)]);
+end
+end
+
 function cmap = cmaphot(n)
-    cmap = [create_grad([1 1 1],[1 0 0],n);create_grad([1 0 0],[0.25 0 0],n)];
+cmap = cmapbase;
+cmap = cmap(65:(end-(64-n)),:);
 end
 
 function cmap = cmapcold(n)
-    cmap = flipud([create_grad([1 1 1],[0 0 1],n);create_grad([0 0 1],[0 0 0.25],n)]);
+cmap = cmapbase;
+cmap = cmap((64-n+1):64,:);
 end

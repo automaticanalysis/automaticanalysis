@@ -64,6 +64,15 @@ if isfield(source{1},'dim')
     for s = 1:numel(source)
         source{s} = ft_sourceinterpolate(cfg, source{s}, diag.mri);
     end
+elseif isfield(source{1},'tri') && isfield(diag,'surface')
+    cfg = [];
+    cfg.parameter = cfgdiag.funparameter;
+    cfg.interpmethod = 'nearest';
+    if isfield(source{1},'mask'), cfg.parameter = {cfg.parameter 'mask'}; end
+    for s = 1:numel(source)
+        source{s} = ft_sourceinterpolate(cfg, source{s}, diag.surface);
+        source{s}.avg.(cfgdiag.funparameter) = source{s}.(cfgdiag.funparameter);
+    end
 end
 
 for s = 1:numel(source)
@@ -72,7 +81,9 @@ for s = 1:numel(source)
     % colormap for surface
     if (minval(s) < 0) && (maxval(s) > 0)
         r = maxval(s)/-minval(s);
-        cmaps{s} = [cmapcold(64); cmaphot(round(r*64))];
+        if r > 1, cmaps{s} = [cmapcold(round(64/r)); cmaphot(64)];
+        else, cmaps{s} = [cmapcold(64); cmaphot(round(r*64))];
+        end
     elseif minval(s) < 0, cmaps{s} = cmapcold(64);
     else
         cmaps{s} = cmaphot(64);
@@ -122,7 +133,10 @@ for f = 1:size(diag.snapshotfwoi,1)
                     mask = abs(sourcePlot.avg.(cfgdiag.funparameter)); mask = mask./max(mask);
                     sourcePlot.mask = mask;
                 else % stats
-                    if ~any(sourcePlot.mask(:)), title(sprintf('%s\nns.',strTitle)); end
+                    if ~any(sourcePlot.mask(:))
+                        title(sprintf('%s\nns.',strTitle));
+                        sourcePlot.mask = sourcePlot.mask + 1;
+                    end
                 end
                 
                 cfg = cfgdiag;
@@ -151,7 +165,7 @@ for f = 1:size(diag.snapshotfwoi,1)
     set(fig,'Name',sprintf('%s_freq-%1.2f-%1.2f',figtitle,diag.snapshotfwoi(f,:)));
     
     if nargin >= 4
-        set(fig,'Position',[0,0,1080 1080]);
+        set(fig,'Position',[0,0,1080,round(sizeplot(1)/sizeplot(2)*1080)]);
         set(fig,'PaperPositionMode','auto');
         print(fig,'-noui',sprintf('%s_source_freq-%1.2f-%1.2f.jpg',savepath,diag.snapshotfwoi(f,:)),'-djpeg','-r300');
         close(fig);
@@ -162,10 +176,23 @@ end
 end
 
 %% Colormap functions
+function cmap = cmapbase
+[s, FT] = aas_cache_get([],'fieldtrip');
+if s
+    FT.load;
+    FT.addExternal('brewermap');
+    cmap = flipud(brewermap(128,'RdBu'));
+else
+    cmap = flipud([create_grad([0.4 0 0.1],[1 0 0],32);create_grad([1 0 0],[1 1 1],32);create_grad([1 1 1],[0 0 1],32);create_grad([0 0 1],[0 0.2 0.4],32)]);
+end
+end
+
 function cmap = cmaphot(n)
-    cmap = [create_grad([1 1 1],[1 0 0],n);create_grad([1 0 0],[0.25 0 0],n)];
+cmap = cmapbase;
+cmap = cmap(65:(end-(64-n)),:);
 end
 
 function cmap = cmapcold(n)
-    cmap = flipud([create_grad([1 1 1],[0 0 1],n);create_grad([0 0 1],[0 0 0.25],n)]);
+cmap = cmapbase;
+cmap = cmap((64-n+1):64,:);
 end
