@@ -101,7 +101,24 @@ switch task
         statcfg.minnbchan           = thr.neighbours;      % minimal number of neighbouring channels
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
-
+        
+        hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
+        if hashighressurface
+            fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
+            fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
+            grouphighressurface = ft_read_headshape(fnsurf);
+            for subj = 2:aas_getN_bydomain(aap,'subject')
+                fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',subj,'sourcesurface'));
+                fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};
+                mesh = ft_read_headshape(fnsurf);
+                grouphighressurface.pos = grouphighressurface.pos + mesh.pos;
+            end
+            grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
+            statplotcfg.surface = grouphighressurface;
+        else
+            statplotcfg = rmfield(statplotcfg,'surface');
+        end
+        
         models = aas_getsetting(aap,'model'); models(1) = []; 
         for m = models
             savepath{1} = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);

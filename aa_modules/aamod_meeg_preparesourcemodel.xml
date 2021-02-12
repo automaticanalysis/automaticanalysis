@@ -27,6 +27,7 @@
             <outputstreams>
                 <stream>sourcemodel</stream>
                 <stream>structural</stream>
+                <stream isessential='0' isrenameable='1'>sourcesurface</stream>
             </outputstreams>
             
         </currenttask>

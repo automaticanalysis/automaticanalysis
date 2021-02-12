@@ -84,6 +84,21 @@ switch task
                     tri(indtri,:) = [];                    
                     sourcemodel.tri = tri;
                 end
+                
+                % write surfaces
+                fnames = {};
+                cfg = [];
+                cfg.parameter = 'param';
+                cfg.precision = 'single';
+                for surftype = {'inflated' 'midthickness' 'pial','white'}
+                    sheetfn = fullfile(aas_getsubjpath(aap,subj),'workbench',sprintf('%s.L.%s.164k_fs_LR.surf.gii',aas_getsubjname(aap,subj),surftype{1}));
+                    surf = ft_read_headshape({sheetfn, strrep(sheetfn, '.L.', '.R.')});
+                    surf.(cfg.parameter) = ones(size(surf.pos,1),1);
+                    cfg.filename = fullfile(aas_getsubjpath(aap,subj),['surf_' surftype{1}]);
+                    ft_sourcewrite(cfg,surf);
+                    fnames = vertcat(fnames,{[cfg.filename '.gii']});
+                end
+                aap = aas_desc_outputs(aap,'subject',subj,'sourcesurface',fnames);
         end
         
         sourcemodel = ft_struct2single(sourcemodel);
@@ -101,11 +116,15 @@ switch task
         if subj == 1
             [s, FT] = aas_cache_get(aap,'fieldtrip');
             if ~s, aas_log(aap,true,'FieldTrip is not found'); end
-            [s, WB] = aas_cache_get(aap,'hcpwb');
-            if ~s, aas_log(aap,false,'HCP Workbench is not found -> corticalsheet is not available'); end
-            if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,false,'templates for HCP Workbench are not found -> corticalsheet is not available');
+            if strcmp(aas_getsetting(aap,'method'),'corticalsheet')
+                [s, WB] = aas_cache_get(aap,'hcpwb');
+                if ~s, aas_log(aap,true,'HCP Workbench is not found -> corticalsheet is not available'); end
+                if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,true,'templates for HCP Workbench are not found -> corticalsheet is not available');
+                else
+                    aas_log(aap,false,sprintf('WARNING: make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+                end
             else
-                aas_log(aap,false,sprintf('WARNING: if you want to use corticalsheet, make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'sourcesurface',[],'output');
             end
         end
 end

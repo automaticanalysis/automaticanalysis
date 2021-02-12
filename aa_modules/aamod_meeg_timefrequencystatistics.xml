@@ -33,6 +33,7 @@
             
             <inputstreams>
                 <stream>timefreq</stream>
+                <stream isessential='0'>sourcesurface</stream>
             </inputstreams>
             
             <outputstreams>
@@ -43,6 +44,7 @@
                 <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
                 <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
+                <surface desc="Surface to project statistics onto. 'sourcemodel' means the sourcemodel surface averaged across particpants, the other options corresponds to high-res surface stored in 'surf_[surface].gii' files in the sourcesurface stream (if present)" options='sourcemodel|inflated|midthickness|pial|white' ui='optionlist'>sourcemodel</surface>
                 <view desc='viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI'>RAS</view>
             </diagnostics>
         </currenttask>
