@@ -68,13 +68,13 @@ switch task
         
         %% Data
         % Process streams
-        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
-        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
+        inpstream = aas_getstreams(aap,'input');
+        outpstream = aas_getstreams(aap,'output');
         if ~iscell(outpstream), outpstream = cellstr(outpstream); end
         
         % Get target image:        
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
+        while ~aas_stream_has_contents(aap,inpstream{tInd})
             tInd = tInd + 1;
         end
         aas_log(aap,false,sprintf('Target stream: %s',inpstream{tInd}));
