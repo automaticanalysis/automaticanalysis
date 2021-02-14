@@ -22,7 +22,7 @@ switch task
         
         srcstream = textscan(inpstream{tInd+1},'%s','delimiter','.'); srcstream = srcstream{1}{end};
         
-        d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_*']));
+        d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
             aas_checkreg(aap,domain,cell2mat(varargin),srcstream,targetimfn);
             if numel(inpstream) > (tInd+1)
