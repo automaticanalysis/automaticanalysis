@@ -103,7 +103,7 @@ switch task
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
         
         hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
-        if hashighressurface
+        if hashighressurface && ~strcmp(statplotcfg.surface,'sourcemodel')
             fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
             fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
             grouphighressurface = ft_read_headshape(fnsurf);
@@ -207,7 +207,7 @@ switch task
                         aas_log(aap,false,'WARNING: subject selection works only when latencies are ignored')
                         i = numel(allInp);
                     end
-                    aas_log(aap,false,sprintf('INFO: %d subject(s) selected\n\tThe final subject list is saved in groupStat{1}.stat.subjects.',i));
+                    aas_log(aap,false,sprintf('INFO: %d samples selected\n\tThe final subject list is saved in groupStat{1}.stat.subjects.',i));
                     allTime = allTime(indsubj(1:i),:);
                     allInp = allInp(indsubj(1:i));
                     m.groupmodel = m.groupmodel(indsubj(1:i));
