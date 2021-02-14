@@ -136,46 +136,24 @@
 				"aaMaintainer": "Tibor Auer"
 			},
 			{
-				"Name": "powerStudent.m",
-				"Version": "",
-				"DateDownloaded": "10 March 2016",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/2907-powerstudent",
-				"aaMaintainer": "Tibor Auer"
-			}
-			{
 				"Name": "resize_img.m",
 				"Version": "",
 				"DateDownloaded": "21 March 2017",
 				"URL": "http:\/\/www0.cs.ucl.ac.uk\/staff\/gridgway\/vbm",
 				"aaMaintainer": "Tibor Auer"
 			},
-{
+            {
 				"Name": "rotateticklabel.m",
 				"Version": "(mod)",
 				"DateDownloaded": "",
 				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/29800-scenes-objects-classification-toolbox",
 				"aaMaintainer": "Tibor Auer"
 			},
-
 			{
 				"Name": "sscanfitem.m",
 				"Version": "",
 				"DateDownloaded": "22 July 2015",
 				"URL": "https:\/\/surfer.nmr.mgh.harvard.edu\/fswiki\/DownloadAndInstall",
-				"aaMaintainer": "Tibor Auer"
-			},
-			{
-				"Name": "testt.m",
-				"Version": "",
-				"DateDownloaded": "16 September 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12699-testt",
-				"aaMaintainer": "Tibor Auer"
-			}
-			{
-				"Name": "wilcoxon.m",
-				"Version": "(mod)",
-				"DateDownloaded": "16 September 2015",
-				"URL": "http:\/\/www.mathworks.com\/matlabcentral\/fileexchange\/12702-wilcoxon-test",
 				"aaMaintainer": "Tibor Auer"
 			}
 		]
