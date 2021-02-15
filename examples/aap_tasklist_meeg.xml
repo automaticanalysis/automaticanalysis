@@ -1,7 +1,7 @@
 <aap>
     <tasklist>
         <initialisation>
-            <module><name>aamod_checkparameters</name></module> 
+            <module><name>aamod_checkparameters</name></module>
             <module><name>aamod_evaluatesubjectnames</name></module>
             <module><name>aamod_study_init</name></module>
             <module><name>aamod_newsubj_init</name></module>
@@ -9,8 +9,8 @@
         <main>
             <!-- MRI -->
             <module><name>aamod_structuralfromnifti</name></module>
-            <module><name>aamod_segment8</name></module>            
-            <module><name>aamod_coreg_general</name></module>            
+            <module><name>aamod_segment8</name></module>
+            <module><name>aamod_coreg_general</name></module>
             <module><name>aamod_freesurfer_initialise</name></module>
             <module><name>aamod_freesurfer_autorecon_all</name></module>
             <module><name>aamod_meeg_preparesourcemodel</name></module>
@@ -31,15 +31,20 @@
             <module>
                 <branch>
                     <analysisid_suffix>_AVG</analysisid_suffix>
+                    <module><name>aamod_meeg_timefrequencyanalysis</name></module>
+                    <module><name>aamod_meeg_timefrequencystatistics</name></module>
+                    <module><name>aamod_meeg_sourcereconstruction</name></module>
+                    <module><name>aamod_meeg_timefrequencystatistics</name></module>
                 </branch>
                 <branch>
                     <analysisid_suffix>_CONT</analysisid_suffix>
+                    <module><name>aamod_meeg_timefrequencyanalysis</name></module>
+                    <module><name>aamod_meeg_timefrequencystatistics</name></module>
+                    <module><name>aamod_meeg_sourcereconstruction</name></module>
+                    <!-- time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level -->
+                    <!---module><name>aamod_meeg_timefrequencystatistics</name></module-->
                 </branch>
             </module>
-            <module><name>aamod_meeg_timefrequencyanalysis</name></module>
-            <module><name>aamod_meeg_timefrequencystatistics</name></module>
-            <module><name>aamod_meeg_sourcereconstruction</name></module>
-            <module><name>aamod_meeg_timefrequencystatistics</name></module>
         </main>
     </tasklist>
 </aap>

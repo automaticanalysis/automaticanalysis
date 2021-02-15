@@ -42,10 +42,7 @@ end
 for iarg = iarg0:nargin
     if ~ischar(varargin{iarg-1}), break; end
     image{iarg-iarg0+1} = varargin{iarg-1};
-    if ~isempty(strfind(image{iarg-iarg0+1},'.nii')) % path to image
-        imagename{iarg-iarg0+1} = strtok_ptrn(basename(image{iarg-iarg0+1}),'-0');
-    else % stream
-        imagename{iarg-iarg0+1} = image{iarg-iarg0+1};
+    if isempty(strfind(image{iarg-iarg0+1},'.nii')) % stream
         img = aas_getfiles_bystream_multilevel(aap,index{:},image{iarg-iarg0+1},'output');
         if ~isempty(img), image{iarg-iarg0+1} = img; end
     end
@@ -53,8 +50,8 @@ for iarg = iarg0:nargin
 end
 
 if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
-        isstruct(aap.tasklist.currenttask.settings.diagnostic) ||...
-        aap.tasklist.currenttask.settings.diagnostic
+        (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+        (isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic.streamind)
     
     % One-by-one
     for i = 1:size(image{1},1)

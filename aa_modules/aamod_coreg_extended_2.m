@@ -164,7 +164,9 @@ switch task
         
         %% Describe the outputs and Diagnostics
         
-        if strcmp(aap.options.wheretoprocess,'localsingle')
+        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+                    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && m == aap.tasklist.currenttask.settings.diagnostic.streamind)
             aas_checkreg(aap,domain,cell2mat(varargin),mEPIimg,'structural');
             for m = 1:numel(mainstream)
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
