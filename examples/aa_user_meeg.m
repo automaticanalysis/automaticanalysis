@@ -2,6 +2,9 @@
 % User master script example (aa version 5.*.*)
 %
 % This script demonstrates a basic EEG pipeline on the LEMON dataset: http://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html.
+%
+% N.B.: Time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level is disabled because it requires high amount of memory. You can 
+% enable it by uncommenting the corresponding lines in the tasklist and this UMS marked with corresponding comment.
 
 clear;
 aa_ver5
@@ -21,9 +24,9 @@ EL.close;
 MRIFILE = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_1mm.nii.gz');
 
 % SITE-SPECIFIC CONFIGURATION:
-aap.options.wheretoprocess = 'qsub_nonDCS'; % queuing system			% typical value localsingle or qsub_nonDCS
+aap.options.wheretoprocess = 'qsub_nonDCS'; % queuing system typical value localsingle or qsub_nonDCS
 aap.options.aaparallel.numberofworkers = 20;
-aap.options.aaparallel.memory = 6;
+aap.options.aaparallel.memory = 4; % 12; % time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level requires > 12 GB RAM
 aap.options.aaparallel.walltime = 36;
 aap.options.aaworkerGUI = 0;
 aap.options.garbagecollection = 1;
@@ -144,7 +147,7 @@ for b = 1:2
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics.view = 'RPI';
 end
-for b = 3:4
+for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
@@ -213,7 +216,7 @@ aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00003','*'
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEC','segmentavg','ECCONT');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEO','segmentavg','EOCONT');
 aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00002','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00004','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT');
+% aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00004','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT'); % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
 
 %% RUN
 aa_doprocessing(aap);
