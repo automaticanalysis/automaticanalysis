@@ -158,7 +158,9 @@ switch task
             sname = basename(structdiag);
             structdiag = structdiag((sname(:,1)=='w'),:);
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},wimgs);
-            if strcmp(aap.options.wheretoprocess,'localsingle') && any(strcmp(streams, 'structural'))
+            if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+                    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
                 aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},structdiag);
             end
         end

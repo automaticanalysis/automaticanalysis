@@ -5,8 +5,8 @@ function aas_checkreg_avi(aap, p, axisDim, suffix, slicesD)
 % Check if we need to make a movie (default - yes)...
 doVideo = (isfield(aap.options,'diagnostic_videos') && aap.options.diagnostic_videos) && ... % global
     isfield(aap.tasklist.currenttask.settings,'diagnostic') && ... % module-specific
-    isstruct(aap.tasklist.currenttask.settings.diagnostic) && ...
-    aap.tasklist.currenttask.settings.diagnostic;
+    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && ...
+    aap.tasklist.currenttask.settings.diagnostic);
 if ~doVideo, aas_log(aap,false,'INFO: Diagnostic videos disabled (check aap.options.diagnostic_videos and aap.tasksettings.<module>.diagnostic)'); end
 
 global st
