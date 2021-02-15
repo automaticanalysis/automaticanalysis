@@ -18,10 +18,10 @@
             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>epi</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
-                <stream diagnostic="1">meanepi</stream>  
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
+				<stream diagnostic='1'>meanepi</stream>  
+                <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream>epi</stream>
             </inputstreams>
             
             <outputstreams>

@@ -15,9 +15,9 @@
             </eoptions>
             
             <inputstreams>
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
                 <stream>t1totemplate_xfm</stream>
                 <stream diagnostic="1">aamod_diffusion_extractnodif_00001.nodif</stream>   
+                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>                  
                 <stream>dki_FA</stream> 
                 <stream>dki_MD</stream> 
                 <stream>dki_L1</stream> 
