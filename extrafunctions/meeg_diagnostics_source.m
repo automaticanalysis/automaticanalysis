@@ -135,15 +135,14 @@ for f = 1:size(diag.snapshotfwoi,1)
                 else % stats
                     if ~any(sourcePlot.mask(:))
                         title(sprintf('%s\nns.',strTitle));
-                        sourcePlot.mask = sourcePlot.mask + 1;
+                    else
+                        sourcePlot.avg.(cfgdiag.funparameter) = sourcePlot.avg.(cfgdiag.funparameter).*sourcePlot.mask;
                     end
                 end
                 
                 cfg = cfgdiag;
                 cfg.funcolormap = cmaps{s};
                 cfg.funcolorlim = [minval(s) maxval(s)];
-                cfg.maskparameter = 'mask';
-                cfg.opacitylim = cfg.funcolorlim;
                 cfg.method = 'surface';
                 cfg.camlight = 'no';
                 ft_sourceplot(cfg, sourcePlot);
