@@ -54,6 +54,11 @@ switch task
         cfg.parameter = 'aparc';
         source_atlas = ft_sourceinterpolate(cfg, atlas, source);
         
+        % remove unrepresented areas
+        sel = unique(source_atlas.aparc); sel(sel==0) = [];
+        source_atlas.aparclabel = source_atlas.aparclabel(sel);
+        for s = 1:numel(sel), source_atlas.aparc(source_atlas.aparc==sel(s)) = s; end
+        
         % create spatial information for 'sensors' N.B.: it is still suboptimal 
         for l = 1:numel(source_atlas.aparclabel)
             ind = source_atlas.aparc == l;

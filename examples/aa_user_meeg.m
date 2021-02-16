@@ -127,19 +127,6 @@ aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).weightedaveraging = 1;
 aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi = [[0:120000:7*120000]' [0:120000:7*120000]'+120000];
 
 for b = 1:2
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.view = '';
-end
-aap.tasksettings.aamod_meeg_timefrequencystatistics(2).selectoverlappingdata.subjects = 'auto';
-aap.tasksettings.aamod_meeg_timefrequencystatistics(2).selectoverlappingdata.time = 'ignore';
-indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
-aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.snapshottwoi = [indtime-100 indtime+100];
-for b = 1:2
     aap = aas_renamestream(aap,sprintf('aamod_meeg_sourcereconstruction_%05d',b),'input','timefreq');
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.target = 'scalp';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.method = 'spherefit';
@@ -147,13 +134,27 @@ for b = 1:2
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics.view = 'RPI';
 end
+
+for b = 1:2
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics);
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
+end
+aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.view = 'RPI';
+
+indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
 for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata = aap.tasksettings.aamod_meeg_timefrequencystatistics(b-2).selectoverlappingdata; % from aamod_meeg_timefrequencystatistics 1 and 2
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.subjects = 'auto';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.time = 'ignore';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_sourcereconstruction(b-2).diagnostics); % from aamod_meeg_sourcereconstruction 1 and 2
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics);
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.snapshottwoi = [indtime-250 indtime+250];
 end
 
 %% DATA
@@ -211,11 +212,11 @@ aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEO','avg','EOAVG');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEC|-1xEO','avg','ECAVGminusEOAVG');
 aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00001','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00003','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
+aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00002','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
 
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEC','segmentavg','ECCONT');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEO','segmentavg','EOCONT');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00002','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT');
+aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00003','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT');
 % aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00004','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT'); % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
 
 %% RUN

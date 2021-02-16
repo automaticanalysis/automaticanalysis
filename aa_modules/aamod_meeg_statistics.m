@@ -37,7 +37,7 @@ switch task
         end
         aap = aas_report_add(aap,[],'</tr></table>');
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
                
         inpstreams = aas_getstreams(aap,'input');
@@ -52,7 +52,8 @@ switch task
         cfg = [];
         cfg.method      = 'triangulation'; 
         cfg.feedback    = 'yes';
-        dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat)));
+        dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat))); 
+        if strcmp(inpstreams{1},'crossfreq'), data.label = data.elec.label; end
         if ~ft_datatype(data,'source')
             neighbours = ft_prepare_neighbours(cfg, data);
             set(gcf,'position',[0,0,720 720]);
@@ -82,6 +83,12 @@ switch task
                 statcfg.avgoverfreq = 'yes';
                 fstat = @ft_freqstatistics;
                 fdiag = @meeg_diagnostics_TFR;
+            case 'crossfreq'
+                statcfg.parameter   = 'crsspctrm';
+                fstat = @meeg_statistics;
+                fdiag = @meeg_diagnostics_CF;
+                thr.correctiontimeseries = thr.correction;
+                thr.correctiontimepoint = thr.correction;
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -116,7 +123,7 @@ switch task
             grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
             statplotcfg.surface = grouphighressurface;
         else
-            statplotcfg = rmfield(statplotcfg,'surface');
+            if isfield(statplotcfg,'surface'), statplotcfg = rmfield(statplotcfg,'surface'); end
         end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
@@ -283,6 +290,34 @@ switch task
                 end
             end
             
+            if isfield(allInp{1},'labelcmb')
+                aas_log(aap,false,'INFO: selecting common channelcombinations');
+                labelcmb = categorical(allInp{1}.labelcmb);
+                for subj = 2:numel(allInp)
+                    labelcmb = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
+                end
+                for subj = 1:numel(allInp)
+                    [~,~,ind] = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
+                    allInp{subj}.crsspctrm = allInp{subj}.crsspctrm(ind,:,:,:);
+                end
+                
+                % update neighbours for channelcombination
+                cmblabels = cellstr(spm_file(num2str([1:size(labelcmb,1)]'),'prefix','cmb'));
+                for lc1 = 1:size(labelcmb,1)
+                    nb = false(size(labelcmb,1),1);
+                    for lc2 = 1:size(labelcmb,2)
+                        nb = nb | any(labelcmb(lc1,lc2) == labelcmb,2);
+                        if thr.neighbours > 0, nb = nb |...
+                                any(cell2mat(cellfun(@(l) l == labelcmb, neighbours(labelcmb(lc1,lc2) == {neighbours.label}).neighblabel, 'UniformOutput', false)),2);
+                        end
+                    end
+                    cmbneighbours(lc1).label = cmblabels{lc1};
+                    cmbneighbours(lc1).neighblabel = cmblabels(nb);
+                end
+                cfg{1}.neighbours = cmbneighbours;
+                if cfg{1}.minnbchan == 0, cfg{1}.minnbchan = 2; end
+            end
+            
             cfg{1}.design(1,:) = m.groupmodel;
             switch numel(unique(m.groupmodel))
                 case 1 % group average 
@@ -380,6 +415,12 @@ switch task
                 end
                 if isfield(cfg{c},'frequency')
                     groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
+                    if ischar(cfg{c}.frequency)
+                        switch cfg{c}.frequency
+                            case 'all'
+                                cfg{c}.frequency = [min(groupStat{1}.freq) max(groupStat{1}.freq)];
+                        end
+                    end
                     pcfg.snapshotfwoi = cfg{c}.frequency;
                     cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % hack to add suffix to statFn
                 end
@@ -407,5 +448,23 @@ switch task
 
     case 'checkrequirements'
         if ~aas_cache_get(aap,'fieldtrip'), aas_log(aap,true,'FieldTrip is not found'); end
+end
+end
+
+function stat = meeg_statistics(cfg,varargin)
+% this is a generic function without any sanitycheck
+
+cfg = rmfield(cfg,intersect(fieldnames(cfg),{'channel'})); % to avoid invoking findcluster.m, which cannot handle non-TFR data. 
+cfg.dimord = varargin{1}.dimord;
+cfg.dim = size(varargin{1}.(cfg.parameter));
+dat = cell2mat(cellfun(@(x) x.(cfg.parameter)(:), varargin, 'UniformOutput', false));
+
+statmethod = str2func(['ft_statistics_' cfg.method]);
+stat = statmethod(cfg, dat, cfg.design);
+
+for fn = fieldnames(stat)'
+    if size(stat.(fn{1}),1) == prod(cfg.dim)
+        stat.(fn{1}) = reshape(stat.(fn{1}), cfg.dim);
+    end
 end
 end
