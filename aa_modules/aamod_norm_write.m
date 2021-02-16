@@ -153,15 +153,11 @@ switch task
             end 
             
             % describe outputs with diagnostic
-            % determine normalised struct
-            structdiag = aas_getfiles_bystream(aap,'subject',varargin{1},'structural');
-            sname = basename(structdiag);
-            structdiag = structdiag((sname(:,1)=='w'),:);
             aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},wimgs);
             if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
                     (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
                     (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
-                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},structdiag);
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'structural');
             end
         end
         
