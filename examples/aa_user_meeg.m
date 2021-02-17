@@ -24,7 +24,7 @@ EL.close;
 MRIFILE = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_1mm.nii.gz');
 
 % SITE-SPECIFIC CONFIGURATION:
-aap.options.wheretoprocess = 'qsub_nonDCS'; % queuing system typical value localsingle or qsub_nonDCS
+aap.options.wheretoprocess = 'qsub'; % queuing system typical value localsingle or qsub_nonDCS
 aap.options.aaparallel.numberofworkers = 20;
 aap.options.aaparallel.memory = 4; % 12; % time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level requires > 12 GB RAM
 aap.options.aaparallel.walltime = 36;
