@@ -381,7 +381,7 @@ switch task
                         end
                     else
                         cfg{1}.frequency = 'all';
-                    end                    
+                    end
                 case 'peak' % custom analysis and plotting
                     cfg{1}.parameter = 'amp';
                     savepath{2} = savepath{1};
@@ -434,9 +434,9 @@ switch task
                 
                 % append to stream
                 outputFn = {};
-                outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'groupstat');
+                outstreamFn = aas_getoutputstreamfilename(aap,'study',[],'groupstat');
                 if exist(outstreamFn,'file')
-                    outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'groupstat','output'));
+                    outputFn = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat','output'));
                 end
                 outputFn{end+1} = statFn;
                 aap = aas_desc_outputs(aap,'study',[],'groupstat',outputFn);
