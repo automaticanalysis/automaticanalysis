@@ -22,7 +22,6 @@ classdef aaq_qsub < aaq
     %   runall              - Run all jobs/tasks on the queue
     %   QVUpdate            - Update queue viewer
     %   QVClose             - Close queue viewer
-    %   pool_args           - Construct arguments to be submitted to schedulers
     %   qsub_q_job          - Create Job in the pool and task in the job if pool exists, 
     %                         otherwise call aa_doprocessing_onetask
     %   add_from_jobqueue   - Add job to queue by calling qsub_q_job and creating jobinfo
@@ -418,62 +417,9 @@ classdef aaq_qsub < aaq
         end
         
         % =================================================================
-        function pool_args(obj,varargin)
-            
-            global aaparallel;
-            memory = aaparallel.memory;
-            walltime = aaparallel.walltime;
-            
-            for iarg = 1:numel(varargin)
-                if ~ischar(varargin{iarg})
-                    continue; 
-                end
-                switch varargin{iarg}
-                    case 'mem'
-                        if ~isempty(varargin{iarg+1})
-                            memory = varargin{iarg+1}; 
-                        end
-                    case 'walltime'
-                        if ~isempty(varargin{iarg+1})
-                            walltime = varargin{iarg+1}; 
-                        end
-                end
-            end
-            
-            switch class(obj.pool)
-                case 'parallel.cluster.Torque'
-                    if round(memory) == memory % round
-                        memory = sprintf('%dGB',memory);
-                    else % non-round --> MB
-                        memory = sprintf('%dMB',memory*1000);
-                    end
-                    obj.pool.SubmitArguments = strcat(sprintf('-q compute -l mem=%s -l walltime=%d',memory,walltime*3600),obj.initialSubmitArguments);
-                    %                 obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,...
-                    %                     sprintf(' -N Mod%02d_',job.k),...
-                    %                     sprintf('%03d',job.indices));
-                case 'parallel.cluster.LSF'
-                    obj.SubmitArguments = sprintf(' -M %d -R "rusage[mem=%d]"',memory*1000,memory*1000);
-                    obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
-                case 'parallel.cluster.Generic'
-                    if obj.newGenericVersion
-                        if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
-                            aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
-                            aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
-                            aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
-                        else
-                            obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l s_cpu=%d:00:00 -l s_rss=%dG',obj.initialSubmitArguments,walltime,memory);
-                        end
-                    else
-                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',walltime);
-                        obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',memory);
-                    end
-            end
-        end
-        
-        % =================================================================
         function qsub_q_job(obj,job)
-            % Create Job in the pool and task in the job if pool exists,
-            % otherwise call aa_doprocessing_onetask
+            % Create batch job in the pool if pool exists, otherwise call
+            % aa_doprocessing_onetask
             global aaworker
             global aacache
             aaworker.aacache = aacache;
@@ -509,66 +455,6 @@ classdef aaq_qsub < aaq
                     'AutoAddClientPath', false, ...
                     'AdditionalPaths', reqpath,...
                     'CaptureDiary', true);
-                
-                
-                % Original implementation below (leaving it here for now)
-                % Notes:
-                % 1. The code lines revolving around qsubsettings are meant
-                % for a future version in which we can assign resources to
-                % jobs/tasks in an explicit way
-                %                 % Check how much memory and time we should assign to the job
-                %                 qsubsettings = {'mem',[],'walltime',[]};
-                %                 % if isfield(obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index),'qsub')
-                %                 % qsub = obj.aap.tasksettings.(job.stagename)(obj.aap.tasklist.main.module(job.k).index).qsub;
-                %                 % for f = fieldnames(qsub)'
-                %                 % switch f{1}
-                %                 % case 'memoryBase'
-                %                 % qsubsettings{2} = qsub.memoryBase;
-                %                 % case 'timeBase'
-                %                 % qsubsettings{4} = qsub.timeBase;
-                %                 % end
-                %                 % end
-                %                 % end
-                %                 obj.pool_args(qsubsettings{:});
-                %                 J = createJob(obj.pool);
-                %                 cj = @aa_doprocessing_onetask;
-                %                 nrtn = 0;
-                %                 inparg = {obj.aap,job.task,job.k,job.indices, aaworker};
-                %                 if isprop(J,'AutoAttachFiles')
-                %                     J.AutoAttachFiles = false;
-                %                 end
-                %                 % [RT 2013-09-04 and 2013-11-11; TA 2013-11-14 and 2014-12-12]
-                %                 % Make workers self-sufficient by passing them the aa
-                %                 % paths. Users don't need to remember to update their own
-                %                 % default paths (e.g. for a new aa version)
-                %                 if isprop(J,'AdditionalPaths')
-                %                     J.AdditionalPaths = reqpath;
-                %                 elseif isprop(J,'PathDependencies')
-                %                     J.PathDependencies = reqpath;
-                %                 end
-                %                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
-                %                 success = false;
-                %                 retries = 0;
-                %                 % Job submission can sometimes fail (server fault) (DP).
-                %                 % Added retry to cope with this.
-                %                 while success == false
-                %                     try
-                %                         J.submit;
-                %                         success = true;
-                %                     catch ME
-                %                         if retries > obj.aap.options.aaworkermaximumretry
-                %                             throw(ME)
-                %                         else
-                %                             retries = retries + 1;
-                %                             aas_log(obj.aap, false, sprintf('WARNING: Error starting job: %s | Retries: %d', ME.message, retries))
-                %                             pause(5)
-                %                         end
-                %                     end
-                %                 end
-                %                 % % State what the assigned number of hours and GB is...
-                %                 % Naas_movParsot in use [TA]
-                %                 % fprintf('Job %s, assigned %0.4f hours. and %0.9f GB\n\n', ...
-                %                 % job.stagename, timReq./(60*60), memReq./(1024^3))
             else
                 aa_doprocessing_onetask(obj.aap,job.task,job.k,job.indices);
             end
