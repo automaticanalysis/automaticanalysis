@@ -60,12 +60,6 @@ switch task
         domain = aap.tasklist.currenttask.domain;
         [diagstream, mainstream, wbstream] = process_streams(aap);
         
-        % Get the T1 template
-        sTimg = fullfile(spm('dir'), aap.directory_conventions.T1template);
-        if ~exist(sTimg, 'file')
-            aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', sTimg));
-        end
-        
         % Check local structural
         Simg = aas_getfiles_bystream(aap,subj,'structural');
         if size(Simg,1) > 1
@@ -126,9 +120,9 @@ switch task
             
             % Coregister mean EPI to wholebrain EPI
             flags.estimate.cost_fun = 'ncc'; % whithin-modality
-            x2 = spm_coreg(spm_vol(deblank(WBimg)),spm_vol(WBimg),flags.estimate);
+            x2 = spm_coreg(spm_vol(deblank(WBimg)),spm_vol(mEPIimg),flags.estimate);
             % Set the new space for the mean EPI
-            spm_get_space(WBimg, spm_matrix(x2)\spm_get_space(WBimg));
+            spm_get_space(mEPIimg, spm_matrix(x2)\spm_get_space(mEPIimg));
             x = x1 + x2;
         else
             % Coregister mean EPI to structural
@@ -154,16 +148,25 @@ switch task
         for m = 1:numel(mainstream)
             if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),mainstream{m}), continue; end
             EPIimg{m} = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream{m});
+            excl = [];
             for e = 1:size(EPIimg{m},1)
+                if ~strcmp(spm_file(EPIimg{m}(e,:),'ext'),'nii')
+                    aas_log(aap,false,sprintf('WARNING: file %s is not a NIfTI --> skipping',EPIimg{m}(e,:)));
+                    excl(end+1) = e;
+                    continue; 
+                end
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)
                 spm_get_space(deblank(EPIimg{m}(e,:)), MM);
             end
+            EPIimg{m}(excl,:) = [];
         end
         
         %% Describe the outputs and Diagnostics
         
-        if strcmp(aap.options.wheretoprocess,'localsingle')
+        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+                    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && m == aap.tasklist.currenttask.settings.diagnostic.streamind)
             aas_checkreg(aap,domain,cell2mat(varargin),mEPIimg,'structural');
             for m = 1:numel(mainstream)
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
@@ -179,7 +182,22 @@ switch task
         end
         
     case 'checkrequirements'
-
+        in = aas_getstreams(aap,'input'); in(1:4) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
 end
 end
 

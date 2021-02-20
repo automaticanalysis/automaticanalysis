@@ -145,7 +145,7 @@ classdef aa_provenance < handle
                 obj.pp.bundle(obj.IDs{1}.id,obj.p);
                 serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.provn'));
                 serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.ttl'));
-%                 serialize(obj.pp,fullfile(obj.studypath,'aa_prov_workflow.json'));
+                serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.json'));
                 if ~unix('which dot')
                     try
                         serialize(obj.pp,fullfile(serpath,'aa_prov_workflow.pdf'));
@@ -302,6 +302,7 @@ classdef aa_provenance < handle
                 ioutp = strcmp({outp.name},stream);
                 outp = outp(ioutp); outp = outp(1);
                 destdomain = outp.destdomain;
+                if strcmp(destdomain,'*'), destdomain = aap.schema.tasksettings.(aap.tasklist.main.module(outp.destnumber).name)(aap.tasklist.main.module(outp.destnumber).index).ATTRIBUTE.domain; end
                 daap = aas_setcurrenttask(aap,outp.destnumber);
                 aap.tasklist.currenttask.modality = daap.tasklist.currenttask.modality;
             end

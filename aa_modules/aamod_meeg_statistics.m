@@ -37,7 +37,7 @@ switch task
         end
         aap = aas_report_add(aap,[],'</tr></table>');
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
                
         inpstreams = aas_getstreams(aap,'input');
@@ -52,7 +52,8 @@ switch task
         cfg = [];
         cfg.method      = 'triangulation'; 
         cfg.feedback    = 'yes';
-        dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat)));
+        dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat))); 
+        if strcmp(inpstreams{1},'crossfreq'), data.label = data.elec.label; end
         if ~ft_datatype(data,'source')
             neighbours = ft_prepare_neighbours(cfg, data);
             set(gcf,'position',[0,0,720 720]);
@@ -63,6 +64,11 @@ switch task
             neighbours = [];
         end
         
+        statplotcfg = aas_getsetting(aap,'diagnostics');
+        if ~ft_datatype(data,'source')
+            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        end
+        
         thr = aas_getsetting(aap,'threshold');
         statcfg = [];
         statcfg.channel   = 'all';
@@ -71,15 +77,18 @@ switch task
             case 'timelock'
                 statcfg.parameter   = 'avg';
                 fstat = @ft_timelockstatistics;
-                fgrandavg = @ft_timelockgrandaverage;
                 fdiag = @meeg_diagnostics_ER;
-                avglat = 'latency';
             case 'timefreq'
                 statcfg.parameter   = 'powspctrm';
+                statcfg.avgoverfreq = 'yes';
                 fstat = @ft_freqstatistics;
-                fgrandavg = @ft_freqgrandaverage;
                 fdiag = @meeg_diagnostics_TFR;
-                avglat = 'toilim';
+            case 'crossfreq'
+                statcfg.parameter   = 'crsspctrm';
+                fstat = @meeg_statistics;
+                fdiag = @meeg_diagnostics_CF;
+                thr.correctiontimeseries = thr.correction;
+                thr.correctiontimepoint = thr.correction;
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -87,7 +96,6 @@ switch task
                 statcfg.parameter   = 'pow';
             end
             fstat = @ft_sourcestatistics;
-            fgrandavg = @ft_sourcegrandaverage;
             fdiag = @meeg_diagnostics_source;
         end
         statcfg.alpha       = thr.p;
@@ -100,14 +108,22 @@ switch task
         statcfg.minnbchan           = thr.neighbours;      % minimal number of neighbouring channels
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
-
-        avgcfg = [];
-        avgcfg.channel   = 'all';
-        avgcfg.(avglat)   = 'all';
-                
-        statplotcfg = aas_getsetting(aap,'diagnostics');
-        if ~ft_datatype(data,'source')
-            statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
+        
+        hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
+        if hashighressurface && ~strcmp(statplotcfg.surface,'sourcemodel')
+            fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
+            fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
+            grouphighressurface = ft_read_headshape(fnsurf);
+            for subj = 2:aas_getN_bydomain(aap,'subject')
+                fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',subj,'sourcesurface'));
+                fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};
+                mesh = ft_read_headshape(fnsurf);
+                grouphighressurface.pos = grouphighressurface.pos + mesh.pos;
+            end
+            grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
+            statplotcfg.surface = grouphighressurface;
+        else
+            if isfield(statplotcfg,'surface'), statplotcfg = rmfield(statplotcfg,'surface'); end
         end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
@@ -198,7 +214,7 @@ switch task
                         aas_log(aap,false,'WARNING: subject selection works only when latencies are ignored')
                         i = numel(allInp);
                     end
-                    aas_log(aap,false,sprintf('INFO: %d subject(s) selected\n\tThe final subject list is saved in groupStat{1}.stat.subjects.',i));
+                    aas_log(aap,false,sprintf('INFO: %d samples selected\n\tThe final subject list is saved in groupStat{1}.stat.subjects.',i));
                     allTime = allTime(indsubj(1:i),:);
                     allInp = allInp(indsubj(1:i));
                     m.groupmodel = m.groupmodel(indsubj(1:i));
@@ -274,6 +290,34 @@ switch task
                 end
             end
             
+            if isfield(allInp{1},'labelcmb')
+                aas_log(aap,false,'INFO: selecting common channelcombinations');
+                labelcmb = categorical(allInp{1}.labelcmb);
+                for subj = 2:numel(allInp)
+                    labelcmb = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
+                end
+                for subj = 1:numel(allInp)
+                    [~,~,ind] = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
+                    allInp{subj}.crsspctrm = allInp{subj}.crsspctrm(ind,:,:,:);
+                end
+                
+                % update neighbours for channelcombination
+                cmblabels = cellstr(spm_file(num2str([1:size(labelcmb,1)]'),'prefix','cmb'));
+                for lc1 = 1:size(labelcmb,1)
+                    nb = false(size(labelcmb,1),1);
+                    for lc2 = 1:size(labelcmb,2)
+                        nb = nb | any(labelcmb(lc1,lc2) == labelcmb,2);
+                        if thr.neighbours > 0, nb = nb |...
+                                any(cell2mat(cellfun(@(l) l == labelcmb, neighbours(labelcmb(lc1,lc2) == {neighbours.label}).neighblabel, 'UniformOutput', false)),2);
+                        end
+                    end
+                    cmbneighbours(lc1).label = cmblabels{lc1};
+                    cmbneighbours(lc1).neighblabel = cmblabels(nb);
+                end
+                cfg{1}.neighbours = cmbneighbours;
+                if cfg{1}.minnbchan == 0, cfg{1}.minnbchan = 2; end
+            end
+            
             cfg{1}.design(1,:) = m.groupmodel;
             switch numel(unique(m.groupmodel))
                 case 1 % group average 
@@ -326,13 +370,25 @@ switch task
                 cfg{1}.latency = 'all';
                 cfg{1}.correctm = thr.correctiontimepoint;
             end
-            if strcmp(inpType, 'peak')  % custom analysis and plotting
-                cfg{1}.parameter = 'amp';
-                savepath{2} = savepath{1};
-                savepath{1} = [savepath{1} '_amp'];
-                cfg{2} = cfg{1};
-                cfg{2}.parameter = 'lat';
-                savepath{2} = [savepath{2} '_lat'];
+            switch inpType
+                case 'timefreq' % separate analyses for each band
+                    fwoi = aas_getsetting(aap,'diagnostics.snapshotfwoi');
+                    if ~isempty(fwoi)
+                        for f = 1:size(fwoi,1)
+                            cfg{f} = cfg{1};
+                            cfg{f}.frequency = fwoi(f,:);
+                            savepath{f} = savepath{1};
+                        end
+                    else
+                        cfg{1}.frequency = 'all';
+                    end
+                case 'peak' % custom analysis and plotting
+                    cfg{1}.parameter = 'amp';
+                    savepath{2} = savepath{1};
+                    savepath{1} = [savepath{1} '_amp'];
+                    cfg{2} = cfg{1};
+                    cfg{2}.parameter = 'lat';
+                    savepath{2} = [savepath{2} '_lat'];
             end
             
             for c = 1:numel(cfg)
@@ -342,8 +398,7 @@ switch task
                 
                 % plot
                 groupStat = {};
-                avgcfg.parameter = cfg{c}.parameter;
-                avgcfg.(avglat) = cfg{c}.latency;
+                avgcfg = keepfields(cfg{c},{'parameter','latency'});
                 if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
                     pcfg.snapshottwoi = pcfg.snapshottwoi(...
                         pcfg.snapshottwoi(:,1)/1000 >= stat.time(1) & ...
@@ -353,14 +408,24 @@ switch task
                 
                 if numel(unique(m.groupmodel)) <= 2
                     for g = unique(m.groupmodel)
-                        groupStat{end+1} = fgrandavg(avgcfg, allInp{cfg{c}.design(1,:)==g});
-                        if isfield(allInp{1},'tri'), groupStat{end}.tri = allInp{1}.tri; end
+                        groupStat{end+1} = ft_granddescriptives(avgcfg, allInp{cfg{c}.design(1,:)==g});
                     end
                 else
-                    groupStat{1} = fgrandavg(avgcfg, allInp{:});
-                    if isfield(allInp{1},'tri'), groupStat{1}.tri = allInp{1}.tri; end
+                    groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
+                end
+                if isfield(cfg{c},'frequency')
+                    groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
+                    if ischar(cfg{c}.frequency)
+                        switch cfg{c}.frequency
+                            case 'all'
+                                cfg{c}.frequency = [min(groupStat{1}.freq) max(groupStat{1}.freq)];
+                        end
+                    end
+                    pcfg.snapshotfwoi = cfg{c}.frequency;
+                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % hack to add suffix to statFn
                 end
                 groupStat{1}.stat = stat;
+                pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);
@@ -369,9 +434,9 @@ switch task
                 
                 % append to stream
                 outputFn = {};
-                outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'groupstat');
+                outstreamFn = aas_getoutputstreamfilename(aap,'study',[],'groupstat');
                 if exist(outstreamFn,'file')
-                    outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'groupstat','output'));
+                    outputFn = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat','output'));
                 end
                 outputFn{end+1} = statFn;
                 aap = aas_desc_outputs(aap,'study',[],'groupstat',outputFn);
@@ -383,5 +448,23 @@ switch task
 
     case 'checkrequirements'
         if ~aas_cache_get(aap,'fieldtrip'), aas_log(aap,true,'FieldTrip is not found'); end
+end
+end
+
+function stat = meeg_statistics(cfg,varargin)
+% this is a generic function without any sanitycheck
+
+cfg = rmfield(cfg,intersect(fieldnames(cfg),{'channel'})); % to avoid invoking findcluster.m, which cannot handle non-TFR data. 
+cfg.dimord = varargin{1}.dimord;
+cfg.dim = size(varargin{1}.(cfg.parameter));
+dat = cell2mat(cellfun(@(x) x.(cfg.parameter)(:), varargin, 'UniformOutput', false));
+
+statmethod = str2func(['ft_statistics_' cfg.method]);
+stat = statmethod(cfg, dat, cfg.design);
+
+for fn = fieldnames(stat)'
+    if size(stat.(fn{1}),1) == prod(cfg.dim)
+        stat.(fn{1}) = reshape(stat.(fn{1}), cfg.dim);
+    end
 end
 end

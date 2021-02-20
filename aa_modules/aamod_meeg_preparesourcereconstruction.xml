@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_meeg_sourcereconstruction' domain='subject' desc='Prepare source filter for later use' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.3</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+
+            <method desc='source reconstruction method' ui='optionlist' options='eloreta'>eloreta</method>
+
+            <options desc='method-specific options'>
+                <eloreta>
+                    <normalize>yes</normalize>
+                </eloreta>
+            </options>
+            
+            <realignelectrodes>
+                <method desc='method to realign electrodes, spherefit does not correct for rotations and requires MATLAB Computer Vision Toolbox' ui='optionlist' options='fieldtrip|spherefit'>fieldtrip</method>
+                <target desc='target mesh for the realignment of electrodes' ui='optionlist' options='scalp'>scalp</target>
+                <projecttotarget desc='refine realignment by projecting the electrodes to the target'>1</projecttotarget>
+            </realignelectrodes>
+            
+            <inputstreams>
+                <stream>headmodel</stream>
+                <stream>sourcemodel</stream>
+                <stream>segmentation</stream>
+                <stream isrenameable='1'>input</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>sensors</stream>
+                <stream>leadfield</stream>              
+                <stream>sourcefilter</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

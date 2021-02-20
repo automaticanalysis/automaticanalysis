@@ -8,6 +8,18 @@ if isempty(modality) && isfield(aap.spm.defaults,'modality'), modality = aap.spm
 % MRI (old) is meaningless
 if strcmp(modality,'MRI'), modality = ''; end
 
+% if module has specific session domain
+switch aap.tasklist.currenttask.domain
+    case 'diffusion_session'
+        modality = 'DWI';
+    case 'meeg_session'
+        modality = 'MEEG';
+    case 'special_session'
+        modality = 'X';
+    otherwise
+        % ignore generic session
+end
+
 % last resort --> try modulename
 if isempty(modality)
     if strfind(aap.tasklist.currenttask.name,'_epi'), modality = 'FMRI'; end

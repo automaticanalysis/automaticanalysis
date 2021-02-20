@@ -54,12 +54,51 @@ switch task
                 aas_runFScommand(aap,sprintf('export PATH=$PATH:%s/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',WB.toolPath, FT.toolPath,...
                     aas_getstudypath(aap),aas_getsubjname(aap,subj),...
                     fullfile(WB.templateDir,'standard_mesh_atlases')));
-                resPerHemi = sscanf(aas_getsetting(aap,'options.corticalsheet.resolution'),'%dk')/2;
+                resPerHemi = sscanf(aas_getsetting(aap,'options.corticalsheet.resolution'),'%dk')/2; downsample = 1;
+                if resPerHemi < 4 % create 4k meshes and downsample
+                    downsample = 4/resPerHemi;
+                    resPerHemi = 4;
+                end
                 sheetfn = fullfile(aas_getsubjpath(aap,subj),'workbench',sprintf('%s.L.midthickness.%dk_fs_LR.surf.gii',aas_getsubjname(aap,subj),resPerHemi));
                 if ~exist(sheetfn,'file'), aas_log(aap,true,'ft_postfreesurferscript failed'); end
                 sourcemodel = ft_read_headshape({sheetfn, strrep(sheetfn, '.L.', '.R.')});
                 sourcemodel.inside = sourcemodel.atlasroi>0;
-                sourcemodel = rmfield(sourcemodel, 'atlasroi');                
+                sourcemodel = rmfield(sourcemodel, 'atlasroi');
+                if downsample > 1 % run downsample if needed
+                    indpos = true(1,size(sourcemodel.pos,1)); 
+                    indpos(downsample:downsample:end) = false;
+                    
+                    origpos = sourcemodel.pos;
+                    for f = intersect(fieldnames(sourcemodel),{'pos' 'inside' 'sulc' 'curv' 'thickness' 'brainstructure'})'
+                        sourcemodel.(f{1})(indpos,:) = [];
+                    end
+                    
+                    % process tri
+                    % - resample nodes to nearest
+                    tri = arrayfun(@(x) dsearchn(sourcemodel.pos, origpos(x,:)),sourcemodel.tri(:));
+                    tri = reshape(tri,[],3);
+                    % - remove duplicates
+                    [~,ia] = unique(sort(tri,2),'stable','rows');
+                    tri = tri(ia,:);
+                    indtri = arrayfun(@(t) numel(unique(tri(t,:))) < 3, 1:size(tri,1));
+                    tri(indtri,:) = [];                    
+                    sourcemodel.tri = tri;
+                end
+                
+                % write surfaces
+                fnames = {};
+                cfg = [];
+                cfg.parameter = 'param';
+                cfg.precision = 'single';
+                for surftype = {'inflated' 'midthickness' 'pial','white'}
+                    sheetfn = fullfile(aas_getsubjpath(aap,subj),'workbench',sprintf('%s.L.%s.164k_fs_LR.surf.gii',aas_getsubjname(aap,subj),surftype{1}));
+                    surf = ft_read_headshape({sheetfn, strrep(sheetfn, '.L.', '.R.')});
+                    surf.(cfg.parameter) = ones(size(surf.pos,1),1);
+                    cfg.filename = fullfile(aas_getsubjpath(aap,subj),['surf_' surftype{1}]);
+                    ft_sourcewrite(cfg,surf);
+                    fnames = vertcat(fnames,{[cfg.filename '.gii']});
+                end
+                aap = aas_desc_outputs(aap,'subject',subj,'sourcesurface',fnames);
         end
         
         sourcemodel = ft_struct2single(sourcemodel);
@@ -74,13 +113,19 @@ switch task
 
         FT.unload;
     case 'checkrequirements'
-        [s, FT] = aas_cache_get(aap,'fieldtrip');
-        if ~s, aas_log(aap,true,'FieldTrip is not found'); end
-        [s, WB] = aas_cache_get(aap,'hcpwb');
-        if ~s, aas_log(aap,false,'HCP Workbench is not found -> corticalsheet is not available'); end
-        if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,false,'templates for HCP Workbench are not found -> corticalsheet is not available'); 
-        else
-            aas_log(aap,false,sprintf('WARNING: if you want to use cotricalsheet, make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+        if subj == 1
+            [s, FT] = aas_cache_get(aap,'fieldtrip');
+            if ~s, aas_log(aap,true,'FieldTrip is not found'); end
+            if strcmp(aas_getsetting(aap,'method'),'corticalsheet')
+                [s, WB] = aas_cache_get(aap,'hcpwb');
+                if ~s, aas_log(aap,true,'HCP Workbench is not found -> corticalsheet is not available'); end
+                if isempty(WB.templateDir) || ~exist(WB.templateDir,'dir'), aas_log(aap,true,'templates for HCP Workbench are not found -> corticalsheet is not available');
+                else
+                    aas_log(aap,false,sprintf('WARNING: make sure that the template directory is prepared as described in %s/bin/ft_postfreesurferscript.sh',FT.toolPath))
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'sourcesurface',[],'output');
+            end
         end
 end
 end

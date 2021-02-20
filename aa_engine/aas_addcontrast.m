@@ -12,7 +12,7 @@
 %       - "uniquebysession" -> within-subject contrast that separately specifies contrast for every session
 %   - vector: contrast
 %       - vector containing the weights for each regressor (of interest)
-%       - string defining the wights and the regressors (only for "singlesession:<session name>" and "sameforallsessions")
+%       - string defining the weights and the regressors (only for "singlesession:<session name>" and "sameforallsessions")
 %           format: <weight>x<regressor name>[<main ('m') or parametric ('p')><number of basis/parametric function>] (e.g. '+1xENC_DISPL|-1xENC_FIXAT' or '+1xENC_DISPLm1|-1xENC_FIXATp3')
 %           N.B.: You have to use regressor names with UPPERCASE letters only!
 %           number of basis/parametric functions can be, e.g.:

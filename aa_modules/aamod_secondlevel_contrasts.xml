@@ -37,6 +37,10 @@
                 <stream>secondlevel_spmfs</stream>
             </outputstreams>
             
+            <diagnostics>
+                <histogram desc='create histogram(s) of the contrast estimates' ui='yesno'>1</histogram>
+            </diagnostics>
+            
         </currenttask>
     </tasklist>
 </aap>
