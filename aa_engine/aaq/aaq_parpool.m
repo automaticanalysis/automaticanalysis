@@ -257,7 +257,7 @@ classdef aaq_parpool < aaq
                             execCounter = execCounter + 1;
                             jobTable.execorder(jix) = execCounter;
                             % announce job
-                            msg = sprintf('Parallel eval of job #%d (#%d on task queue): %s using module %s', ...
+                            msg = sprintf('Parallel eval submission of job #%d (#%d on task queue): %s using module %s', ...
                                 execCounter, jix, obj.getJobName(job), job.stagename);
                             aas_log(obj.aap, false, msg);
                             % *** parfeval ***
@@ -371,9 +371,9 @@ classdef aaq_parpool < aaq
                         obj.emptyqueue;
                     end
                     % ensure we do not leave any futures running when done
-                    cancel(obj.FFuture)
+                    cancel(obj.FFuture);
                     % update jobTable and assign to base workspace
-                    obj.jobTableUpdate2base(jobTable)
+                    obj.jobTableUpdate2base(jobTable);
                     if obj.fatalerrors
                         aas_log(obj.aap, true, 'Fatal errors executing jobs.','Errors');
                     end
