@@ -5,6 +5,8 @@ classdef aaq < handle
     %   aap         - struct
     %   isOpen      - logical, flag indicating whether Taskqueue is open
     %   fatalerrors - logical, flag indicating fatal error
+    %   pausedur    - scalar, duration of pauses between retries of job 
+    %                 submission (currently, 60 s)
     %   jobqueue    - struct array, composed of 'taskmasks' (input arg to
     %                 method addtask)
     % aaq Methods:
@@ -21,6 +23,7 @@ classdef aaq < handle
         aap
         isOpen      = false
         fatalerrors = false 
+        pausedur    = 60
         jobqueue    = []
     end
     

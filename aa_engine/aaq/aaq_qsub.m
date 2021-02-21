@@ -15,6 +15,7 @@ classdef aaq_qsub < aaq
     %   *aap         - struct
     %   *isOpen      - logical, flag indicating whether Taskqueue is open
     %   *fatalerrors - logical, flag indicating fatal error
+    %   *pausedur    - scalar, duration of pauses between retries of job submission    
     %   *jobqueue    - struct array, composed of 'taskmasks'
     %
     % aaq_qsub Methods (*inherited):
@@ -219,9 +220,9 @@ classdef aaq_qsub < aaq
                         
                         if ~any(readytorunall)
                             % display monitor and update job states
-                            aas_log(obj.aap, false, 'Workers available, but no jobs ready to run. Waiting 60 seconds...')
+                            aas_log(obj.aap, false, 'Workers available, but no jobs ready to run. Waiting a few seconds...')
                             obj.job_monitor(true);
-                            pause(60)
+                            pause(obj.pausedur)
                         else
                             % silently update job states
                             obj.job_monitor(true);
@@ -345,7 +346,7 @@ classdef aaq_qsub < aaq
                             
                             if obj.jobretries(JI.qi) <= obj.aap.options.aaworkermaximumretry
                                 msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
-                                    ' \n\n Waiting 60 seconds then trying again',...
+                                    ' \n\n Waiting a few seconds then trying again',...
                                     ' (%d tries remaining for this job)\n'...
                                     'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                     ' to run the job locally in debug mode.\n'],...
@@ -353,7 +354,7 @@ classdef aaq_qsub < aaq
                                 aas_log(obj.aap, false, msg);
                                 obj.jobnotrun(JI.qi) = true;
                                 obj.remove_from_jobqueue(JI.JobID, true);
-                                pause(60)
+                                pause(obj.pausedur)
                             else
                                 msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JI.JobID,JI.jobpath,JI.jobname,Task.ErrorMessage);
                                 for e = 1:numel(Task.Error.stack)
@@ -467,8 +468,7 @@ classdef aaq_qsub < aaq
             % Add a job to the queue
             job=obj.jobqueue(i);
             
-            % ** call qsub_q_job, which does the heavy lifting (createJob,
-            % createTask)
+            % ** call qsub_q_job, which does the heavy lifting (batch)
             obj.qsub_q_job(job);
             
             % -- Create struct ji, the job info for referencing later:
