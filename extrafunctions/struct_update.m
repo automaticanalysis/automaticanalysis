@@ -3,7 +3,7 @@ function s_out = struct_update(varargin)
 argParse = inputParser;
 argParse.addRequired('s_in',@isstruct);
 argParse.addRequired('s_upd',@isstruct);
-argParse.addParameter('Mode','update',@ischar);
+argParse.addParameter('Mode','',@(x) ischar(x) & any(strcmp({'update','extend',''},x)));
 argParse.parse(varargin{:});
 s_in = argParse.Results.s_in;
 s_upd = argParse.Results.s_upd;
