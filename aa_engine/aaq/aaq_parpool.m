@@ -21,9 +21,6 @@ classdef aaq_parpool < aaq
     % aaq_parpool lends itself to analyses with many tasks of little
     % complexity, and/or computations on individual multicore machines, or
     % other environments in which blocking CPUs is not an issue.
-
-    % TODO
-    % - implement queue viewer GUI here as in qsub
     
     properties
         pool            = [];    % cluster object
@@ -149,15 +146,70 @@ classdef aaq_parpool < aaq
         end
 
         
-        function jobtable2base(obj, jobTable)
-            % Update jobtable and assign to base workspace.
-            %
-            % For convenience during debugging, update jobTable by copying
-            % values of obj.FFuture to it, and assign it to the base
-            % workspace for inspection.
+        function jobTable = updateJobTable(obj, jobTable)
+            % Update jobTable by copying values of obj.FFuture to it
             jobTable.state = {obj.FFuture.State}';
             jobTable.error = {obj.FFuture.Error}';
+        end        
+        
+        
+        function jobTable = jobTableUpdate2base(obj, jobTable)
+            % Update jobTable and assign it to base workspace (for debugging)
+            jobTable = obj.updateJobTable(jobTable);
             assignin('base', 'jobTable', jobTable);
+        end
+        
+        
+        function jobname = getJobName(obj, job)
+            % Retrieve detailed job name
+            aap = aas_setcurrenttask(obj.aap,job.k);
+            jobname = '';
+            for iind = numel(job.indices):-1:1
+                switch iind
+                    case 2
+                        jobname = aas_getsessdesc(aap,job.indices(iind-1),job.indices(iind));
+                    case 1
+                        jobname = aas_getsubjdesc(aap,job.indices(iind));
+                end
+                if ~isempty(jobname)
+                    break;
+                end
+            end
+        end
+        
+        
+        function reportProblem(obj, isFatal, badIx)
+            % Report error details on the command line.
+            % - isFatal is a logical indicating whether an error should be
+            %   produced (via aas_log)
+            % - badIx must be a logical array pointing to the offending 
+            %   entry or entries in obj.jobqueue / obj.FFuture
+            % propagate fatality
+            obj.fatalerrors = isFatal;
+            % in case two or more errors should have occurred in parallel, 
+            % display all
+            badIx = find(badIx);
+            for bix = 1:numel(badIx)
+                % the job that caused trouble
+                job = obj.jobqueue(badIx(bix));
+                % the corresponding FevalFuture
+                ff = obj.FFuture(badIx(bix));
+                % retrieve path of this particular job
+                [~, jobpath]=aas_doneflag_getpath_bydomain(obj.aap, job.domain, job.indices, job.k);
+                % retrieve job name
+                jobname = obj.getJobName(job);
+                % finally, assemble error message
+                msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error:\n',...
+                    job.k, jobpath, jobname);
+                % ** note that the error report will contain links to
+                % temporary copies of code files used by the workers, not
+                % to the original code, so the user should NOT edit these
+                msg = [msg, ff.Error.getReport('extended', 'hyperlinks', 'on')];
+                aas_log(obj.aap, false, msg);
+            end
+            msg = ['For detailed debugging in the context of job dependencies\n', ...
+                ' see jobTable, a variable dumped to the base workspace'];
+            aas_log(obj.aap, isFatal, msg);
         end
         
         
@@ -181,12 +233,9 @@ classdef aaq_parpool < aaq
                     isJobCanceled = false(1, numJobs);
                     % preallocate array of future objects
                     obj.FFuture(1:numJobs) = parallel.FevalFuture;
-                    % create table from obj.jobqueue
+                    % create table from obj.jobqueue & update
                     jobTable = obj.jobqueue2table();
-                    % set columns state and error to equivalent columns of
-                    % FevalFuture obj.FFuture
-                    jobTable.state = {obj.FFuture.State}';
-                    jobTable.error = {obj.FFuture.Error}';
+                    jobTable = obj.updateJobTable(jobTable);
                     execCounter = 0;
                     while any(obj.isJobNotRun)
                         % obj.jobReadyToGo will be reconstructed below,
@@ -204,10 +253,13 @@ classdef aaq_parpool < aaq
                             % aaworker by appending _copy to variable name
                             aaworker_copy = obj.aaworker;
                             aaworker_copy.logname = fullfile(obj.parpool_path,sprintf('Job%05d_diary.txt',jix));
-                            aas_log(obj.aap, false, sprintf('Parallel eval of job %s', job.doneflag));
                             % protocol order of current job
                             execCounter = execCounter + 1;
                             jobTable.execorder(jix) = execCounter;
+                            % announce job
+                            msg = sprintf('Parallel eval of job #%d (#%d on task queue): %s using module %s', ...
+                                execCounter, jix, obj.getJobName(job), job.stagename);
+                            aas_log(obj.aap, false, msg);
                             % *** parfeval ***
                             obj.FFuture(jix) = parfeval(aas_matlabpool('getcurrent'), ...
                                 @aa_doprocessing_onetask, 1, ...
@@ -226,17 +278,18 @@ classdef aaq_parpool < aaq
                         % fetchNext expects array of futures obj.FFuture to be
                         % completely parfeval'd, that is, all jobs must be
                         % different from 'unavailable', the default state
-                        % upon preallocation of obj.FFuture. Matlab will produce an
-                        % error if that is not the case. However, due to
-                        % the dependencies among jobs we cannot submit them
-                        % all at once but instead have to submit them in
-                        % succession (this is what the dependency
-                        % calculation is all about). Hence, we cannot just
+                        % upon preallocation of obj.FFuture. Matlab will
+                        % produce an error if that is not the case.
+                        % However, due to the dependencies among jobs we
+                        % cannot submit them all at once but instead have
+                        % to submit them in succession (this is what the
+                        % dependency calculation is all about). Hence, we
+                        % cannot just
                         %   fetchNext(obj.FFuture)
-                        % but instead need to index the entries in obj.FFuture which
-                        % are anything but 'unavailable'. Furthermore, and
-                        % obviously, we need to check whether the job ran
-                        % successfully.
+                        % but instead need to index the entries in
+                        % obj.FFuture which are anything but 'unavailable'.
+                        % Furthermore, and obviously, we need to check
+                        % whether the job ran successfully.
                         
                         % identify jobs which have finished and not been
                         % read, so in principle are ready to be fetched
@@ -256,24 +309,21 @@ classdef aaq_parpool < aaq
                         if DO_STRICT_CHECKS
                             % in case of any failed job, save jobTable to
                             % base workspace and trigger an error
-                            if any(strcmp({obj.FFuture.State}, 'failed'))
-                                obj.jobtable2base(jobTable)
-                                aas_log(obj.aap, true, ['ERROR: At least one job failed', ...
-                                ' - you may want to inspect variable jobTable in the base workspace'])
+                            badIx = strcmp({obj.FFuture.State}, 'failed');
+                            if any(badIx)
+                                jobTable = obj.jobTableUpdate2base(jobTable);
+                                obj.reportProblem(true, badIx);
                             end
                             % same for canceled job
                             if any(isJobCanceled)
-                                obj.jobtable2base(jobTable)
-                                aas_log(obj.aap, true, ['ERROR: At least one job was canceled', ...
-                                ' - you may want to inspect variable jobTable in the base workspace'])
+                                jobTable = obj.jobTableUpdate2base(jobTable);
+                                obj.reportProblem(true, isJobCanceled);
                             end
                         end
                         
                         % fetch results (aap) and update state variables
                         for jix = find(isJobToBeFetched(:)')
                             [~, fetched_aap] = fetchNext(obj.FFuture(jix));
-                            aas_log(fetched_aap, false, sprintf('Completed %s', obj.jobqueue(jix).doneflag));
-                            
                             obj.isJobNotRun(jix)=false;
                             % Remove current job as a dependency from all
                             % of the stages dependent on the stage that has
@@ -292,25 +342,29 @@ classdef aaq_parpool < aaq
                         % once all jobs are 'finished' (i.e. succeeded or
                         % were canceled)
                         if all(strcmp({obj.FFuture.State}, 'finished')) && any(isJobCanceled)
-                            obj.jobtable2base(jobTable)
-                            aas_log(obj.aap, false, ['WARNING: At least one job was canceled', ...
-                                ' - you may want to inspect variable jobTable in the base workspace'])
+                            jobTable = obj.jobTableUpdate2base(jobTable);
+                            obj.reportProblem(false, isJobCanceled);
                             break
                         end
                         % similarly, if at least one job is 'failed' and
                         % the rest is 'finished', notify user and break the
                         % loop
-                        if any(strcmp({obj.FFuture.State}, 'failed')) && ...
-                                all(contains({obj.FFuture.State}, {'finished', 'failed'}))
-                            obj.jobtable2base(jobTable)
-                            aas_log(obj.aap, false, ['WARNING: At least one job failed', ...
-                                ' - you may want to inspect variable jobTable in the base workspace'])
+                        badIx = strcmp({obj.FFuture.State}, 'failed');
+                        if any(badIx) && all(contains({obj.FFuture.State}, {'finished', 'failed'}))
+                            jobTable = obj.jobTableUpdate2base(jobTable);
+                            obj.reportProblem(false, badIx);
                             break
                         end
-                        
+                        % report
+                        if ~isempty(jix)
+                            ff = obj.FFuture(jix);
+                            msg = sprintf('QUEUED_JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
+                                jix, job.stagename, obj.getJobName(job), ff.CreateDateTime, ff.FinishDateTime, ff.FinishDateTime - ff.CreateDateTime);
+                            aas_log(fetched_aap, false, msg, obj.aap.gui_controls.colours.completed);
+                        end
                         % brief pause to prevent the while loop from
                         % consuming too many resources
-                        pause(0.2)
+                        pause(0.5)
                     end
                     % wrap-up:
                     if waitforalljobs == 1
@@ -319,9 +373,7 @@ classdef aaq_parpool < aaq
                     % ensure we do not leave any futures running when done
                     cancel(obj.FFuture)
                     % update jobTable and assign to base workspace
-                    obj.jobtable2base(jobTable)
-                    % .fatalerrors seems not to be used in aa, but leave
-                    % here notetheless for now
+                    obj.jobTableUpdate2base(jobTable)
                     if obj.fatalerrors
                         aas_log(obj.aap, true, 'Fatal errors executing jobs.','Errors');
                     end
