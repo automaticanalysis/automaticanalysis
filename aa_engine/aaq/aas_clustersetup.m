@@ -39,6 +39,12 @@ isMaxFiltInTasklist = any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxf
 isNeuromagSpec = ~isempty(aap.directory_conventions.neuromagdir);
 
 switch class(obj.pool)
+    % new: Matlab Job Scheduler
+    case 'parallel.cluster.MJS'
+        if doSetNumWorkers
+            aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
+        end
+    
     case 'parallel.cluster.Slurm'
         obj.pool.SubmitArguments = sprintf('--mem=%dG --time=%d', mem, walltime*60);
         if isMaxFiltInTasklist && isNeuromagSpec
