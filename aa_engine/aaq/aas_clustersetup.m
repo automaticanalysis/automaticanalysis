@@ -38,22 +38,8 @@ isMaxFiltInTasklist = any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxf
 % - neuromag specified?
 isNeuromagSpec = ~isempty(aap.directory_conventions.neuromagdir);
 
-% NOTE: original code version temporarily left in place for comparison
-
 switch class(obj.pool)
     case 'parallel.cluster.Slurm'
-        %         aas_log(obj.aap,false,'INFO: pool Slurm is detected');
-        %         if isprop(obj.pool,'ResourceTemplate')
-        %             obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
-        %         else
-        %             obj.pool.SubmitArguments = sprintf('--mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
-        %         end
-        %         if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
-        %                 ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
-        %             obj.initialSubmitArguments = ' --constraint=maxfilter';
-        %         end
-        %         obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-        %         aaparallel.numberofworkers = 1;
         obj.pool.SubmitArguments = sprintf('--mem=%dG --time=%d', mem, walltime*60);
         if isMaxFiltInTasklist && isNeuromagSpec
             obj.initialSubmitArguments = ' --constraint=maxfilter';
@@ -64,14 +50,6 @@ switch class(obj.pool)
         end
         
     case 'parallel.cluster.Torque'
-        %         aas_log(obj.aap,false,'INFO: pool Torque is detected');
-        %         obj.pool.ResourceTemplate = sprintf('-l nodes=^N^,mem=%dGB,walltime=%d:00:00', aaparallel.memory,aaparallel.walltime);
-        %         if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
-        %                 ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
-        %             obj.initialSubmitArguments = ' -W x=\"NODESET:ONEOF:FEATURES:MAXFILTER\"';
-        %         end
-        %         obj.pool.SubmitArguments = strcat(obj.pool.SubmitArguments,obj.initialSubmitArguments);
-        %         aaparallel.numberofworkers = 1;
         obj.pool.SubmitArguments = sprintf('-l mem=%dGB, walltime=%d:00:00', mem, walltime);
         if isMaxFiltInTasklist && isNeuromagSpec
             % TODO: clarify whether/how NODESET should be eliminated
@@ -83,10 +61,6 @@ switch class(obj.pool)
         end
         
     case 'parallel.cluster.LSF'
-        %         aas_log(obj.aap,false,'INFO: pool LSF is detected');
-        %         obj.pool.SubmitArguments = sprintf(' -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',aaparallel.walltime*60, aaparallel.memory*1000,aaparallel.memory*1000,aaparallel.walltime);
-        %         obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments,obj.pool.SubmitArguments);
-        %         aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
         obj.pool.SubmitArguments = sprintf(' -c %d -M %d -R "rusage[mem=%d:duration=%dh]"',...
             walltime*60, mem*1000, mem*1000, walltime);
         obj.pool.SubmitArguments = strcat(obj.initialSubmitArguments, obj.pool.SubmitArguments);
@@ -95,23 +69,6 @@ switch class(obj.pool)
         end
         
     case 'parallel.cluster.Generic'
-        %         aas_log(obj.aap,false,'INFO: Generic engine is detected');
-        %         obj.newGenericVersion = isempty(obj.pool.IndependentSubmitFcn);
-        %         if obj.newGenericVersion
-        %             if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
-        %                 aas_log(obj.aap,false,'WARNING: Propertiy "AdditionalSubmitArgs" not found.');
-        %                 aas_log(obj.aap,false,'    "AdditionalSubmitArgs" must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.');
-        %                 aas_log(obj.aap,false,'    Your jobs will be submitted to th default queue.');
-        %             else
-        %                 obj.pool.AdditionalProperties.AdditionalSubmitArgs = sprintf('%s -l s_cpu=%d:00:00 -l s_rss=%dG',obj.initialSubmitArguments,aaparallel.walltime,aaparallel.memory);
-        %             end
-        %         else
-        %             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'walltime',aaparallel.walltime);
-        %             obj.pool.IndependentSubmitFcn = obj.SetArg(obj.pool.IndependentSubmitFcn,'memory',aaparallel.memory);
-        %         end
-        %         aaparallel.numberofworkers = 1;
-        
-        
         % TODO: starting with R2017b, AdditionalProperties is available, so
         % in reasonably recent Matlab versions there should be no need to
         % check for newGenericVersion
@@ -128,8 +85,6 @@ switch class(obj.pool)
         end
         
     case 'parallel.cluster.Local'
-        %         aas_log(obj.aap,false,'INFO: Local engine is detected');
-        %         aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
         if doSetNumWorkers
             aaparallel.numberofworkers = aap.options.aaparallel.numberofworkers;
         end
