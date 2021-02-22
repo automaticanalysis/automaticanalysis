@@ -2,7 +2,7 @@
 Automatic Analysis relies on several externally-developed packages and functions. These are provided for convenience and to ensure compatibility; all software retains the license of its original distribution.
 
 ## Packages
-| Name                     | Version                                            | DateDownloaded    | URL                                                                                                                                                        | aaMaintainer                  |
+| Name                     | Version                                            | Last Updated      | URL                                                                                                                                                        | Maintainer                    |
 | ------------------------ | -------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | cluster/SGE              |                                                    | 19 December 2016  | https://www.mathworks.com/matlabcentral/fileexchange/52816-parallel-computing-toolbox-integration-for-matlab-distributed-computing-server-with-grid-engine | Tibor Auer                    |
 | DKI_Toolbox              |                                                    | 31 August 2017    | http://www.mrc-cbu.cam.ac.uk/people/rafael.henriques                                                                                                       | Tibor Auer                    |
@@ -17,7 +17,7 @@ Automatic Analysis relies on several externally-developed packages and functions
 | XML_IO_Tools             | RC (do not update!)                                | 13 February 2010  | http://www.mathworks.com/matlabcentral/fileexchange/12907-xml-io-tools                                                                                     | Tibor Auer                    |
 
 ## Functions
-| Name                     | Version                                            | DateDownloaded    | URL                                                                                                                                                        | aaMaintainer                  |
+| Name                     | Version                                            | Last Updated      | URL                                                                                                                                                        | Maintainer                    |
 | ------------------------ | -------------------------------------------------- | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
 | catstruct.m              | (mod)                                              | 22 July 2015      | http://www.mathworks.com/matlabcentral/fileexchange/7842-catstruct                                                                                         | Tibor Auer                    |
 | colorspace.m             |                                                    | 01 August 2015    | http://www.mathworks.com/matlabcentral/fileexchange/28790-colorspace-transformations                                                                       | Tibor Auer                    |
