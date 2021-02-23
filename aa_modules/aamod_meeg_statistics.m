@@ -469,7 +469,7 @@ switch task
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);
-                statFn = fullfile(aas_getstudypath(aap),[m.name '_' cfg{c}.correctm '.mat']);
+                statFn = spm_file(strrep(statFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
                 save(statFn,'groupStat');
                 
                 % append to stream
