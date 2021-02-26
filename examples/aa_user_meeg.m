@@ -131,7 +131,7 @@ for b = 1:2
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.target = 'scalp';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.method = 'spherefit';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics);
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics,'Mode','update');
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics.view = 'RPI';
 end
 
@@ -140,7 +140,7 @@ for b = 1:2
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics);
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics,'Mode','update');
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
 end
 aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.view = 'RPI';
@@ -153,7 +153,7 @@ for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystat
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.subjects = 'auto';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.time = 'ignore';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics);
+        aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics,'Mode','update');
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.snapshottwoi = [indtime-250 indtime+250];
 end
 

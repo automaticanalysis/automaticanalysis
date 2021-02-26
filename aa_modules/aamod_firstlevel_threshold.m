@@ -8,11 +8,10 @@
 % CHANGE HISTORY
 %
 % 07/2018 --  added explicit template parameter to xml. Save SPM
-% stats table. Added zero-sig-voxel watermark (requires insertInImage
-% utility). Save all maps and renders (even zero sig voxel results).
+% stats table. Added zero-sig-voxel watermark. Save all maps and 
+% renders (even zero sig voxel results). 
 % Add sanity check(s). Added optional "description" text which is
 % overlayed on map if defined. General cleanup. [MSJ]
-%
 
 function [aap,resp]=aamod_firstlevel_threshold(aap,task,subj)
 

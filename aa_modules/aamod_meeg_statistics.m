@@ -3,6 +3,15 @@ function [aap, resp] = aamod_meeg_statistics(aap,task)
 
 resp='';
 
+SETTING2DIM = containers.Map(...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'},...
+    {'freqlow' 'freqhigh' 'phase' 'time'}...
+    );
+DIM2SETTING = containers.Map(...
+    {'freqlow' 'freqhigh' 'phase' 'time'},...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'}...
+    );
+
 switch task
     case 'report'
         RES = {'multiplot.*jpg', 'topoplot.*jpg', 'topoplot.*avi', 'source.*jpg'};
@@ -53,7 +62,12 @@ switch task
         cfg.method      = 'triangulation'; 
         cfg.feedback    = 'yes';
         dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat))); 
-        if strcmp(inpstreams{1},'crossfreq'), data.label = data.elec.label; end
+        if strcmp(inpstreams{1},'crossfreq') % tweak data into TFR
+            data.label = data.elec.label; 
+            data.freq = data.freqlow;
+            data.time = data.freqhigh;
+            data.dimord = 'chancmb_freq_time';
+        end
         if ~ft_datatype(data,'source')
             neighbours = ft_prepare_neighbours(cfg, data);
             set(gcf,'position',[0,0,720 720]);
@@ -240,17 +254,10 @@ switch task
                 for i = 1:numel(allInp)
                     allInp{i}.time = allInp{i}.time(allTime);
                     dat = getfield(allInp{i}, par{:});
-                    switch dimTime
-                        case 1
-                            allInp{i} = setfield(allInp{i}, par{:}, dat(allTime));
-                        case 2
-                            allInp{i} = setfield(allInp{i}, par{:}, dat(:,allTime));
-                        case 3
-                            allInp{i} = setfield(allInp{i}, par{:}, dat(:,:,allTime));
-                        otherwise
-                            ass_log(aap,true,'More than three dimensions are not supported')
-                    end
-                    
+                    [dat,perm,nshift] = shiftdata(dat,dimTime);
+                    dat = dat(allTime,:,:,:,:);
+                    dat = squeeze(unshiftdata(dat,perm,nshift));
+                    allInp{i} = setfield(allInp{i}, par{:}, dat);
                     if isfield(allInp{i},'trialinfo'), allInp{i}.trialinfo = allInp{i}.trialinfo(allTime); end
                 end
                 
@@ -298,7 +305,8 @@ switch task
                 end
                 for subj = 1:numel(allInp)
                     [~,~,ind] = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
-                    allInp{subj}.crsspctrm = allInp{subj}.crsspctrm(ind,:,:,:);
+                    allInp{subj}.labelcmb = allInp{subj}.labelcmb(ind,:);
+                    allInp{subj}.crsspctrm = allInp{subj}.crsspctrm(ind,:,:,:,:);
                 end
                 
                 % update neighbours for channelcombination
@@ -382,6 +390,28 @@ switch task
                     else
                         cfg{1}.frequency = 'all';
                     end
+                case 'crossfreq'
+                    diag = aas_getsetting(aap,'diagnostics');
+                    meas = fieldnames(diag);
+                    numtask = cellfun(@(f) size(diag.(f),1), meas);
+                    meas = meas(numtask>0);
+                    numtask = numtask(numtask>0);
+                    cntr = ones(1,numel(meas));
+                    for c = 1:prod(numtask)
+                        cfg{c} = cfg{1};
+                        for indm = 1:numel(meas)
+                            cfg{c}.average.(SETTING2DIM(meas{indm})) = diag.(meas{indm})(cntr(indm),:);
+                            if strcmp(meas{indm},'snapshottwoi'), cfg{c}.average.time = cfg{c}.average.time./1000; end % correct time
+                            savepath{c} = savepath{1};
+                        end
+                        cntr(1) = cntr(1) + 1;
+                        for cc = 1:numel(cntr)-1
+                            if cntr(cc) > size(diag.(meas{cc}),1)
+                                cntr(cc) = 1;
+                                cntr(cc+1) = cntr(cc+1) + 1;
+                            end
+                        end
+                    end
                 case 'peak' % custom analysis and plotting
                     cfg{1}.parameter = 'amp';
                     savepath{2} = savepath{1};
@@ -413,6 +443,7 @@ switch task
                 else
                     groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
                 end
+                groupStat = cellfun(@(x) struct_update(x,allInp{1},'Mode','extend'), groupStat,'UniformOutput',false);
                 if isfield(cfg{c},'frequency')
                     groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
                     if ischar(cfg{c}.frequency)
@@ -422,14 +453,23 @@ switch task
                         end
                     end
                     pcfg.snapshotfwoi = cfg{c}.frequency;
-                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % hack to add suffix to statFn
+                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % add suffix to statFn
+                end
+                if isfield(cfg{c}, 'average')
+                    avgcfg = keepfields(cfg{c},{'parameter','average'});
+                    avgcfg.parameter = {avgcfg.parameter [avgcfg.parameter 'sem']};
+                    groupStat = cellfun(@(x) meeg_average(avgcfg,x), groupStat,'UniformOutput',false);
+                    for fave = fieldnames(cfg{c}.average)'
+                        pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
+                        statFn = sprintf('%s_%s-%1.2f-%1.2f',statFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
+                    end
                 end
                 groupStat{1}.stat = stat;
                 pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);
                             
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);
-                statFn = fullfile(aas_getstudypath(aap),[m.name '_' cfg{c}.correctm '.mat']);
+                statFn = spm_file(strrep(statFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
                 save(statFn,'groupStat');
                 
                 % append to stream
@@ -451,12 +491,44 @@ switch task
 end
 end
 
+function data = meeg_average(cfg,data)
+for task = fieldnames(cfg.average)'
+    if ischar(cfg.average.(task{1}))
+        switch cfg.average.(task{1})
+            case 'all'
+                cfg.average.(task{1}) = [min(data.(task{1})) max(data.(task{1}))];
+        end
+    end
+    
+    origdimord = strsplit(data.dimord,'_');
+    taskdim = find(strcmp(origdimord,task{1}));
+    taskind = data.(task{1}) >= cfg.average.(task{1})(1) & data.(task{1})<= cfg.average.(task{1})(2);
+    
+    if ~iscell(cfg.parameter), cfg.parameter = {cfg.parameter}; end
+    for par = cfg.parameter
+        dat = data.(par{1});
+        [dat,perm,nshift] = shiftdata(dat,taskdim);
+        dat = mean(dat(taskind,:,:,:,:),1);
+        data.(par{1}) = squeeze(unshiftdata(dat,perm,nshift));
+    end
+    
+    data.(task{1}) = mean(cfg.average.(task{1}));
+    data.dimord = strjoin(setdiff(origdimord,task),'_');
+end
+end
+
 function stat = meeg_statistics(cfg,varargin)
 % this is a generic function without any sanitycheck
+cfg.channel = {cfg.neighbours.label};
 
-cfg = rmfield(cfg,intersect(fieldnames(cfg),{'channel'})); % to avoid invoking findcluster.m, which cannot handle non-TFR data. 
-cfg.dimord = varargin{1}.dimord;
+% average if needed
+if isfield(cfg,'average')
+    varargin = cellfun(@(x) meeg_average(cfg,x), varargin,'UniformOutput',false);
+end
+
 cfg.dim = size(varargin{1}.(cfg.parameter));
+cfg.dimord = varargin{1}.dimord;
+
 dat = cell2mat(cellfun(@(x) x.(cfg.parameter)(:), varargin, 'UniformOutput', false));
 
 statmethod = str2func(['ft_statistics_' cfg.method]);
@@ -467,4 +539,8 @@ for fn = fieldnames(stat)'
         stat.(fn{1}) = reshape(stat.(fn{1}), cfg.dim);
     end
 end
+
+stat.cfg = cfg;
+stat = struct_update(stat,varargin{1},'Mode','extend');
+
 end
