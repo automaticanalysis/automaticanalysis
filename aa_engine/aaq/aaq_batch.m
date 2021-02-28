@@ -1,15 +1,15 @@
-classdef aaq_qsub < aaq
-    % aaq_qsub < aaq
+classdef aaq_batch < aaq
+    % aaq_batch < aaq
     % aa queue processor running batch jobs on a parallel cluster initiated
     % with parcluster.
     %
     % The sequence of method/function calls triggering the execution of a
     % module's code is
     %
-    %   runall > add_from_jobqueue > qsub_q_job > ...
+    %   runall > add_from_jobqueue > batch_q_job > ...
     %       createJob, createTask | aa_doprocessing_onetask
     % 
-    % aaq_qsub Properties (*inherited):
+    % aaq_batch Properties (*inherited):
     %   pool         - cluster object
     %   QV           - instance of aas_qsubViewerClass (Queue viewer)
     %   *aap         - struct
@@ -18,14 +18,14 @@ classdef aaq_qsub < aaq
     %   *pausedur    - scalar, duration of pauses between retries of job submission    
     %   *jobqueue    - struct array, composed of 'taskmasks'
     %
-    % aaq_qsub Methods (*inherited):
+    % aaq_batch Methods (*inherited):
     %   close               - Cancel jobs in queue and call superclass' close
     %   runall              - Run all jobs/tasks on the queue
     %   QVUpdate            - Update queue viewer
     %   QVClose             - Close queue viewer
-    %   qsub_q_job          - Create Job in the pool and task in the job if pool exists, 
+    %   batch_q_job          - Create Job in the pool and task in the job if pool exists, 
     %                         otherwise call aa_doprocessing_onetask
-    %   add_from_jobqueue   - Add job to queue by calling qsub_q_job and creating jobinfo
+    %   add_from_jobqueue   - Add job to queue by calling batch_q_job and creating jobinfo
     %   remove_from_jobqueue - Remove job from jobqueue, possibly initiating a retry
     %   job_monitor         - Gather job info from the job scheduler
     %   job_monitor_loop    - Run loop gathering job information from the job scheduler.
@@ -66,7 +66,7 @@ classdef aaq_qsub < aaq
     end
     
     methods
-        function [obj]=aaq_qsub(aap)
+        function [obj]=aaq_batch(aap)
             % Look for pool profile, initialize parcluster (if pool profile found)
             obj = obj@aaq(aap);
 
@@ -211,7 +211,7 @@ classdef aaq_qsub < aaq
                                     % the job info in obj.jobinfo
                                     % ** Here, somewhat hidden from the uninitiated eye, is the
                                     % instruction to run a module's code.
-                                    % Chain of calls: add_from_jobqueue > % qsub_q_job > createJob, createTask
+                                    % Chain of calls: add_from_jobqueue > % batch_q_job > createJob, createTask
                                     obj.add_from_jobqueue(i);
                                     printswitches.jobsinq = true;
                                 end
@@ -276,7 +276,7 @@ classdef aaq_qsub < aaq
                             msg = sprintf(...
                                 ['Failed to launch (Licence?)!\n'...
                                 'Check <a href="matlab: open(''%s'')">logfile</a>\n'...
-                                'Queue ID: %d | qsub ID %d | Subject ID: %s'],...
+                                'Queue ID: %d | batch ID %d | Subject ID: %s'],...
                                 JI.logfile, JI.qi, JI.JobID, JI.subjectinfo.subjname);
                             % If there is an error, it is fatal...
                             
@@ -331,7 +331,7 @@ classdef aaq_qsub < aaq
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!
-                            fid = fopen(fullfile(aaworker.parmpath,'qsub','time_estimates.txt'), 'a');
+                            fid = fopen(fullfile(aaworker.parmpath,'batch','time_estimates.txt'), 'a');
                             fprintf(fid,'%s\n',msg);
                             fclose(fid);
                             
@@ -418,17 +418,17 @@ classdef aaq_qsub < aaq
         end
         
         % =================================================================
-        function qsub_q_job(obj,job)
+        function batch_q_job(obj,job)
             % Create batch job in the pool if pool exists, otherwise call
             % aa_doprocessing_onetask
             global aaworker
             global aacache
             aaworker.aacache = aacache;
             [~, reqpath] = aas_cache_get(obj.aap,'reqpath','system');
-            % Let's store all our qsub thingies in one particular directory
-            qsubpath=fullfile(aaworker.parmpath,'qsub');
-            aas_makedir(obj.aap,qsubpath);
-            cd(qsubpath);
+            % Let's store all our batch thingies in one particular directory
+            batchpath=fullfile(aaworker.parmpath,'batch');
+            aas_makedir(obj.aap,batchpath);
+            cd(batchpath);
             % Submit the job
             if ~isempty(obj.pool)
                 % New version (Dec 2020)
@@ -463,13 +463,13 @@ classdef aaq_qsub < aaq
         
         % =================================================================
         function add_from_jobqueue(obj, i)
-            % Add job to queue by calling qsub_q_job and creating jobinfo
+            % Add job to queue by calling batch_q_job and creating jobinfo
             global aaworker
             % Add a job to the queue
             job=obj.jobqueue(i);
             
-            % ** call qsub_q_job, which does the heavy lifting (batch)
-            obj.qsub_q_job(job);
+            % ** call batch_q_job, which does the heavy lifting (batch)
+            obj.batch_q_job(job);
             
             % -- Create struct ji, the job info for referencing later:
             % - clean up done jobs to prevent IDs occuring twice
@@ -517,7 +517,7 @@ classdef aaq_qsub < aaq
             obj.jobinfo = [obj.jobinfo, ji];
             obj.jobnotrun(i) = false;
             obj.jobretries(i) = obj.jobretries(i) + 1;
-            aas_log(obj.aap, false, sprintf('Added job %s with qsub ID %3.1d | Subject ID: %s | Execution: %3.1d | Jobs submitted: %3.1d',...
+            aas_log(obj.aap, false, sprintf('Added job %s with batch ID %3.1d | Subject ID: %s | Execution: %3.1d | Jobs submitted: %3.1d',...
                 ji.modulename, ji.JobID, ji.subjectinfo.subjname, obj.jobretries(i), length(obj.pool.Jobs)))
         end
         

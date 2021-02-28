@@ -1,16 +1,20 @@
 # Queue processors in automaticanalysis
--- Work in progress --
+
 ### aaq.m
 Base class of all queue processors; cannot be chosen as queue processor.
 
 ###aaq_localsingle.m
 Simplest queue processor: runs all tasks serially in the local Matlab session, that is, without explicit parallelisation. Useful for development, debugging, and estimating baseline performance.
 
-### aaq_qsub.m
+### aaq_batch.m
 Queue processor running independent __batch__ jobs on a parallel cluster initiated with __parcluster__. 
 
 Very robust queue processor with safety nets like repeated submission of jobs to catch hickups in the cluster.
 The correct order of execution of modules is ensured via 'job done' flags, namely, files written into each module's working directory.
+
+Note that aaq_batch was formerly named aaq_qsub and has undergone some changes during Oct 2020 - Mar 2021. The history of development and renaming, in one line:
+
+aaq_qsub -> refurbishment, replacement of createJob/createTask by batch -> renaming to aaq_batch
 
 ### aaq_parpool.m
 aaq_parpool starts and reserves a pool of Matlab workers with __parpool__ prior to any module computation. Parallelisation is achieved via __parfeval__. 
@@ -31,8 +35,12 @@ aaq_matlab_pct is outdated and deprecated; its designated successor is aaq_parpo
 
 Scenarios for usage are the same as for aaq_parpool.
 
+### aaq_qsub.m
+Predecessor of aaq_batch, which originally used createJob/ createTask to run independent jobs on a parallel cluster initiated with __parcluster__. 
+
 ### aaq_qsub_debug.m, aaq_qsub_monitor_jobs.m
 Outdated variants of aaq_qsub using createJob/createTask, and intended for debugging. 
 
 ### aaq_condor.m
--- to come --
+Queue processor for HTCondor. There is work in progress to substitute it using the HTCondor integration script (available for R2020b and up) and aaq_batch. See https://www.mathworks.com/matlabcentral/fileexchange/78823-parallel-computing-toolbox-plugin-for-matlab-parallel-server-with-htcondor?s_tid=srchtitle
+
