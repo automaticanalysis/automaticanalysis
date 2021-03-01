@@ -5,20 +5,24 @@ if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 if ~iscell(data), data = {data}; end
 
-if ndims(data{1}.crsspctrm) > 3
-    aas_log([],false,'WARNING: visualising data with more than 3D is not yet implemented')
+if (ndims(data{1}.crsspctrm) > 3 && ~any(strcmp(strsplit(data{1}.dimord,'_'),'time'))) || ndims(data{1}.crsspctrm) > 4
+    aas_log([],false,'WARNING: visualising data with more than 3D+time is not yet implemented')
     return
 end
 
 plotcfg.parameter = 'crsspctrm';
-% plotcfg.latency = diag.snapshottwoi./1000; % second
+plotcfg.latency = diag.snapshottwoi./1000; % second
 
 % tweak the data into TFR
 figName = {''};
-if isfield(data{1},'labelcmb'), figName = unique(data{1}.labelcmb(:,1))'; end
+if isfield(data{1},'labelcmb')
+    plotcfg.channels = unique(data{1}.labelcmb(:,2));
+    figName = unique(data{1}.labelcmb(:,1))'; 
+elseif numel(data{1}.label) < 4 % plot single channels
+    plotcfg.channels = unique(data{1}.label);
+end
 cf = cellfun(@(x) cf2tf(x), data,'UniformOutput',false);
-diag.layout = ft_prepare_layout([],cf{1}(1));
-plotcfg.latency = 'all';
+plotcfg.layout = ft_prepare_layout([],cf{1}(1));
 
 % plot as TFR
 for p = 1:numel(cf{1})
@@ -38,15 +42,18 @@ end
 end
 
 function tf = cf2tf(data)
-TFDIMS = {'freq' 'time'};
-dims = strsplit(data.dimord,'_'); dims(1) = []; % not for chan/chancmb
+TFDIMS = {'freq' 'rpt' 'rpttap'};
+dims = strsplit(data.dimord,'_'); 
+dims(1) = []; % not for chan/chancmb
+dims(strcmp(dims,'time')) = []; % not for time, if exists
 tf = data;
 tf.dimord = 'chan';
 for d = 1:numel(dims)
     tf.(TFDIMS{d}) = data.(dims{d});
-    tf.dimord = strjoin({tf.dimord TFDIMS{d}},'_');
+    tf.dimord = strjoin([tf.dimord TFDIMS(d)],'_');
 end
 tf = rmfield(tf,dims);
+if isfield(tf,'time'), tf.dimord = strjoin({tf.dimord 'time'},'_'); end
 
 if isfield(data,'labelcmb')
     dat = tf; dat.label = {''}; clear tf;
