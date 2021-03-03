@@ -4,12 +4,17 @@ function [aap, resp] = aamod_meeg_statistics(aap,task)
 resp='';
 
 SETTING2DIM = containers.Map(...
-    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'},...
-    {'freqlow' 'freqhigh' 'phase' 'time'}...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshotfwoi'},...
+    {'freqlow' 'freqhigh' 'phase' 'freq'}...
     );
 DIM2SETTING = containers.Map(...
-    {'freqlow' 'freqhigh' 'phase' 'time'},...
-    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'}...
+    {'freqlow' 'freqhigh' 'phase' 'freq'},...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshotfwoi'}...
+    );
+
+SETTING2CFG = containers.Map(...
+    {'snapshotfwoi'},...
+    {'frequency'}...
     );
 
 switch task
@@ -101,8 +106,6 @@ switch task
                 statcfg.parameter   = 'crsspctrm';
                 fstat = @meeg_statistics;
                 fdiag = @meeg_diagnostics_CF;
-                thr.correctiontimeseries = thr.correction;
-                thr.correctiontimepoint = thr.correction;
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -116,7 +119,7 @@ switch task
         statcfg.tail        = 0; % two-tailed
         statcfg.correcttail = 'prob';
         statcfg.method              = thr.method;
-        statcfg.correctm            = thr.correctiontimeseries;
+        statcfg.correctm            = thr.correction;
         statcfg.clusteralpha        = thr.p;
         statcfg.numrandomization    = thr.iteration;
         statcfg.minnbchan           = thr.neighbours;      % minimal number of neighbouring channels
@@ -261,10 +264,10 @@ switch task
                     if isfield(allInp{i},'trialinfo'), allInp{i}.trialinfo = allInp{i}.trialinfo(allTime); end
                 end
                 
-                if strcmp(aas_getsetting(aap,'selectoverlappingdata.time'),'ignore') && ~isempty(pcfg.snapshottwoi) % equally divide trials
-                    step = (max(allInp{i}.time) - min(allInp{i}.time))/size(pcfg.snapshottwoi,1);
-                    pcfg.snapshottwoi = [min(allInp{i}.time):step:(max(allInp{i}.time)-step)]'*1000;
-                    pcfg.snapshottwoi(:,2) = pcfg.snapshottwoi(:,1)+step*1000;
+                if strcmp(aas_getsetting(aap,'selectoverlappingdata.time'),'ignore') && ~isempty(pcfg.snapshottwoi) % equally divide trials without overlap
+                    step = (max(allInp{i}.time) - min(allInp{i}.time))/(size(pcfg.snapshottwoi,1)-1);
+                    pcfg.snapshottwoi = ((min(allInp{i}.time):step:max(allInp{i}.time))'-step/4)*1000;
+                    pcfg.snapshottwoi(:,2) = pcfg.snapshottwoi(:,1)+step/2*1000;
                 end
             end
             
@@ -297,7 +300,7 @@ switch task
                 end
             end
             
-            if isfield(allInp{1},'labelcmb')
+            if isfield(allInp{1},'labelcmb') && ~isfield(allInp{1},'label')
                 aas_log(aap,false,'INFO: selecting common channelcombinations');
                 labelcmb = categorical(allInp{1}.labelcmb);
                 for subj = 2:numel(allInp)
@@ -374,25 +377,11 @@ switch task
                         continue;
                     end
             end
-            if ~isfield(allInp{1},'time')
-                cfg{1}.latency = 'all';
-                cfg{1}.correctm = thr.correctiontimepoint;
-            end
+            if ~isfield(allInp{1},'time'), cfg{1}.latency = 'all'; end
             switch inpType
-                case 'timefreq' % separate analyses for each band
-                    fwoi = aas_getsetting(aap,'diagnostics.snapshotfwoi');
-                    if ~isempty(fwoi)
-                        for f = 1:size(fwoi,1)
-                            cfg{f} = cfg{1};
-                            cfg{f}.frequency = fwoi(f,:);
-                            savepath{f} = savepath{1};
-                        end
-                    else
-                        cfg{1}.frequency = 'all';
-                    end
-                case 'crossfreq'
+                case {'timefreq' 'crossfreq'}
                     diag = aas_getsetting(aap,'diagnostics');
-                    meas = fieldnames(diag);
+                    meas = intersect(fieldnames(diag),SETTING2DIM.keys);
                     numtask = cellfun(@(f) size(diag.(f),1), meas);
                     meas = meas(numtask>0);
                     numtask = numtask(numtask>0);
@@ -401,8 +390,13 @@ switch task
                         cfg{c} = cfg{1};
                         for indm = 1:numel(meas)
                             cfg{c}.average.(SETTING2DIM(meas{indm})) = diag.(meas{indm})(cntr(indm),:);
-                            if strcmp(meas{indm},'snapshottwoi'), cfg{c}.average.time = cfg{c}.average.time./1000; end % correct time
-                            savepath{c} = savepath{1};
+                            if strcmp(inpType,'timefreq') 
+                                cfg{c}.(SETTING2CFG(meas{indm})) = diag.(meas{indm})(cntr(indm),:);
+                                if c == 1, savepath{c} = [savepath{1} '_topoplot'];
+                                else, savepath{c} = savepath{1}; end
+                            else
+                                savepath{c} = savepath{1};
+                            end
                         end
                         cntr(1) = cntr(1) + 1;
                         for cc = 1:numel(cntr)-1
@@ -422,7 +416,7 @@ switch task
             end
             
             for c = 1:numel(cfg)
-                statFn = [savepath{c} '_' cfg{c}.correctm];
+                statFn = savepath{c};
                 
                 stat = fstat(cfg{c}, allInp{:});
                 
@@ -431,8 +425,7 @@ switch task
                 avgcfg = keepfields(cfg{c},{'parameter','latency'});
                 if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
                     pcfg.snapshottwoi = pcfg.snapshottwoi(...
-                        pcfg.snapshottwoi(:,1)/1000 >= stat.time(1) & ...
-                        pcfg.snapshottwoi(:,2)/1000 <= stat.time(end) ...
+                        arrayfun(@(i) any(arrayfun(@(t) pcfg.snapshottwoi(i,1) < t & pcfg.snapshottwoi(i,2) > t, stat.time*1000)), 1:size(pcfg.snapshottwoi,1)) ...
                         ,:);
                 end
                 
@@ -444,17 +437,6 @@ switch task
                     groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
                 end
                 groupStat = cellfun(@(x) struct_update(x,allInp{1},'Mode','extend'), groupStat,'UniformOutput',false);
-                if isfield(cfg{c},'frequency')
-                    groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
-                    if ischar(cfg{c}.frequency)
-                        switch cfg{c}.frequency
-                            case 'all'
-                                cfg{c}.frequency = [min(groupStat{1}.freq) max(groupStat{1}.freq)];
-                        end
-                    end
-                    pcfg.snapshotfwoi = cfg{c}.frequency;
-                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % add suffix to statFn
-                end
                 if isfield(cfg{c}, 'average')
                     avgcfg = keepfields(cfg{c},{'parameter','average'});
                     avgcfg.parameter = {avgcfg.parameter [avgcfg.parameter 'sem']};

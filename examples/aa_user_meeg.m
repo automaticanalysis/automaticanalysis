@@ -137,8 +137,7 @@ end
 
 for b = 1:2
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics,'Mode','update');
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
@@ -148,8 +147,7 @@ aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.view = 'RPI';
 indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
 for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.subjects = 'auto';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.time = 'ignore';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
