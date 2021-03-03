@@ -1,8 +1,8 @@
 function h = meeg_plot(cfg,data)
 % cfg
 %   - parameter - char
-%   - latency   - [Nx2], second
 %   - channels  - {1xN}
+%   - latency   - [Nx2], second
 %   - view      - char (item from VAs
 
 %% Contants
@@ -108,6 +108,7 @@ for s = 1:numel(data)
         minval(s) = prctile(cell2mat(cellfun(@(d) d.(cfg.parameter)(mask), data(~strcmp(labels,'stat')), 'UniformOutput',false)),1,'all');
         maxval(s) = prctile(cell2mat(cellfun(@(d) d.(cfg.parameter)(mask), data(~strcmp(labels,'stat')), 'UniformOutput',false)),99,'all');
     end
+    if minval(s) == maxval(s), minval(s) = 0.9*minval(s); end
     % colormaps
     if (minval(s) < 0) && (maxval(s) > 0)
         r = maxval(s)/-minval(s);
@@ -182,11 +183,25 @@ for t = 1:size(cfg.latency,1)
                                 ylabel(p(ch),cfg.channels{ch});
                             end
                         end
+                    case 2 %multiplot
+                        adjustaxes = true;
+
+                        % add time
+                        dataPlot.powspctrm(:,:,2) = dataPlot.powspctrm;
+                        dataPlot.time = [0 1];
+                        tmpcfg.xlim = [0 1];
+                        
+                        tmpcfg.comment = 'yes';
+                        ft_multiplotTFR(tmpcfg,dataPlot);
+                        currfig = gcf;
+                        arrayfun(@(x) copyobj(x,p), get(get(currfig,'CurrentAxes'),'Children'));
                     case 1 %topoplot
                         adjustaxes = true;
-                        tmpcfg.showlabels = 'yes';
+                        FIGWIDTH = 0.75*1080;
+                        
                         tmpcfg.showoutline = 'yes';
                         tmpcfg.marker = 'labels';
+                        tmpcfg.markerfontsize = 4;
                         tmpcfg.comment = 'no';
                         dataPlot = keepfields(dataPlot,{'label',tmpcfg.parameter,'elec','dimord'});
                         figure; ft_topoplotER(tmpcfg,dataPlot);

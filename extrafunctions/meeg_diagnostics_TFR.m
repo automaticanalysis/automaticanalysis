@@ -21,8 +21,28 @@ set(fig,'Name',figtitle)
 
 if nargin == 4 && ~isempty(savepath)
     figFn = savepath;
-    print(fig,'-noui',[figFn '_multiplot.jpg'],'-djpeg','-r300');
+    if ~contains(figFn,'plot'), figFn = [figFn '_multiplot.jpg']; end
+    print(fig,'-noui',figFn,'-djpeg','-r300');
     close(fig);
 end
+
+if isfield(diag,'snapshotfwoi') && ~isempty(diag.snapshotfwoi) && isfield(data{1},'freq') && numel(data{1}.freq) > 1
+    for f = 1:size(diag.snapshotfwoi,1)
+        for d = 1:numel(data)
+            dat{d} = ft_selectdata(struct('frequency',diag.snapshotfwoi(f,:),'avgoverfreq','yes'),data{d});
+            dat{d}.dimord = strrep(dat{d}.dimord,'_freq','');
+        end
+        fig = meeg_plot(plotcfg,dat);
+        
+        set(fig,'Name',figtitle)
+
+        if nargin == 4 && ~isempty(savepath)
+            figFn = savepath;
+            print(fig,'-noui',[figFn '_topoplot_freq-' sprintf('%1.2f-%1.2f',diag.snapshotfwoi(f,:)) '.jpg'],'-djpeg','-r300');
+            close(fig);
+        end
+    end
+end
+
 end
 
