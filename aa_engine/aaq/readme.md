@@ -1,5 +1,7 @@
 # Queue processors in automaticanalysis
 
+## Active
+
 ### aaq.m
 Base class of all queue processors; cannot be chosen as queue processor.
 
@@ -12,9 +14,7 @@ Queue processor running independent __batch__ jobs on a parallel cluster initiat
 Very robust queue processor with safety nets like repeated submission of jobs to catch hickups in the cluster.
 The correct order of execution of modules is ensured via 'job done' flags, namely, files written into each module's working directory.
 
-Note that aaq_batch was formerly named aaq_qsub and has undergone some changes during Oct 2020 - Mar 2021. The history of development and renaming, in one line:
-
-aaq_qsub -> refurbishment, replacement of createJob/createTask by batch -> renaming to aaq_batch
+aaq_batch has been developed from aaq_qsub (see below).
 
 ### aaq_parpool.m
 aaq_parpool starts and reserves a pool of Matlab workers with __parpool__ prior to any module computation. Parallelisation is achieved via __parfeval__. 
@@ -29,17 +29,21 @@ aaq_parpool lends itself to analyses with many tasks of little complexity, and/o
 
 aaq_parpool has been developed from aaq_matlab_pct (see below). The streamcache/real-time code in aaq_matlab_pct has not been ported.
 
+##Legacy
+
 ### aaq_matlab_pct.m
 aaq_matlab_pct starts and reserves a pool of Matlab workers with __parpool__ prior to any module computation. Parallelisation is achieved via __spmd__. 
-aaq_matlab_pct is outdated and deprecated; its designated successor is aaq_parpool.
+Usage of aaq_matlab_pct is deprecated; its designated successor is aaq_parpool.
 
 Scenarios for usage are the same as for aaq_parpool.
 
 ### aaq_qsub.m
-Predecessor of aaq_batch, which originally used createJob/ createTask to run independent jobs on a parallel cluster initiated with __parcluster__. 
+Predecessor of aaq_batch using createJob/ createTask to run independent jobs on a parallel cluster initiated with __parcluster__. 
+
+Scenarios for usage are the same as for aaq_batch.
 
 ### aaq_qsub_debug.m, aaq_qsub_monitor_jobs.m
-Outdated variants of aaq_qsub using createJob/createTask, and intended for debugging. 
+Variants of aaq_qsub using createJob/createTask, and intended for debugging. 
 
 ### aaq_condor.m
 Queue processor for HTCondor. There is work in progress to substitute it using the HTCondor integration script (available for R2020b and up) and aaq_batch. See https://www.mathworks.com/matlabcentral/fileexchange/78823-parallel-computing-toolbox-plugin-for-matlab-parallel-server-with-htcondor?s_tid=srchtitle
