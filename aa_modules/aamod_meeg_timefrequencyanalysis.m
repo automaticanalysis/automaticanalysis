@@ -33,7 +33,7 @@ switch task
         
         aap = aas_report_add(aap,subj,'</table>');
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
         FT.addExternal('spm12');
         
@@ -96,7 +96,7 @@ switch task
                         case 'eeglab'
                             FT.unload;
                             if seg == 1
-                                [junk, EL] = aas_cache_get(aap,'eeglab');
+                                [~, EL] = aas_cache_get(aap,'eeglab');
                                 EL.load;
                             else
                                 EL.reload;
@@ -275,6 +275,7 @@ switch task
                 % contarst events
                 cfg = combinecfg; 
                 cfg.weights = m.event.weights;
+                if prod(weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
                 timefreq = ft_combine(cfg,conEvents{:});
                 meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
                 

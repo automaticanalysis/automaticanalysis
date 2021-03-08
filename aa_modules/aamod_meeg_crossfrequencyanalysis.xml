@@ -22,6 +22,8 @@
             </crossfrequencyanalysis>
 
             <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
+            
+            <contrastoperation desc='operation to calculate contrast (see ft_combine)' options='difference|normaliseddifference|ratio' ui='optionlist'>difference</contrastoperation>
 
             <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
             <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            

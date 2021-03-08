@@ -253,6 +253,7 @@ switch task
                 % contarst events
                 cfg = combinecfg; 
                 cfg.weights = m.event.weights;
+                if prod(weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
                 crossfreq = ft_combine(cfg,conEvents{:});
                 meeg_diagnostics_CF(crossfreq,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
               
