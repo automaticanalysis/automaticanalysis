@@ -79,18 +79,9 @@ switch class(obj.pool)
         end
         
     case 'parallel.cluster.Generic'
-        % TODO: starting with R2017b, AdditionalProperties is available, so
-        % in reasonably recent Matlab versions there should be no need to
-        % check for newGenericVersion
-        if ~isprop(obj.pool.AdditionalProperties,'AdditionalSubmitArgs')
-            aas_log(aap, false, "WARNING: Property 'AdditionalSubmitArgs' not found.");
-            aas_log(aap, false,"    'AdditionalSubmitArgs' must be listed within AdditionalProperties in the cluster profile in order to customise resource requirement and consequential queue selection.");
-            aas_log(aap, false,"    Your jobs will be submitted to the default queue.");
-        else
-            obj.pool.AdditionalProperties.AdditionalSubmitArgs = convertStringsToChars(...
-                string(obj.initialSubmitArguments) + ...
-                compose(" -l s_cpu=%d:00:00 -l s_rss=%dG", walltime, mem));
-        end
+        obj.pool.AdditionalProperties.AdditionalSubmitArgs = convertStringsToChars(...
+            string(obj.initialSubmitArguments) + ...
+            compose(" -l s_cpu=%d:00:00 -l s_rss=%dG", walltime, mem));
         if doSetNumWorkers
             aaparallel.numberofworkers = 1;
         end
