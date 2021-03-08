@@ -89,10 +89,9 @@ else
 end
 
 mplier = 1;
-if isfield(cfg,'channels')
-    mplier = numel(cfg.channels);
-    sizeplot(1) = sizeplot(1)*mplier;
-end
+if isfield(cfg,'channels'), mplier = numel(cfg.channels); end
+if isfield(cfg,'view') && strcmp(cfg.view,'ortho'), mplier = 3; end
+sizeplot(1) = sizeplot(1)*mplier;
 
 %% Scale
 for s = 1:numel(data)
@@ -153,7 +152,7 @@ for t = 1:size(cfg.latency,1)
         tmpcfg = keepfields(cfg,{'layout' 'parameter'});
         tmpcfg.interactive = 'no';
         if isfield(dataPlot,'elec')
-            tmpcfg.zlim = [minval(s) maxval(s)];
+            tmpcfg.zlim = sort([minval(s) maxval(s)]);
             if ft_datatype(dataPlot,'freq') % TFR
                 switch numel(strsplit(dataPlot.dimord,'_'))
                     case 3
@@ -212,25 +211,30 @@ for t = 1:size(cfg.latency,1)
             end
             
         elseif isfield(dataPlot,'dim')
-            %             p = subplot(sizeplot(1),sizeplot(2),(t-1)*2+1);
-            %             cfg = cfgdiag;
-            %             cfg.title = 'positive';
-            %             cfg.maskparameter = cfg.parameter;
-            %             cfg.funcolorlim   = [0 maxval];
-            %             cfg.opacitylim    = cfg.funcolorlim ;
-            %             cfg.method = 'slice';
-            %             ft_dataplot(cfg, dataPlot, cfg.mri);
-            %             copyobj(gca,p);
-            %
-            %             p = subplot(sizeplot(1),sizeplot(2),(t-1)*2+2);
-            %             cfg = cfgdiag;
-            %             cfg.title = 'negative';
-            %             cfg.maskparameter = cfg.parameter;
-            %             cfg.funcolorlim   = [minval 0];
-            %             cfg.opacitylim    = cfg.funcolorlim ;
-            %             cfg.method = 'slice';
-            %             ft_dataplot(cfg, dataPlot, cfg.mri);
-            %             arrayfun(@(x) copyobj(x,p), get(gca,'Children'));
+            tmpcfg = keepfields(cfg,'latency');
+            tmpcfg.funparameter = cfg.parameter;
+            tmpcfg.funcolormap = cmaps{s};
+            tmpcfg.funcolorlim = [minval(s) maxval(s)];
+            switch cfg.view
+                case 'ortho'
+                    adjustaxes = true;
+                    if ~exist('peakposvox','var')
+                        peakposvox = data{1}.transform\[dataPlot.pos(find(dataPlot.((cfg.parameter))==max(dataPlot.(cfg.parameter)),1,'first'),:) 1]';
+                    end                    
+                    tmpcfg.method = 'slice';
+                    tmpcfg.nslices = 1;
+                    for a = 1:3
+                        p(a) = subplot(sizeplot(1),sizeplot(2),indAx + (a-1)*sizeplot(2), 'Parent',h);
+                        tmpcfg.slicerange = [peakposvox(a) peakposvox(a)];
+                        tmpcfg.slicedim = a;
+                        ft_sourceplot(tmpcfg, dataPlot);
+                        colormap(cmaps{s});
+                        currfig(a) = gcf;
+                        arrayfun(@(x) copyobj(x,p(a)), flipud(get(get(currfig(a),'CurrentAxes'),'Children')));
+                        p(a).Children(1).AlphaData(p(a).Children(1).CData==0) = 0;
+                        if a == 2, view(p(a),[90 -90]); end
+                    end
+            end
             
         elseif isfield(dataPlot,'tri')
             adjustaxes = true;

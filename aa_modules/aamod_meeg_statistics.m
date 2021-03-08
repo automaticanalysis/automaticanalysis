@@ -127,20 +127,28 @@ switch task
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
         
         hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
-        if hashighressurface && ~strcmp(statplotcfg.surface,'sourcemodel')
+        if isfield(data,'tri') && hashighressurface && ~strcmp(statplotcfg.background,'sourcemodel')
             fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
-            fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
+            fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};            
             grouphighressurface = ft_read_headshape(fnsurf);
             for subj = 2:aas_getN_bydomain(aap,'subject')
                 fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',subj,'sourcesurface'));
-                fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};
+                fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};
                 mesh = ft_read_headshape(fnsurf);
                 grouphighressurface.pos = grouphighressurface.pos + mesh.pos;
             end
             grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
-            statplotcfg.surface = grouphighressurface;
+            statplotcfg.background = grouphighressurface;
+        elseif isfield(data,'dim')
+            switch statplotcfg.background
+                case 'template'
+                    dat = load(fullfile(FT.toolPath, 'template/headmodel/standard_mri.mat'));
+                    statplotcfg.background = dat.mri;
+                otherwise % filename
+                    statplotcfg.background = ft_read_mri(statplotcfg.background);
+            end
         else
-            if isfield(statplotcfg,'surface'), statplotcfg = rmfield(statplotcfg,'surface'); end
+            if isfield(statplotcfg,'background'), statplotcfg = rmfield(statplotcfg,'background'); end
         end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
@@ -187,6 +195,12 @@ switch task
                             dat.(inpType) = ft_combine(combinecfg,chdata{:});
                         end
                         dat = dat.(inpType);
+                        % expand data
+                        if ~isfield(dat,statcfg.parameter)
+                            dat = ft_selectdata([],dat);
+                            dat = rmfield(dat,intersect(fieldnames(dat),{'ori','filterdimord'}));
+                            dat.cfg = keepfields(dat.cfg.previous,'included');
+                        end
                         if isfield(dat,'time')
                             switch aas_getsetting(aap,'selectoverlappingdata.time')
                                 case 'auto'
@@ -198,6 +212,15 @@ switch task
                                     roundtime = aas_getsetting(aap,'selectoverlappingdata.time');
                             end
                             dat.time = round(dat.time/roundtime)*roundtime; % round timing
+                        end
+                        if isfield(dat,'dim') % grid-based source -> replace and extend pos with that of the template
+                            tmpdat = load(aas_getfiles_bystream(aas_setcurrenttask(aap,aas_getsourcestage(aap,'aamod_meeg_sourcereconstruction')),'subject',subj,'sourcemodel'));
+                            tmpdat = load(tmpdat.sourcemodel.cfg.template);
+                            dat.pos = tmpdat.sourcemodel.pos;
+                            dat.inside = dat.cfg.included;
+                            parsize = size(dat.(statcfg.parameter)); parsize(1) = numel(dat.inside);
+                            par = zeros(parsize); par(dat.inside,:,:,:,:) = dat.(statcfg.parameter);
+                            dat.(statcfg.parameter) = par;
                         end
                         dat.cfg = keepfields(dat.cfg,'included'); % remove provenance to save space
                         allInp{end+1} = ft_struct2single(dat);
@@ -240,15 +263,9 @@ switch task
                 allTime = find(sum(allTime)==size(allTime,1));
                 
                 % - select timepoints
-                if isfield(allInp{1},'dimord')
-                    dimord = allInp{1}.dimord;
-                    par = {statcfg.parameter};
-                elseif isfield(allInp{1}.avg,'dimord')
-                    dimord = allInp{1}.avg.dimord;
-                    par = {'avg' statcfg.parameter};
-                else
-                    aas_log(aap,true,'no dimension information found');
-                end
+                if ~isfield(allInp{1},'dimord'), aas_log(aap,true,'no dimension information found'); end
+                dimord = allInp{1}.dimord;
+                par = {statcfg.parameter};
                 dimTime = find(strcmp(strsplit(dimord,'_'),'time'));
                 if ndims(getfield(allInp{i}, par{:})) ~= dimTime
                     aas_log(aap,true,'time is assumed to be the last dimension')
@@ -271,7 +288,7 @@ switch task
                 end
             end
             
-            if isfield(allInp{1},'pos')
+            if isfield(allInp{1},'pos') % source
                 aas_log(aap,false,'INFO: selecting overlapping positions');
                 posJoint = all(cell2mat(cellfun(@(x) reshape(x.cfg.included,[],1), allInp, 'UniformOutput', false)),2);
                 allPos = zeros(sum(posJoint),3,numel(allInp));
@@ -282,21 +299,25 @@ switch task
                     for p = find(reshape(dat.cfg.included,[],1) & ~posJoint)'
                         toExcl(sum(dat.cfg.included(1:p))) = true;
                     end
-                    dat.pos(toExcl,:) = [];
-                    dat.inside(toExcl,:) = [];
-                    dat.avg.(cfg{1}.parameter)(toExcl,:,:) = [];
-                    dat.avg.ori(toExcl) = [];
-                    if isfield(dat,'tri')
+                    if isfield(dat,'tri') % cortical sheet
+                        dat.pos(toExcl,:) = [];
+                        dat.inside(toExcl) = [];
+                        dat.(cfg{1}.parameter)(toExcl,:,:) = [];
                         [trind, trelem] = ndgrid(1:size(dat.tri,1),1:size(dat.tri,2)); trind = transpose(trind); trelem = transpose(trelem);
                         indtri = logical(sum(arrayfun(@(x,y) any(dat.tri(x,y)==find(toExcl)), trind, trelem)));
                         dat.tri = arrayfun(@(x,y) dat.tri(x,y)-sum(toExcl(1:dat.tri(x,y))), trind, trelem)';
                         dat.tri(indtri,:) = [];
+                        allPos(:,:,i) = dat.pos;
                     end
-                    allPos(:,:,i) = dat.pos;
+                    if isfield(dat,'dim') % grid
+                        dat.inside(toExcl) = false;
+                    end                    
                     allInp{i} = dat;
                 end
-                for i = 1:numel(allInp)
-                    allInp{i}.pos = mean(allPos,3);
+                if isfield(dat,'tri')
+                    for i = 1:numel(allInp)                    
+                        allInp{i}.pos = mean(allPos,3);                    
+                    end
                 end
             end
             
@@ -446,6 +467,7 @@ switch task
                         statFn = sprintf('%s_%s-%1.2f-%1.2f',statFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
                     end
                 end
+                stat.mask(isnan(stat.mask)) = 0;
                 groupStat{1}.stat = stat;
                 pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);

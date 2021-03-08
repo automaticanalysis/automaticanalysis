@@ -40,7 +40,8 @@ switch task
         % create sourcemodel
         switch aas_getsetting(aap,'method')
             case 'grid'
-                dat = load(fullfile(FT.toolPath, ['template/sourcemodel/standard_sourcemodel3d' num2str(aas_getsetting(aap,'options.grid.resolution')) 'mm.mat']));
+                tmpltfile = fullfile(FT.toolPath, ['template/sourcemodel/standard_sourcemodel3d' num2str(aas_getsetting(aap,'options.grid.resolution')) 'mm.mat']);
+                dat = load(tmpltfile);
                 cfg           = [];
                 cfg.warpmni   = 'yes';
                 cfg.spmmethod = 'new';
@@ -49,6 +50,11 @@ switch task
                 cfg.mri       = mri;
                 cfg.unit      ='mm';
                 sourcemodel   = ft_prepare_sourcemodel(cfg);
+                sourcemodel.cfg = [];
+                sourcemodel.cfg.template = tmpltfile;
+                sourcemodel.cfg.urinside = sourcemodel.inside;
+                sourcemodel.pos(~sourcemodel.inside,:) = [];
+                sourcemodel.inside(~sourcemodel.inside,:) = [];
                 
             case 'corticalsheet'
                 aas_runFScommand(aap,sprintf('export PATH=$PATH:%s/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',WB.toolPath, FT.toolPath,...

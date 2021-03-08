@@ -11,8 +11,6 @@
             <module><name>aamod_structuralfromnifti</name></module>
             <module><name>aamod_segment8</name></module>
             <module><name>aamod_coreg_general</name></module>
-            <module><name>aamod_freesurfer_initialise</name></module>
-            <module><name>aamod_freesurfer_autorecon_all</name></module>
             <module><name>aamod_meeg_preparesourcemodel</name></module>
             <module><name>aamod_meeg_prepareheadmodel</name></module>
             

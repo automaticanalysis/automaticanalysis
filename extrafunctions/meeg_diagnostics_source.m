@@ -14,35 +14,33 @@ plotcfg.latency = diag.snapshottwoi./1000; % second
 for s = 1:numel(data)
     if isfield(data{s},'avg')
         if ~isfield(data{s},plotcfg.parameter), data{s}.(plotcfg.parameter) = data{s}.avg.(plotcfg.parameter); end
-        data{s} = rmfield(data{s},'avg');
+        data{s} = rmfield(data{s},{'avg' 'method'});
     end
 end
 
-if isfield(data{1},'dim')
+if isfield(diag,'background')
     dimord = data{1}.dimord;
-    cfg = [];
-    cfg.downsample = 2;
-    cfg.parameter = plotcfg.parameter;
-    for s = 1:numel(data)
-        data{s} = ft_sourceinterpolate(cfg, data{s}, diag.mri);
-        data{s}.dimord = dimord;
-    end
-elseif isfield(data{1},'tri') && isfield(diag,'surface')
-    dimord = data{1}.dimord;
-    cfg = [];
-    cfg.parameter = plotcfg.parameter;
-    cfg.interpmethod = 'nearest';
+    cfg = keepfields(plotcfg,'parameter');
     if isfield(data{1},'stat')
         stat = keepfields(data{1}.stat,STATFIELDS);
         data{1} = struct_update(data{1},stat);
     end
+    
+    if isfield(data{1},'dim')
+        cfg.interpmethod = 'linear';
+        cfg.downsample = 2;
+    elseif isfield(data{1},'tri')
+        cfg.interpmethod = 'nearest';
+    end
+    
     for s = 1:numel(data)
         tmpcfg = cfg;
         if s == 1 && isfield(data{1},'stat'), tmpcfg.parameter = [tmpcfg.parameter STATFIELDS]; end
-        data{s} = ft_sourceinterpolate(tmpcfg, data{s}, diag.surface);
+        data{s} = ft_sourceinterpolate(tmpcfg, data{s}, diag.background);
         if s == 1 && ~isempty(setdiff(tmpcfg.parameter,cfg.parameter))
             stat = [];
             for f = STATFIELDS, stat.(f{1}) = data{1}.(f{1}); end
+            stat.mask(isnan(stat.mask)) = 0;
             data{1}.stat = stat;
         end
         data{s}.dimord = dimord;

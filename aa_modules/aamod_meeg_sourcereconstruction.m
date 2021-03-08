@@ -170,6 +170,11 @@ switch task
         
         % compute the leadfield
         if ~hasLeadField && ~hasFilter
+            if isfield(sourcemodel,'cfg') && isfield(sourcemodel.cfg,'urinside') % save template mask
+                urinside = sourcemodel.cfg.urinside;
+            else
+                urinside = [];
+            end
             cfg = [];
             cfg.sourcemodel = sourcemodel;
             cfg.headmodel   = headmodel;
@@ -208,6 +213,12 @@ switch task
                 end
             end
             sourcemodel.included = reshape(~ind,[],1);
+            if ~isempty(urinside)
+                urind = find(urinside);
+                urind(~sourcemodel.included) = [];
+                sourcemodel.included = false(numel(urinside),1);
+                sourcemodel.included(urind) = true;
+            end
             
             clear rankLF sourceQA trind trelem indtri
             if prepareOnly
