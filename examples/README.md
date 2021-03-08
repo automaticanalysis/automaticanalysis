@@ -1,6 +1,23 @@
 # Example user scripts and task lists
 This directory contains example scripts that use publicly available data (either BIDS or Cusack lab). For an automated test, see aa_testcode/aatest.
 
+Besides the requirements listed on the main project page, the following extensions/materials should be present/installed on your system:
+
+EEGLab plugins:
+- "AMICA"
+- "Fieldtrip-lite"
+- "Fileio"
+- "ICLabel"
+- "Viewprops"
+- "clean_rawdata"
+- "dipfit"
+- "firfilt"
+- "fitTwoDipoles"
+- "neuroscanio"
+
+Specifically for the meeg example:
+Please read the instructions on the template directory you as the user have to set up in  https://github.com/fieldtrip/fieldtrip/blob/master/bin/ft_postfreesurferscript.sh and assemble all files accordingly. The path to the resulting template directory must be known to aa (e.g. listed in aa_parameters_user).
+
 #### aa_user_demo (.m & .xml)
 Runs one session of one subject through a standard SPM-based fMRI analysis.
 
