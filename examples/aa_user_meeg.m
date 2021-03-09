@@ -3,6 +3,13 @@
 %
 % This script demonstrates a basic EEG pipeline on the LEMON dataset: http://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html.
 %
+% It requires the following software to be configured in your parameterset
+%   - SPM
+%   - FSL
+%   - EEGLAB with extensions Fileio, bva-io, clean_rawdata, AMICA, dipfit, Fieldtrip-lite, firfilt, fitTwoDipoles, ICLabel, Viewprops
+%   - FieldTrip
+% See aa_parametersets/aap_parameters_defaults_UoS.xml, lines 21-56 for example configuration
+%
 % N.B.: Time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level is disabled because it requires high amount of memory. You can 
 % enable it by uncommenting the corresponding lines in the tasklist and this UMS marked with corresponding comment.
 
@@ -51,8 +58,8 @@ aap = aas_renamestream(aap,'aamod_coreg_general_00001','output','structural','ou
 aap.tasksettings.aamod_meeg_prepareheadmodel.method = 'simbio';
 aap.tasksettings.aamod_meeg_prepareheadmodel.options.simbio.downsample = 2;
 aap.tasksettings.aamod_meeg_prepareheadmodel.options.simbio.meshshift = 0.1;
-aap.tasksettings.aamod_meeg_preparesourcemodel.method = 'corticalsheet';
-aap.tasksettings.aamod_meeg_preparesourcemodel.options.corticalsheet.resolution = '4k';
+aap.tasksettings.aamod_meeg_preparesourcemodel.method = 'grid';
+aap.tasksettings.aamod_meeg_preparesourcemodel.options.grid.resolution = '10';
 aap = aas_renamestream(aap,'aamod_norm_write_00001','structural','aamod_coreg_general_00001.structural','input');
 aap = aas_renamestream(aap,'aamod_norm_write_00001','epi','aamod_coreg_general_00001.structural','input');
 aap = aas_renamestream(aap,'aamod_norm_write_00001','epi','structural','output');
@@ -122,6 +129,7 @@ for b = 1:2
         33 80;... % low-gamma
         81 120;... % high-gamma
         ];
+    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).contrastoperation = 'ratio';
 end
 aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).weightedaveraging = 1;
 aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi = [[0:120000:7*120000]' [0:120000:7*120000]'+120000];
@@ -132,24 +140,20 @@ for b = 1:2
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).realignelectrodes.method = 'spherefit';
     aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics,...
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics,'Mode','update');
-    aap.tasksettings.aamod_meeg_sourcereconstruction(b).diagnostics.view = 'RPI';
 end
 
 for b = 1:2
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics,'Mode','update');
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
 end
-aap.tasksettings.aamod_meeg_timefrequencystatistics(2).diagnostics.view = 'RPI';
 
 indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
 for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimepoint = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correctiontimeseries = 'no';
+    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.subjects = 'auto';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.time = 'ignore';
     aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...

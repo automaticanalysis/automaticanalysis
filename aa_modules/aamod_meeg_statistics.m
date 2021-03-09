@@ -4,12 +4,17 @@ function [aap, resp] = aamod_meeg_statistics(aap,task)
 resp='';
 
 SETTING2DIM = containers.Map(...
-    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'},...
-    {'freqlow' 'freqhigh' 'phase' 'time'}...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshotfwoi'},...
+    {'freqlow' 'freqhigh' 'phase' 'freq'}...
     );
 DIM2SETTING = containers.Map(...
-    {'freqlow' 'freqhigh' 'phase' 'time'},...
-    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshottwoi'}...
+    {'freqlow' 'freqhigh' 'phase' 'freq'},...
+    {'snapshotfwoiphase' 'snapshotfwoiamplitude' 'snapshotphwoi' 'snapshotfwoi'}...
+    );
+
+SETTING2CFG = containers.Map(...
+    {'snapshotfwoi'},...
+    {'frequency'}...
     );
 
 switch task
@@ -101,8 +106,6 @@ switch task
                 statcfg.parameter   = 'crsspctrm';
                 fstat = @meeg_statistics;
                 fdiag = @meeg_diagnostics_CF;
-                thr.correctiontimeseries = thr.correction;
-                thr.correctiontimepoint = thr.correction;
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -116,7 +119,7 @@ switch task
         statcfg.tail        = 0; % two-tailed
         statcfg.correcttail = 'prob';
         statcfg.method              = thr.method;
-        statcfg.correctm            = thr.correctiontimeseries;
+        statcfg.correctm            = thr.correction;
         statcfg.clusteralpha        = thr.p;
         statcfg.numrandomization    = thr.iteration;
         statcfg.minnbchan           = thr.neighbours;      % minimal number of neighbouring channels
@@ -124,20 +127,28 @@ switch task
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
         
         hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
-        if hashighressurface && ~strcmp(statplotcfg.surface,'sourcemodel')
+        if isfield(data,'tri') && hashighressurface && ~strcmp(statplotcfg.background,'sourcemodel')
             fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
-            fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};            
+            fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};            
             grouphighressurface = ft_read_headshape(fnsurf);
             for subj = 2:aas_getN_bydomain(aap,'subject')
                 fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',subj,'sourcesurface'));
-                fnsurf = fnsurf{contains(fnsurf,statplotcfg.surface)};
+                fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};
                 mesh = ft_read_headshape(fnsurf);
                 grouphighressurface.pos = grouphighressurface.pos + mesh.pos;
             end
             grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
-            statplotcfg.surface = grouphighressurface;
+            statplotcfg.background = grouphighressurface;
+        elseif isfield(data,'dim')
+            switch statplotcfg.background
+                case 'template'
+                    dat = load(fullfile(FT.toolPath, 'template/headmodel/standard_mri.mat'));
+                    statplotcfg.background = dat.mri;
+                otherwise % filename
+                    statplotcfg.background = ft_read_mri(statplotcfg.background);
+            end
         else
-            if isfield(statplotcfg,'surface'), statplotcfg = rmfield(statplotcfg,'surface'); end
+            if isfield(statplotcfg,'background'), statplotcfg = rmfield(statplotcfg,'background'); end
         end
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
@@ -184,6 +195,12 @@ switch task
                             dat.(inpType) = ft_combine(combinecfg,chdata{:});
                         end
                         dat = dat.(inpType);
+                        % expand data
+                        if ~isfield(dat,statcfg.parameter)
+                            dat = ft_selectdata([],dat);
+                            dat = rmfield(dat,intersect(fieldnames(dat),{'ori','filterdimord'}));
+                            dat.cfg = keepfields(dat.cfg.previous,'included');
+                        end
                         if isfield(dat,'time')
                             switch aas_getsetting(aap,'selectoverlappingdata.time')
                                 case 'auto'
@@ -195,6 +212,15 @@ switch task
                                     roundtime = aas_getsetting(aap,'selectoverlappingdata.time');
                             end
                             dat.time = round(dat.time/roundtime)*roundtime; % round timing
+                        end
+                        if isfield(dat,'dim') % grid-based source -> replace and extend pos with that of the template
+                            tmpdat = load(aas_getfiles_bystream(aas_setcurrenttask(aap,aas_getsourcestage(aap,'aamod_meeg_sourcereconstruction')),'subject',subj,'sourcemodel'));
+                            tmpdat = load(tmpdat.sourcemodel.cfg.template);
+                            dat.pos = tmpdat.sourcemodel.pos;
+                            dat.inside = dat.cfg.included;
+                            parsize = size(dat.(statcfg.parameter)); parsize(1) = numel(dat.inside);
+                            par = zeros(parsize); par(dat.inside,:,:,:,:) = dat.(statcfg.parameter);
+                            dat.(statcfg.parameter) = par;
                         end
                         dat.cfg = keepfields(dat.cfg,'included'); % remove provenance to save space
                         allInp{end+1} = ft_struct2single(dat);
@@ -237,15 +263,9 @@ switch task
                 allTime = find(sum(allTime)==size(allTime,1));
                 
                 % - select timepoints
-                if isfield(allInp{1},'dimord')
-                    dimord = allInp{1}.dimord;
-                    par = {statcfg.parameter};
-                elseif isfield(allInp{1}.avg,'dimord')
-                    dimord = allInp{1}.avg.dimord;
-                    par = {'avg' statcfg.parameter};
-                else
-                    aas_log(aap,true,'no dimension information found');
-                end
+                if ~isfield(allInp{1},'dimord'), aas_log(aap,true,'no dimension information found'); end
+                dimord = allInp{1}.dimord;
+                par = {statcfg.parameter};
                 dimTime = find(strcmp(strsplit(dimord,'_'),'time'));
                 if ndims(getfield(allInp{i}, par{:})) ~= dimTime
                     aas_log(aap,true,'time is assumed to be the last dimension')
@@ -261,14 +281,14 @@ switch task
                     if isfield(allInp{i},'trialinfo'), allInp{i}.trialinfo = allInp{i}.trialinfo(allTime); end
                 end
                 
-                if strcmp(aas_getsetting(aap,'selectoverlappingdata.time'),'ignore') && ~isempty(pcfg.snapshottwoi) % equally divide trials
-                    step = (max(allInp{i}.time) - min(allInp{i}.time))/size(pcfg.snapshottwoi,1);
-                    pcfg.snapshottwoi = [min(allInp{i}.time):step:(max(allInp{i}.time)-step)]'*1000;
-                    pcfg.snapshottwoi(:,2) = pcfg.snapshottwoi(:,1)+step*1000;
+                if strcmp(aas_getsetting(aap,'selectoverlappingdata.time'),'ignore') && ~isempty(pcfg.snapshottwoi) % equally divide trials without overlap
+                    step = (max(allInp{i}.time) - min(allInp{i}.time))/(size(pcfg.snapshottwoi,1)-1);
+                    pcfg.snapshottwoi = ((min(allInp{i}.time):step:max(allInp{i}.time))'-step/4)*1000;
+                    pcfg.snapshottwoi(:,2) = pcfg.snapshottwoi(:,1)+step/2*1000;
                 end
             end
             
-            if isfield(allInp{1},'pos')
+            if isfield(allInp{1},'pos') % source
                 aas_log(aap,false,'INFO: selecting overlapping positions');
                 posJoint = all(cell2mat(cellfun(@(x) reshape(x.cfg.included,[],1), allInp, 'UniformOutput', false)),2);
                 allPos = zeros(sum(posJoint),3,numel(allInp));
@@ -279,25 +299,29 @@ switch task
                     for p = find(reshape(dat.cfg.included,[],1) & ~posJoint)'
                         toExcl(sum(dat.cfg.included(1:p))) = true;
                     end
-                    dat.pos(toExcl,:) = [];
-                    dat.inside(toExcl,:) = [];
-                    dat.avg.(cfg{1}.parameter)(toExcl,:,:) = [];
-                    dat.avg.ori(toExcl) = [];
-                    if isfield(dat,'tri')
+                    if isfield(dat,'tri') % cortical sheet
+                        dat.pos(toExcl,:) = [];
+                        dat.inside(toExcl) = [];
+                        dat.(cfg{1}.parameter)(toExcl,:,:) = [];
                         [trind, trelem] = ndgrid(1:size(dat.tri,1),1:size(dat.tri,2)); trind = transpose(trind); trelem = transpose(trelem);
                         indtri = logical(sum(arrayfun(@(x,y) any(dat.tri(x,y)==find(toExcl)), trind, trelem)));
                         dat.tri = arrayfun(@(x,y) dat.tri(x,y)-sum(toExcl(1:dat.tri(x,y))), trind, trelem)';
                         dat.tri(indtri,:) = [];
+                        allPos(:,:,i) = dat.pos;
                     end
-                    allPos(:,:,i) = dat.pos;
+                    if isfield(dat,'dim') % grid
+                        dat.inside(toExcl) = false;
+                    end                    
                     allInp{i} = dat;
                 end
-                for i = 1:numel(allInp)
-                    allInp{i}.pos = mean(allPos,3);
+                if isfield(dat,'tri')
+                    for i = 1:numel(allInp)                    
+                        allInp{i}.pos = mean(allPos,3);                    
+                    end
                 end
             end
             
-            if isfield(allInp{1},'labelcmb')
+            if isfield(allInp{1},'labelcmb') && ~isfield(allInp{1},'label')
                 aas_log(aap,false,'INFO: selecting common channelcombinations');
                 labelcmb = categorical(allInp{1}.labelcmb);
                 for subj = 2:numel(allInp)
@@ -374,25 +398,11 @@ switch task
                         continue;
                     end
             end
-            if ~isfield(allInp{1},'time')
-                cfg{1}.latency = 'all';
-                cfg{1}.correctm = thr.correctiontimepoint;
-            end
+            if ~isfield(allInp{1},'time'), cfg{1}.latency = 'all'; end
             switch inpType
-                case 'timefreq' % separate analyses for each band
-                    fwoi = aas_getsetting(aap,'diagnostics.snapshotfwoi');
-                    if ~isempty(fwoi)
-                        for f = 1:size(fwoi,1)
-                            cfg{f} = cfg{1};
-                            cfg{f}.frequency = fwoi(f,:);
-                            savepath{f} = savepath{1};
-                        end
-                    else
-                        cfg{1}.frequency = 'all';
-                    end
-                case 'crossfreq'
+                case {'timefreq' 'crossfreq'}
                     diag = aas_getsetting(aap,'diagnostics');
-                    meas = fieldnames(diag);
+                    meas = intersect(fieldnames(diag),SETTING2DIM.keys);
                     numtask = cellfun(@(f) size(diag.(f),1), meas);
                     meas = meas(numtask>0);
                     numtask = numtask(numtask>0);
@@ -401,8 +411,13 @@ switch task
                         cfg{c} = cfg{1};
                         for indm = 1:numel(meas)
                             cfg{c}.average.(SETTING2DIM(meas{indm})) = diag.(meas{indm})(cntr(indm),:);
-                            if strcmp(meas{indm},'snapshottwoi'), cfg{c}.average.time = cfg{c}.average.time./1000; end % correct time
-                            savepath{c} = savepath{1};
+                            if strcmp(inpType,'timefreq') 
+                                cfg{c}.(SETTING2CFG(meas{indm})) = diag.(meas{indm})(cntr(indm),:);
+                                if c == 1, savepath{c} = [savepath{1} '_topoplot'];
+                                else, savepath{c} = savepath{1}; end
+                            else
+                                savepath{c} = savepath{1};
+                            end
                         end
                         cntr(1) = cntr(1) + 1;
                         for cc = 1:numel(cntr)-1
@@ -422,7 +437,7 @@ switch task
             end
             
             for c = 1:numel(cfg)
-                statFn = [savepath{c} '_' cfg{c}.correctm];
+                statFn = savepath{c};
                 
                 stat = fstat(cfg{c}, allInp{:});
                 
@@ -431,8 +446,7 @@ switch task
                 avgcfg = keepfields(cfg{c},{'parameter','latency'});
                 if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
                     pcfg.snapshottwoi = pcfg.snapshottwoi(...
-                        pcfg.snapshottwoi(:,1)/1000 >= stat.time(1) & ...
-                        pcfg.snapshottwoi(:,2)/1000 <= stat.time(end) ...
+                        arrayfun(@(i) any(arrayfun(@(t) pcfg.snapshottwoi(i,1) < t & pcfg.snapshottwoi(i,2) > t, stat.time*1000)), 1:size(pcfg.snapshottwoi,1)) ...
                         ,:);
                 end
                 
@@ -444,17 +458,6 @@ switch task
                     groupStat{1} = ft_granddescriptives(avgcfg, allInp{:});
                 end
                 groupStat = cellfun(@(x) struct_update(x,allInp{1},'Mode','extend'), groupStat,'UniformOutput',false);
-                if isfield(cfg{c},'frequency')
-                    groupStat = cellfun(@(x) ft_selectdata(struct('frequency',cfg{c}.frequency,'avgoverfreq','yes'),x), groupStat,'UniformOutput',false);
-                    if ischar(cfg{c}.frequency)
-                        switch cfg{c}.frequency
-                            case 'all'
-                                cfg{c}.frequency = [min(groupStat{1}.freq) max(groupStat{1}.freq)];
-                        end
-                    end
-                    pcfg.snapshotfwoi = cfg{c}.frequency;
-                    cfg{c}.correctm = sprintf('%s_freq-%1.2f-%1.2f',cfg{c}.correctm,cfg{c}.frequency); % add suffix to statFn
-                end
                 if isfield(cfg{c}, 'average')
                     avgcfg = keepfields(cfg{c},{'parameter','average'});
                     avgcfg.parameter = {avgcfg.parameter [avgcfg.parameter 'sem']};
@@ -464,6 +467,7 @@ switch task
                         statFn = sprintf('%s_%s-%1.2f-%1.2f',statFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
                     end
                 end
+                stat.mask(isnan(stat.mask)) = 0;
                 groupStat{1}.stat = stat;
                 pcfg.parameter = cfg{c}.parameter;
                 fdiag(groupStat,pcfg,m.name,statFn);

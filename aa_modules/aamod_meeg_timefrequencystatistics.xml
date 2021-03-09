@@ -25,8 +25,7 @@
             <threshold>
                 <method desc='methods for calculating the significance probability' options='montecarlo|analytic' ui='optionlist'>montecarlo</method>
                 <iteration desc='number of randomisation (for montecarlo)'>5000</iteration>
-                <correctiontimeseries desc='multiple-comparison correction for timeseries data' options='no|cluster|bonferroni|holm|hochberg|fdr' ui='optionlist'>cluster</correctiontimeseries>
-                <correctiontimepoint desc='multiple-comparison correction for timepoint data' options='no|cluster|bonferroni|holm|hochberg|fdr' ui='optionlist'>fdr</correctiontimepoint>
+                <correction desc='multiple-comparison correction for timeseries data' options='no|cluster|bonferroni|holm|hochberg|fdr' ui='optionlist'>cluster</correction>
                 <neighbours desc='minimum number of channels required (for cluster)'>2</neighbours>
                 <p desc='critical value for cluster and single-sample'>0.05</p>
             </threshold>
@@ -44,8 +43,17 @@
                 <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
                 <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
-                <surface desc="Surface to project statistics onto. 'sourcemodel' means the sourcemodel surface averaged across particpants, the other options corresponds to high-res surface stored in 'surf_[surface].gii' files in the sourcesurface stream (if present)" options='sourcemodel|inflated|midthickness|pial|white' ui='optionlist'>sourcemodel</surface>
-                <view desc='viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI'>RAS</view>
+                <!--
+                Background to project statistics onto. 
+                In case of cortical sheet based source, 'sourcemodel' means the sourcemodel surface averaged across particpants, the other options corresponds to high-res surface stored in 'surf_[surface].gii' files in the sourcesurface stream (if present)
+                In case of grid based source, 'template' means FieldTrip's 'standard_mri', the [filename] corresponds to any image specified with full path
+                -->
+                <background options='sourcemodel|inflated|midthickness|pial|white|template|[filename]' ui='optionlist'>template</background>
+                <!--
+                In case of cortical sheet based source, viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain.
+                In case of grid based source, view can be 'ortho'
+                -->
+                <view desc='' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI|ortho'>ortho</view>
             </diagnostics>
         </currenttask>
     </tasklist>
