@@ -19,7 +19,7 @@ aa_ver5
 SUBJS = [10004 10005 10007 10010];
 
 %% RECIPE
-aap = aarecipe('aap_tasklist_meeg.xml');
+aap = aarecipe('meeg_tasklist.xml');
 SPM = aas_inittoolbox(aap,'spm');
 SPM.load;
 

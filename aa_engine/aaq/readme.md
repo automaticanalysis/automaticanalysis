@@ -5,7 +5,7 @@
 ### aaq.m
 Base class of all queue processors; cannot be chosen as queue processor.
 
-###aaq_localsingle.m
+### aaq_localsingle.m
 Simplest queue processor: runs all tasks serially in the local Matlab session, that is, without explicit parallelisation. Useful for development, debugging, and estimating baseline performance.
 
 ### aaq_batch.m
@@ -29,7 +29,7 @@ aaq_parpool lends itself to analyses with many tasks of little complexity, and/o
 
 aaq_parpool has been developed from aaq_matlab_pct (see below). The streamcache/real-time code in aaq_matlab_pct has not been ported.
 
-##Legacy
+## Legacy
 
 ### aaq_matlab_pct.m
 aaq_matlab_pct starts and reserves a pool of Matlab workers with __parpool__ prior to any module computation. Parallelisation is achieved via __spmd__. 
