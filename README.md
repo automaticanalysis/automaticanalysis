@@ -15,6 +15,14 @@ associated documentation whether electronic or printed.
 Use of this software is subject to the terms of the license, found in
 the license.txt file distributed with this software.
 
+# Update #
+
+Please, be aware that this README is not updated anymore; therefore, some information might be outdated and the links might be broken.
+
+The new website at http://automaticanalysis.github.io is now live and should be the primary point of reference.
+
+Please, consult with this README only when you do not find the desired information at http://automaticanalysis.github.io.
+
 # About
 
 aa is a pipeline system for neuroimaging written primarily in Matlab. It
@@ -96,7 +104,6 @@ Optional:
    - *directory_conventions/spmtoolsdir*: Path to external/custom SPM toolboxes
 
  - Parallel processing: 
-   - *directory_conventions/qsubscheduler*: MATLAB function to set up qsub scheduler to execute jobs in the cluster (should be in your MATLAB path)
    - *directory_conventions/poolprofile*: MATLAB function to create cluster profile for parallel processing in a local job (should be in your MATLAB path)
 
 # Get started
