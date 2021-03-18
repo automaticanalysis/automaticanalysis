@@ -150,7 +150,8 @@ switch task
             EPIimg{m} = aas_getfiles_bystream(aap,domain,cell2mat(varargin),mainstream{m});
             excl = [];
             for e = 1:size(EPIimg{m},1)
-                if ~strcmp(spm_file(EPIimg{m}(e,:),'ext'),'nii')
+                isOK = true; try spm_vol(EPIimg{m}(e,:)); catch, isOK = false; end
+                if ~isOK
                     aas_log(aap,false,sprintf('WARNING: file %s is not a NIfTI --> skipping',EPIimg{m}(e,:)));
                     excl(end+1) = e;
                     continue; 
