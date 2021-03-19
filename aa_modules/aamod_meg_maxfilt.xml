@@ -33,11 +33,11 @@
             <transform desc='empty: no transform; 0: default; -0: (overall) session number take as reference; +0: (selected) session number to take as reference' ui='double'>1 0</transform>
                         
             <inputstreams>
-                <stream isrenameable='1'>meg</stream>
+                <stream isrenameable='1'>meeg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream isrenameable='1'>meg</stream>                
+                <stream isrenameable='1'>meeg</stream>                
                 <stream isrenameable='1'>trans_meg</stream>
                 <stream isrenameable='1'>meg_head</stream>
             </outputstreams>
