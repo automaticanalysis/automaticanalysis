@@ -39,9 +39,9 @@
             <VarThr>0</VarThr> <!-- Variance explained threshold for ICs (normally 0 so that no thresholding on variance) -->
  
             <inputstreams>
-                <stream diagnostic="1">meg</stream>              
+                <stream diagnostic="1">meeg</stream>              
                 <stream>topography</stream>
-                <stream>meg_ica</stream>
+                <stream>meeg_ica</stream>
             </inputstreams>
             
             <outputstreams>
