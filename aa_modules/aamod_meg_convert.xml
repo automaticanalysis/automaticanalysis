@@ -16,11 +16,11 @@
                 
             <inputstreams>
                 <stream>channellabels</stream>
-                <stream isrenameable='1'>meg</stream>
+                <stream isrenameable='1'>meeg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>meg</stream>                
+                <stream>meeg</stream>                
             </outputstreams>
             
         </currenttask>

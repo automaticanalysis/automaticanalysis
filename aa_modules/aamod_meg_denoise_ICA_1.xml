@@ -17,11 +17,11 @@
             <Rseed>1</Rseed>
             
             <inputstreams>
-                <stream>meg</stream>
+                <stream>meeg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>meg_ica</stream>                
+                <stream>meeg_ica</stream>                
             </outputstreams>
             
         </currenttask>

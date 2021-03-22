@@ -45,8 +45,8 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>meg</stream>                
-                <stream>meg_ica</stream>
+                <stream>meeg</stream>                
+                <stream>meeg_ica</stream>
             </outputstreams>
             
         </currenttask>
