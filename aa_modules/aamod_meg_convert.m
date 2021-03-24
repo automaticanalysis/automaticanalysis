@@ -56,7 +56,7 @@ switch task
         SPMtool.rmCollection('meeg');
 
         %% Outputs
-        aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        
+        aap=aas_desc_outputs(aap,subj,sess,'meeg',char([outfname '.dat'],[outfname '.mat']));        
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

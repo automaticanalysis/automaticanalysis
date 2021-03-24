@@ -11,7 +11,7 @@ switch task
             aap = aas_report_add(aap,subj,'<td>');
             aap = aas_report_add(aap,subj,['<h3>Session: ' aas_getsessdesc(aap,subj,sess) '</h3>']);
             
-            [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meeg_session',[subj,sess],'meg','output'));
+            [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meeg_session',[subj,sess],'meeg','output'));
             logfname  = fullfile(sesspath,sprintf('%s.log',fstem));
             aap = aas_report_add(aap,subj,'<table><tr><td>');
             
@@ -25,8 +25,8 @@ switch task
             
             %% 2. Movement (courtesy to Jason Taylor and Rik Henson)
             [pth,fstem] = spm_fileparts(logfname);
-            movfname = fullfile(pth,['diagnostic_aamod_meg_maxfilt_' fstem 'movpar.txt']);
-            figfname = fullfile(pth,['diagnostic_aamod_meg_maxfilt_' fstem 'movpar.jpg']);
+            movfname = fullfile(pth,['diagnostic_aamod_meeg_maxfilt_' fstem 'movpar.txt']);
+            figfname = fullfile(pth,['diagnostic_aamod_meeg_maxfilt_' fstem 'movpar.jpg']);
             
             % Parse log file for movement params:
             if ~exist(movfname,'file')
@@ -79,7 +79,7 @@ switch task
             
             %% 3. Transdef
             if ~isempty(aap.tasklist.currenttask.settings.transform)
-                [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meeg_session',[subj,sess],'trans_meg','output'));
+                [sesspath, fstem] = fileparts(aas_getfiles_bystream(aap,'meeg_session',[subj,sess],'trans_meeg','output'));
                 logtrfname  = fullfile(sesspath,sprintf('%s.log',fstem));
                 
                 aap = aas_report_add(aap,subj,'<h4>Transformation:</h4>');
@@ -112,7 +112,7 @@ switch task
                 sesspath = aas_getsesspath(aap,subj,sess);
                 
                 % clear previous diagnostics
-                delete(fullfile(sesspath,'diagnostic_aamod_meg_maxfilt_*'));
+                delete(fullfile(sesspath,'diagnostic_aamod_meeg_maxfilt_*'));
                 
                 instream = aas_getstreams(aap,'input'); instream = instream{1};
                 infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],instream);
@@ -133,8 +133,8 @@ switch task
                     rmpath(fullfile(aap.directory_conventions.neuromagdir,'meg_pd_1.2'));
                 else
                     if ~isempty(HPIsess) % ... and load from HPIsess
-                        megfname = aas_getfiles_bystream(aap,'meeg_session',[subj,HPIsess],'meg','output');
-                        spherefit = load(spm_file(megfname,'suffix','_sphere_fit','ext','txt'),'-ASCII','spherefit');
+                        meegfname = aas_getfiles_bystream(aap,'meeg_session',[subj,HPIsess],'meeg','output');
+                        spherefit = load(spm_file(meegfname,'suffix','_sphere_fit','ext','txt'),'-ASCII','spherefit');
                     else
                         aas_log(aap,1,sprintf('WARNING: Session for HPI not defined!\nWARNING: HPI is not perfomed for %s!',aas_getsessdesc(aap,subj,sess)))
                     end
@@ -246,7 +246,7 @@ switch task
                                 end
                                 if trans == sess, continue; end % do not trans to itself
                                 if isEmptyRoom && (trans == HPIsess), continue; end % do not trans empty_room to HPIsess
-                                ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meg_get_fif')),... % raw data
+                                ref_str = aas_getfiles_bystream(aas_setcurrenttask(aap,cell_index({aap.tasklist.main.module.name},'aamod_meeg_get_fif')),... % raw data
                                     'meeg_session',[subj,trans],instream);
                                 trcmd_par = sprintf(' -trans %s ',ref_str);
                                 outtrpfx    = ['trans' aap.acq_details.meeg_sessions(trans).name '_' outtrpfx];

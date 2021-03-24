@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='Use MAXFILT' modality='MEG'>
+        <currenttask domain='subject' desc='Use MAXFILT' modality='MEEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
