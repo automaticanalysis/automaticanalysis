@@ -1,4 +1,4 @@
-function [aap, resp] = aamod_meg_maxfilt(aap,task,subj)
+function [aap, resp] = aamod_meeg_maxfilt(aap,task,subj)
 
 resp='';
 

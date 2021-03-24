@@ -38,8 +38,8 @@
             
             <outputstreams>
                 <stream isrenameable='1'>meeg</stream>                
-                <stream isrenameable='1'>trans_meg</stream>
-                <stream isrenameable='1'>meg_head</stream>
+                <stream isrenameable='1'>trans_meeg</stream>
+                <stream isrenameable='1'>meeg_head</stream>
             </outputstreams>
             
         </currenttask>
