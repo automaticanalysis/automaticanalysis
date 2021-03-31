@@ -53,7 +53,7 @@ set(fig,'Name',figtitle)
 
 if nargin == 4 && ~isempty(savepath)
     figFn = savepath;
-    print(fig,'-noui',[figFn '_multiplot.jpg'],'-djpeg','-r300');
+    print(fig,'-noui',[figFn '.jpg'],'-djpeg','-r300');
     close(fig);
 end
 end
