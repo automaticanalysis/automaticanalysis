@@ -6,7 +6,7 @@ function [aap]=aas_findinputstreamsources(aap)
 % save provenance
 provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.dot');
 pfid = fopen(provfn,'w');
-fprintf(pfid,'digraph {\n\trankdir = LR;\n\tcharset="utf-8";\n\n');
+fprintf(pfid,'digraph {\n\t');
 dotR = {};
 
 cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
@@ -168,12 +168,11 @@ for k1=1:length(aap.tasklist.main.module)
         end
     end
 end
-fprintf(pfid,'\n\t// Resources\n');
 dotR = unique(dotR,'stable');
 for r = 1:numel(dotR)
-    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ]; \n',dotR{r},dotR{r});
+    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ];\n',dotR{r},dotR{r});
 end
-fprintf(pfid,'\n\t// Anonymous nodes\n\n\t// Literals\n\n\tlabel="\\n\\nModel:\\n(Unknown)";\n}\n');
+fprintf(pfid,'}');
 fclose(pfid);
 % create provenance map
 if ~unix('which dot')

@@ -29,7 +29,7 @@ switch task
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
         
-        aap = aas_report_add(aap,[],'<table><tr>');
+        aap = aas_report_add(aap,[],'<table id="data"><tr>');
         for m = models, aap = aas_report_add(aap,[],['<th>Model: ' m.name '</th>']); end
         aap = aas_report_add(aap,[],'</tr><tr>');
         
