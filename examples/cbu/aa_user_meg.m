@@ -13,7 +13,7 @@ clear;
 aa_ver5
 
 %% RECIPE:
-aap = aarecipe('aap_tasklist_meg.xml');
+aap = aarecipe('aap_parameters_defaults_CBSU.xml','aap_tasklist_meg.xml');
 SPM = aas_inittoolbox(aap,'spm');
 SPM.load;
 
@@ -21,9 +21,8 @@ SPM.load;
 aap.options.wheretoprocess='qsub'; % queuing system			% typical value localsingle or qsub
 
 %% PIPELINE
-aap = aas_renamestream(aap,'aamod_meg_maxfilt_00001','meg','meeg','input');
-aap.tasksettings.aamod_meg_denoise_ICA_2_applytrajectory.toremove = 'spat';
-aap.tasksettings.aamod_meg_epochs.timewindow = [-2000 500];
+aap.tasksettings.aamod_meeg_denoise_ICA_2_applytrajectory.toremove = 'spat';
+aap.tasksettings.aamod_meeg_epochs_meg.timewindow = [-2000 500];
 
 %% DATA
 % Directory & sub-directory for analysed data:
@@ -47,8 +46,8 @@ aap = aas_addsubject(aap,'S1',{[12 442] []},'functional',{'psp_button_press_self
 aap = aas_addsubject(aap,'S2',{[13 133] []},'functional',{'ftd_0133_bsp_raw.fif'});
 
 % Add conditions
-aap = aas_add_meeg_event(aap,'aamod_meg_epochs','S1','run1','BP',{'STI101_down' 8192},34);
-aap = aas_add_meeg_event(aap,'aamod_meg_epochs','S2','run1','BP',{'STI101_down' 22},34);
+aap = aas_add_meeg_event(aap,'aamod_meeg_epochs_meg','S1','run1','BP',{'STI101_down' 8192},34);
+aap = aas_add_meeg_event(aap,'aamod_meeg_epochs_meg','S2','run1','BP',{'STI101_down' 22},34);
 
 %% RUN
 aa_doprocessing(aap);

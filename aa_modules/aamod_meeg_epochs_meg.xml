@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='meeg_session' desc='Epoching continuous MEG data' modality='MEG'>
+        <currenttask domain='meeg_session' desc='Epoching continuous MEG data' modality='MEEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
@@ -24,13 +24,13 @@
                     <trlshift></trlshift> <!--- usually 34ms for visual, 9ms for auditory -->
                 </event>
             </condition>
-            
+
             <inputstreams>
-                <stream>meg</stream>
+                <stream>meeg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>meg</stream>                
+                <stream>meeg</stream>                
             </outputstreams>
             
         </currenttask>

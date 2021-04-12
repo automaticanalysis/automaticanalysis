@@ -11,7 +11,7 @@ switch task
         SPMtool.addCollection('meeg');
         
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = infname(1,:);
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'); infname = infname(1,:);
         S.D = spm_eeg_load(infname);
         
         S.bc = aap.tasklist.currenttask.settings.baselinecorrection;
@@ -60,7 +60,7 @@ switch task
         
         SPMtool.rmCollection('meeg');
         
-        aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));        
+        aap=aas_desc_outputs(aap,subj,sess,'meeg',char([outfname '.dat'],[outfname '.mat']));        
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

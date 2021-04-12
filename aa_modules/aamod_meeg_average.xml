@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='meeg_session' desc='Average epoched MEG data' modality='MEG'>
+        <currenttask domain='meeg_session' desc='Average epoched MEG data' modality='MEEG'>
             
             <qsub>
                 <timeBase>0.15</timeBase>
@@ -12,11 +12,11 @@
             <conditionorder desc='Condition labels separated with ":"'></conditionorder>
             
             <inputstreams>
-                <stream>meg</stream>
+                <stream>meeg</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>meg</stream>                
+                <stream>meeg</stream>                
             </outputstreams>
             
         </currenttask>

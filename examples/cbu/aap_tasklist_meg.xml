@@ -8,12 +8,12 @@
         </initialisation>
         <main>
             <module><name>aamod_meeg_get_file</name></module>
-            <module><name>aamod_meg_maxfilt</name></module>
-            <module><name>aamod_meg_convert</name></module>
-            <module><name>aamod_meg_denoise_ICA_1</name></module>
-            <module><name>aamod_meg_denoise_ICA_2_applytrajectory</name></module>
-            <module><name>aamod_meg_epochs</name></module>
-            <module><name>aamod_meg_average</name></module>
+            <module><name>aamod_meeg_maxfilt</name></module>
+            <module><name>aamod_meeg_convert</name></module>
+            <module><name>aamod_meeg_denoise_ICA_1</name></module>
+            <module><name>aamod_meeg_denoise_ICA_2_applytrajectory</name></module>
+            <module><name>aamod_meeg_epochs_meg</name></module>
+            <module><name>aamod_meeg_average</name></module>
         </main>
     </tasklist>
 </aap>

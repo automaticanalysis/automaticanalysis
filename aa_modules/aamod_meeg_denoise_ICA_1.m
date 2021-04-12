@@ -1,4 +1,4 @@
-function [aap, resp] = aamod_meg_denoise_ICA_1(aap,task,subj,sess)
+function [aap, resp] = aamod_meeg_denoise_ICA_1(aap,task,subj,sess)
 
 resp='';
 
@@ -19,7 +19,7 @@ switch task
         EL.load;
         
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = basename(infname(1,:));
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'); infname = basename(infname(1,:));
         outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
         
         %% Not sure if bit below is needed?
@@ -73,7 +73,7 @@ switch task
 
         %% Outputs
         save(outfname,'ica');
-        aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
+        aap=aas_desc_outputs(aap,subj,sess,'meeg_ica',[outfname '.mat']);
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

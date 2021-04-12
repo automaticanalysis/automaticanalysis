@@ -1,4 +1,4 @@
-function [aap, resp] = aamod_meg_denoise_ICA_2_applytrajectory(aap,task,subj,sess)
+function [aap, resp] = aamod_meeg_denoise_ICA_2_applytrajectory(aap,task,subj,sess)
 
 %% Could generalise to have separate thresholding schemes for temporal and spatial (eg relative for temporal, but maximal for spatial)
 resp='';
@@ -9,8 +9,8 @@ switch task
         SPMtool.addCollection('meeg');
         
         FNUM = 10;  % To avoid too many figures!
-        load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica','output'));
-        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
+        load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg_ica','output'));
+        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'); infname_meg = infname_meg(1,:);
         D = spm_eeg_load(infname_meg);
         
         for m = 1:length(modality)
@@ -19,7 +19,7 @@ switch task
             
             in.type = modality{m};
             
-            fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_hist_correlations.jpg',in.type));
+            fname = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meeg_denoise_ICA_2_applytrajectory_%s_hist_correlations.jpg',in.type));
             if ~exist(fname,'file')
                 f = figure(FNUM); clf; set(f,'Position',[0 0 800 600]);
                 Nr = size(tempcor{m},1);
@@ -49,8 +49,8 @@ switch task
             for i=1:length(toremove{m})
                 ii = toremove{m}(i);
 
-                fname_tc = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_IC%d_and_Ref_timecourses.jpg',in.type,ii));
-                fname_top = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_%s_IC%d_topography.jpg',in.type,ii));
+                fname_tc = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meeg_denoise_ICA_2_applytrajectory_%s_IC%d_and_Ref_timecourses.jpg',in.type,ii));
+                fname_top = fullfile(aas_getsesspath(aap,subj,sess),sprintf('diagnostic_aamod_meeg_denoise_ICA_2_applytrajectory_%s_IC%d_topography.jpg',in.type,ii));
                 if ~exist(fname_tc,'file') || ~exist(fname_top,'file')
                     f = figure(FNUM); clf; hold on, set(f,'Position',[0 0 800 600]);
                     %                plot(zscore(d(ii,1:MaxT)),'r');
@@ -86,10 +86,10 @@ switch task
         SPMtool.addCollection('meeg');
         
         % clear previous diagnostics
-        delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meg_denoise_ICA_2_applytrajectory_*'));
+        delete(fullfile(aas_getsesspath(aap,subj,sess),'diagnostic_aamod_meeg_denoise_ICA_2_applytrajectory_*'));
         
-        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname_meg = infname_meg(1,:);
-        infname_ica = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica');
+        infname_meg = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'); infname_meg = infname_meg(1,:);
+        infname_ica = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg_ica');
         
         D = spm_eeg_load(infname_meg);  % INPUTSTREAM from Convert
         ICA = load(infname_ica);
@@ -350,10 +350,10 @@ switch task
         sessdir = aas_getsesspath(aap,subj,sess);
         outfname = fullfile(sessdir,[S.prefix basename(infname_meg) '_ICA']); % specifying output filestem
         save(outfname,'toremove','refs','ref_type','TraMat','weights','modality','artICs','chans','tempval','tempcor','spatval','spatcor','varenough');
-        aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
+        aap=aas_desc_outputs(aap,subj,sess,'meeg_ica',[outfname '.mat']);
         
         outfname = [S.prefix basename(infname_meg)];
-        aap=aas_desc_outputs(aap,subj,sess,'meg',char([outfname '.dat'],[outfname '.mat']));
+        aap=aas_desc_outputs(aap,subj,sess,'meeg',char([outfname '.dat'],[outfname '.mat']));
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

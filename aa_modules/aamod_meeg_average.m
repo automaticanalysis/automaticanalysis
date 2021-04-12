@@ -16,7 +16,7 @@ switch task
             case 'meeg_session'
                 localroot = aas_getsesspath(aap,varargin{:});
         end
-        infname = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meg'); infname = infname(1,:);        
+        infname = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),'meeg'); infname = infname(1,:);        
         D = spm_eeg_load(infname);
         
         % Reorder conditions
@@ -24,7 +24,7 @@ switch task
             conditionorder = textscan(aap.tasklist.currenttask.settings.conditionorder,'%s','delimiter',':'); conditionorder = conditionorder{1}';
             if any(~strcmp(sort(D.condlist), sort(conditionorder)))
                 c = D.condlist;
-                aas_log(aap,true,sprintf('ERROR: Conditions specified here are not in concordance with conditions specified in aamod_meg_epochs: %s',sprintf('\n\t%s',c{:})));
+                aas_log(aap,true,sprintf('ERROR: Conditions specified here are not in concordance with conditions specified in aamod_meeg_epochs: %s',sprintf('\n\t%s',c{:})));
             end
             D = condlist(D, conditionorder);
             D.save

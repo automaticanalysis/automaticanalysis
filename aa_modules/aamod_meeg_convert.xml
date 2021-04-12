@@ -20,7 +20,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>meeg</stream>                
+                <stream isrenameable='1'>meeg</stream>                
             </outputstreams>
             
         </currenttask>
