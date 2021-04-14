@@ -54,9 +54,16 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         (isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic.streamind)
     
     % One-by-one
+    imgExcl = [];
     for i = 1:size(image{1},1)
         %         spm_check_registration(image{2});
         %         spm_orthviews('addcolouredimage',1,image{1}(i,:), OVERcolours{i})
+        isOK = true; try spm_vol(image{1}(i,:)); catch, isOK = false; end
+        if ~isOK
+            aas_log(aap,false,sprintf('WARNING: trype of file %s is not recognised --> skipping',image{1}(i,:))); 
+            imgExcl(end+1) = i;
+            continue; 
+        end
         spm_check_registration(char(image{2},image{1}(i,:)));
         % switch on Contours
         global st;
@@ -73,6 +80,7 @@ if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
         aas_checkreg_avi(aap, index, 0, ['_' strtok_ptrn(basename(image{1}(i,:)),'-0')]);
         close(spm_figure('GetWin','Graphics')); clear global st;
     end
+    image{1}(imgExcl,:) = [];
     if i > 1
         % Summary
         OVERcolours = distinguishable_colors(size(image{1},1));

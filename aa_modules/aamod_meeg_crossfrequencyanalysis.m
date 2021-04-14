@@ -159,7 +159,7 @@ switch task
                         cfacfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqlow);
                         cfacfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqhigh);
                         tmpcf = ft_crossfrequencyanalysis(cfacfg,tf);
-                        indnoCF = arrayfun(@(x) all(~squeeze(tmpcf.crsspctrm(x,:,:,:)),'all'),1:size(tmpcf.labelcmb,1));
+                        indnoCF = arrayfun(@(x) all(~nanfill(squeeze(tmpcf.crsspctrm(x,:,:,:)),0),'all'),1:size(tmpcf.labelcmb,1));
                         tmpcf.crsspctrm(indnoCF,:,:,:) = [];
                         if isfield(tmpcf,'labelcmb'), tmpcf.labelcmb(indnoCF,:) = [];
                         else, tmpcf.label(indnoCF,:) = []; end
@@ -179,7 +179,7 @@ switch task
                     cfg.weights = weights;
                     crossfreqMain = ft_combine(cfg,cf{:});
                     
-                    meeg_diagnostics_CF(crossfreqMain,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
+                    meeg_diagnostics_CF(crossfreqMain,diagcfg,eventLabel,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
                     
                     % trialmodel
                     crossfreqModel = crossfreqMain;
@@ -208,8 +208,8 @@ switch task
                             cfg.keeptrials = 'yes';
                             cfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqlow);
                             cfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqhigh);
-                            tmpcf = ft_crossfrequencyanalysis(cfg,tf);
-                            indnoCF = arrayfun(@(x) all(~squeeze(tmpcf.crsspctrm(x,:,:,:,:)),'all'),1:size(tmpcf.labelcmb,1));
+                            tmpcf = ft_crossfrequencyanalysis(cfg,tf);                                                    
+                            indnoCF = arrayfun(@(x) all(~nanfill(squeeze(tmpcf.crsspctrm(x,:,:,:)),0),'all'),1:size(tmpcf.labelcmb,1));
                             tmpcf.crsspctrm(indnoCF,:,:,:,:) = [];
                             if isfield(tmpcf,'labelcmb'), tmpcf.labelcmb(indnoCF,:) = [];
                             else, tmpcf.label(indnoCF,:) = []; end
@@ -242,7 +242,7 @@ switch task
                         crossfreqModel = ft_combine(cfg,cf{:});
                     end
                           
-                    meeg_diagnostics_CF(crossfreqModel,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+                    meeg_diagnostics_CF(crossfreqModel,diagcfg,[m.name '_' eventLabel],fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
 
                     conEvents{e} = crossfreqModel;
                     crossfreq.(eventLabel).main = crossfreqMain;
@@ -255,7 +255,7 @@ switch task
                 cfg.weights = m.event.weights;
                 if prod(weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
                 crossfreq = ft_combine(cfg,conEvents{:});
-                meeg_diagnostics_CF(crossfreq,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
+                meeg_diagnostics_CF(crossfreq,diagcfg,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
               
                 % save/update output
                 crossfreqFn = fullfile(aas_getsesspath(aap,subj,sess),['crossfreq_' m.name '.mat']);
@@ -278,7 +278,7 @@ switch task
             cfg = combinecfg; 
             cfg.weights = m.session.weights;
             crossfreq = ft_combine(cfg,conSessions{:});
-            meeg_diagnostics_CF(crossfreq,diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
+            meeg_diagnostics_CF(crossfreq,diagcfg,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
            
             % save/update output
             crossfreq.cfg = []; % remove provenance to save space
@@ -306,4 +306,9 @@ switch task
             aas_log(aap,true,'ERROR: PAC requires nphasebins');
         end
 end
+end
+
+function t = nanfill(dat,v)
+t = dat;
+t(isnan(t)) = v;
 end

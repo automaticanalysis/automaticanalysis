@@ -21,7 +21,8 @@ set(fig,'Name',figtitle)
 
 if nargin == 4 && ~isempty(savepath)
     figFn = savepath;
-    if ~contains(figFn,'plot'), figFn = [figFn '_multiplot.jpg']; end
+    if contains(figFn,'plot'), figFn = [figFn '.jpg'];
+    else, figFn = [figFn '_multiplot.jpg']; end
     print(fig,'-noui',figFn,'-djpeg','-r300');
     close(fig);
 end

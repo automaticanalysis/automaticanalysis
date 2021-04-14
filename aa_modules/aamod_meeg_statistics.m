@@ -29,15 +29,20 @@ switch task
         
         models = aas_getsetting(aap,'model'); models(1) = []; 
         
-        aap = aas_report_add(aap,[],'<table><tr>');
+        aap = aas_report_add(aap,[],'<table id="data"><tr>');
         for m = models, aap = aas_report_add(aap,[],['<th>Model: ' m.name '</th>']); end
         aap = aas_report_add(aap,[],'</tr><tr>');
         
         for m = models
             aap = aas_report_add(aap,[],'<td valign="top">');
             
-            savepath = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);
+            savepath = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);            
             res = cellstr(spm_select('FPList',spm_file(savepath,'path'),['^' spm_file(savepath,'basename') '_.*']));
+            % sort images according to datetime
+            resd = cellfun(@dir, res);
+            [~,ind] = sort(datenum({resd.date}));
+            res = res(ind);
+            
             for r = RES
                 ind = find(cellfun(@(x) ~isempty(regexp(x,r{1},'once')), res))';
                 if ~isempty(ind)
@@ -335,6 +340,7 @@ switch task
                 
                 % update neighbours for channelcombination
                 cmblabels = cellstr(spm_file(num2str([1:size(labelcmb,1)]'),'prefix','cmb'));
+                cmbneighbours = [];
                 for lc1 = 1:size(labelcmb,1)
                     nb = false(size(labelcmb,1),1);
                     for lc2 = 1:size(labelcmb,2)
