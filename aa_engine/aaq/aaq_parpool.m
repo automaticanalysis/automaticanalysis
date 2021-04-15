@@ -74,7 +74,7 @@ classdef aaq_parpool < aaq
                     end
                     % set up cluster object (Slurm | Torque | LSF | Generic
                     % | Local) without changing aaparallel.numberofworkers
-                    obj = aas_clustersetup(obj, aap, false);
+                    obj = obj.clustersetup(false);
                 else
                     obj.pool = parcluster('local');
                 end
