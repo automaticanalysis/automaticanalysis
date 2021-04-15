@@ -272,6 +272,7 @@ classdef aa_provenance < handle
             % Output
             for o = aas_getstreams(obj.IDs{id}.aap,'output')
                 ostream = o{1};
+                if isempty(ostream), continue; end
                 
                 prid_outputstream = obj.addStream(id,ostream);
                 

@@ -59,7 +59,7 @@ classdef aaq_batch < aaq
             )
         jobretries = []             % array, number of retries of job runs
         waitforalljobs              % logical, true indicating that job queue is fully built, false otherwise
-        initialSubmitArguments      % char array, 2nd input arg to pool.SubmitArguments (ensures resources, e.g. MAXFILTER license)
+        initialSubmitArguments      % string, 2nd input arg to pool.SubmitArguments (ensures resources, e.g. MAXFILTER license)
         newGenericVersion           % logical, true if pool.IndependentSubmitFcn is empty 
         refresh_waitforjob          % - unused
         refresh_waitforworker       % - unused
@@ -86,6 +86,8 @@ classdef aaq_batch < aaq
                         obj.poolConf(c) = conf{1}(c); 
                     end
                     [poolprofile, obj.initialSubmitArguments] = obj.poolConf{1:2};
+                    if isempty(obj.initialSubmitArguments), obj.initialSubmitArguments = ""; end
+                    obj.initialSubmitArguments = string(obj.initialSubmitArguments);
 
                     profiles = parallel.clusterProfiles;
                     if ~any(strcmp(profiles,poolprofile))
@@ -101,7 +103,7 @@ classdef aaq_batch < aaq
                     obj.pool=parcluster(poolprofile);
                     % set up cluster object (Slurm | Torque | LSF | Generic
                     % | Local), changing aaparallel.numberofworkers
-                    obj = aas_clustersetup(obj, aap, true);
+                    obj = obj.clustersetup(true);
                 else
                     obj.pool = parcluster('local');
                     % ** no need to set any of aaparallel's values here as
