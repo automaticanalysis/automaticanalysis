@@ -131,8 +131,8 @@ switch task
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
         
-        hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
-        if isfield(data,'tri') && hashighressurface && ~strcmp(statplotcfg.background,'sourcemodel')
+        if isfield(data,'tri') && ~strcmp(statplotcfg.background,'sourcemodel') && ...
+                all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')))
             fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
             fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};            
             grouphighressurface = ft_read_headshape(fnsurf);
@@ -144,6 +144,9 @@ switch task
             end
             grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
             statplotcfg.background = grouphighressurface;
+            outputFn = fullfile(aas_getstudypath(aap),'background.mat');
+            save(outputFn,'grouphighressurface');
+            aap = aas_desc_outputs(aap,'study',[],'background',outputFn);
         elseif isfield(data,'dim')
             switch statplotcfg.background
                 case 'template'
@@ -320,9 +323,24 @@ switch task
                     allInp{i} = dat;
                 end
                 if isfield(dat,'tri')
-                    for i = 1:numel(allInp)                    
-                        allInp{i}.pos = mean(allPos,3);                    
+                    % make sure that all nodes are included in tri
+                    allNodes = false(size(allInp{1}.pos,1),1);
+                    tri = allInp{1}.tri; i = 1;
+                    allNodes(unique(tri)) = true; i = 1;
+                    while ~all(allNodes)
+                        i = i + 1;
+                        for n = intersect(allInp{i}.tri(:),find(~allNodes))'
+                            tri = [tri; ...
+                                allInp{i}.tri(find(arrayfun(@(t) any(allInp{i}.tri(t,:)==n),1:size(allInp{i}.tri,1)),1,'first'),:)...
+                                ];
+                            allNodes(unique(tri)) = true;
+                        end
                     end
+                    for i = 1:numel(allInp)                    
+                        allInp{i}.pos = mean(allPos,3);
+                        allInp{i}.tri = tri;
+                    end
+                    cfg{1}.tri = tri;
                 end
             end
             
