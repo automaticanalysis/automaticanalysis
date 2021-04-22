@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' mfile_alias='aamod_coreg_extended_2' desc='SPM coregistration extended a la DCCN (stream rois)' modality='MRI'>
+        <currenttask mfile_alias='aamod_coreg_extended_2' domain='subject' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -14,21 +14,16 @@
                 <cost_fun>nmi</cost_fun>
             </eoptions>
             
-            <structural>1</structural>
-             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream isrenameable="1">rois</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
-                <stream isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
-				<stream isessential="0">aamod_realign_00001.meanepi</stream>  
-                <stream>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream diagnostic='1'>meanepi</stream>                
             </inputstreams>
             
             <outputstreams>
-                <stream isrenameable="1">rois</stream>
+                <stream>meanepi</stream>
             </outputstreams>
-            
         </currenttask>
     </tasklist>
 </aap>
