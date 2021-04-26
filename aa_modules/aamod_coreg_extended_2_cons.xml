@@ -18,11 +18,10 @@
              
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>firstlevel_cons</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
-                <stream diagnostic="1" isessential="0">aamod_realignunwarp_00001.meanepi</stream>  
-				<stream diagnostic="1" isessential="0">aamod_realign_00001.meanepi</stream>  
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
+				<stream diagnostic='1'>meanepi</stream>  
+                <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream>firstlevel_cons</stream>
             </inputstreams>
             
             <outputstreams>
