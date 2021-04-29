@@ -20,19 +20,19 @@
 			<!-- MTI -->
             <module><name>aamod_get_dicom_specialseries</name></module>
             <module><name>aamod_convert_specialseries</name></module>
-            <module><name>aamod_MTI2MTR</name></module>
-            <module><name>aamod_MTI_coreg_extended_2</name></module>
-            <module><name>aamod_MTI_norm_write_dartel</name></module>
+            <module><name>aamod_mti2MTR</name></module>
+            <module><name>aamod_mti_coreg_extended_2</name></module>
+            <module><name>aamod_mti_norm_write_dartel</name></module>
 			<module>
                 <branch>
                     <analysisid_suffix>_JHU</analysisid_suffix>
-                    <module><name>aamod_MTI_roi_extract</name></module>
-                    <module><name>aamod_MTI_roi_valid</name></module>
+                    <module><name>aamod_mti_roi_extract</name></module>
+                    <module><name>aamod_mti_roi_valid</name></module>
                 </branch>
                 <branch>
                     <analysisid_suffix>_Juelich</analysisid_suffix>
-                    <module><name>aamod_MTI_roi_extract</name></module>
-                    <module><name>aamod_MTI_roi_valid</name></module>
+                    <module><name>aamod_mti_roi_extract</name></module>
+                    <module><name>aamod_mti_roi_valid</name></module>
                 </branch>
             </module>
         </main>
