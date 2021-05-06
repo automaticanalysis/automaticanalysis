@@ -356,10 +356,10 @@ classdef aaq_parpool < aaq
                             break
                         end
                         % report
-                        if ~isempty(jix)
+                        for jix = find(isJobToBeFetched(:)')
                             ff = obj.FFuture(jix);
                             msg = sprintf('QUEUED_JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
-                                jix, job.stagename, obj.getJobName(job), ff.CreateDateTime, ff.FinishDateTime, ff.FinishDateTime - ff.CreateDateTime);
+                                jix, obj.jobqueue(jix).stagename, obj.getJobName(obj.jobqueue(jix)), ff.CreateDateTime, ff.FinishDateTime, ff.FinishDateTime - ff.CreateDateTime);
                             aas_log(fetched_aap, false, msg, obj.aap.gui_controls.colours.completed);
                         end
                         % brief pause to prevent the while loop from
