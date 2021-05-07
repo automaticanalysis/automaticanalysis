@@ -9,6 +9,8 @@ if ~isobject(aa) % aa is not running
     clear global aa;
     aa = aaClass('nopath','nogreet');
 end
+% in case msg is a String, convert it to char array
+msg = convertStringsToChars(msg);
 
 % figure out whether the caller is an engine (aaq_*)
 ST = dbstack;
@@ -62,7 +64,7 @@ if iserr % errors
     
     % undocumented, for devel only
     if aap.options.verbose ~= -1
-        error('aa:internal','aa error:\n%s\n','see above (or set aap.options.verbose')
+        error('aa:internal','aa error:\n%s\n','see above (or set aap.options.verbose)')
     end 
 else % warnings
     if aap.options.verbose == 2, logitem([msg '\n'],style); end

@@ -29,14 +29,23 @@ assert(numel(demoind)==1,...
     ['multiple reference to ''' DEMODIRBASENAME ''' directory in aap.directory_conventions.rawdatadir'])
 demodir = sources{demoind};
 if exist('rawdir','var') && ~isempty(strfind(demodir,fullfile(DEMODIRBASENAME,rawdir))), demodir = fileparts(demodir); end % remove reference
-
 if ~exist('rawdir','var') || ~exist(fullfile(demodir,rawdir),'dir') % we need to download
     aas_makedir(aap,demodir);
     aas_log(aap, false, ['INFO: downloading demo data to ' demodir]);
     % attempt to download the data
     outfn = [tempname '.tar.gz'];
-    assert(aas_shell(sprintf('wget -O %s %s',outfn,URL))==0, ...
-        ['could not download dataset from ' URL]);
+    try
+        assert(aas_shell(sprintf('wget -O %s %s',outfn,URL))==0);
+    catch 
+        f = warndlg(['Could not download dataset from ' URL ...
+            ' - press OK to attempt download with ''--no-check-certificate'' option', ...
+            ' (may by risky), Ctrl-C in Matlab command window to stop'], ...
+            'Download issue', 'modal');
+        uiwait(f)
+        aas_log(aap, false, ['INFO: re-attempting download with --no-check-certificate']);
+        assert(aas_shell(sprintf('wget --no-check-certificate -O %s %s',outfn,URL))==0, ...
+            ['Download of dataset from ' URL 'unsuccessful despite ''--no-check-certificate'' option']);
+    end
     [s, w] = aas_shell(sprintf('tar -xvf %s -C %s',outfn,demodir));
     assert(s==0);
     % the sub-directory should now exist
