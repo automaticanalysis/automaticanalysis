@@ -63,6 +63,15 @@ classdef toolboxClass < handle
             if obj.pStatus < obj.CONST_STATUS.loaded
                 p = split(path,pathsep);                
                 obj.toolInPath = p(cellfun(@(x) ~isempty(strfind(x,obj.toolPath)), p));
+                
+                % add modification
+                tbname = obj.name;
+                if isempty(tbname), tbname = strrep(class(obj),'Class',''); end
+                modDir = fullfile(fileparts(mfilename('fullpath')),[tbname '_mods']);
+                if exist(modDir,'dir')
+                    addpath(modDir);
+                    obj.toolInPath = [{modDir}; obj.toolInPath];
+                end
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
             for v = fieldnames(obj.workspace)'

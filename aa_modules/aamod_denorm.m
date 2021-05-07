@@ -59,6 +59,7 @@ switch task
             job.woptions = flags;
             out = spm_run_norm(job);
         elseif aas_stream_has_contents(aap,'dartel_templatetomni_xfm') && aas_stream_has_contents(aap,'dartel_flowfield') % DARTEL
+            % NYI
         elseif aas_stream_has_contents(aap,'freesurfer') % freesurfer
             fstemplate = fullfile(aas_getstudypath(aap),'fsaverage');
             if ~exist(fstemplate,'dir'), aas_shell(sprintf('ln -s %s/subjects/fsaverage %s',aap.directory_conventions.freesurferdir,fstemplate)); end

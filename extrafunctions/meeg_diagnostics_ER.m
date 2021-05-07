@@ -17,6 +17,7 @@ dispcfg.comment = 'no';
 
 cfgmulti = dispcfg;
 cfgtopo = dispcfg;
+cfgtopo.figure = 'gca';
 
 cfgmulti.showlabels  = 'yes';
 if isfield(er{1},'stat')

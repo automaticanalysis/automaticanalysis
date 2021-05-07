@@ -19,6 +19,7 @@ SPM.load;
 
 % SITE-SPECIFIC CONFIGURATION:
 aap.options.wheretoprocess='qsub'; % queuing system			% typical value localsingle or qsub
+aap.directory_conventions.toolbox(2).dir = '/imaging/local/software/eeglab/eeglab-2020'; % ensure compatibility
 
 %% PIPELINE
 aap = aas_renamestream(aap,'aamod_meg_maxfilt_00001','meg','meeg','input');

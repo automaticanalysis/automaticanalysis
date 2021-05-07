@@ -183,14 +183,20 @@ switch task
         end
         
     case 'checkrequirements'
-        in = aas_getstreams(aap,'input'); in(1:4) = []; % not for reference
+        [in, attr] = aas_getstreams(aap,'input'); 
+        indModRef = find(cellfun(@(a) isstruct(a) && isfield(a,'diagnostic') && a.diagnostic, attr),1,'last');
+        in(1:indModRef-1) = []; % not for cross-modality reference(s)
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
         stageindex = sscanf(index,'_%05d');
         out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
         for s = 1:numel(in)
-            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            instream = strsplit(in{s},'.'); instream = instream{end};
             if s <= numel(out)
                 if ~strcmp(out{s},instream)
+                    if s == 1 % modality reference missing (optional)
+                        out = [{''} out];
+                        continue
+                    end
                     aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
                     aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
                 end

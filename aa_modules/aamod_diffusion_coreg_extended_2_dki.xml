@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias="aamod_coreg_extended_2" domain='diffusion_session' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
+        <currenttask mfile_alias='aamod_coreg_extended_2' domain='diffusion_session' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -15,9 +15,9 @@
             </eoptions>
             
             <inputstreams>
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
                 <stream>t1totemplate_xfm</stream>
-                <stream diagnostic="1">aamod_diffusion_extractnodif_00001.nodif</stream>   
+                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
+                <stream diagnostic="1">aamod_diffusion_extractnodif_00001.nodif</stream>
                 <stream>dki_FA</stream> 
                 <stream>dki_MD</stream> 
                 <stream>dki_L1</stream> 

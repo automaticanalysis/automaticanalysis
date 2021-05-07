@@ -131,8 +131,9 @@ switch task
         statcfg.neighbours          = neighbours; % defined as above
         statcfg.ivar                = 1; % the 1st row in cfg.design contains the independent variable        
         
-        hashighressurface = all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject')));
-        if isfield(data,'tri') && hashighressurface && ~strcmp(statplotcfg.background,'sourcemodel')
+        if isfield(data,'tri') && ~strcmp(statplotcfg.background,'sourcemodel') && ... % only for cortical sheet source-level data
+                all(arrayfun(@(subj) aas_stream_has_contents(aap,'subject',subj,'sourcesurface'), 1:aas_getN_bydomain(aap,'subject'))) && ... % only when all subject has surface
+                ~aas_stream_has_contents(aap,'study',[],'background') % only when it has not been generated, yet
             fnsurf = cellstr(aas_getfiles_bystream(aap,'subject',1,'sourcesurface'));
             fnsurf = fnsurf{contains(fnsurf,statplotcfg.background)};            
             grouphighressurface = ft_read_headshape(fnsurf);
@@ -144,6 +145,9 @@ switch task
             end
             grouphighressurface.pos = grouphighressurface.pos/aas_getN_bydomain(aap,'subject');
             statplotcfg.background = grouphighressurface;
+            outputFn = fullfile(aas_getstudypath(aap),'background.mat');
+            save(outputFn,'grouphighressurface');
+            aap = aas_desc_outputs(aap,'study',[],'background',outputFn);
         elseif isfield(data,'dim')
             switch statplotcfg.background
                 case 'template'
@@ -156,7 +160,19 @@ switch task
             if isfield(statplotcfg,'background'), statplotcfg = rmfield(statplotcfg,'background'); end
         end
         
-        models = aas_getsetting(aap,'model'); models(1) = []; 
+        models = aas_getsetting(aap,'model'); models(1) = [];
+        % do not redo fully analyzed models (assume last is not full, if any)
+        modelIsRun = find(arrayfun(@(m) ~isempty(spm_select('List',aas_getstudypath(aap),['^' m.name '_'])), models),1,'last');
+        if ~isempty(modelIsRun)
+            models(1:modelIsRun-1) = [];
+            % clean results for last (now first)
+            resStat = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat'));
+            for m = cellstr(spm_select('FPList',aas_getstudypath(aap),['^' models(1).name]))'
+                delete(m{1});
+                resStat(strcmp(resStat,m{1})) = [];
+            end
+            aap = aas_desc_outputs(aap,'study',[],'groupstat',resStat);
+        end
         for m = models
             savepath{1} = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);
             if ~ischar(m.timewindow), m.timewindow = m.timewindow / 1000; end % in seconds
@@ -320,9 +336,24 @@ switch task
                     allInp{i} = dat;
                 end
                 if isfield(dat,'tri')
-                    for i = 1:numel(allInp)                    
-                        allInp{i}.pos = mean(allPos,3);                    
+                    % make sure that all nodes are included in tri
+                    allNodes = false(size(allInp{1}.pos,1),1);
+                    tri = allInp{1}.tri; i = 1;
+                    allNodes(unique(tri)) = true; i = 1;
+                    while ~all(allNodes)
+                        i = i + 1;
+                        for n = intersect(allInp{i}.tri(:),find(~allNodes))'
+                            tri = [tri; ...
+                                allInp{i}.tri(find(arrayfun(@(t) any(allInp{i}.tri(t,:)==n),1:size(allInp{i}.tri,1)),1,'first'),:)...
+                                ];
+                            allNodes(unique(tri)) = true;
+                        end
                     end
+                    for i = 1:numel(allInp)                    
+                        allInp{i}.pos = mean(allPos,3);
+                        allInp{i}.tri = tri;
+                    end
+                    cfg{1}.tri = tri;
                 end
             end
             

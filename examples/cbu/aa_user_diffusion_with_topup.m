@@ -37,8 +37,8 @@ else
     SPMtool.load;
 end
 
-aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','normalised_white', 'input');
-aap = aas_renamestream(aap,'aamod_diffusion_dartel_denormDKI_00001','grey','native_white','output');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denorm_dki_00001','grey','normalised_white', 'input');
+aap = aas_renamestream(aap,'aamod_diffusion_dartel_denorm_dki_00001','grey','native_white','output');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub
@@ -50,7 +50,7 @@ aap.tasksettings.aamod_dartel_norm_write.fwhm=1;
 aap.tasksettings.aamod_diffusion_extractnodif.tol_b0 = 10;
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.2;
 aap.tasksettings.aamod_diffusion_smooth.FWHM = 2.5;        
-aap.tasksettings.aamod_diffusion_dartel_denormDKI.interp=4;
+aap.tasksettings.aamod_diffusion_dartel_denorm_dki.interp=4;
 
 %% STUDY
 aap=aas_addinitialstream(aap,'rois',{...
