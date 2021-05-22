@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+``````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````````  <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
         <currenttask mfile_alias='aamod_coreg_extended_2' domain='session' desc='SPM coregistration (extended a la DCCN)' modality='MRI'>
@@ -18,9 +18,9 @@
             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream isessential='0'>wholebrain_epi</stream>
-				<stream diagnostic='1'>meanepi</stream>  
                 <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>  
+                <stream isessential='0'>wholebrain_epi</stream>
+				<stream diagnostic='1'>meanepi</stream>              
                 <stream>epi</stream>
             </inputstreams>
             

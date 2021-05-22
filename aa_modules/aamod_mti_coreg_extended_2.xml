@@ -16,9 +16,9 @@
             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>MTR</stream>
+                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>
                 <stream diagnostic="1">MTI_baseline</stream>
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
+                <stream>MTR</stream>
             </inputstreams>
             
             <outputstreams>
