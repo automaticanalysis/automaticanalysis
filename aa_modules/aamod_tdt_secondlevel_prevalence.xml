@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='aa module for second-level statistics on MVPA with The Decoding Toolbox using prevalence analysis' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>1</timeBase>
+                <memoryBase desc='Required memory in GB'>8</memoryBase>
+            </qsub>
+            
+            <iteration desc='number of permutations'>1e6</iteration>
+            
+            <threshold>
+                <p>0.05</p>
+            </threshold>
+            
+            <overlay>
+                <template options='SPMT1|averaged_structurals'>SPMT1</template>
+                <nth_slice desc='in mm'>6</nth_slice>
+            </overlay>
+            
+            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
+            <inputstreams>
+                <stream>settings</stream>
+                <stream>structural</stream>
+                <stream isrenameable='1'>input</stream>
+                <stream isrenameable='1'>permuted_input</stream>
+            </inputstreams>
+            
+            <outputstreams desc='streams will correspond to the measure(s)'>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
