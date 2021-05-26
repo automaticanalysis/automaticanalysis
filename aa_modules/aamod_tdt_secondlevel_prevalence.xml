@@ -28,8 +28,9 @@
                 <stream isrenameable='1'>permuted_input</stream>
             </inputstreams>
             
-            <outputstreams desc='streams will correspond to the measure(s)'>
-            </outputstreams>    
+            <outputstreams>
+                <stream isrenameable='1'>thresholded_output</stream>
+            </outputstreams>
             
         </currenttask>
     </tasklist>

@@ -53,9 +53,9 @@ switch task
         [~, TDT] = aas_cache_get(aap,'tdt');
         TDT.load;
         
-        statdir = spm_file(cfg.results.dir,'basename','stats');
+        statdir = fullfile(aas_getstudypath(aap),'stats');
         aas_makedir(aap,statdir);
-        resultfilenames = fullfile(statdir, 'prevalence');
+        resfnameroot = fullfile(statdir, 'prevalence_');
         
         %% Background
         switch aas_getsetting(aap,'overlay.template')
@@ -90,18 +90,20 @@ switch task
         end
         
         dat = load(aas_getfiles_bystream(aap,'subject',1,'settings'));
-        for o = 1:numel(dat.cfg.results.output)
+        for decoding_measure = reshape(dat.cfg.results.output,1,[])
             %% Statistics
+            resultfilenames = [resfnameroot decoding_measure{1}];
+            
             % get data
             nSubj = aas_getN_bydomain(aap,'subject');
             inputimages = cell(nSubj,2);
             for subj = 1:nSubj
                 % get the original unpermuted result image as first image (required by the package)
-                res_image = cellstr(aas_getfiles_bystream(aap,'subject',subj,o));
+                res_image = cellstr(aas_getfiles_bystream(aap,'subject',subj,decoding_measure{1}));
                 inputimages(subj, 1) = res_image;
                 
                 % put permuted images (4D) afterwards
-                permuted_images = aas_getfiles_bystream(aap,'subject',subj,['permuted_' o]);
+                permuted_images = aas_getfiles_bystream(aap,'subject',subj,['permuted_' decoding_measure{1}]);
                 inputimages(subj, 2) = {permuted_images};
             end
             
@@ -109,6 +111,7 @@ switch task
             prevalenceTDT(inputimages, aas_getsetting(aap,'iteration'), resultfilenames);
             
             %% Overlay
+            thrfnames = {};
             for f = cellstr(spm_select('FPList',statdir,['^' spm_file(resultfilenames,'basename') '_p[cu]{1}.*']))'
                 % threshold
                 V = spm_vol(f{1});
@@ -126,7 +129,8 @@ switch task
                 %     end
                 % end
                 V.fname = spm_file(f{1},'prefix','thresh_');
-                spm_write_vol(V,Y);                        
+                spm_write_vol(V,Y);
+                thrfnames{end+1} = V.fname;
             
                 % edges of activation
                 slims = ones(4,2);
@@ -149,7 +153,7 @@ switch task
                 for a = 1:3
                     if any(Y,'all'), stat_fname = {V.fname}; else, stat_fname = {}; end
                     [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
-                    fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
+                    fnsl{a} = fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',decoding_measure{1},a));
                     
                     if ~any(Y,'all')
                         annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
@@ -159,8 +163,10 @@ switch task
                     close(fig);
                 end
                 
-                dlmwrite(fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',cfg.results.output{o})),[min(v(v~=0)), max(v)]);
+                dlmwrite(fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',decoding_measure{1})),[min(v(v~=0)), max(v)]);
             end
+            
+            aap = aas_desc_outputs(aap,['thresholded_' decoding_measure{1}],char(thrfnames));
         end
         
         %% Cleanup
@@ -177,9 +183,11 @@ switch task
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'input',src{s},'input');
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'permuted_input',['permuted_' src{s}],'input');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'thresholded_output',['thresholded_' src{s}],'output');                
             else
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',src{s},'input');
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',['permuted_' src{s}],'input');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',['thresholded_' src{s}],'output');                
             end
             aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' input/output streams: ''' src{s} '''']);
         end
