@@ -153,7 +153,7 @@ switch task
                 for a = 1:3
                     if any(Y,'all'), stat_fname = {V.fname}; else, stat_fname = {}; end
                     [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
-                    fnsl{a} = fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',decoding_measure{1},a));
+                    fnsl{a} = fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',spm_file(f{1},'basename'),a));
                     
                     if ~any(Y,'all')
                         annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
@@ -163,7 +163,7 @@ switch task
                     close(fig);
                 end
                 
-                dlmwrite(fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',decoding_measure{1})),[min(v(v~=0)), max(v)]);
+                dlmwrite(fullfile(aas_getstudypath(aap), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',spm_file(f{1},'basename'))),[min(v(v~=0)), max(v)]);
             end
             
             aap = aas_desc_outputs(aap,['thresholded_' decoding_measure{1}],char(thrfnames));
