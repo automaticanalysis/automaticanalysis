@@ -95,6 +95,7 @@ switch task
             
             if isempty(ROIvals)
                 ROIvals = setdiff(unique(YM(:)),0);
+                ROIvals(isnan(ROIvals)) = [];
                 %else
                 %if strcmp(ROIvals,'>0');  % could add more special options here...
                 %f = find(Y>0);        % but for now, require user to create mask

@@ -38,7 +38,7 @@ switch task
         inps = aas_getstreams(aap,'input');
         inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
         
-        fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(cell_index(inps,'mask')),'UniformOutput',false);
+        fnMask = cellfun(@(x) aas_getfiles_bystream(aap,'subject',subj,x), inps(contains(inps,{'mask','rois'})),'UniformOutput',false);
         fnSPM = aas_getfiles_bystream(aap,'subject',subj,'firstlevel_spm');
         dat = load(fnSPM);
         dirSPM = fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.stats_singlesubj);

@@ -36,6 +36,7 @@
             </inputstreams>
             
             <outputstreams>
+                <stream isessential='0' desc='background to project statistics onto (source only)'>background</stream>
                 <stream>groupstat</stream>
             </outputstreams>
             
