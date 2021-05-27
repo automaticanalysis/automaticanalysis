@@ -249,9 +249,20 @@ classdef aaq < handle
                     end
                     
                 case 'parallel.cluster.Generic'
-                    obj.pool.AdditionalProperties.AdditionalSubmitArgs = convertStringsToChars(...
-                        obj.initialSubmitArguments + ...
-                        compose(" -l s_cpu=%d:00:00 -l s_rss=%dG", walltime, mem));
+                    isSoGE = ~aas_shell('which qsub',true,false);
+                    isCondor = ~aas_shell('which condor_submit',true,false);
+                    
+                    if isSoGE
+                        obj.pool.AdditionalProperties.AdditionalSubmitArgs = convertStringsToChars(...
+                            obj.initialSubmitArguments + ...
+                            compose(" -l s_cpu=%d:00:00 -l s_rss=%dG", walltime, mem));
+                    elseif isCondor
+                        obj.pool.AdditionalProperties.AdditionalSubmitArgs = convertStringsToChars(...
+                            obj.initialSubmitArguments + ...
+                            compose(" +JobRunTime=%d request_memory=%d", walltime, mem*1024));
+                    else
+                        aas_log(obj.aap,true,'ERROR: scheduler type cannot be determined');
+                    end
                     if doSetNumWorkers
                         aaparallel.numberofworkers = 1;
                     end
