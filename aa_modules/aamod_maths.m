@@ -10,10 +10,15 @@ switch task
         outputstreams=aas_getstreams(aap,'output'); ostream = outputstreams{1};
         
         % obtain data
-        inputfnameslist = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),istream);
+        inputfnameslist = cellstr(aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),istream));
+        if ~isempty(aas_getsetting(aap,'inputselection'))
+            inputfnameslist = inputfnameslist(cellfun(@(i) ~isempty(regexp(i,aas_getsetting(aap,'inputselection'),'match')), inputfnameslist));
+        end
+        
+        % run
         outputfnameslist = '';
-        for inp = 1:size(inputfnameslist,1)
-            inputfnames = deblank(inputfnameslist(inp,:));
+        for inp = 1:numel(inputfnameslist)
+            inputfnames = inputfnameslist{inp};
             V = spm_vol(inputfnames);
             dat = spm_read_vols(V);
             
@@ -78,4 +83,9 @@ end
 
 function o = sub(x,c)
 o = x-c;
+end
+
+function o = bin(x)
+x(isnan(x)) = 0;
+o = logical(x);
 end
