@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='TFR calculation' modality='MEEG'>
+        <currenttask domain='subject' desc='CFC calculation' modality='MEEG'>
             
             <qsub>
                 <timeBase>0.25</timeBase>
