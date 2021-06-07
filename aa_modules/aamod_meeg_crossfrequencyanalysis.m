@@ -56,6 +56,7 @@ switch task
         combinecfg.normalise = 'no';
         
         diagcfg = aas_getsetting(aap,'diagnostics');
+        diagcfg.parameter = 'crsspctrm';
               
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});

@@ -40,8 +40,6 @@
             
             <inputstreams>
                 <stream>meeg</stream>
-                <stream isessential='0'>headmodel</stream>
-                <stream isessential='0'>sourcemodel</stream>
             </inputstreams>
             
             <outputstreams>
