@@ -7,8 +7,9 @@ function [aap,resp] = aamod_scrub_epis(aap, task, subj, sess)
 %	NB: this module generates a list of delta regressors to "scrub" data
 %	from the GLM -- it does not literally delete the frames from the nii
 %
-% Revision History
+% Change History
 %
+% 09/2020 [MSJ] - add task frameloss_percent warning
 % 08/2020 [MSJ] - fix possible PCT race error
 % summer 2020 [MSJ] -- added task timing plot
 % winter 2018 [MSJ] -- absorb aamod_listspike 
@@ -22,7 +23,7 @@ switch task
     case 'report'
         
     case 'doit'
-	
+	        
 		% initialization stuff
 		
 		explicit_scrublist = [ ];
@@ -51,8 +52,8 @@ switch task
 		if (~isempty(aap.tasklist.currenttask.settings.explicit_framelist))
 			explicit_framelist = aap.tasklist.currenttask.settings.explicit_framelist;
 			explicit_scrublist = eval(explicit_framelist);
-		end
-		
+        end  
+        
 
 		% 2) add a metric-based scrublist using scrub_criteria if the var is not empty
 
@@ -110,8 +111,8 @@ switch task
                 
                 if (~exist(temp,'file'))
 
-                    aas_log(aap, false, sprintf('***** CANNOT FIND %s. Hail Mary pause ****** \n', temp));
-                    unix('touch /Users/peellelab/SCRUB_EPI_FILE_FAIL.txt');
+                    aas_log(aap, false, sprintf('Cannot find %s. Retry after 1 sec ****** \n', temp));
+                    pause(1);
                     pause(1);
                     temp = aas_getfiles_bystream(aap, 'metric_thresholds');
 
@@ -234,7 +235,6 @@ switch task
 
         [ event_names, frameseries ] = task_timing_data(aap, subj, sess, numvol, TR);
 
-
         if (isempty(event_names))
 
             bh = bar(bg,bw);
@@ -256,23 +256,48 @@ switch task
 
             subplot(2,1,2)
 
-            clist = [ 'r', 'g', 'b', 'c', 'm', 'y', 'k' ];
-            cvals = 0.8 * [ 1 0 0 ; 0 1 0; 0 0 1; 0 1 1 ; 1 0 1; 1 1 0; 1 1 1 ];
+            clist = [ 'r', 'g', 'b', 'c', 'm', 'y' ];
+            cvals = 0.8 * [ 1 0 0 ; 0 1 0; 0 0 1; 0 1 1 ; 1 0 1; 1 1 0 ];
             title_string = cell(numel(event_names),1);
-
+            
             for index = 1:numel(event_names)
                 bh = bar(frameseries(index,:),bw,clist(mod(index,length(clist))));
-                set(bh,'FaceColor',cvals(index,:));
-                taskloss = round(100 * dot(frameseries(index,:),master_scrub_indicator) / sum(frameseries(index,:)));
-                title_string{index} = sprintf('%s(%s) %d%%     ', strrep(event_names{index},'_','-'), clist(mod(index,length(clist))), taskloss);
+                set(bh,'FaceColor',cvals(mod(index,length(clist)),:));
+                surviving_framecount = dot(frameseries(index,:),1-master_scrub_indicator);
+                frameloss_percent = round(100 * dot(frameseries(index,:),master_scrub_indicator) / sum(frameseries(index,:)));
+                title_string{index} = sprintf('%s(%s) %d%%     ', strrep(event_names{index},'_','-'), clist(mod(index,length(clist))), frameloss_percent);
                 hold on;
-            end
+                
+                % warn about excessive frameloss_percent
+  
+                if (frameloss_percent > aap.tasklist.currenttask.settings.task_frameloss_warn)
+                    warnstring = sprintf('%d%% frameloss_percent (subj: %d sess: %d) for task %s', frameloss_percent, subj, sess, event_names{index});
+                    aa_log(aap, false, warnstring); 
+               end
+                
+                % collect for later save 
+                %
+                % note -- DON'T convert event names to uppercase -- that way we can read the
+                % event names to use in an exclusion eval string literally from the title of
+                % the piano plot
+                %
+                % NB: if there's whitespace or special chars in the event name, this will
+                % crash (these can't appear in the fieldname for a struct). Look into
+                % aap.acq_details.stripBIDSEventNames if doing BIDS input (if not doing
+                % BIDS input, just behave yourself when naming events)
 
-            set(bh(1),'ShowBaseLine','off');
+                scrubstats.([ 'surviving_framecount_' event_names{index}]) = surviving_framecount;
+                scrubstats.([ 'frameloss_percent_' event_names{index}]) = frameloss_percent;
+
+            end
+            
+            % give task plot a black background to match scrub plot
+            set(bh.Parent,'color','k');
+            
+            set(bh,'ShowBaseLine','off');
             axis tight;
             % this works better than axis off
             bh.Parent.YTick = []; bh.Parent.XTick = [];
-
             
             fsize = 12;
             if (numel(event_names) > 3); fsize=10; end
@@ -285,23 +310,19 @@ switch task
    		set(hf,'Renderer','opengl');
 		set(findall(hf,'Type','text'),'FontUnits','normalized');
 		fname = fullfile(session_path, 'keeplist.jpg');
+        hf.InvertHardcopy = 'off'; % otherwise matlab changes our nice black bg to white
 		print(hf, '-djpeg', '-r150', fname);
-		close(hf);      
-        		
+		close(hf);
+                		
         %  desc -----------------------------------------------------------
 		
-		% save the scrub and keeper lists. These are just a list of integers.
-		% save( ) converts these to double, so we use dlmwrite( ) here which
-		% doesn't. Either works with load( ) if you need the data later...
-		      
-        scrublist_fname = fullfile(session_path, 'scrublist.txt');
-		dlmwrite(scrublist_fname, scrublist);
-		aap = aas_desc_outputs(aap, subj, sess, 'scrublist', scrublist_fname);
-				
-		keeperlist_fname = fullfile(session_path, 'keeperlist.txt');
-		dlmwrite(keeperlist_fname, keeperlist);
-		aap = aas_desc_outputs(aap, subj, sess, 'keeperlist', keeperlist_fname);
-        
+        scrubstats.keeperlist = keeperlist;
+        scrubstats.scrublist = scrublist;
+
+        scrubstats_fname = fullfile(session_path, 'scrubbing_stats.mat');
+        save(scrubstats_fname, 'scrubstats');
+        aap = aas_desc_outputs(aap, subj, sess, 'scrubstats', scrubstats_fname);
+     
         % aamod_firstlevel_model uses the stream name "listspikes" (not
         % "scrublist") so we have to save a copy of the scrub info to this 
 		% streamname if we expect to use it in the GLM
@@ -318,7 +339,6 @@ switch task
 		listspikes_fname = fullfile(session_path, 'listspikes.mat');
 		save(listspikes_fname, 'TSspikes', 'Mspikes');
         aap = aas_desc_outputs(aap, subj, sess, 'listspikes', listspikes_fname);
-
 		
     case 'checkrequirements'
         
@@ -338,7 +358,7 @@ end
 
 function [ event_names, frameseries ] = task_timing_data(aap, subj, sess, nframes, TR)
 
-% generate a task timing plot (TTP) for subject subj / session sess
+% generate a task timing data for subject subj / session sess
 
 % extract task timing data from aap struct for subject subj / session sess
 
@@ -408,7 +428,7 @@ for mindex = 1:numel(model)
 
         end
         
-        % guess: we can return now -- there is only entry per subj/sess
+        % we can return now -- there is only entry per subj/sess
             
         return;
  
@@ -417,6 +437,12 @@ for mindex = 1:numel(model)
 end
 
 end
+
+
+
+
+
+
             
             
             

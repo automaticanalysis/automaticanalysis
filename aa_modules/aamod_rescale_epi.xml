@@ -6,11 +6,19 @@
         <keywords>rescale mode1000 fslmaths</keywords>
         
         <permanenceofoutput>2</permanenceofoutput>
+  
+        <!-- scale mode: raw: multiply data by scale; median: set median=scale; mode: set mode=scale -->
+        <!-- (median and mode scaling ignore zero and nan voxels) -->
+               
+        <scalingmode ui='optionlist' options='raw|median|mode'>raw</scalingmode>  
+        <scale>1</scale>
         
-        <!-- if no scale is provided, mode1000 scaling is performed -->
+        <!-- can specify a mask to use in median and mode scaling -->
+        <!-- so the ops only consider in-brain voxels -->
+        <!-- "default" == spm default; otherwise provide a full path -->
         
-        <scale></scale>
-        
+        <explicit_mask>default</explicit_mask>
+       
         <!-- output data type (see fslmaths). Possible values: char short int float double input -->
         <!-- default is float; int will result in smaller files but may cause rounding problems -->
         <!-- (note the "input" option is broken in fsl 6.0.1) -->
@@ -18,6 +26,7 @@
         <odt>float</odt>
 
         <!-- we don't 'modify' epi; we create a new epi and reassign the streamname -->
+        <!-- ergo ismodified=0 to save some disk -->
 
         <inputstreams>
             <stream ismodified='0'>epi</stream>

@@ -12,6 +12,10 @@ function [aap,resp] = aamod_lossplot(aap, task)
 % of metric_data (e.g., metric_data.FD => metric_thresholds.FD.onepercent,
 % metric_thresholds.FD.twoprecent, etc).
 %
+% Change History
+%
+% summer 2021 [MSJ] -- new
+%
 
 resp='';
 

@@ -29,8 +29,7 @@ switch task
     case 'doit'
         cwd=pwd;
         % get the subdirectories in the main directory
-        subj_dir  =  aas_getsubjpath(aap,subj);
-        
+        subj_dir  =  aas_getsubjpath(aap,subj);      
         % Maintained for backwards compatibility- better now now put
         % module-specific value in
         % aap.directory_conventions.stats_singlesubj
@@ -292,23 +291,7 @@ switch task
                     aas_log(aap,false,sprintf('\t%s: %d', convec_names{cindex}, convec(SPM.xX.iC(cindex))))
                 end
             end
-        end
-        
-
-        % document the contrast values
-
-        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'diagnostic_CONVEC.txt'),'w');
-        if (fid > 0) 
-            for conind = 1:length(contrasts.con)
-                fprintf(fid,sprintf('%s\n', contrasts.con(conind).name));
-                for cindex  =  1:max(size(convec_names))
-                    fprintf(fid,'\t%s: %d\n', convec_names{cindex}, convec(SPM.xX.iC(cindex)));
-                end
-            end
-            fclose(fid);
-        else
-            aas_log(aap,false,'WARNING: Could not save contrast diagnostic');
-        end
+        end 
        
         % Make the con images
         SPM.xCon =[];
@@ -323,7 +306,7 @@ switch task
                 SPM.xCon(end+1) = spm_FcUtil('Set', connames{conind}, contype{conind},'c', cons{conind}', SPM.xX.xKXs);
             end
         end
-        SPM = spm_contrasts(SPM);
+        SPM = spm_contrasts(SPM);      
         
         % Efficiency based on Rik Henson's script [TA]
         if (settings.estimateefficiency)

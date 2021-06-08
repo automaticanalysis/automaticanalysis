@@ -308,6 +308,8 @@ function html_add_jpegs(fid, aap)
 	tasklist = aap.tasksettings;
 	tasknames = fieldnames(tasklist);
 	tagnum = 1;
+    
+    dotcount = 0;
 
 	for index = 1:numel(tasknames)
 		
@@ -363,9 +365,10 @@ function html_add_jpegs(fid, aap)
 
 			end
 			
-			fprintf('.');
+			fprintf('.');dotcount = dotcount+1;
+            if (mod(dotcount,50)==0);fprintf('\n');end
 
-		end
+        end
 
 	end
 	

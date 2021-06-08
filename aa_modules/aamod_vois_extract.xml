@@ -13,20 +13,22 @@
             
             <VOI>
                 <name></name>
-                <Ic>-1</Ic> <!-- removing variance that can be predicted by the null space of the F contrast specified
-                (-1: generate an F-contrast testing for all effects of interest) -->
-                <lmax>1</lmax> <!-- number of contrast (lmax) -->
-                <def>sphere</def> <!-- sphere box mask -->
-                <xyz></xyz>
-                <spec>0</spec>
+                <Ic></Ic>        <!-- remove variance in the null space of this F contrast -->
+                                 <!-- (-1 == adjust for all effects of interest) -->
+                <lmax></lmax>    <!-- this seems to have no effect, but it must be a valid contrast number -->
+                <def></def>      <!-- sphere | box | mask -->
+                <xyz></xyz>      <!-- VOI center (mm) if def=sphere or box -->
+                <spec></spec>    <!-- filename if def=mask, otherwise radius -->
             </VOI>
+            
+            <!-- if rois stream defined, it gets dibs on lmax and/or mask -->
             
             <inputstreams>
                 <stream>firstlevel_spm</stream> 
-                <stream>firstlevel_betas</stream> 
-                <stream>firstlevel_spmts</stream> 
-                <stream>firstlevel_spmfs</stream>
-                <stream isrenameable="1" isessential="0">rois</stream>
+                <stream>firstlevel_betas</stream>
+                <stream isessential='0'>firstlevel_spmts</stream>
+                <stream isessential='0'>firstlevel_spmfs</stream>
+                <stream isessential='0'>rois</stream>  
             </inputstreams>
 
             <outputstreams>

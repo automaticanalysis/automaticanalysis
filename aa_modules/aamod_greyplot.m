@@ -24,6 +24,11 @@ function [aap,resp] = aamod_greyplot(aap,task,subj,sess)
 % 	NeuroImage 154, 150-158, (2017) 
 % 	https://doi.org/10.1016/j.neuroimage.2016.08.009
 %
+%
+% Change History
+%
+% summer 2021 [MSJ] -- new
+%
 
 resp='';
 
@@ -333,7 +338,6 @@ switch task
 		set(findall(figh,'Type','text'),'FontUnits','normalized');
 		print(figh, '-djpeg', '-r150', fname);
 		close(figh);
-
 			
 		% ----------------------------------------------------------------
 		% desc the metric data

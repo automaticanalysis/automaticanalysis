@@ -236,7 +236,6 @@ switch task
 			save(fname,'FD');
 			aap = aas_desc_outputs(aap,subj,sess,'FD', fname);
 
-
         end
         
         %% DIAGNOSTICS

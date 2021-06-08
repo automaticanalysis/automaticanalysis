@@ -404,8 +404,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                     for e = 1:numel(names)
                                         if (strcmpi(names{e},'null') && omitNullBIDSEvents)
                                             continue;
-                                        end
- 
+                                        end  
                                         % if numdummies EV adjustment creates any events
                                         % w/ onset < 0 don't add them (they crash SPM)
                                         adjusted_onsets = onsets{e}-numdummies*TR;

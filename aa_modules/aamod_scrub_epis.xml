@@ -66,9 +66,12 @@
             <!-- in the tasklist before modeling. Ergo, you must specify it here -->
 
             <xBFUNITS ui='optionlist' options='secs|scans'>secs</xBFUNITS>
+            
+            <!-- task frameloss (in percent) that generates a warning -->
+            <task_frameloss_warn>50</task_frameloss_warn>
   
 			<inputstreams>
-				<stream>epi</stream>
+				<stream ismodified='0'>epi</stream>
 				<stream isessential='0'>realignment_parameter</stream>
 				<stream isessential='0'>tsdiffana</stream>
 				<stream isessential='0'>DVARS</stream>
@@ -80,12 +83,11 @@
 			</inputstreams>	
 			
 			<!-- the output is an integer list of the scrubbed and retained -->
-			<!-- frame numbers. We duplicate this info in "listspikes" (in a -->
-			<!-- somewhat different format) for aamod_firstlevel_model -->
-
+			<!-- frame numbers saved to scrubstats. We duplicate this info in -->
+            <!-- "listspikes" (in a somewhat different format) for aamod_firstlevel_model -->
+            
 			<outputstreams>
-				<stream>scrublist</stream>
-				<stream>keeperlist</stream>
+                <stream>scrubstats</stream>
 				<stream>listspikes</stream>
 			</outputstreams>
 
