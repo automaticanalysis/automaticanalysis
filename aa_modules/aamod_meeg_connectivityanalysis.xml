@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Functional connectivity calculation' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.25</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+            
+            <multivariateautoregressiveanalysis>
+                <method desc='method to calculate autoregression' options='LWR|corr_biased|corr_unbiased|VMparcorr_unbiased|VMparcorr_biased|NSparcorr_unbiased|NSparcorr_biased|ARFIT|BURGV' ui='optionlist'>LWR</method>
+                <order desc='order of the autoregressive model'>10</order>
+            </multivariateautoregressiveanalysis>
+
+            <timefrequencyanalysis>
+                <spectralsmoothing desc='the amount of spectral smoothing specifed in Hz'></spectralsmoothing>
+            </timefrequencyanalysis>
+            
+            <connectivityanalysis>
+                <method desc='methods of calculating the cross-spectral relationship' options='wpli_debiased|granger' ui='optionlist'></method>
+                <channels desc='cell-column with selection of channels to calculate connectivity between, if empty or Nx1 all specified channels will be used (NxN connectivity), if Nx2 connectivity between the pairs will be considered (N connectivity)'></channels>
+            </connectivityanalysis>
+
+            <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
+            
+            <contrastoperation desc='operation to calculate contrast (see ft_combine)' options='difference|normaliseddifference|ratio' ui='optionlist'>difference</contrastoperation>
+
+            <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
+            <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
+            
+            <trialmodel desc='modelling trials'>
+                <subject></subject>
+                <model>
+                    <name></name>
+                    <session></session>
+                    <event></event>
+                    <samplevector></samplevector>
+                </model>
+            </trialmodel>
+            
+            <inputstreams>
+                <stream>meeg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>connfreq</stream>
+            </outputstreams>
+            
+             <diagnostics>
+                <snapshottwoi desc='timewindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>
