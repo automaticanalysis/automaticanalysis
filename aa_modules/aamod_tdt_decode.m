@@ -28,7 +28,7 @@ switch task
         [~, TDT] = aas_cache_get(aap,'tdt');
         TDT.load;
         cfg = TDT.defaults;
-        cfg.analysis = 'searchlight';
+        cfg.analysis = aas_getsetting(aap,'method');
         
         % Disable plots
         cfg.plot_selected_voxels = 0;
@@ -45,27 +45,30 @@ switch task
         orderBF = dat.SPM.xBF.order;
         
         % check mask
-        if numel(fnMask) > 1
+        if (numel(fnMask) > 1) && ~strcmp(cfg.analysis,'roi')
             brain_mask = spm_imcalc(spm_vol(char(fnMask)),fullfile(TASKROOT,'brain_mask.nii'),'min(X)',{1});
-            fnMask = brain_mask.fname;
-        else
-            fnMask = char(fnMask);
+            fnMask = {brain_mask.fname};
         end
-        V = spm_vol(fnMask);
-        Y = spm_read_vols(V); 
-        mask_num = unique(Y(:));
-        mask_num(isnan(mask_num)|mask_num==0) = []; 
-        if any(mask_num~=1)
-            fnMask = spm_file(V.fname,'prefix','b');
-            V.fname = fnMask;
-            V.pinfo = [1 0 0]';
-            Y = Y > 0.5;
-            spm_write_vol(V,Y);
+        for f = 1:numel(fnMask)
+            V = spm_vol(fnMask{f});
+            Y = spm_read_vols(V);
+            mask_num = unique(Y(:));
+            mask_num(isnan(mask_num)|mask_num==0) = [];
+            if any(mask_num~=1)
+                fnMask{f} = spm_file(V.fname,'prefix','b');
+                V.fname = fnMask{f};
+                V.pinfo = [1 0 0]';
+                Y = Y > 0.5;
+                spm_write_vol(V,Y);
+            end
         end
         
         cfg.files.mask = fnMask;
         
-        cfg.searchlight = aas_getsetting(aap,'searchlight');
+        switch cfg.analysis
+            case 'searchlight'
+                cfg.searchlight = aas_getsetting(aap,'searchlight');
+        end
         
         labelnames = aas_getsetting(aap,'itemList');
         for l = 1:numel(labelnames)
@@ -93,7 +96,7 @@ switch task
         aap = aas_desc_outputs(aap,'subject',subj,'mask',cfg.files.mask);
                 
         for o = 1:numel(cfg.results.output)
-            aap = aas_desc_outputs(aap,'subject',subj,cfg.results.output{o},spm_select('FPList',cfg.results.dir,['^' cfg.results.resultsname{o} '\.[(mat)(nii)]{1}']));
+            aap = aas_desc_outputs(aap,'subject',subj,cfg.results.output{o},spm_select('FPList',cfg.results.dir,['^' cfg.results.resultsname{o} '[_a-z]*\.[(mat)(nii)]{1}']));
         end
         
         %% Cleanup

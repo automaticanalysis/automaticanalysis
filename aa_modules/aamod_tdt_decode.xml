@@ -11,6 +11,8 @@
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
             
+            <method desc='decoding analysis' options='wholebrain|searchlight|roi' ui='optionlist'>searchlight</method>
+            
             <searchlight desc='spherical searchlight'>
                 <unit options='voxels|mm'>voxels</unit>
                 <radius>4</radius>
@@ -18,7 +20,10 @@
             
             <measure desc='decoding_measure (multiple can be specified as colon-separeted list)' options='accuracy|sensitivity|specificity|balanced_accuracy|AUC|accuracy_minus_chance|sensitivity_minus_chance|specificity_minus_chance|balanced_accuracy_minus_chance|AUC_minus_chance' ui='optionlist'></measure>
             
-            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
+            <!-- N.B.: input mask must have 'mask' or 'rois' in the streamname
+            methods 'wholebrain' and 'searchlight' requires 1 volume
+            method 'roi' may use more the one volume for ROI wise decoding
+            --> 
             <inputstreams>
                 <stream isrenameable='1'>firstlevel_brainmask</stream>
                 <stream>firstlevel_spm</stream>
