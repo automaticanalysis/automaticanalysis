@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        
+        <currenttask domain='study' desc='force execution to halt' modality='MRI' >      
+        
+        <!-- module needs inputs and outputs or scheduler has kittens -->
+        
+       <inputstreams>
+           <!-- <stream isrenameable='1' isessential='0'>dummy</stream>-->
+           <!-- need to specify some streams to force PCT to run all previous modules -->
+           <!-- before running aamod_halt (which it may do if a_h has no required inputs). -->
+           <!-- This is a nonissue when running localsingle mode. -->
+            <stream>epi</stream>
+        </inputstreams>
+
+        <outputstreams>
+            <stream isrenameable='1'>dummy</stream>
+            <!-- we have to specify at least one stream required by the module -->
+            <!-- appearing after aamod_halt in the tasklist otherwise PCT may -->
+            <!-- run those modules before running aamod_halt (this is a nonissue -->
+            <!-- when running localsingle mode) -->
+            <stream>epi</stream>
+        </outputstreams>
+        
+        </currenttask>
+    </tasklist>
+</aap>

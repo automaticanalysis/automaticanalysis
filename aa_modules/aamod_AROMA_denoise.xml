@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' desc='denoise an EPI using ICA-AROMA' modality='MRI'>
+        
+        <permanenceofoutput>2</permanenceofoutput>               
+
+        <!-- the analysis generates many large intermediate gziped nifti -->
+        <!-- files; we can/should prolly delete these on exit -->
+        
+        <deletegzips>1</deletegzips>               
+
+        <!-- we don't 'modify' epi; we create a new epi and reassign -->
+        <!-- the streamname ergo epi is flagged as not modified -->
+
+        <inputstreams>
+            <stream>structural</stream>
+            <stream ismodified='0'>epi</stream>
+            <stream>epi_dicom_header</stream> <!-- need for TR -->
+            <stream>realignment_parameter</stream>
+       </inputstreams>
+
+        <outputstreams>
+            <stream>epi</stream>
+        </outputstreams>
+			
+        </currenttask>
+    </tasklist> 
+</aap>
+

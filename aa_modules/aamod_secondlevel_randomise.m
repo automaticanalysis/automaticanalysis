@@ -1,17 +1,36 @@
+function [ aap,resp ] = aamod_secondlevel_randomise(aap,task)
+
 % AA module - nonparametric secondlevel statistics using FSL randomise
 %
 % Only runs if all contrasts present in same order in all subjects at first
 % level. If so, makes model with basic t-test for each of contrasts.
 %
-% Modified for aa by Rhodri Cusack May 2006
-% Second-level model from Rik Henson
+% NEW FILE NAMING CONVENTION
+%
+%  FSL randomise doesn't exactly have the most transparent output filenaming  
+%  Ergo, we attempt to convert them to something more readable  
+%
+%  In brief: fslT_000C_tstat1.nii => <cname>_<identifier>_uncorrected.nii  
+%  and the thresholded version = <cname>_<identifier>_<pmap>_corrected.nii  
+%  where C is a contrast number, cname is the corresponding contrast name,  
+%  "identifier" is an optional identifier (e.g., "young" or "controls")  
+%  and pmap is the threhsolding option  
+%
+%  Additionally, if the glm_output option was passed to aamod_secondlevel_randomise  
+%  the generated cope file is reanamed to <cname>_<identifier>_cope.nii. The sigmasqr,  
+%  pe, and var files are deleted (UPDATE  we prolly can keep, since the new directory
+% structure is less clusttered)  
+% 
+%  if multiple tstat files are present (e.g., *_tstat1.nii, *_tstat2.nii  
+%  as generated in a 2-group ttest) the new names include the tstat number  
 %
 % CHANGE HISTORY
 %
+% 06/2021 [MSJ] attempt to implement sensible FSL file naming
 % 06/2019 [MSJ] Modified to run one or two sample ttest w/ covariates
 %
-
-function [ aap,resp ] = aamod_secondlevel_randomise(aap,task)
+% Modified for aa by Rhodri Cusack May 2006
+% Second-level model from Rik Henson
 
 resp='';
 
@@ -115,45 +134,99 @@ switch task
         % -- the same file can be used for a one sample or two
         % sample ttest etc; we simply pass a different design matrix
         
-        FSLrandomiseCell = cell(1, size(conFn{1}, 1));
+        FSLCommandString = cell(1, size(conFn{1}, 1));
         mergedData = cell(1, size(conFn{1}, 1));
         maskData = cell(1, size(conFn{1}, 1));
         
         pth = aas_getstudypath(aap);
+        
+        % sort files by contrast, each in a separate folder
+        % named according to the contrast to better organize results
+
+        % need an SPM to get the contrast names, which we assume are
+        % the same for all subjects, so we can just use first subject
+
+        SPM = load(aas_getfiles_bystream(aap, 1, 'firstlevel_spm'));
+        SPM = SPM.SPM;
+        temp = { SPM.xCon(:).name };
+        % take out characters that don't go well in filenames...
+        dirnames = cellfun(@(x) char(regexp(x,'[a-zA-Z0-9_-]','match'))', temp, 'UniformOutput',false);
+
+        % output file extension may be .nii or nii.gz
+        % BUGWATCH: need to deal with nii.gz in aamod_secondlevel_randomise_threshold
+
+        if (strcmp(aap.directory_conventions.fsloutputtype,'NIFTI') ~= 1)
+            fsl_file_extension = 'nii.gz';
+        else
+            fsl_file_extension = 'nii';
+        end        
+        
+        for cindex = 1:numel(dirnames)
+               
+            % recall we set pwd to module directory on entry...
+            dirname = dirnames{cindex};
+            aas_makedir(aap,dirname); % harmless if dirname exists
+            pause(1);   % make sure filesystem catches up
             
-        for n = 1:size(conFn{1}, 1)
+            aas_log(aap,false,sprintf('Merging data for contrast %d', cindex))
             
-            aas_log(aap,false,sprintf('Merging data for contrast %d', n))
-            
-            mergedData{n} = fullfile(pth, sprintf('dataMerged_%04d.nii', n));
+            mergedData{cindex} = fullfile(pth, sprintf('%s/mergedata.nii', dirname));
+          
             unmergedData = '';
             for sindex = 1:nsub
-                mask_img([], conFn{sindex}(n, :), 0)
-                unmergedData = [unmergedData conFn{sindex}(n, :) ' '];
+                mask_img([], conFn{sindex}(cindex, :), 0)
+                unmergedData = [unmergedData conFn{sindex}(cindex, :) ' '];
             end
             
-            FSLmerge = ['fslmerge -t ' mergedData{n} ' ' unmergedData];
+            FSLmerge = ['fslmerge -t ' mergedData{cindex} ' ' unmergedData];
             aas_runfslcommand(aap, FSLmerge);
             
             % make a mask on the fly
             
-            V = spm_vol(mergedData{n});
+            V = spm_vol(mergedData{cindex});
             Y = spm_read_vols(V);
             V = V(1);
-            maskData{n} = fullfile(pth, sprintf('mask_%04d.nii', n));
-            V.fname = maskData{n};
+            maskData{cindex} = fullfile(pth, sprintf('%s/mask.nii', dirname));
+            V.fname = maskData{cindex};
             M = all(Y ~= 0, 4);
             spm_write_vol(V, M);
             
             % generate a Randomise command for the test we're doing
-                
+            
+            % if we're doing backgrounding, terminate the randomize command with a bg token
+
+            if (aap.tasklist.currenttask.settings.runFSLinbackground)
+                options = [ aap.tasklist.currenttask.settings.options ' &'];
+            else
+                options = aap.tasklist.currenttask.settings.options;
+            end
+
+            % regardless of bgoption, DON'T run the final contrast in the background
+            % (we need one job to block (hopefully all other jobs will complete)
+
+            if (cindex == numel(dirnames))
+                options = aap.tasklist.currenttask.settings.options;
+            end
+
+            % we need a unique separator for a_2_r_threshold to find
+            % use double underscore + identifier + double underscore
+            % if user didn't specify an identifier, use XXX
+            % note we only specify the first trailing underscore here
+            % -- FSL will add the second
+
+            if (isempty(aap.tasklist.currenttask.settings.identifier))
+                outfile_prefix = [ dirname '__XXX_'];
+            else
+                outfile_prefix = [ dirname '__' aap.tasklist.currenttask.settings.identifier '_'];
+            end
+               
             if ((number_of_testgroups == 1) && isempty(covariates))
                 
                 % special simple case: 1 sample ttest
-                % reference: randomise -i dataMerged_0001.nii -o ttest1 -1 -T -v 5
+                % reference: randomise -i dataMerged_0001.nii -o ttest1 -1 -T -v 5 -n 5000
                 
-                FSLrandomiseCell{n} = ['randomise -i ' mergedData{n} ' -m ' maskData{n} ' -o ' ... 
-                    fullfile(pth, sprintf('fslT_%04d', n)) ' -1 ' options];
+                FSLCommandString{cindex} = ['randomise -i ' mergedData{cindex} ' -m ' maskData{cindex} ' -o ' ... 
+                    fullfile(pth, sprintf('%s/%s',dirname,outfile_prefix)) ' -1 ' options];
 
             else
 
@@ -164,75 +237,120 @@ switch task
   
                 % this will create design.mat and design.con
                 % could move this outside con loop (design.mat and
-                % design.con are the same for all contrasts...)
-                
-                create_auxillary_fsl_files(aap, master_subject_list, SID_1, SID_2, covariates);
+                % design.con are the same for all contrasts...) 
                  
-                FSLrandomiseCell{n} = ['randomise -i ' mergedData{n} ' -m ' maskData{n} ' -o ' ... 
-                    fullfile(pth, sprintf('fslT_%04d', n)) ' -d ' fullfile(pth,'design.mat') ' -t ' fullfile(pth,'design.con') ' ' options];
+                create_auxillary_fsl_files(aap, master_subject_list, SID_1, SID_2, covariates);
+                
+                FSLCommandString{cindex} = ['randomise -i ' mergedData{cindex} ' -m ' maskData{cindex} ' -o ' ... 
+                    fullfile(pth, sprintf('%s/%s',dirname,outfile_prefix)) ' -d ' fullfile(pth,'design.mat') ' -t ' fullfile(pth,'design.con') ' ' options];
 
             end
             
-        end     % loop over covariates        
+            
+        end   % loop over covariates        
         
         % now run FSL
                 
-        for n = 1:size(conFn{1}, 1)
-            aas_log(aap,false,sprintf('Running randomise on contrast %d', n))
-            aas_runfslcommand(aap, FSLrandomiseCell{n});
+        for cindex = 1:size(conFn{1}, 1)
+            aas_log(aap,false,sprintf('Running randomise on contrast %d', cindex))
+            aas_runfslcommand(aap, FSLCommandString{cindex});
+            pause(1);  % feels necessary to let bg process launch...
+        end
+              
+        % block here until all outfiles exist
+
+        for cindex = 1:numel(dirnames)
+
+            dirname = dirnames{cindex};
+
+            % block until all the contrast directories are populated
+
+            temp = dir(fullfile(pth, sprintf('%s/*tstat*.%s', dirname, fsl_file_extension)));
+
+            while (numel(temp) == 0)
+                unix('sleep 60s');
+                temp = dir(fullfile(pth, sprintf('%s/*tstat*.%s', dirname, fsl_file_extension)));
+             end
+
         end
 
         % clean up temp files; Note we don't delete design.mat and 
         % design.con in two-group test -- leave for verification
         
-        for n = 1:size(conFn{1}, 1)
-            delete(mergedData{n});
-            delete(maskData{n});
+        for cindex = 1:size(conFn{1}, 1)
+            delete(mergedData{cindex});
+            delete(maskData{cindex});
         end
         
-        % desc the outputs and save some diagnostic images
+        % desc the outputs
         
         fslt_fns = '';
         fslcorrp_fns = '';
+        fslcope_fns = '';
         
         pindex = 1;
         tindex = 1;
-        
-        aas_prepare_diagnostic(aap);
+        gindex = 1;
 
-        for contrast = 1:size(conFn{1}, 1)
+        for cindex = 1:numel(dirnames)
                         
-            tmp = dir(fullfile(pth, sprintf('fslT_%04d_*_corrp_tstat*.nii', contrast)));
-            
-            if (isempty(fslcorrp_fns)); fslcorrp_fns = cell(size(conFn{1},1)*size(tmp,1),1); end
-            
-            for dindex = 1:size(tmp,1)
-                fslcorrp_fns{pindex} = [tmp(dindex).folder '/' tmp(dindex).name];
-                pindex = pindex + 1;
+            dirname = dirnames{cindex};
+                                  
+            if (isempty(aap.tasklist.currenttask.settings.identifier))
+                outfile_prefix = [ dirname '__XXX_'];
+            else
+                outfile_prefix = [ dirname '__' aap.tasklist.currenttask.settings.identifier '_'];
             end
+          
+            % uncorrected tmap (./conname/prefix_tstat.extension)
             
-            tmp = dir(fullfile(pth, sprintf('fslT_%04d_tstat*.nii', contrast)));
+            temp = dir(fullfile(pth, sprintf('%s/%s_tstat*.%s', dirname, outfile_prefix, fsl_file_extension)));
 
-            if (isempty(fslt_fns)); fslt_fns = cell(size(conFn{1},1)*size(tmp,1),1); end
+            if (isempty(fslt_fns)); fslt_fns = cell(size(conFn{1},1)*size(temp,1),1); end
             
-            for dindex = 1:size(tmp,1)
-                fslt_fns{tindex} = [tmp(dindex).folder '/' tmp(dindex).name];
+            for findex = 1:size(temp,1)
+                fslt_fns{tindex} = [temp(findex).folder '/' temp(findex).name];
                 tindex = tindex + 1;
             end
             
+            % various p-correction files based on options (./conname/prefix_*corrp*.nii[.gz])
+            
+            temp = dir(fullfile(pth, sprintf('%s/%s*corrp*.%s', dirname, outfile_prefix, fsl_file_extension)));
+            
+            if (isempty(fslcorrp_fns)); fslcorrp_fns = cell(size(conFn{1},1)*size(temp,1),1); end
+            
+            for findex = 1:size(temp,1)
+                fslcorrp_fns{pindex} = [temp(findex).folder '/' temp(findex).name];
+                pindex = pindex + 1;
+            end
+            
+           % cope files if --glm_output was used (./conname/prefix_*glm*.nii[.gz])
+            
+            temp = dir(fullfile(pth, sprintf('%s/%s*glm*.%s', dirname, outfile_prefix, fsl_file_extension)));
+            
+            if (isempty(fslcope_fns)); fslcope_fns = cell(size(conFn{1},1)*size(temp,1),1); end
+            
+            for findex = 1:size(temp,1)
+                fslcope_fns{gindex} = [temp(findex).folder '/' temp(findex).name];
+                gindex = gindex + 1;
+            end
+            
         end
         
-        % document subjects and covariates for QA
-        
-        writetable(cell2table(master_subject_list'), fullfile(aas_getstudypath(aap),'diagnostic_SUBJECTS.txt'), 'WriteVariableNames', false);
-
-        if (~isempty(covariates))
-            writetable(array2table(covariates), fullfile(aas_getstudypath(aap),'diagnostic_COVARIATES.txt')); 
-        end
-
         aap=aas_desc_outputs(aap,'secondlevel_fslts', fslt_fns);
         aap=aas_desc_outputs(aap,'secondlevel_fslcorrps', fslcorrp_fns);
-        
+        aap=aas_desc_outputs(aap,'secondlevel_fslcopes', fslcope_fns);
+     
+        % document subjects and covariates for QA
+
+        aas_prepare_diagnostic(aap);
+         
+        writetable(cell2table(master_subject_list'), fullfile(aas_getstudypath(aap),'diagnostics','diagnostic_SUBJECTS.txt'), 'WriteVariableNames', false);
+
+        if (~isempty(covariates))
+            writetable(array2table(covariates), fullfile(aas_getstudypath(aap), 'diagnostics', 'diagnostic_COVARIATES.txt')); 
+        end   
+                
         % restore pwd and we're done!
 
         cd(savedir);
