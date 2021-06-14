@@ -39,9 +39,15 @@ switch task
         %% Preapre
         subj = varargin{1};
         domain = aap.tasklist.currenttask.domain;
+        domaindir = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         inpstreams = aas_getstreams(aap,'input');
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, cell2mat(varargin), workstream));
+        % make a working copy in the working folder to avoid interference
+        tmp_images = spm_file(images,'path',domaindir,'prefix','tmp_');
+        arrayfun(@(i) copyfile(images{i}, tmp_images{i}), 1:numel(images));
+        images = tmp_images;
+        
         regstreams = inpstreams(1:end-2); toRemove = [];
         for i = 1:numel(regstreams)
             if ~aas_stream_has_contents(aap,domain,cell2mat(varargin),regstreams{i}), toRemove(end+1) = i; end
@@ -106,6 +112,9 @@ switch task
         if strcmp(aap.options.wheretoprocess,'localsingle')
             aas_checkreg(aap,domain,cell2mat(varargin),workstream,regstreams{end});
         end
+        
+        %% Cleanup
+        delete(char(tmp_images));
     case 'checkrequirements'
         in =  aas_getstreams(aap,'input'); in = in{end}; % last stream
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
