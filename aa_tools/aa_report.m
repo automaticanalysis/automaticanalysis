@@ -195,7 +195,7 @@ aap.prov.serialise(studyroot);
 % Show report
 if ~isdeployed, web(['file://' aap.report.html_main.fname]); end
 % Last, save AAP structure
-save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
+save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap','-v7.3');
 
 aa_close(aap);
 
