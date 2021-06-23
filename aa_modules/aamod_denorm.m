@@ -44,7 +44,7 @@ switch task
         workstream = inpstreams{end};
         images = cellstr(aas_getfiles_bystream_multilevel(aap, domain, cell2mat(varargin), workstream));
         % make a working copy in the working folder to avoid interference
-        tmp_images = spm_file(images,'path',domaindir,'prefix','tmp_');
+        tmp_images = spm_file(images,'path',domaindir,'suffix','_tmp');
         arrayfun(@(i) copyfile(images{i}, tmp_images{i}), 1:numel(images));
         images = tmp_images;
         
@@ -114,7 +114,7 @@ switch task
         end
         
         %% Cleanup
-        delete(char(tmp_images));
+        cellfun(@(f) delete(f), tmp_images);
     case 'checkrequirements'
         in =  aas_getstreams(aap,'input'); in = in{end}; % last stream
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
