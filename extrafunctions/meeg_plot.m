@@ -139,7 +139,10 @@ for t = 1:size(cfg.latency,1)
         end
         if ~isempty(labels{s}), strTitle = sprintf('%s: %s',labels{s},strTitle); end
         dataPlot = ft_selectdata(tmpcfg,data{s});
-        if isnumeric(cfg.latency), dataPlot.dimord = strrep(dataPlot.dimord,'_time',''); end
+        if isnumeric(cfg.latency)
+            dataPlot.dimord = strrep(dataPlot.dimord,'_time',''); 
+            dataPlot = rmfield(dataPlot,'time');
+        end
         
         if isfield(dataPlot,'mask') % stats
             if ~any(dataPlot.mask(:))
@@ -151,7 +154,7 @@ for t = 1:size(cfg.latency,1)
         
         tmpcfg = keepfields(cfg,{'layout' 'parameter'});
         tmpcfg.interactive = 'no';
-        if isfield(dataPlot,'elec')
+        if isfield(dataPlot,'label')
             tmpcfg.zlim = sort([minval(s) maxval(s)]);
             if ft_datatype(dataPlot,'freq') % TFR
                 switch numel(strsplit(dataPlot.dimord,'_'))
@@ -164,7 +167,7 @@ for t = 1:size(cfg.latency,1)
                         
                         if ~isfield(cfg,'channels')  % multiplot
                             adjustaxes = true;
-                            FIGWIDTH = 2*1080;
+                            FIGWIDTH = 1.5*1080;
                             
                             tmpcfg.showlabels = 'yes';
                             tmpcfg.showoutline = 'yes';
@@ -186,7 +189,7 @@ for t = 1:size(cfg.latency,1)
                         adjustaxes = true;
 
                         % add time
-                        dataPlot.powspctrm(:,:,2) = dataPlot.powspctrm;
+                        dataPlot.(cfg.parameter)(:,:,2) = dataPlot.(cfg.parameter);
                         dataPlot.time = [0 1];
                         tmpcfg.xlim = [0 1];
                         
@@ -210,6 +213,14 @@ for t = 1:size(cfg.latency,1)
             elseif ft_datatype(data,'timelock')  % ER
             end
             
+        elseif isfield(dataPlot,'labelcmb') % connectivity
+            adjustaxes = false;
+            if ndims(dataPlot.(cfg.parameter)) == 2, cmaps{s} = []; end
+            tmpcfg = keepfields(cfg,'parameter');
+            figure; ft_connectivityplot(tmpcfg,dataPlot);
+            currfig = gcf;
+            arrayfun(@(x) copyobj(x,p), flipud(get(get(currfig,'CurrentAxes'),'Children')));
+        
         elseif isfield(dataPlot,'dim')
             tmpcfg = keepfields(cfg,'latency');
             tmpcfg.funparameter = cfg.parameter;
@@ -260,8 +271,10 @@ for t = 1:size(cfg.latency,1)
             end
             title(p(1), strTitle);
             set(get(p(1),'Title'), 'Visible', 1);
-            colormap(p(i),cmaps{s});
-            colorbar(p(i));
+            if ~isempty(cmaps{s})
+                colormap(p(i),cmaps{s});
+                colorbar(p(i));
+            end
             close(currfig(i));
         end        
     end
