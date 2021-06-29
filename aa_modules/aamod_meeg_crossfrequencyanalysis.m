@@ -3,30 +3,30 @@ resp='';
 
 switch task
     case 'report'
-        channels = aas_getsetting(aap,'crossfrequencyanalysis.chanphase'); if isempty(channels), channels = {}; end
-        models = strrep(spm_file(cellstr(aas_getfiles_bystream(aap,'subject',subj,'crossfreq')),'basename'),'crossfreq_','')';
-        aap = aas_report_add(aap,subj,'<table id="data"><tr>');
-        aap = aas_report_add(aap,subj,'<th>Phase channel</th>');
-        for m = models, aap = aas_report_add(aap,subj,['<th>Model: ' m{1} '</th>']); end
-        aap = aas_report_add(aap,subj,'</tr>');
-
-        for ch = channels
-            aap = aas_report_add(aap,subj,'<tr>');
-            aap = aas_report_add(aap,subj,['<td>' ch{1} '</td>']);
-            for m = models
-                aap = aas_report_add(aap,subj,'<td>');
-                if isempty(ch{1})
-                    fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_multiplot.jpg']);
-                else
-                    fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' ch{1} '_multiplot.jpg']);
-                end
-                if exist(fnimg,'file'), aap=aas_report_addimage(aap,subj,fnimg); end
-                aap = aas_report_add(aap,subj,'</td>');
-            end
-            aap = aas_report_add(aap,subj,'</tr>');
-        end
-
-        aap = aas_report_add(aap,subj,'</table>');
+%         channels = aas_getsetting(aap,'crossfrequencyanalysis.chanphase'); if isempty(channels), channels = {}; end
+%         models = strrep(spm_file(cellstr(aas_getfiles_bystream(aap,'subject',subj,'crossfreq')),'basename'),'crossfreq_','')';
+%         aap = aas_report_add(aap,subj,'<table id="data"><tr>');
+%         aap = aas_report_add(aap,subj,'<th>Phase channel</th>');
+%         for m = models, aap = aas_report_add(aap,subj,['<th>Model: ' m{1} '</th>']); end
+%         aap = aas_report_add(aap,subj,'</tr>');
+% 
+%         for ch = channels
+%             aap = aas_report_add(aap,subj,'<tr>');
+%             aap = aas_report_add(aap,subj,['<td>' ch{1} '</td>']);
+%             for m = models
+%                 aap = aas_report_add(aap,subj,'<td>');
+%                 if isempty(ch{1})
+%                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_multiplot.jpg']);
+%                 else
+%                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' ch{1} '_multiplot.jpg']);
+%                 end
+%                 if exist(fnimg,'file'), aap=aas_report_addimage(aap,subj,fnimg); end
+%                 aap = aas_report_add(aap,subj,'</td>');
+%             end
+%             aap = aas_report_add(aap,subj,'</tr>');
+%         end
+% 
+%         aap = aas_report_add(aap,subj,'</table>');
     case 'doit'
         [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
