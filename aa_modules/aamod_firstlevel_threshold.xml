@@ -13,7 +13,7 @@
             <threshold>
                 <correction>none</correction> <!-- FWE/FDR/iTT/none -->
                 <p>0.001</p>
-                <extent>0</extent>
+                <extent desc="cluster-extent threshold, in voxel [number] or in (corrected) probability ['correction:p-value']">0</extent>
             </threshold>
 			
             <overlay>
