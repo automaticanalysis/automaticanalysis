@@ -23,7 +23,7 @@
                         <extentprethreshold desc='exclude clusters with extent below this threshold before clustering, in voxel'>0</extentprethreshold>
                         <searchradius desc='search radius of the clusters, in voxel'></searchradius>
                         <mergethreshold desc='merge generated clusters with extent below this threshold, in voxel'></mergethreshold>                        
-                    </fusion-watershed>
+                    </fusionwatershed>
                 </options>
             </cluster>
             
