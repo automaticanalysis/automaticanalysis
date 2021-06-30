@@ -54,7 +54,7 @@ switch task
             Y = spm_read_vols(V);
             mask_num = unique(Y(:));
             mask_num(isnan(mask_num)|mask_num==0) = [];
-            if any(mask_num~=1)
+            if numel(mask_num) > 1 && ~strcmp(aas_getsetting(aap,'method'),'roi')
                 fnMask{f} = spm_file(V.fname,'prefix','b');
                 V.fname = fnMask{f};
                 V.pinfo = [1 0 0]';
