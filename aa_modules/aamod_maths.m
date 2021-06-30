@@ -89,3 +89,11 @@ function o = bin(x)
 x(isnan(x)) = 0;
 o = logical(x);
 end
+
+function o = splitbylabels(x)
+o = {};
+for l = unique(x(x>0))'
+    o{end+1} = x == l;
+end
+o = cat(ndims(o{1})+1,o{:});
+end
