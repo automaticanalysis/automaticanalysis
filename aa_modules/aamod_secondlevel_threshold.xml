@@ -15,7 +15,18 @@
                 <p>0.05</p>
                 <extent desc="cluster-extent threshold, in voxel [number] or in (corrected) probability ['correction:p-value']">0</extent>
             </threshold>
-                        
+                     
+            <cluster>
+                <method desc='clustering method' options='none|fusionwatershed' ui='optionlist'>none</method>
+                <options desc='method-specific options'>
+                    <fusionwatershed>
+                        <extentprethreshold desc='exclude clusters with extent below this threshold before clustering, in voxel'>0</extentprethreshold>
+                        <searchradius desc='search radius of the clusters, in voxel'></searchradius>
+                        <mergethreshold desc='merge generated clusters with extent below this threshold, in voxel'></mergethreshold>                        
+                    </fusion-watershed>
+                </options>
+            </cluster>
+            
             <overlay>
                 <transparency>0</transparency>
                 <nth_slice desc='in mm'>6</nth_slice>
@@ -36,6 +47,7 @@
             
             <outputstreams>
                 <stream>secondlevel_thr</stream>
+                <stream>secondlevel_clusters</stream>
                 <stream>secondlevel_thrslice</stream>
                 <stream>secondlevel_thr3D</stream>
             </outputstreams>
