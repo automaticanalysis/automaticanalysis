@@ -85,15 +85,22 @@ function o = sub(x,c)
 o = x-c;
 end
 
+% binarise
 function o = bin(x)
 x(isnan(x)) = 0;
 o = logical(x);
 end
 
+% split a multi-label volume (i.e. one volume with multiple non-overlapping labels) into singe-label volumes
 function o = splitbylabels(x)
 o = {};
 for l = unique(x(x>0))'
     o{end+1} = x == l;
 end
 o = cat(ndims(o{1})+1,o{:});
+end
+
+% identical volume (usefull for input selection)
+function o = ident(x)
+o = x;
 end
