@@ -297,22 +297,26 @@ switch task
             % Cluster
             clusterfname = spm_file(V.fname,'prefix','cl_');
             if ~isempty(aas_getsetting(aap,'cluster'))
-                switch aas_getsetting(aap,'cluster.method')
-                    case 'fusionwatershed'
-                        [s,FWS] = aas_cache_get(aap,'fws');
-                        if ~s
-                            aas_log(aap,false,'WARNING: Fusion-Watershed is not installed! --> clustering skipped');
-                        else
-                            FWS.load;
-                            settings = aas_getsetting(aap,'cluster.options.fusionwatershed');
-                            obj = fws.generate_ROI(V.fname,...
-                                'threshold_method','z','threshold_value',0.1,...
-                                'filter',settings.extentprethreshold,'radius',settings.searchradius,'merge',settings.mergethreshold,...
-                                'plot',false,'output',true);
-                            save.vol(obj.label,obj.grid,spm_file(clusterfname,'ext',''),'Compressed',false);
-                            writetable(obj.table,spm_file(clusterfname,'ext','csv'));
-                            FWS.unload;
-                        end
+                if no_sig_voxels
+                    copyfile(V.fname,clusterfname);
+                else
+                    switch aas_getsetting(aap,'cluster.method')
+                        case 'fusionwatershed'
+                            [s,FWS] = aas_cache_get(aap,'fws');
+                            if ~s
+                                aas_log(aap,false,'WARNING: Fusion-Watershed is not installed! --> clustering skipped');
+                            else
+                                FWS.load;
+                                settings = aas_getsetting(aap,'cluster.options.fusionwatershed');
+                                obj = fws.generate_ROI(V.fname,...
+                                    'threshold_method','z','threshold_value',0.1,...
+                                    'filter',settings.extentprethreshold,'radius',settings.searchradius,'merge',settings.mergethreshold,...
+                                    'plot',false,'output',true);
+                                save.vol(obj.label,obj.grid,spm_file(clusterfname,'ext',''),'Compressed',false);
+                                writetable(obj.table,spm_file(clusterfname,'ext','csv'));
+                                FWS.unload;
+                            end
+                    end
                 end
             end
             
