@@ -1,14 +1,30 @@
-function dirs2delete = aas_delete_deststage(aap,indices,dryrun)
-% recursively delete destination stages
+function dirs2delete = aas_delete_deststage(aap,indices,varargin)
+% recursively delete/backup destination stages
 
-if nargin < 3, dryrun = false; end
+argParse = inputParser;
+argParse.addParameter('includeCurrent',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('dryrun',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('backupFolder','',@ischar);
+argParse.parse(varargin{:});
+
+if ~isempty(argParse.Results.backupFolder), aas_makedir(aap,argParse.Results.backupFolder); end
 
 dirs2delete = unique(aas_deststage(aap,aap.tasklist.currenttask.modulenumber,indices,{}),'stable')';
-if ~dryrun
+if argParse.Results.includeCurrent
+    dirs2delete = [cellstr(aas_getpath_bydomain(aap,aap.tasklist.currenttask.domain,indices,aap.tasklist.currenttask.modulenumber));dirs2delete];
+end
+
+if ~argParse.Results.dryrun
     for d = dirs2delete'
         if exist(d{1},'dir')
-            aas_log(aap,false,['WARNING: deleting ' d{1}]);
-            rmdir(d{1},'s'); 
+            if ~isempty(argParse.Results.backupFolder)
+                dest = strrep(d{1},aap.internal.aap_initial.acq_details.root,argParse.Results.backupFolder);
+                aas_log(aap,false,['INFO: moving ' d{1} ' to ' argParse.Results.backupFolder]);
+                movefile(d{1},dest);
+            else
+                aas_log(aap,false,['WARNING: deleting ' d{1}]);
+                rmdir(d{1},'s');
+            end
         end
     end
 end
