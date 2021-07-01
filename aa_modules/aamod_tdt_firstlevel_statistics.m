@@ -73,49 +73,49 @@ switch task
         cfg.results.write = 2; % write only mat file
         cfg.results.overwrite = 1;
         
-        combine = 0;   % see make_design_permutations how you can run all analysis in one go, might be faster but takes more memory
-        designs = make_design_permutation(cfg,aas_getsetting(aap,'permutation.iteration'),combine);
-        
-        doParallel = aas_getsetting(aap,'permutation.numberofworkers') > 1;
-        if doParallel
-            aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
-            if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
-            try
-                cluster = parcluster(poolprofile);
-                if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
-                global aaworker;
-                wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
-                aas_makedir(aap,wdir);
-                cluster.JobStorageLocation = wdir;
-                nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
-                pool = gcp('nocreate');
-                if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
-            catch E
-                aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
-                doParallel = false;
-            end
-            
-            if doParallel
-                parfor i_perm = 1:aas_getsetting(aap,'permutation.iteration')
-                    cfg_perm = cfg;
-                    cfg_perm.design = designs{i_perm};
-                    cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
-                    
-                    decoding(cfg_perm); % run permutation
-                end
-                
-                delete(pool);
-            end
-        end
-        if ~doParallel
-            for i_perm = 1:aas_getsetting(aap,'permutation.iteration')
-                cfg_perm = cfg;
-                cfg_perm.design = designs{i_perm};
-                cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
-                
-                decoding(cfg_perm); % run permutation
-            end
-        end
+%         combine = 0;   % see make_design_permutations how you can run all analysis in one go, might be faster but takes more memory
+%         designs = make_design_permutation(cfg,aas_getsetting(aap,'permutation.iteration'),combine);
+%         
+%         doParallel = aas_getsetting(aap,'permutation.numberofworkers') > 1;
+%         if doParallel
+%             aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
+%             if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
+%             try
+%                 cluster = parcluster(poolprofile);
+%                 if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
+%                 global aaworker;
+%                 wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
+%                 aas_makedir(aap,wdir);
+%                 cluster.JobStorageLocation = wdir;
+%                 nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
+%                 pool = gcp('nocreate');
+%                 if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
+%             catch E
+%                 aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
+%                 doParallel = false;
+%             end
+%             
+%             if doParallel
+%                 parfor i_perm = 1:aas_getsetting(aap,'permutation.iteration')
+%                     cfg_perm = cfg;
+%                     cfg_perm.design = designs{i_perm};
+%                     cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
+%                     
+%                     decoding(cfg_perm); % run permutation
+%                 end
+%                 
+%                 delete(pool);
+%             end
+%         end
+%         if ~doParallel
+%             for i_perm = 1:aas_getsetting(aap,'permutation.iteration')
+%                 cfg_perm = cfg;
+%                 cfg_perm.design = designs{i_perm};
+%                 cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
+%                 
+%                 decoding(cfg_perm); % run permutation
+%             end
+%         end
         
         % - write 4D NIfTI
         dim = [cfg.datainfo.dim aas_getsetting(aap,'permutation.iteration')];
@@ -131,9 +131,19 @@ switch task
             create(N);
             
             for n = 1:aas_getsetting(aap,'permutation.iteration')
-                dat = load(outpermfnames{n});
-                Y = zeros(dat.results.datainfo.dim);
-                Y(dat.results.mask_index) = dat.results.(cfg.results.output{o}).output;
+                dat = load(outpermfnames{n}); results = dat.results;
+                output = results.(cfg.results.output{o}).output;
+                Y = zeros(results.datainfo.dim);
+                if strcmp(cfg.analysis,'roi')
+                    roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), results.roi_names);
+                    output = num2cell(output);
+                else
+                    roiInd = 1;
+                    output = {output};
+                end
+                for r = 1:numel(roiInd)
+                    Y(results.mask_index_each{r}) = output{r};
+                end                
                 N.dat(:,:,:,n) = Y;
                 spm_get_space([N.dat.fname ',' num2str(n)], N.mat);
             end
@@ -174,7 +184,16 @@ switch task
             Z = statres.(cfg.results.output{o}).output;
             Z(statres.(cfg.results.output{o}).p >= 0.05) = 0;
             Y = zeros(statres.datainfo.dim);
-            Y(statres.mask_index) = Z;
+            if strcmp(cfg.analysis,'roi')
+                roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), statres.roi_names);
+                Z = num2cell(Z);
+            else
+                roiInd = 1;
+                Z = {Z};
+            end
+            for r = 1:numel(roiInd)
+                Y(statres.mask_index_each{r}) = Z{r};
+            end
             N.dat(:,:,:) = Y;
             spm_get_space(N.dat.fname, N.mat);
             
@@ -200,11 +219,11 @@ switch task
             % - draw
             axis = {'sagittal','coronal','axial'};
             for a = 1:3
-                if any(Z~=0), stat_fname = {N.dat.fname}; else, stat_fname = {}; end
+                if any(cell2mat(Z)~=0), stat_fname = {N.dat.fname}; else, stat_fname = {}; end
                 [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
                 fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
                 
-                if (~any(Z~=0))
+                if (~any(cell2mat(Z)~=0))
                     annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                 end
                 
