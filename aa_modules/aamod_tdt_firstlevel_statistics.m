@@ -73,49 +73,49 @@ switch task
         cfg.results.write = 2; % write only mat file
         cfg.results.overwrite = 1;
         
-%         combine = 0;   % see make_design_permutations how you can run all analysis in one go, might be faster but takes more memory
-%         designs = make_design_permutation(cfg,aas_getsetting(aap,'permutation.iteration'),combine);
-%         
-%         doParallel = aas_getsetting(aap,'permutation.numberofworkers') > 1;
-%         if doParallel
-%             aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
-%             if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
-%             try
-%                 cluster = parcluster(poolprofile);
-%                 if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
-%                 global aaworker;
-%                 wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
-%                 aas_makedir(aap,wdir);
-%                 cluster.JobStorageLocation = wdir;
-%                 nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
-%                 pool = gcp('nocreate');
-%                 if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
-%             catch E
-%                 aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
-%                 doParallel = false;
-%             end
-%             
-%             if doParallel
-%                 parfor i_perm = 1:aas_getsetting(aap,'permutation.iteration')
-%                     cfg_perm = cfg;
-%                     cfg_perm.design = designs{i_perm};
-%                     cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
-%                     
-%                     decoding(cfg_perm); % run permutation
-%                 end
-%                 
-%                 delete(pool);
-%             end
-%         end
-%         if ~doParallel
-%             for i_perm = 1:aas_getsetting(aap,'permutation.iteration')
-%                 cfg_perm = cfg;
-%                 cfg_perm.design = designs{i_perm};
-%                 cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
-%                 
-%                 decoding(cfg_perm); % run permutation
-%             end
-%         end
+        combine = 0;   % see make_design_permutations how you can run all analysis in one go, might be faster but takes more memory
+        designs = make_design_permutation(cfg,aas_getsetting(aap,'permutation.iteration'),combine);
+        
+        doParallel = aas_getsetting(aap,'permutation.numberofworkers') > 1;
+        if doParallel
+            aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
+            if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
+            try
+                cluster = parcluster(poolprofile);
+                if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
+                global aaworker;
+                wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
+                aas_makedir(aap,wdir);
+                cluster.JobStorageLocation = wdir;
+                nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
+                pool = gcp('nocreate');
+                if isempty(pool) || pool.NumWorkers < nWorkers, delete(pool); pool = parpool(cluster,nWorkers); end
+            catch E
+                aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
+                doParallel = false;
+            end
+            
+            if doParallel
+                parfor i_perm = 1:aas_getsetting(aap,'permutation.iteration')
+                    cfg_perm = cfg;
+                    cfg_perm.design = designs{i_perm};
+                    cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
+                    
+                    decoding(cfg_perm); % run permutation
+                end
+                
+                delete(pool);
+            end
+        end
+        if ~doParallel
+            for i_perm = 1:aas_getsetting(aap,'permutation.iteration')
+                cfg_perm = cfg;
+                cfg_perm.design = designs{i_perm};
+                cfg_perm.results.filestart = ['perm' sprintf('%04d',i_perm)];
+                
+                decoding(cfg_perm); % run permutation
+            end
+        end
         
         % - write 4D NIfTI
         dim = [cfg.datainfo.dim aas_getsetting(aap,'permutation.iteration')];
