@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        
+        <initialisation>	
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>
+                    
+        <!-- preprocessing -->
+
+        <module><name>aamod_structuralfromnifti</name></module>
+        <module><name>aamod_reorienttomiddle_structural</name></module>
+
+        <module><name>aamod_epifromnifti</name></module>
+        <module><name>aamod_reorienttomiddle_epi</name></module>
+
+        <module><name>aamod_realign</name></module>  
+        <module><name>aamod_coreg_extended</name></module>
+
+        <module><name>aamod_segment8_multichan</name>
+             <extraparameters>
+                <aap><tasklist><currenttask><settings>
+                    <samp>2</samp>
+                </settings></currenttask></tasklist></aap>
+            </extraparameters>
+        </module>
+
+        <module><name>aamod_norm_write_epi</name></module>
+
+        <module><name>aamod_smooth</name>
+            <extraparameters>
+                <aap><tasklist><currenttask><settings>
+                    <FWHM>8</FWHM>
+                </settings></currenttask></tasklist></aap>
+            </extraparameters>
+        </module>
+
+        <!-- modeling -->
+
+        <module><name>aamod_firstlevel_model</name></module>            
+        <module><name>aamod_firstlevel_contrasts</name></module> 
+        <module><name>aamod_firstlevel_threshold</name></module>
+            
+        </main>
+    </tasklist>
+</aap>
