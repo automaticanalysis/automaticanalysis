@@ -20,6 +20,7 @@
             <connectivityanalysis>
                 <method desc='methods of calculating the cross-spectral relationship' options='wpli_debiased|granger' ui='optionlist'></method>
                 <channels desc='cell-column with selection of channels to calculate connectivity between, if empty or Nx1 all specified channels will be used (NxN connectivity), if Nx2 connectivity between the pairs will be considered (N connectivity)'></channels>
+                <foi desc='frequencies of interest specified as [1xN]'></foi>
             </connectivityanalysis>
 
             <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
