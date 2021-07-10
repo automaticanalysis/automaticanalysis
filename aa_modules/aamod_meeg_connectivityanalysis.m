@@ -52,6 +52,8 @@ switch task
         conncfg = aas_getsetting(aap,'connectivityanalysis');
         % conncfg.keeptrials  = 'no';
         
+        if ~isempty(conncfg.foi), tfacfg.foi = conncfg.foi; end
+        conncfg = rmfield(conncfg, 'foi');        
         switch conncfg.method
 %                 mvarcfg = aas_getsetting(aap,'multivariateautoregressiveanalysis');
 %                 if METHOD_MVAR.(mvarcfg.method) == 0
