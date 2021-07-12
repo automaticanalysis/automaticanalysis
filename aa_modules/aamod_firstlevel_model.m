@@ -224,6 +224,10 @@ switch task
                     for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
                         defPPI = defCov.covariate(indDefPPI).vector;
                         
+                        if ischar(defPPI) % already processed
+                            continue
+                        end
+                        
                         if any(strcmp({ppis.name},defPPI.name)) % existing definition
                             if ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).voiname,defPPI.voiname) || ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).contrastspec,defPPI.contrastspec)
                                 aas_log(aap,true,['ERROR: PPI ' defPPI.name ' with a different definition already exists']);
