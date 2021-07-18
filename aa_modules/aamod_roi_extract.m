@@ -44,8 +44,6 @@ switch task
     case 'doit'
       
         %% Settings
-        ROIvals    = aap.tasklist.currenttask.settings.ROIvals;
-        
         mask_space = aap.tasklist.currenttask.settings.mask_space;
         output_raw = aap.tasklist.currenttask.settings.output_raw;        
         
@@ -94,6 +92,7 @@ switch task
                     XYZind = yyXYZind;
                 end
                 
+                ROIvals = aas_getsetting(aap,'ROIvals');
                 if isempty(ROIvals)
                     ROIvals = setdiff(unique(YM(:)),0);
                     ROIvals(isnan(ROIvals)) = [];
