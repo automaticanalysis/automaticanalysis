@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        
+        <initialisation>			
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>
+         
+            <!-- this will generate T2 if it exists in data -->
+            
+            <module><name>aamod_structuralfromnifti</name></module>
+   
+            <!-- reorienttomiddle is optional but good idea -->
+            <!-- biascorrection often necessary or defacing fails -->
+            
+            <module><name>aamod_reorienttomiddle_structural</name></module>
+            <module><name>aamod_biascorrect_structural</name></module>  
+            <module><name>aamod_freesurfer_deface</name></module>
+
+            <module><name>aamod_reorienttomiddle_t2</name></module>
+            <module><name>aamod_biascorrect_t2</name></module>
+            <module><name>aamod_freesurfer_deface_apply_t2</name></module>
+                     
+		            
+        </main>
+        
+    </tasklist>
+</aap>

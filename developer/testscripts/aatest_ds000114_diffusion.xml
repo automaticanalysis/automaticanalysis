@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        
+        <initialisation>         
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+        
+        <main>
+            
+        <module><name>aamod_structuralfromnifti</name></module>
+        <module><name>aamod_diffusionfromnifti</name></module>
+
+        <module><name>aamod_reorienttomiddle_structural</name></module>
+        <module><name>aamod_reorienttomiddle_diffusion</name></module>
+
+        <module><name>aamod_biascorrect_structural</name></module>
+        <module><name>aamod_coreg_extended_1</name></module>
+
+        <module><name>aamod_diffusion_extractnodif</name></module>
+        <module><name>aamod_diffusion_bet</name></module>
+        <module><name>aamod_diffusion_dtinlfit</name></module>
+        <module><name>aamod_diffusion_coreg_extended_2_dti</name></module>
+      
+         </main>
+          
+    </tasklist>
+</aap>

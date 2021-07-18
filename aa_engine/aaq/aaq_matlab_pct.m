@@ -197,6 +197,8 @@ classdef aaq_matlab_pct<aaq
             % This method only acts when the queue is fully built
             if waitforalljobs
                 if ~isempty(obj.jobqueue)
+                    global aacache
+                    obj.aaworker.aacache = aacache;
                     spmd
                         if labindex==1
                             obj.runall_spmd_master(waitforalljobs);
