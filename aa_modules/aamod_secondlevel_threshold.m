@@ -299,6 +299,13 @@ switch task
                                         'threshold_method','z','threshold_value',0.1,...
                                         'filter',settings.extentprethreshold,'radius',settings.searchradius,'merge',settings.mergethreshold,...
                                         'plot',false,'output',true);
+                                    
+                                    % - exclude small (<k) ROIs
+                                    smallROIs = obj.table.ROIid(obj.table.Volume < k);
+                                    obj.label(reshape(arrayfun(@(l) any(l == smallROIs), obj.label(:)), obj.grid.d)) = 0;
+                                    obj.table(arrayfun(@(l) any(l == smallROIs), obj.table.ROIid),:) = [];
+                                    
+                                    % - save results
                                     save.vol(obj.label,obj.grid,spm_file(clusterfname,'ext',''),'Compressed',false);
                                     writetable(obj.table,spm_file(clusterfname,'ext','csv'));
                                     FWS.unload;
