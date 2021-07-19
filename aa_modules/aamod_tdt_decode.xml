@@ -11,31 +11,6 @@
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
             
-            <decoding>
-                <software options='libsvm|liblinear' ui='optionlist'>libsvm</software>
-                <options>
-                    <liblinear>
-                        <solver options='LR|SVC|SVR|CS-SVC' ui='optionlist'>SVC</solver>
-                        <dual ui='yesno'>1</dual>
-                        <regularisation options='L1|L2' ui='optionlist'>L2</regularisation>
-                        <loss options='L1|L2|none' ui='optionlist'>L2</loss>
-                        <cost>1</cost>
-                    </liblinear>
-                    <libsvm>
-                        <svm options='C-SVC|nu-SVC|1SVM|eSVR|nu-SVR' ui='optionlist'>C-SVC</svm>
-                        <kernel options='linear|polynomial|RBF|sigmoid|precomputed' ui='optionlist'>precomputed</kernel>
-                        <kernelparameters>
-                            <degree>3</degree>
-                            <gamma desc="manual [number] or 'auto' (1/number of features)">auto</gamma>
-                            <coef0>0</coef0>
-                        </kernelparameters>
-                        <cost>1</cost>
-                    </libsvm>
-                    <common>
-                    </common>
-                </options>
-            </decoding>
-            
             <method desc='decoding analysis' options='wholebrain|searchlight|roi' ui='optionlist'>searchlight</method>
             
             <searchlight desc='spherical searchlight'>
