@@ -34,6 +34,69 @@ switch task
         cfg.plot_selected_voxels = 0;
         cfg.plot_design = 0;
         
+        % Set and configure classifier
+        % cfg.decoding.train.classification.model_parameters = '-s 1 -c 1 -q';
+        cfg.decoding.software = aas_getsetting(aap,'decoding.software');        
+        settings = aas_getsetting(aap,['decoding.options.' cfg.decoding.software]);
+        switch cfg.decoding.software
+            case 'liblinear'
+                cfg.decoding.method = 'classification';
+                                
+                if strcmp(settings.solver,'CS-SVC'), solver = 4;
+                else
+                    switch settings.solver
+                        case 'LR'
+                            solver = [0 6 7];
+                        case 'SVC'
+                            solver = [1 2 3 5];
+                        case 'SVR'
+                            solver = [11 12 13];
+                    end
+                    if settings.dual
+                        solver = intersect(solver,[1 3 5 6 7 12 13]);
+                    else
+                        solver = intersect(solver,[0 2 5 6 11]);
+                    end
+                    switch settings.regularisation
+                        case 'L1'
+                            solver = intersect(solver,[5 6]);
+                        case 'L2'
+                            solver = intersect(solver,[0 1 2 3 7 11 12 13]);
+                    end
+                    switch settings.loss
+                        case 'L1'
+                            solver = intersect(solver,[3 13]);
+                        case 'L2'
+                            solver = intersect(solver,[1 2 5 11 12]);
+                        case 'none'
+                            solver = intersect(solver,[0 6 7]);
+                    end
+                end
+                cfg.decoding.train.classification.model_parameters = sprintf('-s %d -c %d -q',solver,settings.cost);
+            case 'libsvm'
+                schema = aap.schema.tasksettings.aamod_tdt_decode(aap.tasklist.currenttask.index).decoding.options.libsvm;
+                
+                if strcmp(settings.kernel,'precomputed')
+                    cfg.decoding.method = 'classification_kernel';
+                else
+                    cfg.decoding.method = 'classification';
+                end
+                
+                if ischar(settings.kernelparameters.gamma) % 'auto'
+                    settings.kernelparameters.gamma = 1/numel(aas_getsetting(aap,'itemList'));
+                end
+                
+                cfg.decoding.train.(cfg.decoding.method).model_parameters = sprintf('-s %d -t %d -d %d -g %1.3f -r %1.3f -c %d -b %d -q',...
+                    find(strcmp(strsplit(schema.svm.ATTRIBUTE.options,'|'),settings.svm))-1, ...
+                    find(strcmp(strsplit(schema.kernel.ATTRIBUTE.options,'|'),settings.kernel))-1, ...
+                    settings.kernelparameters.degree, ...
+                    settings.kernelparameters.gamma ,...
+                    settings.kernelparameters.coef0, ...
+                    settings.cost, ...
+                    contains(settings.svm,'SRV') ...
+                    );
+        end
+        
         %% Prepare
         inps = aas_getstreams(aap,'input');
         inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
