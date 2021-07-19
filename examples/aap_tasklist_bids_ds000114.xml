@@ -41,7 +41,7 @@
             <!-- Functional -->
             <module><name>aamod_realign</name></module>
             <module><name>aamod_slicetiming</name></module>
-            <module><name>aamod_coreg_extended_2_epi</name></module>
+            <module><name>aamod_coreg_extended_2</name></module>
             <module><name>aamod_norm_write_dartel</name></module> 
             <module><name>aamod_smooth</name></module>
             <module><name>aamod_tsdiffana</name></module>

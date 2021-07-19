@@ -30,15 +30,17 @@ classdef hcpwbClass < toolboxClass
         function load(obj)
             % specify binary folder
             if isunix
-                assert(~isempty(strfind(getenv('ARCH'),'64')),'64-bit OS required');
+                assert(contains(getenv('ARCH'),'64'),'64-bit OS required');
                 if exist('/etc/os-release','file')
                     lines = regexp(fileread('/etc/os-release'), '\n', 'split');
                     lines(cellfun(@isempty,lines)) = [];
                     dat = regexp(lines, '\=', 'split');
-                    ID=dat{cellfun(@(x) strcmp(x{1},'ID'),dat)}{2};
+                    ID=dat{cellfun(@(x) strcmp(x{1},'ID'),dat)}{2}; ID = strrep(ID,'"','');
                     switch ID
-                        case {'"centos"' '"rhel"' '"fedora"'}
+                        case {'centos' 'rhel' 'fedora'}
                             obj.binaryDir = 'bin_rh_linux64';
+                        case {'ubuntu'}
+                            obj.binaryDir = 'bin_linux64';
                         otherwise
                             error('OS %s not supported', ID)
                     end
@@ -48,8 +50,12 @@ classdef hcpwbClass < toolboxClass
             else
                 error('/etc/os-release not found -> cannot determine *nix release')
             end
+            % check binary
+            if ~exist(fullfile(obj.toolPath,obj.binaryDir),'dir')
+                warning('workbench binary is not found. You can obtain it from https://www.humanconnectome.org/software/get-connectome-workbench');
+            end
             
-            % checkc templatedir
+            % check templatedir
             if isempty(obj.templateDir) || ~exist(obj.templateDir,'dir') || numel(dir(obj.templateDir)) == 2
                warning('template directory is not found. You can obtain it from https://github.com/Washington-University/HCPpipelines (subfolder global/templates)');
             end

@@ -18,7 +18,7 @@ switch task
             sess = aap.tasklist.currenttask.settings.session;
         end
         
-        streams=aap.tasklist.currenttask.inputstreams.stream;
+        streams = aas_getstreams(aap,'input');
         
         for streamind=1:length(streams)
             
@@ -55,20 +55,26 @@ switch task
                 aap=aas_desc_outputs(aap,subj,streams{streamind},outputfns);
             end
             
-        end;
+        end
         % All done
         spm_progress_bar('Clear');
     case 'checkrequirements'
-        in =  aas_getstreams(aap,'input');
+        in = aas_getstreams(aap,'input');
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
         stageindex = sscanf(index,'_%05d');
         out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
         for s = 1:numel(in)
-            if ~strcmp(out{s},in{s})
-                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},in{s},'output');
-                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' in{s} '''']);
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
             end
-        end        
+        end     
 end
 
 

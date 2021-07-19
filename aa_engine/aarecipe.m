@@ -98,7 +98,7 @@ if exist('tasklistxml','var')
     xml_tasklist.schema=xml_read(tasklistxml,Pref);
     Pref.ReadAttr=0;
     xml_tasklist=xml_read(tasklistxml,Pref);
-    aap=catstruct(aap,xml_tasklist);
+    aap=struct_update(aap,xml_tasklist);
     % Now load up each modules parameters
     aap.tasksettings=[];
     

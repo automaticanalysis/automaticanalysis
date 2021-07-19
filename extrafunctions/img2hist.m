@@ -71,19 +71,11 @@ for f = 1:numel(fileName)
     
     % T-value of deviation from zero-centered
     zmean = Y{f}-mean(Y{f});
-    try
-        Tstats = testt(Y{f},zmean);
-        SRstats = wilcoxon(Y{f}',zmean');
-        
-        % Get legend information
-        legStr{f} = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
-            name{f}, nanmean(Y{f}), nanmedian(Y{f}), nanstd(Y{f}), Tstats.tvalue, SRstats.z);
-    catch
-        [nh, p, dev, Tstats] = ttest2(Y{f},zmean);
-        % Get legend information
-        legStr{f} = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f', ...
-            name{f}, nanmean(Y{f}), nanmedian(Y{f}), nanstd(Y{f}), Tstats.tstat);
-    end
+    
+    [~,~,~, Tstats] = ttest2(Y{f},zmean);
+    % Get legend information
+    legStr{f} = sprintf('%s: mean %0.2f, median %0.2f, std: %0.2f, ttest-Tval is: %0.2f', ...
+        name{f}, nanmean(Y{f}), nanmedian(Y{f}), nanstd(Y{f}), Tstats.tstat);
 end
 
 xlabel('Value')
@@ -91,15 +83,9 @@ ylabel('Proportion of voxels')
 legend(legStr,'interpreter','none');
 
 %% Difference between 2 distributions
-if length(fileName) == 2
-    try
-        Tstats = testt(Y{1},Y{2});
-        SRstats = wilcoxon(Y{1},Y{2});
-        title(sprintf('%s: mean %0.2f, median %0.2f, ttest-Tval is: %0.2f, SR-Zval is: %0.2f', ...
-            [name{1} '-' name{2}], nanmean(Y{1}) - nanmean(Y{2}), nanmedian(Y{1}) - nanmedian(Y{2}), Tstats.tvalue, SRstats.z))
-    catch
-        [nh, p, dev, Tstats] = ttest2(Y{1},Y{2});
-        title(sprintf('%s: mean %0.2f, median %0.2f, ttest-Tval is: %0.2f', ...
-            [name{1} '-' name{2}], nanmean(Y{1}) - nanmean(Y{2}), nanmedian(Y{1}) - nanmedian(Y{2}), Tstats.tstat))
-    end
+if numel(fileName) == 2
+    [~,~,~, Tstats] = ttest2(Y{1},Y{2});
+    [~,~,SRstats] = signrank(Y{1},Y{2});
+    title(sprintf('%s: mean %0.2f, median %0.2f, ttest-Tval is: %0.2f, singnrank-Zval is: %0.2f', ...
+        [name{1} '-' name{2}], nanmean(Y{1}) - nanmean(Y{2}), nanmedian(Y{1}) - nanmedian(Y{2}), Tstats.tstat, SRstats.zval))
 end

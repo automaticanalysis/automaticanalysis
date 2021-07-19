@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
   <tasklist>
-   <currenttask mfile_alias='aamod_roi_extract' domain='session' desc='Extract data in ROIs' modality='MRI'>
+   <currenttask mfile_alias='aamod_roi_extract' domain='*' desc='Extract data in ROIs' modality='MRI'>
         <ROIvals></ROIvals>
         
         <mask_space desc='Voxels from which space to use: 0 - data; 1 - mask'>1</mask_space>
@@ -15,10 +15,10 @@
         
         <inputstreams>
             <stream isrenameable="1">rois</stream>
-            <stream>epi</stream>
+            <stream isrenameable="1">epi</stream>
         </inputstreams>
         <outputstreams>
-            <stream>roidata_epi</stream>
+            <stream isrenameable="1">roidata_epi</stream>
         </outputstreams>
    </currenttask>
   </tasklist>

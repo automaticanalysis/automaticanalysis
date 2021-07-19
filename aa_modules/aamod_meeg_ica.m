@@ -8,10 +8,11 @@ switch task
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         EL.load;
         
-        EEG = pop_loadset(infname{strcmp(spm_file(infname,'ext'),'set')});
+        indfnEEG = strcmp(spm_file(infname,'ext'),'set');
+        EEG = pop_loadset('filepath',spm_file(infname{indfnEEG},'path'),'filename',spm_file(infname{indfnEEG},'filename'));
         
         % common parameters
         if isempty(aas_getsetting(aap,'PCA')), PCA = 0;
@@ -66,7 +67,7 @@ switch task
         
         % save
         outfname = spm_file(infname,'prefix','ica_');
-        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{1},'basename'));
+        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{indfnEEG},'basename'));
 
         EL.unload;
                 

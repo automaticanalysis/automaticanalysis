@@ -6,6 +6,9 @@
             <eoptions>
                 <cost_fun>nmi</cost_fun>
             </eoptions>
+            <roptions>
+                <interp>4</interp>
+            </roptions>
             
             <doReslice>1</doReslice>
             

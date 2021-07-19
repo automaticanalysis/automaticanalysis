@@ -47,7 +47,8 @@ classdef eeglabClass < toolboxClass
             if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
             
-            for p = plugin_getweb('', obj.plugins, 'newlist')
+            pllist = plugin_getweb('', obj.plugins, 'newlist');
+            for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
                     plugin_install(p.zip, p.name, p.version, p.size);
                     is_new_plugin = true;

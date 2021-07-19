@@ -30,9 +30,7 @@ switch task
         
         % Load the movement parameters
         Mfn = cellstr(aas_getfiles_bystream(aap,subj,sess,'realignment_parameter')); % aas_movPars(aap,subj, [1 0 0; 0 0 0]);
-        rp = spm_load(Mfn{strcmp(spm_file(Mfn, 'ext'),'txt')});
-        nsess = length(aap.acq_details.sessions);
-        
+        rp = spm_load(Mfn{strcmp(spm_file(Mfn, 'ext'),'txt')});        
         
         % Load up differnces through time as produced by tsdiffana
         tdfn = aas_getimages_bystream(aap,subj,sess,'tsdiffana');
@@ -93,33 +91,33 @@ switch task
         
         Mspikes=[find(badMspikes), rpdiff(badMspikes,:)];
         
-        %% DIAGNOSTIC
+        %% DIAGNOSTIC  
+        f = figure('Position',[0,400,1600,400]);
         
-        subplot(nsess,4, (sess - 1) * 4 + 1)
+        subplot(1,4,1)
         hold off
         plot(tm, 'b.')
         hold on
         plot(TSspikes(:,1), TSspikes(:,2), 'ko')
         title(sprintf('Sess %d \t Spikes: %d\n', sess, size(TSspikes,1)))
         
-        subplot(nsess,4, (sess - 1) * 4 + 2)
-        hist(Rtm,50)
+        subplot(1,4,2)
+        histogram(Rtm,50)
         title(sprintf('Distribution of the tm data underlying spikes'))
         
-        subplot(nsess,4, (sess - 1) * 4 + 3)
+        subplot(1,4,3)
         hold off
         plot(rpdiff(:,1:3))
         hold on
         plot(find(badTspikes), rpdiff(badTspikes,1:3), 'ko')
         title(sprintf('Sess %d \t Translations: %d\n', sess, sum(badTspikes,1)))
         
-        subplot(nsess,4, (sess - 1) * 4 + 4)
+        subplot(1,4,4)
         hold off
         plot(rpdiff(:,4:6))
         hold on
         plot(find(badRspikes), rpdiff(badRspikes,4:6), 'ko')
         title(sprintf('Sess %d \t Rotations: %d\n', sess, sum(badRspikes,1)))
-        
         
         %% Save things
         aas_log(aap,false,sprintf('Sess %d \t Spikes: %d; Moves: %d', sess, size(TSspikes,1), size(Mspikes,1)))
@@ -130,14 +128,9 @@ switch task
         % Save the time differences
         aap = aas_desc_outputs(aap,subj,sess, 'listspikes', SPfn);
         
-        
         %% Save graphical output to common diagnostics directory
-        set(2,'Renderer','zbuffer');
-        print(2,'-djpeg','-r150',fullfile(aap.acq_details.root, 'diagnostics', ...
-            [mfilename '__' subjname '.jpeg']));
-        try close(2); catch; end
+        set(f,'Renderer','zbuffer');
+        print(f,'-djpeg','-r150',fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '.jpeg']));
+        close(f);
     case 'checkrequirements'
-
-    otherwise
-        aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end

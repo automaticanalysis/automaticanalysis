@@ -184,11 +184,6 @@ if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conve
     setenv('PATH',[p ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
-
-
-% Path to spm modifications to the top
-addpath(fullfile(aa.Path,'extrafunctions','spm_mods'),'-begin');
-
 %% Build required path list for cluster submission
 % aa
 reqpath=textscan(genpath(aa.Path),'%s','delimiter',':'); reqpath = reqpath{1};

@@ -26,6 +26,7 @@ switch task
         FT.addExternal('spm12');
         
         diag = aas_getsetting(aap,'diagnostics');
+        diag.parameter = 'avg';
         
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
@@ -70,7 +71,7 @@ switch task
                             else
                                 EL.reload;
                             end
-                            EEG = pop_loadset(meegfn{seg});
+                            EEG = pop_loadset('filepath',spm_file(meegfn{seg},'path'),'filename',spm_file(meegfn{seg},'filename'));
                             EL.unload;
                             FT.reload;                            
                             data(seg) = eeglab2fieldtripER(EEG,'reorient',1);

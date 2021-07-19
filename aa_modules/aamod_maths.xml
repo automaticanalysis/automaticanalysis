@@ -9,8 +9,9 @@
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
-            <!-- Operation must be a statement as written in the command window. 'X' refers to the data. E.g.: 'std(X,[],4)' -->
-            <operation></operation>
+            <inputselection desc='Regular expression to select input file in case of multiple inputs in the stream'></inputselection>
+            
+            <operation desc="Operation is a (cell array of) function call(s) as written in the command window. 'X' refers to the data. E.g.: 'std(X,[],4)' Arithmetic operations are implemented as subfunctions of the module."></operation>
             
             <inputstreams>
                 <stream isrenameable='1' isessential='1' diagnostic='0'>input</stream>

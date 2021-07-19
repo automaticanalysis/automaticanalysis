@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='aa module for MVPA with CosmoMVPA' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <!-- make sure that your Default Cluster is configured for parpool -->
+            <numworker desc='number of parallel worker (0 or 1 means no parallelisation)'>0</numworker>
+            
+            <inference>
+                <method desc='methods for calculating the significance probability' options='montecarlo' ui='optionlist'>montecarlo</method>
+                <iteration desc='number of randomisation (for montecarlo)'>5000</iteration>
+                <correction desc='multiple-comparison correction' options='max|maxsum|maxsize|tfce' ui='optionlist'>tfce</correction>
+                <pclusterforming desc='cluster-forming threshold (not for tfce)'>0.05</pclusterforming>
+                <p desc='critical value for cluster and single-sample'>0.05</p>
+            </inference>
+            
+            <overlay>
+                <transparency>0</transparency>
+                <nth_slice desc='in mm'>6</nth_slice>
+                <template>SPMT1</template>  <!-- averaged_structurals/SPMT1 -->
+            </overlay>
+            
+            <inputstreams>
+                <stream isrenameable='1'>map</stream>
+                <stream isessential='0' isrenameable='1'>structural</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>secondlevel_thr</stream>
+                <stream>secondlevel_thrslice</stream>
+                <stream>secondlevel_thr3D</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

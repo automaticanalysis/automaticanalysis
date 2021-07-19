@@ -18,9 +18,9 @@
              
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
-                <stream>ASL-CBF</stream>
+                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream> 
                 <stream diagnostic="1">ASL-raw</stream>
-                <stream diagnostic="1">aamod_coreg_extended_1_00001.structural</stream>  
+                <stream>ASL-CBF</stream>
             </inputstreams>
             
             <outputstreams>

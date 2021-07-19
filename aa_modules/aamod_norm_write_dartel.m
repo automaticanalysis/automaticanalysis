@@ -176,7 +176,9 @@ switch task
             
             % describe outputs with diagnostoc
             aap=aas_desc_outputs(aap,index{:},streams{streamind},wimgs);
-            if strcmp(aap.options.wheretoprocess,'localsingle')
+            if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+                    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
                 aas_checkreg(aap,index{:},streams{streamind},'structural');
             end
             if ~exist('xfm','var')

@@ -13,12 +13,12 @@
             <threshold>
                 <correction>none</correction> <!-- FWE/FDR/iTT/none -->
                 <p>0.001</p>
-                <extent>0</extent>
+                <extent desc="cluster-extent threshold, in voxel [number] or in (corrected) probability ['correction:p-value']">0</extent>
             </threshold>
 			
             <overlay>
                 <transparency>0</transparency>
-                <nth_slice>3</nth_slice>
+                <nth_slice desc='in mm'>6</nth_slice>
                 <template>SPMT1</template> <!-- structural|SPMT1 -->
             </overlay>
 			

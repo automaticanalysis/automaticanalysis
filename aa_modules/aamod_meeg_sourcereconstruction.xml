@@ -23,21 +23,33 @@
             </realignelectrodes>
             
             <inputstreams>
-                <stream>timefreq</stream>
                 <stream>headmodel</stream>
                 <stream>sourcemodel</stream>
-                <stream>structural</stream>
                 <stream>segmentation</stream>
+                <stream isessential='0'>sensors</stream>
+                <stream isessential='0'>leadfield</stream>
+                <stream isessential='0'>sourcefilter</stream>
+                <stream isrenameable='1'>input</stream>
             </inputstreams>
             
             <outputstreams>
-                <stream>timefreq</stream>
+                <stream isrenameable='1'>output</stream>
             </outputstreams>
             
             <diagnostics>
                 <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
-                <view desc='viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI'>RAS</view>
+                <!--
+                Background to project statistics onto. 
+                In case of cortical sheet based source, 'sourcemodel' means the sourcemodel surface averaged across particpants, the other options corresponds to high-res surface stored in 'surf_[surface].gii' files in the sourcesurface stream (if present)
+                In case of grid based source, 'template' means FieldTrip's 'standard_mri', the [filename] corresponds to any image specified with full path
+                -->
+                <background options='sourcemodel|inflated|midthickness|pial|white|template|[filename]' ui='optionlist'>template</background>
+                <!--
+                In case of cortical sheet based source, viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain.
+                In case of grid based source, view can be 'ortho'
+                -->
+                <view desc='' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI|ortho'>ortho</view>
             </diagnostics>
             
         </currenttask>

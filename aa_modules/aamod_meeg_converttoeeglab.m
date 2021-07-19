@@ -29,7 +29,7 @@ switch task
         end
         if isempty(EEG)
             for i = 1:numel(E)
-                aas_log(aap,false,sprintf('ERROR: reading %s - %s',infname{i}, E(i).message));
+                aas_log(aap,i==numel(E),sprintf('ERROR: reading %s - %s',infname{i}, E(i).message));
             end
         end
         

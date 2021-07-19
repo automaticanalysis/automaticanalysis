@@ -4,8 +4,8 @@ resp='';
 
 switch task
     case 'report'
-        [junk, EL] = aas_cache_get(aap,'eeglab');
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, EL] = aas_cache_get(aap,'eeglab');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         
         MAXNTRIAL=1000; % do not expect more than 1000 trials
         
@@ -28,7 +28,7 @@ switch task
         if subj == 1, EL.load;
         else, EL.reload; end
         for d = 1:numel(outfname)
-            EEG(d) = pop_loadset(outfname{d});            
+            EEG(d) = pop_loadset('filepath',spm_file(outfname{d},'path'),'filename',spm_file(outfname{d},'filename'));
         end
         EL.unload;
         if subj == 1, FT.load;
@@ -91,7 +91,7 @@ switch task
         
         %% Summary in case of more subjects
         if (subj > 1) && (subj == numel(aap.acq_details.subjects)) % last subject
-            [junk, iSess] = aas_getN_bydomain(aap,aap.tasklist.currenttask.domain,subj);
+            [~, iSess] = aas_getN_bydomain(aap,aap.tasklist.currenttask.domain,subj);
             firstSess = iSess(1);
             lastSess = iSess(end);
             
@@ -183,13 +183,13 @@ switch task
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
-        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        [~, SPMtool] = aas_cache_get(aap,'spm');
         SPMtool.load;
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         EL.load;
         
         EEGLABFILE = infname{strcmp(spm_file(infname,'ext'),'set')};
-        EEG = pop_loadset(EEGLABFILE);
+        EEG = pop_loadset('filepath',spm_file(EEGLABFILE,'path'),'filename',spm_file(EEGLABFILE,'filename'));
        
         % save original timevector
         if isfield(EEG.etc,'clean_sample_mask')

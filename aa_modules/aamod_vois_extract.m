@@ -1,126 +1,83 @@
 % AA module - extract VOIs
-% [aap,resp]=aamod_vois_extract(aap,task,subj,sess)
-% based on ppi_spm_batch.m 17 by Guillaume Flandin & Darren Gitelman
+% [aap,resp]=aamod_vois_extract(aap,task,subj)
+% based on https://jacoblee.net/occamseraser/2018/01/03/extracting-rois-for-ppi-analysis-using-spm-batch/index.html
 % Tibor Auer MRC CBSU Jul 2014
 
-function [aap,resp]=aamod_vois_extract(aap,task,subj,sess)
+function [aap,resp]=aamod_vois_extract(aap,task,subj)
 
 resp='';
 
 switch task
-    case 'domain'
-        resp='session';   % this module needs to be run once per subject case 'report'
-        
     case 'doit'
         
         %% Init
-        % Directory
-        subj_dir = aas_getsubjpath(aap,subj);
-        anadir = fullfile(subj_dir,aap.directory_conventions.stats_singlesubj);
-        sessdir = aas_getsesspath(aap,subj,sess);
+        job0.spmmat = {aas_getfiles_bystream(aap,'subject',subj,'firstlevel_spm')};
+        dat = load(job0.spmmat{1}); SPM = dat.SPM;
+        switch aas_getsetting(aap,'adjust')
+            case 'none'
+                job0.adjust = 0;
+            case 'all'
+                job0.adjust = nan;
+            otherwise
+                aas_log(aap,true,'NYI: adjusting for specific contrast')
+        end
+        imgstream = aas_getstreams(aap,'input'); imgstream = imgstream{end};
         
-        % Settings
-        cd(anadir);
-        delete('VOI*.mat');
-
-        VOIs0 = aap.tasklist.currenttask.settings.VOI;
-        fSPM = aas_getfiles_bystream(aap, subj,'firstlevel_spm');
-        load(fSPM);
-        spm_jobman('initcfg');
-
-        %% Run
-        % Setup
-        nVOI = 0;
-        runF = false;
-        for v = 1:numel(VOIs0)
-            VOI = VOIs0(v);
-            if (VOI.Ic == -1)
-               runF = true;
-               VOI.Ic = numel(SPM.xCon)+1;
-            end
-            VOI.Sess = sess; % single session only
-            if isempty(VOI.name), VOI.name = VOI.xyz; end % default
-
-            if isempty(VOI.lmax) && ~strcmp(VOI.def,'mask') % specified
-                nVOI = nVOI + 1;
-                VOIs(nVOI) = VOI;
-            else
-                if aas_stream_has_contents(aap,'rois')
-                    VOI0 = VOI;
-                    ROIs = aas_getfiles_bystream(aap,subj,'rois');
-                    for r = 1:size(ROIs,1)
-                        VOI = VOI0;
-                        fROI = deblank(ROIs(r,:));
-                        if strcmp(VOI.def,'mask')
-                            VOI.name = basename(fROI);
-                            VOI.spec = spm_vol(fROI);
-                        else % lmax
-                            VOI.defIc = VOI.lmax;
-                            VOI.name = basename(fROI);
-                            roi = spm_read_vols(spm_vol(fROI));
-                            
-                            Vcon = SPM.xCon(VOI.defIc).Vspm;
-                            Z = spm_read_vols(Vcon);
-                            Z = Z.*roi;
-                            lmax_v = find3D(Z==max(Z(Z~=0)))';
-                            lmax_mm = Vcon.mat(1:3,:)*[lmax_v; ones(1,size(lmax_v,2))];
-                            
-                            VOI.xyz = lmax_mm;
-                        end
-                        nVOI = nVOI + 1;
-                        VOIs(nVOI) = VOI;
-                    end
+        for sess = aap.acq_details.selected_sessions   
+            aas_makedir(aap,aas_getsesspath(aap,subj,sess));
+            
+            %% Generate VOIs
+            fnames = {};
+            for v = aas_getsetting(aap,'VOI')                
+                job = job0;
+                job.session = sess;
+                job.name = fullfile(aas_getsesspath(aap,subj,sess),v.name);
+                
+                switch v.type
+                    case 'sphere'
+                        job.roi{1}.sphere.radius = v.size/2;
+                    case 'mask'
+                        job.roi{1}.mask.image = {aas_getfiles_bystream(aap,'subject',subj,imgstream)};
+                        job.roi{1}.mask.threshold = 0.5;
+                    case 'roi'
+                        job.roi{1}.label.image = {aas_getfiles_bystream(aap,'subject',subj,imgstream)};
+                        job.roi{1}.label.list = v.centredefinition.roival;
+                    case 'blob'
+                        aas_log(aap,true,'NYI: blob')
                 end
+                switch v.centre
+                    case 'xyz'
+                        aas_log(aap,true,'NYI: xyz')
+                    case 'roicentre'
+                        [Y,XYZmm] = spm_read_vols(spm_vol(aas_getfiles_bystream(aap,'subject',subj,imgstream)));
+                        job.roi{1}.(char(fieldnames(job.roi{1}))).centre = mean(XYZmm(:,Y(:) == v.centredefinition.roival),2)';
+                    case 'roimaximum'
+                        job.roi{1}.(char(fieldnames(job.roi{1}))).centre = [0 0 0]; % not used
+                        job.roi{1}.(char(fieldnames(job.roi{1}))).move.local.spm = 2;
+                        job.roi{1}.(char(fieldnames(job.roi{1}))).move.local.mask = 'i3';
+                        job.roi{2}.spm.spmmat = {''};
+                        job.roi{2}.spm.contrast = find(strcmp({SPM.xCon.name},v.centredefinition.contrast),1,'first');
+                        job.roi{2}.spm.conjunction = 1;
+                        job.roi{2}.spm.mask = [];
+                        job.roi{2}.spm.threshdesc = 'none';
+                        job.roi{2}.spm.thresh = 1; % unthresholded
+                        job.roi{2}.spm.extent = 0;
+                        job.roi{3}.label.image = {aas_getfiles_bystream(aap,'subject',subj,imgstream)};
+                        job.roi{3}.label.list = v.centredefinition.roival;
+                        job.expression = 'i1';
+                end
+                
+                % add brainmask
+                job.roi{end+1}.mask.image = {aas_getfiles_bystream(aap,'subject',subj,'firstlevel_brainmask')};
+                job.roi{end}.mask.threshold = 0.5;
+                job.expression = sprintf('%s & i%d',job.expression,numel(job.roi));
+                
+                out = spm_run_voi(job);
+                fnames = vertcat(fnames,out.voiimg,out.voimat);
             end
+            aap = aas_desc_outputs(aap,'session',[subj sess],'vois',fnames);
         end
         
-        if runF % generate an F-contrast testing for all effects of interest
-            clear jobs
-            jobs{1}.stats{1}.con.spmmat = cellstr(fSPM);
-            jobs{1}.stats{1}.con.consess{1}.fcon.name = 'Effects of interest';
-            fcont = [eye(numel(SPM.Sess(1).U)) zeros(numel(SPM.Sess(1).U),size(SPM.Sess(1).C.C,2)+1)];
-            for i=1:size(fcont,1)
-                jobs{1}.stats{1}.con.consess{1}.fcon.convec{1,i} = fcont(i,:);
-            end
-            spm_jobman('run',jobs);
-            load(fSPM);
-        end
-        
-        for v = 1:numel(VOIs)
-            VOI = VOIs(v);
-            
-            if ~isfield(VOI,'defIc')
-                VOI.defIc = VOI.Ic;
-            end
-            
-            % Extract
-            iSPM = SPM;
-            iSPM.title = sprintf('Extracting %s: %s',...
-                VOI.name,...
-                SPM.xCon(VOI.defIc).name);
-            iSPM.Ic = VOI.defIc;
-            iSPM.n = 1;
-            iSPM.Im = [];
-            iSPM.pm = [];
-            iSPM.Ex = [];
-            iSPM.u = 1; % no effective threshold
-            iSPM.k = 0;
-            iSPM.thresDesc = 'none';
-            [hReg,xSPM,SPM] = spm_results_ui('Setup',iSPM);
-            
-            [Y,xY]  = spm_regions(xSPM,SPM,hReg,VOI);
-            
-            vfname = sprintf('VOI_%s_%i.mat',VOI.name,VOI.Sess);
-            movefile(vfname,sessdir);
-            voifn{v} = fullfile(sessdir,vfname);
-        end
-        
-        %% Describe outputs
-        %  firstlevel_spm
-        aap=aas_desc_outputs(aap,subj,sess,'vois',char(voifn));
         
     case 'checkrequirements'
-        
-    otherwise
-        aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end

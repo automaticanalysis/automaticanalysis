@@ -40,7 +40,15 @@ elseif (numel(str) > 5) && strcmp(str(1:5), 'HEAD=')
     fprintf(aap.report.(ptr).fid,'<!DOCTYPE html>\n');
     fprintf(aap.report.(ptr).fid,'<html>\n');
     fprintf(aap.report.(ptr).fid,'<head><link rel="stylesheet" href="%saa_styles.css"></head>\n',dpath);
+    if strcmp(ptr, 'html_main')
+        fprintf(aap.report.(ptr).fid,'<meta charset="utf-8">\n');
+    end
     fprintf(aap.report.(ptr).fid,'<body>\n');
+    if strcmp(ptr, 'html_main')
+        fprintf(aap.report.(ptr).fid,'<script src="https://d3js.org/d3.v5.min.js"></script>\n');
+        fprintf(aap.report.(ptr).fid,'<script src="https://unpkg.com/@hpcc-js/wasm@0.3.11/dist/index.min.js"></script>\n');
+        fprintf(aap.report.(ptr).fid,'<script src="https://unpkg.com/d3-graphviz@3.0.5/build/d3-graphviz.js"></script>\n');
+    end
     fprintf(aap.report.(ptr).fid,'<table border=0>\n');
     fprintf(aap.report.(ptr).fid,'<td align=center width=100%%>\n');
     fprintf(aap.report.(ptr).fid,'%s\n',['<tr><td align=center><font size=+3><b>' str(6:end) '</b></font></tr>']);
@@ -60,6 +68,26 @@ elseif (numel(str) > 5) && strcmp(str(1:5), 'HEAD=')
         fprintf(aap.report.(ptr).fid,'<a href="%s" target=_top>MEEG epoch summary</a>',aap.report.html_er.fname);
     end
     fprintf(aap.report.(ptr).fid,'\n<hr class="rounded">\n');
+    if strcmp(ptr, 'html_main')
+        fprintf(aap.report.(ptr).fid,'<h2>Workflow</h2>\n');
+        fprintf(aap.report.(ptr).fid,'<div id="workflow"></div>\n');
+        fprintf(aap.report.(ptr).fid,'<script>\n');
+        fprintf(aap.report.(ptr).fid,'d3.select("#workflow").graphviz()\n');
+        fprintf(aap.report.(ptr).fid,'.renderDot(''digraph {''\n');
+        
+        % read dot data
+        dotfid = fopen(spm_file(aap.report.(ptr).fname,'filename','aap_prov.dot'));
+        lines = {};
+        while ~feof(dotfid), lines{end+1} = fgetl(dotfid); end
+        fclose(dotfid);
+        lines([1 end]) = '';
+        
+        % write dot data to html
+        for l = lines, fprintf(aap.report.(ptr).fid,['    +''' l{1}(2:end) '''\n']); end
+        
+        fprintf(aap.report.(ptr).fid,'    +''}'');\n');      
+        fprintf(aap.report.(ptr).fid,'</script>\n');
+    end
     fprintf(aap.report.(ptr).fid,'<table border=0>\n');
 elseif strcmp(str, 'EOF')
     fprintf(aap.report.(ptr).fid,'</table>\n');

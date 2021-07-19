@@ -13,7 +13,7 @@
             <threshold ui='optionlist' options='zero|exclusive|[value(s)]'>0.9</threshold>           
             
             <inputstreams>
-                <stream isrenameable='1'>reference</stream>
+                <stream isrenameable='1' isessential='0'>reference</stream>
                 <stream isrenameable='1'>grey</stream>
                 <stream isrenameable='1'>white</stream>
                 <stream isrenameable='1'>csf</stream>
