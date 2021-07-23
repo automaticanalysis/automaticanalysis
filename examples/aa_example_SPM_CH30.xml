@@ -19,13 +19,7 @@
         <module><name>aamod_realign</name></module>  
         <module><name>aamod_coreg_extended</name></module>
 
-        <module><name>aamod_segment8_multichan</name>
-             <extraparameters>
-                <aap><tasklist><currenttask><settings>
-                    <samp>2</samp>
-                </settings></currenttask></tasklist></aap>
-            </extraparameters>
-        </module>
+        <module><name>aamod_segment_structural</name></module>
 
         <module><name>aamod_norm_write_epi</name></module>
 

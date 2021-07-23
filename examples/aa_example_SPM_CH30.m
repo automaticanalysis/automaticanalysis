@@ -88,6 +88,7 @@ aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsession
 						   
 % -------------------------------------------------------------------------
 % run and report
+% (you must have FSL installed to run reporting)
 % -------------------------------------------------------------------------
 
 aa_doprocessing(aap);
