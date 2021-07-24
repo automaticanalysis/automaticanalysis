@@ -155,31 +155,33 @@ switch task
         regressor_names = design_from_spm(dirSPM);
         
         cfg0 = cfg;
-        if aas_getsetting(aap,'pairwise')
-            % create labelcombinations
-            labelcmbsel = [reshape(repmat(1:numel(labelnames),numel(labelnames),1),1,[]); repmat(1:numel(labelnames),1,numel(labelnames))]';
-            labelcmbsel(diff(labelcmbsel,[],2) == 0,:) = []; 
-            labelcmbsel = unique(cell2mat(arrayfun(@(c) sort(labelcmbsel(c,:))', 1:size(labelcmbsel,1), 'UniformOutput', false))','rows');
-            
-            % run pairwise decodings
-            for c = 1:size(labelcmbsel,1)
-                cfg = cfg0;
-                cfg.results.filestart = sprintf('%s%02d',cfg.results.filestart,c);
-                cfg = decoding_describe_data(cfg,labelnames(labelcmbsel(c,:)),1:2,regressor_names,dirSPM);
-                cfg.design = make_design_cv(cfg);
-                decoding(cfg);
-            end
-        else
-            cfg = decoding_describe_data(cfg,labelnames,1:length(labelnames),regressor_names,dirSPM);
+        
+        % original multiclass
+        cfg = decoding_describe_data(cfg,labelnames,1:length(labelnames),regressor_names,dirSPM);
+        cfg.design = make_design_cv(cfg);
+        decoding(cfg);
+        
+        % pairwise
+        % - create labelcombinations
+        labelcmbsel = [reshape(repmat(1:numel(labelnames),numel(labelnames),1),1,[]); repmat(1:numel(labelnames),1,numel(labelnames))]';
+        labelcmbsel(diff(labelcmbsel,[],2) == 0,:) = [];
+        labelcmbsel = unique(cell2mat(arrayfun(@(c) sort(labelcmbsel(c,:))', 1:size(labelcmbsel,1), 'UniformOutput', false))','rows');
+        
+        % - run pairwise decodings
+        for c = 1:size(labelcmbsel,1)
+            cfg = cfg0;
+            cfg.results.filestart = sprintf('%s%02d',cfg.results.filestart,c);
+            cfg = decoding_describe_data(cfg,labelnames(labelcmbsel(c,:)),1:2,regressor_names,dirSPM);
             cfg.design = make_design_cv(cfg);
             decoding(cfg);
-        end
+        end       
         
-        aap = aas_desc_outputs(aap,'subject',subj,'settings',spm_select('FPList',cfg0.results.dir,[cfg0.results.filestart '.*_cfg.mat']));
+        aap = aas_desc_outputs(aap,'subject',subj,'settings',fullfile(cfg0.results.dir,[cfg0.results.filestart '_cfg.mat']));
         aap = aas_desc_outputs(aap,'subject',subj,'mask',cfg0.files.mask);
                 
         for o = 1:numel(cfg0.results.output)
-            aap = aas_desc_outputs(aap,'subject',subj,cfg0.results.output{o},spm_select('FPList',cfg0.results.dir,['^' cfg0.results.filestart '[0-9]*_' cfg0.results.output{o} '[_a-z]*\.[(mat)(nii)]{1}']));
+            aap = aas_desc_outputs(aap,'subject',subj,cfg0.results.output{o},spm_select('FPList',cfg0.results.dir,['^' cfg0.results.filestart '_' cfg0.results.output{o} '[_a-z]*\.[(mat)(nii)]{1}']));
+            aap = aas_desc_outputs(aap,'subject',subj,[cfg0.results.output{o} '_pairwise'],spm_select('FPList',cfg0.results.dir,['^' cfg0.results.filestart '[0-9]{2}_' cfg0.results.output{o} '[_a-z]*\.[(mat)(nii)]{1}']));
         end
         
         %% Cleanup
@@ -195,8 +197,10 @@ switch task
             if strcmp(out{s},meas{s}), continue; end
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'result',meas{s},'output');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'result_pairwise',[meas{s} '_pairwise'],'output');
             else
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',meas{s},'output');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',[meas{s} '_pairwise'],'output');
             end
             aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' meas{s} '''']);
         end
