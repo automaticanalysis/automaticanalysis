@@ -26,13 +26,17 @@ o.img = struct(...
     'cmap',gray(256),...
     'range',prctile(Y(:),[0.1 99.9]),...
     'prop',1,...
-    'hold',1,...
+    'hold',0,... % no interpolation
     'background',nan,...
     'nancol',0 ...
     );
 o.img(1).outofrange = {1 256};
+o.cbar = [];
 
 for i = 1:numel(s_img)
+    if iscell(s_img{i})
+        [s_img{i}, cmaps{i}] = deal(s_img{i}{:});
+    end
     V = spm_vol(s_img{i});
     Y = spm_read_vols(V);
     o.img(i+1) = o.img(1);
@@ -43,6 +47,7 @@ for i = 1:numel(s_img)
     o.img(i+1).range = [1e-6 vRange(i,2)]; % ensure maximum extent
     % if ~diff(o.img(i+1).range), o.img(i+1).range = [o.img(i+1).range(1)*0.9 o.img(i+1).range(2)*1.1]; end
     o.img(i+1).outofrange = {0 64};
+    o.cbar(end+1) = i+1;
 end
 paint(o);
 fig = o.figure;
