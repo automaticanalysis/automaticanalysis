@@ -34,6 +34,69 @@ switch task
         cfg.plot_selected_voxels = 0;
         cfg.plot_design = 0;
         
+        % Set and configure classifier
+        % cfg.decoding.train.classification.model_parameters = '-s 1 -c 1 -q';
+        cfg.decoding.software = aas_getsetting(aap,'decoding.software');        
+        settings = aas_getsetting(aap,['decoding.options.' cfg.decoding.software]);
+        switch cfg.decoding.software
+            case 'liblinear'
+                cfg.decoding.method = 'classification';
+                                
+                if strcmp(settings.solver,'CS-SVC'), solver = 4;
+                else
+                    switch settings.solver
+                        case 'LR'
+                            solver = [0 6 7];
+                        case 'SVC'
+                            solver = [1 2 3 5];
+                        case 'SVR'
+                            solver = [11 12 13];
+                    end
+                    if settings.dual
+                        solver = intersect(solver,[1 3 5 6 7 12 13]);
+                    else
+                        solver = intersect(solver,[0 2 5 6 11]);
+                    end
+                    switch settings.regularisation
+                        case 'L1'
+                            solver = intersect(solver,[5 6]);
+                        case 'L2'
+                            solver = intersect(solver,[0 1 2 3 7 11 12 13]);
+                    end
+                    switch settings.loss
+                        case 'L1'
+                            solver = intersect(solver,[3 13]);
+                        case 'L2'
+                            solver = intersect(solver,[1 2 5 11 12]);
+                        case 'none'
+                            solver = intersect(solver,[0 6 7]);
+                    end
+                end
+                cfg.decoding.train.classification.model_parameters = sprintf('-s %d -c %d -q',solver,settings.cost);
+            case 'libsvm'
+                schema = aap.schema.tasksettings.aamod_tdt_decode(aap.tasklist.currenttask.index).decoding.options.libsvm;
+                
+                if strcmp(settings.kernel,'precomputed')
+                    cfg.decoding.method = 'classification_kernel';
+                else
+                    cfg.decoding.method = 'classification';
+                end
+                
+                if ischar(settings.kernelparameters.gamma) % 'auto'
+                    settings.kernelparameters.gamma = 1/numel(aas_getsetting(aap,'itemList'));
+                end
+                
+                cfg.decoding.train.(cfg.decoding.method).model_parameters = sprintf('-s %d -t %d -d %d -g %1.3f -r %1.3f -c %d -b %d -q',...
+                    find(strcmp(strsplit(schema.svm.ATTRIBUTE.options,'|'),settings.svm))-1, ...
+                    find(strcmp(strsplit(schema.kernel.ATTRIBUTE.options,'|'),settings.kernel))-1, ...
+                    settings.kernelparameters.degree, ...
+                    settings.kernelparameters.gamma ,...
+                    settings.kernelparameters.coef0, ...
+                    settings.cost, ...
+                    contains(settings.svm,'SRV') ...
+                    );
+        end
+        
         %% Prepare
         inps = aas_getstreams(aap,'input');
         inps = inps(logical(cellfun(@(x) exist(aas_getinputstreamfilename(aap,'subject',subj,x),'file'), inps)));
@@ -91,17 +154,34 @@ switch task
         %% Run
         regressor_names = design_from_spm(dirSPM);
         
+        cfg0 = cfg;
+        
+        % original multiclass
         cfg = decoding_describe_data(cfg,labelnames,1:length(labelnames),regressor_names,dirSPM);
-        
         cfg.design = make_design_cv(cfg);
-
-        [~, cfg] = decoding(cfg);
+        decoding(cfg);
         
-        aap = aas_desc_outputs(aap,'subject',subj,'settings',fullfile(cfg.results.dir,[cfg.results.filestart '_cfg.mat']));
-        aap = aas_desc_outputs(aap,'subject',subj,'mask',cfg.files.mask);
+        % pairwise
+        % - create labelcombinations
+        labelcmbsel = [reshape(repmat(1:numel(labelnames),numel(labelnames),1),1,[]); repmat(1:numel(labelnames),1,numel(labelnames))]';
+        labelcmbsel(diff(labelcmbsel,[],2) == 0,:) = [];
+        labelcmbsel = unique(cell2mat(arrayfun(@(c) sort(labelcmbsel(c,:))', 1:size(labelcmbsel,1), 'UniformOutput', false))','rows');
+        
+        % - run pairwise decodings
+        for c = 1:size(labelcmbsel,1)
+            cfg = cfg0;
+            cfg.results.filestart = sprintf('%s%02d',cfg.results.filestart,c);
+            cfg = decoding_describe_data(cfg,labelnames(labelcmbsel(c,:)),1:2,regressor_names,dirSPM);
+            cfg.design = make_design_cv(cfg);
+            decoding(cfg);
+        end       
+        
+        aap = aas_desc_outputs(aap,'subject',subj,'settings',fullfile(cfg0.results.dir,[cfg0.results.filestart '_cfg.mat']));
+        aap = aas_desc_outputs(aap,'subject',subj,'mask',cfg0.files.mask);
                 
-        for o = 1:numel(cfg.results.output)
-            aap = aas_desc_outputs(aap,'subject',subj,cfg.results.output{o},spm_select('FPList',cfg.results.dir,['^' cfg.results.resultsname{o} '[_a-z]*\.[(mat)(nii)]{1}']));
+        for o = 1:numel(cfg0.results.output)
+            aap = aas_desc_outputs(aap,'subject',subj,cfg0.results.output{o},spm_select('FPList',cfg0.results.dir,['^' cfg0.results.filestart '_' cfg0.results.output{o} '[_a-z]*\.[(mat)(nii)]{1}']));
+            aap = aas_desc_outputs(aap,'subject',subj,[cfg0.results.output{o} '_pairwise'],spm_select('FPList',cfg0.results.dir,['^' cfg0.results.filestart '[0-9]{2}_' cfg0.results.output{o} '[_a-z]*\.[(mat)(nii)]{1}']));
         end
         
         %% Cleanup
@@ -117,8 +197,10 @@ switch task
             if strcmp(out{s},meas{s}), continue; end
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'result',meas{s},'output');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'result_pairwise',[meas{s} '_pairwise'],'output');
             else
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',meas{s},'output');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',[meas{s} '_pairwise'],'output');
             end
             aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' meas{s} '''']);
         end
