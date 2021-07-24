@@ -11,8 +11,6 @@
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
             
-            <pairwise desc='running pairwise classification on multiple [N>2] classes, the number of decodings will be ((N-1)*N)/2' ui='yesno'>0</pairwise>
-
             <decoding>
                 <software options='libsvm|liblinear' ui='optionlist'>libsvm</software>
                 <options>
@@ -61,6 +59,7 @@
                 <stream>settings</stream>
                 <stream>mask</stream>
                 <stream isrenameable='1'>result</stream>
+                <stream isrenameable='1'>result_pairwise</stream>
             </outputstreams>    
             
         </currenttask>

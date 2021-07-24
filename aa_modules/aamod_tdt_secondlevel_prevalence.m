@@ -178,8 +178,8 @@ switch task
         % automatic connection to the nearest aamod_tdt_decode
         src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,'aamod_tdt_decode','settings')),'output'); src(1:2) = []; % settings, mask
         inp = aas_getstreams(aap,'input'); inp(1:2) = []; % settings, structural
-        for s = 1:numel(src)
-            if strcmp(inp{(s-1)*2+1},src{s}), continue; end % every odd is result, every even is permuted
+        for s = 1:2:numel(src) % every second excluding pairwise
+            if strcmp(inp{s},src{s}), continue; end
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'input',src{s},'input');
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'permuted_input',['permuted_' src{s}],'input');
