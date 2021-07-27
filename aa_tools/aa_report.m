@@ -187,7 +187,19 @@ end
 % Close files
 aap = aas_report_add(aap,[],'EOF');
 aap = aas_report_add(aap,0,'EOF');
-fclose all;
+for subj = 1:aas_getN_bydomain(aap,'subject')
+    aap = aas_report_add(aap,subj,'EOF');
+end
+if has_motioncorrection, aap = aas_report_add(aap,'moco','EOF'); end
+if has_registration, aap = aas_report_add(aap,'reg','EOF'); end
+if has_contrast
+    aap = aas_report_add(aap,'C00','EOF'); 
+    conFields = fieldnames(aap.report); conFields = conFields(contains(conFields,'html_C'));
+    for C = 1:numel(conFields)-1
+        aap = aas_report_add(aap,sprintf('C%02d',C),'EOF');
+    end
+end
+if has_meegepochs, aap = aas_report_add(aap,'er','EOF'); end
 
 % Provenance
 aap.prov.serialise(studyroot);
