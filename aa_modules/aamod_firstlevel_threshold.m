@@ -28,7 +28,7 @@ switch task
         conNames = {cons.name};
         [~,a] = unique(conNames,'first');
         conNames = conNames(sort(a));
-		
+        
         if subj == 1 % first
             for C = 1:numel(conNames)
                 if  ~isfield(aap.report,sprintf('html_C%02d',C))
@@ -50,70 +50,70 @@ switch task
         loaded = load(fSPM);
         
         for C = 1:numel(loaded.SPM.xCon)
-			
+            
             conName = strrep_multi(loaded.SPM.xCon(C).name,{' ' ':' '>'},{'' '_' '-'});
             conInd = find(strcmp(conNames,loaded.SPM.xCon(C).name));
             if isempty(conInd), continue, end
-            			
+            
             aap = aas_report_add(aap,sprintf('C%02d',conInd),['Subject: ' basename(aas_getsubjpath(aap,subj)) '<br>']);
-            		
+            
             aap = aas_report_add(aap,subj,sprintf('<h4>%02d. %s</h4>',conInd,conName));
-			
+            
             f{1} = fullfile(aas_getsubjpath(aap,subj),...
                 sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_overlay_0.jpg',conInd,conName));
-			
-		% older versions didn't create overlay/renders if no voxels
-		% survived thresholding, ergo the check here. We now create
-		% all images, but this check doesn't hurt, and may be useful
-		% if generating a report on an old extant analysis
-			
+            
+            % older versions didn't create overlay/renders if no voxels
+            % survived thresholding, ergo the check here. We now create
+            % all images, but this check doesn't hurt, and may be useful
+            % if generating a report on an old extant analysis
+            
             if exist(f{1},'file')
-				
+                
                 tstat = dlmread(strrep(f{1},'_overlay_0.jpg','.txt'));
-				
+                
                 f{2} = fullfile(aas_getsubjpath(aap,subj),...
                     sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s_render.jpg',conInd,conName));
                 
                 % add overlay and render images to single subject report...
-				
+                
                 aap = aas_report_add(aap, subj,'<table><tr>');
                 aap = aas_report_add(aap, subj, sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap, subj,'<td>');
                     aap = aas_report_addimage(aap, subj, f{i});
                     aap = aas_report_add(aap, subj,'</td>');
-				end
-				
-		% add SPM stats table
-				
-		statsfname = fullfile(aas_getsubjpath(aap,subj),sprintf('table_firstlevel_threshold_C%02d_%s.jpg', conInd, conName));
-									
-		corr = aap.tasklist.currenttask.settings.threshold.correction;
-		u0   = aap.tasklist.currenttask.settings.threshold.p;
-		make_stats_table(loaded.SPM, statsfname, C, u0, corr);
-
+                end
+                
+                % add SPM stats table
+                
+                statsfname = fullfile(aas_getsubjpath(aap,subj),sprintf('table_firstlevel_threshold_C%02d_%s.jpg', conInd, conName));
+                
+                corr = aap.tasklist.currenttask.settings.threshold.correction;
+                u0   = aap.tasklist.currenttask.settings.threshold.p;
+                make_stats_table(loaded.SPM, statsfname, C, u0, corr);
+                
                 aap = aas_report_add(aap, subj,'<td>');
-				aap = aas_report_addimage(aap, subj, statsfname);
+                aap = aas_report_addimage(aap, subj, statsfname);
                 aap = aas_report_add(aap, subj,'</td>');
-								
+                
                 aap = aas_report_add(aap,subj,'</tr></table>');
                 
                 % ...also add images & table to module report
-				
+                
                 aap = aas_report_add(aap,sprintf('C%02d',conInd),'<table><tr>');
                 aap = aas_report_add(aap,sprintf('C%02d',conInd),sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
                 for i = 1:2
                     aap = aas_report_add(aap, sprintf('C%02d',conInd),'<td>');
                     aap = aas_report_addimage(aap,sprintf('C%02d',conInd), f{i});
                     aap = aas_report_add(aap,sprintf('C%02d',conInd),'</td>');
-				end
+                end
                 aap = aas_report_add(aap, sprintf('C%02d',conInd),'<td>');
- 				aap = aas_report_addimage(aap, sprintf('C%02d',conInd), statsfname);
-                aap = aas_report_add(aap,sprintf('C%02d',conInd),'</td>');	
-				aap = aas_report_add(aap,sprintf('C%02d',conInd),'</tr></table>');
-                            
-		end
-			
+                aap = aas_report_addimage(aap, sprintf('C%02d',conInd), statsfname);
+                aap = aas_report_add(aap,sprintf('C%02d',conInd),'</td>');
+                aap = aas_report_add(aap,sprintf('C%02d',conInd),'</tr></table>');
+                
+            end
+            
         end
         
     case 'doit'
