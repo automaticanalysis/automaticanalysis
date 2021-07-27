@@ -1,31 +1,18 @@
-
+function aatest_ds000114_dartel(deleteprevious,wheretoprocess)
 % PR testing - dartel using ds000114
 
 % -------------------------------------------------------------------------
 % init
 % -------------------------------------------------------------------------
 
-clear all;
-aa_ver5;
-
-aap = aarecipe([mfilename('fullpath') '.xml']);
-
-% -------------------------------------------------------------------------
-% results and data directory specification
-% -------------------------------------------------------------------------
-
-temp = split(mfilename,'_');
-aap.directory_conventions.analysisid = [ temp{2} '_' temp{3} ];
-
-fprintf('Saving results in: %s/%s\n', aap.acq_details.root, aap.directory_conventions.analysisid);
-
-aap.directory_conventions.rawdatadir = fullfile(aap.directory_conventions.rawdatadir,temp{2});
+aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
 
 % -------------------------------------------------------------------------
 % analysis options
 % -------------------------------------------------------------------------
 
 aap.options.NIFTI4D = 1;
+aap.options.wheretoprocess = wheretoprocess;
 
 aap.tasksettings.aamod_segment8_multichan.samp=2;
 aap.tasksettings.aamod_segment8_multichan.writenormimg=0;
@@ -36,9 +23,10 @@ aap.tasksettings.aamod_dartel_normmni.fwhm=1;
 % BIDS
 % -------------------------------------------------------------------------
 
+aap.acq_details.input.selected_subjects = {'sub-01'};
 % aap.acq_details.input.combinemultiple = true;
 
-aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
+aap = aas_processBIDS(aap);
 
 
 % -------------------------------------------------------------------------
