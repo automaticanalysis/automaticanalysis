@@ -1,22 +1,18 @@
-function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
+function aap = aas_processBIDS(aap,varargin)
 % Allow specify Subjects, Sessions and Events from Brain Imaging Data Structure (BIDS)
 %
-%       aap = aas_processBIDS(aap,[sessnames],[tasknames],[SUBJ],[regcolumn])
+%       aap = aas_processBIDS(aap,[[<Name>,<Value>][,<Name>,<Value>]...])
 %
 % Required:
 %     - aap.directory_conventions.rawdatadir: path to BIDS
 %
-% Optional:
-%     - sessnames - cell array with sessions to process (useful if you only want
-%           some sessions, or if you want to preserve a certain session order)
-%     - tasknames - cell array of tasks to process - see sessnames
-%     - SUBJ - cell or char array of subjects to process
-%     - regcolumn - (default 'trial_type') column in events.tsv to use for first
-%           level model
-%
-% Relevant AAP sub-fields:
+% Relevant aap sub-fields:
+%     - aap.acq_details.input.selected_subjects:
+%           cell or char array of subjects to process
+%     - aap.acq_details.input.selected_visits:
+%           cell or char array of visits to process
 %     - aap.acq_details.input.combinemultiple:
-%           Combines multiple sessions per subjects (default = false)
+%           Combines multiple visits per subjects (default = false)
 %     - aap.acq_details.input.selected_sessions:
 %           selection of a subset of tasks/runs based on their names (e.g. 'task-001_run01')
 %           - elements are strings: selecting for preprocessing and analysis
@@ -30,14 +26,22 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %               - aap.acq_details.numdummies: number of (acquired) dummy scans (default = 0);
 %               - "repetition_time" (TR) specified in JSON header
 %
-%   the following (optional) fields add flexibility in the handling of
-%   modeling (i.e., tsv) data. They can be combined as needed:
+%  Optional parameters (Name-Value pairs): specific for BIDS and add flexibility in the handling
+%       of modelling (i.e., tsv) data. They can be combined as needed.
 % 
-%     - aap.acq_details.stripBIDSEventNames: true == strip special characters from event names
-%     - aap.acq_details.omitNullBIDSEvents: true == do not add "null" events to model
-%     - aap.acq_details.convertBIDSEventsToUppercase: true == convert event names to uppercase
-%     - aap.acq_details.maxBIDSEventNameLength: >0 == truncate event names
-%     - aap.acq_details.omitBIDSmodeling: true == return w/o processing modeling data
+%     - 'regcolumn':
+%           column in events.tsv to use for firstlevel model (default = 'trial_type')           
+%     - 'stripEventNames':
+%           strip special characters from event names (default = false)
+%     - 'omitNullEvents':
+%           do not add "null" events to model (default = false)
+%     - 'convertEventsToUppercase':
+%           convert event names to uppercase as required for contrast specification based on
+%           event names (default = false)
+%     - 'maxEventNameLength:'
+%           truncate event names longer than the specified value (default = inf)
+%     - 'omitModeling':
+%           return w/o processing modeling data (default = false)
 % 
 % CHANGE HISTORY:
 %
@@ -52,27 +56,26 @@ global BIDSsettings;
 SPMtool = aas_inittoolbox(aap,'spm');
 SPMtool.load;
 
-if ~exist('sessnames','var') || isempty(sessnames)
-    sessnames = [];
-end
-
-if ~exist('tasknames','var') || isempty(tasknames)
-    tasknames = [];
-end
-
-if ~exist('regcolumn','var') || isempty(regcolumn)
-    regcolumn = 'trial_type';
-end
-
+%% Init
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
 BIDSsettings.directories.fieldmapDIR = 'fmap';
 BIDSsettings.directories.diffusionDIR = 'dwi';
 BIDSsettings.combinemultiple = aap.acq_details.input.combinemultiple;
-BIDSsettings.sessnames = sessnames;
-BIDSsettings.tasknames = tasknames;
+BIDSsettings.sessnames = aap.acq_details.input.selected_visits;
+BIDSsettings.tasknames = aap.acq_details.input.selected_sessions;
 
-%% Init
+argParse = inputParser;
+argParse.addParameter('regcolumn','trial_type',@ischar);
+argParse.addParameter('stripEventNames',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('omitNullEvents',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('convertEventsToUppercase',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('maxEventNameLength',inf,@isnumeric);
+argParse.addParameter('omitModeling',false,@(x) islogical(x) || isnumeric(x));
+argParse.parse(varargin{:});
+
+BIDSsettings.modelling = argParse.Results;
+
 aap.directory_conventions.subjectoutputformat = '%s';
 aap.directory_conventions.subject_directory_format = 3;
 
@@ -101,16 +104,12 @@ end
 % Set BIDS
 BIDS = aap.directory_conventions.rawdatadir;
 
-if ~exist('SUBJ','var') || isempty(SUBJ)
-    % Look for subjects
+% Look for subjects
+SUBJ = aap.acq_details.input.selected_subjects;
+if isempty(SUBJ)    
     SUBJ = spm_select('List',aap.directory_conventions.rawdatadir,'dir','sub-.*');
 end
-
-if iscell(SUBJ)
-    % assume user has supplied cell array
-    SUBJ = char(SUBJ);
-end
-
+SUBJ = intersect(SUBJ,spm_select('List',BIDS,'dir','sub-.*'));
 if isempty(SUBJ)
     % avoid cryptic errors later
     aas_log(aap,true,sprintf('no subjects found in directory %s',...
@@ -120,28 +119,27 @@ end
 % 1st pass - Add sessions only
 % 2ns pass - Add data
 for p = [false true]
-    for subj = 1:size(SUBJ,1)
-        subjID = deblank(SUBJ(subj,:));
-        SESS = spm_select('List',fullfile(BIDS,subjID),'dir','ses');
+    for subj = reshape(SUBJ,1,[])
+        subjID = subj{1};
+        SESS = cellstr(spm_select('List',fullfile(BIDS,subjID),'dir','ses'));
         if ~isempty(BIDSsettings.sessnames)
             % check that custom sessnames exist for this subject
-            SESS = intersect(cellstr(SESS),BIDSsettings.sessnames);
+            SESS = intersect(SESS,BIDSsettings.sessnames);
             if numel(SESS) ~= numel(BIDSsettings.sessnames)
                 aas_log(aap,false,sprintf('WARNING: did not find all specified sessnames for sub %s',subjID));
             end
-            SESS = char(SESS);
         end
         if isempty(SESS)
-            aap = add_data(aap,subjID,fullfile(BIDS,subjID),p,regcolumn);
+            aap = add_data(aap,subjID,fullfile(BIDS,subjID),p);
         else
-            for sess = 1:size(SESS,1)
-                aap = add_data(aap,[subjID '/' deblank(SESS(sess,:))],fullfile(BIDS,subjID,deblank(SESS(sess,:))),p,regcolumn);
+            for sess = reshape(SESS,1,[])
+                aap = add_data(aap,fullfile(subjID,sess{1}),fullfile(BIDS,subjID,sess{1}),p);
             end
         end
     end
-    if ~p && BIDSsettings.combinemultiple && (size(SESS,1) > 1)
+    if ~p && BIDSsettings.combinemultiple && (numel(SESS) > 1)
         % sort sessions
-        sessstr = regexp(cellstr(SESS),'-','split');
+        sessstr = regexp(SESS,'-','split');
         sessstr = vertcat(sessstr{:});
         sessstr = sessstr(:,2);
         if numel(aap.acq_details.sessions) > 1
@@ -162,45 +160,13 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function aap = add_data(aap,mriname,sesspath,toAddData,regcolumn)
+function aap = add_data(aap,mriname,sesspath,toAddData)
 
 global BIDSsettings;
 structDIR = BIDSsettings.directories.structDIR;
 functionalDIR = BIDSsettings.directories.functionalDIR;
 fieldmapDIR = BIDSsettings.directories.fieldmapDIR;
 diffusionDIR = BIDSsettings.directories.diffusionDIR;
-
-% defaults for acq_details flags
-
-if (isfield(aap.acq_details,'omitBIDSmodeling') && aap.acq_details.omitBIDSmodeling == true)
-    omitBIDSmodeling = true;
-else
-	omitBIDSmodeling = false;
-end
-
-if (isfield(aap.acq_details,'stripBIDSEventNames') && aap.acq_details.stripBIDSEventNames == true)
-    stripBIDSEventNames = true;
-else
-    stripBIDSEventNames = false;
-end
- 
-if (isfield(aap.acq_details,'omitNullBIDSEvents') && aap.acq_details.omitNullBIDSEvents == true)
-    omitNullBIDSEvents = true;
-else
-    omitNullBIDSEvents = false;
-end
-                                
-if (isfield(aap.acq_details,'convertBIDSEventsToUppercase') && aap.acq_details.convertBIDSEventsToUppercase == true)
-    convertBIDSEventsToUppercase = true;
-else
-    convertBIDSEventsToUppercase = false;
-end
-
-if (isfield(aap.acq_details,'maxBIDSEventNameLength') && aap.acq_details.maxBIDSEventNameLength > 0)
-    maxBIDSEventNameLength = aap.acq_details.maxBIDSEventNameLength;
-else
-    maxBIDSEventNameLength = Inf;
-end
 
 % locate first_level modules
 stagenumModel(1) = struct('name','aamod_firstlevel_model','ind',...
@@ -251,7 +217,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); 
                     if sessname(1) == '_', sessname(1) = ''; end
 
-                    if ~isempty(strfind(basename(sesspath),'ses-'))
+                    if contains(basename(sesspath),'ses-')
                         sesstr = ['_' strrep(basename(sesspath),'ses-','')];
                     else
                         sesstr = '';
@@ -362,8 +328,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 
                 % Model
                         
-                if (omitBIDSmodeling)                    
-                    aas_log(aap,false,sprintf('INFO: Omitting addevent in aas_processBIDS (change in aap.acq_details.omitBIDSmodeling)'));
+                if (BIDSsettings.modelling.omitModeling)                    
+                    aas_log(aap,false,sprintf('INFO: Omitting addevent in aas_processBIDS'));
                 else
 
                     for thisstage = stagenumModel
@@ -385,10 +351,10 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
                             else
                                 EVENTS = tsvread(eventfname);
-                                iName = cell_index(EVENTS(1,:),regcolumn);
+                                iName = cell_index(EVENTS(1,:),BIDSsettings.modelling.regcolumn);
                                 iOns = cell_index(EVENTS(1,:),'onset');
                                 iDur = cell_index(EVENTS(1,:),'duration');
-                                if (stripBIDSEventNames)
+                                if (BIDSsettings.modelling.stripEventNames)
                                     EVENTS(2:end,iName) = regexprep(EVENTS(2:end,iName),'[^a-zA-Z0-9]','');
                                 end                         
                                 names = unique(EVENTS(2:end,iName));
@@ -399,16 +365,16 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                     onsets{iEV}(end+1) = str2double(EVENTS{t,iOns});
                                     durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
                                 end
-                                if (convertBIDSEventsToUppercase)
+                                if (BIDSsettings.modelling.convertEventsToUppercase)
                                     names = upper(names); 
                                 end
-                                if (maxBIDSEventNameLength < Inf)
-                                    maxlen =  maxBIDSEventNameLength;
+                                if (BIDSsettings.modelling.maxEventNameLength < Inf)
+                                    maxlen =  BIDSsettings.modelling.maxEventNameLength;
                                     names = cellfun(@(x) x(1:min(maxlen,length(x))), names,'UniformOutput',false);
                                 end
                                 for m = iModel
                                     for e = 1:numel(names)
-                                        if (strcmpi(names{e},'null') && omitNullBIDSEvents)
+                                        if (strcmpi(names{e},'null') && BIDSsettings.modelling.omitNullEvents)
                                             continue;
                                         end
                                         aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},onsets{e}-numdummies*TR,durations{e});
@@ -494,7 +460,7 @@ if ~isempty(hdrfname{1})
         taskname = info.TaskName;
 %         taskname = regexp(taskname,'[a-zA-Z0-9]*','match');
 %         taskname = strcat(taskname{:});
-        if ~isempty(strfind(basename(sesspath),'ses-'))
+        if contains(basename(sesspath),'ses-')
             sesstr = ['_' strrep(basename(sesspath),'ses-','')];
         else
             sesstr = '';

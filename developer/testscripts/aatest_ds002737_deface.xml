@@ -17,12 +17,16 @@
             
             <module><name>aamod_reorienttomiddle_structural</name></module>
             <module><name>aamod_biascorrect_structural</name></module>  
-            <module><name>aamod_freesurfer_deface</name></module>
-
             <module><name>aamod_reorienttomiddle_t2</name></module>
             <module><name>aamod_biascorrect_t2</name></module>
+
+            <!-- defacing with FreeSurfer-->
+            
+            <module><name>aamod_freesurfer_deface</name></module>
             <module><name>aamod_freesurfer_deface_apply_t2</name></module>
                      
+            <!-- defacing with FaceMasking (structural only) -->
+            <module><name>aamod_facemasking</name></module>
 		            
         </main>
         

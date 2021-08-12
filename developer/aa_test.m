@@ -1,42 +1,47 @@
-function aa_test(glob,haltonerror,useqsubdebug)
+function aa_test(varargin)
 %
 % run /developer testscripts (new version -- replaces aatest)
 %
 % inputs (optional)
 %
-% glob -
-%
+% 'glob', glob -
 %   (limited) glob search string used to restrict which 
 %   testscripts are run ("limited" in the sense that we only
 %   recognize a string literal and a tilde-negated string literal. 
 %   See example usage below). If not specified, all testscripts 
 %   are run.
 %
-% haltonerror,useqsubdebug -
+% 'deleteprevious', deleteprevious -
+%   == true, testing will delete any previous tests to trigger re-execution
+%      (default: true)
 %
-%   == true, testing will halt (crash) if any script errors
-%   == false (default), testing will ignore error and simply run 
-%      next script UNLESS useqsubdebug == true, then we instead 
-%      drop into aaq_qsub_debug (default: false)
+% 'haltonerror', haltonerror -
+%   == true, testing will halt (crash) if any errors (default: false)
+%
+% 'wheretoprocess', wheretoprocess- 
+%   == 'localsingle' (default), jobs within testing will run locally in a
+%      serial fashion UNLESS wheretoprocess specifies differently, then
+%      jobs instead will be submitted to the cluster as specified
 %
 % Example Usage
 %
-%   aa_test;           - run all scripts, use default settings
-%   aa_test([],true)   - run all scripts, halt on error
+%   aa_test;                      - run all scripts, use default settings
+%   aa_test('haltonerror',true)   - run all scripts, halt on error
 %
 % example glob usage
 %
-%   aa_test('aatest_ds000114_fmri') - only run aatest_ds000114_fmri.m
-%   aa_test('~ds002737') - run all scripts except those with 
+%   aa_test('glob','aatest_ds000114_fmri') - only run aatest_ds000114_fmri.m
+%   aa_test('glob','~ds002737') - run all scripts except those with 
 %                          "ds002737" in the name (note leading tilde)
 %
 % test results (pass/fail) are logged to aa_test.log in working dir.
 % If this file exists, you'll be asked before it is overwritten
 %
 % Expected usage is: 1) do 'aa_test' to run all scripts using
-% defaults, 2) check the log, then 3) run aa_test('foo', true)
-% or aa_test('foo',true,true) to re-run a script "foo" that failed
-% in order to drop into the debugger.
+% defaults, 2) check the log, then 3) run aa_test('glob','foo','haltonerror'
+% ,true) or aa_test('glob','foo','haltonerror',true,'wheretoprocess','qsub')
+% to run the jobs on a cluster and re-run script "foo" that failed in order 
+% to drop into the debugger.
 %
 % Notes
 %
@@ -47,29 +52,24 @@ function aa_test(glob,haltonerror,useqsubdebug)
 %
 % Note testscripts load parameter file ~/.aa/aap_parameters_user.xml
 % You should customize this file for how you want to do PR testing. 
-% See comments in $AAHOME/developer/testscript_TEMPLATE.m for info.
+% See comments in $AAHOME/developer/aatest_ds000114_TEMPLATE.m for info.
 %
 % Revision History
 %
 % summer/2021 [MSJ] - newish (derived from aatest) 
 %
 
-if ~exist('haltonerror','var') || isempty(haltonerror)
-    haltonerror = false;
-end
-
-if ~exist('useqsubdebug','var') || isempty(useqsubdebug)
-    useqsubdebug = false;
-end
-
-if ~exist('glob','var') || isempty(glob)
-    glob = '';
-end
+argParse = inputParser;
+argParse.addParameter('glob','',@ischar);
+argParse.addParameter('deleteprevious',true,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('haltonerror',false,@(x) islogical(x) || isnumeric(x));
+argParse.addParameter('wheretoprocess','localsingle',@ischar);
+argParse.parse(varargin{:});
 
 % parse glob negation tilde
 
 globflag = 0;
-
+glob = argParse.Results.glob;
 if ~isempty(glob)
     globflag = 1;
     if startsWith(glob,'~')
@@ -92,9 +92,9 @@ if (fid < 0)
 end
    
 % get a list of testscripts
-
-aadir = fileparts(which('aa_ver5'));
-testdir = fullfile(aadir,'developer/testscripts');
+aa = aaClass('nopath','nogreet');
+aadir = aa.Path;
+testdir = fullfile(aadir,'developer','testscripts');
 
 tests = dir(fullfile(testdir,'*.m'));
 testnames = {tests.name};
@@ -102,12 +102,11 @@ testnames = {tests.name};
 savedir = pwd;
 cd(testdir);
 
-for findex = 1:numel(testnames)
-    fname = testnames{findex};
-    if globflag<0 && contains(fname,glob); continue; end
-    if globflag>0 && ~contains(fname,glob); continue; end
-    fprintf('\n\nRunning %s...\n', fname);
-    runit(fullfile(testdir,fname), haltonerror, useqsubdebug, fid);
+for fname = testnames
+    if globflag<0 && contains(fname{1},glob); continue; end
+    if globflag>0 && ~contains(fname{1},glob); continue; end
+    fprintf('\n\nRunning %s...\n', fname{1});
+    runit(fname{1}, argParse.Results.deleteprevious, argParse.Results.haltonerror, argParse.Results.wheretoprocess, fid);
 end
 
 fprintf('------------------\ntests finished.\n')
@@ -117,20 +116,22 @@ fclose(fid);
 end
 
 % -------------------------------------------------------------------------
-function runit(scriptpath, haltonerror, useqsubdebug, fid)
+function runit(scriptname, deleteprevious, haltonerror, wheretoprocess, fid)
 % -------------------------------------------------------------------------
+
+func = str2func(strrep(scriptname,'.m',''));
 
 if  haltonerror
     
     % run script normally;
     % function halts on aa error
     
-    encapsulated(scriptpath);
+    func(deleteprevious, wheretoprocess);
     
     % if encapsulated returns, this script passed
     
-    fprintf('\npass - %s\n',scriptpath);
-    fprintf(fid,'\npass - %s\n',scriptpath);
+    fprintf('\npass - %s\n',scriptname);
+    fprintf(fid,'\npass - %s\n',scriptname);
 
 else
     
@@ -140,22 +141,22 @@ else
     
     try
         
-        encapsulated(scriptpath);
-        fprintf('\npass - %s\n',scriptpath);
-        fprintf(fid,'\npass - %s\n',scriptpath);
+        func(deleteprevious, wheretoprocess);
+        fprintf('\npass - %s\n',scriptname);
+        fprintf(fid,'\npass - %s\n',scriptname);
         
     catch err
         
-        fprintf('FAIL - %s\n',scriptpath);
-        fprintf(fid,'FAIL - %s\n',scriptpath);
+        fprintf('FAIL - %s\n',scriptname);
+        fprintf(fid,'FAIL - %s\n',scriptname);
         
-        if useqsubdebug
+        if ~strcmp(wheretoprocess,'localsingle')
             
             try
                 aaq_qsub_debug;
-            catch debugerr
-                fprintf('aaq_qsub_debug. See err variable.\n');
-                fprintf(fid,'aaq_qsub_debug. See err variable.\n');
+            catch
+                fprintf('aaq_qsub_debug: %s. See err variable.\n',err.message);
+                fprintf(fid,'aaq_qsub_debug: %s. See err variable.\n',err.message);
             end
             
             % catch cases when aaq_qsub_debug quietly 
@@ -170,19 +171,3 @@ else
 end
 
 end
-
-
-% -------------------------------------------------------------------------
-function encapsulated(scriptpath)
-% -------------------------------------------------------------------------
-
-% run script inside a function to prevent clear 
-% etc from breaking outer variable scope
-
-run(scriptpath)
-
-end
-
-
-
-

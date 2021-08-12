@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # this script will list the modules not appearing in
 # any testscripts in $AAHOME/developer/testscripts
@@ -6,7 +6,7 @@
 # we assume the script lives in $AAHOME/developer
 # (we need this to find the aa_modules directory!) 
 
-SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+SCRIPTPATH="$( cd -- "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 ; pwd -P )"
 
 AAHOME=`dirname $SCRIPTPATH`
 
