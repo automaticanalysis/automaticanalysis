@@ -31,18 +31,30 @@
                 <extraparameters>
                     <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
                 </extraparameters>
-            </toolbox>            
+            </toolbox>         
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fieldtrip</name>
                 <dir ui='dir'>/users/psychology01/software/fieldtrip</dir>
-            </toolbox> 
+            </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>hcpwb</name>
                 <dir ui='dir'>/users/psychology01/software/HCP-workbench</dir>
                 <extraparameters>
                     <templateDir>/users/psychology01/software/HCP-workbench/templates</templateDir>
                 </extraparameters>
-            </toolbox> 
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>cosmomvpa</name>
+                <dir ui='dir'>/users/psychology01/software/CoSMoMVPA</dir>
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>tdt</name>
+                <dir ui='dir'>/users/psychology01/software/decoding_toolbox</dir>
+            </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fws</name>
+                <dir ui='dir'>/users/psychology01/software/matlab-fws</dir>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.3-py/FSL</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_bash</fslsetup>

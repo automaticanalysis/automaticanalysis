@@ -20,7 +20,6 @@
             <protocol_structural ui='text'>t1_mpr</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*.IMA</dicomfilter>
-            <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir">/usr/local/apps/psycapps/CoSMoMVPA/CoSMoMVPA-1.1.0/mvpa</matlabtoolsdir>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
                 <dir ui='dir'>/usr/local/apps/psycapps/spm/spm12-r7487</dir>
@@ -28,6 +27,10 @@
                     <doKeepInPath>1</doKeepInPath>
                 </extraparameters>
             </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>cosmomvpa</name>
+                <dir ui='dir'>/usr/local/apps/psycapps/CoSMoMVPA/CoSMoMVPA-1.1.0</dir>
+            </toolbox> 
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash 5.0.10</fslsetup>

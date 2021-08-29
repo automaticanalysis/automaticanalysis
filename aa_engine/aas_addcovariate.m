@@ -1,17 +1,17 @@
 % Adds a covariate to a model
-% function
-% aap=aas_addcovariate(aap,modulename,subject,session,covarName,covariate, HRF, interest)
+% function aap = aas_addcovariate(aap,modulename,subject,session,covarName,covarVector,HRF,interest)
 %
-% modulename=name of module (e.g.,'aamod_firstlevel_model') for which this
-%   covariate applies
-% subject = subject for whom this model applies
-% session = session for which this applies
-% covarName = name of the covariate
-% covarVector = covariate vector, which should be as long as the session
-% HRF = do we want to convolve this covariate with the HRF? (0 - no; 1 - yes)
-% interest = is this covariate of interest, or a nuisa`  B nce covariate?
+% modulename    = name of module (e.g.,'aamod_firstlevel_model') for which this covariate applies
+% subject       = subject for whom this covariate applies
+% session       = session for which this covariate applies
+% covarName     = name of the covariate. It MUST NOT start with 'ppidef_'. If it starts with 'ppidef_', the  it is considered to be a PPI definition and the
+%                   covarVector MUST correspond to a PPI specification (see below). The prefix 'ppidef_' will be removed for the modelling.
+% covarVector   = covariate vector, which should be as long as the session. In case of a PPI specification, it MUST be in a format of 
+%                   <voi name>|<weight>x<regressor name>[|<weight>x<regressor name>[...]]
+% HRF           = do we want to convolve this covariate with the HRF? (0 - no; 1 - yes)
+% interest      = is this covariate of interest, or a nuisa`  B nce covariate?
 
-function aap=aas_addcovariate(aap,modulename,subject,session,covarName,covarVector,HRF, interest)
+function aap = aas_addcovariate(aap,modulename,subject,session,covarName,covarVector,HRF,interest)
 
 if nargin < 7
     HRF = 1; % By default we convolve the covariate
@@ -62,14 +62,21 @@ else
     moduleindex = 1;
 end
 
+% PPI?
+if ~isempty(regexp(covarName,'^ppidef_.*', 'once'))
+    PPIspec = [];
+    PPIspec.name = strrep(covarName,'ppidef_','');
+    [PPIspec.voiname, PPIspec.contrastspec] = strtok(covarVector','|');
+    PPIspec.contrastspec(1) = '';
+    covarVector = PPIspec;
+end
+
 % find model that corresponds and add contrast to this if it exists
-for m = 1 : length(moduleindex)
-    
-    mInd = moduleindex(m);
+for m = moduleindex
     
     % find model that corresponds and add event to this if it exists
-    whichmodel=[strcmp({aap.tasksettings.(modulename)(mInd).modelC.subject},subject)] & ...
-        [strcmp({aap.tasksettings.(modulename)(mInd).modelC.session},session)];
+    whichmodel=[strcmp({aap.tasksettings.(modulename)(m).modelC.subject},subject)] & ...
+        [strcmp({aap.tasksettings.(modulename)(m).modelC.session},session)];
     
     if (~any(whichmodel))
         emptymod=[];
@@ -79,11 +86,11 @@ for m = 1 : length(moduleindex)
         emptymod.covariate.vector=covarVector;
         emptymod.covariate.HRF=HRF;
         emptymod.covariate.interest=interest;
-        aap.tasksettings.(modulename)(mInd).modelC(end+1)=emptymod;
+        aap.tasksettings.(modulename)(m).modelC(end+1)=emptymod;
     else
-        aap.tasksettings.(modulename)(mInd).modelC(whichmodel).covariate(end+1).name=covarName;
-        aap.tasksettings.(modulename)(mInd).modelC(whichmodel).covariate(end).vector=covarVector;
-        aap.tasksettings.(modulename)(mInd).modelC(whichmodel).covariate(end).HRF=HRF;
-        aap.tasksettings.(modulename)(mInd).modelC(whichmodel).covariate(end).interest=interest;
+        aap.tasksettings.(modulename)(m).modelC(whichmodel).covariate(end+1).name=covarName;
+        aap.tasksettings.(modulename)(m).modelC(whichmodel).covariate(end).vector=covarVector;
+        aap.tasksettings.(modulename)(m).modelC(whichmodel).covariate(end).HRF=HRF;
+        aap.tasksettings.(modulename)(m).modelC(whichmodel).covariate(end).interest=interest;
     end
 end

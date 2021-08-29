@@ -1,50 +1,54 @@
-% Transparent overlay of an SPM on a background (bg) image.
-% Positive and negative values presented with different colormaps.
-% Tibor Auer MRC CBU Cambridge 2012-2013
-
-function [img0, cmap, v] = map_overlay(bg,stat,trans)
-% Gray - Blue - Yellow-Red (Stronger change is darker)
-% cmap = vertcat(gray(128), create_grad([0 0 1],[1 1 1],64),...
-%     create_grad([1 1 1],[1 1 0],32),create_grad([1 1 0],[1 0 0],32));
-
-% Gray - Blue - Red-Yellow (Stronger change is brighter)
-cmap = vertcat(gray(128), create_grad([1 1 1],[0 0 1],64),...
-    create_grad([1 0 0],[1 1 0],32),create_grad([1 1 0],[1 1 1],32));
-
-if nargin < 3, trans = 1; end
-
-% Default
-v = [-Inf Inf];
-
-fa = stat.*(stat>0);
-fd = stat.*(stat<0);
-f = zeros(size(bg,1),size(bg,2),size(bg,3));
-if numel(fa(fa>0))
-    [fa va] = histc2D(fa,194,256);
-    v(194:256) = va;
-    f = fa;
-end
-if numel(fd(fd<0))
-    [fd vd] = histc2D(fd,130,191);
-    v(130:191) = vd;
-    f = f + fd;
-end
-img = histc2D(bg,1,127);
-
-for z = 1:size(img,3)
-    f0(:,:,z,:) = ind2rgb(f(:,:,z),cmap);
-    img0(:,:,z,:) = ind2rgb(img(:,:,z),cmap);
-end
-
-for x = 1:size(img,1)
-    for y = 1:size(img,2)
-        for z = 1:size(img,3)
-            if ~isnan(f(x,y,z)) && f(x,y,z)
-                cr = create_grad(img0(x,y,z,:),f0(x,y,z,:),11);
-                cr(cr<0) = -cr(cr<0); cr(cr>1) = 1;
-                img0(x,y,z,:) = cr(round(trans*10)+1,:);
-            end
+function [fig, vRange] = map_overlay(bg_img, s_img, axis, slices)
+    vRange = [-Inf Inf];
+    if isempty(bg_img), bg_img = fullfile(spm('Dir'),'toolbox','OldNorm','T1.nii'); end
+    if isempty(axis), axis = 'axial'; end
+    
+    % Init
+    cmaps = {...
+        create_grad([1 0 0],[1 1 1],64),...
+        create_grad([0 0 1],[1 1 1],64),...
+        create_grad([0 1 0],[1 1 1],64)...
+        };
+    o = slover;
+    o.transform = axis;
+    o.figure = spm_figure('CreateWin','Graphics');
+    o.slicedef = [...
+        -90 2 90;...
+        -126 2 90];
+    o.slices = slices;
+    
+    % Load bg
+    V = spm_vol(bg_img);
+    Y = spm_read_vols(V);
+    o.img = struct(...
+        'vol',V,...
+        'type','truecolor',...
+        'cmap',gray(256),...
+        'range',prctile(Y(:),[0.1 99.9]),...
+        'prop',1,...
+        'hold',0,... % no interpolation
+        'background',nan,...
+        'nancol',0 ...
+        );
+    o.img(1).outofrange = {1 256};
+    o.cbar = [];
+    
+    for i = 1:numel(s_img)
+        if iscell(s_img{i})
+            [s_img{i}, cmaps{i}] = deal(s_img{i}{:});
         end
+        V = spm_vol(s_img{i});
+        Y = spm_read_vols(V);
+        o.img(i+1) = o.img(1);
+        o.img(i+1).type = 'split';
+        o.img(i+1).cmap = cmaps{i};
+        o.img(i+1).vol = V;
+        vRange(i,:) = [min(Y(Y>0)) max(Y(:))];
+        o.img(i+1).range = [1e-6 vRange(i,2)]; % ensure maximum extent
+        % if ~diff(o.img(i+1).range), o.img(i+1).range = [o.img(i+1).range(1)*0.9 o.img(i+1).range(2)*1.1]; end
+        o.img(i+1).outofrange = {0 64};
+        o.cbar(end+1) = i+1;
     end
-end
-v = v';
+    paint(o);
+    fig = o.figure;
+    

@@ -19,7 +19,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>firstlevel_thr_FS</stream>
+                <stream>firstlevel_thr</stream>
             </outputstreams>
             
         </currenttask>

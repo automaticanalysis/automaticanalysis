@@ -17,7 +17,7 @@
             </inputstreams>
             
             <outputstreams>
-                <stream>secondlevel_thr_FS</stream>
+                <stream>secondlevel_thr</stream>
             </outputstreams>
             
         </currenttask>

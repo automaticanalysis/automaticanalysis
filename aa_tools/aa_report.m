@@ -63,7 +63,7 @@ for s = stageindices
 end
 has_motioncorrection = ~isempty(intersect(mfstages,{'aamod_realign' 'aamod_realignunwarp'}));
 has_registration = ~isempty(intersect(mfstages,{'aamod_norm_write' 'aamod_norm_write_dartel'}));
-has_contrast = ~isempty(intersect(mfstages,{'aamod_firstlevel_threshold'}));
+has_firstlevel = ~isempty(intersect(mfstages,{'aamod_firstlevel_threshold'}));
 has_meegepochs = ~isempty(intersect(mfstages,{'aamod_meeg_epochs'}));
 
 % Main HTLMs
@@ -77,9 +77,9 @@ aap.report.subdir = fullfile(fileparts(aap.report.html_main.fname),'report_subje
 if ~exist(aap.report.subdir,'dir'), mkdir(aap.report.subdir); end
 if has_motioncorrection, aap.report.html_moco.fname = strrep(aap.report.html_main.fname,'.htm','_moco.htm'); end
 if has_registration, aap.report.html_reg.fname = strrep(aap.report.html_main.fname,'.htm','_reg.htm'); end
-if has_contrast
-    aap.report.html_C00.fname = strrep(aap.report.html_main.fname,'.htm','_scon.htm');
-    aap.report.condir = fullfile(fileparts(aap.report.html_main.fname),'report_scon');
+if has_firstlevel
+    aap.report.html_C00.fname = strrep(aap.report.html_main.fname,'.htm','_firstlevel.htm');
+    aap.report.condir = fullfile(fileparts(aap.report.html_main.fname),'report_firstlevel');
 end
 if has_meegepochs, aap.report.html_er.fname = strrep(aap.report.html_main.fname,'.htm','_er.htm'); end
 
@@ -90,7 +90,7 @@ aap = aas_report_add(aap,0,'HEAD=Subjects');
 if ~exist(aap.report.subdir,'dir'), mkdir(aap.report.subdir); end
 if has_motioncorrection, aap = aas_report_add(aap,'moco','HEAD=Motion correction summary'); end
 if has_registration, aap = aas_report_add(aap,'reg','HEAD=Registration summary'); end
-if has_contrast
+if has_firstlevel
     aap = aas_report_add(aap,'C00','HEAD=First level results');
     if ~exist(aap.report.condir,'dir'), mkdir(aap.report.condir); end
 end
@@ -207,7 +207,7 @@ aap.prov.serialise(studyroot);
 % Show report
 if ~isdeployed, web(['file://' aap.report.html_main.fname]); end
 % Last, save AAP structure
-save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap');
+save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap','-v7.3');
 
 aa_close(aap);
 

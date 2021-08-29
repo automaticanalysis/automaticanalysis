@@ -27,7 +27,7 @@ switch task
             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
         else
             stats_suffix=[];
-        end;
+        end
         
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
 	% if rfxdir doesn't exist, create it [MSJ]
@@ -62,6 +62,8 @@ switch task
             allCons{flc} = spm_select('FPList',SPM.swd,'^con_.*');
             allTs{flc} = spm_select('FPList',SPM.swd,'^spmT_.*');
             allFs{flc} = spm_select('FPList',SPM.swd,'^spmF_.*');
+            
+            diag(aap,SPM)
         end
         
         %% Describe outputs
@@ -90,14 +92,16 @@ if nargin < 2 % SPM is not passed (e.g. reporting)
     end
 end
 
-for flc = 1:numel(SPM)
-    % distribution
-    cons = SPM(flc).xCon; cons = cons([cons.STAT]=='T');
-    for c = cons
-        h = img2hist(fullfile(SPM(flc).swd, c.Vspm.fname), [], strrep(c.name,' ',''), 1);
-        print(h,'-djpeg','-r150', fullfile(aas_getstudypath(aap), ...
-            ['diagnostic_aamod_secondlevel_contrast_dist_' basename(SPM(flc).swd) '_' strrep(c.name,' ','') '.jpg']));
-        close(h);
+if isempty(aas_getsetting(aap,'diagnostics.histogram')) || aas_getsetting(aap,'diagnostics.histogram')
+    for flc = 1:numel(SPM)
+        % distribution
+        cons = SPM(flc).xCon; cons = cons([cons.STAT]=='T');
+        for c = cons
+            h = img2hist(fullfile(SPM(flc).swd, c.Vspm.fname), [], strrep(c.name,' ',''), 1);
+            print(h,'-djpeg','-r150', fullfile(aas_getstudypath(aap), ...
+                ['diagnostic_aamod_secondlevel_contrast_dist_' basename(SPM(flc).swd) '_' strrep(c.name,' ','') '.jpg']));
+            close(h);
+        end
     end
 end
 end

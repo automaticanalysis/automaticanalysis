@@ -1,9 +1,9 @@
 {
 	"Name": "automaticanalysis",
-	"Version": "5.5.1",
-	"Date": "Sep 2020",
+	"Version": "5.6.0",
+	"Date": "Jun 2021",
 	"ManuscriptRef": "Cusack R, Vicente-Grabovetsky A, Mitchell DJ, Wild CJ, Auer T, Linke AC, Peelle JE (2015). Automatic analysis (aa): Efficient neuroimaging workflows and parallel processing using Matlab and XML. Frontiers in Neuroinformatics 8:90.",
 	"ManuscriptURL": "http:\/\/dx.doi.org\/10.3389\/fninf.2014.00090",
-	"URL": "http:\/\/automaticanalysis.org",
+	"URL": "http:\/\/automaticanalysis.github.io",
 	"wiki": "https:\/\/github.com\/rhodricusack\/automaticanalysis\/wiki"
 }

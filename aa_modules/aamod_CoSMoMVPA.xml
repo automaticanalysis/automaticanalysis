@@ -21,15 +21,16 @@
             </Csettings>
             
             <bsMatrix desc='mat-file containing the behavioural similarity matrix'></bsMatrix>
-            <itemList desc='Cell of event names (or distinct parts) in order corresponding with the bsMatrix. One cell may contain multiple event names to refer to the same event across subjects'></itemList>
+            <itemList desc='Cell of event names (or distinct parts) in order corresponding with the bsMatrix. One cell may be cell containing multiple event names to refer to the same event across subjects'></itemList>
             
             <searchlightVox desc='Number of voxels per spherical searchlight'></searchlightVox>
             
-            <!-- mask, firstlevel_spm, firstlevel_spmts should be added manually by means of aas_renamestream
-            N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname
-            --> 
+            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
             <inputstreams>
-                <stream attr='1'>structural</stream>
+                <stream>structural</stream>
+                <stream isrenameable='1'>firstlevel_brainmask</stream>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_spmts</stream>
             </inputstreams>
             
             <outputstreams>

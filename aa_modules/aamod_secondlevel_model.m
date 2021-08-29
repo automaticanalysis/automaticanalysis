@@ -58,8 +58,6 @@ switch task
             aap = aas_report_add(aap,[],'</td></tr></table>');
         end
     case 'doit'
-        [junk, SPMtool] = aas_cache_get(aap,'spm');
-        
         nsub=length(aap.acq_details.subjects);
         aas_log(aap,false,sprintf('%d subjects',nsub));
         % New option to allow suffix to output file in extraparameters
@@ -83,16 +81,16 @@ switch task
             confiles{m}=aas_getfiles_bystream(aap,m,'firstlevel_cons');
             SPMtemp=load(flSPMfn{m});
             flSPM{m}.SPM.xCon=SPMtemp.SPM.xCon;
-%             if (m~=1)
-%                 if (length(flSPM{m}.SPM.xCon)~=length(flSPM{1}.SPM.xCon))
-%                     aas_log(aap,1,sprintf('Number of contrasts in first level analysis for subject %d different from subject 1. They must be the same for aamod_model_secondlevel to work\n',m));
-%                     for n=1:length(flSPM(m).SPM.xCon)
-%                         if (flSPM{m}.SPM.xCon(n).name~=flSPM{1}.SPM.xCon(n).name);
-%                             aas_log(aap,1,sprintf('Names of contrasts at first level different. Contrast %d has name %s for subject %d but %s for subject 1. They must be the same for aamod_model_secondlevel to work\n',n,flSPM{m}.SPM.xCon(n).name,m,flSPM{1}.xCon(n).name));
-%                         end;
-%                     end;
-%                 end;
-%             end;
+            if m > 1
+                if numel(flSPM{m}.SPM.xCon) < numel(flSPM{1}.SPM.xCon)
+                    aas_log(aap,1,sprintf('Number of contrasts in first level analysis for subject %d smaller than that for subject 1. There MUST be corresponding contrasts for aamod_model_secondlevel to work\n',m));
+                    for n=1:numel(flSPM(m).SPM.xCon)
+                        if ~strcmp(flSPM{m}.SPM.xCon(n).name,flSPM{1}.SPM.xCon(n).name)
+                            aas_log(aap,1,sprintf('Names of contrasts at first level different. Contrast %d has name %s for subject %d but %s for subject 1. They MUST be the same for aamod_model_secondlevel to work\n',n,flSPM{m}.SPM.xCon(n).name,m,flSPM{1}.xCon(n).name));
+                        end
+                    end
+                end
+            end
         end
         %                phs = 1; conname='UF_S'
         allSPMs = {};
@@ -119,9 +117,7 @@ switch task
                 for s=1:nsub
                     foundit=false;
                     for fileind=1:size(confiles{s},1)
-                        [junk, nme]=fileparts(confiles{s}(fileind,:));
-                        m = regexp(nme,sprintf('con_%04d',n));
-                        if m
+                        if ~isempty(strfind(spm_file(confiles{s}(fileind,:),'basename'),sprintf('con_%04d',n)))
                             foundit=true;
                             break;
                         end

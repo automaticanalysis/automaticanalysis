@@ -10,11 +10,12 @@ switch task
             aap = aas_report_add(aap,subj,'</td></tr></table>');
         end
         
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         if subj == 1, EL.load;
         else, EL.reload; end
         outfname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg','output'));
-        EEG = pop_loadset(outfname{strcmp(spm_file(outfname,'ext'),'set')});
+        outfname = outfname{strcmp(spm_file(outfname,'ext'),'set')};
+        EEG = pop_loadset('filepath',spm_file(outfname,'path'),'filename',spm_file(outfname,'filename'));
         EL.unload;
         
         if isfield(EEG.etc,'clean_channel_mask')
@@ -27,10 +28,11 @@ switch task
     case 'doit'
         infname = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meeg'));
         
-        [junk, EL] = aas_cache_get(aap,'eeglab');
+        [~, EL] = aas_cache_get(aap,'eeglab');
         EL.load;
         
-        origEEG = pop_loadset(infname{strcmp(spm_file(infname,'ext'),'set')});
+        indfnEEG = strcmp(spm_file(infname,'ext'),'set');
+        origEEG = pop_loadset('filepath',spm_file(infname{indfnEEG},'path'),'filename',spm_file(infname{indfnEEG},'filename'));
         params = {};
         criteria = aas_getsetting(aap,'criteria');
         for f = fieldnames(criteria)'
@@ -62,7 +64,7 @@ switch task
         end
         
         outfname = spm_file(infname,'prefix','cleaned_');
-        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{1},'basename'));
+        pop_saveset(EEG,'filepath',aas_getsesspath(aap,subj,sess),'filename',spm_file(outfname{indfnEEG},'basename'));
         
         EL.unload;
                 
