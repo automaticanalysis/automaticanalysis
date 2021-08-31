@@ -11,6 +11,33 @@
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
             
+            <decoding>
+                <software options='libsvm|liblinear' ui='optionlist'>libsvm</software>
+                <options>
+                    <liblinear>
+                        <solver options='LR|SVC|SVR|CS-SVC' ui='optionlist'>SVC</solver>
+                        <dual ui='yesno'>1</dual>
+                        <regularisation options='L1|L2' ui='optionlist'>L2</regularisation>
+                        <loss options='L1|L2|none' ui='optionlist'>L2</loss>
+                        <cost>1</cost>
+                    </liblinear>
+                    <libsvm>
+                        <svm options='C-SVC|nu-SVC|1SVM|eSVR|nu-SVR' ui='optionlist'>C-SVC</svm>
+                        <kernel options='linear|polynomial|RBF|sigmoid|precomputed' ui='optionlist'>precomputed</kernel>
+                        <kernelparameters>
+                            <degree>3</degree>
+                            <gamma desc="manual [number] or 'auto' (1/number of features)">auto</gamma>
+                            <coef0>0</coef0>
+                        </kernelparameters>
+                        <cost>1</cost>
+                    </libsvm>
+                    <common>
+                    </common>
+                </options>
+            </decoding>
+            
+            <method desc='decoding analysis' options='wholebrain|searchlight|roi' ui='optionlist'>searchlight</method>
+            
             <searchlight desc='spherical searchlight'>
                 <unit options='voxels|mm'>voxels</unit>
                 <radius>4</radius>
@@ -18,7 +45,10 @@
             
             <measure desc='decoding_measure (multiple can be specified as colon-separeted list)' options='accuracy|sensitivity|specificity|balanced_accuracy|AUC|accuracy_minus_chance|sensitivity_minus_chance|specificity_minus_chance|balanced_accuracy_minus_chance|AUC_minus_chance' ui='optionlist'></measure>
             
-            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
+            <!-- N.B.: input mask must have 'mask' or 'rois' in the streamname
+            methods 'wholebrain' and 'searchlight' requires 1 volume
+            method 'roi' may use more the one volume for ROI wise decoding
+            --> 
             <inputstreams>
                 <stream isrenameable='1'>firstlevel_brainmask</stream>
                 <stream>firstlevel_spm</stream>
@@ -29,6 +59,7 @@
                 <stream>settings</stream>
                 <stream>mask</stream>
                 <stream isrenameable='1'>result</stream>
+                <stream isrenameable='1'>result_pairwise</stream>
             </outputstreams>    
             
         </currenttask>

@@ -31,7 +31,26 @@ if strcmp(cfg.normalise,'yes')
 end
 weights = cfg.weights;
 
+% check data
 data = varargin;
+if numel(data) > 1
+    dims = strsplit(data{1}.dimord,'_');
+    discrepantDim = logical(diff(cell2mat(cellfun(@(d) size(d.(cfg.parameter{1}))', data, 'UniformOutput', false))'));
+    for dim = dims(discrepantDim)
+        indDim = find(strcmp(dims,dim{1}));
+        scale = cellfun(@(d) d.(dim{1}), data, 'UniformOutput', false);
+        sc = scale{1}; for i = 2:numel(scale), sc = intersect(sc, scale{i}); end; scale = sc;        
+        for i = 1:numel(data)
+            [~,ind] = intersect(data{i}.(dim{1}), scale);
+            for p = cfg.parameter
+                [dat, shperm, shn] = shiftdata(data{i}.(p{1}),indDim);
+                data{i}.(p{1}) = unshiftdata(dat(ind,:,:,:,:),shperm,shn);
+            end
+            data{i}.(dim{1}) = scale;
+        end
+    end
+end
+
 out = data{1};
 for p = cfg.parameter
     switch cfg.contrast

@@ -3,7 +3,7 @@
 %
 % N.B.: It requires FreeSurfer templates talairach_mixed_with_skull.gca and
 % face.gca downloaded from https://surfer.nmr.mgh.harvard.edu/fswiki/mri_deface,
-% exracted and stored in aap.directory_conventions.templatedir as
+% extracted and stored in aap.directory_conventions.templatedir as
 % freesurfer_deface_talairach_mixed_with_skull.gca and
 % freesurfer_deface_face.gca, respectively.
 

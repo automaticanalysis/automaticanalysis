@@ -72,14 +72,10 @@ switch task
         cfg.method      = 'triangulation'; 
         cfg.feedback    = 'yes';
         dat = load(allFnTL{1}{1}); data = dat.(char(fieldnames(dat))); 
-        if strcmp(inpstreams{1},'crossfreq') % tweak data into TFR
-            data.label = data.elec.label; 
-            data.freq = data.freqlow;
-            data.time = data.freqhigh;
-            data.dimord = 'chancmb_freq_time';
-        end
-        if ~ft_datatype(data,'source')
-            neighbours = ft_prepare_neighbours(cfg, data);
+       
+        if isfield(data,'elec')
+            cfg.elec = data.elec;
+            neighbours = ft_prepare_neighbours(cfg);
             set(gcf,'position',[0,0,720 720]);
             set(gcf,'PaperPositionMode','auto');
             print(gcf,'-noui',fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_neighbours']),'-djpeg','-r300');
@@ -89,7 +85,7 @@ switch task
         end
         
         statplotcfg = aas_getsetting(aap,'diagnostics');
-        if ~ft_datatype(data,'source')
+        if isfield(data,'elec')
             statplotcfg.layout = ft_prepare_layout([], dat.(char(fieldnames(dat))));
         end
         
@@ -109,6 +105,13 @@ switch task
                 fdiag = @meeg_diagnostics_TFR;
             case 'crossfreq'
                 statcfg.parameter   = 'crsspctrm';
+                fstat = @meeg_statistics;
+                fdiag = @meeg_diagnostics_CF;
+            case 'connfreq'
+                f = fieldnames(data);
+                f = f(cellfun(@(x) ~isempty(regexp(x,'.*spctrm$', 'once')),f));
+                if numel(f) ~= 1, aas_log(aap,true,'Parameter cannot be identified'); end
+                statcfg.parameter   = f{1};
                 fstat = @meeg_statistics;
                 fdiag = @meeg_diagnostics_CF;
         end
@@ -366,7 +369,7 @@ switch task
                 for subj = 1:numel(allInp)
                     [~,~,ind] = intersect(labelcmb,categorical(allInp{subj}.labelcmb),'rows');
                     allInp{subj}.labelcmb = allInp{subj}.labelcmb(ind,:);
-                    allInp{subj}.crsspctrm = allInp{subj}.crsspctrm(ind,:,:,:,:);
+                    allInp{subj}.(statcfg.parameter) = allInp{subj}.(statcfg.parameter)(ind,:,:,:,:);
                 end
                 
                 % update neighbours for channelcombination
@@ -374,10 +377,19 @@ switch task
                 cmbneighbours = [];
                 for lc1 = 1:size(labelcmb,1)
                     nb = false(size(labelcmb,1),1);
-                    for lc2 = 1:size(labelcmb,2)
-                        nb = nb | any(labelcmb(lc1,lc2) == labelcmb,2);
+                    if ~thr.combinationneighbours
+                        % option 1: do not consider channelcombination
                         if thr.neighbours > 0, nb = nb |...
-                                any(cell2mat(cellfun(@(l) l == labelcmb, neighbours(labelcmb(lc1,lc2) == {neighbours.label}).neighblabel, 'UniformOutput', false)),2);
+                                (any(cell2mat(cellfun(@(l) labelcmb(:,2) == l, neighbours({neighbours.label} == labelcmb(lc1,2)).neighblabel, 'UniformOutput', false)),2) & labelcmb(:,1) == labelcmb(lc1,1)) |... % source to destinationneighbours
+                                (any(cell2mat(cellfun(@(l) labelcmb(:,1) == l, neighbours({neighbours.label} == labelcmb(lc1,1)).neighblabel, 'UniformOutput', false)),2) & labelcmb(:,2) == labelcmb(lc1,2)); % destination to sourceneighbours
+                        end
+                    else
+                        % option 2: consider channelcombination
+                        for lc2 = 1:size(labelcmb,2)
+                            nb = nb | any(labelcmb(lc1,lc2) == labelcmb,2);
+                            if thr.neighbours > 0, nb = nb |...
+                                    any(cell2mat(cellfun(@(l) l == labelcmb, neighbours(labelcmb(lc1,lc2) == {neighbours.label}).neighblabel, 'UniformOutput', false)),2);
+                            end
                         end
                     end
                     cmbneighbours(lc1).label = cmblabels{lc1};

@@ -189,10 +189,10 @@
         <topscannumber desc='Ignore EPI scans after this one' ui='int'/>
         
         <input>
-            <list desc='List of subjects and sessions' ui='dir'></list>
+            <selected_subjects desc='Allows subselection of a subset of subjects from the list' ui='custom'></selected_subjects>
+            <selected_visits desc='Allows subselection of a subset of visits from the list' ui='custom'></selected_visits>
             <combinemultiple desc='Combine multiple entries/visits into one?' ui='yesno'>0</combinemultiple>
-            <selected_sessions desc='Allows subselection of a subset of series from the list' ui='intarray'></selected_sessions>
-            <referencedirectory_tmpl desc='Directory contining event references in SPM format' ui='dir_allowwildcards'></referencedirectory_tmpl>
+            <selected_sessions desc='Allows subselection of a subset of series from the list' ui='custom'></selected_sessions>
             <correctEVfordummies desc='Automatically correct event onset time according for dummies?' ui='yesno'>1</correctEVfordummies>
         </input>
         

@@ -93,9 +93,6 @@ switch task
         end
         
         % Init
-        
-        try doTFCE = aap.tasklist.currenttask.settings.threshold.doTFCE; catch, doTFCE = 0; end % TFCE?
-        corr = aap.tasklist.currenttask.settings.threshold.correction;		% correction
         u0   = aap.tasklist.currenttask.settings.threshold.p;				% height threshold
         k   = aap.tasklist.currenttask.settings.threshold.extent;			% extent threshold {voxels}
         nSl = aap.tasklist.currenttask.settings.overlay.nth_slice;
@@ -172,6 +169,8 @@ switch task
             SPM=loaded.SPM;
             anadir=fileparts(fnSPM);
             cd(anadir);
+            anadir = pwd; % resolve links
+            fnSPM = spm_file(fnSPM,'path',anadir);
             
             for c = 1:numel(SPM.xCon)
                 no_sig_voxels = false; % need this for later
@@ -186,9 +185,12 @@ switch task
                 VspmSv   = cat(1,SPM.xCon(c).Vspm);
                 n = 1; % No conjunction
                 
-                if doTFCE
-                    job.spmmat = {fSPM};
-                    job.mask = {fullfile(fileparts(fSPM),'mask.nii,1')};
+                corr = aap.tasklist.currenttask.settings.threshold.correction;		% correction
+                if strcmp(corr,'TFCE') && strcmp(STAT,'F'), corr = 'FWE'; end % TFCE does not support F-test -> FWE
+                
+                if strcmp(corr,'TFCE')
+                    job.spmmat = {fnSPM};
+                    job.mask = {fullfile(fileparts(fnSPM),'mask.nii,1')};
                     job.conspec = struct( ...
                         'titlestr','', ...
                         'contrasts',c, ...
@@ -233,6 +235,27 @@ switch task
                     end
                     
                     % Extent threshold filtering
+                    if ischar(k) % probability-based
+                        k = strsplit(k,':'); k{2} = str2double(k{2});
+                        iSPM = SPM;
+                        iSPM.Ic = c;
+                        iSPM.thresDesc = corr;
+                        iSPM.u = u0;
+                        iSPM.k = 0;
+                        iSPM.Im = [];
+                        [~,xSPM] = spm_getSPM(iSPM);
+                        T = spm_list('Table',xSPM);
+                        switch k{1}
+                            case {'FWE' 'FDR'}
+                                k{1} = ['p(' k{1} '-corr)'];
+                            case {'none'}
+                                k{1} = 'p(unc)';
+                        end
+                        pInd = strcmp(T.hdr(1,:),'cluster') & strcmp(T.hdr(2,:),k{1});
+                        kInd = strcmp(T.hdr(2,:),'equivk');
+                        k = min(cell2mat(T.dat(cellfun(@(p) ~isempty(p) && p<k{2}, T.dat(:,pInd)),kInd)));
+                    end
+                    
                     A     = spm_clusters(XYZ);
                     Q     = [];
                     for i = 1:max(A)
@@ -259,20 +282,22 @@ switch task
                 
                 % Overlay
                 % - edges of activation (in mm)
-                slims = ones(4,2);
-                sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
-                if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
-                else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
-                if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
-                else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
-                if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
-                else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                % - convert to mm
-                slims = sort(V.mat*slims,2);
-                % - extend if too narrow (min. 50mm)
-                slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
+                
+            slims = ones(4,2);            
+            sAct = arrayfun(@(x) any(reshape(Yepi(x,:,:),[],1)), 1:size(Yepi,1));
+            if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
+            else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+            sAct = arrayfun(@(y) any(reshape(Yepi(:,y,:),[],1)), 1:size(Yepi,2));
+            if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
+            else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+            sAct = arrayfun(@(z) any(reshape(Yepi(:,:,z),[],1)), 1:size(Yepi,3));
+            if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
+            else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+            % - convert to mm
+            slims = sort(V.mat*slims,2);
+            % - extend if too narrow (min. 50mm)
+            slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
+
                 
                 % - draw
                 axis = {'sagittal','coronal','axial'};

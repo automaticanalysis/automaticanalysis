@@ -4,9 +4,10 @@
 %
 %--------------------------------------------------------------------------
 % COMP_SIGNAL creates regressors with mean signal intensity values for each
-% segmented compartment [WhiteMatter (WM), CerebralSpinalFluid (CSF) and
-% Out-of-Brain (OOB)] separately for each image. The resulting three
-% regressors are saved in a mat file (structure: [WM CSF OOB]). These
+% segmented compartment [Grey Matter (GM), White Matter (WM), Cerebral Spinal
+% Fluid (CSF) and Out-of-Head (OOH; if epi mask from BET is provided)] 
+% separately for each image. The resulting regressors are saved in a mat file
+% (structure: [GM WM CSF OOH (if epi mask from BET is provided)]). These
 % regressors can be used similarly to head motion regressors. Where the
 % later can account for head motion effects, the compartment signal
 % regressors can be used to account for global signal noise due to changes

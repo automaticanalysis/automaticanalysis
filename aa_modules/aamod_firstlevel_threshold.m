@@ -248,6 +248,27 @@ switch task
                 end
                 
                 % Extent threshold filtering
+                if ischar(k) % probability-based
+                    k = strsplit(k,':'); k{2} = str2double(k{2});
+                    iSPM = SPM;
+                    iSPM.Ic = c;
+                    iSPM.thresDesc = corr;
+                    iSPM.u = u0;
+                    iSPM.k = 0;
+                    iSPM.Im = [];
+                    [~,xSPM] = spm_getSPM(iSPM);
+                    T = spm_list('Table',xSPM);
+                    switch k{1}
+                        case {'FWE' 'FDR'}
+                            k{1} = ['p(' k{1} '-corr)'];
+                        case {'none'}
+                            k{1} = 'p(unc)';
+                    end
+                    pInd = strcmp(T.hdr(1,:),'cluster') & strcmp(T.hdr(2,:),k{1});
+                    kInd = strcmp(T.hdr(2,:),'equivk');
+                    k = min(cell2mat(T.dat(cellfun(@(p) ~isempty(p) && p<k{2}, T.dat(:,pInd)),kInd)));
+                end
+                
                 A     = spm_clusters(XYZ);
                 Q     = [];
                 for i = 1:max(A)
@@ -274,14 +295,15 @@ switch task
             
             % Overlay
             % - edges of activation
-            slims = ones(4,2);
-            sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
+            
+            slims = ones(4,2);            
+            sAct = arrayfun(@(x) any(reshape(Yepi(x,:,:),[],1)), 1:size(Yepi,1));
             if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
             else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
+            sAct = arrayfun(@(y) any(reshape(Yepi(:,y,:),[],1)), 1:size(Yepi,2));
             if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
             else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
+            sAct = arrayfun(@(z) any(reshape(Yepi(:,:,z),[],1)), 1:size(Yepi,3));
             if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
             else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
             % - convert to mm

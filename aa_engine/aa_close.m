@@ -39,5 +39,9 @@ end
 if cell_index(tasks,'clear')
     clear global aa aacache aaparallel aaworker defaults taskqueue localtaskqueue;
 end
+
+% close any SPM windows that may have been left up
+close all
+
 end
 

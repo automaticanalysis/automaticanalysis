@@ -131,9 +131,19 @@ switch task
             create(N);
             
             for n = 1:aas_getsetting(aap,'permutation.iteration')
-                dat = load(outpermfnames{n});
-                Y = zeros(dat.results.datainfo.dim);
-                Y(dat.results.mask_index) = dat.results.(cfg.results.output{o}).output;
+                dat = load(outpermfnames{n}); results = dat.results;
+                output = results.(cfg.results.output{o}).output;
+                Y = zeros(results.datainfo.dim);
+                if strcmp(cfg.analysis,'roi')
+                    roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), results.roi_names);
+                    output = num2cell(output);
+                else
+                    roiInd = 1;
+                    output = {output};
+                end
+                for r = 1:numel(roiInd)
+                    Y(results.mask_index_each{r}) = output{r};
+                end                
                 N.dat(:,:,:,n) = Y;
                 spm_get_space([N.dat.fname ',' num2str(n)], N.mat);
             end
@@ -174,7 +184,16 @@ switch task
             Z = statres.(cfg.results.output{o}).output;
             Z(statres.(cfg.results.output{o}).p >= 0.05) = 0;
             Y = zeros(statres.datainfo.dim);
-            Y(statres.mask_index) = Z;
+            if strcmp(cfg.analysis,'roi')
+                roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), statres.roi_names);
+                Z = num2cell(Z);
+            else
+                roiInd = 1;
+                Z = {Z};
+            end
+            for r = 1:numel(roiInd)
+                Y(statres.mask_index_each{r}) = Z{r};
+            end
             N.dat(:,:,:) = Y;
             spm_get_space(N.dat.fname, N.mat);
             
@@ -200,11 +219,11 @@ switch task
             % - draw
             axis = {'sagittal','coronal','axial'};
             for a = 1:3
-                if any(Z~=0), stat_fname = {N.dat.fname}; else, stat_fname = {}; end
+                if any(cell2mat(Z)~=0), stat_fname = {N.dat.fname}; else, stat_fname = {}; end
                 [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
                 fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
                 
-                if (~any(Z~=0))
+                if (~any(cell2mat(Z)~=0))
                     annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                 end
                 
@@ -224,7 +243,7 @@ switch task
         % automatic connection to the nearest aamod_tdt_decode
         src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,'aamod_tdt_decode','settings')),'output'); src(1:2) = []; % settings, mask
         inp = aas_getstreams(aap,'input'); inp(1:4) = []; % settings, mask, firstlevel_betas, structural
-        for s = 1:numel(src)
+        for s = 1:2:numel(src) % every second excluding pairwise
             if strcmp(inp{s},src{s}), continue; end
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'input',src{s},'input');
