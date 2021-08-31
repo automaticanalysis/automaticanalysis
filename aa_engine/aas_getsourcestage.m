@@ -7,9 +7,9 @@ if nargin == 2 % based on branch
     currbranch = aap.tasklist.currenttask.extraparameters.aap.directory_conventions.analysisid_suffix;
     for currmodnum = find(strcmp({aap.tasklist.main.module.name}, sourcemod))
         srcbranch = aap.tasklist.main.module(currmodnum).extraparameters.aap.directory_conventions.analysisid_suffix;
-        if strcmp(currbranch,srcbranch), break; end
+        if strcmp(currbranch,srcbranch) || contains(currbranch,[srcbranch '_']), break; end % might be an issue if one branchname contains the other
     end
-    if ~strcmp(currbranch,srcbranch), currmodnum = aap.tasklist.currenttask.modulenumber; end
+    if ~strcmp(currbranch,srcbranch) && ~contains(currbranch,[srcbranch '_']), currmodnum = aap.tasklist.currenttask.modulenumber; end
     
 else % based on stream
     stream = strsplit(stream,'.');
