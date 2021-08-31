@@ -134,7 +134,6 @@ switch task
         nSl = aap.tasklist.currenttask.settings.overlay.nth_slice;
         tra = aap.tasklist.currenttask.settings.overlay.transparency;
         Outputs.thr = '';
-        Outputs.cl = '';
         Outputs.sl = '';
         Outputs.Rend = '';
         
@@ -294,49 +293,17 @@ switch task
             V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
             spm_write_vol(V,Yepi);
             
-            % Cluster
-            clusterfname = spm_file(V.fname,'prefix','cl_');
-            if ~isempty(aas_getsetting(aap,'cluster'))
-                if no_sig_voxels
-                    copyfile(V.fname,clusterfname);
-                else
-                    switch aas_getsetting(aap,'cluster.method')
-                        case 'fusionwatershed'
-                            [s,FWS] = aas_cache_get(aap,'fws');
-                            if ~s
-                                aas_log(aap,false,'WARNING: Fusion-Watershed is not installed! --> clustering skipped');
-                            else
-                                FWS.load;
-                                settings = aas_getsetting(aap,'cluster.options.fusionwatershed');
-                                obj = fws.generate_ROI(V.fname,...
-                                    'threshold_method','z','threshold_value',0.1,...
-                                    'filter',settings.extentprethreshold,'radius',settings.searchradius,'merge',settings.mergethreshold,...
-                                    'plot',false,'output',true);
-                                
-                                % - exclude small (<k) ROIs
-                                smallROIs = obj.table.ROIid(obj.table.Volume < k);
-                                obj.label(reshape(arrayfun(@(l) any(l == smallROIs), obj.label(:)), obj.grid.d)) = 0;
-                                obj.table(arrayfun(@(l) any(l == smallROIs), obj.table.ROIid),:) = [];
-                                    
-                                % - save results
-                                save.vol(obj.label,obj.grid,spm_file(clusterfname,'ext',''),'Compressed',false);
-                                writetable(obj.table,spm_file(clusterfname,'ext','csv'));
-                                FWS.unload;
-                            end
-                    end
-                end
-            end
-            
             % Overlay
             % - edges of activation
-            slims = ones(4,2);
-            sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
+            
+            slims = ones(4,2);            
+            sAct = arrayfun(@(x) any(reshape(Yepi(x,:,:),[],1)), 1:size(Yepi,1));
             if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
             else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
+            sAct = arrayfun(@(y) any(reshape(Yepi(:,y,:),[],1)), 1:size(Yepi,2));
             if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
             else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
+            sAct = arrayfun(@(z) any(reshape(Yepi(:,:,z),[],1)), 1:size(Yepi,3));
             if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
             else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
             % - convert to mm
@@ -359,7 +326,7 @@ switch task
                     annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                 end
                 
-                fnsl{a} = spm_print(fnsl{a},fig,'jpg');
+                spm_print(fnsl{a},fig,'jpg')
             end
             
             dlmwrite(fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s.txt',c,conName)),[min(v(v~=0)), max(v)]);
@@ -411,7 +378,6 @@ switch task
             % Outputs
             
             if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
-            if exist(clusterfname,'file'), Outputs.cl = strvcat(Outputs.cl, clusterfname); end
             for f = 1:numel(fnsl)
                 if exist(fnsl{f},'file'), Outputs.sl = strvcat(Outputs.sl, fnsl{f}); end
             end
@@ -424,7 +390,6 @@ switch task
         % Describe outputs
         
         aap=aas_desc_outputs(aap,subj,'firstlevel_thr',Outputs.thr);
-        aap=aas_desc_outputs(aap,subj,'firstlevel_clusters',Outputs.cl);
         aap=aas_desc_outputs(aap,subj,'firstlevel_thrslice',Outputs.sl);
         aap=aas_desc_outputs(aap,subj,'firstlevel_thr3D',Outputs.Rend);
         

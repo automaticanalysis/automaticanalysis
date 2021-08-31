@@ -41,6 +41,7 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 % 
 % CHANGE HISTORY:
 %
+%   M Jones WashU 2021 -- look for .nii if .nii.gz doesn't exist (structural and epi files only)
 %   M Jones WashU 2020 -- added acq_details tsv processing options
 %   J Carlin 2018 -- Update
 %   Tibor Auer MRC CBU Cambridge 2015 -- new
@@ -231,13 +232,15 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
 	case '.'
         case structDIR
             if ~toAddData, continue; end
-            for sfx = {'T1w','T2w'};
-                for image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))'
-                    if isempty(image{1}), continue; end
-                    hdrfname = retrieve_file(fullfile(sesspath,structDIR,[subjname '_' sfx{1},'.json']));
-                    info = ''; if ~isempty(hdrfname{1}), info = loadjson_multi(hdrfname); end
-                    structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',info));
+            for sfx = {'T1w','T2w'}
+                image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))';
+                if isempty(image{1})
+                image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii$']))';
                 end
+                if isempty(image{1}), continue; end
+                hdrfname = retrieve_file(fullfile(sesspath,structDIR,[subjname '_' sfx{1},'.json']));
+                info = ''; if ~isempty(hdrfname{1}), info = loadjson_multi(hdrfname); end
+                structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',info));
             end
         case diffusionDIR
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
@@ -305,6 +308,10 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
         case functionalDIR
             allepi = cellstr(spm_select('FPList',...
                 fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))';
+            % if gz doesn't exist, see if unziped version does:
+            if (isempty(allepi) || isempty(allepi{1}))
+                allepi = cellstr(spm_select('FPList',fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii$']))';
+            end
             if ~isempty(BIDSsettings.tasknames)
                 % identify target tasks, in correct order
                 tasks = cellfun(@(x)get_taskname(sesspath,subjname,x),allepi,'uniformoutput',0);
@@ -323,9 +330,9 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 allepi = outepi;
             end
             for cfname = allepi
-                taskfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '_bold.nii'},{'',''});
-                [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});
-                               
+                [~,n,~] = fileparts(strtok(cfname{1},'.'));
+                taskfname = strrep_multi(n,{[subjname '_'] '_bold'},{'',''});
+                [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});                              
                 % Header
                 info = []; TR = 0;
                 hdrfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
@@ -475,7 +482,8 @@ end
 function [taskname, sesstr] = get_taskname(sesspath,subjname,fname)
 global BIDSsettings;
 functionalDIR = BIDSsettings.directories.functionalDIR;
-taskfname = strrep_multi(basename(fname),{[subjname '_'] '_bold.nii'},{'',''});
+[~,n,~] = fileparts(strtok(fname,'.'));
+taskfname = strrep_multi(n,{[subjname '_'] '_bold'},{'',''});
 taskname = strrep(taskfname,'task-','');
 
 % Header

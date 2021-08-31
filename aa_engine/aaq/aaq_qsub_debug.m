@@ -7,7 +7,7 @@ dbstop if error
 
 if isempty(obj)
     dbclear all
-    error('No task queue found. This function can only be used after receiving an error running AA in "qsub" mode.')
+    error('No task queue found. This function can only be used after receiving an error running aa in "qsub" mode.')
 end
 
 L = length([obj.pool.Jobs.ID]);
