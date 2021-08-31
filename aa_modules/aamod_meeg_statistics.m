@@ -38,6 +38,7 @@ switch task
             
             savepath = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);            
             res = cellstr(spm_select('FPList',spm_file(savepath,'path'),['^' spm_file(savepath,'basename') '_.*']));
+            if isempty(res{1}), continue; end
             % sort images according to datetime
             resd = cellfun(@dir, res);
             [~,ind] = sort(datenum({resd.date}));
