@@ -62,7 +62,7 @@ if ~isempty(getfield(aap,start{:}))
                         outdomain = start0{end};
                     end
                 case 'children'
-                    if isstruct(tree.(indomain))
+                    if isstruct(tree.(char(indomain)))
                         outdomain = fieldnames(tree.(indomain));
                     end
             end
