@@ -45,6 +45,7 @@ Scenarios for usage are the same as for aaq_batch.
 ### aaq_qsub_debug.m, aaq_qsub_monitor_jobs.m
 Variants of aaq_qsub using createJob/createTask, and intended for debugging. 
 
-### aaq_condor.m
-Queue processor for HTCondor. There is work in progress to substitute it using the HTCondor integration script (available for R2020b and up) and aaq_batch. See https://www.mathworks.com/matlabcentral/fileexchange/78823-parallel-computing-toolbox-plugin-for-matlab-parallel-server-with-htcondor?s_tid=srchtitle
+## Additional notes for specific schedulers
+### HTCondor
+`aaq_batch` queue processor can be used for HTCondor after installing the [HTCondor integration script](https://www.mathworks.com/matlabcentral/fileexchange/78823-parallel-computing-toolbox-plugin-for-matlab-parallel-server-with-htcondor?s_tid=srchtitle)(available for R2020b and up).
 
