@@ -19,7 +19,7 @@ aa_ver5
 SUBJS = [10004 10005 10007 10010];
 
 %% RECIPE
-aap = aarecipe('aap_tasklist_meeg.xml');
+aap = aarecipe('meeg_tasklist.xml');
 SPM = aas_inittoolbox(aap,'spm');
 SPM.load;
 
@@ -31,7 +31,7 @@ EL.close;
 MRIFILE = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_1mm.nii.gz');
 
 % SITE-SPECIFIC CONFIGURATION:
-aap.options.wheretoprocess = 'qsub'; % queuing system typical value localsingle or qsub_nonDCS
+aap.options.wheretoprocess = 'parpool'; % queuing system
 aap.options.aaparallel.numberofworkers = 20;
 aap.options.aaparallel.memory = 4; % 12; % time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level requires > 12 GB RAM
 aap.options.aaparallel.walltime = 36;

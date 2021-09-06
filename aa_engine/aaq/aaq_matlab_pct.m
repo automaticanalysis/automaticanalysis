@@ -1,66 +1,118 @@
+classdef aaq_matlab_pct < aaq
+    % aaq_matlab_pct < aaq
+    % aa queue processor that uses Matlab's spmd construct to run tasks.
+    %
+    % It differs from the Condor or qsub queue managers in that it uses a
+    % pre-existing pool of matlab sessions, started with a prior command
+    % like "parpool open 8". As there's no need to launch a matlab session
+    % for each processing module, latencies are reduced, which is important
+    % if you have lots of small jobs (i.e., like realtime)
+    %
+    % It also has more efficient dependency calculation, which rather than
+    % using done flags keeps track (within the current processing session).
+    % Done flags are still read in at the beginning and written as a module
+    % finishes.
+    %
+    %
+    % The sequence of method/function calls triggering the execution of a
+    % module's code is
+    %
+    %   runall > runall_spmd_master | runall_spmd_worker > aa_doprocessing_onetask
+    % 
+    %
+    % aaq_matlab_pct Properties (*inherited):
+    %   doHandlePool - logical, true indicating that this class handles
+    %                  the parpool
+    %   benchmark    - struct, container for performance statistics
+    %   matlab_pct_path - char arr, subdirectory for storing job diaries
+    %   jobcount     - double, counter for jobs in pipeline
+    %   *aap         - struct, the 'main' aa struct govering analysis
+    %   *isOpen      - logical, flag indicating whether taskqueue is open
+    %   *fatalerrors - logical, flag indicating fatal error
+    %   *jobqueue    - struct, composed of 'taskmasks'
+    % 
+    % aaq_matlab_pct Methods (*inherited):
+    %   addtask             - Call superclass' addtask and additionally 
+    %                         scan for dependencies
+    %   runall              - Run all jobs/tasks on the queue using spmd
+    %   runall_spmd_master  - Send data to workers for processing (will be
+    %                         run by worker with labindex 1, the 'master')
+    %   runall_spmd_worker  - Wait for signal from master and either call 
+    %                         aa_doprocessing_onetask or signal a closed
+    %                         state (will be run by non-master workers)
+    %   receiveWorkerMessages - Receive worker message and process it
+    %   processWorkerMessage - Set workerstatus property or, if message is
+    %                          'done_aa_doprocessing', perform wrap-up
+    %   waitforrealtime     - <seemingly not used>
+    %   close               - Close parpool and call superclass' close
+    %   *save               - save self to file
+    %   *emptyqueue         - clear the task queue (set jobqueue to [])
+    %   *allocate           - allocate a job from the task queue to a worker
+    %   *getjobdescription  - return struct task
 
-% aa queue processor that uses Matlab's Parallel Computing Toolbox to run
-% tasks.
-%
-% It differs from the Condor or qsub queue managers in that it uses a
-% pre-existing pool of matlab sessions, started with a prior command like
-% "matlabpool open 8". As there's no need to launch a matlab session for each
-% processing module, latencies are reduced, which is important if you have
-% lots of small jobs (i.e., like realtime)
-%
-% It also has more efficient dependency calculation, which rather than
-% using done flags keeps track (within the current processing session).
-% Done flags are stil read in at the beginning and written as a module
-% finishes.
-
-classdef aaq_matlab_pct<aaq
+    
+    % ==================== 'Hidden help' for developers ===================
+    % The worker with labindex 1 is defined as the master; communication
+    % between master and the other workers is accomplished via labSend,
+    % labReceive, and labProbe. 
+    %
+    % The master sends instructions and data to the other workers when they
+    % are available:
+    %   labSend({'aa_doprocessing',obj,job,...
+    %   labSend({'close'},...
+    %
+    % The other workers always report back to the master (note the
+    % labindex), in most cases reporting their status:
+    %   labSend({'status','waiting'},1);
+    %   labSend({'status','aa_doprocessing'},1);
+    %   labSend({'status','closed'},1);
+    % However, once a job is successfully finished, instead of the string
+    % 'status' the worker in question sends 'done_aa_doprocessing', the job
+    % index and a stream to return (which may be empty):
+    %   labSend({'done_aa_doprocessing',jobind,streamcache_toreturn},1);
+    % 
+    % Hidden property 'workerstatus' is central for this communication in
+    % that it indicates the current status of each worker ('pending',
+    % 'waiting', 'waitforrealtime', 'idle', 'closed').
+    % 
+    % Above-mentioned more efficient dependency calculation is done in
+    % method addtask, using hidden properties isJobReadyToGo, isJobNotRun,
+    % jobDoneFlag, isJobDoneFlag, jobDepOn, jobDepOf, numJobDepOn.
+    
     properties
-        toHandlePool    = false; % aaq handles pools
-        
+        doHandlePool    = false; % logical, true indicating that class handles parpool
         benchmark       = struct('receiveWorkerMessages',0,...
                             'submitJobs',0,...
                             'waitForWorkers',0,...
                             'labsend',0,...
-                            'jobreadystart',0);
-        
-        % no effect
-        matlab_pct_path=[]; % to store benchmark file (<aaworker.parmpath>/matlab_pct)
-        retrynum=[]; % counter for rertries (for each job)
-        jobcount=0; % # jobs in pipeline
-        stored_path=''; % MATLAB path
-        
-        % not in use
-        jobstatus=[];
-        compiledfile=[];                
-        maxretries=5; % maximum allowed rerties
-        filestomonitor=[];
-        filestomonitor_jobnum=[];
+                            'jobreadystart',0); % struct, container for performance statistics
+        matlab_pct_path = []; % subdirectory for storing job diaries (<aaworker.parmpath>/matlab_pct)
+        jobcount        = 0;  % counter for jobs in pipeline
     end
+    
     properties (Hidden)
-        jobstudypths            = {} % actulaised studypath (for each job)
-        readytogo               = [] % green sign (for each job)
-        jobnotrun               = [] % job status (for each job)
+        jobStudyPaths           = {} % cell array, actualised studypath (for each job)
+        jobReadyToGo            = [] % double array, indexes of jobs ready to be processed
+        isJobNotRun             = [] % logical array, true indicating job has not run (for each job)
+        jobDoneFlag             = {} % cell array, copy of taskmask.doneflag (for each job)
+        isJobDoneFlag           = [] % logical array, true if doneflag file exists (for each job)
+        jobDepOn                = {} % cell array, jobs the actual job depends on (for each job)
+        jobDepOf                = {} % cell array, jobs depending on the actual job (for each job)
+        numJobDepOn             = [] % double array, no. of jobs the actual job depends on (for each job)
 
-        dep_names               = {} % doneflag (for each job)
-        dep_done                = [] % is doneflag exists (for each job)
-        depon                   = {} % jobs the actual job depends on (for each job)
-        depof                   = {} % jobs depending on the actual job (for each job)
-        depon_num               = [] % # jobs the actual job depends on (for each job)
-
-        % real-time
-        realtime_deps           = []
-
-        % low-level
-        aaworker                = [] % aaworker struct
-        aaparallel              = [] % aaparallel struct
-        workerstatus            = {} % worker status (for each worker)
+        aaworker                = [] % copy of global aaworker struct
+        aaparallel              = [] % copy of global aaparallel struct
+        workerstatus            = {} % cell array of chars indicating worker status (for each worker)
         
+        % real-time
+        realtime_deps           = [] % struct, dependencies of real-time jobs
         % Torque-only
         initialSubmitArguments  = '' % additional arguments to use when submitting jobs
     end
+    
     methods
-        %% Constructor: setting up engine
         function [obj]=aaq_matlab_pct(aap)
+            % Constructor: setting up engine
             global aaparallel
             global aaworker
             obj.aap=aap;
@@ -70,11 +122,7 @@ classdef aaq_matlab_pct<aaq
             obj.matlab_pct_path=fullfile(obj.aaworker.parmpath,'matlab_pct');
             if ~exist(obj.matlab_pct_path,'dir')
                 aas_makedir(obj.aap,obj.matlab_pct_path);
-            end;
-            
-            % Take snapshot of paths so the workers can get themselves up
-            % to speed
-            obj.stored_path=path;
+            end
             
             if ~aas_matlabpool('isopen')
                 if ~isempty(aap.directory_conventions.poolprofile)
@@ -103,7 +151,7 @@ classdef aaq_matlab_pct<aaq
                             aas_log(aap,false,'INFO: Generic engine is detected');
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'walltime',obj.aaparallel.walltime);
                             P.CommunicatingSubmitFcn = obj.SetArg(P.CommunicatingSubmitFcn,'memory',obj.aaparallel.memory);                            
-                        case 'Local'
+                        case 'parallel.cluster.Local'
                             aas_log(obj.aap,false,'INFO: Local engine is detected');
                     end
                 else
@@ -111,92 +159,101 @@ classdef aaq_matlab_pct<aaq
                 end
                 P.NumWorkers = obj.aaparallel.numberofworkers;
                 P.JobStorageLocation = obj.aaworker.parmpath;
+                % Note that below we're possibly overriding the number of
+                % workers that may have been stored in a pool profile
                 C = aas_matlabpool(P,P.NumWorkers);
-                if ~isempty(C), C.IdleTimeout = obj.aaparallel.walltime*60; end
-                obj.toHandlePool = true;                
+                if ~isempty(C)
+                    C.IdleTimeout = obj.aaparallel.walltime*60; 
+                end
+                obj.doHandlePool = true;                
             end
         end
+
         
         function close(obj)
-            if obj.toHandlePool, aas_matlabpool('close'); end
+            % Close matlabpool and invoke superclass' close function.
+            if obj.doHandlePool
+                aas_matlabpool('close'); 
+            end
             close@aaq(obj);
         end
         
-        %%==============================
-        % Add a task to the task queue
-        % This adds to the parent class's method, by scanning the dependencies
-        % of the new module.
-        %
-        function obj=addtask(obj,taskmask)
+        
+        function addtask(obj,taskmask)
+            % Add a task to the task queue.
+            % Adds to the parent class's method by scanning the
+            % dependencies of the new module.
             obj=addtask@aaq(obj,taskmask);
+            % module_index is needed for dealing with real-time input only
+            module_index=obj.aap.tasklist.main.module(taskmask.k).index;
+            job_ix=length(obj.jobqueue);
+            obj.isJobNotRun(job_ix)=true;
             
-            index=obj.aap.tasklist.main.module(taskmask.k).index;
-            
-            njob=length(obj.jobqueue);
-            
-            obj.retrynum(njob)=0;
-            obj.jobnotrun(njob)=true;
-            
-            %% For better performance, make a list of all dependencies and refer to them by index
+            % For better performance, make a list of all dependencies and
+            % refer to them by index 
             % Removes need for endless done flag file checking
-            obj.depof{njob}=[];
-            obj.depon{njob}=[];
-            obj.depon_num(njob)=0;
+            obj.jobDepOf{job_ix}=[];
+            obj.jobDepOn{job_ix}=[];
+            obj.numJobDepOn(job_ix)=0;
             
             % Store this task as a future dependency of others
-            obj.dep_names{njob}=taskmask.doneflag;
-            obj.dep_done(njob)=exist(taskmask.doneflag,'file');
-            obj.jobstudypths{njob}=aas_getstudypath(obj.aap,taskmask.k);
+            obj.jobDoneFlag{job_ix}=taskmask.doneflag;
+            obj.isJobDoneFlag(job_ix)=exist(taskmask.doneflag,'file');
+            obj.jobStudyPaths{job_ix}=aas_getstudypath(obj.aap,taskmask.k);
             
             % Does this stage need realtime input?
-            if isfield(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE,'waitforrealtime_singlefile') && ~isempty(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE.waitforrealtime_singlefile)
-                [dcmfield, dcmfilter]=strtok(obj.aap.schema.tasksettings.(taskmask.stagename)(index).ATTRIBUTE.waitforrealtime_singlefile,'=');
-                newrtd=struct('dcmfield',dcmfield,'dcmfilter',strtrim(dcmfilter(2:end)),'njob',njob,'eventtype','singlefile','satisfied',false);
+            if isfield(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE,'waitforrealtime_singlefile') && ~isempty(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE.waitforrealtime_singlefile)
+                [dcmfield, dcmfilter]=strtok(obj.aap.schema.tasksettings.(taskmask.stagename)(module_index).ATTRIBUTE.waitforrealtime_singlefile,'=');
+                newrtd=struct('dcmfield',dcmfield,'dcmfilter',strtrim(dcmfilter(2:end)),'njob',job_ix,'eventtype','singlefile','satisfied',false);
                 if isempty(obj.realtime_deps)
                     obj.realtime_deps=newrtd;
                 else
                     obj.realtime_deps(end+1)=newrtd;
-                end;
-                obj.depon{njob}=-length(obj.realtime_deps); % minus indicates realtime dependency
-                obj.depon_num(njob)=1;
-            end;
-            
+                end
+                obj.jobDepOn{job_ix}=-length(obj.realtime_deps); % minus indicates realtime dependency
+                obj.numJobDepOn(job_ix)=1;
+            end
             
             % Go through each dependency of this task and find the index of
             % that
-            for tbcfind=1:length(obj.jobqueue(njob).tobecompletedfirst)
+            for tbcfind=1:length(obj.jobqueue(job_ix).tobecompletedfirst)
                 % Find or put this dependency in a list
-                df=obj.jobqueue(njob).tobecompletedfirst{tbcfind};
-                depind=find(strcmp(df,obj.dep_names));
+                df=obj.jobqueue(job_ix).tobecompletedfirst{tbcfind};
+                depind=find(strcmp(df,obj.jobDoneFlag));
                 if isempty(depind)
                     aas_log(aap,true,sprintf('Dependency %s of %s not found.',df,taskmask.doneflag));
-                end;
+                end
                 
                 % Only record dependencies that haven't already been
                 % satisfied
-                if ~obj.dep_done(depind)
-                    obj.depon{njob}(end+1)=depind;
-                    obj.depon_num(njob)=obj.depon_num(njob)+1;
-                    obj.depof{depind}(end+1)=njob;
-                end;
-            end;
+                if ~obj.isJobDoneFlag(depind)
+                    obj.jobDepOn{job_ix}(end+1)=depind;
+                    obj.numJobDepOn(job_ix)=obj.numJobDepOn(job_ix)+1;
+                    obj.jobDepOf{depind}(end+1)=job_ix;
+                end
+            end
             
-            % Add it to the readytogo queue if appropriate
-            if obj.depon_num(njob)==0
-                obj.readytogo=[obj.readytogo njob];
-            end;
-            
+            % Add it to the jobReadyToGo queue if appropriate
+            if obj.numJobDepOn(job_ix)==0
+                obj.jobReadyToGo=[obj.jobReadyToGo job_ix];
+            end
         end
+
         
-        
-        
-        % Run all jobs, using matlabs "single program, multiple data"
-        % construct. This isn't really what we use it for - we actually set
-        % pass messages between the modules to make a queue happen
-        function [obj]=runall(obj,dontcloseexistingworkers,waitforalljobs)
+        function runall(obj, ~, waitforalljobs)
+            % Run all jobs, using spmd.
+            % This isn't really what we use it for - we actually set pass
+            % messages between the modules to make a queue happen.
+            % 'waitforalljobs' is a logical, true indicating that the job
+            % queue is fully built, false otherwise.
+            
             % This method only acts when the queue is fully built
             if waitforalljobs
                 if ~isempty(obj.jobqueue)
+                    % Copy current value of global variable aacache to
+                    % obj.aaworker (necessary because workers invoked by
+                    % spmd have 'local copies of global variables',
+                    % initiated with [])
                     global aacache
                     obj.aaworker.aacache = aacache;
                     spmd
@@ -206,77 +263,89 @@ classdef aaq_matlab_pct<aaq
                             obj.waitforrealtime();
                         else
                             obj.runall_spmd_worker();
-                        end;
-                    end;
-                end;
-            end;
-        end;
+                        end
+                    end
+                end
+            end
+        end
         
-        % Used by the master thread to pump any messages from workers
-        function [obj,messagesreceived]=receiveWorkerMessages(obj)
+        
+        function messagesreceived=receiveWorkerMessages(obj)
+            % Pull data from workers and process them.
+            % This method is used exclusively by the master worker.
             tic
             messagesreceived=false;
             while(labProbe)
-                [data, source, tag]=labReceive;
-                obj.processWorkerMessage(data,source);
+                [workerData, workerIndex, ~]=labReceive;
+                obj.processWorkerMessage(workerData,workerIndex);
                 messagesreceived=true;
-            end;
+            end
             obj.benchmark.receiveWorkerMessages=obj.benchmark.receiveWorkerMessages+toc;
-        end;
+        end
         
-        % Execute this worker message
-        function [obj]=processWorkerMessage(obj,data,source)
-            switch(data{1})
+        
+        function processWorkerMessage(obj,workerData,workerIndex)
+            % Execute action implied by message from non-master worker.
+            % Input arg 'workerData' is the data sent from any of the
+            % non-master workers, see comments in the code.
+
+            % the first element's value signals the action to be triggered:
+            % if it is 'status', do nothing but copy the second element
+            % to the appropriate position in obj.workerstatus; if it is
+            % 'done_aa_doprocessing', 
+            firstOutputArg = workerData{1};
+            
+            switch(firstOutputArg)
                 case 'status'
-                    obj.workerstatus{source}=data{2};
+                    % workerData{2} is a string indicating the worker's status,
+                    % like 'waiting' or 'aa_doprocessing'
+                    obj.workerstatus{workerIndex}=workerData{2};
                 case 'done_aa_doprocessing'
-                    jobind=data{2};
-                    obj.jobnotrun(jobind)=false;
+                    % workerData{2} is the job index
+                    jobind=workerData{2};
+                    obj.isJobNotRun(jobind)=false;
                     aas_log(obj.aap,false,sprintf('PARALLEL (matlab_pct): Completed %s',obj.jobqueue(jobind).doneflag));
-                    
-                    % Append to stream cache with results from this process
-                    processstreamcache=data{3};
+                    % workerData{3} is streamcache_toreturn - append to stream cache
+                    processstreamcache=workerData{3};
                     if ~isempty(processstreamcache)
                         if ~isfield(obj.aap.internal,'streamcache')
                             obj.aap.internal.streamcache=processstreamcache;
                         else
                             obj.aap.internal.streamcache=[obj.aap.internal.streamcache processstreamcache];
-                        end;
-                    end;
+                        end
+                    end
                     % Remove this as a dependency from all of the
                     % stages dependent on the stage that has just
                     % completed
-                    for depoflist=1:length(obj.depof{jobind})
-                        deponmask=obj.depof{jobind}(depoflist);
-                        obj.depon{deponmask}(obj.depon{deponmask}==jobind)=[];
-                        obj.depon_num(deponmask)=obj.depon_num(deponmask)-1;
-                        obj.readytogo=[obj.readytogo deponmask(obj.depon_num(deponmask)==0)];
-                    end;
+                    for depoflist=1:length(obj.jobDepOf{jobind})
+                        deponmask=obj.jobDepOf{jobind}(depoflist);
+                        obj.jobDepOn{deponmask}(obj.jobDepOn{deponmask}==jobind)=[];
+                        obj.numJobDepOn(deponmask)=obj.numJobDepOn(deponmask)-1;
+                        obj.jobReadyToGo=[obj.jobReadyToGo deponmask(obj.numJobDepOn(deponmask)==0)];
+                    end
                 otherwise
-                    fprintf('Unrecognized message from worker %s\n',data{1});
-                    
-            end;
-        end;
+                    % trigger an error for any other input, as this may
+                    % signal a bug
+                    aas_log(obj.aap, true, sprintf('Unrecognized message from worker %s\n',firstOutputArg)); 
+            end
+        end
         
-        % Master - sends jobs that are ready to workers
-        function [obj]=runall_spmd_master(obj,waitforalljobs)
+        
+        function runall_spmd_master(obj,waitforalljobs)
+            % Master - sends jobs that are ready to workers
             obj.receiveWorkerMessages();
-            
             itnum=0;
-            
             fprintf('Now trying job execution\n');
-            
             workerwaits=[];
             
-            
             % Main job execution list
-            while any(obj.jobnotrun)
+            while any(obj.isJobNotRun)
                 submitjobstart=tic;
                 itnum=itnum+1;
                 
                 jobreadystart=tic;
-                jobreadylist=obj.readytogo;
-                obj.readytogo=[];
+                jobreadylist=obj.jobReadyToGo;
+                obj.jobReadyToGo=[];
                 obj.benchmark.jobreadystart=obj.benchmark.jobreadystart+toc(jobreadystart);
                 
                 for jobreadyind=length(jobreadylist):-1:1
@@ -289,58 +358,51 @@ classdef aaq_matlab_pct<aaq
                     % Find out who can run it, wait if no-one free
                     waittime=tic;
                     while(1)
-                        workerwaiting=find(strcmp('waiting',obj.workerstatus));
-                        if ~isempty(workerwaiting)
+                        waitingWorkerIndex=find(strcmp('waiting',obj.workerstatus));
+                        if ~isempty(waitingWorkerIndex)
                             workerwaits(end+1)=0;
-                            workerwaiting=workerwaiting(1);
-                            obj.workerstatus{workerwaiting}='pending';
+                            waitingWorkerIndex=waitingWorkerIndex(1);
+                            obj.workerstatus{waitingWorkerIndex}='pending';
                             break;
                         else
                             workerwaits(end+1)=1;
-                        end;
+                        end
                         obj.receiveWorkerMessages();
-                    end;
+                    end
                     obj.benchmark.waitForWorkers=obj.benchmark.waitForWorkers+toc(waittime);
                     
-                    
                     % Run the job
-                    aas_log(obj.aap,false,sprintf('PARALLEL (matlab_pct): Submitting to worker %d job %s',workerwaiting,job.doneflag));
+                    aas_log(obj.aap,false,sprintf('PARALLEL (matlab_pct): Submitting to worker %d job %s',waitingWorkerIndex,job.doneflag));
                     labsendstart=tic;
-                    labSend({'aa_doprocessing',obj,job,jobind},workerwaiting);
+                    labSend({'aa_doprocessing',obj,job,jobind},waitingWorkerIndex);
                     obj.benchmark.labsend=obj.benchmark.labsend+toc(labsendstart);
                     
                     % Flag as submitted
-                    obj.jobnotrun(jobind)=false;
+                    obj.isJobNotRun(jobind)=false;
                 end
                 obj.benchmark.submitJobs=obj.benchmark.submitJobs+toc(submitjobstart);
                 
                 if ~waitforalljobs
                     break;
-                end;
-                
-                
-                %%
-                
+                end
                 obj.receiveWorkerMessages();
-                
             end
-            
             
             % Close all workers as they become free
             fprintf('Closing\n');
             while any(~strcmp('closed',obj.workerstatus(2:end)))
-                workerwaiting=find(strcmp('waitforrealtime',obj.workerstatus) | strcmp('idle',obj.workerstatus) | strcmp('waiting',obj.workerstatus));
-                for wwind=1:length(workerwaiting)
-                    fprintf('Sending close to %d\n',workerwaiting(wwind));
-                    labSend({'close'},workerwaiting(wwind));
-                end;
+                waitingWorkerIndex=find(strcmp('waitforrealtime',obj.workerstatus) | strcmp('idle',obj.workerstatus) | strcmp('waiting',obj.workerstatus));
+                for wwind=1:length(waitingWorkerIndex)
+                    fprintf('Sending close to %d\n',waitingWorkerIndex(wwind));
+                    labSend({'close'},waitingWorkerIndex(wwind));
+                end
                 obj.receiveWorkerMessages();
                 pause(0.5);
                 for w=1:length(obj.workerstatus)
                     fprintf('worker %d status %s; ',w,obj.workerstatus{w});
-                end;
+                end
                 fprintf('\n');
-            end;
+            end
             
             fprintf('Proportion of jobs that had to wait for worker %f\n',mean(workerwaits));
             obj.benchmark
@@ -350,65 +412,75 @@ classdef aaq_matlab_pct<aaq
                 obj.emptyqueue;
             end
             
-            if (obj.fatalerrors)
-                aas_log(obj.aap,false,'PARALLEL (matlab_pct): Fatal errors executing jobs. The errors were:','Errors');
-                for errind=1:length(errline)
-                    aas_log(obj.aap,false,[' ' errline{errind}],'Errors');
-                end;
-                aas_log(obj.aap,true,'PARALLEL (matlab_pct): Terminating because of errors','Errors');
+            if obj.fatalerrors
+                aas_log(obj.aap, true, 'PARALLEL (matlab_pct): Fatal errors executing jobs.','Errors');
             end
         end
         
         
-        
-        %% Code for a worker
-        % basically hangs around waiting to be told what to do, and then
-        % executes code when asked
-        function [obj]=runall_spmd_worker(obj)
+        function runall_spmd_worker(obj)
+            % Enter a loop probing whether other workers are ready to send
+            % data ('hang around') and, once that is the case, either
+            % spring into action by running aa_doprocessing_onetask, or
+            % close up, depending on the message transmitted ('be told what
+            % to do').
+            % Code will be run by non-master workers only.
             alldone=false;
             while ~alldone
-                % Say we're waiting for something to do
+                % report 'waiting' status
                 labSend({'status','waiting'},1);
-                
-                % Wait to be told what that is
+                % Wait until *any* worker is ready to send data
                 while(~labProbe)
                     pause(0.01);
-                end;                
-                
-                [data source tag]=labReceive;
-                switch(data{1})
+                end                
+                % receive the data
+                workerData=labReceive;
+                % the first element is the string determining the action to
+                % be taken
+                switch(workerData{1})
                     case 'aa_doprocessing'
+                        % report new status
                         labSend({'status','aa_doprocessing'},1);
-                        obj=data{2};
-                        job=data{3};
-                        jobind=data{4};
+                        % copy values of received data to local variables
+                        obj=workerData{2};
+                        job=workerData{3};
+                        jobind=workerData{4};
                         aap=obj.aap;
-                        aaworker = obj.aaworker;
-                        aaworker.logname = fullfile(obj.matlab_pct_path,sprintf('Job%05d_diary.txt',jobind));
+                        % avoid any potential confusion with global var
+                        % aaworker by appending _copy to variable name
+                        aaworker_copy = obj.aaworker;
+                        aaworker_copy.logname = fullfile(obj.matlab_pct_path,sprintf('Job%05d_diary.txt',jobind));
                         if ~isfield(aap.internal,'streamcache')
                             nstreamcache=0;
                         else
                             nstreamcache=length(aap.internal.streamcache);
-                        end;
-                        aap=aa_doprocessing_onetask(aap,job.task,job.k,job.indices,aaworker);
+                        end
+                        % *here is the beef*
+                        aap=aa_doprocessing_onetask(aap,job.task,job.k,job.indices,aaworker_copy);
                         % Only return new streams...
                         if isfield(aap.internal,'streamcache') && length(aap.internal.streamcache)>nstreamcache
                             streamcache_toreturn=aap.internal.streamcache(nstreamcache+1:end);
                         else
                             streamcache_toreturn=[];
-                        end;
+                        end
+                        % report new status
                         labSend({'done_aa_doprocessing',jobind,streamcache_toreturn},1);
                     case 'close'
                         labSend({'status','closed'},1);
                         alldone=true;
-                end;
-            end;
-        end;
+                    otherwise
+                        % this case is only entered if a non-master worker
+                        % is ready to send data, which does not affect
+                        % processing of the data, but may be worth
+                        % reporting (if only for debugging purposes)
+                        aas_log(obj.aap, false, sprintf('Message from worker: %s\n',workerData{1}));                         
+                end
+            end
+        end
         
         
-        function [obj]=waitforrealtime(obj)
-            
-            %% THREAD TO ROUTE INCOMING REALTIME DATA
+        function waitforrealtime(obj)
+            % THREAD TO ROUTE INCOMING REALTIME DATA
             % Overview:
             %  A set of realtime modules (like aamod_realtime_wait_epi)
             %  contain the attributes waitforrealtime_singlefile or
@@ -436,8 +508,8 @@ classdef aaq_matlab_pct<aaq
                         case 'close'
                             labSend({'status','closed'},1);
                             break;
-                    end;
-                end;
+                    end
+                end
                 if isempty(imfid)
                     allseries=dir(fullfile(impth,'series*.txt'));
                     while isempty(imfid)
@@ -452,22 +524,22 @@ classdef aaq_matlab_pct<aaq
                             if feof(imfid)
                                 fclose(imfid);
                                 imfid=[];
-                            end;
+                            end
                             if strcmp(status,'idle')
                                 labSend({'status','waitforrealtime'},1);
                                 status='waitforrealtime';
-                            end;
+                            end
                         else
                             % More than 5s since the last data?
                             if toc(lastdatatime)>5
                                 labSend({'status','idle'},1);
                                 status='idle';
                                 pause(0.5);
-                            end;
+                            end
                             break;
-                        end;
-                    end;
-                end;
+                        end
+                    end
+                end
                 
                 % Read a line from it and process
                 if ~isempty(imfid)
@@ -476,7 +548,7 @@ classdef aaq_matlab_pct<aaq
                     %                     fprintf('Getting ready to junk %d lines\n',linesread);
                     for junklines=1:linesread
                         ln=fgetl(imfid);
-                    end;
+                    end
                     %                     fprintf('Done junking\n');
                     
                     % Any new lines?
@@ -494,8 +566,8 @@ classdef aaq_matlab_pct<aaq
                                 linesread=linesread+1;
                                 [cmd rem]=strtok(ln,[' ' 9 10]);
                                 cmd=strtrim(cmd);
-                            end;
-                        end;
+                            end
+                        end
                         
                         if strcmp(cmd,'MEAS_FINISHED')
                             aas_log(obj.aap,false,sprintf('Realtime incoming %s: MEAS_FINISHED',allseries(filenumber).name));
@@ -521,7 +593,7 @@ classdef aaq_matlab_pct<aaq
                                         % Throw a strop, for now at least
                                         if ~exist(dcmfile,'file')
                                             aas_log(obj.aap,true,sprintf('Dicom file not found: %s',dcmfile))
-                                        end;
+                                        end
                                         
                                         % Load up DICOM and see what it will
                                         % satisfy
@@ -554,7 +626,7 @@ classdef aaq_matlab_pct<aaq
                                                     % This dependency is done
                                                     obj.realtime_deps(rdlist(rdind)).satisfied=true;
                                                     
-                                                    obj.jobnotrun(rdtarget.njob)=false;
+                                                    obj.isJobNotRun(rdtarget.njob)=false;
                                                     
                                                     % Write done flag
                                                     doneflag=aas_doneflag_getpath_bydomain(obj.aap,dcmjob.domain,dcmjob.indices,dcmjob.k);

@@ -192,7 +192,7 @@ for subj = 1:aas_getN_bydomain(aap,'subject')
 end
 if has_motioncorrection, aap = aas_report_add(aap,'moco','EOF'); end
 if has_registration, aap = aas_report_add(aap,'reg','EOF'); end
-if has_contrast
+if has_firstlevel
     aap = aas_report_add(aap,'C00','EOF'); 
     conFields = fieldnames(aap.report); conFields = conFields(contains(conFields,'html_C'));
     for C = 1:numel(conFields)-1
@@ -207,6 +207,7 @@ aap.prov.serialise(studyroot);
 % Show report
 if ~isdeployed, web(['file://' aap.report.html_main.fname]); end
 % Last, save AAP structure
+aap = rmfield(aap,'prov'); % save space
 save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap','-v7.3');
 
 aa_close(aap);
