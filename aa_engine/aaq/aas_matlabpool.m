@@ -1,31 +1,35 @@
 function out = aas_matlabpool(varargin)
-switch varargin{1}
-    case 'getcurrent'
-        try out = gcp('nocreate'); catch
-            warning('Not supported by MATLAB %s',sprintf('%d.',getmatlabversion));
-            out = [];
-        end
-    case 'isopen'
-        try out = ~isempty(gcp('nocreate')); catch, out = matlabpool('size') > 0; end
-    case 'close'
-        try 
-            p = gcp('nocreate');
-            if ~isempty(p), delete(p); end
-        catch
-            try
-                matlabpool('close'); 
-            catch E
-                if strcmp(E.identifier, 'parallel:convenience:InteractiveSessionNotRunning')
-                    warning('No open pool is found');
-                else
-                    rethrow(E);
-                end
-            end
-        end
-    otherwise % start
-        try out = parpool(varargin{:}); catch
-            matlabpool(varargin{:}); 
-            out = [];
-        end
+% AAS_MATLABPOOL performs actions on the current matlab pool:
+%   out = aas_matlabpool('getcurrent') returns the current pool object,
+%       which may be empty (no pool will be started)
+%   out = aas_matlabpool('isopen') returns a logical indicating whether a 
+%       pool is open 
+%   out = aas_matlabpool('close') closes the current pool if it exists and
+%       returns an empty pool object
+%   out = aas_matlabpool(varargin) where varargin is none of the options 
+%       above, calls parpool; varargin in this case must be a resource, or 
+%       a poolsize, or both, plus name-value pairs (see parpool). The pool
+%       object will be returned.
+% 
+% If the request fails, [] will be returned.
+
+% default value upon failure
+out = [];
+try
+    switch varargin{1}
+        case 'getcurrent'
+            out = gcp('nocreate');
+        case 'isopen'
+            out = ~isempty(gcp('nocreate'));
+        case 'close'
+            delete(gcp('nocreate'));
+            % return empty pool project rather than []
+            out = gcp('nocreate');
+        otherwise % start
+            out = parpool(varargin{:});
+    end
+catch ME
+    warning(ME.identifier, 'An error was caught handling the parallel pool:\n %s ', ME.message);
 end
+
 end
