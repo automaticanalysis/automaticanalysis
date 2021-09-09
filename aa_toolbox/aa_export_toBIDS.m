@@ -112,7 +112,8 @@ header_part = false; % header completed
 
 % data
 
-for subj = 1:numel(aap.acq_details.subjects)
+% % % % % % for subj = 1:numel(aap.acq_details.subjects)
+for subj = 23:numel(aap.acq_details.subjects)
 	
     aas_log(aap,false,['INFO: Exporting subject: ' aas_getsubjname(aap,subj)])
     subname = aas_getsubjname(aap,subj);
@@ -290,11 +291,13 @@ for subj = 1:numel(aap.acq_details.subjects)
             for e = 1:numel(events)
                 ord = [ord vertcat(e*ones(1,numel(events(e).ons)),1:numel(events(e).ons))];
             end
-            if size(events(1).ons,1) > size(events(1).ons,2) % column
+            
+            try
                 [ons,inde] = sort(vertcat(events.ons));
-            else
+            catch
                 [ons,inde] = sort(horzcat(events.ons)');
             end
+   
             ord = ord(:,inde);
             lines = sprintf('onset\tduration\tweight\ttrial_type\n');
             for l = 1:size(ord,2)
