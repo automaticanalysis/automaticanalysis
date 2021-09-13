@@ -112,8 +112,7 @@ header_part = false; % header completed
 
 % data
 
-% % % % % % for subj = 1:numel(aap.acq_details.subjects)
-for subj = 23:numel(aap.acq_details.subjects)
+for subj = 1:numel(aap.acq_details.subjects)
 	
     aas_log(aap,false,['INFO: Exporting subject: ' aas_getsubjname(aap,subj)])
     subname = aas_getsubjname(aap,subj);
@@ -291,6 +290,9 @@ for subj = 23:numel(aap.acq_details.subjects)
             for e = 1:numel(events)
                 ord = [ord vertcat(e*ones(1,numel(events(e).ons)),1:numel(events(e).ons))];
             end
+
+            % trying to determine if events are a row or col vect
+            % this can fail if events.ons contains one element...
             
             try
                 [ons,inde] = sort(vertcat(events.ons));
