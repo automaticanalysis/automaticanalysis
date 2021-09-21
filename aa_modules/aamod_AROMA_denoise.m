@@ -133,11 +133,7 @@ REFMASK_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_
         if (status > 0)
             aas_log(aap, true, sprintf('Error running flirt: %s', result));
         end
-    
-        % 4) func-to-MNI
-        %
-        % applywarp --in=my_functional --ref=${FSLDIR}/data/standard/MNI152_T1_2mm --warp=my_nonlinear_transf --premat=func2struct.mat --out=my_warped_functional         
-       
+           
         % generate mean epi (need for detrending)
 
         MEANEPI_FNAME = fullfile(working_dir, 'meanepi.nii.gz'); 

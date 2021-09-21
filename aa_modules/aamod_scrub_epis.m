@@ -272,7 +272,7 @@ switch task
   
                 if (frameloss_percent > aap.tasklist.currenttask.settings.task_frameloss_warn)
                     warnstring = sprintf('%d%% frameloss_percent (subj: %d sess: %d) for task %s', frameloss_percent, subj, sess, event_names{index});
-                    aa_log(aap, false, warnstring); 
+                    aas_log(aap, false, warnstring); 
                end
                 
                 % collect for later save 

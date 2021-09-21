@@ -170,7 +170,7 @@ switch task
 			if (tmpfile(1) ~= '/'), tmpfile = fullfile(fileparts(which('spm')),tmpfile); end
 				
 			if ~exist(tmpfile,'file')
-				aas_log(aap, true, sprintf('%s: SPM T1 template not found. Exiting...', mfilename));
+				aas_log(aap, true, sprintf('%s: SPM T1 template %s not found. Exiting...', mfilename, tmpfile));
 			end
 				
 		otherwise
