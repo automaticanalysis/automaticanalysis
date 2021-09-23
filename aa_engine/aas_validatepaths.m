@@ -45,7 +45,7 @@ else
                 if isstruct(sub{ind})
                     if isfield(values,fs{f})
                         for structind=1:length(values.(fs{f}))
-                            validatepaths(aap,mystruct.(fs{f}),values.(fs{f})(structind),[nme '.' fs{f}]);
+                            validatepaths(aap,mystruct.(fs{f})(1),values.(fs{f})(structind),[nme '.' fs{f}]);
                         end;
                     end;
                 else

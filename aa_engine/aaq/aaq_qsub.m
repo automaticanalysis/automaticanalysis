@@ -65,7 +65,11 @@ classdef aaq_qsub<aaq
                     switch class(obj.pool)
                         case 'parallel.cluster.Slurm'
                             aas_log(obj.aap,false,'INFO: pool Slurm is detected');
-                            obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG, -t %d', aaparallel.memory,aaparallel.walltime*60);
+                            if isprop(obj.pool,'ResourceTemplate')
+                                obj.pool.ResourceTemplate = sprintf('--ntasks=^N^ --cpus-per-task=^T^ --mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
+                            else
+                                obj.pool.SubmitArguments = sprintf('--mem=%dG --time=%d', aaparallel.memory,aaparallel.walltime*60);
+                            end
                             if any(strcmp({aap.tasklist.main.module.name},'aamod_meg_maxfilt')) && ... % maxfilt module detected
                                     ~isempty(aap.directory_conventions.neuromagdir) % neuromag specified
                                 obj.initialSubmitArguments = ' --constraint=maxfilter';
@@ -439,6 +443,8 @@ classdef aaq_qsub<aaq
         function [obj]=qsub_q_job(obj,job)
             global aaworker
             global aacache
+            aaworker.aacache = aacache;
+            [s, reqpath] = aas_cache_get(obj.aap,'reqpath','system');
             % Let's store all our qsub thingies in one particular directory
             qsubpath=fullfile(aaworker.parmpath,'qsub');
             aas_makedir(obj.aap,qsubpath);
@@ -468,9 +474,9 @@ classdef aaq_qsub<aaq
                 % them the aa paths. Users don't need to remember to update
                 % their own default paths (e.g. for a new aa version)
                 if isprop(J,'AdditionalPaths')
-                    J.AdditionalPaths = aacache.path.reqpath;
+                    J.AdditionalPaths = reqpath;
                 elseif isprop(J,'PathDependencies')
-                    J.PathDependencies = aacache.path.reqpath;
+                    J.PathDependencies = reqpath;
                 end
                 createTask(J,cj,nrtn,inparg,'CaptureDiary',true);
                 success = false;

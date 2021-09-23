@@ -1,5 +1,5 @@
 % Automatic Analysis function to retrieve image lists
-% function [imagefns]=aas_getfiles_bystream(aap,[i,[j,]]streamname[,inputmodulenumber])
+% function [imagefns]=aas_getfiles_bystream(aap,[domain,incides,]streamname)
 %  stream may be at study, subject or session level depending on number of
 %  parameters
 %  streamname is name of stream
@@ -17,4 +17,9 @@ c = cellfun(@(x) [{x} strsplit(x,'.')], {aap.internal.inputstreamsources{aap.tas
 
 stream_has_contents=any(strcmp(streamname,horzcat(c{:})));
     
+if numel(varargin) == 3 % domain specific
+    aap.options.verbose = -1; % ignore error
+    stream_has_contents = ~isempty(aas_getfiles_bystream(aap,varargin{1},varargin{2},streamname,'input'));
+end
+
 end

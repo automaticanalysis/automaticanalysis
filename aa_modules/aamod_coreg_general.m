@@ -13,18 +13,16 @@ switch task
         localpath = aas_getpath_bydomain(aap,domain,cell2mat(varargin));
         
         % Process streams
-        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
-        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
-        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
+        inpstream = aas_getstreams(aap,'input');
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
+        while ~aas_stream_has_contents(aap,inpstream{tInd})
             tInd = tInd + 1;
         end
-        targetimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
+        targetimfn = aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),inpstream{tInd}); % occasional "." in streamname may cause problem for aas_checkreg
         
         srcstream = textscan(inpstream{tInd+1},'%s','delimiter','.'); srcstream = srcstream{1}{end};
         
-        d = dir(fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_*']));
+        d = dir(fullfile(localpath,'diagnostic_aas_checkreg_*'));
         if isempty(d)
             aas_checkreg(aap,domain,cell2mat(varargin),srcstream,targetimfn);
             if numel(inpstream) > (tInd+1)
@@ -57,10 +55,10 @@ switch task
             end
         end
         if isfield(aap.tasklist.currenttask.settings,'roptions')
-            fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
+            fields = fieldnames(aap.tasklist.currenttask.settings.roptions);
             for f = 1:numel(fields)
-                if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
-                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                if ~isempty(aap.tasklist.currenttask.settings.roptions.(fields{f}))
+                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.roptions.(fields{f});
                 end
             end
         end
@@ -70,13 +68,13 @@ switch task
         
         %% Data
         % Process streams
-        inpstream = aap.tasklist.currenttask.settings.inputstreams.stream;
-        outpstream = aap.tasklist.currenttask.settings.outputstreams.stream;
-        if ~iscell(outpstream), outpstream = cellstr(outpstream); end;
+        inpstream = aas_getstreams(aap,'input');
+        outpstream = aas_getstreams(aap,'output');
+        if ~iscell(outpstream), outpstream = cellstr(outpstream); end
         
         % Get target image:        
         tInd = 1;
-        while ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),inpstream{tInd})
+        while ~aas_stream_has_contents(aap,inpstream{tInd})
             tInd = tInd + 1;
         end
         aas_log(aap,false,sprintf('Target stream: %s',inpstream{tInd}));
@@ -170,5 +168,20 @@ switch task
         end
         
     case 'checkrequirements'
-
+        in = aas_getstreams(aap,'input'); in(1) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
 end

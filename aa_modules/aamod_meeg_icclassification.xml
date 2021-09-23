@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='meeg_session' desc='Classification of ICs for MEEG data' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.25</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <method options='ICLabel'>ICLabel</method>            
+            
+            <criteria>
+                <prob desc='colon-seperated list of condition(s) specifed as probability/probabilies of label(s)'></prob>
+                <!-- The format of the list items is the following:
+                        +/*: specifying OR or AND operation (only for the second/third/etc. conditions)
+                        <lablel of the class as specified by the classifier>
+                        >/=/<: specifying lower-bound/exact/upper-bound criterion
+                        <probability>
+                     e.g.: Brain>0.5:*Muscle<0.3
+                -->
+                
+                <rv desc='threshold in residual variance of dipole fitting for labelling component as good'></rv>
+            </criteria>
+            
+            <inputstreams>
+                <stream>meeg</stream>                
+            </inputstreams>
+
+            <outputstreams>
+                <stream>meeg</stream>                
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

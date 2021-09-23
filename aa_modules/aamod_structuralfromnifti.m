@@ -47,11 +47,12 @@ switch task
                 
                 %% Image
                 if ~exist(niftifile,'file')
-                    niftisearchpth=aas_findvol(aap,'');
+                    niftisearchpth=aas_findvol(aap,subj);
                     if ~isempty(niftisearchpth)
                         niftifile = fullfile(niftisearchpth,niftifile);
+                        if ~exist(niftifile,'file'), aas_log(aap,true,['ERROR: image ' niftifile ' not found']); end
                     end
-                end
+                end                
                 comp = false;
                 if strcmp(spm_file(niftifile,'Ext'),'gz')
                     comp = true;
@@ -70,37 +71,30 @@ switch task
                     Ys = Ys + Y/numel(series);
                 else                    
                     spm_write_vol(V(s),Y);
-                end                               
-                
-                 %% header           
-                
-                if ~isempty(hdrfile)
-                    if ischar(hdrfile)
-                        switch spm_file(hdrfile,'Ext')
-                        case 'mat'
-                            dat = load(hdrfile);
-                            dcmhdr = dat.dcmhdr;
-                        case 'json'
-                            hdrfile = loadjson(hdrfile);
-                            % convert timings to ms (DICOM default)
-                            for f = fieldnames(hdrfile)'
-                                if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
-                            end
-                            if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
-                            if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
-                        end
-                    elseif isstruct(hdrfile)
-                        for f = fieldnames(hdrfile)'
-                            if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
-                        end
-                        if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
-                        if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                          
-                    else
-                        aas_log(aap,false,'WARNING: No header provided!');
-                    end
                 end
-               
                 
+                %% header
+                if ~isempty(hdrfile)
+                    if isstruct(hdrfile)
+                        dcmhdr = hdrfile;
+                    else
+                        switch spm_file(hdrfile,'Ext')
+                            case 'mat'
+                                dat = load(hdrfile);
+                                dcmhdr = dat.dcmhdr;
+                            case 'json'
+                                hdrfile = loadjson(hdrfile);
+                                % convert timings to ms (DICOM default)
+                                for f = fieldnames(hdrfile)'
+                                    if strfind(f{1},'Time'), dcmhdr{s}.(f{1}) = hdrfile.(f{1})*1000; end
+                                end
+                                if isfield(dcmhdr{s},'RepetitionTime'), dcmhdr{s}.volumeTR = dcmhdr{s}.RepetitionTime/1000; end
+                                if isfield(dcmhdr{s},'EchoTime'), dcmhdr{s}.volumeTE = dcmhdr{s}.EchoTime/1000; end                    
+                        end
+                    end
+                else
+                    aas_log(aap,false,'WARNING: No header provided!');
+                end
             end
             if aap.options.(['autoidentify' stream '_average'])
                 fn = deblank(fn(1,:));
@@ -115,6 +109,8 @@ switch task
                 save(dcmhdrfn,'dcmhdr');
                 aap=aas_desc_outputs(aap,subj,[stream '_dicom_header'],dcmhdrfn);
             end
+            % remove variable to avoid writing wrong header to subsequent sfxs
+            clear dcmhdr
         end
     case 'checkrequirements'
         

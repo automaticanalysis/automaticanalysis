@@ -36,9 +36,15 @@ if ~isempty(maskVol)
     maskVol = logical(maskVol);
 end
 
+% get basic info
+expPoly = cellfun(@(x) ~isempty(regexp(x,'.*\^[2-9]\*.*')), SPM.xX.name);
+origEVs = SPM.xX.name(~expPoly);
+origX = SPM.xX.X(:,~expPoly);
+D = D(~expPoly);
+
 %% INTEREST AND NUISANCE COLUMNS...
-SPMinterest = SPM.xX.name(SPM.xX.iC);
-SPMnuisance = SPM.xX.name(SPM.xX.iG);
+SPMinterest = origEVs(SPM.xX.iC);
+SPMnuisance = origEVs(SPM.xX.iG);
 
 errorCols = [];
 
@@ -61,7 +67,7 @@ end
 if ~isempty(errorCols)
    aas_log([],false,'Problems with columns...')
    for n = 1:length(errorCols)
-       aas_log([],false,['\t' SPMnames{errorCols(n)}])
+       aas_log([],false,['\t' origEVs{errorCols(n)}])
    end
 end
 if ~isempty(errorCols)
@@ -69,8 +75,8 @@ if ~isempty(errorCols)
 end
 
 %% CORRELATION BETWEEN REGRESSORS...
-SPMmodel = SPM.xX.X(:, SPM.xX.iC);
-[sharedVar, h.regs] = corrTCs(SPMmodel, SPMnames(SPM.xX.iC), 1, 0);
+SPMmodel = origX(:, SPM.xX.iC);
+[sharedVar, h.regs] = corrTCs(SPMmodel, origEVs(SPM.xX.iC), 1, 0);
 
 %% CORRELATIONS BETWEEN BETAS...
 aas_log([],false,'Loading beta images into data structure')
@@ -78,7 +84,7 @@ for d = 1:length(SPMcols)
     V = spm_vol(fullfile(pth, D(SPMcols(d)).name));
     Y = spm_read_vols(V);
     % maskVol things we don't want...
-    if ~isempty(maskVol);
+    if ~isempty(maskVol)
         Y = Y(maskVol);
     else
         Y = Y(isfinite(Y) & Y~=0);  
@@ -91,4 +97,4 @@ for d = 1:length(SPMcols)
 end
 
 aas_log([],false,'Correlating voxel-wise betas across regressors')
-[sharedVar, h.betas] = corrTCs(data, SPMnames(SPMcols), 1, 0);
+[sharedVar, h.betas] = corrTCs(data, origEVs(SPMcols), 1, 0);

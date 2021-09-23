@@ -9,11 +9,9 @@
 %
 % CHANGE HISTORY
 %
-% 04/2020 [MSJ] added rWLS
-% 03/2018 [MSJ] don't wait for reporting to plot the design matrix, save
-% masks as QA images; save regressors to text file (SPM figure labeling
-% is hard to read!)
-%
+% 09/2021 [MSJ] added rWLS; don't wait for reporting to plot the design 
+% matrix, save masks as QA images; save regressors to text file (SPM 
+% figure labeling is hard to read!)
 
 function [aap,resp]=aamod_firstlevel_model(aap,task,subj)
 
@@ -35,32 +33,48 @@ switch task
         end
 
     case 'doit'
+        
         % Get subject directory
         cwd=pwd;
         
  		% We can now have missing sessions per subject, so we're going to use only
         % the sessions that are common to this subject and selected_sessions
+        
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
         numSess = numel(subjSessionI);
-
-        % Add PPI if exist
+        
         modname = aap.tasklist.currenttask.name;
         modnameind = regexp(modname, '_\d{5,5}$');
         modindex = str2num(modname(modnameind+1:end));
+        
+        % Add PPI if exist
         for sess = subjSessionI
-            if aas_stream_has_contents(aap,subj,sess,'ppi')
-                load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
-                [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    'PPI',PPI.ppi,0,1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    ['Psych_' psych],PPI.P,0,1);
-                aap = aas_addcovariate(aap,modname,...
-                    basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                    ['Phys_' phys],PPI.Y,0,1);
+            if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')
+                [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
+                if ~isempty(defCov)
+                    covToRemove = [];
+                    PPIs = cellstr(aas_getfiles_bystream(aap,'session',[subj,sess],'ppi'));
+                    for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                        defPPI = defCov.covariate(indDefPPI);
+                        covToRemove(end+1) = indDefPPI;
+                        fnPPI = PPIs{contains(spm_file(PPIs,'basename'),defPPI.vector')};
+                        dat = load(fnPPI); PPI = dat.PPI;                        
+
+                        if ~any(strcmp({aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate.name},['Phys_' PPI.xY.name]))
+                            aap = aas_addcovariate(aap,modname,...
+                                aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                                ['Phys_' PPI.xY.name],PPI.Y,0,1);
+                        end
+                        aap = aas_addcovariate(aap,modname,...
+                            aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                            strrep(defPPI.name,'ppidef_',''),PPI.ppi,0,1);
+                        %                     aap = aas_addcovariate(aap,modname,...
+                        %                         aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
+                        %                         ['Psych_' psych],PPI.P,0,1);
+                    end
+                    aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(covToRemove) = []; % remove original definition
+                end
             end
         end
         % update current sesstings
@@ -74,6 +88,7 @@ switch task
             aas_firstlevel_model_nuisance(aap, subj, files);
 
         %% Set up CORE model
+        
         cols_nuisance=[];
         cols_interest=[];
         currcol=1;
@@ -93,12 +108,13 @@ switch task
                                                              cols_interest, cols_nuisance, currcol, ...
                                                              movementRegs, compartmentRegs, physiologicalRegs, spikeRegs, GLMDNregs);
         end
-                
+
         cd (anadir)
 
         %%%%%%%%%%%%%%%%%%%
         %% DESIGN MATRIX %%
         %%%%%%%%%%%%%%%%%%%
+        
         SPM.xY.P = allfiles;
         if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
             spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
@@ -139,14 +155,15 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
+        
         % avoid overwrite dialog
         prevmask = spm_select('List',SPMdes.swd,'^mask\..{3}$');
         if ~isempty(prevmask)
             for ind=1:size(prevmask,1)
                 spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
-            end;
-        end  
-
+            end
+        end
+                
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
             SPMest = spm_rwls_spm(SPMdes);
         else
@@ -165,7 +182,7 @@ switch task
                 end
                 residuals{subjSessionI(s)} = horzcat(repmat([sesspath filesep],[SPM.nscan(s) 1]),fres);
                 if aap.options.NIFTI4D
-                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))));
+                    spm_file_merge(residuals{subjSessionI(s)},fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s))),0,SPM.xY.RT);
                     fres = cellstr(residuals{subjSessionI(s)});
                     residuals{subjSessionI(s)} = fullfile(sesspath,sprintf('Res-%04d.nii',subjSessionI(s)));                
                     delete(fres{:});
@@ -175,9 +192,9 @@ switch task
         end        
         
         %% Describe outputs
+        
         cd (cwd);
 
-        % Describe outputs
         %  firstlevel_spm
         aap=aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
 
@@ -191,13 +208,10 @@ switch task
                 dir(fullfile(anadir,'mask.*')));
             mask = dir(fullfile(anadir,'mask.*'));
             mask=strcat(repmat([anadir filesep],[numel(mask) 1]),char({mask.name}));
-            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);	
-			
+            aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);            
             % save diagnostic images for QA montage
             save_three_ortho_jpgs(mask,fullfile(aas_getsubjpath(aap,subj),'diagnostic_BRAINMASK'));
-
         end
-        
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
         
@@ -208,21 +222,20 @@ switch task
         end
 
         %% DIAGNOSTICS
-		   
-    %  document rwls results using spm_rwls_resstats 
+        
+        %  document rwls results using spm_rwls_resstats 
 
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
             % sometimes rwls looks for the movement params using the wrong          
             % filename, so pass in an expliclit fname if we can
-           if (aas_stream_has_contents(aap, subj, 'realignment_parameter'))
+            if (aas_stream_has_contents(aap, subj, 'realignment_parameter'))
                 for sindex = 1:numSess
                     moveparfname{sindex} = aas_getfiles_bystream(aap, subj, sindex,'realignment_parameter'); 
                 end
                 spm_rwls_resstats(SPMest,[],moveparfname);
             else
                 spm_rwls_resstats(SPMest);  % fingers crossed
-           end
-            
+            end          
             
             h = spm_figure('GetWin', 'Graphics');
             set(h,'Renderer','opengl');
@@ -235,23 +248,24 @@ switch task
 
         end
  
- 
-        % don't wait for reporting to plot the design matrix!
+        % its convenient to save the design matrix now rather than having to run reporting...
 
         spm_DesRep('DesOrth',SPMest.xX);
         h = spm_figure('GetWin', 'Graphics');
         set(h,'Renderer','opengl');
-        % the following is a workaround for font rescaling weirdness -- needs more testing
+        % the following is a workaround for font rescaling weirdness
         set(findall(h,'Type','text'),'FontSize', 10);
         set(findall(h,'Type','text'),'FontUnits','normalized');
         print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'DESIGN_MATRIX.jpg'));
         spm_figure('Close','Graphics');
 
-        % document columns of design matrix
+        % document columns of design matrix as plaintext (SPM skips labels on the plot)
 
         writetable(cell2table(SPMest.xX.name'), fullfile(aas_getsubjpath(aap,subj),'REGRESSORS.txt'));
 
-        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'diagnostic_ONSETS.txt'),'w');
+        % document event onsets for verification
+         
+        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'ONSETS.txt'),'w');
 
         if (fid > 0) 
             for sessindex = 1:numel(SPMest.Sess)
@@ -267,7 +281,7 @@ switch task
             end
             fclose(fid);
         end
-
+        
         if ~isempty(SPMdes.xX.iC) % model is not empty
             h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
             print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_aamod_firstlevel_model_regs.jpg'));
@@ -277,7 +291,10 @@ switch task
             close(h.betas)
         end
         
+        
     case 'checkrequirements'
+
+        %% rWLS
         
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
             if (isempty(which('spm_rwls_spm')))
@@ -285,9 +302,56 @@ switch task
             end
         end
         
-               
-
+        %% Add PPI preparations (if needed)
+        [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+        subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
+        modname = aap.tasklist.currenttask.name;
+        modnameind = regexp(modname, '_\d{5,5}$');
+        modindex = str2num(modname(modnameind+1:end));
+        
+        for sess = subjSessionI
+            if aas_stream_has_contents(aap,'ppi')
+                [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
+                if ~isempty(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                    ppiprepstage = aap.tasklist.main.module(aas_getsourcestage(aap,'aamod_ppi_prepare','ppi'));                        
+                    ppis = aap.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI;
+                    for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                        defPPI = defCov.covariate(indDefPPI).vector;
+                        
+                        if ischar(defPPI) % already processed
+                            continue
+                        end
+                        
+                        if any(strcmp({ppis.name},defPPI.name)) % existing definition
+                            if ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).voiname,defPPI.voiname) || ~strcmp(ppis(strcmp({ppis.name},defPPI.name)).contrastspec,defPPI.contrastspec)
+                                aas_log(aap,true,['ERROR: PPI ' defPPI.name ' with a different definition already exists']);
+                            end
+                        else
+                            ppis(end+1) = defPPI;
+                        end
+                        % update covariate
+                        cov = defCov.covariate(indDefPPI);
+                        cov.vector = defPPI.name';
+                        aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.aap_beforeuserchanges.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.internal.aap_initial.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(indDefPPI) = cov;
+                    end
+                    aap.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.aap_beforeuserchanges.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.internal.aap_initial.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;
+                    aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI = ppis;                    
+                end
+            end
+        end
+        
+        %% Adjust outstream
+        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
+            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
+            aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
+        end
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
+        
 end

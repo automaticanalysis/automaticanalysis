@@ -27,7 +27,7 @@ switch (domain)
         N=2;
         I=1:2;
         
-    case {'session','meg_session','isc_session','diffusion_session','diffusion_session_bedpostx','special_session'}
+    case {'session','meeg_session','isc_session','diffusion_session','diffusion_session_bedpostx','special_session'}
         
         switch domain
             case {'session','isc_session'}
@@ -39,9 +39,9 @@ switch (domain)
             case 'special_session'
                 sessions = aap.acq_details.special_sessions;
                 if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).specialseries{:}); end
-            case 'meg_session'
-                sessions = aap.acq_details.meg_sessions;
-                if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).megseriesnumbers{:}); end
+            case 'meeg_session'
+                sessions = aap.acq_details.meeg_sessions;
+                if ~isempty(indices), seriesnumbers = horzcat(aap.acq_details.subjects(indices(1)).meegseriesnumbers{:}); end
         end
         
         if isempty(indices)

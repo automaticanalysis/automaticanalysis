@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_meeg_statistics' domain='study' desc='Statistical analysis ERPs/ERFs' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <model>
+                <name></name>
+                <subjects></subjects>
+                <trialmodel></trialmodel>
+                <channels></channels>
+                <groupmodel></groupmodel>
+                <timewindow></timewindow>
+            </model>
+            
+            <selectoverlappingdata>
+                <time desc='specify how to treat time' options='ignore|auto|[second to round to]' ui='optionlist'>auto</time>
+                <subjects desc='minimum amount of subjects required to have overlapping data' options='auto|[ratio of all subjects]' ui='optionlist'>1</subjects>
+            </selectoverlappingdata>
+            
+            <threshold>
+                <method desc='methods for calculating the significance probability' options='montecarlo|analytic' ui='optionlist'>montecarlo</method>
+                <iteration desc='number of randomisation (for montecarlo)'>5000</iteration>
+                <correction desc='multiple-comparison correction for timeseries data' options='no|cluster|bonferroni|holm|hochberg|fdr' ui='optionlist'>cluster</correction>
+                <neighbours desc='minimum number of channels required (for cluster)'>2</neighbours>
+                <p desc='critical value for cluster and single-sample'>0.05</p>
+            </threshold>
+            
+            <inputstreams>
+                <stream>timelock</stream>
+                <stream isessential='0'>peak</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>groupstat</stream>
+            </outputstreams>
+            
+            <diagnostics>
+                <videotwoi desc='width of the timewindow-of-interest (for each frame) specified in millisecond (none for no video)'></videotwoi>
+                <snapshottwoi desc='timewindow-of-interest for snapshots specified as [start stop] in millisecond (or as Nx2 matrix)'></snapshottwoi>
+                <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
+            </diagnostics>
+        </currenttask>
+    </tasklist>
+</aap>

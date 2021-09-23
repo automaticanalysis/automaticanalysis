@@ -36,12 +36,14 @@ aap=aarecipe('aap_tasklist_fmri_connect.xml');
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path
 spmhit = which('spm_spm');
+spmdir = aas_gettoolboxdir(aap,'spm');
 if any(spmhit)
-    assert(strcmp(fileparts(spmhit), aap.directory_conventions.spmdir), ...
-        'spm on path differs from aap.directory_conventions.spmdir');
+    assert(strcmp(fileparts(spmhit), spmdir), ...
+        'spm on path differs from that in aap.directory_conventions');
 else
-    fprintf('adding spmdir to path: %s\n', aap.directory_conventions.spmdir);
-    addpath(aap.directory_conventions.spmdir);
+    fprintf('adding spmdir to path: %s\n', spmdir);
+    SPMtool = spmClass(spmdir);
+    SPMtool.load;
 end
 
 % Modify standard recipe module selection here if you'd like
@@ -52,10 +54,10 @@ aap.tasksettings.aamod_slicetiming.refslice = 16;
 aap.tasksettings.aamod_norm_write_dartel.vox = [3 3 3];
 aap.tasksettings.aamod_norm_write_meanepi_dartel.vox = [3 3 3];
 aap.tasksettings.aamod_waveletdespike.maskingthreshold=0.7;
-aap = aas_renamestream(aap,'aamod_mask_fromsegment_00001','reference','meanepi');
-aap = aas_renamestream(aap,'aamod_mask_fromsegment_00001','grey','normalised_grey');
-aap = aas_renamestream(aap,'aamod_mask_fromsegment_00001','white','normalised_white');
-aap = aas_renamestream(aap,'aamod_mask_fromsegment_00001','csf','normalised_csf');
+aap = aas_renamestream(aap,'aamod_mask_segment_00001','reference','meanepi');
+aap = aas_renamestream(aap,'aamod_mask_segment_00001','grey','normalised_grey');
+aap = aas_renamestream(aap,'aamod_mask_segment_00001','white','normalised_white');
+aap = aas_renamestream(aap,'aamod_mask_segment_00001','csf','normalised_csf');
 for b = 1:3
     aap.tasksettings.aamod_firstlevel_model(b).allowemptymodel=1;
     aap.tasksettings.aamod_firstlevel_model(b).writeresiduals=NaN;

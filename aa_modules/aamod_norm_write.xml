@@ -14,6 +14,8 @@
             <bb desc='bounding box of normalised images (-X X -Y Y -Z Z)'>-78 78 -112 76 -70 85</bb>
             <interp>4</interp>
             
+            <PVE desc='binarize controling Partial Volume Effect'></PVE>
+            
             <inputstreams>
                 <stream isessential='0'>forward_deformation_field</stream>
                 <stream isessential='0'>normalisation_seg_sn</stream>                  
@@ -24,6 +26,10 @@
             <outputstreams>
                 <stream isrenameable='1'>epi</stream>                
             </outputstreams>
+            
+            <diagnostic>
+                <streamind desc='index of main (i.e. non-diagnostic) stream to be reported'>1</streamind>
+            </diagnostic>
             
         </currenttask>
     </tasklist>

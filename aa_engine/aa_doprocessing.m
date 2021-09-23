@@ -191,17 +191,23 @@ aap=aas_builddependencymap(aap);
 % - find out what data comes from where and goes where
 % - store initial settings before any module specific customisation
 % - save AAP structure
+orig = aap.options.verbose;
+aap.options.verbose = -1;
 aap = update_aap(aap);
+aap.options.verbose = orig;
+aap.aap_beforeuserchanges.options.verbose = orig;
+aap.internal.aap_initial.options.verbose = orig;
+aap.internal.aap_initial.aap_beforeuserchanges.options.verbose = orig;
 
 % check disk space
 FileObj=java.io.File(aas_getstudypath(aap));
 GBFree=FileObj.getUsableSpace/1024/1000/1000;
 if (GBFree<10)
     aas_log(aap,false,sprintf('WARNING: Only %f GB of disk space free on analysis drive',GBFree));
-end;
+end
 
 % Choose where to run all tasks
-if ~exist(sprintf('aaq_%s', aap.options.wheretoprocess),'file'), 
+if ~exist(sprintf('aaq_%s', aap.options.wheretoprocess),'file')
     aas_log(aap,true,sprintf('Unknown aap.options.wheretoprocess: %s\n',aap.options.wheretoprocess));
 end
 taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
@@ -215,7 +221,7 @@ end
 % Check registered with django
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     % Get bucket nid
-    [aap waserror aaworker.bucket_drupalnid]=drupal_checkexists(aap,'bucket',aaworker.bucket);
+    [aap, waserror, aaworker.bucket_drupalnid]=drupal_checkexists(aap,'bucket',aaworker.bucket);
     
     % Check all subjects are specified as datasets that belong to the job...
     %     attr=[];
@@ -232,7 +238,7 @@ for mytasks = {'checkrequirements','doit'} %
     for k=1:length(aap.tasklist.main.module)
         task=mytasks{1};
         % allow full path of module to be provided [djm]
-        [stagepath stagename]=fileparts(aap.tasklist.main.module(k).name);
+        [stagepath, stagename]=fileparts(aap.tasklist.main.module(k).name);
         index=aap.tasklist.main.module(k).index;
         
         if (isfield(aap.schema.tasksettings.(stagename)(index).ATTRIBUTE,'mfile_alias'))
@@ -248,7 +254,8 @@ for mytasks = {'checkrequirements','doit'} %
         
         % find out whether this module needs to be executed once per study, subject or session
         domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
-        
+        if strcmp(domain,'*'), domain = 'study'; end % generic modules at checkrequirements -> run once 
+                        
         % Start setting up the descriptor for the parallel queue
         clear taskmask
         taskmask.domain=domain;
@@ -289,10 +296,8 @@ for mytasks = {'checkrequirements','doit'} %
                 end
             end
             
-            if aas_doneflagexists(aap,doneflag)
-                if strcmp(task,'doit')
-                    msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
-                end
+            if aas_doneflagexists(aap,doneflag) && strcmp(task,'doit')
+                msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
             else
                 alldone=false;
                 switch (task)
@@ -318,7 +323,7 @@ for mytasks = {'checkrequirements','doit'} %
                                 tbcf_deps=aas_getdependencies_bydomain(aap,completefirst(k0i).sourcedomain,domain,indices,'doneflaglocations');
                                 for tbcf_depsind=1:length(tbcf_deps)
                                     tbcf{end+1}=aas_doneflag_getpath_bydomain(aap,tbcf_deps{tbcf_depsind}{1},tbcf_deps{tbcf_depsind}{2},completefirst(k0i).sourcenumber);
-                                end;
+                                end
                             end
                         end
                         taskmask.tobecompletedfirst=tbcf;
@@ -352,7 +357,7 @@ for mytasks = {'checkrequirements','doit'} %
             % Get jobs started as quickly as possible - important on AWS as it
             % can take a while to scan all of the done flags
             taskqueue.runall(dontcloseexistingworkers, false);
-            if ~isempty(localtaskqueue.jobqueue),
+            if ~isempty(localtaskqueue.jobqueue)
                 localtaskqueue.runall(dontcloseexistingworkers, false);
             end
             if ~taskqueue.isOpen, break; end
@@ -443,7 +448,7 @@ end
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
-[prev_stagepath prev_stagename]=fileparts(aap.tasklist.main.module(stagenum).name);
+[prev_stagepath, prev_stagename]=fileparts(aap.tasklist.main.module(stagenum).name);
 prev_index=aap.tasklist.main.module(stagenum).index;
 if (isfield(aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE,'mfile_alias'))
     prev_mfile_alias=aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE.mfile_alias;

@@ -1,5 +1,4 @@
 % Automatic analysis - initialise paths from recipe
-
 function [aap]=aa_init(aap)
 
 global aa
@@ -31,47 +30,70 @@ if isfield(aap.options,'aaworkercleanup') && ~isempty(aap.options.aaworkercleanu
     end
 end
 
-global aacache
 % Set UTC time function
 if exist('utc_time','file')
-    aacache.utc_time = @utc_time;
+    utc_timeFunc = @utc_time;
 else
     aas_log(aap,false,'INFO: utc_time is not found. java function will be used\n')
-    aacache.utc_time = @java.lang.System.currentTimeMillis;
+    utc_timeFunc = @java.lang.System.currentTimeMillis;
 end
+aas_cache_put(aap,'utc_time',utc_timeFunc,'utils');
 
 %% Set Paths
-aacache.path.bcp_path = path;
-aacache.path.bcp_shellpath = getenv('PATH');
+aas_cache_put(aap,'bcp_path',path,'system');
+aas_cache_put(aap,'bcp_shellpath',getenv('PATH'),'system');
+
 % Path for SPM
-if ~isempty(aap.directory_conventions.spmdir)
-    % by setting this environment variable it becomes possible to define other
-    % paths relative to $SPMDIR in defaults files and task lists
-    setenv('SPMDIR',aap.directory_conventions.spmdir);
+SPMDIR = '';
+doKeepInPath = true;
+% - backward compatibility
+if isfield(aap.directory_conventions,'spmdir') && ~isempty(aap.directory_conventions.spmdir)
+    SPMDIR = aap.directory_conventions.spmdir;
 end
-
-if isdeployed
-    aap.directory_conventions.spmdir = spm('Dir');
-    setenv('SPMDIR',aap.directory_conventions.spmdir);
+% toolboxes
+if isfield(aap.directory_conventions,'toolbox')
+    tbxInd = strcmp({aap.directory_conventions.toolbox.name},'spm');
+    if any(tbxInd)
+        SPMDIR = aap.directory_conventions.toolbox(tbxInd).dir;
+        doKeepInPath = aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath;
+    end
 end
-
-% expand shell paths (before SPM so SPM can be in e.g. home directory)
-aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
-
-if isempty(aap.directory_conventions.spmdir)
+% - path
+if isempty(SPMDIR)
     if isempty(which('spm'))
-        aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set aap.directory_conventions.spmdir');
+        aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set in aap.directory_conventions.toolbox');
     else
-        aap.directory_conventions.spmdir=spm('Dir');
-    end;
-end;
+        SPMDIR = spm('Dir');
+        doKeepInPath = true;
+    end
+end
+% - deployed
+if isdeployed
+    SPMDIR = spm('Dir');
+    doKeepInPath = true;
+end
+% - reset
+if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
+if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
+    aap.directory_conventions.toolbox(tbxInd).name = 'spm';
+    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR; 
+    aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath = 1;
+end
+
+% - by setting this environment variable it becomes possible to define other
+%   paths relative to $SPMDIR in defaults files and task lists
+setenv('SPMDIR',SPMDIR);
+
+% - expand shell paths (before SPM so SPM can be in e.g. home directory)
+aap = aas_expandpathbyvars(aap, aap.options.verbose>2);
 
 if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
     oldspmdefaults = aap.spm.defaults;
 end
 
-addpath(aap.directory_conventions.spmdir);
-spm_jobman('initcfg');
+SPM = spmClass(SPMDIR,'doAddToPath',true,'doKeepInPath',doKeepInPath);
+SPM.load;
+aas_cache_put(aap,'spm',SPM);
 
 try
     aap.spm.defaults=spm_get_defaults;
@@ -90,54 +112,26 @@ if exist('oldspmdefaults', 'var')
 end
 aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
 
-% Path for SPM MEG/EEG
-addpath(fullfile(spm('Dir'),'external','fieldtrip'));
-clear ft_defaults
-clear global ft_default
-ft_defaults;
-global ft_default
-ft_default.trackcallinfo = 'no';
-ft_default.showcallinfo = 'no';
-addpath(...
-    fullfile(spm('Dir'),'external','bemcp'),...
-    fullfile(spm('Dir'),'external','ctf'),...
-    fullfile(spm('Dir'),'external','eeprobe'),...
-    fullfile(spm('Dir'),'external','mne'),...
-    fullfile(spm('Dir'),'external','yokogawa_meg_reader'),...
-    fullfile(spm('Dir'),'toolbox', 'dcm_meeg'),...
-    fullfile(spm('Dir'),'toolbox', 'spectral'),...
-    fullfile(spm('Dir'),'toolbox', 'Neural_Models'),...
-    fullfile(spm('Dir'),'toolbox', 'MEEGtools'));
+% Path for matlabtools
+if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
+    addpath(strrep(aap.directory_conventions.matlabtoolsdir,':',pathsep))
+end
 
-% Path fore spmtools
-if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
-    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':'); SPMTools = SPMTools{1};
-    for pp = SPMTools'
-        addpath(genpath(pp{1}));
+% Toolboxes
+if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
+    for TBX = aap.directory_conventions.toolbox
+        if strcmp(TBX.name,'spm'), continue; end
+        aas_cache_put(aap,TBX.name,aas_inittoolbox(aap,TBX.name));
     end
 end
 
-% Path for EEGLAB, if specified
-if ~isempty(aap.directory_conventions.eeglabdir)
-    addpath(...
-        fullfile(aap.directory_conventions.eeglabdir,'functions'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'adminfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'sigprocfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'guifunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'studyfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'popfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'statistics'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'timefreqfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'miscfunc'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'resources'),...
-        fullfile(aap.directory_conventions.eeglabdir,'functions', 'javachatfunc')...
-        );
-else
-    % Check whether already in path, give warning if not
-    if isempty(which('eeglab'))
-       aas_log(aap,false,sprintf('EEG lab not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.eeglabdir'));
-    end;
-end;
+% MNE
+if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
+    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
+        addpath(aap.directory_conventions.mnedir,'matlab','toolbox');
+        addpath(aap.directory_conventions.mnedir,'matlab','examples');
+    end
+end
 
 % Path to GIFT
 if ~isempty(aap.directory_conventions.GIFTdir)
@@ -146,8 +140,8 @@ else
     % Check whether already in path, give warning if not
     if isempty(which('icatb_runAnalysis'))
        aas_log(aap,false,sprintf('GIFT not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.GIFTdir'));
-    end;
-end;
+    end
+end
 
 % Path to BrainWavelet
 if ~isempty(aap.directory_conventions.BrainWaveletdir)
@@ -160,7 +154,7 @@ else
     % Check whether already in path, give warning if not
     if isempty(which('WaveletDespike'))
        aas_log(aap,false,sprintf('BrainWavelet not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.BrainWaveletdir'));
-    end;
+    end
 end
 
 % Path to FaceMasking
@@ -170,8 +164,8 @@ else
     % Check whether already in path, give warning if not
     if isempty(which('mask_surf_auto'))
        aas_log(aap,false,sprintf('FaceMasking not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.FaceMaskingdir'));
-    end;
-end;
+    end
+end
 
 % Path to LI toolbox
 if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventions.LIdir)
@@ -180,19 +174,15 @@ else
     % Check whether already in path, give warning if not
     if isempty(which('LI'))
        aas_log(aap,false,sprintf('LI toolbox not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.LIdir'));
-    end;
-end;
+    end
+end
 
 
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
-    setenv('PATH',[aacache.path.bcp_shellpath ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+    [s,p] = aas_cache_get(aap,'bcp_shellpath','system');
+    setenv('PATH',[p ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
-
-
-
-% Path to spm modifications to the top
-addpath(fullfile(aa.Path,'extrafunctions','spm_mods'),'-begin');
 
 %% Build required path list for cluster submission
 % aa
@@ -201,36 +191,35 @@ reqpath=textscan(genpath(aa.Path),'%s','delimiter',':'); reqpath = reqpath{1};
 p = textscan(path,'%s','delimiter',':'); p = p{1};
 
 % spm
-p_ind = cell_index(p,aap.directory_conventions.spmdir); % SPM-related dir
+p_ind = cell_index(p,SPMDIR); % SPM-related dir
 for ip = p_ind
     reqpath{end+1} = p{ip};
 end
-% spmtools
-if isfield(aap.directory_conventions,'spmtoolsdir') && ~isempty(aap.directory_conventions.spmtoolsdir)
-    SPMTools = textscan(aap.directory_conventions.spmtoolsdir,'%s','delimiter', ':'); SPMTools = SPMTools{1};
-    for pp = SPMTools'
-        if exist(pp{1},'dir')
-            pdir = textscan(genpath(pp{1}),'%s','delimiter', ':'); pdir = pdir{1};
-            reqpath = [reqpath; pdir];
+
+% matlabtoolsdir
+if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
+    matlabtools = textscan(aap.directory_conventions.matlabtoolsdir,'%s','delimiter', ':'); matlabtools = matlabtools{1};
+    for pp = matlabtools'
+        if exist(pp{1},'dir'), reqpath = [reqpath; pp{1}]; end
+    end
+end
+
+% Toolboxes
+if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
+    for TBX = aap.directory_conventions.toolbox
+        if isfield(TBX,'extraparameters') && isfield(TBX.extraparameters,'doAddToPath') && TBX.extraparameters.doAddToPath
+            reqpath{end+1} = TBX.dir;
         end
     end
 end
 
 % MNE
 if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
-    if exist(fullfile(aap.directory_conventions.mnedir,'matlab'),'dir')
-        reqpath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','toolbox');
-        reqpath{end+1}=fullfile(aap.directory_conventions.mnedir,'matlab','examples');
-    end
-end
-
-% EEGLAB
-if ~isempty(aap.directory_conventions.eeglabdir)
-    p_ind = cell_index(p,aap.directory_conventions.eeglabdir);
+    p_ind = cell_index(p,aap.directory_conventions.mnedir);
     for ip = p_ind
         reqpath{end+1} = p{ip};
     end
-end;
+end
 
 % GIFT
 if ~isempty(aap.directory_conventions.GIFTdir)
@@ -265,12 +254,12 @@ if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventi
 end
 
 % clean
-reqpath=reqpath(strcmp('',reqpath)==0);
+reqpath = reqpath(strcmp('',reqpath)==0);
 exc = cell_index(reqpath,'.git');
 if exc, reqpath(exc) = []; end
 
-aacache.path.reqpath = reqpath;
+aas_cache_put(aap,'reqpath',reqpath,'system');
 % switch off warnings
-aacache.warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
-aacache.warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
-
+warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
+warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
+aas_cache_put(aap,'warnings',warnings,'system');

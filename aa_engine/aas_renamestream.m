@@ -25,12 +25,17 @@ modulenumber = cell_index({aap.tasklist.main.module.name},stagename); modulenumb
 %% Check task
 odot = origstream == '.';
 if any(odot), origstreamname = origstream(find(odot)+1:end);
-else origstreamname = origstream; end
+else, origstreamname = origstream; end
 
-[newstream, newattr] = strtok(newstream,':'); if ~isempty(newattr), newattr(1) = []; end
+if ~isempty(newstream)
+    dat = strsplit(newstream,':');
+    newstream = dat{1}; newattr = dat(2:end);
+else
+    newattr = '';
+end
 ndot = newstream == '.';
 if any(ndot), newstreamname = newstream(find(ndot)+1:end);
-else newstreamname = newstream; end
+else, newstreamname = newstream; end
 
 toSpecify = any(ndot);
 toRename = ~strcmp(origstreamname,newstreamname);
@@ -43,7 +48,7 @@ end
 for i = 1:numel(inputstreams)
     idot = inputstreams{i} == '.';
     if any(idot), inputstreamname = inputstreams{i}(find(idot)+1:end);
-    else inputstreamname = inputstreams{i}; end
+    else, inputstreamname = inputstreams{i}; end
     if strcmp(inputstreamname,origstreamname)
         break;
     end
@@ -54,16 +59,14 @@ if strcmp(inputstreamname,origstreamname)
     ind = i;
 elseif strcmp(origstreamname,'append')
     ind = i + 1;    
+    stream = [];
     stream.CONTENT = newstream;
     % defaults
     stream.ATTRIBUTE.isrenameable = 1;
     stream.ATTRIBUTE.isessential = 1;
-    if ~isempty(newattr)
-        listAttr = textscan(newattr,'%s','delimiter',':'); listAttr = listAttr{1};
-        for a = listAttr'
-            [key, val] = strtok(listAttr{1},'-'); val = str2double(val);
-            stream.ATTRIBUTE.(key) = val;
-        end
+    for attr = newattr
+        keyval = strsplit(attr{1},'-');
+        stream.ATTRIBUTE.(keyval{1}) = str2double(keyval{2});
     end
     aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream;
     if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = stream; end
@@ -82,7 +85,7 @@ if isfield(aap,'internal')
     if isempty(storedstreams) || ~any(cell_index({storedstreams.name},origstreamname)), streamindex = NaN;
     else
         if ~strcmp(origstreamname,'append'), streamindex = cell_index({storedstreams.name},origstreamname); 
-        else streamindex = numel(storedstreams); end
+        else, streamindex = numel(storedstreams); end
     end
 end
         

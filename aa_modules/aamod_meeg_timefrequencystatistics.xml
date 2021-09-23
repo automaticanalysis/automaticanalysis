@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_meeg_statistics' domain='study' desc='Statistical analysis TFRs' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.15</timeBase>
+                <memoryBase>0.5</memoryBase>
+            </qsub>
+            
+            <model>
+                <name></name>
+                <subjects></subjects>
+                <trialmodel></trialmodel>
+                <channels></channels>
+                <groupmodel></groupmodel>
+                <timewindow></timewindow>
+            </model>
+            
+            <selectoverlappingdata>
+                <time desc='specify how to treat time' options='ignore|auto|[second to round to]' ui='optionlist'>auto</time>
+                <subjects desc='minimum amount of subjects required to have overlapping data' options='auto|[ratio of all subjects]' ui='optionlist'>1</subjects>
+            </selectoverlappingdata>
+            
+            <threshold>
+                <method desc='methods for calculating the significance probability' options='montecarlo|analytic' ui='optionlist'>montecarlo</method>
+                <iteration desc='number of randomisation (for montecarlo)'>5000</iteration>
+                <correction desc='multiple-comparison correction for timeseries data' options='no|cluster|bonferroni|holm|hochberg|fdr' ui='optionlist'>cluster</correction>
+                <neighbours desc='minimum number of channels required (for cluster)'>2</neighbours>
+                <p desc='critical value for cluster and single-sample'>0.05</p>
+            </threshold>
+            
+            <inputstreams>
+                <stream>timefreq</stream>
+                <stream isessential='0'>sourcesurface</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isessential='0' desc='background to project statistics onto (source only)'>background</stream>
+                <stream>groupstat</stream>
+            </outputstreams>
+            
+            <diagnostics>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
+                <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+                <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
+                <!--
+                Background to project statistics onto. 
+                In case of cortical sheet based source, 'sourcemodel' means the sourcemodel surface averaged across particpants, the other options corresponds to high-res surface stored in 'surf_[surface].gii' files in the sourcesurface stream (if present)
+                In case of grid based source, 'template' means FieldTrip's 'standard_mri', the [filename] corresponds to any image specified with full path
+                -->
+                <background options='sourcemodel|inflated|midthickness|pial|white|template|[filename]' ui='optionlist'>template</background>
+                <!--
+                In case of cortical sheet based source, viewing angle target, only for surface, e.g. RAS for right-anterior-superior part of the brain.
+                In case of grid based source, view can be 'ortho'
+                -->
+                <view desc='' ui='optionlist' options='RAS|LAS|RPS|LPS|RAI|LAI|RPI|LPI|ortho'>ortho</view>
+            </diagnostics>
+        </currenttask>
+    </tasklist>
+</aap>

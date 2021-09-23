@@ -63,7 +63,7 @@ classdef aaClass
                 fprintf(' <a href = "%s">%s</a>\n',obj.ManuscriptURL,d{2});
                 fprintf(' <a href = "%s">%s</a>\n',obj.ManuscriptURL,d{3});
                 fprintf('\nPlease visit <a href = "%s">The aa website</a> for more information!\n',obj.aaURL);
-                fprintf('\nHere you can find example <a href = "matlab: cd %s">tasklists</a> and <a href = "matlab: cd %s">scripts</a>.\n',...
+                fprintf('\nHere you can find example <a href = "matlab: cd %s">parameter sets</a> and <a href = "matlab: cd %s">examples</a>.\n',...
                     fullfile(obj.Path,'aa_parametersets'),fullfile(obj.Path,'examples'));
                 fprintf('Ready.\n');
             end

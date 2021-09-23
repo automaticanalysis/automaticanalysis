@@ -1,34 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask domain='session' desc='VOI extraction' modality='MRI' >
+        <currenttask domain='subject' desc='VOI extraction' modality='MRI' >
             
             <qsub>
-                <localonly>1</localonly>
                 <timeBase></timeBase>
                 <memoryBase></memoryBase>
             </qsub>
             
             <permanenceofoutput>3</permanenceofoutput>
             
-            <VOI>
-                <name></name>
-                <Ic></Ic>        <!-- remove variance in the null space of this F contrast -->
-                                 <!-- (-1 == adjust for all effects of interest) -->
-                <lmax></lmax>    <!-- this seems to have no effect, but it must be a valid contrast number -->
-                <def></def>      <!-- sphere | box | mask -->
-                <xyz></xyz>      <!-- VOI center (mm) if def=sphere or box -->
-                <spec></spec>    <!-- filename if def=mask, otherwise radius -->
-            </VOI>
+            <adjust desc='removing variance explained' ui='optionlist' options='none|all|[contrast name]'>none</adjust>
             
-            <!-- if rois stream defined, it gets dibs on lmax and/or mask -->
+            <VOI>
+                <name desc='Name of the VOI'></name>
+                <type ui='optionlist' options='sphere|mask|roi|blob'></type>
+                <centre ui='optionlist' options='xyz|roicentre|roimaximum'></centre>
+                <centredefinition>
+                    <xyz></xyz>
+                    <roival></roival>
+                    <contrast desc='name of the contrast'></contrast>
+                </centredefinition>
+                <size desc='diametre for sphere, in mm'></size>
+            </VOI>
             
             <inputstreams>
                 <stream>firstlevel_spm</stream> 
-                <stream>firstlevel_betas</stream>
-                <stream isessential='0'>firstlevel_spmts</stream>
-                <stream isessential='0'>firstlevel_spmfs</stream>
-                <stream isessential='0'>rois</stream>  
+                <stream>firstlevel_brainmask</stream>
+                <stream>firstlevel_betas</stream>                
+                <stream isessential="0">firstlevel_spmts</stream> 
+                <stream isessential="0">firstlevel_spmfs</stream>
+                <stream isrenameable="1" isessential="0">rois</stream>
             </inputstreams>
 
             <outputstreams>

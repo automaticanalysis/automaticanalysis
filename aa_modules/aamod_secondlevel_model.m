@@ -11,6 +11,8 @@ resp='';
 
 switch task
     case 'report'
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        
         if numel(cellstr(spm_select('List',aas_getstudypath(aap),'^diagnostic.*'))) < 2 % two images expected
             % group mask
             for subj = 1:numel(aap.acq_details.subjects)
@@ -26,7 +28,7 @@ switch task
             so = slover;
             so.figure = spm_figure('GetWin', 'SliceOverlay');
             
-            so.img.vol = spm_vol(fullfile(aap.directory_conventions.spmdir,aap.directory_conventions.T1template));
+            so.img.vol = spm_vol(fullfile(SPMtool.toolPath,aap.directory_conventions.T1template));
             so.img.prop = 1;
             so.transform = 'axial';
             so = fill_defaults(so);
@@ -44,8 +46,8 @@ switch task
 
             % design
             fSPM = aas_getfiles_bystream(aap,aap.tasklist.currenttask.outputstreams.stream{1}); fSPM = deblank(fSPM(1,:)); %all models are the same (number of inputs may vary)
-            load(fSPM);            
-            spm_DesRep('DesOrth',SPM.xX);
+            dat = load(fSPM);
+            spm_DesRep('DesOrth',dat.SPM.xX);
             saveas(spm_figure('GetWin','Graphics'),fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_design.jpg']));
             close all;
         end
@@ -55,7 +57,6 @@ switch task
             aap=aas_report_addimage(aap,[],fullfile(aas_getstudypath(aap),fdiag(d).name));
             aap = aas_report_add(aap,[],'</td></tr></table>');
         end
-        
     case 'doit'
         nsub=length(aap.acq_details.subjects);
         aas_log(aap,false,sprintf('%d subjects',nsub));
@@ -64,7 +65,7 @@ switch task
             stats_suffix=aap.tasklist.currenttask.extraparameters.stats_suffix;
         else
             stats_suffix=[];
-        end;
+        end
         
         % And make analysis directory
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
@@ -80,17 +81,17 @@ switch task
             confiles{m}=aas_getfiles_bystream(aap,m,'firstlevel_cons');
             SPMtemp=load(flSPMfn{m});
             flSPM{m}.SPM.xCon=SPMtemp.SPM.xCon;
-%             if (m~=1)
-%                 if (length(flSPM{m}.SPM.xCon)~=length(flSPM{1}.SPM.xCon))
-%                     aas_log(aap,1,sprintf('Number of contrasts in first level analysis for subject %d different from subject 1. They must be the same for aamod_model_secondlevel to work\n',m));
-%                     for n=1:length(flSPM(m).SPM.xCon)
-%                         if (flSPM{m}.SPM.xCon(n).name~=flSPM{1}.SPM.xCon(n).name);
-%                             aas_log(aap,1,sprintf('Names of contrasts at first level different. Contrast %d has name %s for subject %d but %s for subject 1. They must be the same for aamod_model_secondlevel to work\n',n,flSPM{m}.SPM.xCon(n).name,m,flSPM{1}.xCon(n).name));
-%                         end;
-%                     end;
-%                 end;
-%             end;
-        end;
+            if m > 1
+                if numel(flSPM{m}.SPM.xCon) < numel(flSPM{1}.SPM.xCon)
+                    aas_log(aap,1,sprintf('Number of contrasts in first level analysis for subject %d smaller than that for subject 1. There MUST be corresponding contrasts for aamod_model_secondlevel to work\n',m));
+                    for n=1:numel(flSPM(m).SPM.xCon)
+                        if ~strcmp(flSPM{m}.SPM.xCon(n).name,flSPM{1}.SPM.xCon(n).name)
+                            aas_log(aap,1,sprintf('Names of contrasts at first level different. Contrast %d has name %s for subject %d but %s for subject 1. They MUST be the same for aamod_model_secondlevel to work\n',n,flSPM{m}.SPM.xCon(n).name,m,flSPM{1}.xCon(n).name));
+                        end
+                    end
+                end
+            end
+        end
         %                phs = 1; conname='UF_S'
         allSPMs = {};
         allbetas = {};
@@ -102,7 +103,7 @@ switch task
                 % take out characters that don't go well in filenames...
                 conname = char(regexp(conname,'[a-zA-Z0-9_-]','match'))';
                 rfxdir = fullfile(rfxrootdir,conname);
-                if exist(rfxdir)~=7; mkdir(rfxrootdir,conname);end
+                if exist(rfxdir,'dir')~=7; mkdir(rfxrootdir,conname);end
                 cd(rfxdir);
                 
                 clear SPM
@@ -115,17 +116,15 @@ switch task
                 
                 for s=1:nsub
                     foundit=false;
-                    for fileind=1:size(confiles{s},1);
-                        [pth nme ext]=fileparts(confiles{s}(fileind,:));
-                        m = regexp(nme,sprintf('con_%04d',n));
-                        if m
+                    for fileind=1:size(confiles{s},1)
+                        if ~isempty(strfind(spm_file(confiles{s}(fileind,:),'basename'),sprintf('con_%04d',n)))
                             foundit=true;
                             break;
-                        end;
-                    end;
+                        end
+                    end
                     if (~foundit)
                         aas_log(aap,true,sprintf('Contrast %d not found in subject %s',n,aap.acq_details.subjects(s).subjname));
-                    end;
+                    end
                     SPM.xY.P{s}   = confiles{s}(fileind,:);
                     SPM.xY.VY(s)   = spm_vol(SPM.xY.P{s});
                 end
@@ -195,8 +194,8 @@ switch task
         aap=aas_desc_outputs(aap,'secondlevel_spm',char(allSPMs));
         aap=aas_desc_outputs(aap,'secondlevel_betas',char(allbetas));
     case 'checkrequirements'
-        
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end

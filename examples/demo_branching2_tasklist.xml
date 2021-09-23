@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <!-- Example of doubling forking tasklist, and of setting aap parameters for a module within an xml tasklist -->
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_autoidentifyseries_timtrio</name></module>
+            <module><name>aamod_get_dicom_structural</name></module>
+            <module><name>aamod_get_dicom_epi</name></module>
+            <module><name>aamod_convert_structural</name></module>
+            <module><name>aamod_convert_epi</name></module>
+            <module><name>aamod_tsdiffana</name></module>
+
+            <module><name>aamod_coreg_extended_1</name></module>
+            <module><name>aamod_biascorrect_structural</name></module>
+            <module><name>aamod_segment8</name></module>
+
+            <module>
+                <!-- First fork: realign or slice timing first? -->
+                <branch>
+                    <analysisid_suffix>_realign_then_slicetime</analysisid_suffix>
+                    <module><name>aamod_realign</name></module>
+                    <module><name>aamod_slicetiming</name></module>
+                    <module><name>aamod_coreg_extended_2_epi</name></module>
+                    <module><name>aamod_coreg_extended_2_meanepi</name></module>			
+                    <module><name>aamod_norm_write</name></module> 
+                    <module><name>aamod_norm_write_meanepi</name></module> 
+                    <module><name>aamod_smooth</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_slicetime_then_realign</analysisid_suffix>
+                    <module><name>aamod_slicetiming</name></module>
+                    <module><name>aamod_realign</name></module>
+                    <module><name>aamod_coreg_extended_2_epi</name></module>
+                    <module><name>aamod_coreg_extended_2_meanepi</name></module>			
+                    <module><name>aamod_norm_write</name></module> 
+                    <module><name>aamod_norm_write_meanepi</name></module> 
+                    <module>
+                        <!-- Second fork: for the slice time first, try two different smoothing kernels  -->
+                        <branch>
+                            <analysisid_suffix>_regularsmoothing</analysisid_suffix>
+                            <module><name>aamod_smooth</name></module>
+                        </branch>
+                        <branch>
+                            <analysisid_suffix>_moresmoothing</analysisid_suffix>
+                            <module><name>aamod_smooth</name>
+                                <!-- Now set smoothing kernel, equivalent to aap.tasksettings.aamod_smooth().FWHM -->
+                                <extraparameters>
+                                    <aap><tasklist><currenttask><settings>
+                                                    <FWHM>16</FWHM>
+                                    </settings></currenttask></tasklist></aap>
+                                </extraparameters>
+                            </module>
+                        </branch>
+                    </module>
+                </branch>
+            </module>
+            
+            <!-- Modelling. Now no need to make local copies of the first level model and contrasts -->
+            <module><name>aamod_firstlevel_model</name></module>
+            <module><name>aamod_firstlevel_contrasts</name></module>
+            <module><name>aamod_firstlevel_threshold</name></module>
+        </main>
+    </tasklist>
+</aap>

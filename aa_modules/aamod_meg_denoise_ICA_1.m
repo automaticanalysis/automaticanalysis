@@ -6,14 +6,25 @@ switch task
     case 'report'
         
     case 'doit'
+        [s,EL] = aas_cache_get(aap,'eeglab');
+        if ~s, aas_log(aap,true,'EEGLAB not found'); end
+        EL.load;
+        
         %% Initialise
+        [junk, SPMtool] = aas_cache_get(aap,'spm');
+        SPMtool.doToolbox('fieldtrip','load');
+        SPMtool.addCollection('meeg');
+        [s,EL] = aas_cache_get(aap,'eeglab');
+        if ~s, aas_log(aap,true,'EEGLAB not found'); end
+        EL.load;
+        
         sessdir = aas_getsesspath(aap,subj,sess);
-        infname = aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg'); infname = basename(infname(1,:));
+        infname = aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg'); infname = basename(infname(1,:));
         outfname = fullfile(sessdir,[infname '_ICA']); % specifying output filestem
         
         %% Not sure if bit below is needed?
 %         if aas_stream_has_contents(aap,[subj sess],'meg_ica')
-%             ICA0 = load(aas_getfiles_bystream(aap,'meg_session',[subj sess],'meg_ica'));
+%             ICA0 = load(aas_getfiles_bystream(aap,'meeg_session',[subj sess],'meg_ica'));
 %             ICA = struct(...
 %                 'weights',ICA0.ica.weights, ...
 %                 'compvars',ICA0.ica.compvars ...
@@ -41,12 +52,12 @@ switch task
                 actual_PCA_dim = PCA_dim;
             end
             try
-                if ~isempty(Rseed) && exist('rik_runica','file')              
-                    [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
-                else
+%                 if ~isempty(Rseed) && exist('rik_runica','file')              
+%                     [weights,sphere,compvars,bias,signs,lrates,ICs] = rik_runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800,'rseed',Rseed); % Just local copy where rand seed can be passed
+%                 else
                     if ~isempty(Rseed), aas_log(aap,false,'WARNING: Random seed requested but no facility with standard runica?'); end
                     [weights,sphere,compvars,bias,signs,lrates,ICs] = runica(D(chans,:),'pca',actual_PCA_dim,'extended',1,'maxsteps',800); % will give different answer each time run
-                end
+%                 end
                 ica{n}.weights = weights;
                 ica{n}.chans = chans;
                 ica{n}.compvars = compvars;
@@ -56,7 +67,13 @@ switch task
             end
         end
         
+        EL.unload;
+        SPMtool.rmCollection('meeg');
+        SPMtool.doToolbox('fieldtrip','unload')
+
         %% Outputs
         save(outfname,'ica');
         aap=aas_desc_outputs(aap,subj,sess,'meg_ica',[outfname '.mat']);
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

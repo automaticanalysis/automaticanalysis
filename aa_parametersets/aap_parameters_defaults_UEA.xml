@@ -8,11 +8,10 @@
             <specialseriesdirname desc='Subdirectory in subject dir for special series' ui='text'>specialseries</specialseriesdirname>
             <eventsdirname  desc='Subdirectory in study, subject and/or session for event files' ui='text'>events</eventsdirname>
             <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/gpfs/home/ryb17eeu/data</rawdatadir>
-            <rawmegdatadir desc='Directory to find raw MEG data' ui='dir'></rawmegdatadir>
+            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'></rawmeegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
-            <selectechonumbers desc='Which echo numbers?' ui='vector_array' range='[1 Inf]'>0</selectechonumbers>
             <outputformat options='splitbymodule|onedirectory' ui='optionlist'>splitbymodule</outputformat>
             <remotefilesystem  desc='Type of files for imaging data' options='none|s3' ui='optionlist'>none</remotefilesystem>
             <dicomfolderstructure desc='Dicom folder structure, "flat" if all files in one directory (e.g., Robarts), "series" if series in separate directory (e.g., CBU)' ui='text'>flat</dicomfolderstructure>
@@ -22,9 +21,15 @@
             <protocol_structural ui='text'>MPRAGE</protocol_structural>
             <protocol_t2 ui='text'>t2_spc</protocol_t2>
             <dicomfilter ui='text'>*</dicomfilter>
-            <megsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'></megsubjectoutputformat>
-            <spmdir desc="Path(s) to SPM (>SPM12 r6470 required)" ui="dir">/gpfs/home/ryb17eeu/imaging_pipelines/software/spm12</spmdir>
-            <spmtoolsdir desc='Path(s) to SPM tools (colon separated list)' ui='dir'></spmtoolsdir>
+            <meegsubjectoutputformat desc='sprintf formatting string to get subject directory from number' ui='text'></meegsubjectoutputformat>
+            <matlabtoolsdir desc="Path(s) to MATLAB tools (colon separated list)" ui="dir"></matlabtoolsdir>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/gpfs/home/ryb17eeu/imaging_pipelines/software/spm12</dir>
+                <extraparameters>
+                    <doKeepInPath>1</doKeepInPath>
+                </extraparameters>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/gpfs/software/fsl/5.0.10</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/gpfs/home/ryb17eeu/imaging_pipelines/bin/fsl_bash</fslsetup>
@@ -35,11 +40,9 @@
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
             <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/gpfs/software/freesurfer/6.0/FreeSurferEnv.sh;</freesurferenvironment>
             <neuromagdir desc='Path to Neuromag' ui='dir'></neuromagdir>
-            <eeglabdir desc='Path to EEGLAB toolbox' ui='dir'></eeglabdir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'></GIFTdir>
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
-            <fieldtripdir desc='Path to fieltrip toolbox' ui='dir'></fieldtripdir>
             <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/gpfs/home/ryb17eeu/imaging_pipelines/software/BrainWavelet_v2.0</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>

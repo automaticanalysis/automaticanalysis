@@ -18,8 +18,22 @@
 clear
 aa_ver5
 
+
 %% DEFINE SPECIFIC PARAMETERS
 aap=aarecipe('aap_tasklist_fmri_advanced.xml');
+
+% this example uses SPM tools in the user script, so we have to ensure SPM is
+% on the path
+spmhit = which('spm_spm');
+spmdir = aas_gettoolboxdir(aap,'spm');
+if any(spmhit)
+    assert(strcmp(fileparts(spmhit), spmdir), ...
+        'spm on path differs from that in aap.directory_conventions');
+else
+    fprintf('adding spmdir to path: %s\n', spmdir);
+    SPMtool = spmClass(spmdir);
+    SPMtool.load;
+end
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system			% OPTIONS: 'localsingle'|'qsub' for aa engine, typical value 'qsub'

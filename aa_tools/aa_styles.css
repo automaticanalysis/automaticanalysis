@@ -1,0 +1,25 @@
+/* workflow */
+#workflow {
+    border: 3px solid #0000FF;
+    text-align: center;
+}
+/* data table */
+#data th {
+    border: 1px solid #ddd;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    text-align: left;
+    background-color: #33ACFF;
+    color: #000000;
+}
+#data tr:hover {background-color: #DDD;}
+#data tr:nth-child(even){background-color: #F2F2F2;}
+#data td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+}
+#data td:nth-child(1){
+    text-align: left;
+    font-weight:bold;
+}

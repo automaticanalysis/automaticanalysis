@@ -6,7 +6,7 @@ function [aap]=aas_findinputstreamsources(aap)
 % save provenance
 provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.dot');
 pfid = fopen(provfn,'w');
-fprintf(pfid,'digraph {\n\trankdir = LR;\n\tcharset="utf-8";\n\n');
+fprintf(pfid,'digraph {\n\t');
 dotR = {};
 
 cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
@@ -18,13 +18,13 @@ aap.internal.outputstreamdestinations=cell(length(aap.tasklist.main.module),1);
 for k1=1:length(aap.tasklist.main.module)
     aap.internal.inputstreamsources{k1}.stream=[];
     aap.internal.outputstreamdestinations{k1}.stream=[];
-end;
+end
 
 % Now go through each module and find its input dependencies
 %  then make bi-directional connections in inputstreamsources and
 %  outputstreamdestinations
 for k1=1:length(aap.tasklist.main.module)
-    [stagepath stagename]=fileparts(aap.tasklist.main.module(k1).name);
+    [~, stagename]=fileparts(aap.tasklist.main.module(k1).name);
     index=aap.tasklist.main.module(k1).index;
     
     % Find streams to be loaded remotely
@@ -57,11 +57,11 @@ for k1=1:length(aap.tasklist.main.module)
             if isstruct(inputstreams.stream{ind}) && length(inputstreams.stream{ind})>1
                 for structind=1:length(inputstreams.stream{ind})
                     streamlist{end+1}=inputstreams.stream{ind}(structind);
-                end;
+                end
             else
                 streamlist{end+1}=inputstreams.stream{ind};
-            end;
-        end;
+            end
+        end
         
         % Now we have one stream per cell
         for i=1:numel(streamlist)
@@ -70,16 +70,16 @@ for k1=1:length(aap.tasklist.main.module)
             if isstruct(inputstreamname)
                 if isfield(inputstreamname.ATTRIBUTE,'ismodified')
                     ismodified=inputstreamname.ATTRIBUTE.ismodified;
-                end;
+                end
                 if isfield(inputstreamname.ATTRIBUTE,'isessential')
                     isessential=inputstreamname.ATTRIBUTE.isessential;
-                end;
+                end
                 inputstreamname=inputstreamname.CONTENT;
-            end;
+            end
             findremote=[];
             if ~isempty(remotestream)
                 findremote=find(strcmp(inputstreamname,{remotestream.stream}));
-            end;
+            end
             if ~isempty(findremote)
                 stream=[];
                 stream.name=inputstreamname;
@@ -97,7 +97,7 @@ for k1=1:length(aap.tasklist.main.module)
                     aap.internal.inputstreamsources{k1}.stream=stream;
                 else
                     aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
-                end;
+                end
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
                 % write provenance
                 fprintf(pfid,'"R%s" -> "R%s_%05d" [ label="%s" ];',['Remote ' stream.host ': ' stream.sourcestagename],stagename,index,stream.name);
@@ -106,13 +106,13 @@ for k1=1:length(aap.tasklist.main.module)
 				fprintf(cfid,'%s\t%s\t%s_%05d\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
             else
                 
-                [aap stagethatoutputs mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
+                [aap, stagethatoutputs, mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
                 if isempty(stagethatoutputs)
                     if isessential
                         aas_log(aap,true,sprintf('Stage %s required input %s is not an output of any stage it is dependent on. You might need to add an aas_addinitialstream command or get the stream from a remote source.',stagename,inputstreamname));
                     end
                 else
-                    [sourcestagepath sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
+                    [~, sourcestagename]=fileparts(aap.tasklist.main.module(stagethatoutputs).name);
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     % write provenance
@@ -138,7 +138,7 @@ for k1=1:length(aap.tasklist.main.module)
                         aap.internal.inputstreamsources{k1}.stream=stream;
                     else
                         aap.internal.inputstreamsources{k1}.stream(end+1)=stream;
-                    end;
+                    end
                     
                     stream=[];
                     stream.name=inputstreamname;
@@ -150,14 +150,14 @@ for k1=1:length(aap.tasklist.main.module)
                         aap.internal.outputstreamdestinations{stagethatoutputs}.stream=stream;
                     else
                         aap.internal.outputstreamdestinations{stagethatoutputs}.stream(end+1)=stream;
-                    end;
-                end;
-            end;
+                    end
+                end
+            end
             if (~isempty(findremote) || ~isempty(stagethatoutputs)) && (i==numel(streamlist))
                 % change domain and modality if needed (due to input, which is expected to be the last stream)
                 currstage = aap.schema.tasksettings.(stagename)(index).ATTRIBUTE;
                 currstream = aap.internal.inputstreamsources{k1}.stream(end);
-                if (strcmp(currstage.domain,'*') && strcmp(currstage.modality,'MRI'))% general-purpose module
+                if strcmp(currstage.domain,'*') % general-purpose module
 %                         (~isempty(strfind(currstream.sourcedomain,'session')) || ~strcmp(currstream.sourcemodality,'MRI')) % special
                     aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.modality = currstream.sourcemodality;
@@ -165,15 +165,14 @@ for k1=1:length(aap.tasklist.main.module)
                     aap.internal.aap_initial.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain = currstream.sourcedomain;
                 end
             end
-        end;
-    end;
-end;
-fprintf(pfid,'\n\t// Resources\n');
+        end
+    end
+end
 dotR = unique(dotR,'stable');
 for r = 1:numel(dotR)
-    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ]; \n',dotR{r},dotR{r});
+    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ];\n',dotR{r},dotR{r});
 end
-fprintf(pfid,'\n\t// Anonymous nodes\n\n\t// Literals\n\n\tlabel="\\n\\nModel:\\n(Unknown)";\n}\n');
+fprintf(pfid,'}');
 fclose(pfid);
 % create provenance map
 if ~unix('which dot')
@@ -190,14 +189,14 @@ function [aap,stagethatoutputs,mindepth]=searchforoutput(aap,currentstage,output
 % is this branch ever going to do better than we already have?
 if (depth>=mindepth)
     return;
-end;
+end
 
 stagethatoutputs=[];
 
 % Search the current level, see if it provides the required output
 if (~notthislevelplease)
     depth=depth+1;
-    [stagepath stagename]=fileparts(aap.tasklist.main.module(currentstage).name);
+    [~, stagename]=fileparts(aap.tasklist.main.module(currentstage).name);
     stagetag=aas_getstagetag(aap,currentstage);
     index=aap.tasklist.main.module(currentstage).index;
     
@@ -215,15 +214,15 @@ if (~notthislevelplease)
                     strcmp(outputtype,streamsimple))
                 stagethatoutputs=currentstage;
                 mindepth=depth;
-            end;
-        end;
-    end;
-end;
+            end
+        end
+    end
+end
 
 % If not found, search backwards further
 if (isempty(stagethatoutputs))
     dependenton=aap.internal.dependenton{currentstage};
     for i=1:length(dependenton)
-        [aap stagethatoutputs mindepth]=searchforoutput(aap,dependenton(i).stage,outputtype,false,depth,mindepth);
-    end;
-end;
+        [aap, stagethatoutputs, mindepth]=searchforoutput(aap,dependenton(i).stage,outputtype,false,depth,mindepth);
+    end
+end

@@ -32,9 +32,10 @@ switch task
         bvalfile = series.bval;
         bvecfile = series.bvec;
         if ~exist(niftifile,'file') % assume path realtive to (first) rawdatadir
-            niftisearchpth=aas_findvol(aap,'');
+            niftisearchpth=aas_findvol(aap,subj);
             if ~isempty(niftisearchpth)
                 niftifile = fullfile(niftisearchpth,niftifile);
+                if ~exist(niftifile,'file'), aas_log(aap,true,['ERROR: image ' niftifile ' not found']); end
                 if ~isempty(headerfile), headerfile = fullfile(niftisearchpth,headerfile); end
                 bvalfile = fullfile(niftisearchpth,bvalfile);
                 bvecfile = fullfile(niftisearchpth,bvecfile);

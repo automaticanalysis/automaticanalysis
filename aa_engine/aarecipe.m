@@ -53,7 +53,7 @@ if ~exist(defaultparameters,'file')
     seedparam = fullfile(rootpath, seedparam);
     
     % initialise the save dialogue in the current aap.acq_details.root if specified
-    xml=xml_read(seedparam,Pref);
+    xml=xml_read(seedparam);
     configdir = fullfile(getenv('HOME'),'.aa');
     % generate new parameters file N.B.: in networks with shared resources
     % average user may not be able to write into aa_paremetersets
@@ -62,7 +62,7 @@ if ~exist(defaultparameters,'file')
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
     
-    analysisroot = aas_expandpathbyvars(xml.acq_details.root);
+    analysisroot = aas_expandpathbyvars(xml.acq_details.root.CONTENT);
     aas_makedir([], analysisroot);
     analysisroot = userinput('uigetdir',analysisroot,'Location of analyses by default','GUI',isGUI);
     
@@ -84,8 +84,9 @@ if ~exist(defaultparameters,'file')
     end
 end
 
-aap=xml_read(defaultparameters,Pref);
-aap.schema=xml_read(defaultparameters);
+schema = xml_read(defaultparameters);
+aap = processattributes(schema);
+aap.schema = schema;
 
 % And now load up task list
 if exist('tasklistxml','var')
@@ -97,7 +98,7 @@ if exist('tasklistxml','var')
     xml_tasklist.schema=xml_read(tasklistxml,Pref);
     Pref.ReadAttr=0;
     xml_tasklist=xml_read(tasklistxml,Pref);
-    aap=catstruct(aap,xml_tasklist);
+    aap=struct_update(aap,xml_tasklist);
     % Now load up each modules parameters
     aap.tasksettings=[];
     
@@ -125,6 +126,9 @@ if exist('tasklistxml','var')
         for task=1:length(aap.tasklist.main.module)
             [aap index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
             aap.tasklist.main.module(task).index=index;
+            if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(task).name)(index).ATTRIBUTE,'mfile_alias')
+                aap.tasklist.main.module(task).aliasfor = aap.schema.tasksettings.(aap.tasklist.main.module(task).name)(index).ATTRIBUTE.mfile_alias;
+            end
         end
     end
     
@@ -149,6 +153,37 @@ end
 aap.aap_beforeuserchanges=[];
 aap.aap_beforeuserchanges=aap;
 
+end
+
+%% Recursively process nodes
+function node = processattributes(node)
+if isstruct(node)
+    if isfield(node,'ATTRIBUTE')
+        if isfield(node,'CONTENT')
+            attr = node.ATTRIBUTE;
+            node = node.CONTENT;
+            if isfield(attr,'ui')
+                switch attr.ui
+                    case {'text' 'dir' 'dir_allowwildcards' 'dir_part_allowwildcards' 'dir_part' 'file'}
+                        node = char(node);
+% TODO
+%                     case {'dir_list','optionlist'}
+%                     case {'structarray'}
+%                     case {'intarray' 'rgb'}
+%                     case {'double'}
+%                     case {'int'}
+%                     case {'yesno'}
+                end
+            end
+            return
+        else
+            node = rmfield(node,'ATTRIBUTE');
+        end
+    end
+    for f = fieldnames(node)'
+        node.(f{1}) = cell2mat(arrayfun(@(x) processattributes(x), node.(f{1}), 'UniformOutput', false)); % deal with arrays
+    end
+end
 end
 
 %% Recursively process branches

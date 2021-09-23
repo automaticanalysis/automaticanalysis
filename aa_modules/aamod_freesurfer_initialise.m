@@ -37,4 +37,7 @@ switch task
         outs = cellfun(@(x) spm_select('FPListRec',fullfile(subjpath,x),'.*'), {'RAW','ANAT','mri'},'UniformOutput',false);
         outs = char(outs(cellfun(@(x) ~isempty(x), outs)));
         aap = aas_desc_outputs(aap,subj,'freesurfer',outs);
+        
+    case 'checkrequirements'
+        if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
 end

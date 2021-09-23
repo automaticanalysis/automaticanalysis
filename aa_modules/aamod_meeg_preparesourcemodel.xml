@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='Prepare sourcemodel' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+
+            <method desc='sourcemodel method' options='grid|corticalsheet'>corticalsheet</method>
+            
+            <options desc='method-specific options'>
+                <grid>
+                    <resolution desc='distance between grid points' options='4|5|6|7point5|8|10'>10</resolution>
+                </grid>
+                <corticalsheet>
+                    <resolution desc='number of tessels' options='2k|4k|8k|16k|64k|328k'>8k</resolution>
+                </corticalsheet>
+            </options>
+            
+            <inputstreams>
+                <stream isessential='0'>structural</stream>
+                <stream isessential='0'>freesurfer</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>sourcemodel</stream>
+                <stream>structural</stream>
+                <stream isessential='0' isrenameable='1'>sourcesurface</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

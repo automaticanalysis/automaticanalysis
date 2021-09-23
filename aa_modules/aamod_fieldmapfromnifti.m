@@ -26,9 +26,10 @@ switch task
         niftifile = niftistruct.fname; % checks first only
         hdrfile = niftistruct.hdr;
         if ~exist(niftifile{1},'file')
-            niftisearchpth=aas_findvol(aap,'');
+            niftisearchpth=aas_findvol(aap,subj);
             if ~isempty(niftisearchpth)
-                niftifile = spm_file(niftifile,'path',niftisearchpth);
+                niftifile = cell_fullfile(niftisearchpth,niftifile);
+                if ~exist(niftifile{1},'file'), aas_log(aap,true,['ERROR: image ' niftifile{1} ' not found']); end
                 if ischar(hdrfile), hdrfile = spm_file(hdrfile,'path',niftisearchpth); end
             end
         end
@@ -38,7 +39,7 @@ switch task
             comp = strcmp(spm_file(niftifile{f},'Ext'),'gz');
             if comp
                 gunzip(niftifile{f},fullfile(sesspth,'temp'));
-                niftifile{1} = spm_file(niftifile{f}(1:end-3),'path',fullfile(sesspth,'temp'));
+                niftifile{f} = spm_file(niftifile{f}(1:end-3),'path',fullfile(sesspth,'temp'));
             end
             
             aas_makedir(aap,fullfile(sesspth,sprintf('serie%02d',f)));
@@ -55,18 +56,24 @@ switch task
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],'fieldmap',char(fn));
         
         %% header
-        switch spm_file(hdrfile,'Ext')
-            case 'mat'
-                dat = load(hdrfile);
-                dcmhdr = dat.dcmhdr;
-            case 'json'
-                hdrfile = loadjson(hdrfile);
-                % convert timings to ms (DICOM default)
-                for f = fieldnames(hdrfile)'
-                    if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+        if ~isempty(hdrfile)
+            if iscell(hdrfile)
+                dcmhdr = hdrfile;
+            else
+                switch spm_file(hdrfile,'Ext')
+                    case 'mat'
+                        dat = load(hdrfile);
+                        dcmhdr = dat.dcmhdr;
+                    case 'json'
+                        hdrfile = loadjson(hdrfile);
+                        % convert timings to ms (DICOM default)
+                        for f = fieldnames(hdrfile)'
+                            if strfind(f{1},'Time'), dcmhdr{1}.(f{1}) = hdrfile.(f{1})*1000; end
+                        end
+                        if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
+                        if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
                 end
-                if isfield(dcmhdr{1},'RepetitionTime'), dcmhdr{1}.volumeTR = dcmhdr{1}.RepetitionTime/1000; end
-                if isfield(dcmhdr{1},'EchoTime1') && isfield(dcmhdr{1},'EchoTime2'), dcmhdr{1}.volumeTE = [dcmhdr{1}.EchoTime1 dcmhdr{1}.EchoTime2]/1000; end
+            end
         end
         
         %% Output
@@ -78,4 +85,14 @@ switch task
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
+end
+end
+
+function fullfilepaths=cell_fullfile(basepath,filepaths)
+% Like full file, except that input filepaths is a cell array. basepath is
+% prepended (using fullfile) to every item in filepaths. Result is a cell
+% array
+for fileind=1:length(filepaths)
+    fullfilepaths{fileind}=fullfile(basepath,filepaths{fileind});
+end
 end

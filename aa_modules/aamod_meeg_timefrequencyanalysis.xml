@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='TFR calculation' modality='MEEG'>
+            
+            <qsub>
+                <timeBase>0.25</timeBase>
+                <memoryBase>0.75</memoryBase>
+            </qsub>
+            
+            <timefrequencyanalysis>
+                <method desc='methods of calculating the spectra' options='mtmconvol|mtmfft' ui='optionlist'></method>
+                <taper options='dpss|hanning' ui='optionlist'></taper>
+                <foi desc='frequencies of interest specified as [1xN1] for individual FOIs'></foi>
+                <toi desc='the times on which the analysis windows should be centered, specified as [1xN2] in milliseconds'></toi>
+                <twoicps desc='width of the analysis window-of-interest specified in cycle-per-sample (i.e. decreasing with frequencies of interest)'></twoicps>
+                <spectralsmoothing desc='the amount of spectral smoothing specifed as a ratio relative to frequencies of interest (i.e. increasing with frequencies of interest)'></spectralsmoothing>
+            </timefrequencyanalysis>
+
+            <weightedaveraging desc='weight data with trial number when averaging'>0</weightedaveraging>
+            
+            <contrastoperation desc='operation to calculate contrast (see ft_combine)' options='difference|normaliseddifference|ratio' ui='optionlist'>difference</contrastoperation>
+
+            <baselinewindow desc='specify baseline as [begin end] in milliseconds for baseline correction, specify "all" for the complete trial'></baselinewindow>
+            
+            <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
+            <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
+            
+            <trialmodel desc='modelling trials'>
+                <subject></subject>
+                <model>
+                    <name></name>
+                    <session></session>
+                    <event></event>
+                    <samplevector></samplevector>
+                </model>
+            </trialmodel>
+            
+            <inputstreams>
+                <stream>meeg</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>timefreq</stream>
+                <stream>peak</stream>
+            </outputstreams>
+            
+            <diagnostics>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
+                <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+            </diagnostics>
+            
+        </currenttask>
+    </tasklist>
+</aap>
