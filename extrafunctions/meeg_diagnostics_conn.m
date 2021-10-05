@@ -1,4 +1,4 @@
-function fig = meeg_diagnostics_conn(data,diag,varargin)
+function fig = meeg_diagnostics_conn(data,diag,savepath)
 
 if nargin >= 3, figtitle = varargin{1}; else, figtitle = 'Sample'; end
 if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
