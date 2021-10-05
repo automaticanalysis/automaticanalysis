@@ -6,7 +6,7 @@ switch task
     case 'report'
 
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
         FT.addExternal('spm12');
         
@@ -29,7 +29,7 @@ switch task
             % import segmentation
             aas_log(aap,false,'INFO: suitable segmentation (6-class) found -> importing segmentation')
             
-            seg = rmfield(mri,{'anatomy','inside'});
+            seg = rmfield(mri,intersect(fieldnames(mri), {'anatomy','inside'}));
             seg.dim = double(seg.dim);
             targfname = fullfile(aas_getsubjpath(aap,subj),'target.nii');
             ft_write_mri(targfname,mri.anatomy,'transform',mri.transform,'dataformat','nifti')
@@ -158,7 +158,7 @@ switch task
         % - plot
         seg_i = ft_datatype_segmentation(seg,'segmentationstyle','indexed');
         cfg              = [];
-        cfg.funparameter = 'seg';
+        cfg.funparameter = intersect(fieldnames(seg_i),{'tissue','seg'});
         cfg.funcolormap  = lines(6); % distinct color per tissue
         cfg.location     = 'center';
         cfg.atlas        = seg_i;    % the segmentation can also be used as atlas
