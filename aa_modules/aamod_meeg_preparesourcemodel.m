@@ -6,7 +6,7 @@ switch task
     case 'report'
         
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
         
         if strcmp(aas_getsetting(aap,'method'),'corticalsheet')
@@ -105,6 +105,42 @@ switch task
                     fnames = vertcat(fnames,{[cfg.filename '.gii']});
                 end
                 aap = aas_desc_outputs(aap,'subject',subj,'sourcesurface',fnames);
+                
+                % create atlas
+                fnames = cellstr(aas_getfiles_bystream(aap,'subject',subj,'freesurfer'));
+                res = regexp(fnames,['.*' aas_getsetting(aap,'options.corticalsheet.annotation') '\.annot$'],'match');
+                annot = sort(vertcat(res{:}));
+                res = regexp(fnames,'.*h\.pial$','match');
+                mesh = sort(vertcat(res{:}));
+                
+                atlaslh = ft_read_atlas({annot{1} mesh{1}},'format','freesurfer_aparc');
+                atlasrh = ft_read_atlas({annot{2} mesh{2}},'format','freesurfer_aparc');
+                
+                sourceatlas = rmfield(atlaslh,'rgba');
+                sourceatlas.pos = vertcat(atlaslh.pos, atlasrh.pos);
+                sourceatlas.tri = vertcat(atlaslh.tri, atlasrh.tri+size(atlaslh.pos,1));
+                sourceatlas.aparclabel = vertcat(spm_file(atlaslh.aparclabel,'prefix','lh_'),spm_file(atlaslh.aparclabel,'prefix','rh_'));
+                sourceatlas.aparc = vertcat(atlaslh.aparc, atlasrh.aparc+numel(atlaslh.aparclabel));
+                
+                % diag
+                fname = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_atlas.jpg']);
+                if ~exist(fname,'file')
+                    cfg = [];
+                    cfg.figure = figure; hold on;
+                    cfg.method = 'surface';
+                    cfg.funparameter = 'aparc';
+                    cfg.funcolormap = distinguishable_colors(numel(sourceatlas.aparclabel));
+                    ft_sourceplot(cfg,sourceatlas);
+                    view(135,45);
+                    set(cfg.figure,'position',[0,0,720 720]);
+                    set(cfg.figure,'PaperPositionMode','auto');
+                    print(cfg.figure,'-noui',fname,'-djpeg','-r300');
+                    close(cfg.figure);
+                end
+                
+                fnAtlas = fullfile(aas_getsubjpath(aap,subj),'sourceatlas.mat');
+                save(fnAtlas,'sourceatlas');
+                aap = aas_desc_outputs(aap,'subject',subj,'sourceatlas',fnAtlas);
         end
         
         sourcemodel = ft_struct2single(sourcemodel);

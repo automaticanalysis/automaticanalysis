@@ -107,14 +107,14 @@ switch task
             case 'crossfreq'
                 statcfg.parameter   = 'crsspctrm';
                 fstat = @meeg_statistics;
-                fdiag = @meeg_diagnostics_CF;
+                fdiag = @meeg_diagnostics_conn;
             case 'connfreq'
                 f = fieldnames(data);
                 f = f(cellfun(@(x) ~isempty(regexp(x,'.*spctrm$', 'once')),f));
                 if numel(f) ~= 1, aas_log(aap,true,'Parameter cannot be identified'); end
                 statcfg.parameter   = f{1};
                 fstat = @meeg_statistics;
-                fdiag = @meeg_diagnostics_CF;
+                fdiag = @meeg_diagnostics_conn;
         end
         if ft_datatype(data,'source')
             switch inpstreams{1}
@@ -163,6 +163,10 @@ switch task
         else
             if isfield(statplotcfg,'background'), statplotcfg = rmfield(statplotcfg,'background'); end
         end
+                
+        atlascfg = [];
+        atlascfg.interpmethod = 'nearest';
+        atlascfg.parameter = 'aparc';
         
         models = aas_getsetting(aap,'model'); models(1) = [];
         % do not redo fully analyzed models (assume last is not full, if any)
@@ -170,14 +174,17 @@ switch task
         if ~isempty(modelIsRun)
             models(1:modelIsRun-1) = [];
             % clean results for last (now first)
-            resStat = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat'));
-            for m = cellstr(spm_select('FPList',aas_getstudypath(aap),['^' models(1).name]))'
-                delete(m{1});
-                resStat(strcmp(resStat,m{1})) = [];
+            if aas_stream_has_contents(aap,'study',[],'groupstat')
+                resStat = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat'));
+                for m = cellstr(spm_select('FPList',aas_getstudypath(aap),['^' models(1).name]))'
+                    delete(m{1});
+                    resStat(strcmp(resStat,m{1})) = [];
+                end
+                aap = aas_desc_outputs(aap,'study',[],'groupstat',resStat);
             end
-            aap = aas_desc_outputs(aap,'study',[],'groupstat',resStat);
         end
         for m = models
+            atlas = [];
             savepath{1} = fullfile(aas_getstudypath(aap),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_' m.name]);
             if ~ischar(m.timewindow), m.timewindow = m.timewindow / 1000; end % in seconds
             
@@ -220,10 +227,11 @@ switch task
                             dat.(inpType) = ft_combine(combinecfg,chdata{:});
                         end
                         dat = dat.(inpType);
-                        % expand data
+                        % expand data and remove confouding fields
                         if ~isfield(dat,statcfg.parameter)
                             dat = ft_selectdata([],dat);
-                            dat = rmfield(dat,intersect(fieldnames(dat),{'ori','filterdimord'}));
+                            dat = rmfield(dat,intersect(fieldnames(dat),{'ori','filterdimord','inside'}));
+                            if all(isfield(dat,{'pos' 'label'})), dat = rmfield(dat,'label'); end
                             dat.cfg = keepfields(dat.cfg.previous,'included');
                         end
                         if isfield(dat,'time')
@@ -242,9 +250,8 @@ switch task
                             tmpdat = load(aas_getfiles_bystream(aas_setcurrenttask(aap,aas_getsourcestage(aap,'aamod_meeg_sourcereconstruction')),'subject',subj,'sourcemodel'));
                             tmpdat = load(tmpdat.sourcemodel.cfg.template);
                             dat.pos = tmpdat.sourcemodel.pos;
-                            dat.inside = dat.cfg.included;
-                            parsize = size(dat.(statcfg.parameter)); parsize(1) = numel(dat.inside);
-                            par = zeros(parsize); par(dat.inside,:,:,:,:) = dat.(statcfg.parameter);
+                            parsize = size(dat.(statcfg.parameter)); parsize(1) = numel(dat.cfg.included);
+                            par = zeros(parsize); par(dat.cfg.included,:,:,:,:) = dat.(statcfg.parameter);
                             dat.(statcfg.parameter) = par;
                         end
                         dat.cfg = keepfields(dat.cfg,'included'); % remove provenance to save space
@@ -314,6 +321,7 @@ switch task
             end
             
             if isfield(allInp{1},'pos') % source
+                allAtlas = struct('aparc',{},'aparclabel',{});
                 aas_log(aap,false,'INFO: selecting overlapping positions');
                 posJoint = all(cell2mat(cellfun(@(x) reshape(x.cfg.included,[],1), allInp, 'UniformOutput', false)),2);
                 allPos = zeros(sum(posJoint),3,numel(allInp));
@@ -326,7 +334,6 @@ switch task
                     end
                     if isfield(dat,'tri') % cortical sheet
                         dat.pos(toExcl,:) = [];
-                        dat.inside(toExcl) = [];
                         dat.(cfg{1}.parameter)(toExcl,:,:) = [];
                         [trind, trelem] = ndgrid(1:size(dat.tri,1),1:size(dat.tri,2)); trind = transpose(trind); trelem = transpose(trelem);
                         indtri = logical(sum(arrayfun(@(x,y) any(dat.tri(x,y)==find(toExcl)), trind, trelem)));
@@ -334,12 +341,13 @@ switch task
                         dat.tri(indtri,:) = [];
                         allPos(:,:,i) = dat.pos;
                     end
-                    if isfield(dat,'dim') % grid
-                        dat.inside(toExcl) = false;
-                    end                    
                     allInp{i} = dat;
+                    if aas_stream_has_contents(aap,'subject',subjmodel(i),'sourceatlas')
+                        dat = load(aas_getfiles_bystream(aap,'subject',subjmodel(i),'sourceatlas')); sourceatlas = dat.sourceatlas;
+                        allAtlas(i) = keepfields(ft_sourceinterpolate(atlascfg, sourceatlas, allInp{i}),fieldnames(allAtlas));
+                    end
                 end
-                if isfield(dat,'tri')
+                if isfield(allInp{1},'tri')
                     % make sure that all nodes are included in tri
                     allNodes = false(size(allInp{1}.pos,1),1);
                     tri = allInp{1}.tri; i = 1;
@@ -353,12 +361,51 @@ switch task
                             allNodes(unique(tri)) = true;
                         end
                     end
-                    for i = 1:numel(allInp)                    
+                    for i = 1:numel(allInp)
                         allInp{i}.pos = mean(allPos,3);
                         allInp{i}.tri = tri;
                     end
                     cfg{1}.tri = tri;
                 end
+                if ~isempty(allAtlas)
+                    % check consitency
+                    % - same list of areas
+                    allParcLabMatch = sum(reshape(...
+                        arrayfun(@(i1,i2) isequal(allAtlas(i1).aparclabel,allAtlas(i2).aparclabel),...
+                            reshape(repmat(1:numel(allAtlas),numel(allAtlas),1),1,[]), reshape(repmat(1:numel(allAtlas),numel(allAtlas),1)',1,[])...
+                            ),...
+                        numel(allAtlas),numel(allAtlas)));
+                    jointParcLab = allAtlas(find(allParcLabMatch==max(allParcLabMatch),1,'first')).aparclabel;
+                    % - update parcellation
+                    for i = 1:numel(allInp)
+                        if ~isequal(allAtlas(i).aparclabel,jointParcLab)
+                            % - extra area -> remove
+                            missingParcLab = cellfun(@(a) ~any(strcmp(jointParcLab,a)), allAtlas(i).aparclabel);
+                            adjParcLab = cumsum(missingParcLab); adjParcLab(missingParcLab) = -1;
+                            if any(adjParcLab)
+                                for a = 1:numel(adjParcLab)
+                                    if adjParcLab(a) == -1, allAtlas(i).aparc(allAtlas(i).aparc == a) = 0;
+                                    else
+                                        allAtlas(i).aparc(allAtlas(i).aparc == a) = allAtlas(i).aparc(allAtlas(i).aparc == a) - adjParcLab(a);
+                                    end
+                                end
+                                allAtlas(i).aparclabel = allAtlas(i).aparclabel(~missingParcLab);
+                            end
+                            
+                            matchParcLab = cellfun(@(a) find(strcmp(jointParcLab,a)), allAtlas(i).aparclabel);
+                            for a = 1:numel(matchParcLab)
+                                if matchParcLab(a) ~= a
+                                    allAtlas(i).aparc(allAtlas(i).aparc == a) = matchParcLab(a);
+                                    allAtlas(i).aparclabel(a) = jointParcLab(a);
+                                end
+                            end
+                        end
+                    end
+                    
+                    % select dominant parcellation
+                    atlas.aparc = mode([allAtlas.aparc],2);
+                    atlas.aparclabel = jointParcLab;
+                end                
             end
             
             if isfield(allInp{1},'labelcmb') && ~isfield(allInp{1},'label')
@@ -487,7 +534,7 @@ switch task
             end
             
             for c = 1:numel(cfg)
-                statFn = savepath{c};
+                diagFn = savepath{c};
                 
                 stat = fstat(cfg{c}, allInp{:});
                 
@@ -514,17 +561,18 @@ switch task
                     groupStat = cellfun(@(x) meeg_average(avgcfg,x), groupStat,'UniformOutput',false);
                     for fave = fieldnames(cfg{c}.average)'
                         pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
-                        statFn = sprintf('%s_%s-%1.2f-%1.2f',statFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
+                        diagFn = sprintf('%s_%s-%1.2f-%1.2f',diagFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
                     end
                 end
                 stat.mask(isnan(stat.mask)) = 0;
                 groupStat{1}.stat = stat;
-                pcfg.parameter = cfg{c}.parameter;
-                fdiag(groupStat,pcfg,m.name,statFn);
-                            
                 groupStat{1}.stat.subjects = m.subjects(subjmodel);
-                statFn = spm_file(strrep(statFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
+                if isstruct(atlas), groupStat{1} = struct_update(groupStat{1},atlas,'Mode','extend'); end
+                statFn = spm_file(strrep(diagFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
                 save(statFn,'groupStat');
+
+                pcfg.parameter = cfg{c}.parameter;
+                fdiag(groupStat,pcfg,m.name,diagFn);
                 
                 % append to stream
                 outputFn = {};

@@ -15,44 +15,14 @@ switch task
         dat = load(inputfnames{1}); f = fieldnames(dat); source = dat.(f{1});
         
         %% Create atlas
-        if isfield(source,'tri') % cortical sheet -> freesurfer
-            fnames = cellstr(aas_getfiles_bystream(aap,'subject',varargin{1},'freesurfer'));
-            res = regexp(fnames,['.*' aas_getsetting(aap,'options.corticalsheet.annotation') '\.annot$'],'match');
-            annot = sort(vertcat(res{:}));
-            res = regexp(fnames,'.*h\.pial$','match');
-            mesh = sort(vertcat(res{:}));
-            
-            atlaslh = ft_read_atlas({annot{1} mesh{1}},'format','freesurfer_aparc');
-            atlasrh = ft_read_atlas({annot{2} mesh{2}},'format','freesurfer_aparc');
-                        
-            atlas = rmfield(atlaslh,'rgba');
-            atlas.pos = vertcat(atlaslh.pos, atlasrh.pos);
-            atlas.tri = vertcat(atlaslh.tri, atlasrh.tri+size(atlaslh.pos,1));
-            atlas.aparclabel = vertcat(spm_file(atlaslh.aparclabel,'prefix','lh_'),spm_file(atlaslh.aparclabel,'prefix','rh_'));
-            atlas.aparc = vertcat(atlaslh.aparc, atlasrh.aparc+numel(atlaslh.aparclabel));
-        end
         
-        % diag
-        fname = fullfile(aas_getsubjpath(aap,varargin{1}),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_atlas.jpg']);
-        if ~exist(fname,'file')
-            cfg = [];
-            cfg.figure = figure; hold on;
-            cfg.method = 'surface';
-            cfg.funparameter = 'aparc';
-            cfg.funcolormap = distinguishable_colors(numel(atlas.aparclabel));
-            ft_sourceplot(cfg,atlas);
-            view(135,45);
-            set(cfg.figure,'position',[0,0,720 720]);
-            set(cfg.figure,'PaperPositionMode','auto');
-            print(cfg.figure,'-noui',fullfile(aas_getsubjpath(aap,varargin{1}),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_atlas']),'-djpeg','-r300');
-            close(cfg.figure);
-        end
+        dat = load(aas_getfiles_bystream(aap,'subject',varargin{1},'sourceatlas')); sourceatlas = dat.sourceatlas;
         
         % resample
         cfg = [];
         cfg.interpmethod = 'nearest';
         cfg.parameter = 'aparc';
-        source_atlas = ft_sourceinterpolate(cfg, atlas, source);
+        source_atlas = ft_sourceinterpolate(cfg, sourceatlas, source);
         
         % remove unrepresented areas
         sel = unique(source_atlas.aparc); sel(sel==0) = [];

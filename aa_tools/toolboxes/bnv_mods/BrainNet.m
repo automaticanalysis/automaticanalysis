@@ -3093,10 +3093,12 @@ if EC.edg.color == 2
     cb = colorbar('location','South');
     if EC.edg.color_map_type == 1 % Modified by Mingrui, 20170303, support fixed color mapping
         if EC.edg.color_abs == 0
-            caxis([min(surf.cylinder(:,3)),max(surf.cylinder(:,3))]);
+            lim = [min(surf.cylinder(:,3)),max(surf.cylinder(:,3))];
         else
-            caxis([min(abs(surf.cylinder(:,3))),max(abs(surf.cylinder(:,3)))]);
+            lim = [min(abs(surf.cylinder(:,3))),max(abs(surf.cylinder(:,3)))];
         end
+        if ~diff(lim), lim = lim.*[0.9 1.1]; end
+        caxis(lim);
     else
         caxis([EC.edg.color_map_low,EC.edg.color_map_high]);
     end

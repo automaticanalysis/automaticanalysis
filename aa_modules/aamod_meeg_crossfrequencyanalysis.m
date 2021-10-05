@@ -180,7 +180,7 @@ switch task
                     cfg.weights = weights;
                     crossfreqMain = ft_combine(cfg,cf{:});
                     
-                    meeg_diagnostics_CF(crossfreqMain,diagcfg,eventLabel,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
+%                     meeg_diagnostics_conn(crossfreqMain,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
                     
                     % trialmodel
                     crossfreqModel = crossfreqMain;
@@ -243,7 +243,7 @@ switch task
                         crossfreqModel = ft_combine(cfg,cf{:});
                     end
                           
-                    meeg_diagnostics_CF(crossfreqModel,diagcfg,[m.name '_' eventLabel],fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+%                     meeg_diagnostics_conn(crossfreqModel,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
 
                     conEvents{e} = crossfreqModel;
                     crossfreq.(eventLabel).main = crossfreqMain;
@@ -254,9 +254,9 @@ switch task
                 % contarst events
                 cfg = combinecfg; 
                 cfg.weights = m.event.weights;
-                if prod(weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
+                if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
                 crossfreq = ft_combine(cfg,conEvents{:});
-                meeg_diagnostics_CF(crossfreq,diagcfg,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
+%                 meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
               
                 % save/update output
                 crossfreqFn = fullfile(aas_getsesspath(aap,subj,sess),['crossfreq_' m.name '.mat']);
@@ -279,7 +279,7 @@ switch task
             cfg = combinecfg; 
             cfg.weights = m.session.weights;
             crossfreq = ft_combine(cfg,conSessions{:});
-            meeg_diagnostics_CF(crossfreq,diagcfg,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
+%             meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
            
             % save/update output
             crossfreq.cfg = []; % remove provenance to save space
