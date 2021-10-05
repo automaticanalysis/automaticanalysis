@@ -1,4 +1,7 @@
-function fig = meeg_diagnostics_conn(data,diag,savepath)
+function fig = meeg_diagnostics_conn(data,diag,varargin)
+
+if nargin >= 3, figtitle = varargin{1}; else, figtitle = 'Sample'; end
+if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 %% config
 [s, FT] = aas_cache_get([],'fieldtrip');
@@ -31,12 +34,13 @@ labeltickstep = diff(find(strcmp(groupStat.labelcmb(:,2),groupStat.labelcmb{1,2}
 labeltick = 1:labeltickstep:size(groupStat.labelcmb,1);
 
 %% Get data
-mask = groupStat.stat.mask;
+mask = groupStat.stat.mask & ~isnan(groupStat.stat.stat);
 stat = groupStat.stat.stat .* mask;
+if ~any(stat,'all'), return; end
 [cmap, cmaprange] = cmap_adjust(cmapbase,stat(mask));
 if all(stat(stat~=0)>0), sfx = 'p';
 elseif all(stat(stat~=0)<0), sfx = 'n';
-else, aap_log([],true,'mixed stat - NYI');
+else, sfx = 'pn';
 end
 
 %% Matrix
@@ -55,8 +59,11 @@ for a = ax
     set(a,'XTickLabel',round(freq(get(a,'XTick')))); 
 end
 set(ax(1),'YTickLabel',labelcmb(labeltick));
-print(gcf,'-noui',[savepath '_matrix.jpg'],'-djpeg','-r300');
-close(gcf);
+set(h,'Name',figtitle);
+if ~isempty(savepath)
+    print(h,'-noui',[savepath '_matrix.jpg'],'-djpeg','-r300');
+    close(h);
+end
 
 % txt
 fnTxt = [savepath '_matrix.txt'];
@@ -85,12 +92,19 @@ if ~isempty(idx)
 end
 
 %% Network (for each FOI)
-for f = 1:size(diag.snapshotfwoi,1)
+if numel(sfx) > 1, aas_log([],true,'mixed stat - NYI'); end
+
+if isfield(diag,'snapshotfwoi'), snapshotwoi = diag.snapshotfwoi; 
+elseif isfield(diag,'snapshotfwoiphase') && ~isempty(diag.snapshotfwoiphase), snapshotwoi = diag.snapshotfwoiphase; 
+elseif isfield(diag,'snapshotfwoiamplitude') && ~isempty(diag.snapshotfwoiamplitude), snapshotwoi = diag.snapshotfwoiamplitude; 
+else, aas_log([],true,'no valid snapshot specification found'); end
+
+for f = 1:size(snapshotwoi,1)
     mat = zeros(nROI,nROI);
     for roi = unique(groupStat.labelcmb(:,1),'stable')'
         roiind = strcmp(atlas.Var6,strrep(roi{1},'h ','.'));
         lcoi = strcmp(groupStat.labelcmb(:,1),roi{1});
-        boiind = [find(freq >= diag.snapshotfwoi(f,1),1,'first') find(freq <= diag.snapshotfwoi(f,2),1,'last')];
+        boiind = [find(freq >= snapshotwoi(f,1),1,'first') find(freq <= snapshotwoi(f,2),1,'last')];
         meas = mean(stat(lcoi,boiind(1):boiind(2)),2);
         if nROI > numel(meas)
             mat(:,roiind) = [meas(1:find(roiind)-1); 0; meas(find(roiind):end)]; % auto-connectivity
@@ -100,10 +114,42 @@ for f = 1:size(diag.snapshotfwoi,1)
         % mat(mat(:,roiind)<cmaprange(1)/2,roiind) = 0; % at least half of the band
     end
     if ~any(mat,'all'), continue; end
-    fnedge = sprintf('%s_net_%d-%d_%c.edge',savepath,diag.snapshotfwoi(f,:),sfx);
-    dlmwrite(fnedge,mat,'\t');    
-    inputfiles.edge = fnedge;
+    fnEdge = sprintf('%s_net_%d-%d_%c.edge',savepath,snapshotwoi(f,:),sfx);
+    dlmwrite(fnEdge,mat,'\t');    
+    inputfiles.edge = fnEdge;
     fig = BrainNet(inputfiles,BNV.BNVSettings);
-    print(fig,'-noui',spm_file(fnedge,'ext','jpg'),'-djpeg','-r300');
-    close(fig);
+    set(fig,'Name',figtitle);
+    if ~isempty(savepath)
+        print(fig,'-noui',spm_file(fnEdge,'ext','jpg'),'-djpeg','-r300');
+        close(fig);
+    end
+end
+if isempty(savepath)
+    delete(fnNode);
+    delete(fnEdge);
+end
+end
+
+function [cmap, cmaprange] = cmap_adjust(cmapbase,stat)
+minval = prctile(stat,1,'all');
+maxval = prctile(stat,99,'all');
+% colormaps
+if (minval < 0) && (maxval > 0)
+    r = maxval/-minval;
+    if r > 1, cmap = [cmapcold(cmapbase,round(64/r)); cmaphot(cmapbase,64)];
+    else, cmap = [cmapcold(cmapbase,64); cmaphot(cmapbase,round(r*64))];
+    end
+elseif minval < 0, cmap = cmapcold(cmapbase,64);
+else
+    cmap = cmaphot(cmapbase,64);
+end
+cmaprange = [minval, maxval];
+end
+
+function cmap = cmaphot(cmapbase,n)
+cmap = cmapbase(65:(end-(64-n)),:);
+end
+
+function cmap = cmapcold(cmapbase,n)
+cmap = cmapbase((64-n+1):64,:);
 end
