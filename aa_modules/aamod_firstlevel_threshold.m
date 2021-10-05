@@ -134,6 +134,7 @@ switch task
         nSl = aap.tasklist.currenttask.settings.overlay.nth_slice;
         tra = aap.tasklist.currenttask.settings.overlay.transparency;
         Outputs.thr = '';
+        Outputs.cl = '';
         Outputs.sl = '';
         Outputs.Rend = '';
         
@@ -293,17 +294,49 @@ switch task
             V.descrip = sprintf('thr{%s_%1.4f;ext_%d}%s',corr,u0,k,V.descrip(strfind(V.descrip,'}')+1:end));
             spm_write_vol(V,Yepi);
             
+            % Cluster
+            clusterfname = spm_file(V.fname,'prefix','cl_');
+            if ~isempty(aas_getsetting(aap,'cluster'))
+                if no_sig_voxels
+                    copyfile(V.fname,clusterfname);
+                else
+                    switch aas_getsetting(aap,'cluster.method')
+                        case 'fusionwatershed'
+                            [s,FWS] = aas_cache_get(aap,'fws');
+                            if ~s
+                                aas_log(aap,false,'WARNING: Fusion-Watershed is not installed! --> clustering skipped');
+                            else
+                                FWS.load;
+                                settings = aas_getsetting(aap,'cluster.options.fusionwatershed');
+                                obj = fws.generate_ROI(V.fname,...
+                                    'threshold_method','z','threshold_value',0.1,...
+                                    'filter',settings.extentprethreshold,'radius',settings.searchradius,'merge',settings.mergethreshold,...
+                                    'plot',false,'output',true);
+                                
+                                % - exclude small (<k) ROIs
+                                smallROIs = obj.table.ROIid(obj.table.Volume < k);
+                                obj.label(reshape(arrayfun(@(l) any(l == smallROIs), obj.label(:)), obj.grid.d)) = 0;
+                                obj.table(arrayfun(@(l) any(l == smallROIs), obj.table.ROIid),:) = [];
+                                    
+                                % - save results
+                                save.vol(obj.label,obj.grid,spm_file(clusterfname,'ext',''),'Compressed',false);
+                                writetable(obj.table,spm_file(clusterfname,'ext','csv'));
+                                FWS.unload;
+                            end
+                    end
+                end
+            end
+            
             % Overlay
             % - edges of activation
-            
-            slims = ones(4,2);            
-            sAct = arrayfun(@(x) any(reshape(Yepi(x,:,:),[],1)), 1:size(Yepi,1));
+            slims = ones(4,2);
+            sAct = arrayfun(@(x) any(Yepi(x,:,:),'all'), 1:size(Yepi,1));
             if numel(find(sAct))<2, slims(1,:) = [1 size(Yepi,1)];
             else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(y) any(reshape(Yepi(:,y,:),[],1)), 1:size(Yepi,2));
+            sAct = arrayfun(@(y) any(Yepi(:,y,:),'all'), 1:size(Yepi,2));
             if numel(find(sAct))<2, slims(2,:) = [1 size(Yepi,2)];
             else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-            sAct = arrayfun(@(z) any(reshape(Yepi(:,:,z),[],1)), 1:size(Yepi,3));
+            sAct = arrayfun(@(z) any(Yepi(:,:,z),'all'), 1:size(Yepi,3));
             if numel(find(sAct))<2, slims(3,:) = [1 size(Yepi,3)];
             else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
             % - convert to mm
@@ -326,7 +359,7 @@ switch task
                     annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
                 end
                 
-                spm_print(fnsl{a},fig,'jpg')
+                fnsl{a} = spm_print(fnsl{a},fig,'jpg');
             end
             
             dlmwrite(fullfile(localroot, sprintf('diagnostic_aamod_firstlevel_threshold_C%02d_%s.txt',c,conName)),[min(v(v~=0)), max(v)]);
@@ -378,6 +411,7 @@ switch task
             % Outputs
             
             if exist(V.fname,'file'), Outputs.thr = strvcat(Outputs.thr, V.fname); end
+            if exist(clusterfname,'file'), Outputs.cl = strvcat(Outputs.cl, clusterfname); end
             for f = 1:numel(fnsl)
                 if exist(fnsl{f},'file'), Outputs.sl = strvcat(Outputs.sl, fnsl{f}); end
             end
@@ -390,6 +424,7 @@ switch task
         % Describe outputs
         
         aap=aas_desc_outputs(aap,subj,'firstlevel_thr',Outputs.thr);
+        aap=aas_desc_outputs(aap,subj,'firstlevel_clusters',Outputs.cl);
         aap=aas_desc_outputs(aap,subj,'firstlevel_thrslice',Outputs.sl);
         aap=aas_desc_outputs(aap,subj,'firstlevel_thr3D',Outputs.Rend);
         
@@ -434,8 +469,8 @@ function make_stats_table(varargin)
 % sanity check
 
 if (nargin < 1)
-	fprintf('Usage: make_stats_table(SPM, [fname, Ic, u, thresDesc, k, Im])\n');
-	return;
+    fprintf('Usage: make_stats_table(SPM, [fname, Ic, u, thresDesc, k, Im])\n');
+    return;
 end
 
 SPM = varargin{1};
@@ -443,8 +478,8 @@ SPM = varargin{1};
 % sanity check -- make sure the passed SPM has results to display 
 
 if (~isfield(SPM,'xCon') || isempty(SPM.xCon))
-	fprintf('%s: SPM struct does not contain contrasts. Aborting...\n', mfilename);
-	return;
+    fprintf('%s: SPM struct does not contain contrasts. Aborting...\n', mfilename);
+    return;
 end
 
 % defaults
@@ -460,23 +495,23 @@ SPM.Im = [];
 
 
 if (nargin > 1)
-	fname = varargin{2};
+    fname = varargin{2};
 end
 
 if (nargin > 2)
-	SPM.Ic = varargin{3};
+    SPM.Ic = varargin{3};
 end
 
 if (nargin > 3)
-	SPM.u = varargin{4};
+    SPM.u = varargin{4};
 end
 
 if (nargin > 4)
-	SPM.thresDesc = varargin{5};
+    SPM.thresDesc = varargin{5};
 end
 
 if (nargin > 5)
-	SPM.k = varargin{6};
+    SPM.k = varargin{6};
 end
 
 % Im is a ruse: currently we can only handle "no mask"
@@ -489,8 +524,8 @@ end
 % spm_list_display_noUI can only handle 'none' and 'FWE'
 
 if (~strcmp(SPM.thresDesc,'none') && ~strcmp(SPM.thresDesc,'FWE'))
-	fprintf('%s: Can only handle ''none'' and ''FWE'' thresholding. Aborting...\n', mfilename);
-	return;
+    fprintf('%s: Can only handle ''none'' and ''FWE'' thresholding. Aborting...\n', mfilename);
+    return;
 end
 
 % extract info and make table
@@ -504,25 +539,25 @@ spm_list_display_noUI(TabDat,hreg);
 
 if (~isempty(fname))
 
-	set(hreg,'Renderer','opengl'); % I think this is the default
+    set(hreg,'Renderer','opengl'); % I think this is the default
 
-	% workaround for font rescaling weirdness
+    % workaround for font rescaling weirdness
 
-	set(findall(hreg,'Type','text'),'FontUnits','normalized');
+    set(findall(hreg,'Type','text'),'FontUnits','normalized');
 
-	% tweak paper size to account for landscape layout
+    % tweak paper size to account for landscape layout
 
-	set(hreg,'PaperUnits','inches','PaperPosition',[0 0 5 4]);
+    set(hreg,'PaperUnits','inches','PaperPosition',[0 0 5 4]);
 
-	% force jpg suffix otherwise there can be weirdness
-	% also, bump up resolution to 200 bc numbers
+    % force jpg suffix otherwise there can be weirdness
+    % also, bump up resolution to 200 bc numbers
 
-	[p,n,~] = fileparts(fname);
-	fname = fullfile(p,[n '.jpg']);
+    [p,n,~] = fileparts(fname);
+    fname = fullfile(p,[n '.jpg']);
 
-	print(hreg, '-djpeg', '-r200', fname, '-noui');
+    print(hreg, '-djpeg', '-r200', fname, '-noui');
 
-	close(hreg);
+    close(hreg);
 
 end
 
@@ -554,13 +589,13 @@ function spm_list_display_noUI(TabDat,hReg)
     %-Table axes & Title
     %----------------------------------------------------------------------
     hAx   = axes('Parent',Fgraph,...
-                 'Position',[0.025 bot 0.9 ht],...
-                 'DefaultTextFontSize',FS(8),...
-                 'DefaultTextInterpreter','Tex',...
-                 'DefaultTextVerticalAlignment','Baseline',...
-                 'Tag','SPMList',...
-                 'Units','points',...
-                 'Visible','off');
+                    'Position',[0.025 bot 0.9 ht],...
+                    'DefaultTextFontSize',FS(8),...
+                    'DefaultTextInterpreter','Tex',...
+                    'DefaultTextVerticalAlignment','Baseline',...
+                    'Tag','SPMList',...
+                    'Units','points',...
+                    'Visible','off');
 
     AxPos = get(hAx,'Position'); set(hAx,'YLim',[0,AxPos(4)])
     dy    = FS(9);
@@ -571,7 +606,7 @@ function spm_list_display_noUI(TabDat,hReg)
 %     text(0,y,['Statistics:  \it\fontsize{',num2str(FS(9)),'}',TabDat.tit],...
 %               'FontSize',FS(11),'FontWeight','Bold');   y = y - dy/2;
 
-	line([0 1],[y y],'LineWidth',3,'Color','r'),        y = y - 9*dy/8;
+    line([0 1],[y y],'LineWidth',3,'Color','r'),        y = y - 9*dy/8;
     
     %-Display table header
     %----------------------------------------------------------------------
@@ -645,9 +680,9 @@ function spm_list_display_noUI(TabDat,hReg)
     %-Column Locations
     %----------------------------------------------------------------------
     tCol = [ 0.01      0.08 ...                                %-Set
-             0.15      0.24      0.33      0.39 ...            %-Cluster
-             0.49      0.58      0.65      0.74      0.83 ...  %-Peak
-             0.92];                                            %-XYZ
+                0.15      0.24      0.33      0.39 ...            %-Cluster
+                0.49      0.58      0.65      0.74      0.83 ...  %-Peak
+                0.92];                                            %-XYZ
     
     %-Pagination variables
     %----------------------------------------------------------------------
@@ -697,9 +732,9 @@ function spm_list_display_noUI(TabDat,hReg)
         
         for k=3:11
             h = text(tCol(k),y,sprintf(TabDat.fmt{k},TabDat.dat{i,k}),...
-                     'FontWeight',fw,...
-                     'UserData',TabDat.dat{i,k},...
-                     'ButtonDownFcn','get(gcbo,''UserData'')');
+                        'FontWeight',fw,...
+                        'UserData',TabDat.dat{i,k},...
+                        'ButtonDownFcn','get(gcbo,''UserData'')');
             hPage = [hPage, h];
             if k == 5
                 HlistClust = [HlistClust, h];
