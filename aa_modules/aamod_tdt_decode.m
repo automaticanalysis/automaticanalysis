@@ -34,6 +34,51 @@ switch task
         cfg.plot_selected_voxels = 0;
         cfg.plot_design = 0;
         
+        % Set and configure feature selection
+        settings = aas_getsetting(aap,'featureselection');
+        if ~strcmp(settings.method,'none')
+            cfg.feature_selection.n_vox = settings.numberofvoxels;
+            cfg.feature_selection.optimization_criterion = settings.criterion;
+            switch settings.estimation
+                case 'train'
+                    cfg.feature_selection.estimation = 'across';
+                case 'traintest'
+                    cfg.feature_selection.estimation = 'all';                    
+            end
+            cfg.feature_selection.scale.method = settings.scaling;
+            if ~strcmp(cfg.feature_selection.scale.method,'none'), cfg.feature_selection.scale.estimation = 'all'; end
+            switch settings.method
+                case 'maxresponse'
+                    cfg.feature_selection.method = 'filter';
+                    cfg.feature_selection.filter = 'F';
+                case 'maxpooledredsponse'
+                    cfg.feature_selection.method = 'filter';
+                    cfg.feature_selection.filter = 'F0';
+                case 'nonparammaxresponse'
+                    cfg.feature_selection.method = 'filter';
+                    cfg.feature_selection.filter = 'U';
+                case 'trainedweights'
+                    cfg.feature_selection.method = 'filter';
+                    cfg.feature_selection.filter = 'W';
+                case 'RFE'
+                    cfg.feature_selection.method = 'embedded';
+                    cfg.feature_selection.embedded = 'RFE';
+                    cfg.feature_selection.direction = settings.options.RFE.direction;
+                    cfg.feature_selection.nested_n_vox = settings.options.RFE.nestednumberofvoxels;
+                otherwise % external
+                    cfg.feature_selection.method = 'filter';
+                    cfg.feature_selection.filter = 'external';
+                    if contains(settings.method,':')
+                        cfg.feature_selection.external_fname = strsplit(settings.method,':');
+                    else
+                        cfg.feature_selection.external_fname = cellstr(settings.method);
+                    end
+                    if ~all(cellfun(@(f) exist(f,'file'), cfg.feature_selection.external_fname))
+                        aas_log(aap,true,'One or more external image for feature selection not found.');
+                    end
+            end
+        end
+        
         % Set and configure classifier
         % cfg.decoding.train.classification.model_parameters = '-s 1 -c 1 -q';
         cfg.decoding.software = aas_getsetting(aap,'decoding.software');        
