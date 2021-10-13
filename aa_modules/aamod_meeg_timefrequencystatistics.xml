@@ -33,6 +33,7 @@
             <inputstreams>
                 <stream>timefreq</stream>
                 <stream isessential='0'>sourcesurface</stream>
+                <stream isessential='0'>sourceatlas</stream>
             </inputstreams>
             
             <outputstreams>

@@ -2,7 +2,7 @@
 <!--  This is a tempate for a module header processing an MRI session --> 
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='aa module for MVPA with The Decoding Toolbox' modality='MRI'>
+        <currenttask mfile_alias='aamod_tdt_decode' domain='subject' desc='aa module for MVPA of ROI-ROI connectivity with The Decoding Toolbox' modality='MRI'>
             
             <qsub>
                 <timeBase desc='Required time in hours'>0.5</timeBase>
@@ -11,35 +11,7 @@
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
             <dopairwise desc='do parowise decoding (for cases with more then two items only)' ui='yesno'>0</dopairwise>
-            
-            <featureselection>
-                <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
-                <numberofvoxels desc="number of to be selected voxels 'automatic', single value or range of values in total number or ratio">automatic</numberofvoxels>
-                <criterion options='max|select_peak' ui='optionlist'>max</criterion>
-                <estimation options='train|traintest' ui='optionlist'>train</estimation>
-                <scaling options='z|min0max1|none' ui='optionlist'>none</scaling>
-                <options>
-                    <RFE>
-                        <direction options='backward' ui='optionlist'>backward</direction>
-                        <nestednumberofvoxels desc='number of voxels used in each step [range of values in total number or ratio]'></nestednumberofvoxels>
-                    </RFE>
-                </options>
-            </featureselection>
-            
-            <featureselection>
-                <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
-                <numberofvoxels desc="number of to be selected voxels 'automatic', single value or range of values in total number or ratio">automatic</numberofvoxels>
-                <criterion options='max|select_peak' ui='optionlist'>max</criterion>
-                <estimation options='train|traintest' ui='optionlist'>train</estimation>
-                <scaling options='z|min0max1|none' ui='optionlist'>none</scaling>
-                <options>
-                    <RFE>
-                        <direction options='backward' ui='optionlist'>backward</direction>
-                        <nestednumberofvoxels desc='number of voxels used in each step [range of values in total number or ratio]'></nestednumberofvoxels>
-                    </RFE>
-                </options>
-            </featureselection>
-            
+
             <featureselection>
                 <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
                 <numberofvoxels desc="number of to be selected voxels 'automatic', single value or range of values in total number or ratio">automatic</numberofvoxels>
@@ -93,9 +65,7 @@
             method 'roi' may use more the one volume for ROI wise decoding
             --> 
             <inputstreams>
-                <stream isrenameable='1'>firstlevel_brainmask</stream>
-                <stream>firstlevel_spm</stream>
-                <stream>firstlevel_betas</stream>
+                <stream>connectivity</stream>
             </inputstreams>
             
             <outputstreams desc='streams will correspond to the measure(s)'>
