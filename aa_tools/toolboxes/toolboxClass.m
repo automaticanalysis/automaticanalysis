@@ -22,7 +22,7 @@ classdef toolboxClass < handle
         
         toolInPath = {}
         
-        workspace = struct
+        workspace
         
         collections = struct('name',{},'path',{},'toolbox',{})
         
@@ -43,10 +43,9 @@ classdef toolboxClass < handle
             end
             obj.keepInPath = doKeepInPath;
             obj.pStatus = obj.CONST_STATUS.defined;
-            
-            for v = workspaceVariableNames
-                obj.workspace.(v{1}) = [];
-            end
+
+            obj.workspace = cellfun(@jsondecode, workspaceVariableNames);
+            if ~isempty(obj.workspace), obj.workspace(1).value = []; end
         end
         
         function val = get.status(obj)
@@ -69,19 +68,26 @@ classdef toolboxClass < handle
                 if isempty(tbname), tbname = strrep(class(obj),'Class',''); end
                 modDir = fullfile(fileparts(mfilename('fullpath')),[tbname '_mods']);
                 if exist(modDir,'dir')
-                    addpath(modDir);
-                    obj.toolInPath = [{modDir}; obj.toolInPath];
+                    addpath(genpath(modDir));
+                    modDir = strsplit(genpath(modDir),':');
+                    obj.toolInPath = [modDir(1:end-1)'; obj.toolInPath];
                 end
                 obj.pStatus = obj.CONST_STATUS.loaded;
             end
-            for v = fieldnames(obj.workspace)'
-                if ~any(strcmp(evalin('base','who'),v{1}))
-                    obj.workspace = rmfield(obj.workspace,v{1});
+            toRemove = [];
+            for iw = 1:numel(obj.workspace) 
+                if isfield(obj.workspace(iw),'attributes') && any(strcmp(obj.workspace(iw).attributes,'global'))
+                    eval(['global ' obj.workspace(iw).name]);
+                    assignin('base', obj.workspace(iw).name, eval(obj.workspace(iw).name));
+                end
+                if ~any(strcmp(evalin('base','who'),obj.workspace(iw).name))
+                    toRemove(end+1) = iw;
                     continue;
                 end
-                obj.workspace.(v{1}) = evalin('base',v{1});
-                if ~keepWorkspace, evalin('base',['clear ' v{1}]); end
+                obj.workspace(iw).value = evalin('base',obj.workspace(iw).name);
+                if ~keepWorkspace, evalin('base',['clear ' obj.workspace(iw).name]); end
             end
+            obj.workspace(toRemove) = [];
         end
         
         function close(obj)
@@ -95,8 +101,11 @@ classdef toolboxClass < handle
             
             % GUI and workspace
             for h = obj.hGUI, close(h); end
-            for v = fieldnames(obj.workspace)'
-                obj.workspace.(v{1}) = [];
+            for iw = 1:numel(obj.workspace)
+                evalin('base',['clear ' obj.workspace(iw).name]);
+                if isfield(obj.workspace(iw),'attributes') && any(strcmp(obj.workspace(iw).attributes,'global'))
+                    eval(['clear global ' obj.workspace(iw).name]);
+                end
             end
             
             obj.pStatus = obj.CONST_STATUS.undefined;
@@ -120,8 +129,11 @@ classdef toolboxClass < handle
             % GUI and workspace
             if obj.showGUI, for h = obj.hGUI, set(h,'visible','on'); end; end
             if loadWorkspace
-                for v = fieldnames(obj.workspace)'
-                    assignin('base', v{1}, obj.workspace.(v{1}));
+                for iw = 1:numel(obj.workspace)
+                    if isfield(obj.workspace(iw),'attributes') && any(strcmp(obj.workspace(iw).attributes,'global'))
+                        eval(['global ' obj.workspace(iw).name]);
+                    end
+                    assignin('base', obj.workspace(iw).name, obj.workspace(iw).value);
                 end
             end
         end
@@ -144,9 +156,12 @@ classdef toolboxClass < handle
             
             % GUI and workspace
             if obj.showGUI, for h = obj.hGUI, set(h,'visible','off'); end; end
-            for v = fieldnames(obj.workspace)'
-                if updateWorkspace, obj.workspace.(v{1}) = evalin('base',v{1}); end
-                evalin('base',['clear ' v{1}]);
+            for iw = 1:numel(obj.workspace)
+                if updateWorkspace, obj.workspace.(iw).value = evalin('base',obj.workspace(iw).name); end
+                evalin('base',['clear ' obj.workspace(iw).name]);
+                if isfield(obj.workspace(iw),'attributes') && any(strcmp(obj.workspace(iw).attributes,'global'))
+                    eval(['clear global ' obj.workspace(iw).name]);
+                end
             end
         end
         

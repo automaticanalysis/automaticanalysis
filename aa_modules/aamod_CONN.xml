@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' desc='ROI/seed-based functional connectivity using the CONN toolbox' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>1</timeBase>
+                <memoryBase desc='Required memory in GB'>2</memoryBase>
+            </qsub>
+            
+            <units options='PSC|raw' ui='optionlist'></units>
+            
+            <denoising>
+                <confounds desc='(multiple) counfounds to regress out of the signals' options='GM|WM|CSF|SPM covariates' ui='multioptionlist'></confounds>
+                <filter desc='band-pass filter, if lower bound is NaN then it is defined based on high-pass filter as in firstlevel_spm'></filter>
+            </denoising>
+            
+            <analysis desc='analysis to perform, it can be a list of structures'>
+                <name></name>
+                <condition></condition>
+                <roival desc='array of roi values to be used or all if unspecified'></roival>
+                <measure options='correlation (bivariate)|correlation (semipartial)|regression (bivariate)|regression (multivariate)' ui='optionlist'></measure>
+                <weight options='none|hrf|hanning' ui='optionlist'></weight>
+            </analysis>
+            
+            <inputstreams>
+                <stream isessential='0'>structural</stream>
+                <stream isessential='0'>native_grey_mask</stream>
+                <stream isessential='0'>native_white_mask</stream>
+                <stream isessential='0'>native_csf_mask</stream>
+                <stream>epi</stream>
+                <stream>rois</stream>
+                <stream isessential='0'>firstlevel_spm</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>settings</stream>
+                <stream>connectivity</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
