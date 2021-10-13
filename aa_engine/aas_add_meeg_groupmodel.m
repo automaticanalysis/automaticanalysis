@@ -70,7 +70,7 @@ for m = 1:numel(moduleindex)
     mInd = moduleindex(m);
     
     if any(strcmp({aap.tasksettings.(modulename)(mInd).model.name},modelname))
-        aas_log(aap,true,['Module ' modelname 'has been already specified.']);
+        aas_log(aap,true,['Model ' modelname ' has been already specified.']);
     end
     
     emptymod = aap.tasksettings.(modulename)(mInd).model(1); % The first one is usually empty, makes for a good template in case the structure changes
