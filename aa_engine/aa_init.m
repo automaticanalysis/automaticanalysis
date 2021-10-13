@@ -114,7 +114,7 @@ end
 
 % Toolboxes
 if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
-    for TBX = aap.directory_conventions.toolbox
+    for TBX = reshape(aap.directory_conventions.toolbox,1,[])
         if strcmp(TBX.name,'spm'), continue; end
         aas_cache_put(aap,TBX.name,aas_inittoolbox(aap,TBX.name));
     end
@@ -201,7 +201,7 @@ end
 
 % Toolboxes
 if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
-    for TBX = aap.directory_conventions.toolbox
+    for TBX = reshape(aap.directory_conventions.toolbox,1,[])
         if isfield(TBX,'extraparameters') && isfield(TBX.extraparameters,'doAddToPath') && TBX.extraparameters.doAddToPath
             reqpath{end+1} = TBX.dir;
         end
