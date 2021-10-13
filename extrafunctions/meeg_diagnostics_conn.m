@@ -1,15 +1,15 @@
-function fig = meeg_diagnostics_conn(data,diag,savepath)
+function fig = meeg_diagnostics_conn(data,diag,varargin)
 
 if nargin >= 3, figtitle = varargin{1}; else, figtitle = 'Sample'; end
 if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 %% config
-[s, FT] = aas_cache_get([],'fieldtrip');
+[~, FT] = aas_cache_get([],'fieldtrip');
 FT.load
 FT.addExternal('brewermap');
 cmapbase = flipud(brewermap(128,'RdBu'));
 
-[s, BNV] = aas_cache_get([],'bnv');
+[~, BNV] = aas_cache_get([],'bnv');
 inputfiles.surf = fullfile(BNV.toolPath,'Data','SurfTemplate','BrainMesh_ICBM152_smoothed_tal.nv');
 inputfiles.map = '';
 
@@ -36,7 +36,10 @@ labeltick = 1:labeltickstep:size(groupStat.labelcmb,1);
 %% Get data
 mask = groupStat.stat.mask & ~isnan(groupStat.stat.stat);
 stat = groupStat.stat.stat .* mask;
-if ~any(stat,'all'), return; end
+if ~any(stat,'all')
+    delete(fnNode);
+    return; 
+end
 [cmap, cmaprange] = cmap_adjust(cmapbase,stat(mask));
 if all(stat(stat~=0)>0), sfx = 'p';
 elseif all(stat(stat~=0)<0), sfx = 'n';
@@ -97,7 +100,8 @@ if numel(sfx) > 1, aas_log([],true,'mixed stat - NYI'); end
 if isfield(diag,'snapshotfwoi'), snapshotwoi = diag.snapshotfwoi; 
 elseif isfield(diag,'snapshotfwoiphase') && ~isempty(diag.snapshotfwoiphase), snapshotwoi = diag.snapshotfwoiphase; 
 elseif isfield(diag,'snapshotfwoiamplitude') && ~isempty(diag.snapshotfwoiamplitude), snapshotwoi = diag.snapshotfwoiamplitude; 
-else, aas_log([],true,'no valid snapshot specification found'); end
+else, aas_log([],true,'no valid snapshot specification found'); 
+end
 
 for f = 1:size(snapshotwoi,1)
     mat = zeros(nROI,nROI);
