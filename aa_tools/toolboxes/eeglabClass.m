@@ -19,7 +19,6 @@ classdef eeglabClass < toolboxClass
     methods
         function obj = eeglabClass(path,varargin)
             defaultAddToPath = true;
-            defaultKeepInPath = false;
             defaultRequiredPlugins = {};
             defaultKeepGUI = false;
             
@@ -27,7 +26,6 @@ classdef eeglabClass < toolboxClass
             argParse.addRequired('path',@ischar);
             argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
-            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
             argParse.addParameter('doKeepGUI',defaultKeepGUI,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
@@ -44,7 +42,7 @@ classdef eeglabClass < toolboxClass
                 '{"name": "STUDY"}'...
                 };
             
-            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,vars);
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
         end

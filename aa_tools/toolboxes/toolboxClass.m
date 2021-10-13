@@ -34,14 +34,13 @@ classdef toolboxClass < handle
     end
     
     methods
-        function obj = toolboxClass(name,path,doAddToPath,doKeepInPath,workspaceVariableNames)
+        function obj = toolboxClass(name,path,doAddToPath,workspaceVariableNames)
             obj.name = name;
             obj.toolPath = path;
             if doAddToPath
                 addpath(obj.toolPath); 
                 obj.toolInPath = cellstr(obj.toolPath);
             end
-            obj.keepInPath = doKeepInPath;
             obj.pStatus = obj.CONST_STATUS.defined;
 
             obj.workspace = cellfun(@jsondecode, workspaceVariableNames);

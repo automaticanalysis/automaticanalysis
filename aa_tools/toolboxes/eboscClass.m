@@ -6,16 +6,14 @@ classdef eboscClass < toolboxClass
     methods
         function obj = eboscClass(path,varargin)
             defaultAddToPath = false;
-            defaultKeepInPath = false;
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
             argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
-            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,{});
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,{});
         end
         
         function load(obj)
