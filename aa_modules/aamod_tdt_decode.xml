@@ -26,34 +26,6 @@
                 </options>
             </featureselection>
             
-            <featureselection>
-                <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
-                <numberofvoxels desc="number of to be selected voxels 'automatic', single value or range of values in total number or ratio">automatic</numberofvoxels>
-                <criterion options='max|select_peak' ui='optionlist'>max</criterion>
-                <estimation options='train|traintest' ui='optionlist'>train</estimation>
-                <scaling options='z|min0max1|none' ui='optionlist'>none</scaling>
-                <options>
-                    <RFE>
-                        <direction options='backward' ui='optionlist'>backward</direction>
-                        <nestednumberofvoxels desc='number of voxels used in each step [range of values in total number or ratio]'></nestednumberofvoxels>
-                    </RFE>
-                </options>
-            </featureselection>
-            
-            <featureselection>
-                <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
-                <numberofvoxels desc="number of to be selected voxels 'automatic', single value or range of values in total number or ratio">automatic</numberofvoxels>
-                <criterion options='max|select_peak' ui='optionlist'>max</criterion>
-                <estimation options='train|traintest' ui='optionlist'>train</estimation>
-                <scaling options='z|min0max1|none' ui='optionlist'>none</scaling>
-                <options>
-                    <RFE>
-                        <direction options='backward' ui='optionlist'>backward</direction>
-                        <nestednumberofvoxels desc='number of voxels used in each step [range of values in total number or ratio]'></nestednumberofvoxels>
-                    </RFE>
-                </options>
-            </featureselection>
-            
             <decoding>
                 <software options='libsvm|liblinear' ui='optionlist'>libsvm</software>
                 <options>
