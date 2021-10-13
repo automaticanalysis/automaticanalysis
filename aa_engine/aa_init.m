@@ -45,7 +45,6 @@ aas_cache_put(aap,'bcp_shellpath',getenv('PATH'),'system');
 
 % Path for SPM
 SPMDIR = '';
-doKeepInPath = true;
 % - backward compatibility
 if isfield(aap.directory_conventions,'spmdir') && ~isempty(aap.directory_conventions.spmdir)
     SPMDIR = aap.directory_conventions.spmdir;
@@ -55,7 +54,6 @@ if isfield(aap.directory_conventions,'toolbox')
     tbxInd = strcmp({aap.directory_conventions.toolbox.name},'spm');
     if any(tbxInd)
         SPMDIR = aap.directory_conventions.toolbox(tbxInd).dir;
-        doKeepInPath = aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath;
     end
 end
 % - path
@@ -64,20 +62,17 @@ if isempty(SPMDIR)
         aas_log(aap,true,'You''re going to need SPM, add it to your paths manually or set in aap.directory_conventions.toolbox');
     else
         SPMDIR = spm('Dir');
-        doKeepInPath = true;
     end
 end
 % - deployed
 if isdeployed
     SPMDIR = spm('Dir');
-    doKeepInPath = true;
 end
 % - reset
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
 if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
     aap.directory_conventions.toolbox(tbxInd).name = 'spm';
     aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR; 
-    aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath = 1;
 end
 
 % - by setting this environment variable it becomes possible to define other
@@ -91,7 +86,7 @@ if isfield(aap, 'spm') && isfield(aap.spm, 'defaults')
     oldspmdefaults = aap.spm.defaults;
 end
 
-SPM = spmClass(SPMDIR,'doAddToPath',true,'doKeepInPath',doKeepInPath);
+SPM = spmClass(SPMDIR,'doAddToPath',true);
 SPM.load;
 aas_cache_put(aap,'spm',SPM);
 
