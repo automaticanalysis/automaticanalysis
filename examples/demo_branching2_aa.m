@@ -1,8 +1,9 @@
-% Automatic analysis (aa) - user master script This example runs one session of one
-% subject through a standard SPM-based fMRI analysis. See also aa_user_demo.
+% Automatic analysis (aa) - user master script
+% This example runs one session of one subject through a standard SPM-based
+% fMRI analysis. See also aa_user_demo.
 %
-% This script demonstrates how branching can be used to explore how the order of slice
-% time and motion correction affects results (see aap_tasklist_demo_branching1.xml).
+% This script demonstrates nested multi-level branching (see also
+% aa_user_demo_branching1).
 %
 % v3: Johan Carlin, MRC CBU, 2018-08-06
 % v2: Tibor Auer MRC Cognition and Brain Sciences Unit, 2016-02-17
@@ -12,8 +13,8 @@
 clear
 aa_ver5;
 
-%% LOAD TASKLIST
-aap = aarecipe('aap_tasklist_demo_branching1.xml');
+%% LOAD RECIPE AND TASKLIST
+aap = aarecipe('demo_branching2_tasklist.xml');
 
 %% DEFINE STUDY SPECIFIC PARAMETERS
 aap.options.wheretoprocess = 'localsingle';
@@ -27,6 +28,7 @@ aap.tasksettings.aamod_slicetiming(2).refslice = 16;
 aap.tasksettings.aamod_norm_write(2).vox = [3 3 3];
 aap.tasksettings.aamod_norm_write_meanepi(2).vox = [3 3 3];
 
+%% DATA
 % download the demo dataset (if necessary)
 aap = aa_downloaddemo(aap);
 
@@ -44,7 +46,7 @@ aap.acq_details.numdummies = 10;
 %% STUDY
 % Where to put the analyzed data
 aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
-aap.directory_conventions.analysisid = 'auditory_branching1';     
+aap.directory_conventions.analysisid = 'auditory_branching2';
 
 % Add data
 % Just one session
