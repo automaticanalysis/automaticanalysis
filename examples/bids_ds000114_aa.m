@@ -12,10 +12,10 @@ clear
 aa_ver5
 
 %% LOAD TASKLIST
-aap = aarecipe('aap_tasklist_bids_ds000114.xml');
+aap = aarecipe('bids_ds000114_tasklist.xml');
 
 % Modify standard recipe module selection here if you'd like
-aap.options.wheretoprocess = 'localsingle'; % queuing system			% typical value qsub | localsingle
+aap.options.wheretoprocess = 'batch'; % queuing system			% typical value batch | localsingle
 
 aap.tasksettings.aamod_segment8.writenormimg = 0;
 aap.tasksettings.aamod_dartel_norm_write.vox = 1;

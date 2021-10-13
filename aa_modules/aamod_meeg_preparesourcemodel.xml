@@ -16,6 +16,7 @@
                 </grid>
                 <corticalsheet>
                     <resolution desc='number of tessels' options='2k|4k|8k|16k|64k|328k'>8k</resolution>
+                    <annotation desc='parcellation scheme' ui='optionlist' options='aparc|DKTatlas|a2009s'></annotation>
                 </corticalsheet>
             </options>
             
@@ -28,6 +29,7 @@
                 <stream>sourcemodel</stream>
                 <stream>structural</stream>
                 <stream isessential='0' isrenameable='1'>sourcesurface</stream>
+                <stream isessential='0' isrenameable='1'>sourceatlas</stream>
             </outputstreams>
             
         </currenttask>
