@@ -195,7 +195,7 @@ switch task
             if ~any(strcmp(inp,'settings_pairwise')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','input'); end
             src = setdiff(src,{'settings_pairwise'});
         end
-        inp = setdiff(inp,{'settings' 'settings_pairwise' 'structural'});
+        inp(contains(inp,{'settings' 'settings_pairwise' 'structural'})) = [];
         for s = 1:numel(src) % every second excluding pairwise
             if strcmp(inp{s},src{s}), continue; end
             if s == 1
