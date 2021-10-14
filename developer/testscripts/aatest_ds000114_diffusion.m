@@ -25,9 +25,7 @@ aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
 % -------------------------------------------------------------------------
 % BIDS
 % -------------------------------------------------------------------------
-aap.acq_details.input.selected_subjects = {'sub-01'};
-
-aap = aas_processBIDS(aap);
+aap = aas_processBIDS(aap,[],[],{'sub-01'});
 
 % -------------------------------------------------------------------------
 % run

@@ -32,13 +32,11 @@ aap.tasksettings.aamod_smooth.FWHM = 5;
 % BIDS
 % -------------------------------------------------------------------------
 
-aap.acq_details.input.selected_subjects = {'sub-01','sub-02','sub-03','sub-04', 'sub-05'};
-aap.acq_details.input.selected_sessions = {'finger_foot_lips','line_bisection'};
 aap.acq_details.input.combinemultiple = true;
 
 % five subjects is about minimum to run a second level model
 
-aap = aas_processBIDS(aap);
+aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03','sub-04', 'sub-05'});
 
 % -------------------------------------------------------------------------
 % modeling - contrast specification
