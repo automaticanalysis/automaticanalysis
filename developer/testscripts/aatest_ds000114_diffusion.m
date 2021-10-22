@@ -1,4 +1,5 @@
-function aatest_ds000114_diffusion(deleteprevious,wheretoprocess)
+function aatest_ds000114_diffusion(parameterfile, deleteprevious, wheretoprocess)
+
 % developer PR test script
 %
 % description: BIDS multimodal dataset ds000114 -- diffusion
@@ -8,13 +9,11 @@ function aatest_ds000114_diffusion(deleteprevious,wheretoprocess)
 % init
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
+aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
 % -------------------------------------------------------------------------
 % analysis options
 % -------------------------------------------------------------------------
-
-aap.options.wheretoprocess = wheretoprocess;
 
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.combinemultiple = 1;
@@ -25,9 +24,8 @@ aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
 % -------------------------------------------------------------------------
 % BIDS
 % -------------------------------------------------------------------------
-aap.acq_details.input.selected_subjects = {'sub-01'};
 
-aap = aas_processBIDS(aap);
+aap = aas_processBIDS(aap,[],[],{'sub-01'});
 
 % -------------------------------------------------------------------------
 % run

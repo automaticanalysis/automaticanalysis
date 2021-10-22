@@ -1,4 +1,5 @@
-function aatest_ds000114_fmri(deleteprevious,wheretoprocess)
+function aatest_ds000114_fmri(parameterfile, deleteprevious,wheretoprocess)
+
 % This script runs a basic modeling pipeline (preprocessing through secondlevel)
 % using ds000114 motor and line bisection tasks. The data should be dowloaded 
 % prior to running the script
@@ -7,7 +8,7 @@ function aatest_ds000114_fmri(deleteprevious,wheretoprocess)
 % init
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
+aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
 % -------------------------------------------------------------------------
 % analysis options
@@ -17,7 +18,6 @@ aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
 
 aap.options.NIFTI4D = 1;
-aap.options.wheretoprocess = wheretoprocess;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
@@ -32,13 +32,12 @@ aap.tasksettings.aamod_smooth.FWHM = 5;
 % BIDS
 % -------------------------------------------------------------------------
 
-aap.acq_details.input.selected_subjects = {'sub-01','sub-02','sub-03','sub-04', 'sub-05'};
-aap.acq_details.input.selected_sessions = {'finger_foot_lips','line_bisection'};
 aap.acq_details.input.combinemultiple = true;
 
 % five subjects is about minimum to run a second level model
 
-aap = aas_processBIDS(aap);
+aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03','sub-04','sub-05'});
+
 
 % -------------------------------------------------------------------------
 % modeling - contrast specification

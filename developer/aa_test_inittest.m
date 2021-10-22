@@ -1,13 +1,18 @@
-function aap = aa_test_inittest(testpath,deleteprevious)
+function aap = aa_test_inittest(testpath, parameterfile, deleteprevious, wheretoprocess)
 
-aap = aarecipe([testpath '.xml']);
+% this is a convenience function called by testing scripts to setup
+% data and results directories and required processing options
 
-% -------------------------------------------------------------------------
-% results and data directory specification
-% -------------------------------------------------------------------------
+if isempty(parameterfile)
+    aap = aarecipe([testpath '.xml']);
+else
+    aap = aarecipe(parameterfile,[testpath '.xml']);
+end
 
 temp = strsplit(testpath,filesep); temp = strsplit(temp{end},'_');
+
 aap.directory_conventions.analysisid = [ temp{2} '_' temp{3} ];
+aap.directory_conventions.rawdatadir = fullfile(aap.directory_conventions.rawdatadir,temp{2});
 
 anadir = fullfile(aap.acq_details.root, aap.directory_conventions.analysisid);
 fprintf('Saving results in: %s\n', anadir);
@@ -17,5 +22,4 @@ if exist(anadir,'dir') && deleteprevious
     fprintf('Done\n');    
 end
 
-demodir = regexp(aap.directory_conventions.rawdatadir,'(?<=:)[a-zA-Z0-9_\/]*aa_demo(?:)','match');
-aap.directory_conventions.rawdatadir = fullfile(demodir{1},temp{2});
+aap.options.wheretoprocess = wheretoprocess;

@@ -337,9 +337,9 @@ switch task
         end
         
         %% Diagnostics
-%         if strcmp(aap.options.wheretoprocess,'localsingle')
-            diag(aap,subjind);
-%         end
+
+        diag(aap,subjind);
+
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
         %% Adjust outstream

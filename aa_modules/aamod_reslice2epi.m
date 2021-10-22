@@ -39,15 +39,13 @@ switch task
         for streamInd = 2:length(inStreams.stream)
             imgs{streamInd} = aas_getfiles_bystream(aap, varargin{:}, inStreams.stream{streamInd});
         end
-        
-        
+               
         % reslice
         flags.which = settings.which;   % generally 1, which is reslice all but first
         flags.mean = settings.mean;     % generally 0, which does not create mean image
         flags.interp = settings.interp; % generally 0 for NN, preserving binary
         flags.prefix = 'r';
-        spm_reslice(strvcat(imgs), flags);
-        
+        spm_reslice(strvcat(imgs), flags);     
         
         % describe outputs (assume r prepended to input images
         for streamInd = 1:length(outStreams.stream)
@@ -60,10 +58,7 @@ switch task
             end
             
             aap = aas_desc_outputs(aap, varargin{:}, outStreams.stream{streamInd}, outImgs);
-        end
-        
-        
-        
+        end 
         
     case 'checkrequirements'
         

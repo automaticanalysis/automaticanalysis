@@ -436,13 +436,5 @@ for mindex = 1:numel(model)
     
 end
 
-end
-
-
-
-
-
-
-            
-            
+end     
             

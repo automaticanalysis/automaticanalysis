@@ -34,6 +34,13 @@ switch task
 
     case 'doit'
         
+        % rWLS toolbox init
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            [ ~, WLS ] = aas_cache_get(aap,'wls');
+            WLS.load;
+        end
+        
         % Get subject directory
         cwd=pwd;
         
@@ -234,12 +241,12 @@ switch task
                 end
                 spm_rwls_resstats(SPMest,[],moveparfname);
             else
-                spm_rwls_resstats(SPMest);  % fingers crossed
+                spm_rwls_resstats(SPMest);
             end          
             
             h = spm_figure('GetWin', 'Graphics');
             set(h,'Renderer','opengl');
-            % the following is a workaround for font rescaling weirdness -- needs more testing
+            % the following is a workaround for font rescaling weirdness
             set(findall(h,'Type','text'),'FontSize', 10);
             set(findall(h,'Type','text'),'FontUnits','normalized');
             print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_RWLS.jpg'));
@@ -291,16 +298,19 @@ switch task
             close(h.betas)
         end
         
+        % unload toolboxes?
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            WLS.unload;
+        end     
         
     case 'checkrequirements'
 
         %% rWLS
         
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
-            if (isempty(which('spm_rwls_spm')))
-                aas_log(aap, true, 'Cannot find WLS functions. Check that the rWLS toolbox is installed');
-            end
-        end
+            if ~aas_cache_get(aap,'wls'), aas_log(aap,true,'rWLS toolbox not found'); end
+        end       
         
         %% Add PPI preparations (if needed)
         [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);

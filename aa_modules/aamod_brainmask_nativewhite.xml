@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        <currenttask mfile_alias='aamod_brainmask' domain='subject' desc='Create native space binary brain mask from segmented grey matter' modality='MRI'>
+        <currenttask mfile_alias='aamod_brainmask' domain='subject' desc='Create native space binary brain mask from segmented white matter' modality='MRI'>
             
             <qsub>
                 <timeBase>0.5</timeBase>

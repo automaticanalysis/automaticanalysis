@@ -12,10 +12,12 @@ function [ aap,resp ] = aamod_AROMA_denoise(aap, task, subject_index, session_in
 %
 %   (assuming that the repo link is still valid)
 %
+% note this is unsupervised denoising, which as a rule does not
+% perform as well as using ICA with training data...
+%
 % Change History
 %
-% summer 2021 [MSJ] - cleanup
-% summer 2020 [MSJ] - new
+% summer 2021 [MSJ] - new
 %
 
 resp='';
@@ -40,10 +42,7 @@ switch task
         
         % NB: AROMA seems to require full paths to everything
         
-        % eventually need to get AROMA_FNAME from aap prefs entry or standard FSL install place
-        
-% % %         AROMA_FNAME = '/Users/peellelab/SANDBOX/MELODIC/ICA-AROMA/ICA_AROMA.py';
-AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
+        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
      
         % we assume EPI and structural are in native space
         % we assume epi is realigned and coregistered to structural
@@ -62,12 +61,9 @@ AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA
         % this is the MNI structural reference. FSL comes with a number of
         % them preinstalled. We use the 2mm, because fnirt takes > 5
         % hours to run using the 1mm and 30 min using 2mm.
-    
-% % % %         REFERENCE_FNAME = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain.nii.gz';  % better      
-% % % %         REFMASK_FNAME = '/usr/local/fsl/data/standard/MNI152_T1_2mm_brain_mask.nii.gz';
              
-REFERENCE_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm_brain.nii.gz');
-REFMASK_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm_brain_mask.nii.gz');
+        REFERENCE_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm_brain.nii.gz');
+        REFMASK_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm_brain_mask.nii.gz');
 
         % output will go in WD/DENOISED/denoised_func_data_nonaggr.nii[.gz]
         % for the vanilla AROMA settings used here
@@ -179,8 +175,7 @@ REFMASK_FNAME = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_
 
         EPIMNI_FNAME = fullfile(working_dir,'epiMNI.nii.gz');
         
-% % % %         WARPREF = '/usr/local/fsl/data/standard/MNI152_T1_2mm'; 
-WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm');              
+        WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm');              
 
         aas_log(aap, false, sprintf('transforming %s to MNI space...', SMOOTHED_FNAME));
         command = sprintf('applywarp --in=%s --ref=%s --warp=%s --premat=%s --out=%s', SMOOTHED_FNAME, WARPREF, STRUCT2MNI_WARP, EPI2STRUCT_AFFINE, EPIMNI_FNAME);
@@ -240,10 +235,43 @@ WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm
 		        
     case 'checkrequirements'
         
-        % should check here if FSL and AROMA and python2.7 are findable
+         
+        % sanity checks:
         
+        if (~isfield(aap.directory_conventions,'fsldir') ...
+            || isempty(aap.directory_conventions.fsldir) ...
+                || ~exist(aap.directory_conventions.fsldir,'dir'))
+                
+                aas_log(aap, true, sprintf('%s: aap.directory_conventions.fsldir is not set properly. Exiting...',mfile));
+        end
+        
+        % check if AROMA is installed
+        
+        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
+        
+        if ~exist(AROMA_FNAME,'file')               
+            aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfile, AROMA_FNAME));
+        end
+
+        % AROMA requires python2.7
+        % use system instead of aas_shell to avoid the latter's confusing error message if which not found
+        
+        [ status,result ] = system('which python2.7');
+
+        if (status > 0 || isempty(result))
+            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfile));
+        end       
+        
+        % may as well check for template while we're here
+        
+        WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm.nii.gz');             
+
+        if ~exist(WARPREF,'file')               
+            aas_log(aap, true, sprintf('%s: cannot find FSL template %s. Exiting...', mfile, WARPREF));
+        end
+       
     otherwise
         
-        aas_log(aap, 1, sprintf('%s:Unknown task %s',mfilename, task));
+        aas_log(aap, 1, sprintf('%s: Unknown task %s',mfilename, task));
         
 end
