@@ -1,4 +1,4 @@
-function [aap,resp]=aamod_CONN_validate(aap,task,subj)
+function [aap,resp]=aamod_CONN(aap,task,subj)
 resp='';
 
 switch task
