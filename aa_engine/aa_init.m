@@ -76,7 +76,7 @@ end
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
 if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
     aap.directory_conventions.toolbox(tbxInd).name = 'spm';
-    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR; 
+    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR;
     aap.directory_conventions.toolbox(tbxInd).extraparameters.doKeepInPath = 1;
 end
 
@@ -98,7 +98,7 @@ aas_cache_put(aap,'spm',SPM);
 try
     aap.spm.defaults=spm_get_defaults;
 catch
-    global defaults    
+    global defaults
     if isstruct(defaults)
         aas_log(aap,false,'WARNING: SPM defaults has not been found, global defaults will be used');
         aap.spm.defaults=defaults;
@@ -170,30 +170,46 @@ if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conve
     setenv('PATH',[p ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
-%% Build required path list for cluster submission
-% aa
-reqpath=textscan(genpath(aa.Path),'%s','delimiter',':'); reqpath = reqpath{1};
+reqpath = build_reqpath(aa.Path, aap, SPMDIR);
+aas_cache_put(aap,'reqpath',reqpath,'system');
 
-p = textscan(path,'%s','delimiter',':'); p = p{1};
+% switch off warnings
+warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
+warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
+aas_cache_put(aap,'warnings',warnings,'system');
+
+end
+
+function reqpath = build_reqpath(aa_path, aap, SPMDIR)
+%% Build required path list for cluster submission
+
+% aa
+reqpath = textscan(genpath(aa_path), '%s', 'delimiter', ':');
+reqpath = reqpath{1};
+
+p = textscan(path, '%s', 'delimiter', ':');
+p = p{1};
 
 % spm
-p_ind = cell_index(p,SPMDIR); % SPM-related dir
-for ip = p_ind
-    reqpath{end+1} = p{ip};
-end
+reqpath = add_matched_directories(reqpath, p, SPMDIR);
 
 % matlabtoolsdir
 if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
-    matlabtools = textscan(aap.directory_conventions.matlabtoolsdir,'%s','delimiter', ':'); matlabtools = matlabtools{1};
+    matlabtools = textscan(aap.directory_conventions.matlabtoolsdir, '%s', 'delimiter', ':');
+    matlabtools = matlabtools{1};
     for pp = matlabtools'
-        if exist(pp{1},'dir'), reqpath = [reqpath; pp{1}]; end
+        if exist(pp{1},'dir')
+            reqpath = [reqpath; pp{1}];
+        end
     end
 end
 
 % Toolboxes
 if isfield(aap.directory_conventions,'toolbox') && isstruct(aap.directory_conventions.toolbox)
     for TBX = aap.directory_conventions.toolbox
-        if isfield(TBX,'extraparameters') && isfield(TBX.extraparameters,'doAddToPath') && TBX.extraparameters.doAddToPath
+        if isfield(TBX, 'extraparameters') ...
+                && isfield(TBX.extraparameters, 'doAddToPath') ...
+                && TBX.extraparameters.doAddToPath
             reqpath{end+1} = TBX.dir;
         end
     end
@@ -201,44 +217,46 @@ end
 
 % MNE
 if isfield(aap.directory_conventions,'mnedir') && ~isempty(aap.directory_conventions.mnedir)
-    p_ind = cell_index(p,aap.directory_conventions.mnedir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
+    reqpath = add_matched_directories(reqpath, p, aap.directory_conventions.mnedir);
 end
 
 % GIFT
 if ~isempty(aap.directory_conventions.GIFTdir)
-    p_ind = cell_index(p,aap.directory_conventions.GIFTdir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
+    reqpath = add_matched_directories(reqpath, p, aap.directory_conventions.GIFTdir);
 end
 
 
 % FaceMasking
 if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
-    p_ind = cell_index(p,aap.directory_conventions.FaceMaskingdir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
+    reqpath = add_matched_directories(reqpath, p, aap.directory_conventions.FaceMaskingdir);
 end
 
 % LI
 if isfield(aap.directory_conventions,'LIdir') && ~isempty(aap.directory_conventions.LIdir)
-    p_ind = cell_index(p,aap.directory_conventions.LIdir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
+    reqpath = add_matched_directories(reqpath, p, aap.directory_conventions.LIdir);
 end
 
-% clean
-reqpath = reqpath(strcmp('',reqpath)==0);
-exc = cell_index(reqpath,'.git');
-if exc, reqpath(exc) = []; end
+% clean: remove empty and .git paths
+reqpath = reqpath(strcmp('', reqpath)==0);
+exc = cell_index(reqpath, '.git');
+if exc
+    reqpath(exc) = [];
+end
 
-aas_cache_put(aap,'reqpath',reqpath,'system');
-% switch off warnings
-warnings(1) = warning('off','MATLAB:Completion:CorrespondingMCodeIsEmpty');
-warnings(2) = warning('off','MATLAB:getframe:RequestedRectangleExceedsFigureBounds');
-aas_cache_put(aap,'warnings',warnings,'system');
+end
+
+function reqpath = add_matched_directories(reqpath, paths, dirname)
+% Add entries from the cell array paths, whose start matches dirname, to the end of the reqpath cell array.
+
+% In paths, the entries do not have any trailing filesep
+% Make sure dirname itself is also a match
+if strcmp(dirname(end), filesep)
+    % Remove trailing filesep
+    dirname = dirname(1:end-1);
+end
+
+p_ind = cell_index(paths, dirname);
+nr_add = length(p_ind);
+reqpath(end+1:end+nr_add) = paths(p_ind);
+
+end
