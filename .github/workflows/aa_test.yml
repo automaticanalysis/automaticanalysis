@@ -20,7 +20,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Environmental variables
+      - name: Check out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v2
+
+        - name: Environmental variables
         shell: bash
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
