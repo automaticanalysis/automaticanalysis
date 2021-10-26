@@ -49,6 +49,7 @@ jobs:
           git clone https://github.com/spm/spm12 $HOME/tools/spm12
           wget -P $HOME/tools https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py
           cd $HOME/tools
+          sudo apt-get install python
           python fslinstaller.py
           ls $HOME/tools
           echo $FSLDIR
