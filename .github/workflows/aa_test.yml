@@ -33,12 +33,11 @@ jobs:
           release: R2020a
 
       - name: Install tools
-        run:
-          pwd
-          ls
-          ls $GITHUB_WORKSPACE
+        run: |
           mkdir $GITHUB_WORKSPACE/tools
           git clone https://github.com/spm/spm12 -o $GITHUB_WORKSPACE/tools/spm12
+          ls $GITHUB_WORKSPACE
+
       #- name: Run script
       #  uses: matlab-actions/run-command@v1
       #  with:
