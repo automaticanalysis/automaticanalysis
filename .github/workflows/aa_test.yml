@@ -32,7 +32,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p $HOME/tools/fsl/etc/fslconf
-          cp $GITHUB_WORKSPACE/.github/workflows/fsl_bash $HOME/tools/fsl/etc/fslconf/fsl.sh
+          touch $HOME/tools/fsl/etc/fslconf/fsl.sh
           source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
 
   aa_test:
