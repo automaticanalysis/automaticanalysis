@@ -34,7 +34,11 @@ jobs:
 
       - name: Install tools
         run:
-          git clone https://github.com/spm/spm12
+          pwd
+          ls
+          ls $GITHUB_WORKSPACE
+          mkdir $GITHUB_WORKSPACE/tools
+          git clone https://github.com/spm/spm12 -o $GITHUB_WORKSPACE/tools/spm12
       #- name: Run script
       #  uses: matlab-actions/run-command@v1
       #  with:
