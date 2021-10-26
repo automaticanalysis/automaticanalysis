@@ -1,5 +1,3 @@
-mkdir -p $HOME/tools/fsl/etc/fslconf
-cp $GITHUB_WORKSPACE/.github/workflows/fsl_bash $HOME/tools/fsl/etc/fslconf/fsl.sh
 export LD_LIBRARY_PATH=$HOME/tools/fsl/fslpython/lib:$HOME/tools/fsl/lib:$LD_LIBRARY_PATH
 export FSLDIR=$HOME/tools/fsl
 echo "FSLDIR = $FSLDIR"

@@ -31,6 +31,8 @@ jobs:
       - name: Environmental variables
         shell: bash
         run: |
+          mkdir -p $HOME/tools/fsl/etc/fslconf
+          cp $GITHUB_WORKSPACE/.github/workflows/fsl_bash $HOME/tools/fsl/etc/fslconf/fsl.sh
           source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
 
   aa_test:
