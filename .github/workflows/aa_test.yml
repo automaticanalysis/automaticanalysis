@@ -26,7 +26,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 512
+          root-reserve-mb: 10240
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -50,7 +50,7 @@ jobs:
           wget -P $HOME/tools https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py
           cd $HOME/tools
           sudo apt-get install python
-          python fslinstaller.py -q -d $HOME/tools/fsl
+          python fslinstaller.py -d $HOME/tools/fsl
           ls $HOME/tools
           echo $FSLDIR
 
