@@ -33,8 +33,9 @@ jobs:
         run: |
           mkdir -p $HOME/tools/fsl/etc/fslconf
           touch $HOME/tools/fsl/etc/fslconf/fsl.sh
-          sed -i 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash
-          source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
+          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/fsl_bash
+          source $HOME/fsl_bash
+          echo $FSLDIR
 
   aa_test:
     name: Minimum test using SPM and FSL only
@@ -81,7 +82,7 @@ jobs:
           tar xzf fsl-6.0.5-centos7_64.tar.gz
           rm fsl-6.0.5-centos7_64.tar.gz
           mkdir $HOME/tools/config
-          cp $GITHUB_WORKSPACE/.github/workflows/fsl_bash $HOME/tools/config
+          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
 
       - name: Retrive test data under $HOME/data/aa_demo
