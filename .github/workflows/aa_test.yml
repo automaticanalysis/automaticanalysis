@@ -45,7 +45,7 @@ jobs:
         run: |
           mkdir $GITHUB_WORKSPACE/data
           aws s3 cp s3://openneuro.org/ds000114 $GITHUB_WORKSPACE/data/ds000114 --recursive --exclude "*" --include "task-*" --no-sign-request
-	        aws s3 cp s3://openneuro.org/ds000114 $GITHUB_WORKSPACE/data/ds000114 --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 $GITHUB_WORKSPACE/data/ds000114 --recursive --exclude "*" --include "dwi*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $GITHUB_WORKSPACE/data/ds000114/sub-01 --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-02 $GITHUB_WORKSPACE/data/ds000114/sub-02 --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-03 $GITHUB_WORKSPACE/data/ds000114/sub-03 --recursive --no-sign-request
