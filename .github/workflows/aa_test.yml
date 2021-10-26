@@ -15,9 +15,21 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
+  github_test:
+    name: Testing GitHub Action
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Environmental variables
+        shell: bash
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
+
   aa_test:
     name: Minimum test using SPM and FSL only
+
+    needs: github_test
+
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -44,7 +56,6 @@ jobs:
       - name: Install tools under $HOME/tools
         shell: bash
         run: |
-          echo $SHELL
           sudo apt-get update
           sudo apt-get install awscli
           mkdir $HOME/tools
@@ -95,4 +106,3 @@ jobs:
           name: aa_test
           path: |
             $HOME/projects
-            !dist/**/*.md
