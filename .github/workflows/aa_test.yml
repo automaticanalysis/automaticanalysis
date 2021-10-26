@@ -33,6 +33,7 @@ jobs:
         run: |
           mkdir -p $HOME/tools/fsl/etc/fslconf
           touch $HOME/tools/fsl/etc/fslconf/fsl.sh
+          sed -i 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash
           source $GITHUB_WORKSPACE/.github/workflows/fsl_bash
 
   aa_test:
