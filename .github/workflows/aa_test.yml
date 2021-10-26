@@ -20,10 +20,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out repository under $GITHUB_WORKSPACE
+      - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
+      
+      - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
       - name: Environmental variables
@@ -50,10 +52,12 @@ jobs:
           remove-android: 'true'
           remove-haskell: 'true'
 
-      - name: Check out repository under $GITHUB_WORKSPACE
+      - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
+      
+      - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
       - name: Set up MATLAB
