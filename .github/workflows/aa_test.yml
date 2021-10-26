@@ -16,7 +16,8 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  aa_test:
+    name: Minimum test using SPM only
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -34,11 +35,26 @@ jobs:
 
       - name: Install tools
         run: |
+          sudo apt-get update
+          sudo apt-get install awscli
           mkdir $GITHUB_WORKSPACE/tools
-          git clone https://github.com/spm/spm12 -o $GITHUB_WORKSPACE/tools/spm12
-          ls $GITHUB_WORKSPACE
+          git clone https://github.com/spm/spm12 $GITHUB_WORKSPACE/tools/spm12
+          ls $GITHUB_WORKSPACE/tools
 
-      #- name: Run script
+      - name: Retrive test data
+        run: |
+          mkdir $GITHUB_WORKSPACE/data
+          aws s3 cp s3://openneuro.org/ds000114 $GITHUB_WORKSPACE/data/ds000114 --recursive --exclude "*" --include "task-*" --no-sign-request
+	        aws s3 cp s3://openneuro.org/ds000114 $GITHUB_WORKSPACE/data/ds000114 --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 $GITHUB_WORKSPACE/data/ds000114/sub-01 --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-02 $GITHUB_WORKSPACE/data/ds000114/sub-02 --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-03 $GITHUB_WORKSPACE/data/ds000114/sub-03 --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-04 $GITHUB_WORKSPACE/data/ds000114/sub-04 --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-05 $GITHUB_WORKSPACE/data/ds000114/sub-05 --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 $GITHUB_WORKSPACE/data/ds002737/sub-01/ses-03 --recursive --no-sign-request
+          ls $GITHUB_WORKSPACE/data
+
+#- name: Run script
       #  uses: matlab-actions/run-command@v1
       #  with:
       #    command: aa_ver5, aa_test
