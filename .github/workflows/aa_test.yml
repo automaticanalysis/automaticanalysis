@@ -51,6 +51,9 @@ jobs:
           cd $HOME/tools
           tar xzf fsl-6.0.5-centos7_64.tar.gz
           rm fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools/config
+          cp $GITHUB_WORKSPACE/.github/workflows/fsl_bash $HOME/tools/config
+          source $HOME/tools/config/fsl_bash
 
       - name: Retrive test data under $HOME/data
         run: |
@@ -73,6 +76,10 @@ jobs:
         run: |
           echo "Free space:"
           df -h
+          echo $FSLDIR
+          mkdir $HOME/.aa
+          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
+          mkdir $HOME/projects
 
       - name: Run script
         uses: matlab-actions/run-command@v1
