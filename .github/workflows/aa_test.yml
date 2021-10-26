@@ -73,8 +73,7 @@ jobs:
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
-          mkdir $HOME/data
-          mkdir $HOME/data/aa_demo
+          mkdir -p $HOME/data/aa_demo
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
