@@ -26,7 +26,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 10240
+          root-reserve-mb: 512
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -47,10 +47,10 @@ jobs:
           sudo apt-get install awscli
           mkdir $HOME/tools
           git clone https://github.com/spm/spm12 $HOME/tools/spm12
-          wget -P $HOME/tools https://fsl.fmrib.ox.ac.uk/fsldownloads/fslinstaller.py
+          wget -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           cd $HOME/tools
-          sudo apt-get install python
-          python fslinstaller.py -d $HOME/tools/fsl
+          tar xzf fsl-6.0.5-centos7_64.tar.gz
+          rm fsl-6.0.5-centos7_64.tar.gz
           ls $HOME/tools
           echo $FSLDIR
 
