@@ -1,5 +1,5 @@
 export LD_LIBRARY_PATH=$HOME/tools/fsl/fslpython/lib:$HOME/tools/fsl/lib:$LD_LIBRARY_PATH
 export FSLDIR=$HOME/tools/fsl
 echo "FSLDIR = $FSLDIR"
-source $FSLDIR/etc/fslconf/fsl.sh
+source "$FSLDIR/etc/fslconf/fsl.sh"
 export PATH=$FSLDIR/bin:$PATH
