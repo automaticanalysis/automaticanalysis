@@ -74,7 +74,7 @@ jobs:
           echo "Free space:"
           df -h
 
-#- name: Run script
-      #  uses: matlab-actions/run-command@v1
-      #  with:
-      #    command: aa_ver5, aa_test
+- name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test
