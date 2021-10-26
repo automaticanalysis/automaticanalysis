@@ -53,6 +53,10 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114/sub-05 $GITHUB_WORKSPACE/data/ds000114/sub-05 --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 $GITHUB_WORKSPACE/data/ds002737/sub-01/ses-03 --recursive --no-sign-request
           ls $GITHUB_WORKSPACE/data
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
 
 #- name: Run script
       #  uses: matlab-actions/run-command@v1
