@@ -21,6 +21,9 @@ jobs:
 
     steps:
       - name: Check out repository under $GITHUB_WORKSPACE
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
         uses: actions/checkout@v2
 
       - name: Environmental variables
@@ -48,6 +51,9 @@ jobs:
           remove-haskell: 'true'
 
       - name: Check out repository under $GITHUB_WORKSPACE
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
         uses: actions/checkout@v2
 
       - name: Set up MATLAB
