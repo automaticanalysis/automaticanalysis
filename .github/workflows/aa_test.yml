@@ -23,13 +23,15 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+      - name: Check out repository
+        uses: actions/checkout@v2
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
-          # MATLAB release to set up (R2020a or later)
-          release: R2016b # optional, default is latest
+          # MATLAB release to set up R2016b
+          release: R2016b
+
       - name: Install tools
         run:
           git clone https://github.com/spm/spm12
