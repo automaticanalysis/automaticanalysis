@@ -1,4 +1,4 @@
-echo "{LD_LIBRARY_PATH}={${HOME}/tools/fsl/fslpython/lib:${HOME}/tools/fsl/lib:${LD_LIBRARY_PATH}}" >> $GITHUB_ENV
-echo "{FSLDIR}={${HOME}/tools/fsl}" >> $GITHUB_ENV
-. ${FSLDIR}/etc/fslconf/fsl.sh
-echo "{${FSLDIR}/bin}" >> $GITHUB_PATH
+export LD_LIBRARY_PATH=$HOME/tools/fsl/fslpython/lib:$HOME/tools/fsl/lib:$LD_LIBRARY_PATH
+export FSLDIR=$HOME/tools/fsl
+. $FSLDIR/etc/fslconf/fsl.sh
+export PATH=$FSLDIR/bin:$PATH
