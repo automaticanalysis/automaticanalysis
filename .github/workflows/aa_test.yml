@@ -60,6 +60,9 @@ jobs:
           mkdir $HOME/tools/config
           sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
+          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
+          mv lin64.Dec2017 FaceMasking
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -139,6 +142,9 @@ jobs:
           mkdir $HOME/tools/config
           sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
+          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
+          mv lin64.Dec2017 FaceMasking
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -218,6 +224,9 @@ jobs:
           mkdir $HOME/tools/config
           sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
+          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
+          mv lin64.Dec2017 FaceMasking
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -310,7 +319,7 @@ jobs:
           gunzip $HOME/tools/templates/*
           mv $HOME/tools/templates/talairach_mixed_with_skull.gca $HOME/tools/templates/freesurfer_deface_talairach_mixed_with_skull.gca
           mv $HOME/tools/templates/face.gca $HOME/tools/templates/freesurfer_deface_face.gca
-          wget --no-check-certificate -q -P $HOME/tools/templates https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
           unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
           mv lin64.Dec2017 FaceMasking
 
