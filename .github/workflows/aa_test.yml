@@ -242,7 +242,7 @@ jobs:
           path: |
             $HOME/projects
 
-aatest_ds002737_deface:
+  aatest_ds002737_deface:
     name: Testing (Freesurfer) Deface and FaceMasking
 
     # The type of runner that the job will run on
