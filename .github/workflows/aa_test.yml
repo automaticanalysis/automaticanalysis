@@ -15,11 +15,23 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  github_test:
-    name: Testing GitHub Action
+  aatest_ds000114_dartel:
+    name: Testing SPM DARTEL
+
+    # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
+    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -28,19 +40,55 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Environmental variables
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          # MATLAB release to set up R2020a
+          release: R2020a
+
+      - name: Install tools under $HOME/tools
         shell: bash
         run: |
-          mkdir -p $HOME/tools/fsl/etc/fslconf
-          touch $HOME/tools/fsl/etc/fslconf/fsl.sh
-          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/fsl_bash
-          source $HOME/fsl_bash
+          sudo apt-get update
+          sudo apt-get install awscli
+          mkdir $HOME/tools
+          git clone https://github.com/spm/spm12 $HOME/tools/spm12
+
+      - name: Retrive test data under $HOME/data/aa_demo
+        run: |
+          mkdir -p $HOME/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          ls $HOME/data/aa_demo
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
+
+      - name: Configure aa
+        run: |
+          echo "Free space:"
+          df -h
           echo $FSLDIR
+          mkdir $HOME/.aa
+          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
+          mkdir $HOME/projects
 
-  aa_test:
-    name: Minimum test using SPM and FSL only
+      - name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_dartel')
 
-    needs: github_test
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: aatest_ds000114_dartel
+          path: |
+            $HOME/projects
+
+  aatest_ds000114_diffusion:
+    name: Testing Diffusion (with FSL)
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -91,10 +139,162 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          ls $HOME/data/aa_demo
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
+
+      - name: Configure aa
+        run: |
+          echo "Free space:"
+          df -h
+          echo $FSLDIR
+          mkdir $HOME/.aa
+          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
+          mkdir $HOME/projects
+
+      - name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_diffusion')
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: aatest_ds000114_diffusion
+          path: |
+            $HOME/projects
+
+  aatest_ds000114_fmri:
+    name: Testing fMRI
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - name: Check out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v2
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          # MATLAB release to set up R2020a
+          release: R2020a
+
+      - name: Install tools under $HOME/tools
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install awscli
+          mkdir $HOME/tools
+          git clone https://github.com/spm/spm12 $HOME/tools/spm12
+
+      - name: Retrive test data under $HOME/data/aa_demo
+        run: |
+          mkdir -p $HOME/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-04 $HOME/data/aa_demo/ds000114/sub-04 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-05 $HOME/data/aa_demo/ds000114/sub-05 --quiet --recursive --no-sign-request
+          ls $HOME/data/aa_demo
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
+
+      - name: Configure aa
+        run: |
+          echo "Free space:"
+          df -h
+          echo $FSLDIR
+          mkdir $HOME/.aa
+          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
+          mkdir $HOME/projects
+
+      - name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_fmri')
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: aatest_ds000114_fmri
+          path: |
+            $HOME/projects
+
+aatest_ds002737_deface:
+    name: Testing (Freesurfer) Deface and FaceMasking
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+      
+      - name: Check out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v2
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          # MATLAB release to set up R2020a
+          release: R2020a
+
+      - name: Install tools under $HOME/tools
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install awscli
+          mkdir $HOME/tools
+          git clone https://github.com/spm/spm12 $HOME/tools/spm12
+          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
+          cd $HOME/tools
+          tar xzf fsl-6.0.5-centos7_64.tar.gz
+          rm fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools/config
+          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
+          source $HOME/tools/config/fsl_bash
+          wget -q -P $HOME/tools https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.0/freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
+          tar xzf freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
+          rm freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
+          echo -e "tibor.auer@gmail.com\n7061\n *Ccpi6x7PAIeQ\n FS96pPK5vW.0g" > $HOME/tools/freesurfer/license.txt
+
+      - name: Retrive test data under $HOME/data/aa_demo
+        run: |
+          mkdir -p $HOME/data/aa_demo
           aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 $HOME/data/aa_demo/ds002737/sub-01/ses-03 --quiet --recursive --no-sign-request
           ls $HOME/data/aa_demo
         env:
@@ -114,11 +314,11 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds002737_deface')
 
       - name: Archive results
         uses: actions/upload-artifact@v2
         with:
-          name: aa_test
+          name: aatest_ds002737_deface
           path: |
             $HOME/projects
