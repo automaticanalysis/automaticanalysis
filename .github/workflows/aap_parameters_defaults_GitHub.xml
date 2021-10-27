@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap xmlns:xi="http://www.w3.org/2001/XInclude">
-    <xi:include href="aap_parameters_defaults.xml" parse="xml"/>
+    <xi:include href="/home/runner/work/automaticanalysis/automaticanalysis/aa_parametersets/aap_parameters_defaults.xml" parse="xml"/>
     <local>
         <directory_conventions>
             <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>$HOME/data/aa_demo</rawdatadir>
