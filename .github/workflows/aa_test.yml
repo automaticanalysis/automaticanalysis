@@ -85,7 +85,7 @@ jobs:
         with:
           name: aatest_ds000114_dartel
           path: |
-            $HOME/projects
+            $HOME/projects/
 
   aatest_ds000114_diffusion:
     name: Testing Diffusion (with FSL)
@@ -125,6 +125,7 @@ jobs:
           sudo apt-get install awscli
           mkdir $HOME/tools
           git clone https://github.com/spm/spm12 $HOME/tools/spm12
+          sudo apt-get install dc
           wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           cd $HOME/tools
           tar xzf fsl-6.0.5-centos7_64.tar.gz
@@ -164,7 +165,7 @@ jobs:
         with:
           name: aatest_ds000114_diffusion
           path: |
-            $HOME/projects
+            $HOME/projects/
 
   aatest_ds000114_fmri:
     name: Testing fMRI
@@ -204,6 +205,14 @@ jobs:
           sudo apt-get install awscli
           mkdir $HOME/tools
           git clone https://github.com/spm/spm12 $HOME/tools/spm12
+          sudo apt-get install dc
+          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
+          cd $HOME/tools
+          tar xzf fsl-6.0.5-centos7_64.tar.gz
+          rm fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools/config
+          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
+          source $HOME/tools/config/fsl_bash
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -240,7 +249,7 @@ jobs:
         with:
           name: aatest_ds000114_fmri
           path: |
-            $HOME/projects
+            $HOME/projects/
 
   aatest_ds002737_deface:
     name: Testing (Freesurfer) Deface and FaceMasking
@@ -291,6 +300,12 @@ jobs:
           tar xzf freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
           rm freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
           echo -e "tibor.auer@gmail.com\n7061\n *Ccpi6x7PAIeQ\n FS96pPK5vW.0g" > $HOME/tools/freesurfer/license.txt
+          mkdir -p $HOME/tools/templates
+          wget -q -P $HOME/tools/templates https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/talairach_mixed_with_skull.gca.gz
+          wget -q -P $HOME/tools/templates https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/face.gca.gz
+          gunzip $HOME/tools/templates/*
+          mv $HOME/tools/templates/talairach_mixed_with_skull.gca $HOME/tools/templates/freesurfer_deface_talairach_mixed_with_skull.gca
+          mv $HOME/tools/templates/face.gca $HOME/tools/templates/freesurfer_deface_face.gca
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -321,4 +336,4 @@ jobs:
         with:
           name: aatest_ds002737_deface
           path: |
-            $HOME/projects
+            $HOME/projects/
