@@ -53,6 +53,13 @@ jobs:
           sudo apt-get install awscli
           mkdir $HOME/tools
           git clone https://github.com/spm/spm12 $HOME/tools/spm12
+          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
+          cd $HOME/tools
+          tar xzf fsl-6.0.5-centos7_64.tar.gz
+          rm fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools/config
+          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
+          source $HOME/tools/config/fsl_bash
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -70,7 +77,6 @@ jobs:
         run: |
           echo "Free space:"
           df -h
-          echo $FSLDIR
           mkdir $HOME/.aa
           cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
           mkdir $HOME/projects
@@ -85,7 +91,7 @@ jobs:
         with:
           name: aatest_ds000114_dartel
           path: |
-            $HOME/projects/
+            ~/projects/
 
   aatest_ds000114_diffusion:
     name: Testing Diffusion (with FSL)
@@ -150,7 +156,6 @@ jobs:
         run: |
           echo "Free space:"
           df -h
-          echo $FSLDIR
           mkdir $HOME/.aa
           cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
           mkdir $HOME/projects
@@ -165,7 +170,7 @@ jobs:
         with:
           name: aatest_ds000114_diffusion
           path: |
-            $HOME/projects/
+            ~/projects/
 
   aatest_ds000114_fmri:
     name: Testing fMRI
@@ -234,7 +239,6 @@ jobs:
         run: |
           echo "Free space:"
           df -h
-          echo $FSLDIR
           mkdir $HOME/.aa
           cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
           mkdir $HOME/projects
@@ -249,7 +253,7 @@ jobs:
         with:
           name: aatest_ds000114_fmri
           path: |
-            $HOME/projects/
+            ~/projects/
 
   aatest_ds002737_deface:
     name: Testing (Freesurfer) Deface and FaceMasking
@@ -306,6 +310,9 @@ jobs:
           gunzip $HOME/tools/templates/*
           mv $HOME/tools/templates/talairach_mixed_with_skull.gca $HOME/tools/templates/freesurfer_deface_talairach_mixed_with_skull.gca
           mv $HOME/tools/templates/face.gca $HOME/tools/templates/freesurfer_deface_face.gca
+          wget --no-check-certificate -q -P $HOME/tools/templates https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
+          mv lin64.Dec2017 FaceMasking
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -321,7 +328,6 @@ jobs:
         run: |
           echo "Free space:"
           df -h
-          echo $FSLDIR
           mkdir $HOME/.aa
           cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
           mkdir $HOME/projects
@@ -336,4 +342,4 @@ jobs:
         with:
           name: aatest_ds002737_deface
           path: |
-            $HOME/projects/
+            ~/projects/
