@@ -3,8 +3,8 @@
     <xi:include href="/home/runner/work/automaticanalysis/automaticanalysis/aa_parametersets/aap_parameters_defaults.xml" parse="xml"/>
     <local>
         <directory_conventions>
-            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>$HOME/data/aa_demo</rawdatadir>
-            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>$HOME/data/aa_demo</rawmeegdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/home/runner/data/aa_demo</rawdatadir>
+            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>/home/runner/data/aa_demo</rawmeegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -26,8 +26,8 @@
                 </extraparameters>
             </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>$HOME/tools/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>$HOME/tools/config/fsl_bash</fslsetup>
+            <fsldir desc='Path to fsl' ui='dir'>/home/runner/tools/fsl</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/tools/config/fsl_bash</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
@@ -48,7 +48,7 @@
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
         </options>
         <acq_details>
-            <root desc='Root on local machine for processed data' ui='dir'>$HOME/projects</root>
+            <root desc='Root on local machine for processed data' ui='dir'>/home/runner/projects</root>
         </acq_details>
     </local>
 </aap>
