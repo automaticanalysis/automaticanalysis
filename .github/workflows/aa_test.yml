@@ -26,7 +26,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 56,320
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -73,7 +73,6 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          ls $HOME/data/aa_demo
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -110,7 +109,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 56,320
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -157,7 +156,6 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          ls $HOME/data/aa_demo
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -194,7 +192,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 56,320
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -243,7 +241,6 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
-          ls $HOME/data/aa_demo
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -280,7 +277,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 56,320
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -340,7 +337,6 @@ jobs:
         run: |
           mkdir -p $HOME/data/aa_demo
           aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 $HOME/data/aa_demo/ds002737/sub-01/ses-03 --quiet --recursive --no-sign-request
-          ls $HOME/data/aa_demo
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
