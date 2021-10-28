@@ -52,8 +52,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install awscli
           mkdir $HOME/tools
-          git clone https://github.com/spm/spm12 $HOME/tools/spm12
-          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          cd $HOME/tools
+          git clone https://github.com/spm/spm12
+          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
           unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
           rm MaskFace.12.27.2017.matlab_required.lin64.zip
           mv lin64.Dec2017 FaceMasking
@@ -61,8 +62,8 @@ jobs:
       - name: Install templates (FSL)
         shell: bash
         run: |
-          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           cd $HOME/tools
+          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           tar xzf fsl-6.0.5-centos7_64.tar.gz fsl/data/standard
           rm fsl-6.0.5-centos7_64.tar.gz
 
@@ -134,18 +135,18 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install awscli
-          mkdir $HOME/tools
-          git clone https://github.com/spm/spm12 $HOME/tools/spm12
           sudo apt-get install libtinfo5 libtinfo6 dc
-          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools
           cd $HOME/tools
+          git clone https://github.com/spm/spm12          
+          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           tar xzf fsl-6.0.5-centos7_64.tar.gz
           rm fsl-6.0.5-centos7_64.tar.gz
           $HOME/tools/fsl/etc/fslconf/post_install.sh -f $HOME/tools/fsl
           mkdir $HOME/tools/config
           sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
-          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
           unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
           rm MaskFace.12.27.2017.matlab_required.lin64.zip
           mv lin64.Dec2017 FaceMasking
@@ -219,8 +220,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install awscli
           mkdir $HOME/tools
-          git clone https://github.com/spm/spm12 $HOME/tools/spm12
-          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          cd $HOME/tools
+          git clone https://github.com/spm/spm12
+          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
           unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
           rm MaskFace.12.27.2017.matlab_required.lin64.zip
           mv lin64.Dec2017 FaceMasking
@@ -228,8 +230,8 @@ jobs:
       - name: Install templates (FSL)
         shell: bash
         run: |
-          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           cd $HOME/tools
+          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           tar xzf fsl-6.0.5-centos7_64.tar.gz fsl/data/standard
           rm fsl-6.0.5-centos7_64.tar.gz
 
@@ -303,22 +305,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install awscli
-          mkdir $HOME/tools
-          git clone https://github.com/spm/spm12 $HOME/tools/spm12
           sudo apt-get install libtinfo5 libtinfo6 dc
-          wget -q -P $HOME/tools http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
+          mkdir $HOME/tools
           cd $HOME/tools
+          git clone https://github.com/spm/spm12          
+          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
           tar xzf fsl-6.0.5-centos7_64.tar.gz
           rm fsl-6.0.5-centos7_64.tar.gz
           $HOME/tools/fsl/etc/fslconf/post_install.sh -f $HOME/tools/fsl
           mkdir $HOME/tools/config
           sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
           source $HOME/tools/config/fsl_bash
-          wget -q -P $HOME/tools https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.0/freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
+          wget -q https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.0/freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
           tar xzf freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
           rm freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
           echo -e "tibor.auer@gmail.com\n7061\n *Ccpi6x7PAIeQ\n FS96pPK5vW.0g" > $HOME/tools/freesurfer/license.txt
-          wget --no-check-certificate -q -P $HOME/tools https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
+          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
           unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
           rm MaskFace.12.27.2017.matlab_required.lin64.zip
           mv lin64.Dec2017 FaceMasking
