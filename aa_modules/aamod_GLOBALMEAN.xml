@@ -32,7 +32,7 @@
             </inputstreams>
 			
             <outputstreams>
-                <stream>GLOBALMEAN</stream>
+                <stream>globalmean</stream>
             </outputstreams>
 			
         </currenttask>

@@ -1,4 +1,4 @@
-function [aap,resp] = aamod_scrub_epis(aap, task, subj, sess)
+function [aap,resp] = aamod_scrub_epi(aap, task, subj, sess)
 %
 % aamod_scrub_epis
 %
@@ -9,6 +9,7 @@ function [aap,resp] = aamod_scrub_epis(aap, task, subj, sess)
 %
 % Change History
 %
+% 10/2021 [MSJ] - streamnames are now lowercase by fiat
 % 09/2020 [MSJ] - add task frameloss_percent warning
 % 08/2020 [MSJ] - fix possible PCT race error
 % summer 2020 [MSJ] -- added task timing plot
@@ -73,14 +74,14 @@ switch task
 				dRPJ = rpdiff(:,4:6);
 			end
  
-			if (aas_stream_has_contents(aap, subj, sess, 'FD'))
-				temp = aas_getfiles_bystream(aap, subj, sess, 'FD');
+			if (aas_stream_has_contents(aap, subj, sess, 'fd'))
+				temp = aas_getfiles_bystream(aap, subj, sess, 'fd');
 				temp = load(temp);
 				FD = temp.FD;
 			end
 
-			if (aas_stream_has_contents(aap, subj, sess, 'DVARS'))
-				temp = aas_getfiles_bystream(aap, subj, sess, 'DVARS');
+			if (aas_stream_has_contents(aap, subj, sess, 'dvars'))
+				temp = aas_getfiles_bystream(aap, subj, sess, 'dvars');
 				DVARS = load(temp); % creats DVARS.wb, DVARS.wm, DVARS.gm
 			end
 
@@ -123,8 +124,8 @@ switch task
                 
             end
   
-            if (aas_stream_has_contents(aap, 'GLOBALMEAN'))
-                temp = aas_getfiles_bystream(aap, subj, sess, 'GLOBALMEAN');
+            if (aas_stream_has_contents(aap, 'globalmean'))
+                temp = aas_getfiles_bystream(aap, subj, sess, 'globalmean');
                 temp = load(temp);
                 GLOBALMEAN = temp.GLOBALMEAN;
             end

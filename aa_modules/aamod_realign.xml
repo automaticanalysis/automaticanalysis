@@ -52,7 +52,7 @@
                 <stream>realignment_parameter</stream>
                 <stream>meanepi</stream>
                 <stream>epi</stream>
-                <stream>FD</stream>
+                <stream>fd</stream>
             </outputstreams>
             
 

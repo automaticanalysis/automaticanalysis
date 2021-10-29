@@ -24,11 +24,11 @@
             
             <module><name>aamod_biascorrect_structural</name></module>
    
-            <!-- aamod_greyplot uses streams DVARS and GLOBALMEAN -->
+            <!-- aamod_greyplot uses DVARS and GLOBALMEAN -->
             <!-- it's probably most informative to create these before realignment -->
             
-            <module><name>aamod_DVARS</name></module>
-            <module><name>aamod_GLOBALMEAN</name></module>
+            <module><name>aamod_dvars</name></module>
+            <module><name>aamod_globalmean</name></module>
             
              <!-- aamod_greyplot also needs stream FD (create by aamod_realign) -->
              
@@ -57,7 +57,7 @@
             
             <!-- lossplot creates a summary of % dataloss for a range of thresholds -->
             <!-- applied to whatever metrics were specified in aamod_greyplot. It -->
-            <!-- also generates the metric_threshold stream used in aamod_scrub_epis -->
+            <!-- also generates the metric_threshold stream used in aamod_scrub_epi -->
             
            <module><name>aamod_lossplot</name></module>
             
@@ -221,12 +221,12 @@
 
                 <branch>  
                  
-                <!-- aamod_scrub_epis generates delta-function nuisance regressors -->
+                <!-- aamod_scrub_epi generates delta-function nuisance regressors -->
                 <!-- (one for each frame that violates the scrub_criteria). The -->
-                <!-- scrub_criteria are quite flexible (see aamod_scrub_epis.xml -->
+                <!-- scrub_criteria are quite flexible (see aamod_scrub_epi.xml -->
                 <!-- for more examples. This example uses a fixed threshold of FD > 0.1 -->
 
-                <module><name>aamod_scrub_epis</name>
+                <module><name>aamod_scrub_epi</name>
                     <extraparameters>
                     <aap><tasklist><currenttask><settings>
                         <scrub_criteria> metric_data.FD > 0.1 </scrub_criteria>
@@ -282,7 +282,7 @@
                 <!-- this demonstrates use of thresholding based on percent dataloss -->
                 <!-- the stream metric_thresholds is created by aamod_lossplot -->
 
-                <module><name>aamod_scrub_epis</name>
+                <module><name>aamod_scrub_epi</name>
                     <extraparameters>
                     <aap><tasklist><currenttask><settings>
                         <scrub_criteria> metric_data.DVARS > metric_thresholds.DVARS.fivepercent </scrub_criteria>

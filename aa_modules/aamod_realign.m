@@ -256,7 +256,7 @@ switch task
 			FD = [0;sum(dM,2)];
 			fname = fullfile(pth,'FD.mat');
 			save(fname,'FD');
-			aap = aas_desc_outputs(aap,subj,sess,'FD', fname);
+			aap = aas_desc_outputs(aap,subj,sess,'fd', fname);
 
         end
         

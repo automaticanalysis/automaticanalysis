@@ -1,4 +1,4 @@
-function [aap,resp] = aamod_GLOBALMEAN(aap, task, subj, sess)
+function [aap,resp] = aamod_globalmean(aap, task, subj, sess)
 %
 % extract globalmean signal
 
@@ -146,7 +146,7 @@ switch task
 
 		fname = fullfile(sesspath, 'GLOBALMEAN.mat');
 		save(fname,'GLOBALMEAN');
-		aap=aas_desc_outputs(aap, subj, sess, 'GLOBALMEAN', fname);
+		aap=aas_desc_outputs(aap, subj, sess, 'globalmean', fname);
 		
 		% lets plot a diagnostic
 				

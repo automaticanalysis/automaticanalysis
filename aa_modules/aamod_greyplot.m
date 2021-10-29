@@ -74,16 +74,19 @@ switch task
 			wb_epi(:,frame) = temp(:);
 		end
 		wb_epi = detrend(wb_epi')';
+        
+        % stream names in aa are lowercase by fiat
+        % variable names are uppercase
 			
-		temp = aas_getfiles_bystream(aap, subj, sess, 'GLOBALMEAN');
+		temp = aas_getfiles_bystream(aap, subj, sess, 'globalmean');
 		temp = load(temp);
 		GLOBALMEAN = temp.GLOBALMEAN;
         
-		temp = aas_getfiles_bystream(aap, subj, sess, 'FD');
+		temp = aas_getfiles_bystream(aap, subj, sess, 'fd');
 		temp = load(temp);
 		FD = temp.FD;
 
-		temp = aas_getfiles_bystream(aap, subj, sess, 'DVARS');
+		temp = aas_getfiles_bystream(aap, subj, sess, 'dvars');
 		DVARS = load(temp); % creates DVARS.wb, DVARS,wm, DVARS.gm
 
 		% ----------------------------------------------------------------

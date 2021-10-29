@@ -62,9 +62,9 @@
               <stream isessential='0'>meanepi</stream>
               <stream isessential='0'>native_greymask</stream>
               <stream isessential='0'>native_whitemask</stream>
-              <stream>GLOBALMEAN</stream>
-              <stream>DVARS</stream>
-              <stream>FD</stream>
+              <stream>globalmean</stream>
+              <stream>dvars</stream>
+              <stream>fd</stream>
            </inputstreams>
 			
             <!-- the metric data (i.e. the data that appears in the metric plots -->

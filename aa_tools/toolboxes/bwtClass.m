@@ -1,6 +1,6 @@
 % aa toolbox interface for BrainWavelet toolbox
 
-classdef wdsClass < toolboxClass
+classdef bwtClass < toolboxClass
     
     properties (Access = protected)
         hGUI = []% GUI handles
@@ -8,7 +8,7 @@ classdef wdsClass < toolboxClass
     
     methods
         
-        function obj = wdsClass(path,varargin)
+        function obj = bwtClass(path,varargin)
             
             defaultAddToPath = false;
             defaultKeepInPath = false;

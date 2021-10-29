@@ -24,7 +24,7 @@
             <!-- and also DVARS.gm and DVARS.wm if gray/white mask was provided -->
 			 
             <outputstreams>
-               <stream>DVARS</stream>
+               <stream>dvars</stream>
             </outputstreams>
  			
         </currenttask>

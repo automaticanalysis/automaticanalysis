@@ -16,8 +16,8 @@
                         
             <module><name>aamod_biascorrect_structural</name></module>          
    
-            <module><name>aamod_DVARS</name></module>
-            <module><name>aamod_GLOBALMEAN</name></module>
+            <module><name>aamod_dvars</name></module>
+            <module><name>aamod_globalmean</name></module>
                         
             <module><name>aamod_realign</name></module>  
             <module><name>aamod_biascorrect_meanepi</name></module>
@@ -47,7 +47,7 @@
                 </extraparameters>
             </module>
                                 
-            <module><name>aamod_scrub_epis</name>
+            <module><name>aamod_scrub_epi</name>
                 <extraparameters>
                 <aap><tasklist><currenttask><settings>
                     <scrub_criteria> metric_data.DVARS > metric_thresholds.DVARS.fivepercent</scrub_criteria>

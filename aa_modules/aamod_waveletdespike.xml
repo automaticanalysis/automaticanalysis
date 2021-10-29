@@ -18,7 +18,7 @@
                 - 1: binary mask provided in brainmask stream
                 - 0-1: probability thteshold for spm brainmask 
                 - 0: automatic intensity threshold based on the first scan
-                - -1: no mask
+                - -1: no masking (ignores input stream brainmask if present)
             -->
             
             <maskingthreshold desc='Brain masking'>-1</maskingthreshold>

@@ -9,8 +9,8 @@ switch task
         
         [ ~, SPMtool ] = aas_cache_get(aap,'spm');
         
-        [ ~, WDS ] = aas_cache_get(aap,'wds');
-        WDS.load;
+        [ ~, BWT ] = aas_cache_get(aap,'bwt');
+        BWT.load;
 
         streams=aap.tasklist.currenttask.inputstreams.stream;
         
@@ -19,6 +19,7 @@ switch task
         
         %% masking
         thr = aap.tasklist.currenttask.settings.maskingthreshold;
+        
         switch thr
             case 1
                 mask = aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[subj,sess],'brainmask');
@@ -72,11 +73,11 @@ switch task
         aap=aas_desc_outputs(aap,aap.tasklist.currenttask.domain,[subj sess],streams{1},outputfns);
         
         %% unload
-        WDS.unload;
+        BWT.unload;
         
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM not found'); end
-        if ~aas_cache_get(aap,'wds'), aas_log(aap,true,'Wavelet despiking toolbox not found'); end
+        if ~aas_cache_get(aap,'bwt'), aas_log(aap,true,'Wavelet despiking toolbox not found'); end
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));
