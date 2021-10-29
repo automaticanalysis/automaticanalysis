@@ -150,13 +150,14 @@ else
         fprintf('FAIL - %s\n',scriptname);
         fprintf(fid,'FAIL - %s\n',scriptname);
         
-        if ~strcmp(wheretoprocess,'localsingle')
+        if strcmp(wheretoprocess,'localsingle')
+            reporterror(scriptname,err);
+        else
             
             try
                 aaq_qsub_debug;
-            catch
-                fprintf('aaq_qsub_debug: %s. See err variable.\n',err.message);
-                fprintf(fid,'aaq_qsub_debug: %s. See err variable.\n',err.message);
+            catch err
+                reporterror(scriptname,err);
             end
             
             % catch cases when aaq_qsub_debug quietly 
@@ -170,4 +171,16 @@ else
 
 end
 
+end
+
+function reporterror(scriptname,err)
+msg = sprintf('%s had an error: %s\n',scriptname,err.message);
+for e = 1:numel(err.stack)
+    % Stop tracking to internal
+    if strfind(err.stack(e).file,'distcomp'), break, end
+    msg = [msg sprintf('<a href="matlab: opentoline(''%s'',%d)">in %s (line %d)</a>\n', ...
+        err.stack(e).file, err.stack(e).line,...
+        err.stack(e).file, err.stack(e).line)];
+end
+fprintf(msg)
 end
