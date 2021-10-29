@@ -23,7 +23,7 @@
             <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
             <inputstreams>
                 <stream>settings</stream>
-                <stream>structural</stream>
+                <stream isessential='0'>structural</stream>
                 <stream isrenameable='1'>input</stream>
                 <stream isrenameable='1'>permuted_input</stream>
             </inputstreams>

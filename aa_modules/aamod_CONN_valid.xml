@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Validate ROI/seed-based CONN results for consistency across participants' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>0.5</timeBase>
+                <memoryBase desc='Required memory in GB'>1</memoryBase>
+            </qsub>
+            
+            <inputstreams>
+                <stream>settings</stream>
+                <stream>connectivity</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>connectivity</stream>
+                <stream>ROInames</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>

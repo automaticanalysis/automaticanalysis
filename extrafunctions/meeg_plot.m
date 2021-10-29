@@ -68,8 +68,9 @@ if isfield(data{1},'stat')
    
     data = [data(1) data];
     data{1}.(cfg.parameter) = stat.stat;
-    for s = 1:numel(data)
-        data{s}.mask = logical(stat.mask);
+    data{1}.mask = logical(stat.mask);
+    for s = 2:numel(data)
+        if isfield(data{s},'mask'), data{s}.mask = logical(stat.mask); end
     end
     labels = [{'stat'} labels];
 end
@@ -138,7 +139,8 @@ for t = 1:size(cfg.latency,1)
             strTitle = 'all';
         end
         if ~isempty(labels{s}), strTitle = sprintf('%s: %s',labels{s},strTitle); end
-        dataPlot = ft_selectdata(tmpcfg,data{s});
+        dataPlot = ft_selectdata(tmpcfg,rmfield(data{s},intersect(fieldnames(data{s}),{'inside','mask'})));
+        if isfield(data{s},'mask'), dataPlot.mask = data{s}.mask; end
         if isnumeric(cfg.latency)
             dataPlot.dimord = strrep(dataPlot.dimord,'_time',''); 
             dataPlot = rmfield(dataPlot,'time');

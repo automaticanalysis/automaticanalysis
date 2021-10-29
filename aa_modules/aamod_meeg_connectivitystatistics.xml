@@ -40,9 +40,7 @@
             </outputstreams>
             
             <diagnostics desc='at least one has to be specified to generate images, in case of specifying more than one'>
-                <snapshotfwoiphase desc='phase-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix), [] means averaging over the available range'></snapshotfwoiphase>
-                <snapshotfwoiamplitude desc='amplitude-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix), [] means averaging over the available range'></snapshotfwoiamplitude>
-                <snapshotphwoi desc='phasewindow-of-interest for snapshots specified as [start stop] in degrees (or as Nx2 matrix), [] means averaging over the available range'></snapshotphwoi>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix), [] means averaging over the available range'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
             </diagnostics>
         </currenttask>
