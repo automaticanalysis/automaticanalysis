@@ -250,7 +250,7 @@ jobs:
           aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-04 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-04 $HOME/data/aa_demo/ds000114/sub-04 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
