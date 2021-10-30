@@ -23,7 +23,8 @@ aap.tasksettings.aamod_dartel_normmni.fwhm=1;
 % BIDS
 % -------------------------------------------------------------------------
 
-aap.acq_details.input.combinemultiple = true;
+% aap.acq_details.input.combinemultiple = true;
+
 aap = aas_processBIDS(aap,[],{'finger_foot_lips'}, {'sub-01'});
 
 % -------------------------------------------------------------------------
