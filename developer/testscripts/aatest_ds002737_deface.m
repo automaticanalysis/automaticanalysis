@@ -21,10 +21,7 @@ aap.options.wheretoprocess = wheretoprocess;
 % -------------------------------------------------------------------------
 
 % anatomy data is in session 3
-aap.acq_details.input.selected_subjects = {'sub-01'};
-aap.acq_details.input.selected_visits = {'ses-03'};
-
-aap = aas_processBIDS(aap);
+aap = aas_processBIDS(aap,{'ses-03'},[],{'sub-01'});
 
 % -------------------------------------------------------------------------
 % run
