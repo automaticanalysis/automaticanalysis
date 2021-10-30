@@ -17,5 +17,10 @@ if exist(anadir,'dir') && deleteprevious
     fprintf('Done\n');    
 end
 
-demodir = regexp(aap.directory_conventions.rawdatadir,'(?<=:)[a-zA-Z0-9_\/]*aa_demo(?:)','match');
+if contains(aap.directory_conventions.rawdatadir,':') % more then one directories
+    demodir = regexp(aap.directory_conventions.rawdatadir,'(?<=:)[a-zA-Z0-9_\/]*aa_demo(?:)','match');
+else % one directory
+    demodir = regexp(aap.directory_conventions.rawdatadir,'[a-zA-Z0-9_\/]*aa_demo(?:)','match');
+end
+if isempty(demodir), aas_log([],true,'aap.directory_conventions.rawdatadir contains no aa_demo directory'); end   
 aap.directory_conventions.rawdatadir = fullfile(demodir{1},temp{2});
