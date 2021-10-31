@@ -27,6 +27,10 @@ aap.tasksettings.aamod_segment8.samp = 2;
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
 aap.tasksettings.aamod_slicetiming.refslice = 16;
 aap.tasksettings.aamod_smooth.FWHM = 5;
+aap.tasksettings.aamod_secondlevel_threshold(1).threshold.correction = 'none';
+aap.tasksettings.aamod_secondlevel_threshold(1).threshold.p = 0.001;
+aap.tasksettings.aamod_secondlevel_threshold(2).threshold.correction = 'none';
+aap.tasksettings.aamod_secondlevel_threshold(2).threshold.p = 0.001;
 
 % -------------------------------------------------------------------------
 % BIDS
@@ -36,7 +40,7 @@ aap.acq_details.input.combinemultiple = true;
 
 % five subjects is about minimum to run a second level model
 
-aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03','sub-04'});
+aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03'});
 
 % -------------------------------------------------------------------------
 % modeling - contrast specification
