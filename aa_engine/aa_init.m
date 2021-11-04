@@ -143,20 +143,6 @@ else
     end
 end
 
-% Path to BrainWavelet
-if ~isempty(aap.directory_conventions.BrainWaveletdir)
-    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'BWT'));
-    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','cprintf'));
-    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','NIfTI'));
-    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','wmtsa','dwt'));
-    addpath(fullfile(aap.directory_conventions.BrainWaveletdir,'third_party','wmtsa','utils'));
-else
-    % Check whether already in path, give warning if not
-    if isempty(which('WaveletDespike'))
-       aas_log(aap,false,sprintf('BrainWavelet not found, if you need this you should add it to the matlab path manually, or set aap.directory_conventions.BrainWaveletdir'));
-    end
-end
-
 % Path to FaceMasking
 if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)
     addpath(genpath(fullfile(aap.directory_conventions.FaceMaskingdir,'matlab')));
@@ -229,13 +215,6 @@ if ~isempty(aap.directory_conventions.GIFTdir)
     end
 end
 
-% BrainWavelet
-if ~isempty(aap.directory_conventions.BrainWaveletdir)
-    p_ind = cell_index(p,aap.directory_conventions.BrainWaveletdir);
-    for ip = p_ind
-        reqpath{end+1} = p{ip};
-    end
-end
 
 % FaceMasking
 if isfield(aap.directory_conventions,'FaceMaskingdir') && ~isempty(aap.directory_conventions.FaceMaskingdir)

@@ -1,4 +1,5 @@
-function aatest_ds000114_fmri(deleteprevious,wheretoprocess)
+function aatest_ds000114_fmri(parameterfile, deleteprevious,wheretoprocess)
+
 % This script runs a basic modeling pipeline (preprocessing through secondlevel)
 % using ds000114 motor and line bisection tasks. The data should be dowloaded 
 % prior to running the script
@@ -7,7 +8,7 @@ function aatest_ds000114_fmri(deleteprevious,wheretoprocess)
 % init
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
+aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
 % -------------------------------------------------------------------------
 % analysis options
@@ -17,7 +18,6 @@ aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
 
 aap.options.NIFTI4D = 1;
-aap.options.wheretoprocess = wheretoprocess;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;

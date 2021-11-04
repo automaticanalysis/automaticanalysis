@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='plot scrubbing dataloss summary' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+						
+            <!-- "metric_data" goes, e.g., metric_data.FD, metric_data.DVARS etc -->
+            <!-- for whatever metric was defined. It is currently generated in -->
+            <!-- greyplot, but it can come from anywhere as long as it has proper format -->
+			    			
+            <inputstreams>
+                <stream >metric_data</stream>
+             </inputstreams>
+			
+            <!-- the metric_thresholds struct mimics metric_data: -->
+            <!-- metricdata.FD => metric_thresholds.FD.onepercent, etc. -->
+            <!-- metricdata.DVARS => metric_thresholds.DVARS.onepercent, etc -->
+            <!-- the fieldnames will be generated using the fieldnames in metric_data -->
+			
+            <outputstreams>
+               <stream>metric_thresholds</stream>
+            </outputstreams>
+            		            
+        </currenttask>
+    </tasklist>
+</aap>

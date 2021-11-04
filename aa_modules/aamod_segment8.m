@@ -337,9 +337,9 @@ switch task
         end
         
         %% Diagnostics
-        if strcmp(aap.options.wheretoprocess,'localsingle')
-            diag(aap,subjind);
-        end
+
+        diag(aap,subjind);
+
     case 'checkrequirements'
         if ~aas_cache_get(aap,'spm'), aas_log(aap,true,'SPM is not found'); end
         %% Adjust outstream
@@ -359,15 +359,15 @@ function diag(aap,subj) % [TA]
 Simg = aas_getfiles_bystream(aap,subj,'structural');
 localpath = aas_getsubjpath(aap,subj);
 outSeg = char(...
-    aas_getfiles_bystream(aap,subj,'native_csf'),...
+    aas_getfiles_bystream(aap,subj,'native_grey'),...
     aas_getfiles_bystream(aap,subj,'native_white'),...
-    aas_getfiles_bystream(aap,subj,'native_grey'));
+    aas_getfiles_bystream(aap,subj,'native_csf'));
 outNSeg = char(...
-    aas_getfiles_bystream(aap,subj,'normalised_density_csf'),...
+    aas_getfiles_bystream(aap,subj,'normalised_density_grey'),...
     aas_getfiles_bystream(aap,subj,'normalised_density_white'),...
-    aas_getfiles_bystream(aap,subj,'normalised_density_grey'));
+    aas_getfiles_bystream(aap,subj,'normalised_density_csf'));
 
-OVERcolours = aas_colours;
+OVERcolours = {[1 0 0], [0 1 0], [0 0 1]};
 
 %% Draw native template
 spm_check_registration(Simg)
