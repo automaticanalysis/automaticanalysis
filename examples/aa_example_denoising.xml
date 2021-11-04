@@ -1,0 +1,380 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+
+        <initialisation>	
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>
+         
+            <!-- preprocessing -->
+            
+            <!-- general notes -->
+            
+            <!-- 1) as a rule, reorient to middle is good to include -->
+            <!-- even though on many datasets it is not necessary -->
+            
+            <!-- 2) ditto for biascorrection -->
+            
+            <module><name>aamod_structuralfromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_structural</name></module>
+            <module><name>aamod_epifromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_epi</name></module>
+            
+            <module><name>aamod_biascorrect_structural</name></module>
+   
+            <!-- aamod_greyplot uses DVARS and GLOBALMEAN -->
+            <!-- it's probably most informative to create these before realignment -->
+            
+            <module><name>aamod_dvars</name></module>
+            <module><name>aamod_globalmean</name></module>
+            
+             <!-- aamod_greyplot also needs stream FD (create by aamod_realign) -->
+             
+           <module><name>aamod_realign</name></module>  
+            <module><name>aamod_biascorrect_meanepi</name></module>
+            <module><name>aamod_coreg_extended</name></module>
+ 
+            <module><name>aamod_segment8_multichan</name>
+                 <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <samp>2</samp>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+				
+             <!-- greyplot needs native greymask to identify voxels to analyze -->
+             
+            <module><name>aamod_brainmask_nativegrey</name></module>	
+            <module><name>aamod_reslicenativegreymask2epi</name></module>
+            
+            <!-- greyplot generates a greyplot (ala JD Power) and accompanying -->
+            <!-- summary plots of specified metrics (FD, DVARS, and global mean -->
+            <!-- are the defaults but other metrics can be specified; see header) -->          
+            
+            <module><name>aamod_greyplot</name></module>
+            
+            <!-- lossplot creates a summary of % dataloss for a range of thresholds -->
+            <!-- applied to whatever metrics were specified in aamod_greyplot. It -->
+            <!-- also generates the metric_threshold stream used in aamod_scrub_epi -->
+            
+           <module><name>aamod_lossplot</name></module>
+            
+            <module><name>aamod_norm_write_epi</name></module>
+            
+            <module><name>aamod_smooth</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <FWHM>8</FWHM>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+                    
+            <module>
+
+               <branch>
+                   
+                <!-- baseline (6 rp) -->
+
+                <module><name>aamod_firstlevel_model</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                        <includemovementpars>1</includemovementpars>
+                        <includespikes>0</includespikes>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                <module><name>aamod_firstlevel_contrasts</name></module> 
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                        <description>6 rp, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+                
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                        <threshold>
+                            <correction>none</correction>
+                            <p>0.001</p>
+                        </threshold>
+                        <description>6 rp, 0.001 UNC</description>
+                    </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>	 
+
+                </branch>                 
+
+                <branch>
+
+                <!-- wavelet despiking -->
+
+                <!-- wavelet despiking results can depend on the data scaling -->
+                <!-- which can create issues when comparing across datasets -->
+                <!-- so here we apply median 1000 rescaling -->
+
+                <module><name>aamod_rescale_epi</name>               
+                    <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <scalingmode>median</scalingmode>
+                        <scale>1000</scale>
+                        <odt>int</odt>
+                    </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>  
+                
+                <module><name>aamod_waveletdespike</name></module>
+                
+                <!-- the rest of the modeling proceeds as usual... -->
+
+                <module><name>aamod_firstlevel_model</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <includemovementpars>0</includemovementpars>
+                            <includespikes>0</includespikes>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                <module><name>aamod_firstlevel_contrasts</name></module> 
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <description>wavelet despike, 0.001 UNC</description>
+                         </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+                              
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <threshold>
+                                <correction>none</correction>
+                                <p>0.001</p>
+                            </threshold>
+                            <description>wavelet despike, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                </branch>
+
+                <branch>
+
+                <!-- robust weighted least squares (rWLS) -->
+                
+                <!-- rWLS is selected setting the autocorrelation option as shown here -->
+                <!-- also, we omit the realigment parameters (includemovementpars = 0) -->
+                <!-- and any frame censoring streams (includespikes = 0) -->
+
+                <module><name>aamod_firstlevel_model</name>      
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <includemovementpars>0</includemovementpars>
+                            <includespikes>0</includespikes>
+                            <autocorrelation>wls</autocorrelation>
+                    </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                <module><name>aamod_firstlevel_contrasts</name></module> 
+                
+                <!-- rWLS docs say smooth betas (i.e., cons) AFTER modeling --> 
+                
+                <module><name>aamod_smooth_cons</name></module>
+                
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <description>rWLS, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                
+                <!-- the rest of the modeling proceeds as usual -->
+
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+                            
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <threshold>
+                                <correction>none</correction>
+                                <p>0.001</p>
+                            </threshold>
+                            <description>rWLS 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>	
+
+                </branch>
+
+                <!-- frame censoring -->
+
+                <branch>  
+                 
+                <!-- aamod_scrub_epi generates delta-function nuisance regressors -->
+                <!-- (one for each frame that violates the scrub_criteria). The -->
+                <!-- scrub_criteria are quite flexible (see aamod_scrub_epi.xml -->
+                <!-- for more examples. This example uses a fixed threshold of FD > 0.1 -->
+
+                <module><name>aamod_scrub_epi</name>
+                    <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <scrub_criteria> metric_data.FD > 0.1 </scrub_criteria>
+                    </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                
+                <!-- be sure to specify includespikes = 1 in aamod_firstlevel_model -->
+                <!-- to include scrub regressors. You would probably also omit -->
+                <!-- the movement parameters when doing frame censoring (but -->
+                <!-- you can include both if desired) -->
+            
+               <module><name>aamod_firstlevel_model</name> 
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <includemovementpars>0</includemovementpars>
+                            <includespikes>1</includespikes>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                <module><name>aamod_firstlevel_contrasts</name></module>
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <description>0.1 FD, 0.001 UNC</description>
+                         </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                
+                <!-- the rest of the modeling proceeds as usual -->
+
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+                             
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <threshold>
+                                <correction>none</correction>
+                                <p>0.001</p>
+                            </threshold>
+                            <description>5% FD, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                </branch>   
+                 
+                <!-- DVARS 5% -->
+               
+                <branch>
+                    
+                <!-- this demonstrates use of thresholding based on percent dataloss -->
+                <!-- the stream metric_thresholds is created by aamod_lossplot -->
+
+                <module><name>aamod_scrub_epi</name>
+                    <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <scrub_criteria> metric_data.DVARS > metric_thresholds.DVARS.fivepercent </scrub_criteria>
+                    </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                <module><name>aamod_firstlevel_model</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <includemovementpars>0</includemovementpars>
+                            <includespikes>1</includespikes>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                <module><name>aamod_firstlevel_contrasts</name></module>
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <description>5% DVARS, 0.001 UNC</description>
+                         </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <threshold>
+                                <correction>none</correction>
+                                <p>0.001</p>
+                            </threshold>
+                            <description>5% DVARS, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                </branch>  
+             
+                 <!-- AROMA -->
+                         
+                <branch>
+                    
+                <!-- see the module header (and associated publication) for -->
+                <!-- various algorithm options. The default values are -->
+                <!-- reasonable but might not be optimal for your data -->
+
+                <module><name>aamod_AROMA_denoise</name></module>
+                
+                <!-- the rest of the modeling proceeds as usual (however, you -->
+                <!-- will probably want to omit rp and any frame censorying -->
+               
+                <module><name>aamod_firstlevel_model</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <includemovementpars>0</includemovementpars>
+                            <includespikes>0</includespikes>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+                
+                <module><name>aamod_firstlevel_contrasts</name></module>
+                
+                <module><name>aamod_firstlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <description>AROMA, 0.001 UNC</description>
+                         </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>
+
+                <module><name>aamod_secondlevel_threshold</name>
+                    <extraparameters>
+                        <aap><tasklist><currenttask><settings>
+                            <threshold>
+                                <correction>none</correction>
+                                <p>0.001</p>
+                            </threshold>
+                            <description>AROMA, 0.001 UNC</description>
+                        </settings></currenttask></tasklist></aap>
+                    </extraparameters>
+                </module>
+
+                </branch> 
+              	
+            </module>
+ 
+        </main>
+    </tasklist>
+</aap>

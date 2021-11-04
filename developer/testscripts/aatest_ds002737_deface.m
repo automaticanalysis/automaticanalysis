@@ -1,4 +1,5 @@
-function aatest_ds002737_deface(deleteprevious,wheretoprocess)
+function aatest_ds002737_deface(parameterfile, deleteprevious, wheretoprocess)
+
 % developer PR test script
 %
 % description: deface structural and T2 using Freesurfer
@@ -8,13 +9,12 @@ function aatest_ds002737_deface(deleteprevious,wheretoprocess)
 % init
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
+aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
 % -------------------------------------------------------------------------
 % analysis options
 % -------------------------------------------------------------------------
 
-aap.options.wheretoprocess = wheretoprocess;
 
 % -------------------------------------------------------------------------
 % BIDS

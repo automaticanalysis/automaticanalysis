@@ -153,12 +153,14 @@ if ~isempty(physiologicalRegs)
 end
 
 %% Spikes and moves, if these exist...
-if ~isempty(spikeRegs)
-    SPM.Sess(sessnuminspm).C.C = [SPM.Sess(sessnuminspm).C.C ...
-        spikeRegs(sess).regs];
-    SPM.Sess(sessnuminspm).C.name = [SPM.Sess(sessnuminspm).C.name ...
-        spikeRegs(sess).names];
-    
+
+% it's possible for spikeRegs to be defined for some sessions and not
+% others (i.e., spikeRegs won't be empty but spikeRegs(sess) might be)
+% so we have to do some additional checking here...
+
+if (~isempty(spikeRegs) && le(sess,numel(spikeRegs)) && ~isempty(spikeRegs(sess).regs))
+    SPM.Sess(sessnuminspm).C.C = [SPM.Sess(sessnuminspm).C.C spikeRegs(sess).regs];
+    SPM.Sess(sessnuminspm).C.name = [SPM.Sess(sessnuminspm).C.name spikeRegs(sess).names];
     cols_nuisance=[cols_nuisance currcol:(currcol+length(spikeRegs(sess).names) - 1)];
     currcol = currcol + length(spikeRegs(sess).names);
 end
@@ -175,3 +177,4 @@ if ~isempty(GLMDNregs)
 end
 
 end
+

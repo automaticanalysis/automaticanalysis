@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+
+        <initialisation>	
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>
+         
+            <!-- preprocessing -->
+            
+            <module><name>aamod_structuralfromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_structural</name></module>
+            <module><name>aamod_epifromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_epi</name></module>           
+               
+            <module><name>aamod_biascorrect_structural</name></module>
+            <module><name>aamod_realign</name></module>  
+            <module><name>aamod_biascorrect_meanEPI</name></module>
+            <module><name>aamod_coreg_extended</name></module>
+            <module><name>aamod_segment8_multichan</name></module>			            
+            <module><name>aamod_norm_write_epi</name></module>         
+            <module><name>aamod_smooth</name></module>
+                    
+            <!-- AROMA-ICA denoising -->
+            
+            <module><name>aamod_AROMA_denoise</name></module>
+
+            <module><name>aamod_firstlevel_model</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <includemovementpars>0</includemovementpars>
+                        <includespikes>0</includespikes>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+
+            <module><name>aamod_firstlevel_contrasts</name></module>
+
+            <module><name>aamod_firstlevel_threshold</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <description>AROMA-ICA, 0.001 UNC</description>
+                     </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+ 
+        </main>
+    </tasklist>
+</aap>

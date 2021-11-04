@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='Second level thresholding for FSL randomise output' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.3</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+             <!-- THRESHOLDING -->
+            
+            <!-- pmap specifies the Ransomise pmap to use for thresholding -->
+            <!-- threshed_map = (pmap<threshold) .* tmap) -->
+            
+            <!-- NB: selection must be consistent with options passed to aamod_secondlevel_randomise! -->
+            <!-- for example, if you specify "tfce" here but didn't pass "-T" to a_s_r, execution will crash -->
+
+            <!-- <pmap ui='optionlist' options='vox|tfce|clustere'>clustere</pmap> -->
+            
+            <pmap ui='optionlist' options='vox|tfce|clustere|clusterm|uncorrected'>clustere</pmap>
+
+            <!-- suffix to be attached to the thresholded tmap (was THRESH) -->
+            <!-- ex: "corrected", "cluster_corrected", "clustere_corrected" etc -->
+            <!-- obviously this should be congruent with the selected pmap option -->
+
+            <corrected_tmap_suffix>clustercorrectedtstat</corrected_tmap_suffix>
+
+            <threshold>0.05</threshold>
+
+            <!-- RENDERING -->
+
+            <!-- "classic" renderer uses the default 6-view SPM layout -->
+            <!-- "washu" renderer is a 4-view GM layout preferred at washu -->
+            <!-- "both" will save both, "none" to skip -->
+
+            <renderer ui='optionlist' options='classic|washu|both|none'>both</renderer>
+
+            <!-- options for the washu renderer (see washu_surfacerender.m for description) -->
+
+            <render_options>cfg.inflate=2</render_options>
+
+            <!-- "description" is used as a figure caption (at upper left corner) ; only available in classic renderer -->
+
+            <description></description>
+
+            <!-- FILE CLEANUP -->
+
+            <!-- the do_file_cleanup option will delete unused Randomise files and -->
+            <!-- rename the output to be more transparent (hopefully). To wit: -->
+            <!--    1) rename the raw tmaps from *_tstatN.nii to *_uncorrectedN.nii -->
+            <!--    2) delete all the _corrp_ files (copies will be left in aamod_secondlevel_randomise) -->
+            <!--    3) rename *glm_cope.nii to *_cope.nii (if present) -->
+            <!--    4) delete all other *glm_* files (copes will be left in aamod_secondlevel_randomise) -->
+
+            <do_file_cleanup>1</do_file_cleanup>
+         
+            <!-- inputs come from aamod_secondlevel_randomise -->
+            <!-- fslts are t maps; fslcorrps are corrected p maps -->
+            <!-- remember: FSL p maps are 1-p -->
+            
+            <inputstreams>
+                <stream>secondlevel_fslts</stream>
+                <stream>secondlevel_fslcorrps</stream>             
+                <!-- fslcopes won't be generated if glm_output option not used in aamod_secondlevel_randomise -->
+                <stream isessential='0'>secondlevel_fslcopes</stream> 
+             </inputstreams>
+
+            <outputstreams>
+               <stream>secondlevel_thr</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
