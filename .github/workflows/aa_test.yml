@@ -92,7 +92,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_dartel')
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -178,7 +178,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_diffusion')
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -266,7 +266,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_fmri')
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -365,7 +365,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds002737_deface')
+          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds002737_deface','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
