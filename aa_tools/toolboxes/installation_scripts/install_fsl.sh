@@ -15,7 +15,7 @@ STANDARDONLY=$4
 
 cd ${INSTDIR}
 echo "Installing fsl-${VERSION}-${FSOS} in ${INSTDIR}"
-wget http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-${VERSION}-${FSOS}_64.tar.gz
+wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-${VERSION}-${FSOS}_64.tar.gz
 if [[ "x${STANDARDONLY}x" == "x1x" ]]; then
     tar xzf fsl-${VERSION}-${FSOS}_64.tar.gz fsl/data/standard
 else
