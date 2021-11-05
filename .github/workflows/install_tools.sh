@@ -9,9 +9,9 @@ source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_facemas
 echo "FSL: ${LOAD_FSL}; FREESURFER: ${LOAD_FREESURFER}"
 
 if [[ "x${LOAD_FSL}x" == "x1x" ]]; then
-    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 7.2.0 centos7
+    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 6.0.5 centos7
 else # FSL standards are needed for some modules
-    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 7.2.0 centos7 1
+    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 6.0.5 centos7 1
 fi
 
 if [[ "x${LOAD_FREESURFER}x" == "x1x" ]]; then
