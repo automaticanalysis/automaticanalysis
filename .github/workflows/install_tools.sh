@@ -2,6 +2,9 @@ TOOLDIR=$HOME/tools
 mkdir $HOME/tools
 TEMPLATEDIR=$HOME/tools/templates
 
+sudo apt-get update
+sudo apt-get install libtinfo5 libtinfo6 dc
+
 source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_spm.sh $TOOLDIR 12
 
 source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_facemasking.sh $TOOLDIR
