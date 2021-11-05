@@ -25,7 +25,7 @@ else
     SCRIPTDIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )" # same folder
     sed 's/\r$//' $SCRIPTDIR/fsl_bash > $SCRIPTDIR/fsl_bash_t; mv $SCRIPTDIR/fsl_bash_t $SCRIPTDIR/fsl_bash
 fi
-rm fsl-${VERSION}-${FSOS}_64.tar.gzs
+rm fsl-${VERSION}-${FSOS}_64.tar.gz
 
 if [[ -d "${INSTDIR}/fsl" ]]; then
     echo "FSL has been installed." >&2
