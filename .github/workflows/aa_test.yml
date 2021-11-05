@@ -15,6 +15,9 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  defaults:
+    run:
+      shell: bash
   aatest_ds000114_dartel:
     name: Testing SPM DARTEL
 
@@ -46,29 +49,12 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking)
-        shell: bash
+      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
         run: |
-          sudo apt-get update
-          sudo apt-get install awscli
-          sudo apt-get autoremove --purge
-          sudo apt-get clean
-          sudo journalctl --vacuum-time=3d
-          mkdir $HOME/tools
-          cd $HOME/tools
-          git clone https://github.com/spm/spm12
-          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
-          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
-          rm MaskFace.12.27.2017.matlab_required.lin64.zip
-          mv lin64.Dec2017 FaceMasking
-      
-      - name: Install templates (FSL)
-        shell: bash
-        run: |
-          cd $HOME/tools
-          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
-          tar xzf fsl-6.0.5-centos7_64.tar.gz fsl/data/standard
-          rm fsl-6.0.5-centos7_64.tar.gz
+          source $GITHUB_WORKSPACE/.github/workflows/intall_tools.sh
+        env:
+          LOAD_FSL: 0
+          LOAD_FREESURFER: 0
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -133,28 +119,11 @@ jobs:
           release: R2020a
 
       - name: Install tools under $HOME/tools (SPM, FSL, FaceMasking)
-        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install awscli
-          sudo apt-get install libtinfo5 libtinfo6 dc
-          sudo apt-get autoremove --purge
-          sudo apt-get clean
-          sudo journalctl --vacuum-time=3d
-          mkdir $HOME/tools
-          cd $HOME/tools
-          git clone https://github.com/spm/spm12          
-          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
-          tar xzf fsl-6.0.5-centos7_64.tar.gz
-          rm fsl-6.0.5-centos7_64.tar.gz
-          $HOME/tools/fsl/etc/fslconf/post_install.sh -f $HOME/tools/fsl
-          mkdir $HOME/tools/config
-          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
-          source $HOME/tools/config/fsl_bash
-          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
-          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
-          rm MaskFace.12.27.2017.matlab_required.lin64.zip
-          mv lin64.Dec2017 FaceMasking
+          source $GITHUB_WORKSPACE/.github/workflows/intall_tools.sh
+        env:
+          LOAD_FSL: 1
+          LOAD_FREESURFER: 0
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -218,29 +187,12 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking)
-        shell: bash
+      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
         run: |
-          sudo apt-get update
-          sudo apt-get install awscli
-          sudo apt-get autoremove --purge
-          sudo apt-get clean
-          sudo journalctl --vacuum-time=3d
-          mkdir $HOME/tools
-          cd $HOME/tools
-          git clone https://github.com/spm/spm12
-          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
-          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
-          rm MaskFace.12.27.2017.matlab_required.lin64.zip
-          mv lin64.Dec2017 FaceMasking
-
-      - name: Install templates (FSL)
-        shell: bash
-        run: |
-          cd $HOME/tools
-          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
-          tar xzf fsl-6.0.5-centos7_64.tar.gz fsl/data/standard
-          rm fsl-6.0.5-centos7_64.tar.gz
+          source $GITHUB_WORKSPACE/.github/workflows/intall_tools.sh
+        env:
+          LOAD_FSL: 0
+          LOAD_FREESURFER: 0
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -307,43 +259,11 @@ jobs:
           release: R2020a
 
       - name: Install tools under $HOME/tools (SPM, FSL, FreeSurfer, FaceMasking)
-        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install awscli
-          sudo apt-get install libtinfo5 libtinfo6 dc
-          sudo apt-get autoremove --purge
-          sudo apt-get clean
-          sudo journalctl --vacuum-time=3d
-          mkdir $HOME/tools
-          cd $HOME/tools
-          git clone https://github.com/spm/spm12          
-          wget -q http://fsl.fmrib.ox.ac.uk/fsldownloads/fsl-6.0.5-centos7_64.tar.gz
-          tar xzf fsl-6.0.5-centos7_64.tar.gz
-          rm fsl-6.0.5-centos7_64.tar.gz
-          $HOME/tools/fsl/etc/fslconf/post_install.sh -f $HOME/tools/fsl
-          mkdir $HOME/tools/config
-          sed 's/\r$//' $GITHUB_WORKSPACE/.github/workflows/fsl_bash > $HOME/tools/config/fsl_bash
-          source $HOME/tools/config/fsl_bash
-          wget -q https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/7.1.0/freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
-          tar xzf freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
-          rm freesurfer-linux-centos7_x86_64-7.1.0.tar.gz
-          echo -e "tibor.auer@gmail.com\n7061\n *Ccpi6x7PAIeQ\n FS96pPK5vW.0g" > $HOME/tools/freesurfer/license.txt
-          wget --no-check-certificate -q https://download.nrg.wustl.edu/pub/FaceMasking/MaskFace.12.27.2017.matlab_required.lin64.zip
-          unzip -q MaskFace.12.27.2017.matlab_required.lin64.zip
-          rm MaskFace.12.27.2017.matlab_required.lin64.zip
-          mv lin64.Dec2017 FaceMasking
-
-      - name: Install templates (FreeSurfer MRI Deface templates, MNI152lin_T1_1mm)
-        shell: bash
-        run: |
-          mkdir -p $HOME/tools/templates
-          wget -q -P $HOME/tools/templates https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/talairach_mixed_with_skull.gca.gz
-          wget -q -P $HOME/tools/templates https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/face.gca.gz
-          gunzip $HOME/tools/templates/*
-          mv $HOME/tools/templates/talairach_mixed_with_skull.gca $HOME/tools/templates/freesurfer_deface_talairach_mixed_with_skull.gca
-          mv $HOME/tools/templates/face.gca $HOME/tools/templates/freesurfer_deface_face.gca
-          cp /home/runner/tools/fsl/data/standard/MNI152_T1_1mm.nii.gz /home/runner/tools/fsl/data/standard/MNI152lin_T1_1mm.nii.gz
+          source $GITHUB_WORKSPACE/.github/workflows/intall_tools.sh
+        env:
+          LOAD_FSL: 1
+          LOAD_FREESURFER: 1
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
