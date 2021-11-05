@@ -19,12 +19,12 @@ LIC=$4
 TPLDIR=$5
 
 cd ${INSTDIR}
-wget -q "https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/${VERSION}/freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
+wget -"https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/${VERSION}/freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
 tar xzf "freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
 rm "freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
 mkdir -p ${TPLDIR}
-wget -q -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/talairach_mixed_with_skull.gca.gz
-wget -q -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/face.gca.gz
+wget -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/talairach_mixed_with_skull.gca.gz
+wget -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/face.gca.gz
 gunzip ${TPLDIR}/*
 mv ${TPLDIR}/talairach_mixed_with_skull.gca ${TPLDIR}/freesurfer_deface_talairach_mixed_with_skull.gca
 mv ${TPLDIR}/face.gca ${TPLDIR}/freesurfer_deface_face.gca
