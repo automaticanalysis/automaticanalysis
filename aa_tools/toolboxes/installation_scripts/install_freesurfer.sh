@@ -22,6 +22,7 @@ cd ${INSTDIR}
 wget -q "https://ftp.nmr.mgh.harvard.edu/pub/dist/freesurfer/${VERSION}/freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
 tar xzf "freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
 rm "freesurfer-linux-${FSOS}_x86_64-${VERSION}.tar.gz"
+echo -e $LIC > ${INSTDIR}/freesurfer/license.txt
 mkdir -p ${TPLDIR}
 wget -q -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/talairach_mixed_with_skull.gca.gz
 wget -q -P ${TPLDIR} https://surfer.nmr.mgh.harvard.edu/pub/dist/mri_deface/face.gca.gz

@@ -27,7 +27,7 @@
             </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/home/runner/tools/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/work/automaticanalysis/automaticanalysis/aa_tools/toolboxes/installation_scripts/fsl_bash</fslsetup>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/tools/config/fsl_bash.sh</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
             <freesurferdir desc='Path to freesurfer' ui='dir'>/home/runner/tools/freesurfer</freesurferdir>        

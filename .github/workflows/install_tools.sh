@@ -1,6 +1,7 @@
 TOOLDIR=$HOME/tools
-mkdir $HOME/tools
-TEMPLATEDIR=$HOME/tools/templates
+mkdir $TOOLDIR
+mkdir $TOOLDIR/config
+TEMPLATEDIR=$TOOLDIR/templates
 
 sudo apt-get update
 sudo apt-get install libtinfo5 libtinfo6 dc
@@ -12,7 +13,7 @@ source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_facemas
 echo "FSL: ${LOAD_FSL}; FREESURFER: ${LOAD_FREESURFER}"
 
 if [[ "x${LOAD_FSL}x" == "x1x" ]]; then
-    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 6.0.5 centos7
+    source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 6.0.5 centos7 0 $TOOLDIR/config/fsl_bash.sh
 else # FSL standards are needed for some modules
     source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_fsl.sh $TOOLDIR 6.0.5 centos7 1
 fi
