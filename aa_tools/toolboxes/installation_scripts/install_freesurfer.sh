@@ -1,4 +1,4 @@
-# This is a script to download and install FreeSurfer with mri_deface templates. The scripts checks the instalation by looking for the "freesurfer" folder
+# This is a script to download and install FreeSurfer with mri_deface templates. The script checks the installation by looking for the "freesurfer" folder
 #
 # source install_freesurfer.sh <installation_directory> <version> <os> <license_string> <template_directory>
 #

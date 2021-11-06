@@ -4,11 +4,11 @@ mkdir $TOOLDIR/config
 TEMPLATEDIR=$TOOLDIR/templates
 
 sudo apt-get update
-sudo apt-get install libtinfo5 libtinfo6 dc
+sudo apt-get install libtinfo5 libtinfo6 dc libxml2-utils
 
-source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_spm.sh $TOOLDIR 12
-
-source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_facemasking.sh $TOOLDIR
+# All MATLAB tools MUST be installed referred by the parameterset
+source $GITHUB_WORKSPACE/.github/workflows/tools_urls.sh
+source $GITHUB_WORKSPACE/aa_tools/toolboxes/installation_scripts/install_matlabtools.sh $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $TOOLDIR
 
 echo "FSL: ${LOAD_FSL}; FREESURFER: ${LOAD_FREESURFER}"
 
