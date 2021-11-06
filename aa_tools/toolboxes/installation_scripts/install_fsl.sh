@@ -32,7 +32,7 @@ else
     ${INSTDIR}/fsl/etc/fslconf/post_install.sh -f ${INSTDIR}/fsl
 
     # config script
-    if [[ $(basename $(echo $0)) == "bash" ]]; then
+    if [[ $(basename $(echo $SHELL)) == "bash" ]]; then
         CFGSTR=$(fslconfig_bash)
         echo "${CFGSTR//INSTDIR/$INSTDIR}" > $CONFIGFILE
     else
