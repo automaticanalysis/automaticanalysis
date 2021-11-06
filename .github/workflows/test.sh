@@ -1,3 +1,3 @@
 mkdir $HOME/logs
-echo "Shell: $(basename $(echo $0))" > $HOME/logs/shell.txt
+echo "Shell: $(basename $(echo $SHELL))" > $HOME/logs/shell.txt
 
