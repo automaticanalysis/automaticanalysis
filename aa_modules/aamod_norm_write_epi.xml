@@ -3,7 +3,8 @@
     <tasklist>
         <currenttask domain='session' mfile_alias='aamod_norm_write' desc='SPM normalisation write (stream EPI)' modality='MRI'>
             
-            <!-- this is identical to norm_write.xml, just with a name that better describes what it does -->
+            <!-- alternative to norm_write.xml with inf bounding box and no domain wildcarding -->
+            <!-- (domain wildcarding is problematic on some systems) -->
 			
             <qsub>
                 <timeBase>0.5</timeBase>
@@ -33,7 +34,7 @@
             <!-- stream 'structural' is only used to checkreg the results -->
             <!-- however, the code will crash if it can't load it -->
 			 
-            <!-- NB: the "ismodified=0 on epi here is very confusing. -->
+            <!-- NB: the "ismodified=0 on epi here is confusing. -->
             <!-- epi is indeed modified, but new file(s) are created -->
             <!-- by reslicing. The *original* epi is unmodified, and -->
             <!-- by telling aa that it can use ln rather than cp -->

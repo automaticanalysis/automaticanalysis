@@ -290,11 +290,16 @@ for subj = 1:numel(aap.acq_details.subjects)
             for e = 1:numel(events)
                 ord = [ord vertcat(e*ones(1,numel(events(e).ons)),1:numel(events(e).ons))];
             end
-            if size(events(1).ons,1) > size(events(1).ons,2) % column
+
+            % trying to determine if events are a row or col vect
+            % this can fail if events.ons contains one element...
+            
+            try
                 [ons,inde] = sort(vertcat(events.ons));
-            else
+            catch
                 [ons,inde] = sort(horzcat(events.ons)');
             end
+   
             ord = ord(:,inde);
             lines = sprintf('onset\tduration\tweight\ttrial_type\n');
             for l = 1:size(ord,2)

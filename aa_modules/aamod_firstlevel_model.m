@@ -6,6 +6,12 @@
 % Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
 % Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
 % Thanks to Rik Henson for various suggestions (modified) [AVG & TA]
+%
+% CHANGE HISTORY
+%
+% 09/2021 [MSJ] added rWLS; don't wait for reporting to plot the design 
+% matrix, save masks as QA images; save regressors to text file (SPM 
+% figure labeling is hard to read!)
 
 function [aap,resp]=aamod_firstlevel_model(aap,task,subj)
 
@@ -27,14 +33,24 @@ switch task
         end
 
     case 'doit'
+        
+        % rWLS toolbox init
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            [ ~, WLS ] = aas_cache_get(aap,'wls');
+            WLS.load;
+        end
+        
         % Get subject directory
         cwd=pwd;
         
  		% We can now have missing sessions per subject, so we're going to use only
         % the sessions that are common to this subject and selected_sessions
+        
         [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
-        numSess = numel(subjSessionI);        
+        numSess = numel(subjSessionI);
+        
         modname = aap.tasklist.currenttask.name;
         modnameind = regexp(modname, '_\d{5,5}$');
         modindex = str2num(modname(modnameind+1:end));
@@ -79,6 +95,7 @@ switch task
             aas_firstlevel_model_nuisance(aap, subj, files);
 
         %% Set up CORE model
+        
         cols_nuisance=[];
         cols_interest=[];
         currcol=1;
@@ -104,11 +121,17 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         %% DESIGN MATRIX %%
         %%%%%%%%%%%%%%%%%%%
+        
         SPM.xY.P = allfiles;
         if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
             spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
         end
-        SPMdes = spm_fmri_spm_ui(SPM);
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            SPMdes = spm_rwls_fmri_spm_ui(SPM);
+        else
+            SPMdes = spm_fmri_spm_ui(SPM);
+        end
 
         SPMdes.xX.X = double(SPMdes.xX.X);
         
@@ -139,15 +162,20 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
+        
         % avoid overwrite dialog
         prevmask = spm_select('List',SPMdes.swd,'^mask\..{3}$');
         if ~isempty(prevmask)
             for ind=1:size(prevmask,1)
                 spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
-            end;
+            end
         end
                 
-        SPMest = spm_spm(SPMdes);
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            SPMest = spm_rwls_spm(SPMdes);
+        else
+            SPMest = spm_spm(SPMdes);
+        end
         
         % Saving Residuals
         if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
@@ -171,9 +199,9 @@ switch task
         end        
         
         %% Describe outputs
+        
         cd (cwd);
 
-        % Describe outputs
         %  firstlevel_spm
         aap=aas_desc_outputs(aap,subj,'firstlevel_spm',fullfile(anadir,'SPM.mat'));
 
@@ -188,6 +216,8 @@ switch task
             mask = dir(fullfile(anadir,'mask.*'));
             mask=strcat(repmat([anadir filesep],[numel(mask) 1]),char({mask.name}));
             aap=aas_desc_outputs(aap,subj,'firstlevel_brainmask',mask);            
+            % save diagnostic images for QA montage
+            save_three_ortho_jpgs(mask,fullfile(aas_getsubjpath(aap,subj),'diagnostic_BRAINMASK'));
         end
         betafns=strcat(repmat([anadir filesep],[numel(allbetas) 1]),char({allbetas.name}));
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
@@ -198,7 +228,67 @@ switch task
             end
         end
 
-        %% DIAGNOSTICS...
+        %% DIAGNOSTICS
+        
+        %  document rwls results using spm_rwls_resstats 
+
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            % sometimes rwls looks for the movement params using the wrong          
+            % filename, so pass in an expliclit fname if we can
+            if (aas_stream_has_contents(aap, subj, 'realignment_parameter'))
+                for sindex = 1:numSess
+                    moveparfname{sindex} = aas_getfiles_bystream(aap, subj, sindex,'realignment_parameter'); 
+                end
+                spm_rwls_resstats(SPMest,[],moveparfname);
+            else
+                spm_rwls_resstats(SPMest);
+            end          
+            
+            h = spm_figure('GetWin', 'Graphics');
+            set(h,'Renderer','opengl');
+            % the following is a workaround for font rescaling weirdness
+            set(findall(h,'Type','text'),'FontSize', 10);
+            set(findall(h,'Type','text'),'FontUnits','normalized');
+            print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_RWLS.jpg'));
+            spm_figure('Close','Graphics');
+            spm_figure('Close','Interactive'); % rWLS toolbox leaves the interactive window up...
+
+        end
+ 
+        % its convenient to save the design matrix now rather than having to run reporting...
+
+        spm_DesRep('DesOrth',SPMest.xX);
+        h = spm_figure('GetWin', 'Graphics');
+        set(h,'Renderer','opengl');
+        % the following is a workaround for font rescaling weirdness
+        set(findall(h,'Type','text'),'FontSize', 10);
+        set(findall(h,'Type','text'),'FontUnits','normalized');
+        print(h,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'DESIGN_MATRIX.jpg'));
+        spm_figure('Close','Graphics');
+
+        % document columns of design matrix as plaintext (SPM skips labels on the plot)
+
+        writetable(cell2table(SPMest.xX.name'), fullfile(aas_getsubjpath(aap,subj),'REGRESSORS.txt'));
+
+        % document event onsets for verification
+         
+        fid = fopen(fullfile(aas_getsubjpath(aap,subj),'ONSETS.txt'),'w');
+
+        if (fid > 0) 
+            for sessindex = 1:numel(SPMest.Sess)
+                fprintf(fid,sprintf('\n\t--- SESSION %0d ---\n',sessindex));
+                regressors = SPMest.Sess(sessindex).U;
+                for rindex = 1:numel(regressors)
+                    fprintf(fid,sprintf('\n\t%s\n\n', regressors(rindex).name{1}));
+                    onsets = regressors(rindex).ons;
+                    for oindex = 1:length(onsets)
+                        fprintf(fid,'\t%g\n', onsets(oindex));
+                    end
+                end
+            end
+            fclose(fid);
+        end
+        
         if ~isempty(SPMdes.xX.iC) % model is not empty
             h = firstlevelmodelStats(anadir, [], spm_select('FPList',anadir,'^mask.*'));
             print(h.regs,'-djpeg','-r150', fullfile(aas_getsubjpath(aap,subj), 'diagnostic_aamod_firstlevel_model_regs.jpg'));
@@ -207,7 +297,21 @@ switch task
             close(h.regs)
             close(h.betas)
         end
+        
+        % unload toolboxes?
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            WLS.unload;
+        end     
+        
     case 'checkrequirements'
+
+        %% rWLS
+        
+        if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
+            if ~aas_cache_get(aap,'wls'), aas_log(aap,true,'rWLS toolbox not found'); end
+        end       
+        
         %% Add PPI preparations (if needed)
         [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
@@ -256,4 +360,8 @@ switch task
             aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
             aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
         end
+        
+    otherwise
+        aas_log(aap,1,sprintf('Unknown task %s',task));
+        
 end

@@ -37,7 +37,7 @@
 			-->
             <firstlevelmasking>1</firstlevelmasking>
             
-            <!-- 'None' or 'AR(1)' -->
+            <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
             <autocorrelation>AR(1)</autocorrelation>
             
             <!-- enable/disable orthogoanlisation (only for SPM12 and above) -->

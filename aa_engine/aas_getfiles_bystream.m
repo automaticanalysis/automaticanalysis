@@ -6,8 +6,12 @@
 %
 % See also aas_getfiles_bystream, which is intended for EPI images.
 %
-% Rhodri Cusack MRC CBU Cambridge, Feb 2010
+% Change History
+%
+% 2021 [MSJ] - double pause to improve OS-X PCT performance
 % Tibor Auer MRC CBU Cambridge, 2012-2013
+% Rhodri Cusack MRC CBU Cambridge, Feb 2010 
+%
 
 function [allfiles md5 inpstreamdesc]=aas_getfiles_bystream(aap,varargin)
 
@@ -86,7 +90,8 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         % the file being available.
         if retries > 0
             copyfile(inpstreamdesc, tmpfname);
-            pause(1)
+            pause(1);            
+            pause(1); % 2nd pause here may help PCT performance on OS-X
         end
         
         fid=fopen(tmpfname,'r');
@@ -96,7 +101,8 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
         if isnumeric(lne)
             retries = retries + 1;
             disp('MD5 line could not be found: waiting 1 second and retrying')            
-            pause(1)
+            pause(1);           
+            pause(1); % 2nd pause here may help PCT performance on OS-X
             else
             break
         end
@@ -131,6 +137,7 @@ else
     inpstreamdesc = '';
     allfiles = '';
     md5 = '';
+unix('touch /Users/peellelab/000_AAS_GETFILE_FAIL3.txt');
 end
 
 end

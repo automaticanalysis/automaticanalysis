@@ -1,38 +1,55 @@
 function aa_test(varargin)
 %
-% run /developer testscripts (new version -- replaces aatest)
+% run $AAHOME/developer testscripts
 %
-% inputs (optional)
+% inputs (optional) - specified as keyword,value pairs
+%
+% 'parameterfile',parameterfile -
+%   == (fullpath) to parameter file. If not specified, aa_test will
+%   use ~/.aa/aap_parameters_user.xml. NB: the parameter file used
+%   for aa_test is slightly different than the standard parameter file.
+%   Briefly, aap.directory_conventions.rawdatadir and 
+%   aap.acq_details.root *must* be defined in the parameter file (many
+%   aa users prefer to define these in the analysis script, not the
+%   parameter file) and rawdatadir is interpreted as the *parent*
+%   directory of the test data directory (or directories), not the data
+%   directory itself. See the template test script provided in
+%   $AAHOME/developer/aatest_ds000114_TEMPLATE.m for an expanded
+%   discussion (including the motivation for these changes).
 %
 % 'glob', glob -
-%   (limited) glob search string used to restrict which 
+%   == (limited) glob search string used to restrict which 
 %   testscripts are run ("limited" in the sense that we only
 %   recognize a string literal and a tilde-negated string literal. 
 %   See example usage below). If not specified, all testscripts 
 %   are run.
 %
 % 'deleteprevious', deleteprevious -
-%   == true, testing will delete any previous tests to trigger re-execution
-%      (default: true)
+%   == true, testing will delete any previous results to force
+%   re-execution of the entire analysis (default: true)
 %
 % 'haltonerror', haltonerror -
-%   == true, testing will halt (crash) if any errors (default: false)
+%   == true, testing will halt (crash) if any errors, otherwise
+%   testing continues with the next script (default: false)
 %
 % 'wheretoprocess', wheretoprocess- 
-%   == 'localsingle' (default), jobs within testing will run locally in a
-%      serial fashion UNLESS wheretoprocess specifies differently, then
-%      jobs instead will be submitted to the cluster as specified
+%   == 'localsingle' (default), jobs will run locally in a serial
+%   fashion. Other options include 'parpool' and 'batch' (cluster)
 %
 % Example Usage
 %
 %   aa_test;                      - run all scripts, use default settings
 %   aa_test('haltonerror',true)   - run all scripts, halt on error
 %
+%   aa_test('parameterfile','/path/to/myPRtestingparameterfile.xml');
+%
 % example glob usage
 %
 %   aa_test('glob','aatest_ds000114_fmri') - only run aatest_ds000114_fmri.m
-%   aa_test('glob','~ds002737') - run all scripts except those with 
+%   aa_test('glob','~ds002737') - run all scripts EXCEPT those with 
 %                          "ds002737" in the name (note leading tilde)
+%
+% Notes
 %
 % test results (pass/fail) are logged to aa_test.log in working dir.
 % If this file exists, you'll be asked before it is overwritten
@@ -43,27 +60,22 @@ function aa_test(varargin)
 % to run the jobs on a cluster and re-run script "foo" that failed in order 
 % to drop into the debugger.
 %
-% Notes
-%
 % test scripts are assumed to live in $AAHOME/developer/testscripts
-% (old version assumed scripts lived in $AAHOME/examples). These
-% scripts are designed for efficient PR testing and not necessarily
+% These are designed for efficient PR testing and not necessarily
 % helpful for learning aa. See $AAHOME/examples for the latter.
-%
-% Note testscripts load parameter file ~/.aa/aap_parameters_user.xml
-% You should customize this file for how you want to do PR testing. 
-% See comments in $AAHOME/developer/aatest_ds000114_TEMPLATE.m for info.
 %
 % Revision History
 %
+% 10/2021 [MSJ] - add parameterfile parameter
 % summer/2021 [MSJ] - newish (derived from aatest) 
 %
 
 argParse = inputParser;
-argParse.addParameter('glob','',@ischar);
-argParse.addParameter('deleteprevious',true,@(x) islogical(x) || isnumeric(x));
-argParse.addParameter('haltonerror',false,@(x) islogical(x) || isnumeric(x));
-argParse.addParameter('wheretoprocess','localsingle',@ischar);
+argParse.addParameter('glob','', @ischar);
+argParse.addParameter('deleteprevious', true, @(x) islogical(x) || isnumeric(x));
+argParse.addParameter('haltonerror', false, @(x) islogical(x) || isnumeric(x));
+argParse.addParameter('wheretoprocess','localsingle', @ischar);
+argParse.addParameter('parameterfile','', @ischar);
 argParse.parse(varargin{:});
 
 % parse glob negation tilde
@@ -106,7 +118,7 @@ for fname = testnames
     if globflag<0 && contains(fname{1},glob); continue; end
     if globflag>0 && ~contains(fname{1},glob); continue; end
     fprintf('\n\nRunning %s...\n', fname{1});
-    runit(fname{1}, argParse.Results.deleteprevious, argParse.Results.haltonerror, argParse.Results.wheretoprocess, fid);
+    runit(fname{1}, argParse.Results.parameterfile, argParse.Results.deleteprevious, argParse.Results.haltonerror, argParse.Results.wheretoprocess, fid);
 end
 
 fprintf('------------------\ntests finished.\n')
@@ -116,7 +128,7 @@ fclose(fid);
 end
 
 % -------------------------------------------------------------------------
-function runit(scriptname, deleteprevious, haltonerror, wheretoprocess, fid)
+function runit(scriptname, parameterfile, deleteprevious, haltonerror, wheretoprocess, fid)
 % -------------------------------------------------------------------------
 
 func = str2func(strrep(scriptname,'.m',''));
@@ -126,7 +138,7 @@ if  haltonerror
     % run script normally;
     % function halts on aa error
     
-    func(deleteprevious, wheretoprocess);
+    func(parameterfile, deleteprevious, wheretoprocess);
     
     % if encapsulated returns, this script passed
     
@@ -141,7 +153,7 @@ else
     
     try
         
-        func(deleteprevious, wheretoprocess);
+        func(parameterfile, deleteprevious, wheretoprocess);
         fprintf('\npass - %s\n',scriptname);
         fprintf(fid,'\npass - %s\n',scriptname);
         

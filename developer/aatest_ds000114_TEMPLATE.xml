@@ -4,6 +4,9 @@
         <initialisation>	
             <module><name>aamod_study_init</name></module>
         </initialisation>
+        
+        <!-- this is just a toy tasklist to accompany the testscript -->
+        <!-- aatest_ds000114_TEMPLATE.m for documentation purposes -->
 		
         <main>
             <module><name>aamod_structuralfromnifti</name></module>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+
+        <initialisation>	
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>
+         
+            <!-- preprocessing -->
+            
+            <module><name>aamod_structuralfromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_structural</name></module>
+            <module><name>aamod_epifromnifti</name></module>
+            <module><name>aamod_reorienttomiddle_epi</name></module>
+
+            <module><name>aamod_biascorrect_structural</name></module>
+
+            <module><name>aamod_realign</name></module>  
+            <module><name>aamod_biascorrect_meanEPI</name></module>
+            <module><name>aamod_coreg_extended</name></module>
+
+            <module><name>aamod_segment8_multichan</name>
+                 <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <samp>2</samp>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+
+            <module><name>aamod_norm_write_epi</name></module>
+
+            <module><name>aamod_smooth</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <FWHM>8</FWHM>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+
+
+            <!-- wavelet despiking -->
+            <!-- apply median 1000 rescaling before processing -->
+
+            <module><name>aamod_rescale_epi</name>               
+                <extraparameters>
+                <aap><tasklist><currenttask><settings>
+                    <scalingmode>median</scalingmode>
+                    <scale>1000</scale>
+                    <odt>int</odt>
+                </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>  
+
+            <module><name>aamod_waveletdespike</name></module>
+            
+            <module><name>aamod_firstlevel_model</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <includemovementpars>0</includemovementpars>
+                        <includespikes>0</includespikes>
+                    </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+            
+            <module><name>aamod_firstlevel_contrasts</name></module> 
+            <module><name>aamod_firstlevel_threshold</name>
+                <extraparameters>
+                    <aap><tasklist><currenttask><settings>
+                        <description>wavelet despike, 0.001 UNC</description>
+                     </settings></currenttask></tasklist></aap>
+                </extraparameters>
+            </module>
+
+        </main>
+        
+    </tasklist>
+</aap>

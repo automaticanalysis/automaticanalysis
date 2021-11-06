@@ -73,24 +73,40 @@ spikeRegs = [];
 SPstreams = streamIn(strcmp('listspikes', streamIn));
 
 if ~isempty(SPstreams) && aas_stream_has_contents(aap, 'listspikes') && settings.includespikes
-    for sess=1:numSess
+	
+    for sess = 1:numSess
+		
         SPfn = aas_getimages_bystream(aap,subj,subjSessionI(sess),SPstreams{:});
         
         % Contains spike scan numbers
+		
         TSspikes = []; Mspikes = [];
         load(SPfn);
         
-        % Combine spikes and moves...
-        regrscans = union(TSspikes(:,1), Mspikes(:,1));
-        
-        spikeRegs(sess).names = {};
-        spikeRegs(sess).regs = zeros(size(files{sess},1), length(regrscans));
-        
-        for r = 1:length(regrscans),
-            spikeRegs(sess).regs(regrscans(r),r) = 1;    % scan regrscan(r) is at one for scan r
-            spikeRegs(sess).names{r} = sprintf('SpikeMov%d', r);
-        end
-    end
+		if (isempty(TSspikes))
+			TSspikes = Mspikes;
+		end
+
+		if (~isempty(TSspikes))
+
+			% Combine spikes and moves...
+			
+			regrscans = union(TSspikes(:,1), Mspikes(:,1));
+
+			spikeRegs(sess).names = {};
+			spikeRegs(sess).regs = zeros(size(files{sess},1), length(regrscans));
+
+			for r = 1:length(regrscans)
+				spikeRegs(sess).regs(regrscans(r),r) = 1;    % scan regrscan(r) is at one for scan r
+				spikeRegs(sess).names{r} = sprintf('SpikeMov%d', r);
+			end
+			
+		end
+	
+end
+	
+
+
 end
 
 %% GLMdenoise regressors [CW]
@@ -104,3 +120,4 @@ if ~isempty(GLMDNstream) && aas_stream_has_contents(aap, 'gd_results') && settin
         GLMDNregs(sess).regs = gd_results.pcregressors{sess}(:, 1:gd_results.pcnum);
     end
 end
+
