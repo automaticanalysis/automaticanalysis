@@ -1,4 +1,4 @@
-# This is a script to download and install FSL. The scripts checks the instalation by looking for the "fsl" folder
+# This is a script to download and install FSL. The script checks the installation by looking for the "fsl" folder
 #
 # source install_fsl.sh <installation_directory> <version> <os> <standard_only> <config_file>
 #
@@ -32,8 +32,14 @@ else
     ${INSTDIR}/fsl/etc/fslconf/post_install.sh -f ${INSTDIR}/fsl
 
     # config script
-    CFGSTR=$(fslconfig_bash)
-    echo "${CFGSTR//INSTDIR/$INSTDIR}" > $CONFIGFILE
+    if [[ $(basename $(echo $0)) == "bash" ]]; then
+        CFGSTR=$(fslconfig_bash)
+        echo "${CFGSTR//INSTDIR/$INSTDIR}" > $CONFIGFILE
+    else
+        echo "FSL configuration is implemented only for BASH."
+        echo "FSL has not been installed properly. Exiting..." >&2
+        exit -1; 
+    fi
 fi
 rm fsl-${VERSION}-${FSOS}_64.tar.gz
 
