@@ -34,3 +34,10 @@ jobs:
       - name: Run a script
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/test.sh
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: CItest
+          path: |
+            ~/logs/
