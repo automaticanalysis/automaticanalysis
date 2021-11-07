@@ -80,7 +80,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -132,7 +132,7 @@ jobs:
           mkdir -p $HOME/data/aa_demo
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
           aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01/ses-test $HOME/data/aa_demo/ds000114/sub-01/ses-test --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -149,7 +149,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -220,7 +220,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2
@@ -287,7 +287,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')), aa_ver5, SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')), SPM.load, aa_test('glob','aatest_ds002737_deface','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds002737_deface','haltonerror',true)
 
       - name: Archive results
         uses: actions/upload-artifact@v2

@@ -16,7 +16,6 @@ aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, whe
 % -------------------------------------------------------------------------
 
 aap.acq_details.numdummies = 1;
-aap.acq_details.input.combinemultiple = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
 
 aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
@@ -25,7 +24,8 @@ aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
 % BIDS
 % -------------------------------------------------------------------------
 
-aap = aas_processBIDS(aap,[],[],{'sub-01'});
+% analyising a single session only
+aap = aas_processBIDS(aap,{'ses-test'},[],{'sub-01'});
 
 % -------------------------------------------------------------------------
 % run

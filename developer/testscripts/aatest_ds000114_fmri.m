@@ -36,7 +36,7 @@ aap.tasksettings.aamod_secondlevel_threshold(2).threshold.p = 0.001;
 % BIDS
 % -------------------------------------------------------------------------
 
-aap.acq_details.input.combinemultiple = true;
+aap.acq_details.input.combinemultiple = 1;
 
 % five subjects is about minimum to run a second level model
 
