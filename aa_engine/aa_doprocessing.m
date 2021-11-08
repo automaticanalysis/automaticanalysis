@@ -35,33 +35,33 @@
 % [RC]
 %
 % Late 2012-Early 2013
-% 
+%
 % Dependency engine rewritten, to allow task domains other than
 % study/subjects/session. For example: "epipackage" is a package of EPIs;
 % "searchlightpackage" is a package of searchlights
 % Dependencies are now defined by a tree structure defined within the
 % aap_defaults_parameters.xml file. This specifies how to breakdown a study
-% into parts according to different schemes. 
+% into parts according to different schemes.
 %
 % Dependencies are now calculated by a set of helper functions - e.g.,
 %  deps=aas_dependencytree_allfromtrunk(aap,domain);
 %   given a task of domain "domain", return a list of all indices at this
 %   level - e.g., for "session", deps= {{'session', [1 1]},{'session', [1
-%   2]},{'session', [2,1]}....{'session',[nsubj nsess]}} 
-% 
+%   2]},{'session', [2,1]}....{'session',[nsubj nsess]}}
+%
 %  aas_doneflag_getpath_bydomain(aap,domain,indices,k)
 %   "domaind" specifies the domain (e.g., session, which branched below subject)
 %   "indicies" is an array with the number of parameters required for a
 %   given branch level (e.g., 2 parameters, subject & session for a
 %   session-level task)
-%  
+%
 %  aas_getdependencies_bydomain(aap,sourcedomain,targetdomain,indices,'doneflaglocations');
-%   if a task of domain "targetdomain" and indices "indices" is waiting for 
+%   if a task of domain "targetdomain" and indices "indices" is waiting for
 %   a task of a given sourcedomain, the stages it must wait for are
 %   returned
 %
 %  aas_getN_bydomain(aap,domain,[indices])
-%   get number of parts to domain 
+%   get number of parts to domain
 %
 %  aas_getdirectory_bydomain(aap,domain.index)
 %   get subdirectory name for a single example specified by index of this
@@ -80,7 +80,7 @@ aap = aa_init(aap);
 
 if (exist('bucket','var'))
     % Get username
-    [s w]=aas_shell(aap, 'whoami');
+    [s, w]=aas_shell(aap, 'whoami');
     username=strtok(w);
 end
 % Defend against command insertion
@@ -118,7 +118,7 @@ aaworker=[];
 try
     aaworker.parmpath;
 catch
-    [junk, nme, junk]=fileparts(tempname);
+    [~, nme, ~]=fileparts(tempname);
     aaworker.parmpath=aaworker_getparmpath(aap,sprintf('%s_%s',datestr(now,30),strtok(nme,'_')));
 end
 
@@ -143,7 +143,7 @@ if isempty(aaparallel)
     end
     % aaparallel.retrydelays=[10 60 300 3600 5*3600]; % seconds delay before successive retries
     aaparallel.retrydelays=[2:9 60 300 3600]; % djm: temporary solution to get past memory errors
-    
+
     while(1)
         if (exist('workerid','var'))
             aaparallel.processkey=workerid;
@@ -151,7 +151,7 @@ if isempty(aaparallel)
             aaparallel.processkey=num2str(round(rand(1)*1e6));
         end
         aaparallel.nextworkernumber=num2str(aaparallel.processkey*1000);
-        
+
         pth=aaworker_getparmpath(aap,0,true);
         fn=dir(fullfile(fileparts(pth),[sprintf('aaworker,%d',aaparallel.processkey) '*']));
         if (isempty(fn)) % No directories starting with this process key
@@ -213,16 +213,16 @@ end
 taskqueue = feval(sprintf('aaq_%s', aap.options.wheretoprocess),aap);
 % Create a local taskqueue for localonly modules
 try
-  localtaskqueue=aaq_localsingle(aap);
+    localtaskqueue=aaq_localsingle(aap);
 catch
-  aas_log(aap,true,'Failed to initiate local queue!\n');
+    aas_log(aap,true,'Failed to initiate local queue!\n');
 end
 
 % Check registered with django
 if (strcmp(aap.directory_conventions.remotefilesystem,'s3'))
     % Get bucket nid
-    [aap, waserror, aaworker.bucket_drupalnid]=drupal_checkexists(aap,'bucket',aaworker.bucket);
-    
+    [aap, ~, aaworker.bucket_drupalnid]=drupal_checkexists(aap,'bucket',aaworker.bucket);
+
     % Check all subjects are specified as datasets that belong to the job...
     %     attr=[];
     %     for i=1:length(aap.acq_details.subjects)
@@ -238,24 +238,24 @@ for mytasks = {'checkrequirements','doit'} %
     for k=1:length(aap.tasklist.main.module)
         task=mytasks{1};
         % allow full path of module to be provided [djm]
-        [stagepath, stagename]=fileparts(aap.tasklist.main.module(k).name);
+        [~, stagename]=fileparts(aap.tasklist.main.module(k).name);
         index=aap.tasklist.main.module(k).index;
-        
+
         if (isfield(aap.schema.tasksettings.(stagename)(index).ATTRIBUTE,'mfile_alias'))
             mfile_alias=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.mfile_alias;
         else
             mfile_alias=stagename;
         end
-        
+
         aap=aas_setcurrenttask(aap,k);
-        
+
         % retrieve description from module
         description=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.desc;
-        
+
         % find out whether this module needs to be executed once per study, subject or session
         domain=aap.schema.tasksettings.(stagename)(index).ATTRIBUTE.domain;
-        if strcmp(domain,'*'), domain = 'study'; end % generic modules at checkrequirements -> run once 
-                        
+        if strcmp(domain,'*'), domain = 'study'; end % generic modules at checkrequirements -> run once
+
         % Start setting up the descriptor for the parallel queue
         clear taskmask
         taskmask.domain=domain;
@@ -263,23 +263,23 @@ for mytasks = {'checkrequirements','doit'} %
         taskmask.task=task;
         taskmask.stagename=stagename;
         taskmask.studypath=aas_getstudypath(aap,aap.directory_conventions.remotefilesystem);
-        
+
         completefirst=aap.internal.inputstreamsources{k}.stream;
-        
+
         % What needs to finish depends upon the domain of this stage and
         % the previous one. So, if both are session level, then the single
         % session needs to finish the previous stage before the next stage
         % starts on this session. If the latter is subject level, all of
         % the sessions must finish.
         % Now execute the module, and change the 'done' flags if task='doit'
-        
+
         % Get all of the possible instances (i.e., single subjects, or
         % single sessions of single subjects) for this domain
-       
+
         deps=aas_dependencytree_allfromtrunk(aap,domain);
         for depind=1:length(deps)
             indices=deps{depind}{2};
-            
+
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
@@ -295,7 +295,7 @@ for mytasks = {'checkrequirements','doit'} %
                     aas_delete_doneflag_bypath(aap,doneflag);
                 end
             end
-            
+
             if aas_doneflagexists(aap,doneflag) && strcmp(task,'doit')
                 msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
             else
@@ -313,7 +313,7 @@ for mytasks = {'checkrequirements','doit'} %
                         for k0i=1:length(aap.internal.outputstreamdestinations{k}.stream)
                             aas_delete_doneflag_bydomain(aap,aap.internal.outputstreamdestinations{k}.stream(k0i).destnumber,domain,indices);
                         end
-                        
+
                         % work out what needs to be done before we can
                         % execute this stage
                         completefirst=aap.internal.inputstreamsources{k}.stream;
@@ -327,7 +327,7 @@ for mytasks = {'checkrequirements','doit'} %
                             end
                         end
                         taskmask.tobecompletedfirst=tbcf;
-                        
+
                         % now queue current stage
                         aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,doneflag));
 
@@ -335,7 +335,7 @@ for mytasks = {'checkrequirements','doit'} %
                         taskmask.doneflag=doneflag;
                         taskmask.description=sprintf('%s for %s',description,doneflag);
                         if isfield(aap.tasklist.currenttask.settings,'qsub') && ...
-							isfield(aap.tasklist.currenttask.settings.qsub,'localonly') && aap.tasklist.currenttask.settings.qsub.localonly && ...
+    							isfield(aap.tasklist.currenttask.settings.qsub,'localonly') && aap.tasklist.currenttask.settings.qsub.localonly && ...
                                 ~strcmp(aap.options.wheretoprocess,'localsingle')
                             localtaskqueue.addtask(taskmask);
                         else
@@ -351,7 +351,7 @@ for mytasks = {'checkrequirements','doit'} %
                 if (length(msg)>2)
                     msg=msg(1:length(msg-2));
                 end
-                
+
                 aas_log(aap,false,msg);
             end
             % Get jobs started as quickly as possible - important on AWS as it
@@ -385,7 +385,7 @@ if taskqueue.isOpen, taskqueue.close; end
 
 if ~taskqueue.fatalerrors
     if ismethod(taskqueue,'QVClose'), taskqueue.QVClose; end
-    
+
     if ~isempty(aap.options.email)
         % In case the server is broken...
         try
@@ -393,7 +393,7 @@ if ~taskqueue.fatalerrors
         catch
         end
     end
-    
+
     if isfield(aap.options,'garbagecollection') && aap.options.garbagecollection
         aas_garbagecollection(aap,1)
     end
@@ -408,7 +408,7 @@ global aa
 
 % restore root
 if isfield(aap.tasklist,'currenttask')
-    aap.acq_details.root = aap.internal.aap_initial.acq_details.root; 
+    aap.acq_details.root = aap.internal.aap_initial.acq_details.root;
     aap.directory_conventions.analysisid = aap.internal.aap_initial.directory_conventions.analysisid;
     aap.directory_conventions.analysisid_suffix = aap.internal.aap_initial.directory_conventions.analysisid_suffix;
 end
@@ -448,7 +448,7 @@ end
 
 
 function [loopvar]=getparallelparts(aap,stagenum)
-[prev_stagepath, prev_stagename]=fileparts(aap.tasklist.main.module(stagenum).name);
+[~, prev_stagename]=fileparts(aap.tasklist.main.module(stagenum).name);
 prev_index=aap.tasklist.main.module(stagenum).index;
 if (isfield(aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE,'mfile_alias'))
     prev_mfile_alias=aap.schema.tasksettings.(prev_stagename)(prev_index).ATTRIBUTE.mfile_alias;
