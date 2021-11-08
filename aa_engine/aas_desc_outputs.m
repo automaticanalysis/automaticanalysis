@@ -70,7 +70,7 @@ descriptor=fullfile(localroot,streamnme);
 trimmedoutputs=cell(1,osd.numoutputs);
 for d=1:osd.numoutputs
     fle=outputs(d,:);
-    if fle(1) == '/' % absolut path
+    if is_absolute_path(fle)
         fle = readlink(fle); % make sure that the path is canonical
         if (length(fle)>length(localroot) && strcmp(fle(1:length(localroot)),localroot))
             fle=fle(length(localroot)+1:end);
