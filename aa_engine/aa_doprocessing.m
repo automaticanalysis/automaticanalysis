@@ -283,7 +283,9 @@ for mytasks = {'checkrequirements','doit'} %
             msg='';
             alldone=true;
             doneflag=aas_doneflag_getpath_bydomain(aap,domain,indices,k);
-            
+            % When used in aas_log messages, escape backward slashes from windows paths.
+            logsafe_path = strrep(doneflag, '\', '\\');
+
             % Check whether tasksettings have changed since the last execution,
             % and if they have, then delete doneflag to trigger re-execution
             if strcmp(task,'doit') && isfield(aap.options,'checktasksettingconsistency') && aap.options.checktasksettingconsistency && aas_doneflagexists(aap,doneflag)
@@ -297,7 +299,7 @@ for mytasks = {'checkrequirements','doit'} %
             end
 
             if aas_doneflagexists(aap,doneflag) && strcmp(task,'doit')
-                msg=[msg sprintf('- done: %s for %s \n',description,doneflag)];
+                msg=[msg sprintf('- done: %s for %s \n',description,logsafe_path)];
             else
                 alldone=false;
                 switch (task)
@@ -329,7 +331,7 @@ for mytasks = {'checkrequirements','doit'} %
                         taskmask.tobecompletedfirst=tbcf;
 
                         % now queue current stage
-                        aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,doneflag));
+                        aas_log(aap,0,sprintf('MODULE %s PENDING: %s for %s',stagename,description,logsafe_path));
 
                         taskmask.indices=indices;
                         taskmask.doneflag=doneflag;

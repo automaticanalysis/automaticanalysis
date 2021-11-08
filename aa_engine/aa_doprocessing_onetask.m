@@ -63,7 +63,9 @@ aaworker.outputstreams=[];
 
 % Now execute the module, and change the 'done' flags if task='doit'
 
-[doneflag doneflagpath stagetag]=aas_doneflag_getpath_bydomain(aap,domain,indices,modulenum);
+[doneflag, doneflagpath, stagetag]=aas_doneflag_getpath_bydomain(aap,domain,indices,modulenum);
+% When used in aas_log messages, escape backward slashes from windows paths.
+logsafe_path = strrep(doneflagpath, '\', '\\');
 outputpath=aas_getpath_bydomain(aap,domain,indices);
 aas_makedir(aap,outputpath);
 aap_tmp=aap;
@@ -72,7 +74,7 @@ save(fullfile(outputpath,sprintf('aap_parameters_%s.mat',stagetag)),'aap');
 aap=aap_tmp;
 if (aas_doneflagexists(aap,doneflag))
     if (strcmp(task,'doit'))
-        aas_log(aap,0,sprintf('- completed previously: %s for %s',description,doneflagpath),aap.gui_controls.colours.completedpreviously);
+        aas_log(aap,0,sprintf('- completed previously: %s for %s',description,logsafe_path),aap.gui_controls.colours.completedpreviously);
         %                 re-write done flag as it clears dependencies
         aas_writedoneflag(aap,doneflag);
     end
@@ -92,7 +94,7 @@ else
                 aas_delete_doneflag_bydomain(aap,aap.internal.outputstreamdestinations{modulenum}.stream(k0i).destnumber,domain,indices);
             end
             % now run current stage
-            aas_log(aap,0,sprintf('MODULE %s RUNNING: %s for %s',stagename,description,doneflagpath),aap.gui_controls.colours.running);
+            aas_log(aap,0,sprintf('MODULE %s RUNNING: %s for %s',stagename,description,logsafe_path),aap.gui_controls.colours.running);
 
             % ...fetch inputs
             if ~isempty(aap.internal.inputstreamsources{modulenum})

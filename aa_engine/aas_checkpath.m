@@ -33,6 +33,8 @@ else
         passed=true;
     else
         passed=false;
-        aas_log(aap,true,sprintf('Paths in aa can only contain the characters a-z, A-Z, 0-9, _, -, ., / and sometimes wildcards/colons \nYour path %s=''%s'' does not satisfy this.',nme,pth));
-    end;
+        % When used in aas_log messages, escape backward slashes from windows paths.
+        logsafe_path = strrep(pth, '\', '\\');
+        aas_log(aap,true,sprintf('Paths in aa can only contain the characters a-z, A-Z, 0-9, _, -, ., / and sometimes wildcards/colons \nYour path %s=''%s'' does not satisfy this.',nme,logsafe_path));
+    end
 end
