@@ -24,6 +24,10 @@ classdef aaClass
                 rmpath(genpath(fullfile(obj.Path,'.git'))); % remove GitHub-related path
                 rmpath(genpath(fullfile(obj.Path,'.github'))); % remove GitHub-related path
                 rmpath(genpath(fullfile(obj.Path,'external','cluster'))); % remove cluster-integration path
+                tbxdirs = dir(fullfile(obj.Path,'aa_tools','toolboxes'));
+                % remove toolbox mods
+                tbxdirs = tbxdirs(cellfun(@(d) ~isempty(regexp(d,'.*_mods$', 'once')), {tbxdirs.name}));
+                rmpath(strrep(strjoin(cellfun(@genpath, fullfile(obj.Path,'aa_tools','toolboxes',{tbxdirs.name}), 'UniformOutput', false),pathsep),'::',':')); 
             end
 
             % user config directory
