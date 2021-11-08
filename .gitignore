@@ -3,3 +3,5 @@
 *.xml~
 
 .DS_Store
+
+spm_*.ps
