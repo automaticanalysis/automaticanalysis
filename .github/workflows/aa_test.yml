@@ -59,11 +59,11 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
+      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL)
         run: |
           source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
         env:
-          LOAD_FSL: 0
+          LOAD_FSL: 1
           LOAD_FREESURFER: 0
 
       - name: Retrive test data under $HOME/data/aa_demo
