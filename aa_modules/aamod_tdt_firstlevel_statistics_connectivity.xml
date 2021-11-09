@@ -2,7 +2,7 @@
 <!--  This is a tempate for a module header processing an MRI session --> 
 <aap>
     <tasklist>
-        <currenttask domain='subject' desc='aa module for first-level statistics on MVPA with The Decoding Toolbox' modality='MRI'>
+        <currenttask mfile_alias='aamod_tdt_firstlevel_statistics' domain='subject' desc='aa module for first-level statistics on MVPA with The Decoding Toolbox' modality='MRI'>
             
             <qsub>
                 <timeBase desc='Required time in hours'>2</timeBase>
@@ -24,8 +24,7 @@
             <inputstreams>
                 <stream>settings</stream>
                 <stream>mask</stream>
-                <stream>structural</stream>
-                <stream>firstlevel_betas</stream>
+                <stream>connectivity</stream>
                 <stream isrenameable='1'>input</stream>
             </inputstreams>
             

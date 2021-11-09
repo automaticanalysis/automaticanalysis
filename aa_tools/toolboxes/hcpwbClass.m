@@ -11,18 +11,16 @@ classdef hcpwbClass < toolboxClass
     methods
         function obj = hcpwbClass(path,varargin)
             defaultAddToPath = false;
-            defaultKeepInPath = false;
             defaultTemplateDir = '';
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
             argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
-            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.addParameter('templateDir',defaultTemplateDir,@ischar);
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,{});
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,{});
             
             obj.templateDir = argParse.Results.templateDir;
         end

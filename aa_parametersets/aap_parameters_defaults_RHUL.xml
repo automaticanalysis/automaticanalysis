@@ -23,9 +23,6 @@
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
                 <dir ui='dir'>/usr/local/apps/psycapps/spm/spm12-r7487</dir>
-                <extraparameters>
-                    <doKeepInPath>1</doKeepInPath>
-                </extraparameters>
             </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>cosmomvpa</name>
