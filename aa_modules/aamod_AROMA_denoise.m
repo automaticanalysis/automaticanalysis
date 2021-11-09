@@ -248,10 +248,9 @@ switch task
         end
         
         % check if AROMA is installed
-        
-        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
-        
-        if ~exist(AROMA_FNAME,'file')               
+        [~, AROMA] = aas_cache_get(aap,'aroma');
+        AROMA_FNAME = AROMA.toolPath;        
+        if ~exist(AROMA_FNAME,'dir')               
             aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
