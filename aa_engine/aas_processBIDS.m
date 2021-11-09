@@ -32,13 +32,13 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %
 %   the following (optional) fields add flexibility in the handling of
 %   modeling (i.e., tsv) data. They can be combined as needed:
-% 
+%
 %     - aap.acq_details.stripBIDSEventNames: true == strip special characters from event names
 %     - aap.acq_details.omitNullBIDSEvents: true == do not add "null" events to model
 %     - aap.acq_details.convertBIDSEventsToUppercase: true == convert event names to uppercase
 %     - aap.acq_details.maxBIDSEventNameLength: >0 == truncate event names
 %     - aap.acq_details.omitBIDSmodeling: true == return w/o processing modeling data
-% 
+%
 % CHANGE HISTORY:
 %
 %   M Jones WashU 2021 -- look for .nii if .nii.gz doesn't exist (structural and epi files only)
@@ -183,13 +183,13 @@ if (isfield(aap.acq_details,'stripBIDSEventNames') && aap.acq_details.stripBIDSE
 else
     stripBIDSEventNames = false;
 end
- 
+
 if (isfield(aap.acq_details,'omitNullBIDSEvents') && aap.acq_details.omitNullBIDSEvents == true)
     omitNullBIDSEvents = true;
 else
     omitNullBIDSEvents = false;
 end
-                                
+
 if (isfield(aap.acq_details,'convertBIDSEventsToUppercase') && aap.acq_details.convertBIDSEventsToUppercase == true)
     convertBIDSEventsToUppercase = true;
 else
@@ -248,7 +248,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval'])); bvalfname = bvalfname{1}; % ASSUME only one instance
                 bvecfname = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bvec'])); bvecfname = bvecfname{1}; % ASSUME only one instance
                 if ~isempty(bvalfname) && ~isempty(bvecfname)
-                    sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''}); 
+                    sessname = strrep_multi(sessfname,{basename(sesspath) runstr},{'',''});
                     if sessname(1) == '_', sessname(1) = ''; end
 
                     if ~isempty(strfind(basename(sesspath),'ses-'))
@@ -256,16 +256,16 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     else
                         sesstr = '';
                     end
-                    
+
                     if BIDSsettings.combinemultiple
                         sessname = [sessname,sesstr];
                     end
                     sessname = [sessname,runstr];
-                    
+
                     aap = aas_add_diffusion_session(aap,sessname);
-                    
+
                     if ~toAddData, continue; end
-                    
+
                     aasessnames = {aap.acq_details.diffusion_sessions.name};
                     if BIDSsettings.combinemultiple && ~ isempty(sesstr)
                         aasessnames = aasessnames(cell_index(aasessnames,sesstr));
@@ -279,13 +279,13 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
             end
         case fieldmapDIR
             if ~toAddData, continue; end
-            
+
             fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json'])); % ASSUME next to the image
             skipnext = false;
             for f = fmaps'
                 if skipnext
                     skipnext = false;
-                    continue; 
+                    continue;
                 end
                 jfname = spm_file(f{1},'basename');
                 ind = find(jfname=='_',1,'last');
@@ -304,7 +304,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     case 'fieldmap'
                 end
                 fieldmapimages = horzcat(fieldmapimages,fmap);
-            end            
+            end
         case functionalDIR
             allepi = cellstr(spm_select('FPList',...
                 fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))';
@@ -330,9 +330,12 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 allepi = outepi;
             end
             for cfname = allepi
-                [~,n,~] = fileparts(strtok(cfname{1},'.'));
+                [~,n,ext] = fileparts(cfname{1});
+                if strcmp(ext, '.gz')
+                    [~,n,~] = fileparts(n);
+                end
                 taskfname = strrep_multi(n,{[subjname '_'] '_bold'},{'',''});
-                [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});                              
+                [taskname, sesssfx] = get_taskname(sesspath,subjname,cfname{1});
                 % Header
                 info = []; TR = 0;
                 hdrfname = retrieve_file(fullfile(sesspath,functionalDIR,[subjname '_' taskfname,'_bold.json']));
@@ -340,13 +343,13 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     info = loadjson_multi(hdrfname);
                     if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
                 end
-                
+
                 % Skip?
                 if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
                 aap = aas_addsession(aap,taskname);
-                
+
                 if ~toAddData, continue; end
-                
+
                 % Data
                 aasessnames = {aap.acq_details.sessions.name};
                 if BIDSsettings.combinemultiple && ~isempty(sesssfx)
@@ -359,10 +362,10 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 else
                     functionalimages{isess} = cfname{1};
                 end
-                
+
                 % Model
-                        
-                if (omitBIDSmodeling)                    
+
+                if (omitBIDSmodeling)
                     aas_log(aap,false,sprintf('INFO: Omitting addevent in aas_processBIDS (change in aap.acq_details.omitBIDSmodeling)'));
                 else
 
@@ -390,7 +393,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 iDur = cell_index(EVENTS(1,:),'duration');
                                 if (stripBIDSEventNames)
                                     EVENTS(2:end,iName) = regexprep(EVENTS(2:end,iName),'[^a-zA-Z0-9]','');
-                                end                         
+                                end
                                 names = unique(EVENTS(2:end,iName));
                                 onsets = cell(numel(names),1);
                                 durations = cell(numel(names),1);
@@ -400,7 +403,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                     durations{iEV}(end+1) = str2double(EVENTS{t,iDur});
                                 end
                                 if (convertBIDSEventsToUppercase)
-                                    names = upper(names); 
+                                    names = upper(names);
                                 end
                                 if (maxBIDSEventNameLength < Inf)
                                     maxlen =  maxBIDSEventNameLength;
@@ -442,7 +445,7 @@ if toAddData
         'functional',functionalimages,...
         'fieldmaps',fieldmapimages,...
         'diffusion',diffusionimages,...
-        'specialseries',specialimages); 
+        'specialseries',specialimages);
 end
 end
 
@@ -495,7 +498,10 @@ end
 function [taskname, sesstr] = get_taskname(sesspath,subjname,fname)
 global BIDSsettings;
 functionalDIR = BIDSsettings.directories.functionalDIR;
-[~,n,~] = fileparts(strtok(fname,'.'));
+[~,n,ext] = fileparts(fname);
+if strcmp(ext, '.gz')
+    [~,n,~] = fileparts(n);
+end
 taskfname = strrep_multi(n,{[subjname '_'] '_bold'},{'',''});
 taskname = strrep(taskfname,'task-','');
 
@@ -512,7 +518,7 @@ if ~isempty(hdrfname{1})
         else
             sesstr = '';
         end
-        if BIDSsettings.combinemultiple            
+        if BIDSsettings.combinemultiple
             taskname = [taskname,sesstr];
         end
         taskname = [taskname,runstr];
@@ -533,7 +539,7 @@ end
 
 function info = loadjson_multi(fnamecell)
 for f = numel(fnamecell):-1:1
-   dat = loadjson(fnamecell{f}); 
+   dat = loadjson(fnamecell{f});
    for field = fieldnames(dat)'
        info.(field{1}) = dat.(field{1});
    end

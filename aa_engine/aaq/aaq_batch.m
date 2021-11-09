@@ -319,9 +319,19 @@ classdef aaq_batch < aaq
                             if isprop(Task,'StartDateTime')
                                 startTime = char(Task.StartDateTime);
                                 finishTime = char(Task.FinishDateTime);
+                                if ~isempty(finishTime)
+                                    usedTime = char(Task.RunningDuration);
+                                end
                             elseif isprop(Task,'StartTime')
                                 startTime = Task.StartTime;
                                 finishTime = Task.FinishTime;
+                                % TODO:
+                                % When do we get in this case?
+                                % Is RunningDuration not available then?
+                                % Does aas_getTaskDuration then do work ok?
+                                if ~isempty(finishTime)
+                                    usedTime = aas_getTaskDuration(Task);
+                                end
                             else
                                 aas_log(obj.aap,true,'Time-related property of Task class not found!')
                             end
@@ -329,7 +339,7 @@ classdef aaq_batch < aaq
                                 continue
                             end
                             msg = sprintf('JOB %d: \tMODULE %s \tON %s \tSTARTED %s \tFINISHED %s \tUSED %s.',...
-                                JI.JobID,JI.modulename,JI.jobname,startTime,finishTime,aas_getTaskDuration(Task));
+                                JI.JobID,JI.modulename,JI.jobname,startTime,finishTime,usedTime);
                             aas_log(obj.aap,false,msg,obj.aap.gui_controls.colours.completed);
                             
                             % Also save to file with module name attached!

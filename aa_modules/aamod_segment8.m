@@ -74,7 +74,7 @@ switch task
         switch spm('ver')
             case 'SPM8'
                 cfg.warpreg = 4;
-                cfg.bb = {NaN(2,3)};                
+                cfg.bb = {NaN(2,3)};
             case {'SPM12b' 'SPM12'}
                 cfg.warpreg = [0 1e-3 0.5 0.05 0.2];
                 cfg.bb = NaN(2,3);
@@ -112,12 +112,12 @@ switch task
                         % try adding a likely location
                         addpath(fullfile(spm('dir')));
                     catch
-                    end                    
+                    end
                 otherwise
                     aas_log(aap, 1, sprintf('%s requires SPM8 or later.', mfilename));
             end
         end
-        
+
         if ~exist('spm_preproc_run', 'file')
             aas_log(aap, true, 'spm_preproc_run is not in your Matlab path but needs to be.');
         end
@@ -148,7 +148,7 @@ switch task
             end
 		end
 		channels = channels(ind);
-		
+
         for c=1:length(channels)
             img{c} = aas_getfiles_bystream(aap, subjind, channels{c});
 
@@ -158,10 +158,10 @@ switch task
 
             % if more than one found, use the first one and hope this is right
             img{c} = strtok(img{c}(1,:));
-            
+
             aas_log(aap, false, sprintf('Found %s image: %s\n',channels{c},img{c}));
         end
-        
+
         % Initial estimate of rigid-body rotation for 32-channel coil (jt 05/Jul/2012)
         StartingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
         ParameterFields={'x','y','z', 'pitch','roll','yaw', 'xscale','yscale','zscale', 'xaffign','yaffign','zaffign'};
@@ -178,7 +178,7 @@ switch task
             % Put this in its place
             StartingParameters(whichitem)=aap.tasklist.currenttask.settings.affinestartingestimate.(fnames{fieldind});
         end
-            
+
         % Initial transform estimate to be passed to spm_preproc_run:
         StartingAffine = spm_matrix(StartingParameters);
 
@@ -195,7 +195,7 @@ switch task
             tissue(k).native = cfg.native;
             tissue(k).warped = cfg.warped;
         end
-        
+
         % multichan (assumes same settings for all channels):
         for c=1:length(channels)
             job.channel(c).vols{1}  = img{c};
@@ -219,16 +219,16 @@ switch task
         job.warp.mrf            = cfg.mrf;
         job.warp.cleanup        = cfg.cleanup;
         job.warp.Affine         = StartingAffine; % jt
-        
+
         if job.warp.samp < 2
             aas_log(aap,false,'Note that the sampling distance is small, which means this might take quite a while (2-12+ hours depending on cluster load etc.)!');
         end
-        
+
         tic %(jt)
         aas_log(aap,false,sprintf('Starting to run segment8 job (%s)...', datestr(now, 'yyyy-mm-dd HH:MM')));
         spm_preproc_run(job);
         aas_log(aap,false,sprintf('\bDone in %.1f hours.', toc/60/60));
-            
+
         % deformation fields (only one - named after the first channel)
         normparamfn = spm_file(img{1},'prefix','y_');
         invparamfn = spm_file(img{1},'prefix','iy_');
@@ -253,7 +253,7 @@ switch task
                 img{c} = V.fname;
             end
         end
-        
+
         % Apply deformation field to native structural? (jt 05/Jul/2012):
         if aas_getsetting(aap,'writenormimg')
             opts = aas_getsetting(aap,'writenorm');
@@ -272,7 +272,7 @@ switch task
                     case {'SPM12b' 'SPM12'}
                         spm_func_def = @spm_deformations;
                         ojob.mask = 0;
-                        ojob.fwhm = opts.fwhm;                        
+                        ojob.fwhm = opts.fwhm;
                         djob.comp{1}.def{1} = normparamfn;
                         djob.out{1}.savedef = ojob;
                         djob.out{2}.(opts.method) = ojob;
@@ -296,7 +296,7 @@ switch task
             case {'SPM12b' 'SPM12'}
                 tiss={'grey','white','csf','skull','scalp','air'};
         end
-                
+
         for t=1:numel(tiss)
             aap = aas_desc_outputs(aap, subjind, sprintf('native_%s', tiss{t}), spm_file(origimg,'prefix',sprintf('c%d',t)));
             aap = aas_desc_outputs(aap, subjind, sprintf('dartelimported_%s', tiss{t}), spm_file(origimg,'prefix',sprintf('rc%d',t)));
@@ -305,7 +305,7 @@ switch task
             aap = aas_desc_outputs(aap, subjind, sprintf('normalised_volume_%s', tiss{t}), ...
                 spm_file(origimg,'prefix',sprintf('m%sc%d',aap.spm.defaults.normalise.write.prefix,t)));
         end
-        
+
         pfx = '';
         if ~isempty(aas_getsetting(aap,'combine'))
             pfx = 'c';
@@ -316,7 +316,7 @@ switch task
                 end
             end
         end
-        
+
         % If user chose to write out normalised input image(s) (jt 05/Jul/2012)
         if aas_getsetting(aap,'writenormimg')
             pfx = [aap.spm.defaults.normalise.write.prefix pfx];
@@ -327,7 +327,7 @@ switch task
                 aap = aas_desc_outputs(aap, subjind, outstreams{c}, spm_file(aas_getfiles_bystream(aap,'subject',subjind,outstreams{c}),'prefix',pfx));
             end
         end
-        
+
         % If user chose to write out deformation fields (jt 05/Jul/2012)
         if aap.tasklist.currenttask.settings.writedeffields(1)
             aap = aas_desc_outputs(aap, subjind, 'forward_deformation_field', normparamfn);
@@ -335,7 +335,7 @@ switch task
         if aap.tasklist.currenttask.settings.writedeffields(2)
             aap = aas_desc_outputs(aap, subjind, 'inverse_deformation_field', invparamfn);
         end
-        
+
         %% Diagnostics
 
         diag(aap,subjind);
@@ -384,8 +384,7 @@ print('-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
 
 %% Draw warped template
-tmpfile = fullfile(aap.directory_conventions.fsldir,'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
-gunzip(tmpfile,localpath); tmpfile = fullfile(localpath,'MNI152_T1_1mm.nii');
+tmpfile = aas_copy_t1_nii(aap, localpath);
 
 spm_check_registration(tmpfile)
 % Add normalised segmentations...
