@@ -122,6 +122,14 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
@@ -191,6 +199,14 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
@@ -259,6 +275,14 @@ jobs:
       
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
+
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
@@ -331,6 +355,14 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1
         with:
@@ -402,6 +434,14 @@ jobs:
       
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
+
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
 
       - name: Set up MATLAB
         uses: matlab-actions/setup-matlab@v1

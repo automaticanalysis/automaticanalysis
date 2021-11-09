@@ -4,7 +4,7 @@ mkdir $TOOLDIR/config
 TEMPLATEDIR=$TOOLDIR/templates
 
 sudo apt-get update
-sudo apt-get install libtinfo5 libtinfo6 dc libxml2-utils
+sudo apt-get install libtinfo5 libtinfo6 dc libxml2-utils python-pip
 
 # All MATLAB tools MUST be installed referred by the parameterset
 source $GITHUB_WORKSPACE/.github/workflows/tools_urls.sh
