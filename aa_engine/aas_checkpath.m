@@ -17,15 +17,15 @@ if (isempty(pth))
 else
     if (allowwildcards)
         if allowcolon
-            matches=regexp(pth,'[-*?\w/.\_]*','match');
-        else
             matches=regexp(pth,'[-*?\w/.\_:]*','match');
+        else
+            matches=regexp(pth,'[-*?\w/.\_]*','match');
         end;
     else
         if allowcolon
             matches=regexp(pth,'[-\w/.\_:]*','match');
         else
-            matches=regexp(pth,'[-\w/.\_:]*','match');
+            matches=regexp(pth,'[-\w/.\_]*','match');
         end;
     end;
     
