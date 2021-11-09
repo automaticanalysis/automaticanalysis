@@ -13,10 +13,6 @@
 %           <dir ui='dir'>/users/abcd1234/tools/ICA-AROMA</dir>
 %   </toolbox>
 classdef aromaClass < toolboxClass
-    properties
-        labels
-    end
-    
     properties (Access = protected)
         hGUI = []% GUI handles
     end
@@ -24,14 +20,16 @@ classdef aromaClass < toolboxClass
     methods
         function obj = aromaClass(path,varargin)
             defaultAddToPath = false;
+            defaultKeepInPath = false;
             
             argParse = inputParser;
             argParse.addRequired('path',@ischar);
             argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
+            argParse.addParameter('doKeepInPath',defaultKeepInPath,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
-            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,{});
+            obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,argParse.Results.doKeepInPath,{});
         end
         
         function load(obj)
