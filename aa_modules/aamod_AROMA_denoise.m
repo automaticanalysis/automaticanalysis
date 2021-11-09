@@ -44,7 +44,7 @@ switch task
         
         % NB: AROMA seems to require full paths to everything
         [~, AROMA] = aas_cache_get(aap,'aroma');
-        AROMA_FNAME = AROMA.toolPath;
+        AROMA_FNAME = fullfile(AROMA.toolPath,'ICA_AROMA.py');
      
         % we assume EPI and structural are in native space
         % we assume epi is realigned and coregistered to structural
@@ -249,8 +249,8 @@ switch task
         
         % check if AROMA is installed
         [~, AROMA] = aas_cache_get(aap,'aroma');
-        AROMA_FNAME = AROMA.toolPath;        
-        if ~exist(AROMA_FNAME,'dir')               
+        AROMA_FNAME = fullfile(AROMA.toolPath,'ICA_AROMA.py');
+        if ~exist(AROMA_FNAME,'file')               
             aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
