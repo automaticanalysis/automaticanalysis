@@ -38,13 +38,13 @@ switch task
             end
         end;
     case 'doit'
-        
-        
+
+
         settings = aap.tasklist.currenttask.settings;
-        
+
         defs =aap.spm.defaults.normalise;
         defs.estimate.weight = '';
-       
+
         % Template image; here template image not skull stripped
         % [AVG] Changed to allow specification of any T1 template, does not
         % need to be in the SPM folder any more...
@@ -55,21 +55,21 @@ switch task
         if ~exist(temp_imgs, 'file')
             aas_log(aap, true, sprintf('Couldn''t find template T1 image %s.', temp_imgs));
         end
-        
+
         clear imgs;
-        
+
         %% Get structural
         % [AVG] Modified the way we get the structural, to be more aa4-like
         inStream = aap.tasklist.currenttask.inputstreams(1).stream{1};
 
         domain=aap.tasklist.currenttask.domain;
-        
+
         if strcmp(domain,'diffusion_session')
             indices=[subj sess];
             Simg = aas_getfiles_bystream(aap,'diffusion_session',[subj sess],inStream);
         end;
-        
-        try 
+
+        try
             Simg = aas_getfiles_bystream(aap,subj,inStream);
             domain='subject';
             indices=[subj];
@@ -78,7 +78,7 @@ switch task
             domain='session';
             indices=[subj 1];
         end
-        
+
         % Cheap and cheerful way of ensuring only one file is considered!
         if size(Simg,1) > 1
             Simg = deblank(Simg(1,:));
@@ -86,38 +86,38 @@ switch task
         end
         % Get structural directory for this subject
         [Spth, Sfn, Sext] = fileparts(Simg);
-        
+
         %% Set up normalisation, etc.
-        
+
         % Set the mask for subject to empty by default
         objMask = ''; % object mask
-        
+
         % Check if there is an affine starting estimate for this subject
         allSubj = strcmp({settings.subject(:).name}, '*');
         thisSubj = strcmp({settings.subject(:).name}, aap.acq_details.subjects(subj).subjname);
-        
+
         if any(allSubj)
             subjectOptions = settings.subject(allSubj);
         elseif any(thisSubj)
             subjectOptions = settings.subject(thisSubj);
         else
             subjectOptions = settings.subject(1);
-        end   
-        
+        end
+
         % Because we are going reslice later (with undistort_reslice)
         % We don't reslice anything except the image to be normalized
-        
+
         % call the SPM segment or normalize function to do the work
         if (aap.tasklist.currenttask.settings.usesegmentnotnormalise)
             % 2 stage process, as proposed by RH, to increased robustness [djm 13/03/06]
-            
+
             %%%%%%%% 1st pass:
             aas_log(aap,false,'Running first pass of norm_noss (get bias corrected structural)')
             estopts.regtype='';    % turn off affine:
             if ~isfield(estopts,'fudge'), estopts.fudge = 5; end % compatiblity
             out = spm_preproc(Simg, estopts);
             [sn,isn]   = spm_prep2sn(out);
-            
+
             % only write out attenuation corrected image
             writeopts.biascor = 1;
             writeopts.GM  = [0 0 0];
@@ -125,7 +125,7 @@ switch task
             writeopts.CSF = [0 0 0];
             writeopts.cleanup = [0];
             spm_preproc_write(sn, writeopts);
-            
+
             %%%%%%%% 2nd pass using attenuation corrected image
             aas_log(aap,false,'Running second pass of norm_noss (estimate normalisation)')
             % mstruc should be the attenuation corrected image
@@ -134,15 +134,15 @@ switch task
             if size(mSimg,1)>1
                 aas_log(aap,0,sprintf('Found more than one attenuated structural so using first:\n%s',Simg));
             end
-            
+
 %             estopts.regtype='mni';    % turn on affine again
-            
+
             % [TA] SPM12 compatibility
             try estopts = aap.spm.defaults.preproc; catch, estopts = aap.spm.defaults.old.preproc; end
             if iscell(estopts.tpm)
                 estopts.tpm = char(estopts.tpm);
             end
-            
+
             if isfield(aap.tasklist.currenttask.settings,'estopts')
                 fields = fieldnames(aap.tasklist.currenttask.settings.estopts);
                 for f = 1:numel(fields)
@@ -151,10 +151,10 @@ switch task
                     end
                 end
             end
-            
+
             % Load header of image to be normalized
             V=spm_vol(mSimg);
-            
+
             % Now adjust parameters according to starting offset parameters
             % as requested in task settings
             startingParameters=[0 0 0   0 0 0   1 1 1   0 0 0];
@@ -168,7 +168,7 @@ switch task
             else
                 aSE = [];
             end
-            
+
             if isstruct(aSE)
                 fnames = fieldnames(aSE);
                 for fieldind=1:length(fnames)
@@ -186,29 +186,29 @@ switch task
                     end;
                 end;
             else
-               startingParameters = aSE; 
+               startingParameters = aSE;
             end
 
             %[AVG] Save original V.mat parameters
             oldMAT = V.mat;
-            
+
             % Adjust starting orientation of object image as requested
             startingAffine=spm_matrix(startingParameters);
             V.mat=startingAffine*V.mat;
-            
+
             % Run normalization
             out = spm_preproc(V,estopts);
-            
+
             % Adjust output Affine to reflect fiddling of starting
             % orientation of object image
             out.Affine=out.Affine*startingAffine;
-            
+
             % [AVG] Instead we set the out.image parameters to our original
             % structural image!
             out.image.mat = oldMAT;
-            
+
             [sn,isn]   = spm_prep2sn(out);
-            
+
             % [AVG] DEBUG:
             % We could print out the Affines in an orderly way, so that
             % the experimenter can see what is being printed out...
@@ -222,7 +222,7 @@ switch task
             matstr = strrep_multi(mat2str(sn.Affine,2),{';', ' '},{'\n' '\t'}); matstr = matstr(2:end-1);
             aas_log(aap,false,sprintf('Spatial Normalisation Affine\n%s',matstr))
             %}
-            
+
             aas_log(aap,false,'Writing out the segmented images')
             % write out GM , WM, CSF native + unmod normalised
             writeopts.biascor = 1;
@@ -231,14 +231,14 @@ switch task
             writeopts.CSF = [0 1 1];
             writeopts.cleanup = [0];
             spm_preproc_write(sn,writeopts);
-            
+
             SNmat = fullfile(Spth, [Sfn '_seg_sn.mat']);
             invSNmat = fullfile(Spth, [Sfn '_seg_inv_sn.mat']);
             savefields(SNmat,sn);
             savefields(invSNmat,isn);
             aap=aas_desc_outputs(aap,subj,'normalisation_seg_sn',SNmat);
             aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
-            
+
             % [AVG] this output is completely different from .xml
             % [RC] I like having separate streams, as it removes the need
             % for later file filtering, which is package dependent
@@ -249,7 +249,7 @@ switch task
                 aap=aas_desc_outputs(aap,subj,sprintf('tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('wc%d%s',tissind,[mSnme mSext])));
                 aap=aas_desc_outputs(aap,subj,sprintf('unmod_tissue_%s',tiss{tissind}),fullfile(Spth,sprintf('c%d%s',tissind,[mSnme mSext])));
             end
-            
+
             % [AVG] also group it all into segmentation stream
             outSeg = '';
             d = 0;
@@ -263,7 +263,7 @@ switch task
                 end
             end
             aap=aas_desc_outputs(aap,domain,indices,'segmentation',outSeg);
-            
+
             % [TA] replace the structural with the bias-corrected one
             Simg = fullfile(Spth,['mm' Sfn Sext]);
             Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix 'mm' Sfn Sext]);
@@ -281,11 +281,11 @@ switch task
             % aap=aas_desc_outputs(aap,subj,'normalisation_seg_inv_sn',invSNmat);
             Sout = fullfile(Spth,[aap.spm.defaults.normalise.write.prefix Sfn Sext]);
         end
-        
+
         spm_write_sn(Simg,SNmat,defs.write);
         % [AVG] we need to add all the outputs, including warped structural
         % [AVG] It is probably best to save the 2nd bias-corrected image
-        
+
         % [CW] But we don't have a bias corrected image if we didn't use
         % segmentation.
 
@@ -293,13 +293,13 @@ switch task
         V = spm_vol(Sout); Y = spm_read_vols(V);
         V.dt = [spm_type('int16') spm_platform('bigend')];
         spm_write_vol(V,Y);
-        
+
         aap=aas_desc_outputs(aap,domain,indices,'structural', strvcat(Simg, Sout));
 
         if settings.diagnostic && strcmp(aap.options.wheretoprocess,'localsingle')
             diag(aap,domain,indices);
         end
-        
+
     case 'checkrequirements'
         % Template image; here template image not skull stripped
         T1file = aap.directory_conventions.T1template;
@@ -347,8 +347,7 @@ print(f,'-djpeg','-r150',...
     fullfile(localpath,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_N_blob.jpg']));
 
 %% Draw warped template
-tmpfile = fullfile(aap.directory_conventions.fsldir,'data','standard','MNI152_T1_1mm.nii.gz'); % use FSL highres
-gunzip(tmpfile,localpath); tmpfile = fullfile(localpath,'MNI152_T1_1mm.nii');
+tmpfile = aas_copy_t1_nii(aap, localpath);
 
 spm_check_registration(tmpfile)
 % Add normalised segmentations...
