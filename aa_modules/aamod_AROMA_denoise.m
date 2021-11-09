@@ -244,7 +244,7 @@ switch task
             || isempty(aap.directory_conventions.fsldir) ...
                 || ~exist(aap.directory_conventions.fsldir,'dir'))
                 
-                aas_log(aap, true, sprintf('%s: aap.directory_conventions.fsldir is not set properly. Exiting...',mfile));
+                aas_log(aap, true, sprintf('%s: aap.directory_conventions.fsldir is not set properly. Exiting...',mfilename));
         end
         
         % check if AROMA is installed
@@ -252,7 +252,7 @@ switch task
         AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
         
         if ~exist(AROMA_FNAME,'file')               
-            aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfile, AROMA_FNAME));
+            aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
         % AROMA requires python2.7
@@ -261,7 +261,7 @@ switch task
         [ status,result ] = system('which python2.7');
 
         if (status > 0 || isempty(result))
-            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfile));
+            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfilename));
         end       
         
         % may as well check for template while we're here
@@ -269,7 +269,7 @@ switch task
         WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm.nii.gz');             
 
         if ~exist(WARPREF,'file')               
-            aas_log(aap, true, sprintf('%s: cannot find FSL template %s. Exiting...', mfile, WARPREF));
+            aas_log(aap, true, sprintf('%s: cannot find FSL template %s. Exiting...', mfilename, WARPREF));
         end
        
     otherwise
