@@ -2,15 +2,20 @@ function [ aap,resp ] = aamod_AROMA_denoise(aap, task, subject_index, session_in
 %
 % denoise an EPI using FSL's ICA-AROMA
 %
-% this requires AROMA-ICA to be aap.directory_conventions.fsldir/bin
+% this requires AROMA-ICA to be installed and added as an aa toolbox
 %
 % The easiest way to install is prolly:
 %
-%   % cd aap.directory_conventions.fsldir
-%   $ cd bin
+%   % cd /users/abcd1234/tools
 %   % sudo git clone https://github.com/maartenmennes/ICA-AROMA.git
 %
 %   (assuming that the repo link is still valid)
+%
+% add the correspodning entry to your parameterset
+%   <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+%       <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
+%           <dir ui='dir'>/users/abcd1234/tools/ICA-AROMA</dir>
+%   </toolbox>
 %
 % note this is unsupervised denoising, which as a rule does not
 % perform as well as using ICA with training data...
@@ -37,12 +42,9 @@ switch task
         save_fsloutputtype = aap.directory_conventions.fsloutputtype;
         aap.directory_conventions.fsloutputtype = 'NIFTI_GZ';
         
-        setenv('FSLOUTPUTTYPE','NIFTI_GZ');
-        setenv('FSLDIR', aap.directory_conventions.fsldir);   
-        
         % NB: AROMA seems to require full paths to everything
-        
-        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
+        [~, AROMA] = aas_cache_get(aap,'aroma');
+        AROMA_FNAME = AROMA.toolPath;
      
         % we assume EPI and structural are in native space
         % we assume epi is realigned and coregistered to structural

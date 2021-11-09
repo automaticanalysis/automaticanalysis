@@ -7,6 +7,21 @@ function aatest_ds000114_AROMA(parameterfile, deleteprevious, wheretoprocess)
 % see aatest_ds00114_TEMPLATE.m in $AAHOME/developer for help on
 % writing and using a test script
 
+% this requires AROMA-ICA to be installed and added as an aa toolbox
+%
+% The easiest way to install is prolly:
+%
+%   % cd /users/abcd1234/tools
+%   % sudo git clone https://github.com/maartenmennes/ICA-AROMA.git
+%
+%   (assuming that the repo link is still valid)
+%
+% add the correspodning entry to your parameterset
+%   <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+%       <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
+%           <dir ui='dir'>/users/abcd1234/tools/ICA-AROMA</dir>
+%   </toolbox>
+
 % -------------------------------------------------------------------------
 % init
 % -------------------------------------------------------------------------

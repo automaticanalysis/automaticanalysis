@@ -29,6 +29,10 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>wls</name>
                 <dir ui='dir'>/home/runner/tools/rwls</dir>
             </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
+                <dir ui='dir'>/home/runner/tools/ICA-AROMA</dir>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/home/runner/tools/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/tools/config/fsl_bash.sh</fslsetup>
