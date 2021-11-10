@@ -114,7 +114,8 @@ aap.aap_beforeuserchanges.spm.defaults = aap.spm.defaults;
 
 % Path for matlabtools
 if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
-    addpath(strrep(aap.directory_conventions.matlabtoolsdir,':',pathsep))
+    matlabtoolsdirs = strsplit(aap.directory_conventions.matlabtoolsdir, pathsep);
+    addpath(matlabtoolsdirs{:});
 end
 
 % Toolboxes
@@ -167,7 +168,7 @@ end
 % Path to DCMTK
 if isfield(aap.directory_conventions,'DCMTKdir') && ~isempty(aap.directory_conventions.DCMTKdir)
     [s,p] = aas_cache_get(aap,'bcp_shellpath','system');
-    setenv('PATH',[p ':' fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
+    setenv('PATH',[p pathsep fullfile(aap.directory_conventions.DCMTKdir,'bin')]);
 end
 
 reqpath = build_reqpath(aa.Path, aap, SPMDIR);
@@ -184,10 +185,10 @@ function reqpath = build_reqpath(aa_path, aap, SPMDIR)
 %% Build required path list for cluster submission
 
 % aa
-reqpath = textscan(genpath(aa_path), '%s', 'delimiter', ':');
+reqpath = textscan(genpath(aa_path), '%s', 'delimiter', pathsep);
 reqpath = reqpath{1};
 
-p = textscan(path, '%s', 'delimiter', ':');
+p = textscan(path, '%s', 'delimiter', pathsep);
 p = p{1};
 
 % spm
@@ -195,7 +196,7 @@ reqpath = add_matched_directories(reqpath, p, SPMDIR);
 
 % matlabtoolsdir
 if isfield(aap.directory_conventions,'matlabtoolsdir') && ~isempty(aap.directory_conventions.matlabtoolsdir)
-    matlabtools = textscan(aap.directory_conventions.matlabtoolsdir, '%s', 'delimiter', ':');
+    matlabtools = textscan(aap.directory_conventions.matlabtoolsdir, '%s', 'delimiter', pathsep);
     matlabtools = matlabtools{1};
     for pp = matlabtools'
         if exist(pp{1},'dir')
@@ -248,13 +249,23 @@ end
 function reqpath = add_matched_directories(reqpath, paths, dirname)
 % Add entries from the cell array paths, whose start matches dirname, to the end of the reqpath cell array.
 
-% In paths, the entries do not have any trailing filesep
-% Make sure dirname itself is also a match
+if ispc()
+    % On windows, both '\' and '/' are valid fileseps, even though the native
+    % file separator is only '\'.
+    % Make sure the user input uses the native filesep, so the following code pieces work correctly:
+    %  1. To remove trailing filesep correctly, it needs to be the native filesep
+    %  2. Entries in the matlab path have only native filesep. Thus user input needs to have only native filesep.
+    dirname = strrep(dirname,'/',filesep);
+end
+
+% In paths, the entries do not have a trailing filesep
+% Remove any trailing filesep from dirname to make sure dirname itself is also a match
 if strcmp(dirname(end), filesep)
     % Remove trailing filesep
     dirname = dirname(1:end-1);
 end
 
+% The actual matching and adding
 p_ind = cell_index(paths, dirname);
 nr_add = length(p_ind);
 reqpath(end+1:end+nr_add) = paths(p_ind);
