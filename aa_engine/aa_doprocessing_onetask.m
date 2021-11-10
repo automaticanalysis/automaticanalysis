@@ -205,7 +205,7 @@ if (tempdirtodelete)
     % error, so cd
     [s, ~]=aas_shell('pwd');
     if (s)
-        cd ~
+        cd(getenv('HOME'))
     end
 end
 
