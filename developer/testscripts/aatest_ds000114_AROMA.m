@@ -7,12 +7,14 @@ function aatest_ds000114_AROMA(parameterfile, deleteprevious, wheretoprocess)
 % see aatest_ds00114_TEMPLATE.m in $AAHOME/developer for help on
 % writing and using a test script
 
-% this requires AROMA-ICA to be installed and added as an aa toolbox
+% This requires AROMA-ICA to be installed and added as an aa toolbox.
+% Also, AROMA requires python2.7 and pip.
 %
 % The easiest way to install is prolly:
 %
 %   % cd /users/abcd1234/tools
-%   % sudo git clone https://github.com/maartenmennes/ICA-AROMA.git
+%   % git clone https://github.com/maartenmennes/ICA-AROMA.git
+%   % python2.7 -m pip install -r ICA-AROMA/requirements.txt
 %
 %   (assuming that the repo link is still valid)
 %
