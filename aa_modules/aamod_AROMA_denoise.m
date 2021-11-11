@@ -2,15 +2,22 @@ function [ aap,resp ] = aamod_AROMA_denoise(aap, task, subject_index, session_in
 %
 % denoise an EPI using FSL's ICA-AROMA
 %
-% this requires AROMA-ICA to be aap.directory_conventions.fsldir/bin
+% This requires AROMA-ICA to be installed and added as an aa toolbox.
+% Also, AROMA requires python2.7 and pip.
 %
 % The easiest way to install is prolly:
 %
-%   % cd aap.directory_conventions.fsldir
-%   $ cd bin
-%   % sudo git clone https://github.com/maartenmennes/ICA-AROMA.git
+%   % cd /users/abcd1234/tools
+%   % git clone https://github.com/maartenmennes/ICA-AROMA.git
+%   % python2.7 -m pip install -r ICA-AROMA/requirements.txt
 %
 %   (assuming that the repo link is still valid)
+%
+% add the correspodning entry to your parameterset
+%   <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+%       <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
+%           <dir ui='dir'>/users/abcd1234/tools/ICA-AROMA</dir>
+%   </toolbox>
 %
 % note this is unsupervised denoising, which as a rule does not
 % perform as well as using ICA with training data...
@@ -28,21 +35,13 @@ switch task
 				
     case 'doit'
         
-        savedir = pwd;
-        
         working_dir = aas_getsesspath(aap, subject_index, session_index);
-        
-        cd(working_dir);
         
         save_fsloutputtype = aap.directory_conventions.fsloutputtype;
         aap.directory_conventions.fsloutputtype = 'NIFTI_GZ';
-        
-        setenv('FSLOUTPUTTYPE','NIFTI_GZ');
-        setenv('FSLDIR', aap.directory_conventions.fsldir);   
-        
         % NB: AROMA seems to require full paths to everything
-        
-        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
+        [~, AROMA] = aas_cache_get(aap,'aroma');
+        AROMA_FNAME = fullfile(AROMA.toolPath,'ICA_AROMA.py');
      
         % we assume EPI and structural are in native space
         % we assume epi is realigned and coregistered to structural
@@ -74,12 +73,10 @@ switch task
         %
         % bet my_structural my_betted_structural
       
-        BETTEDSTRUCTURAL_FNAME = fullfile(working_dir,'betted_structural.nii.gz');           
-      
+        BETTEDSTRUCTURAL_FNAME = fullfile(working_dir,'betted_structural.nii.gz');
         aas_log(aap, false, sprintf('Brain extraction on %s...', STRUCTURAL_FNAME));      
         command = sprintf('bet %s %s', STRUCTURAL_FNAME, BETTEDSTRUCTURAL_FNAME);
-        [ status,result ] = aas_runfslcommand(aap, command);
-        
+        [ status,result ] = aas_runfslcommand(aap, command);        
         if (status > 0)
            aas_log(aap, true, sprintf('Error running bet: %s', result));
         end     
@@ -89,12 +86,10 @@ switch task
         % flirt -ref ${FSLDIR}/data/standard/MNI152_T1_2mm_brain -in my_betted_structural -omat my_affine_transf.mat
         %
         
-        STRUCT2MNI_AFFINE = fullfile(working_dir,'struct2MNI.mat');           
-        
+        STRUCT2MNI_AFFINE = fullfile(working_dir,'struct2MNI.mat');
         aas_log(aap, false, sprintf('Running FLIRT on %s...', BETTEDSTRUCTURAL_FNAME));      
         command = sprintf('flirt -in %s -ref %s -omat %s', BETTEDSTRUCTURAL_FNAME, REFERENCE_FNAME, STRUCT2MNI_AFFINE);
-        [ status,result ] = aas_runfslcommand(aap, command);
-        
+        [ status,result ] = aas_runfslcommand(aap, command);        
         if (status > 0)
            aas_log(aap, true, sprintf('Error running flirt: %s', result));
         end
@@ -107,11 +102,9 @@ switch task
         %
         
         STRUCT2MNI_WARP = fullfile(working_dir,'struct2MNI_warp.nii.gz');
-       
         aas_log(aap, false, sprintf('Running FNIRT on %s...', STRUCTURAL_FNAME));
         command = sprintf('fnirt --in=%s --aff=%s --cout=%s --config=T1_2_MNI152_2mm', STRUCTURAL_FNAME, STRUCT2MNI_AFFINE, STRUCT2MNI_WARP);
-        [ status,result ] = aas_runfslcommand(aap,command);
-        
+        [ status,result ] = aas_runfslcommand(aap,command);        
          if (status > 0)
             aas_log(aap, true, sprintf('Error running fnirt: %s', result));
          end    
@@ -120,24 +113,20 @@ switch task
         %
         % flirt -ref my_betted_structural -in my_functional -dof 6 -omat func2struct.mat
 
-        EPI2STRUCT_AFFINE = fullfile(working_dir,'epi2struct.mat');           
-
+        EPI2STRUCT_AFFINE = fullfile(working_dir,'epi2struct.mat');
         aas_log(aap, false, sprintf('Running FLIRT on %s...', EPI_FNAME));
         command = sprintf('flirt -in %s -ref %s -dof 6 -omat %s',EPI_FNAME, BETTEDSTRUCTURAL_FNAME, EPI2STRUCT_AFFINE);
-        [ status,result ] = aas_runfslcommand(aap,command);
-        
+        [ status,result ] = aas_runfslcommand(aap,command);        
         if (status > 0)
             aas_log(aap, true, sprintf('Error running flirt: %s', result));
         end
            
         % generate mean epi (need for detrending)
 
-        MEANEPI_FNAME = fullfile(working_dir, 'meanepi.nii.gz'); 
-
+        MEANEPI_FNAME = fullfile(working_dir, 'meanepi.nii.gz');
         aas_log(aap, false, sprintf('creating mean epi...'));
         command = sprintf('fslmaths %s -Tmean %s', EPI_FNAME, MEANEPI_FNAME);
         [ status,result ] = aas_runfslcommand(aap,command);
-
         if (status > 0)
            aas_log(aap, true, sprintf('Error creating mean epi: %s', result));
         end
@@ -149,13 +138,10 @@ switch task
         bptf = 0.5 * (100/TR);
 
         DETREND_FNAME = fullfile(working_dir, 'epi_detrend.nii.gz');
-
-        % NB -- need to add meanepi back in after detrend 
-
+        % NB -- need to add meanepi back in after detrend
         aas_log(aap, false, sprintf('detrending %s...', EPI_FNAME));
         command = sprintf('fslmaths %s -bptf %f -1 -add %s %s', EPI_FNAME, bptf, MEANEPI_FNAME, DETREND_FNAME);
         [ status,result ] = aas_runfslcommand(aap,command);
-
         if (status > 0)
            aas_log(aap, true, sprintf('Error detrending: %s', result));
         end
@@ -164,7 +150,6 @@ switch task
         aas_log(aap, false, sprintf('smoothing %s...', DETREND_FNAME));
         command = sprintf('fslmaths %s -kernel gauss 2.1233226 -fmean %s', DETREND_FNAME, SMOOTHED_FNAME);
         [ status,result ] = aas_runfslcommand(aap,command);
-
         if (status > 0)
            aas_log(aap, true, sprintf('Error running smoothing: %s', result));
         end
@@ -173,14 +158,11 @@ switch task
         %
         % applywarp --in=my_functional --ref=${FSLDIR}/data/standard/MNI152_T1_2mm --warp=my_nonlinear_transf --premat=func2struct.mat --out=my_warped_functional         
 
-        EPIMNI_FNAME = fullfile(working_dir,'epiMNI.nii.gz');
-        
-        WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm');              
-
+        EPIMNI_FNAME = fullfile(working_dir,'epiMNI.nii.gz');        
+        WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm');
         aas_log(aap, false, sprintf('transforming %s to MNI space...', SMOOTHED_FNAME));
         command = sprintf('applywarp --in=%s --ref=%s --warp=%s --premat=%s --out=%s', SMOOTHED_FNAME, WARPREF, STRUCT2MNI_WARP, EPI2STRUCT_AFFINE, EPIMNI_FNAME);
-        [ status,result ] = aas_runfslcommand(aap,command);   
-
+        [ status,result ] = aas_runfslcommand(aap,command);
         if (status > 0)
             aas_log(aap, true, sprintf('Error running applywarp: %s', result));
         end      
@@ -197,8 +179,7 @@ switch task
         end
         
         command = sprintf('python2.7 %s -in %s -out %s -mc %s -m %s', AROMA_FNAME, EPIMNI_FNAME, OUT_DIR, MC_FNAME, REFMASK_FNAME);
-        [ status,result ] = aas_shell(command);
-
+        [ status,result ] = aas_runfslcommand(aap,command);
         if (status > 0)
             aas_log(aap, true, sprintf('Error running AROMA: %s', result));
         else
@@ -213,22 +194,29 @@ switch task
         % also delete the .gz (bc big)
 
         output_fname = fullfile(OUT_DIR,'denoised_func_data_nonaggr.nii');
-        gunzip([output_fname '.gz']);
+        gunzip([output_fname '.gz'],working_dir);
         delete([output_fname '.gz']);
-        aap = aas_desc_outputs(aap, subject_index, session_index, 'epi', output_fname);         
+        aap = aas_desc_outputs(aap, subject_index, session_index, 'epi', spm_file(output_fname,'path',working_dir));
        
         % cleanup 
 
         if (aap.tasklist.currenttask.settings.deletegzips)
-            aas_shell(sprintf('rm -rf %s/*.nii.gz',working_dir));
+            delete(BETTEDSTRUCTURAL_FNAME);
+            delete(STRUCT2MNI_AFFINE);
+            delete(STRUCT2MNI_WARP);
+            delete(EPI2STRUCT_AFFINE);
+            delete(MEANEPI_FNAME);
+            delete(DETREND_FNAME);
+            delete(SMOOTHED_FNAME);
+            delete(EPIMNI_FNAME);
         end
         
         aap.directory_conventions.fsloutputtype = save_fsloutputtype;
-        cd(savedir);
-        
-        % aside: if you delete DENOISE/melodic*, it would remove about about 99%
+        % aside: if you delete DENOISE, it would remove about about 99%
         % of unnecessary files (which might be more than 1 GB!). Maybe make
         % this an option. Could also look into garbage collection.
+        % N.B.: DENOISE/ICA_AROMA_component_assessment.pdf might be worth
+        % keeping
         
         % done!
 
@@ -242,15 +230,14 @@ switch task
             || isempty(aap.directory_conventions.fsldir) ...
                 || ~exist(aap.directory_conventions.fsldir,'dir'))
                 
-                aas_log(aap, true, sprintf('%s: aap.directory_conventions.fsldir is not set properly. Exiting...',mfile));
+                aas_log(aap, true, sprintf('%s: aap.directory_conventions.fsldir is not set properly. Exiting...',mfilename));
         end
         
         % check if AROMA is installed
-        
-        AROMA_FNAME = fullfile(aap.directory_conventions.fsldir,'bin/ICA-AROMA/ICA_AROMA.py');
-        
+        [~, AROMA] = aas_cache_get(aap,'aroma');
+        AROMA_FNAME = fullfile(AROMA.toolPath,'ICA_AROMA.py');
         if ~exist(AROMA_FNAME,'file')               
-            aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfile, AROMA_FNAME));
+            aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
         % AROMA requires python2.7
@@ -259,7 +246,7 @@ switch task
         [ status,result ] = system('which python2.7');
 
         if (status > 0 || isempty(result))
-            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfile));
+            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfilename));
         end       
         
         % may as well check for template while we're here
@@ -267,7 +254,7 @@ switch task
         WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm.nii.gz');             
 
         if ~exist(WARPREF,'file')               
-            aas_log(aap, true, sprintf('%s: cannot find FSL template %s. Exiting...', mfile, WARPREF));
+            aas_log(aap, true, sprintf('%s: cannot find FSL template %s. Exiting...', mfilename, WARPREF));
         end
        
     otherwise

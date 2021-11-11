@@ -5,75 +5,43 @@
         <initialisation>	
             <module><name>aamod_study_init</name></module>
         </initialisation>
-		
+
         <main>
-         
-            
+
             <module><name>aamod_structuralfromnifti</name></module>
             <module><name>aamod_reorienttomiddle_structural</name></module>
             <module><name>aamod_epifromnifti</name></module>
             <module><name>aamod_reorienttomiddle_epi</name></module>
-                        
+
             <module><name>aamod_biascorrect_structural</name></module>          
-   
+
             <module><name>aamod_dvars</name></module>
             <module><name>aamod_globalmean</name></module>
-                        
+
             <module><name>aamod_realign</name></module>  
             <module><name>aamod_biascorrect_meanepi</name></module>
             <module><name>aamod_coreg_extended</name></module>
- 
-            <module><name>aamod_segment8_multichan</name>
-                 <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                        <samp>2</samp>
-                    </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
-            				
+
+            <module><name>aamod_segment8_multichan</name></module>
+
             <module><name>aamod_brainmask_nativegrey</name></module>	
             <module><name>aamod_reslicenativegreymask2epi</name></module>
-                                    
+
             <module><name>aamod_greyplot</name></module>             
             <module><name>aamod_lossplot</name></module>
-            
+
             <module><name>aamod_norm_write_epi</name></module>
-            
-            <module><name>aamod_smooth</name>
-                <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                        <FWHM>8</FWHM>
-                    </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
-                                
-            <module><name>aamod_scrub_epi</name>
-                <extraparameters>
-                <aap><tasklist><currenttask><settings>
-                    <scrub_criteria> metric_data.DVARS > metric_thresholds.DVARS.fivepercent</scrub_criteria>
-                </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
-            
-            <module><name>aamod_firstlevel_model</name>
-                <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                        <includemovementpars>0</includemovementpars>
-                        <includespikes>1</includespikes>
-                    </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
-            
+
+            <module><name>aamod_smooth</name></module>
+
+            <module><name>aamod_scrub_epi</name></module>
+
+            <module><name>aamod_firstlevel_model</name></module>
+
             <module><name>aamod_firstlevel_contrasts</name></module>
-            
-            <module><name>aamod_firstlevel_threshold</name>
-                <extraparameters>
-                    <aap><tasklist><currenttask><settings>
-                        <description>5% DVARS, 0.001 UNC</description>
-                     </settings></currenttask></tasklist></aap>
-                </extraparameters>
-            </module>
- 
+
+            <module><name>aamod_firstlevel_threshold</name></module>
+
         </main>
     </tasklist>
 </aap>
