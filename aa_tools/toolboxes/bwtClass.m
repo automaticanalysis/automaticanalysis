@@ -11,7 +11,6 @@ classdef bwtClass < toolboxClass
         function obj = bwtClass(path,varargin)
             
             defaultAddToPath = false;
-            defaultKeepInPath = false;
             
             argParse = inputParser;
             argParse.addRequired('path', @ischar);

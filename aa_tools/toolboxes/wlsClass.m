@@ -15,7 +15,6 @@ classdef wlsClass < toolboxClass
         function obj = wlsClass(path,varargin)
             
             defaultAddToPath = false;
-            defaultKeepInPath = false;
             
             argParse = inputParser;
             argParse.addRequired('path', @ischar);
