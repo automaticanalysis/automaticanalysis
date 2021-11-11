@@ -17,7 +17,7 @@
                
             <module><name>aamod_biascorrect_structural</name></module>
             <module><name>aamod_realign</name></module>  
-            <module><name>aamod_biascorrect_meanEPI</name></module>
+            <module><name>aamod_biascorrect_meanepi</name></module>
             <module><name>aamod_coreg_extended</name></module>
             <module><name>aamod_segment8_multichan</name></module>			            
             <module><name>aamod_norm_write_epi</name></module>         
