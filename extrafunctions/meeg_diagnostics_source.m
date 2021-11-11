@@ -16,6 +16,7 @@ for s = 1:numel(data)
         if ~isfield(data{s},plotcfg.parameter), data{s}.(plotcfg.parameter) = data{s}.avg.(plotcfg.parameter); end
         data{s} = rmfield(data{s},{'avg' 'method'});
     end
+    data{s} = rmfield(data{s},intersect(fieldnames(data{s}),{'aparc','aparclabel'}));
 end
 
 if isfield(diag,'background')
@@ -42,6 +43,7 @@ if isfield(diag,'background')
             for f = STATFIELDS, stat.(f{1}) = data{1}.(f{1}); end
             stat.mask(isnan(stat.mask)) = 0;
             data{1}.stat = stat;
+            data{1} = rmfield(data{1},'mask');
         end
         data{s}.dimord = dimord;
     end

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--  This is a tempate for a module header processing an MRI session --> 
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_tdt_firstlevel_statistics' domain='subject' desc='aa module for first-level statistics on MVPA with The Decoding Toolbox' modality='MRI'>
+            
+            <qsub>
+                <timeBase desc='Required time in hours'>2</timeBase>
+                <memoryBase desc='Required memory in GB'>2</memoryBase>
+            </qsub>
+            
+            <permutation desc='permutation for statistics'>
+                 <iteration desc='number of permutations'>1000</iteration>
+                 <numberofworkers desc='number of parallel workers to run permutations on the cluster, requires valid DCS/MPaS-based poolprofile and cluster allowing submission from worker nodes (0 or 1 means no parallelisation)'>0</numberofworkers>
+            </permutation>
+            
+            <dostatistics desc='indicates whether performing statistics (CAVE: it may crash on certain systems)' ui='yesno'>0</dostatistics>
+            
+            <overlay>
+                <nth_slice desc='in mm'>6</nth_slice>
+            </overlay>
+            
+            <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
+            <inputstreams>
+                <stream>settings</stream>
+                <stream>mask</stream>
+                <stream>connectivity</stream>
+                <stream isrenameable='1'>input</stream>
+            </inputstreams>
+            
+            <outputstreams desc='streams will correspond to the measure(s)'>
+                <stream isrenameable='1'>permuted_output</stream>
+            </outputstreams>    
+            
+        </currenttask>
+    </tasklist>
+</aap>
