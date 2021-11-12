@@ -1,7 +1,16 @@
 % Check whether tasksettings have changed since the last execution
 
-function out = aas_checktasksettingconsistency(aap,prev_settings,new_settings)
+function out = aas_checktasksettingconsistency(aap,prev_settings,new_settings,varargin)
 exclude = {'qsub', 'COMMENT', 'timeadded'};
+
+argParse = inputParser;
+argParse.addParameter('settingsRoot','',@ischar);
+argParse.addParameter('doAll',false,@(x) islogical(x) || isnumeric(x));
+argParse.parse(varargin{:});
+
+if ~isempty(argParse.Results.settingsRoot), settingsroot = [argParse.Results.settingsRoot '.'];
+else, settingsroot = ''; end
+doall = argParse.Results.doAll;
 
 out = true;
 
@@ -16,11 +25,11 @@ if ~isempty(incons)
             continue;
         end
         if isfield(prev_settings,f{1})
-            aas_log(aap,false,sprintf('INFO: settings <%s> has been removed',f{1}));
-            out = isempty(prev_settings.(f{1}));
+            aas_log(aap,false,sprintf('INFO: settings <%s%s> has been removed',settingsroot,f{1}));
+            out = false;
         end
         if isfield(new_settings,f{1})
-            aas_log(aap,false,sprintf('INFO: settings <%s> has been added',f{1}));
+            aas_log(aap,false,sprintf('INFO: settings <%s%s> has been added',settingsroot,f{1}));
             out = isempty(new_settings.(f{1}));
         end
     end
@@ -35,29 +44,36 @@ for f = fields1
     end
     % different class
     if ~strcmp(class(prev_settings.(f{1})),class(new_settings.(f{1})))
-        aas_log(aap,false,sprintf('INFO: class of <%s> has changed',f{1}));
+        aas_log(aap,false,sprintf('INFO: class of <%s%s> has changed',settingsroot,f{1}));
         out = false;
-        return;
+        if ~doall, return; end
     end
     % different size
     if ~all(size(prev_settings.(f{1}))==size(new_settings.(f{1})))
-        aas_log(aap,false,sprintf('INFO: size of <%s> has changed',f{1}));
+        aas_log(aap,false,sprintf('INFO: size of <%s%s> has changed',settingsroot,f{1}));
         out = false;
-        return;
+        if ~doall, return; end
     end
+    % struct
     if isstruct(prev_settings.(f{1}))
-        for i = 1:numel(prev_settings.(f{1}))
-            out = out & aas_checktasksettingconsistency(aap,prev_settings.(f{1})(i),new_settings.(f{1})(i));
+        if ~isstruct(new_settings.(f{1}))
+            aas_log(aap,false,sprintf('INFO: <%s%s> is not a struct any more',settingsroot,f{1}));
+            out = false;
+        else
+            for i = 1:numel(prev_settings.(f{1}))
+                out = out & aas_checktasksettingconsistency(aap,prev_settings.(f{1})(i),new_settings.(f{1})(i),'settingsRoot',[settingsroot f{1}],'doAll',doall);
+            end
         end
     end
     % numeric
-    if isnumeric(prev_settings.(f{1})) && ~all(prev_settings.(f{1}) == new_settings.(f{1}))
-        aas_log(aap,false,sprintf('INFO: value of <%s> has changed',f{1}));
+    if isnumeric(prev_settings.(f{1})) && ~all(prev_settings.(f{1}) == new_settings.(f{1}),'all')
+        aas_log(aap,false,sprintf('INFO: value of <%s%s> has changed',settingsroot,f{1}));
         out = false;
     end
     % string or cell
-    if (ischar(prev_settings.(f{1})) || iscell(prev_settings.(f{1}))) && ~all(strcmp(prev_settings.(f{1}),new_settings.(f{1})))
-        aas_log(aap,false,sprintf('INFO: value of <%s> has changed',f{1}));
+    if (ischar(prev_settings.(f{1})) || iscell(prev_settings.(f{1}))) && ...
+            (numel(prev_settings.(f{1})) ~= numel(new_settings.(f{1})) || ~isequal(prev_settings.(f{1}),new_settings.(f{1})))
+        aas_log(aap,false,sprintf('INFO: value of <%s%s> has changed',settingsroot,f{1}));
         out = false;
     end
 end

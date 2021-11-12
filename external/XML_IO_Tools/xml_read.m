@@ -469,8 +469,11 @@ if isstruct(x) && isstruct(y)
             itemmatch = strcmp(xIDs,yID);
             if any(itemmatch) % update
                 res(itemmatch) = mergeStructs(res(itemmatch),y(yitem),Pref);
-            else % append
-                res(end+1) = y(yitem);
+            else % append - handle partial structures
+                structInit = reshape(cat(2,fieldnames(res),cell(numel(fieldnames(res)),1))',1,[]);
+                newstruct = struct(structInit{:});
+                for f = fieldnames(y(yitem))', newstruct.(f{1}) = y(yitem).(f{1}); end
+                res(end+1) = newstruct;
             end
         end
         return

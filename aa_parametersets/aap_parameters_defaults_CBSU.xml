@@ -26,9 +26,6 @@
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
                 <dir ui='dir'>/imaging/local/software/spm_cbu_svn/releases/spm12_fil_r7771</dir>
-                <extraparameters>
-                    <doKeepInPath>1</doKeepInPath>
-                </extraparameters>
             </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>

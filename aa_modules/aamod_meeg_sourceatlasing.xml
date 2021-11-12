@@ -10,14 +10,8 @@
             
             <parameter desc='parameter to process, can be a cell-array of strings'></parameter>
             
-            <options desc='method-specific options'>
-                <corticalsheet>
-                    <annotation desc='parcellation scheme' ui='optionlist' options='aparc|DKTatlas|a2009s'></annotation>
-                </corticalsheet>
-            </options>
-            
             <inputstreams>
-                <stream isessential='0'>freesurfer</stream>
+                <stream>sourceatlas</stream>
                 <stream isrenameable='1'>input</stream>
             </inputstreams>
             
