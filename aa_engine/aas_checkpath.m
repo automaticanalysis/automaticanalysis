@@ -1,38 +1,47 @@
 % Assert that input pth (with fieldname nme) does not contain forbidden
 % characters. Called by aas_validatepaths.
 %
-% [aap passed]=aas_checkpath(aap,pth,nme,allowwildcards,allowcolon)
-function [aap passed]=aas_checkpath(aap,pth,nme,allowwildcards,allowcolon)
+% [aap, passed] = aas_checkpath(aap, pth, nme, allowwildcards, allowpathsep)
+function [aap, passed] = aas_checkpath(aap, pth, nme, allowwildcards, allowpathsep)
 
-if ~exist('allowwildcards','var') || isempty(allowwildcards)
-    allowwildcards=false;
-end;
+passed = true;
 
-if ~exist('allowcolon','var') || isempty(allowcolon)
-    allowcolon=false;
-end;
+if isempty(pth)
+    return
+end
 
-if (isempty(pth))
-    passed=true;
+% Save original pth input for use in log message
+% When used in aas_log messages, escape backward slashes from windows paths.
+logsafe_path = strrep(pth, '\', '\\');
+
+allowedchars = '-\w/.\_';
+if exist('allowwildcards','var') && ~isempty(allowwildcards) && allowwildcards
+    allowedchars = [allowedchars, '*?'];
+end
+
+if ispc()
+    % On windows:
+    % - paths can start with a drive letter followed by a : when it is an absolute path
+    % - paths natively have a \ as filesep (though can also have /)
+    expression = ['([A-Z]:)?[\\', allowedchars, ']*'];
 else
-    if (allowwildcards)
-        if allowcolon
-            matches=regexp(pth,'[-*?\w/.\_:]*','match');
-        else
-            matches=regexp(pth,'[-*?\w/.\_]*','match');
-        end;
-    else
-        if allowcolon
-            matches=regexp(pth,'[-\w/.\_:]*','match');
-        else
-            matches=regexp(pth,'[-\w/.\_]*','match');
-        end;
-    end;
-    
-    if (length(matches)==1) && (strcmp(matches{1},pth))
-        passed=true;
-    else
-        passed=false;
-        aas_log(aap,true,sprintf('Paths in aa can only contain the characters a-z, A-Z, 0-9, _, -, ., / and sometimes wildcards/colons \nYour path %s=''%s'' does not satisfy this.',nme,pth));
-    end;
+    expression = ['[', allowedchars, ']*'];
+end
+
+if exist('allowpathsep','var') && ~isempty(allowpathsep) && allowpathsep
+    pths = strsplit(pth, pathsep);
+else
+    pths = {pth};
+end
+
+for i = 1:length(pths)
+    checkpath = pths{i};
+    matches = regexp(checkpath, expression, 'match');
+    if length(matches)~=1 || ~(strcmp(matches{1},checkpath))
+        passed = false;
+        msg = sprintf('Paths in aa can only contain the characters a-z, A-Z, 0-9, _, -, ., / and sometimes wildcards/colons \nYour path %s=''%s'' does not satisfy this.',nme,logsafe_path);
+        aas_log(aap, true, msg);
+    end
+end
+
 end
