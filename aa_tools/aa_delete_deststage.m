@@ -1,5 +1,26 @@
-function dirs2delete = aas_delete_deststage(aap,indices,varargin)
+function dirs2delete = aa_delete_deststage(aap,indices,varargin)
 % recursively delete/backup destination stages
+%
+% It removes or backs up existing (intermediate) steps of a workflow before
+% the re-execution of these steps (with different settings).
+%
+% Compulosory positional arguments:
+%   aap:        aap structure actualised for the stage whose destinations 
+%               are to be removed/backed-up
+%   indices:    array of indices corresponding to the domain of the stage,
+%               e.g.
+%                   study   - []
+%                   subject - [subj]
+%                   session - [subj sess]
+% 
+% Optional parameters (key-value pairs):
+%   includeCurrent: whether to remove/back up the current stage, as well
+%                   (default: false)
+%   dryrun:         whether to only compile the list of stage folders to be
+%                   removed/backed-up (default: false)
+%   backupFolder:   path to the folder in which the stages are backed-up,
+%                   The folder will be created if does not exist. If empty,
+%                   the operation is delete rather than back-up. (default: '')
 
 argParse = inputParser;
 argParse.addParameter('includeCurrent',false,@(x) islogical(x) || isnumeric(x));
