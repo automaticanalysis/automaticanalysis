@@ -217,7 +217,9 @@ classdef aaq < handle
                     end
                     
                 case 'parallel.cluster.Slurm'
-                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments = " " + obj.initialSubmitArguments; end
+                    if strlength(obj.initialSubmitArguments) > 0 && ~startsWith(obj.initialSubmitArguments,' ')
+                        obj.initialSubmitArguments = " " + obj.initialSubmitArguments; 
+                    end
                     obj.pool.SubmitArguments = compose("--mem=%dG --time=%d", mem, walltime*60);
                     if isMaxFiltInTasklist && isNeuromagSpec
                         obj.initialSubmitArguments = obj.initialSubmitArguments + " --constraint=maxfilter";
@@ -229,7 +231,9 @@ classdef aaq < handle
                     end
                     
                 case 'parallel.cluster.Torque'
-                    if ~isempty(obj.initialSubmitArguments), obj.initialSubmitArguments = " " + obj.initialSubmitArguments; end
+                    if strlength(obj.initialSubmitArguments) > 0 && ~startsWith(obj.initialSubmitArguments,' ')
+                        obj.initialSubmitArguments = " " + obj.initialSubmitArguments; 
+                    end
                     obj.pool.SubmitArguments = compose("-l mem=%dGB, walltime=%d:00:00", mem, walltime);
                     if isMaxFiltInTasklist && isNeuromagSpec
                         % TODO: clarify whether/how NODESET should be eliminated
