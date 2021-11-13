@@ -18,6 +18,12 @@
 % xnew = aas_expandpathbyvars(x, [verbose=false])
 function x = aas_expandpathbyvars(x, verbose)
 
+if ispc()
+    % Not supported yet for windows
+    % See issues #288 and #289
+    return
+end
+
 if ~exist('verbose','var') || isempty(verbose)
     verbose = false;
 end

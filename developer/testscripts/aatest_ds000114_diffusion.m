@@ -18,7 +18,7 @@ aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, whe
 aap.acq_details.numdummies = 1;
 aap.options.autoidentifystructural_choosefirst = 1;
 
-aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.4;
+aap.tasksettings.aamod_diffusion_bet.bet_f_parameter = 0.8;
 
 % -------------------------------------------------------------------------
 % BIDS

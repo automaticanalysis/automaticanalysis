@@ -17,14 +17,18 @@ if ~hit
         wshell=wshell(pos(end)+1:end);
     end
     wshell=strtrim(wshell);
-    
+
     % stops colours
     if (strcmp(wshell,'bash') || strcmp(wshell,'sh'))
         prefix='export TERM=dumb;';
+    elseif ispc()
+        % TBD: Color suppression needed on Windows? And how to? For now,
+        % just keep empty.
+        prefix='';
     else
         prefix='setenv TERM dumb;';
     end
-    
+
     % cache back
     aas_cache_put([],'shellprefix',prefix);
 end

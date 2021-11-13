@@ -1,13 +1,13 @@
-% aa describe files that form an output stream 
+% aa describe files that form an output stream
 % Preferred new syntax:
 %  function [aap]=aas_desc_outputs(aap,domain,indices,streamname,outputs)
-%  e.g., 
+%  e.g.,
 %   aas_desc_outputs(aap,'subject',[1],'epi',fns)
 %   aas_desc_outputs(aap,'session',[1,1],'epi',fns)
 %   aas_desc_outputs(aap,'searchlight',[4,2,77],'epi',fns)
 %     [subject 4, session 2, searchligh 77]
 %
-% Old syntax (still alllowed): 
+% Old syntax (still alllowed):
 %  function [aap]=aas_desc_outputs(aap,[subject,[session]],streamname,outputs)
 % Outputs may either be specified using a relative or absolute path. If the
 % latter, the path is trimmed to make it relative.
@@ -20,7 +20,7 @@ osd=[];
 
 streamname=varargin{end-1};
 if isstruct(streamname), streamname = streamname.CONTENT; end
-    
+
 pos=find(streamname=='.');
 if (~isempty(pos))
     streamname=streamname(pos(end)+1:end);
@@ -39,7 +39,7 @@ switch(nargin)
     case 4
         i=varargin{1};
         localroot=aas_getsubjpath(aap,i);
-        [pth, nme, ext]=fileparts(localroot);
+        [~, nme, ext]=fileparts(localroot);
         streamdesc=sprintf(' %s ',[nme ext]);
     case 5
         if ischar(varargin{1})
@@ -50,7 +50,7 @@ switch(nargin)
             j=varargin{2};
             localroot=aas_getsesspath(aap,i,j);
             [pth, nme1, ext1]=fileparts(localroot);
-            [pth, nme2, ext2]=fileparts(pth);
+            [~, nme2, ext2]=fileparts(pth);
             streamdesc=sprintf(' %s %s ',[nme2 ext2],[nme1 ext1]);
         end
 end
@@ -64,14 +64,13 @@ if iscell(outputs), outputs=char(outputs); end
 
 osd.numoutputs=size(outputs,1);
 
-
 descriptor=fullfile(localroot,streamnme);
 
 % Trim absolute path if it has been provided
-trimmedoutputs={};
-for d=1:size(outputs,1)
+trimmedoutputs=cell(1,osd.numoutputs);
+for d=1:osd.numoutputs
     fle=outputs(d,:);
-    if fle(1) == '/' % absolut path
+    if is_absolute_path(fle)
         fle = readlink(fle); % make sure that the path is canonical
         if (length(fle)>length(localroot) && strcmp(fle(1:length(localroot)),localroot))
             fle=fle(length(localroot)+1:end);
@@ -126,10 +125,10 @@ switch(aap.directory_conventions.remotefilesystem)
         % Now write to [user]_streams domain
         attr.numfiles=size(outputs,1);
         attr.md5_base64=md5_base64;
-        
+
         streamentry=[aaworker.bucket '|' s3root '/' streamnme];
         sdb_put_attributes(aap,aaworker.streamtablename,streamentry,attr);
-        
+
         aas_log(aap,false,sprintf('Written sdb to %s called %s',aaworker.streamtablename,streamentry));
 
         osd.s3root=s3root;
