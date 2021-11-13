@@ -122,6 +122,11 @@ switch task
                 sourceatlas.aparclabel = vertcat(spm_file(atlaslh.aparclabel,'prefix','lh_'),spm_file(atlaslh.aparclabel,'prefix','rh_'));
                 sourceatlas.aparc = vertcat(atlaslh.aparc, atlasrh.aparc+numel(atlaslh.aparclabel));
                 
+                % register to sourcemodel
+                FT.addExternal('freesurfer');
+                fsmri = MRIread(mrifn);
+                sourceatlas = ft_transform_geometry(fsmri.vox2ras/fsmri.tkrvox2ras, sourceatlas);
+                
                 % diag
                 fname = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_atlas.jpg']);
                 if ~exist(fname,'file')
