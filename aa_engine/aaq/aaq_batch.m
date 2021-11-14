@@ -320,7 +320,11 @@ classdef aaq_batch < aaq
                                 startTime = char(Task.StartDateTime);
                                 finishTime = char(Task.FinishDateTime);
                                 if ~isempty(finishTime)
-                                    usedTime = char(Task.RunningDuration);
+                                    if isprop(Task,'RunningDuration')
+                                        usedTime = char(Task.RunningDuration);
+                                    else
+                                        usedTime = aas_getTaskDuration(Task);
+                                    end
                                 end
                             elseif isprop(Task,'StartTime')
                                 startTime = Task.StartTime;
