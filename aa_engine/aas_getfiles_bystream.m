@@ -137,7 +137,6 @@ else
     inpstreamdesc = '';
     allfiles = '';
     md5 = '';
-unix('touch /Users/peellelab/000_AAS_GETFILE_FAIL3.txt');
 end
 
 end
