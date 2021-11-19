@@ -33,9 +33,11 @@ switch task
         for flc = 1:size(fnSPMs,1)
             
             fnSPM = deblank(fnSPMs(flc,:));
-            loaded=load(fnSPM);
-            SPM=loaded.SPM;
+            load(fnSPM,'SPM');
             
+            % sanity check -- make sure SPM.swd has the correct path
+            if ~isequal(SPM.swd, spm_file(fnSPM,'path')), SPM.swd = spm_file(fnSPM,'path'); end
+
             [~,cname1,~] = fileparts(fileparts(fnSPM));
             
             for C = 1:numel(SPM.xCon)
@@ -70,6 +72,17 @@ switch task
                         aap=aas_report_addimage(aap,[],f{i});
                         aap = aas_report_add(aap,[],'</td>');
                     end
+                    
+                    % add SPM stats table                    
+                    statsfname = fullfile(aas_getstudypath(aap),sprintf('diagnostic_%s_%s_table.jpg', cname1, cname2));
+                    if ~exist(statsfname,'file')
+                        make_stats_table(SPM, statsfname, C, ...
+                            aap.tasklist.currenttask.settings.threshold.p, ...
+                            aap.tasklist.currenttask.settings.threshold.correction);
+                    end
+                    aap = aas_report_add(aap, [],'<td>');
+                    aap = aas_report_addimage(aap, [], statsfname);
+                    aap = aas_report_add(aap, [],'</td>');
                     
                     aap = aas_report_add(aap,[],'</tr></table>');
                     
