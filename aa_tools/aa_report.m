@@ -104,11 +104,6 @@ for k = stageindices
 
     domain = curr_aap.tasklist.currenttask.domain;
     
-    xmlfn = [allstages{k}(1:end-6) '.xml'];
-    if ~exist(xmlfn,'file') && isfield(aap.tasklist.main.module(k),'aliasfor') && ~isempty(aap.tasklist.main.module(k).aliasfor) % mfile_alias
-        xmlfn = [aap.tasklist.main.module(k).aliasfor '.xml'];
-    end
-    xml = xml_read(xmlfn);
     mfile_alias = mfstages{k};
         
     % add provenance
