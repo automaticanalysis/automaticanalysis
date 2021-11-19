@@ -28,7 +28,7 @@ PARAMETER_FNAME = '/path/to/parameter_xml_file';
 % the helloworld tasklist comes installed with aa:
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_helloworld.xml');
+tasklist_fname = fullfile(aahome,'examples/tutorials/tutorial_1_aa_setup.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
 

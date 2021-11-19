@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <aap>
     <tasklist>
-        
-    <initialisation>	
+
+    <initialisation>
         <module><name>aamod_study_init</name></module>
     </initialisation>
 
     <main>
         <module><name>aamod_structuralfromnifti</name></module>
      </main>
-         
+
     </tasklist>
 </aap>
