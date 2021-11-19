@@ -94,7 +94,6 @@ switch task
         
         % Init
         u0   = aap.tasklist.currenttask.settings.threshold.p;				% height threshold
-        k   = aap.tasklist.currenttask.settings.threshold.extent;			% extent threshold {voxels}
         nSl = aap.tasklist.currenttask.settings.overlay.nth_slice;
         tra = aap.tasklist.currenttask.settings.overlay.transparency;
         
@@ -190,6 +189,7 @@ switch task
                 if strcmp(corr,'TFCE') && strcmp(STAT,'F'), corr = 'FWE'; end % TFCE does not support F-test -> FWE
                 
                 if strcmp(corr,'TFCE')
+                    k = aas_getsetting(aap,'threshold.extent');
                     job.spmmat = {fnSPM};
                     job.mask = {fullfile(fileparts(fnSPM),'mask.nii,1')};
                     job.conspec = struct( ...
@@ -236,8 +236,8 @@ switch task
                     end
                     
                     % Extent threshold filtering
-                    if ischar(k) % probability-based
-                        k = strsplit(k,':'); k{2} = str2double(k{2});
+                    if ischar(aas_getsetting(aap,'threshold.extent')) % probability-based
+                        k = strsplit(aas_getsetting(aap,'threshold.extent'),':'); k{2} = str2double(k{2});
                         iSPM = SPM;
                         iSPM.Ic = c;
                         iSPM.thresDesc = corr;
@@ -255,6 +255,9 @@ switch task
                         pInd = strcmp(T.hdr(1,:),'cluster') & strcmp(T.hdr(2,:),k{1});
                         kInd = strcmp(T.hdr(2,:),'equivk');
                         k = min(cell2mat(T.dat(cellfun(@(p) ~isempty(p) && p<k{2}, T.dat(:,pInd)),kInd)));
+                        if isempty(k), k = Inf; end
+                    else
+                        k = aas_getsetting(aap,'threshold.extent');
                     end
                     
                     A     = spm_clusters(XYZ);
