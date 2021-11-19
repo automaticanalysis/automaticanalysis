@@ -51,7 +51,7 @@ if ~exist(defaultparameters,'file')
     [seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },'Desired seed parameter',defaultdir,'GUI',isGUI);
     assert(ischar(seedparam), 'exiting');
     seedparam = fullfile(rootpath, seedparam);
-    
+
     % initialise the save dialogue in the current aap.acq_details.root if specified
     xml=xml_read(seedparam);
     configdir = fullfile(getenv('HOME'),'.aa');
@@ -61,11 +61,11 @@ if ~exist(defaultparameters,'file')
         'Location of the parameters file',fullfile(configdir, defaultparameters),'GUI',isGUI);
     assert(ischar(defaultparameters), 'exiting');
     destination = fullfile(rootpath, defaultparameters);
-    
+
     analysisroot = aas_expandpathbyvars(xml.acq_details.root.CONTENT);
     aas_makedir([], analysisroot);
     analysisroot = userinput('uigetdir',analysisroot,'Location of analyses by default','GUI',isGUI);
-    
+
     create_minimalXML(seedparam, destination, analysisroot);
     assert(exist(destination,'file')>0,'failed to create %s', defaultparameters);
 
@@ -75,7 +75,7 @@ if ~exist(defaultparameters,'file')
     assert(exist(defaultparameters,'file')>0, ...
         'could not find %s - Are you sure it is on your path?',...
         defaultparameters);
-    
+
     if isGUI
         h = msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn');
         waitfor(h);
@@ -95,43 +95,42 @@ if exist('tasklistxml','var')
     end
     Pref.ReadAttr=1;
     Pref.ReadSpec=0;
-    xml_tasklist.schema=xml_read(tasklistxml,Pref);
     Pref.ReadAttr=0;
     xml_tasklist=xml_read(tasklistxml,Pref);
     aap=struct_update(aap,xml_tasklist);
     % Now load up each modules parameters
     aap.tasksettings=[];
-    
-    
+
+
     % Now load up parameters for each of the modules to be used
     % For initialisation modules...
     for task=1:length(aap.tasklist.initialisation.module)
-        [aap index]=aas_addtaskparameters(aap,aap.tasklist.initialisation.module(task).name);
+        [aap, index]=aas_addtaskparameters(aap,aap.tasklist.initialisation.module(task).name);
         aap.tasklist.initialisation.module(task).index=index;
     end
     % ...and for main modules...
-    
-    
+
+
     % Deal with branches - only supported for main modules
     aap.tasklist.main=processbranch(aap,aap.directory_conventions.analysisid_suffix,'*',aap.tasklist.main,1);
-    
+
     aap.tasklist.main.module = pruneEmptyBranches(aap.tasklist.main.module);
-    
+
     % These fields were only used for creating the branching structures
     aap.tasklist.main.module = rmfield(aap.tasklist.main.module, {'branchID', 'ignorebranches'});
-    
+
     % Calculate task parameters and indices for modules
     % e.g., aamod_smooth_01, aamod_smooth_02 etc
     if isfield(aap.tasklist.main,'module')
         for task=1:length(aap.tasklist.main.module)
-            [aap index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
+            [aap, index]=aas_addtaskparameters(aap,aap.tasklist.main.module(task).name,aap.tasklist.main.module(task).aliasfor);
             aap.tasklist.main.module(task).index=index;
             if isfield(aap.schema.tasksettings.(aap.tasklist.main.module(task).name)(index).ATTRIBUTE,'mfile_alias')
                 aap.tasklist.main.module(task).aliasfor = aap.schema.tasksettings.(aap.tasklist.main.module(task).name)(index).ATTRIBUTE.mfile_alias;
             end
         end
     end
-    
+
     % When processing the branches, the indices for modules repeated had
     % not yet been calculated
     % Now we've got the stage tags, we can go through and adorn the
@@ -146,7 +145,7 @@ if exist('tasklistxml','var')
         end
         aap.tasklist.main.module(task).tobecompletedfirst=tbcf_cell;
     end
-    
+
 end
 
 % Make copy of aap
@@ -166,13 +165,13 @@ if isstruct(node)
                 switch attr.ui
                     case {'text' 'dir' 'dir_allowwildcards' 'dir_part_allowwildcards' 'dir_part' 'file'}
                         node = char(node);
-% TODO
-%                     case {'dir_list','optionlist'}
-%                     case {'structarray'}
-%                     case {'intarray' 'rgb'}
-%                     case {'double'}
-%                     case {'int'}
-%                     case {'yesno'}
+                        % TODO
+                        %                     case {'dir_list','optionlist'}
+                        %                     case {'structarray'}
+                        %                     case {'intarray' 'rgb'}
+                        %                     case {'double'}
+                        %                     case {'int'}
+                        %                     case {'yesno'}
                 end
             end
             return
@@ -201,9 +200,9 @@ if (~isfield(branch,'module') || isempty(branch.module))
     extrastages.module.tobecompletedfirst = 0;
     extrastages = checkhasrequiredfields(extrastages);
     outstages = extrastages;
-    
+
 else
-    
+
     % For each module
     for stagenum=1:length(branch.module)
         % Is it a regular module...
@@ -214,7 +213,7 @@ else
             extrastages.module.extraparameters.aap.acq_details.selected_sessions=selected_sessions;
             extrastages.module.tobecompletedfirst = 0;
             extrastages.module.branchID = branchID;
-            
+
             %...or a set of branches
         else
             clear extrastages
@@ -233,69 +232,69 @@ else
                 catch exception
                     selected_sessions='*';
                 end
-                
+
                 [extrastages_added] = processbranch(aap, [analysisid_suffix analysisid_suffix_append],selected_sessions,branch.module(stagenum).branch(branchnum),1);
-                
-                
+
+
                 if (~isempty(extrastages_added))
-                    
+
                     % And add the new stages to our list
                     if (exist('extrastages','var'))
-                        
+
                         numPrevBranchStages = length(extrastages.module);
-                        
+
                         dependI = find([extrastages_added.module.tobecompletedfirst]~=0);   % Stages that have dependencies within this set of new stages
                         noDependI = find([extrastages_added.module.tobecompletedfirst]==0); % Stages that don't have dependencies
-                        
+
                         % Update pointers to account for stages in the previous in branch
                         if ~isempty(dependI)
                             extrastages_added.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst + numPrevBranchStages), extrastages_added.module(dependI));
                         end
-                        
+
                         if (~isempty(noDependI))
                             extrastages_added.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', 0), extrastages_added.module(noDependI));
                         end
-                        
+
                         % Update the branchIDs in the current branch to account for the number in the previous branch number of branches in the previous branch
                         numPrevBranches = length(aa_unique([extrastages.module.branchID]));
                         extrastages_added.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID + numPrevBranches), extrastages_added.module);
-                        
+
                         extrastages.module=[extrastages.module extrastages_added.module];
                     else
                         extrastages.module=extrastages_added.module;
                     end
-                    
+
                 end % End if (~isempty(extrastages_added))
-                
+
             end % End for branchnum=1:length(....
-            
+
             selected_sessions = selected_sessions_main; % restore selected_sessions
         end
-        
+
         if (isfield(extrastages.module,'branch'))
             extrastages.module = rmfield(extrastages.module,'branch');
         end
-        
+
         extrastages = checkhasrequiredfields(extrastages);
         if (exist('outstages','var'))
-            
+
             % Get a list of all the branch IDs that exist in the output
             oBranchIDs = [outstages.module.branchID];
-            [oLabels oIndex] = aa_unique(oBranchIDs);
+            [oLabels, oIndex] = aa_unique(oBranchIDs);
             numOutBranches = length(oLabels);
-            
+
             % Get a list of all the branch IDs that exist in the new stuff
             nBranchIDs = [extrastages.module.branchID];
-            [nLabels nIndex] = aa_unique(nBranchIDs);
+            [nLabels, ~] = aa_unique(nBranchIDs);
             numNewBranches = length(nLabels);
-            
+
             % Number of stages in the new stuff
             numNewStages = length(extrastages.module);
-            
+
             % Basically, we repeat the extrastages and them to each branch that exists in the output.
             for oB = 1 : numOutBranches
                 newStages = extrastages;
-                
+
                 % Update the dependencies: some stages will have no
                 % dependencies (e.g., the first stage of a new branch),
                 % they will point to the last stage of the output branch.
@@ -304,14 +303,14 @@ else
                 if ~isempty(noDependI)
                     newStages.module(noDependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', oIndex(oB)), newStages.module(noDependI));
                 end
-                
+
                 % Or, some new stages are dependent on other new stages, so
                 % they will have to be updated to account for the repeating
                 % nature of this operation.
                 if ~isempty(dependI)
                     newStages.module(dependI) = arrayfun(@(x) setfield(x, 'tobecompletedfirst', x.tobecompletedfirst+length(outstages.module)), newStages.module(dependI));
                 end
-                
+
                 % Update the analysis suffixes
                 outBranchSuffix = outstages.module(oIndex(oB)).extraparameters.aap.directory_conventions.analysisid_suffix;
                 if ~isempty(outBranchSuffix)
@@ -320,48 +319,57 @@ else
                         newStages.module(stage).extraparameters.aap.directory_conventions.analysisid_suffix = [outBranchSuffix newStagesSuffix(length(analysisid_suffix)+1:end)];
                     end
                 end
-                
-                % Update the selected_sessions  
+
+                % Update the selected_sessions
                 newStagestoRemove = [];
                 for stage = 1 : numNewStages
                     outBranchSel = outstages.module(oIndex(oB)).extraparameters.aap.acq_details.selected_sessions;
                     newStagesSel = newStages.module(stage).extraparameters.aap.acq_details.selected_sessions;
-                    
+
                     outBranchSelC = textscan(outBranchSel,'%s','delimiter',' '); outBranchSelC = outBranchSelC{1};
                     newStagesSelC = textscan(newStagesSel,'%s','delimiter',' '); newStagesSelC = newStagesSelC{1};
                     sessionsSelC = textscan(selected_sessions,'%s','delimiter',' '); sessionsSelC = sessionsSelC{1};
-                    if any(strcmp(outBranchSelC,'*')), outBranchSel = union(newStagesSelC,sessionsSelC);
-                    else outBranchSel = outBranchSelC; end
-                    if any(strcmp(newStagesSelC,'*')), newStagesSel = union(outBranchSelC,sessionsSelC);
-                    else newStagesSel = newStagesSelC; end
-                    if any(strcmp(sessionsSelC,'*')), sessionsSel = union(newStagesSelC,outBranchSelC);
-                    else sessionsSel = sessionsSelC; end
-                    
+                    if any(strcmp(outBranchSelC,'*'))
+                        outBranchSel = union(newStagesSelC,sessionsSelC);
+                    else
+                        outBranchSel = outBranchSelC;
+                    end
+                    if any(strcmp(newStagesSelC,'*'))
+                        newStagesSel = union(outBranchSelC,sessionsSelC);
+                    else
+                        newStagesSel = newStagesSelC;
+                    end
+                    if any(strcmp(sessionsSelC,'*'))
+                        sessionsSel = union(newStagesSelC,outBranchSelC);
+                    else
+                        sessionsSel = sessionsSelC;
+                    end
+
                     sessSel = intersect(outBranchSel,intersect(newStagesSel,sessionsSel));
                     if isempty(sessSel)
                         newStagestoRemove(end+1) = stage;
                         continue;
                     end
                     sessSel = sprintf('%s ',sessSel{:}); sessSel(end) = '';
-                    
+
                     newStages.module(stage).extraparameters.aap.acq_details.selected_sessions = sessSel;
                 end
                 newStages.module(newStagestoRemove) = [];
-                               
+
                 % Update the branchIDs
                 newStages.module = arrayfun(@(x) setfield(x, 'branchID', x.branchID+(oB-1)*numNewBranches), newStages.module);
-                
+
                 % Add stages
                 outstages.module = [outstages.module newStages.module];
-                
+
             end % End for oB = 1 : numOutputBranches
-            
+
         else
             outstages.module = extrastages.module;
         end
-        
+
     end % End for loop stagenum
-    
+
 end
 end % End Function processbranch
 
@@ -418,12 +426,12 @@ end
 
 end
 
-function [label index] = aa_unique(vals)
+function [label, index] = aa_unique(vals)
 
 try
-    [label index] = unique(vals, 'legacy');
+    [label, index] = unique(vals, 'legacy');
 catch
-    [label index] = unique(vals);
+    [label, index] = unique(vals);
 end
 
 end
@@ -507,13 +515,13 @@ switch varargin{1}
                 [rootpath,seedparam,~] = fileparts(seedparam);
                 if isempty(rootpath), rootpath = defaultdir; end
                 seedparam = [seedparam varargin{2}{1}(2:end)];
-                
+
                 if exist(fullfile(rootpath,seedparam),'file'), break;
                 else
                     fprintf('Could not find file %s. Please try again!\n',seedparam);
                 end
             end
-            
+
             varargout{1} = seedparam;
             varargout{2} = rootpath;
         end
