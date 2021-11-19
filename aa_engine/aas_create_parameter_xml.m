@@ -8,7 +8,8 @@ seedparam = fullfile(rootpath, seedparam);
 
 % initialise the save dialogue in the current aap.acq_details.root if specified
 xml=xml_read(seedparam);
-configdir = fullfile(getenv('HOME'),'.aa');
+aa_info = aaClass('nopath', 'nogreet');
+configdir = aa_info.configdir;
 % generate new parameters file N.B.: in networks with shared resources
 % average user may not be able to write into aa_paremetersets
 [parameter_xml_filename, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' },...

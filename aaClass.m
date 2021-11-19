@@ -2,7 +2,7 @@ classdef aaClass
     properties
         Path
     end
-    
+
     properties (SetAccess = private)
         Name
         Version
@@ -11,8 +11,12 @@ classdef aaClass
         ManuscriptURL
         aaURL
         aawiki
+        % user config directory
+        configdir = fullfile(getenv('HOME'), '.aa');
+        % user parameter file name
+        parameter_xml_filename = 'aap_parameters_user.xml';
     end
-    
+
     methods
         function obj = aaClass(varargin)
             % Path
@@ -27,19 +31,18 @@ classdef aaClass
                 tbxdirs = dir(fullfile(obj.Path,'aa_tools','toolboxes'));
                 % remove toolbox mods
                 tbxdirs = tbxdirs(cellfun(@(d) ~isempty(regexp(d,'.*_mods$', 'once')), {tbxdirs.name}));
-                rmpath(strrep(strjoin(cellfun(@genpath, fullfile(obj.Path,'aa_tools','toolboxes',{tbxdirs.name}), 'UniformOutput', false),pathsep),'::',':')); 
+                rmpath(strrep(strjoin(cellfun(@genpath, fullfile(obj.Path,'aa_tools','toolboxes',{tbxdirs.name}), 'UniformOutput', false),pathsep),'::',':'));
             end
 
             % user config directory
-            configdir = fullfile(getenv('HOME'),'.aa');
-            aas_makedir([], configdir);
-            addpath(configdir);
-            
-            obj.Name = 'automaticanalysis';            
+            aas_makedir([], obj.configdir);
+            addpath(obj.configdir);
+
+            obj.Name = 'automaticanalysis';
             info = loadjson(strrep(aafile,'Class.m','.json'));
             obj.Version = info.Version;
             obj.Date = info.Date;
-            
+
             % get GitHub commit info if exists
             if exist(fullfile(obj.Path,'.git'),'dir')
                 fid = fopen(fullfile(obj.Path,'.git','logs','HEAD'),'r');
@@ -53,12 +56,12 @@ classdef aaClass
                 obj.Version = [obj.Version ' (' dat{2} ')'];
                 obj.Date = datestr(str2double(dat{end-1})/86400 + datenum(1970,1,1),'mmm yyyy');
             end
-            
+
             obj.ManuscriptRef = info.ManuscriptRef;
             obj.ManuscriptURL = info.ManuscriptURL;
             obj.aaURL = info.URL;
-            obj.aawiki = info.wiki;            
-            
+            obj.aawiki = info.wiki;
+
             % Greet
             if ~any(strcmp(varargin,'nogreet'))
                 d = textscan(obj.ManuscriptRef,'%s %s %s','delimiter','.','CollectOutput',true); d = d{1};

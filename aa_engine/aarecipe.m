@@ -26,11 +26,12 @@ switch(numel(varargin))
     case 0
         warning('You must provide a tasklist to aarecipe.\n');
     case 1
-        defaultparameters='aap_parameters_user.xml';
-        tasklistxml=varargin{1};
+        aa_info = aaClass('nopath', 'nogreet');
+        defaultparameters = aa_info.parameter_xml_filename;
+        tasklistxml = varargin{1};
     case 2
-        defaultparameters=varargin{1};
-        tasklistxml=varargin{2};
+        defaultparameters = varargin{1};
+        tasklistxml = varargin{2};
 end
 
 clear aap
