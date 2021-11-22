@@ -28,7 +28,7 @@ PARAMETER_FNAME = '/path/to/parameter_xml_file';
 % the helloworld tasklist comes installed with aa:
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/aa_example_helloworld.xml');
+tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_helloworld.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
 
@@ -72,5 +72,5 @@ aa_doprocessing(aap);
 aa_close(aap);
 
 % there really isn't any rea "results" to review other than
-% checking that aa ran and created RESULTS_DIR and popluated 
+% checking that aa ran and created RESULTS_DIR and popluated
 % it with some files
