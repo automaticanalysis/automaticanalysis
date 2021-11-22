@@ -24,12 +24,14 @@ switch varargin{1}
                 resp = btns(cellfun(@(x) strcmp(resp,x) || (resp==x(1)), respList));
                 if ~isempty(resp), break; end
             end
+
             varargout{1} = resp{1};
         end
     case  'uigetdir'
         if isGUI
             varargout{1} = uigetdir(varargin{2:end});
         else
+            % TODO: implement an abort option here too?
             rootpath = input([varargin{3} ' (or leave empty for ' varargin{2} '):'],'s');
             if isempty(rootpath), rootpath = varargin{2}; end
 
@@ -47,12 +49,19 @@ switch varargin{1}
                 seedparam = input([varargin{3} ' (or leave empty to abort):'],'s');
                 % filter out extension (so we are robust to whether this is provided or not)
                 [rootpath,seedparam,~] = fileparts(seedparam);
-                if isempty(rootpath), rootpath = defaultdir; end
-                seedparam = [seedparam varargin{2}{1}(2:end)];
+                if isempty(seedparam)
+                    seedparam = 0; % 0 to indicate Cancel, same as uigetfile()
+                    rootpath = 0;
+                    break % leave empty to abort
+                elseif isempty(rootpath)
+                    rootpath = defaultdir;
+                end
+                seedparam = [seedparam varargin{2}{1}(2:end)]; %#ok<AGROW>
 
-                if exist(fullfile(rootpath,seedparam),'file'), break;
+                if exist(fullfile(rootpath,seedparam),'file')
+                    break
                 else
-                    fprintf('Could not find file %s. Please try again!\n',seedparam);
+                    fprintf('Could not find file %s in %s. Please try again!\n',seedparam, rootpath);
                 end
             end
 
@@ -63,6 +72,7 @@ switch varargin{1}
         if isGUI
             [varargout{1}, varargout{2}] = uiputfile(varargin{2:end});
         else
+            % TODO: implement an abort option here too?
             [defaultdir, defaultseed]= fileparts(varargin{4});
             seedparam = input([varargin{3} ' (or leave empty for ' varargin{4} '):'],'s');
             % filter out extension (so we are robust to whether this is provided or not)
