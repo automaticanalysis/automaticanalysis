@@ -12,7 +12,6 @@
 %   aarecipe
 %   aas_processBIDS % when using BIDS data
 %   aa_doprocessing
-%   aa_close
 %
 % See "aa_example_helloworld_model" to actually do something useful
 % with the data.
@@ -71,8 +70,9 @@ aap.directory_conventions.analysisid = RESULTS_DIR;
 % -------------------------------------------------------------------------
 % For BIDS data, point rawdatadir at the top level BIDS directory
 % (i.e., wherever you downloaded ds000114)
-FULLDATAPATH = '/full/path/to/toplevelBIDS';
+FULLDATAPATH =  fullfile(aap.directory_conventions.rawdatadir, 'aa_demo');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
+aap = aa_downloaddemo(aap);
 
 %% ------------------------------------------------------------------------
 % Using BIDS input
@@ -89,7 +89,6 @@ aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
 % Run
 % -------------------------------------------------------------------------
 aa_doprocessing(aap);
-aa_close(aap);
 
 % there really isn't any real "results" to review other than
 % checking that aa ran and created RESULTS_DIR and populated

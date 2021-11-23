@@ -93,7 +93,3 @@ aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsession
 
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-aa_close(aap);
-
-
-
