@@ -167,7 +167,14 @@ if argParse.Results.haltonerror
     % The unittest framework catches errors during tests
     % Here, throw an error is any test failed. A.o. to notify the
     % Continuous Integration of failure.
-    assertSuccess(results);
+    if isempty(results)
+        % Because assertSuccess thinks it is ok to have an empty resultset,
+        % but we think it is an error in the test filters specification,
+        % throw an error.
+        throw(MException('aa_test:emptySelection', 'Test selection after filtering is empty. Not a valid test selection'))
+    else
+        assertSuccess(results);
+    end
 end
 
 end

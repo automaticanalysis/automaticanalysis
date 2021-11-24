@@ -48,7 +48,7 @@ if ~exist(fullfile(demodir),'dir') ... % Does not exist yet
     aas_log(aap, false, ['INFO: downloading demo data to ' logsafe_path]);
 
     % Download and unpack the data to a temp dir first
-    tgz_filename = [tempname '.tar.gz'];
+    tgz_filename = [tempname dataset.filetype];
     tgz_filename = websave(tgz_filename, dataset.URL);
     unpack_dir = tempname;
     untar(tgz_filename, unpack_dir);
