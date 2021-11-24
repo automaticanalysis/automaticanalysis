@@ -36,6 +36,19 @@ function aa_test(varargin)
 %   == 'localsingle' (default), jobs will run locally in a serial
 %   fashion. Other options include 'parpool' and 'batch' (cluster)
 %
+% 'tags' / 'not_tags', cell array of tags -
+%   == list of tags to filter what tests are run. Both 'tags' and 'not_tags'
+%   can be used at the same time. When neither is used, all tests will be
+%   run. When 'tags' is used, only tests that have at least one of the tags
+%   in the list are selected. When 'not_tags' is used, tests that have at
+%   least one of the tags in the list are excluded. Note that tests without
+%   any tags at all are not affected by these filters.
+%   Known tags:
+%    - 'Large' % Note that Large tests are expected to have a dedicated job
+%    in the CI workflow, to have them all run in parallel.
+%    - 'Medium'
+%    - 'Small'
+%
 % Example Usage
 %
 %   aa_test;                      - run all scripts, use default settings
@@ -76,6 +89,8 @@ argParse.addParameter('deleteprevious', true, @(x) islogical(x) || isnumeric(x))
 argParse.addParameter('haltonerror', false, @(x) islogical(x) || isnumeric(x));
 argParse.addParameter('wheretoprocess','localsingle', @ischar);
 argParse.addParameter('parameterfile','', @ischar);
+argParse.addParameter('tags', {}, @iscellstr);
+argParse.addParameter('not_tags', {}, @iscellstr);
 argParse.parse(varargin{:});
 
 thisFolder = fileparts(mfilename("fullpath"));
@@ -121,7 +136,25 @@ if ~isempty(glob)
     end
 end
 
-% PLACEHOLDER: Here, apply e.g. Tag based filtering
+%% Apply tag-based filtering
+tags = argParse.Results.tags;
+if ~isempty(tags)
+    do_select = ~matlab.unittest.selectors.HasTag;
+    for i = 1:length(tags)
+        do_select = do_select | matlab.unittest.selectors.HasTag(tags{i});
+    end
+    suite = suite.selectIf(do_select);
+end
+
+not_tags = argParse.Results.not_tags;
+if ~isempty(not_tags)
+    add_select = matlab.unittest.selectors.HasTag;
+    for i = 1:length(not_tags)
+        add_select = add_select & ~matlab.unittest.selectors.HasTag(not_tags{i});
+    end
+    do_select = ~matlab.unittest.selectors.HasTag | add_select;
+    suite = suite.selectIf(do_select);
+end
 
 %% Run tests
 runner = matlab.unittest.TestRunner.withTextOutput;

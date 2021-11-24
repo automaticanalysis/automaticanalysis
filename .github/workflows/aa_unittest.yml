@@ -1,0 +1,87 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Non-Use case tests
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the master branch
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# Default settings
+defaults:
+    run:
+      shell: bash
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  aatest_ds000114_AROMA:
+    name: Testing AROMA on fMRI
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Check out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v2
+
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          # MATLAB release to set up R2020a
+          release: R2020a
+
+      - name: Install tools under $HOME/tools (SPM, FaceMasking)
+        run: |
+          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+        env:
+          LOAD_FSL: 0
+          LOAD_FREESURFER: 0
+
+      - name: Configure aa
+        run: |
+          echo "Free space:"
+          df -h
+          mkdir $HOME/.aa
+          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
+          mkdir $HOME/projects
+
+      - name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog
+          path: |
+            $GITHUB_WORKSPACE/developer/aa_test.log
