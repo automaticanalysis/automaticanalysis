@@ -18,7 +18,7 @@
 function tutorial_1_aa_setup()
 
 % variable names in ALLUPPERCASE are placeholders that
-% you must edit before the script can be run.
+% you may want to edit before the script is run.
 %
 % make a copy of this file to edit and put it somewhere in your Matlab path
 
@@ -61,18 +61,23 @@ aap = aarecipe(tasklist_fname);
 %
 % The directory in aap.acq_details.root must exist on your machine
 % When it runs, aa will create a subdirectory RESULTS_DIR.
-% aap.acq_details.root = ROOT_PATH; % Outcommented: use value from parameter file
+%aap.acq_details.root = ROOT_PATH; % Outcommented: use value from parameter file
 RESULTS_DIR = mfilename(); % Typically specific for a particular analysis.
 aap.directory_conventions.analysisid = RESULTS_DIR;
 
 %% ------------------------------------------------------------------------
 % Specifying the data directory
 % -------------------------------------------------------------------------
-% For BIDS data, point rawdatadir at the top level BIDS directory
-% (i.e., wherever you downloaded ds000114)
-FULLDATAPATH =  fullfile(aap.directory_conventions.rawdatadir, 'aa_demo');
+% For BIDS data, point rawdatadir at the top level BIDS directory.
+%
+% In this tutorial, will use a demo dataset ds000114, that will be
+% downloaded if necessary.
+% Here it is assumed that aap.directory_conventions.rawdatadir in the
+% parameter xml file is a single directory, not a list of directories
+% separated by pathsep characters.
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds000114');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
-aap = aa_downloaddemo(aap);
+aa_downloaddemo(aap, 'ds000114');
 
 %% ------------------------------------------------------------------------
 % Using BIDS input
@@ -82,7 +87,6 @@ aap = aa_downloaddemo(aap);
 % Here we only run sub-01 for the finger_foot_lips task (ds000114
 % contains four different tasks) since we're just testing whether
 % your aa install is working.
-
 aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
 
 %% ------------------------------------------------------------------------
@@ -90,7 +94,7 @@ aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
 % -------------------------------------------------------------------------
 aa_doprocessing(aap);
 
-% there really isn't any real "results" to review other than
+% There really isn't any real "results" to review other than
 % checking that aa ran and created RESULTS_DIR and populated
 % it with some files.
 
