@@ -20,8 +20,8 @@ defaults:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  aatest_ds000114_AROMA:
-    name: Testing AROMA on fMRI
+  not_large:
+    name: Run all tests that do NOT have the Large tag
 
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
@@ -84,4 +84,4 @@ jobs:
         with:
           name: testlog
           path: |
-            $GITHUB_WORKSPACE/developer/aa_test.log
+            ${{github.workspace}}/developer/aa_test.log
