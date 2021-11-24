@@ -1,7 +1,10 @@
 *.m~
-
 *.xml~
 
 .DS_Store
+.vscode
 
 spm_*.ps
+
+aa_test.log
+.github/workflows/aa_test.yml

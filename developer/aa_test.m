@@ -78,8 +78,10 @@ argParse.addParameter('wheretoprocess','localsingle', @ischar);
 argParse.addParameter('parameterfile','', @ischar);
 argParse.parse(varargin{:});
 
+thisFolder = fileparts(mfilename("fullpath"));
+
 % logging
-logfile = fullfile(pwd,'aa_test.log');
+logfile = fullfile(thisFolder,'aa_test.log');
 if exist(logfile,'file')
     ow = input('aa_test.log exists. Overwrite?(Y/[N])> ','s');
     if (isempty(ow) || ow == 'N' || ow == 'n')
