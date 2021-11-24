@@ -1,8 +1,8 @@
 % Automatic analysis
 % User master script example (aa version 5.*.*)
 %
-% This is an example how to process a BIDS multimodal NIfTI dataset. We assume that you
-% have already downloaded the dataset to your directory.
+% This is an example how to process a BIDS multimodal NIfTI dataset.
+% For this demo the dataset will be downloaded to your directory if you have not already done so.
 %
 % Tibor Auer, MRC-CBSU
 % 08-02-2016
@@ -32,20 +32,16 @@ aap.tasksettings.aamod_firstlevel_threshold(2).overlay.nth_slice = 9;
 %% STUDY
 % Directory for analysed data
 aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
-aap.directory_conventions.analysisid = 'bids_ds114'; 
+aap.directory_conventions.analysisid = 'bids_ds114';
 
 % Add data
-% download the demo dataset (if necessary)
-rawdir = 'ds114_test2';
-aap = aa_downloaddemo(aap,'https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162',rawdir);
-% The bids parser only supports a single rawdatadir. Pick the one that has bids in it.
-sources = strsplit(aap.directory_conventions.rawdatadir,':')';
-bidsind = cell_index(sources,rawdir);
-assert(~any(bidsind==0), ...
-    ['did not find "' rawdir '" BIDS directory in aap.directory_conventions.rawdatadir'])
-assert(numel(bidsind)==1,...
-    ['multiple reference to "' rawdir '" BIDS directory in aap.directory_conventions.rawdatadir'])
-aap.directory_conventions.rawdatadir = sources{bidsind};
+% Download the demo dataset (if necessary)
+% Here it is assumed that aap.directory_conventions.rawdatadir in the
+% parameter xml file is a single directory, not a list of directories
+% separated by pathsep characters.
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds114_test2');
+aap.directory_conventions.rawdatadir = FULLDATAPATH;
+aa_downloaddemo(aap, 'ds000114');
 
 aap.acq_details.numdummies = 1;
 
