@@ -36,7 +36,9 @@ aa_ver5;
 % parameter filename.
 % Settings can be overriden later where needed, in specific parameter files
 % and in run scripts, but that is not a subject in this tutorial file.
-aas_create_parameter_xml('', true, 'use_default_location', true, 'use_default_filename', true);
+if ~aa_has_user_parameter_file()
+    aas_create_parameter_xml('', true, 'use_default_location', true, 'use_default_filename', true);
+end
 
 %% ------------------------------------------------------------------------
 % Creating an aap structure
