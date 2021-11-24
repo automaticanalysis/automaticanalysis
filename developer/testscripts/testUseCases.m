@@ -7,26 +7,24 @@ classdef testUseCases < matlab.unittest.TestCase
 
     properties (TestParameter)
         testname = testUseCases.get_testscripts()
-        inputargs
-    end
-
-    methods (TestParameterDefinition, Static)
-        function inputargs = initializeProperty()
-            inputargs = testUseCases.pass_inputargs('get');
-        end
     end
 
     properties
-        settings = []
+        inputargs
+    end
+
+    methods (TestClassSetup)
+        function classSetup(testCase)
+            testCase.inputargs = testUseCases.pass_inputargs('get');
+        end
     end
 
     methods (Test)
-
-        function use_case_test(testCase, testname, inputargs)
+        function use_case_test(testCase, testname)
             savedir = pwd;
             cd(testCase.testdir);
 
-            testUseCases.runit(testname, inputargs.parameterfile, inputargs.deleteprevious, inputargs.haltonerror, inputargs.wheretoprocess);
+            testUseCases.runit(testname, testCase.inputargs.parameterfile, testCase.inputargs.deleteprevious, testCase.inputargs.haltonerror, testCase.inputargs.wheretoprocess);
 
             cd(savedir);
         end
@@ -108,7 +106,7 @@ classdef testUseCases < matlab.unittest.TestCase
             output = true;
             switch action
                 case 'get'
-                    output = {inputargs};
+                    output = inputargs;
                 case 'set'
                     inputargs = varargin{1};
             end

@@ -104,12 +104,6 @@ end
 %% Get a list of all tests
 
 % Get Use case tests
-% TODO: Is it acceptable that the tests can only run in 2018b or later? If
-% yes, can then use the next two lines, instead of having to have a
-% pass_inputargs method.
-%param = matlab.unittest.parameters.Parameter.fromData('inputargs', {argParse.Results});
-%suiteUseCases = matlab.unittest.TestSuite.fromClass(?testUseCases, 'ExternalParameters',param);
-% Adapt parameter, in a pre2018b compatible way.
 testUseCases.pass_inputargs('set', argParse.Results);
 suiteUseCases = matlab.unittest.TestSuite.fromClass(?testUseCases);
 
