@@ -98,7 +98,10 @@ end
 testUseCases.pass_inputargs('set', argParse.Results);
 suiteUseCases = matlab.unittest.TestSuite.fromClass(?testUseCases);
 
-% PLACEHOLDER: Here, get the non-use case tests
+testsFolder = fullfile(thisFolder, 'tests');
+suiteTests = matlab.unittest.TestSuite.fromFolder(testsFolder);
+
+suite = [suiteUseCases, suiteTests];
 
 %% Apply glob-based filtering
 glob = argParse.Results.glob;
@@ -110,11 +113,11 @@ if ~isempty(glob)
         glob = glob(2:end);
     end
     constr = matlab.unittest.constraints.ContainsSubstring(glob);
-    select = matlab.unittest.selectors.HasName(constr);
+    do_select = matlab.unittest.selectors.HasName(constr);
     if globflag < 0
-        suiteUseCases = suiteUseCases.selectIf(~select);
+        suite = suite.selectIf(~do_select);
     elseif globflag > 0
-        suiteUseCases = suiteUseCases.selectIf(select);
+        suite = suite.selectIf(do_select);
     end
 end
 
@@ -124,14 +127,14 @@ end
 runner = matlab.unittest.TestRunner.withTextOutput;
 file_plugin = matlab.unittest.plugins.ToFile(logfile);
 tap_plugin = matlab.unittest.plugins.TAPPlugin.producingOriginalFormat(file_plugin);
-runner.addPlugin(tap_plugin)
-results = runner.run(suiteUseCases);
+runner.addPlugin(tap_plugin);
+results = runner.run(suite);
 
 if argParse.Results.haltonerror
     % The unittest framework catches errors during tests
     % Here, throw an error is any test failed. A.o. to notify the
     % Continuous Integration of failure.
-    assertSuccess(results)
+    assertSuccess(results);
 end
 
 end
