@@ -78,17 +78,6 @@ argParse.addParameter('wheretoprocess','localsingle', @ischar);
 argParse.addParameter('parameterfile','', @ischar);
 argParse.parse(varargin{:});
 
-% parse glob negation tilde
-globflag = 0;
-glob = argParse.Results.glob;
-if ~isempty(glob)
-    globflag = 1;
-    if startsWith(glob,'~')
-        globflag = -1;
-        glob = glob(2:end);
-    end
-end
-
 % logging
 logfile = fullfile(pwd,'aa_test.log');
 if exist(logfile,'file')
@@ -110,12 +99,21 @@ suiteUseCases = matlab.unittest.TestSuite.fromClass(?testUseCases);
 % PLACEHOLDER: Here, get the non-use case tests
 
 %% Apply glob-based filtering
-constr = matlab.unittest.constraints.ContainsSubstring(glob);
-select = matlab.unittest.selectors.HasName(constr);
-if globflag < 0
-    suiteUseCases = suiteUseCases.selectIf(~select);
-elseif globflag > 0
-    suiteUseCases = suiteUseCases.selectIf(select);
+glob = argParse.Results.glob;
+if ~isempty(glob)
+    globflag = 1;
+    % parse glob negation tilde
+    if startsWith(glob,'~')
+        globflag = -1;
+        glob = glob(2:end);
+    end
+    constr = matlab.unittest.constraints.ContainsSubstring(glob);
+    select = matlab.unittest.selectors.HasName(constr);
+    if globflag < 0
+        suiteUseCases = suiteUseCases.selectIf(~select);
+    elseif globflag > 0
+        suiteUseCases = suiteUseCases.selectIf(select);
+    end
 end
 
 % PLACEHOLDER: Here, apply e.g. Tag based filtering
