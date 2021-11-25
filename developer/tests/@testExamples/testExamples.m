@@ -54,6 +54,9 @@ classdef testExamples < matlab.unittest.TestCase
             % Cleanup: remove temp folder
             rmdir(aap.directory_conventions.rawdatadir, 's')
         end
+    end
+
+    methods(Test, TestTags = {'Medium', 'Minimal_install'})
 
         %% tutorial_1_aa_setup
         function tutorial_1_test(testCase)

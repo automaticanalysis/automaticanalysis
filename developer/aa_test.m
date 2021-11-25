@@ -48,6 +48,7 @@ function aa_test(varargin)
 %    in the CI workflow, to have them all run in parallel.
 %    - 'Medium'
 %    - 'Small'
+%    - 'Minimal_install' % Tests that should run correctly with just aa and spm installed
 %
 % Example Usage
 %
