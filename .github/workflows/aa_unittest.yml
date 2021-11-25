@@ -59,20 +59,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 0
           LOAD_FREESURFER: 0
-
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Run script
         uses: matlab-actions/run-command@v1
