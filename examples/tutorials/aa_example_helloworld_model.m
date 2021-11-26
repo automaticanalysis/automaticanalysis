@@ -137,6 +137,3 @@ aa_doprocessing(aap);
 
 % aa_report will crawl the results and generate an HTML summary
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-
-aa_close(aap);
-
