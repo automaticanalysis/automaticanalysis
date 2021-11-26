@@ -34,17 +34,18 @@ end
 [aahome,~,~] = fileparts(which('aa_ver5'));
 defaultdir = fullfile(aahome,'aa_parametersets');
 ui_msg = 'Select parameter set that will be used as seed';
-[seedparam, rootpath] = userinput('uigetfile',{'*.xml','All Parameter Files' },ui_msg,defaultdir,'GUI',useGUI);
+[seedparam, rootpath] = userinput(...
+    'uigetfile',{'*.xml','All Parameter Files' },ui_msg,defaultdir,'GUI',useGUI);
 assert(ischar(seedparam), 'Exiting, user cancelled');
 is_base_defaults_file = strcmp(seedparam, 'aap_parameters_defaults.xml');
 seedparam = fullfile(rootpath, seedparam);
 
 %% Where to store the new parameters file
-if use_default_location
-    destination = fullfile(aa_info.configdir, parameter_xml_filename);
-else
-    [parameter_xml_filename, rootpath] = userinput('uiputfile',{'*.xml','All Parameter Files' },...
-        'Location where the parameters file will be saved',fullfile(aa_info.configdir, parameter_xml_filename),'GUI',useGUI);
+destination = fullfile(aa_info.configdir, parameter_xml_filename);
+if ~use_default_location
+    ui_msg = 'Location where the parameters file will be saved';
+    [parameter_xml_filename, rootpath] = userinput(...
+        'uiputfile',{'*.xml','All Parameter Files' },ui_msg,destination,'GUI',useGUI);
     assert(ischar(parameter_xml_filename), 'Exiting, user cancelled');
     destination = fullfile(rootpath, parameter_xml_filename);
 end
@@ -94,11 +95,12 @@ if ~exist(parameter_xml_filename,'file')
     throw(ME)
 end
 
+msg = sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination);
 if useGUI
-    h = msgbox(sprintf('New parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.',destination),'New parameters file','Warn');
+    h = msgbox(msg,'New parameters file','Warn');
     waitfor(h);
 else
-    fprintf('\nNew parameter set in %s has been created.\nYou may need to edit this file further to reflect local configuration.\n',destination);
+    fprintf('\n%s\n',msg);
 end
 
 end
