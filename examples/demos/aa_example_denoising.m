@@ -14,7 +14,7 @@
 % preprocessing using FSL equivalents) and rWLS. See stream
 % customization code block below.
 %
-% 2) the rWLS and BrainWavelet toolboxes must be installed and toolbox 
+% 2) the rWLS and BrainWavelet toolboxes must be installed and toolbox
 % entries included in the paramter file
 %
 % 2b)FSL and FSL/AROMA must be installed and the paths entered under the
@@ -22,7 +22,7 @@
 %
 %
 %
-% see comments in the tasklist (aaexample_denoising.xml) for 
+% see comments in the tasklist (aaexample_denoising.xml) for
 % (hopefully) helpful usage information
 
 
@@ -88,7 +88,7 @@ aap = aas_renamestream(aap,'aamod_AROMA_denoise_00001','structural','aamod_coreg
 % BIDS input and model
 % ------------------------------------------------------------------------------------------------------------------------------
 
-aap.acq_details.input.combinemultiple = true;   
+aap.acq_details.input.combinemultiple = true;
 
 % you can use this to test a single subject (but secondlevel modeling will crash!)
 % aap = aas_processBIDS(aap, [], {'finger_foot_lips'},{'sub-01'});
@@ -96,11 +96,10 @@ aap.acq_details.input.combinemultiple = true;
 aap = aas_processBIDS(aap, [], {'finger_foot_lips'});
 
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts_*', '*', 'sameforallsessions', [-0.5 -0.5 1], 'lips', 'T');
-					   
+
 % ------------------------------------------------------------------------------------------------------------------------------
 % RUN
 % ------------------------------------------------------------------------------------------------------------------------------
 
 aa_doprocessing(aap);
-aa_close(aap);
 

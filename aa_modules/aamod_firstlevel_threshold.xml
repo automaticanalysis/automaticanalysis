@@ -39,8 +39,8 @@
 			
             <inputstreams>
                 <stream diagnostic='1'>firstlevel_spm</stream>
-                <stream isessential='0'>firstlevel_spmts</stream>
-                <stream isessential='0'>firstlevel_spmfs</stream>
+                <stream diagnostic='1' isessential='0'>firstlevel_spmts</stream>
+                <stream diagnostic='1' isessential='0'>firstlevel_spmfs</stream>
                 <stream isessential='0'>structural</stream>
             </inputstreams>
 			
