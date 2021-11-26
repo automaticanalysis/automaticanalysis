@@ -39,8 +39,8 @@
             
             <inputstreams>
                 <stream diagnostic='1'>secondlevel_spm</stream>
-                <stream isessential='0'>secondlevel_spmts</stream>
-                <stream isessential='0'>secondlevel_spmfs</stream>
+                <stream diagnostic='1' isessential='0'>secondlevel_spmts</stream>
+                <stream diagnostic='1' isessential='0'>secondlevel_spmfs</stream>
                 <!-- the structural stream must be last -->
                 <stream isessential='0' isrenameable='1'>structural</stream>
             </inputstreams>
