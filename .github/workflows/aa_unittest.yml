@@ -76,7 +76,7 @@ jobs:
       - name: Archive results
         uses: actions/upload-artifact@v2
         with:
-          name: testlog
+          name: testlog_${{github.job}}
           path: |
             ${{github.workspace}}/developer/aa_test.log
 
@@ -139,6 +139,6 @@ jobs:
       - name: Archive results
         uses: actions/upload-artifact@v2
         with:
-          name: testlog
+          name: testlog_${{github.job}}
           path: |
             ${{github.workspace}}/developer/aa_test.log

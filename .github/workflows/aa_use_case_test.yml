@@ -91,6 +91,13 @@ jobs:
           path: |
             ~/projects/
 
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
+
   aatest_ds000114_dartel:
     name: Testing SPM DARTEL
 
@@ -162,6 +169,13 @@ jobs:
           path: |
             ~/projects/
 
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
+
   aatest_ds000114_diffusion:
     name: Testing Diffusion (with FSL)
 
@@ -232,6 +246,13 @@ jobs:
           name: aatest_ds000114_diffusion
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds000114_fmri:
     name: Testing fMRI
@@ -305,6 +326,13 @@ jobs:
           name: aatest_ds000114_fmri
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds000114_scrubbing:
     name: Testing fMRI frame censoring
@@ -380,6 +408,13 @@ jobs:
           path: |
             ~/projects/
 
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
+
   aatest_ds002737_deface:
     name: Testing (Freesurfer) Deface and FaceMasking
 
@@ -448,3 +483,10 @@ jobs:
           name: aatest_ds002737_deface
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
