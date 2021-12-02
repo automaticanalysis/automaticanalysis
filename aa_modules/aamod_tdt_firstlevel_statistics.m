@@ -54,24 +54,55 @@ switch task
         [~, TDT] = aas_cache_get(aap,'tdt');
         TDT.load;
         
-        dat = load(aas_getfiles_bystream(aap,'subject',subj,'settings'));
         if aas_stream_has_contents(aap,'subject',subj,'structural')
             bgfname = aas_getfiles_bystream(aap,'subject',subj,'structural');   
         else
             bgfname = '';
-        end
+        end        
+        load(aas_getfiles_bystream(aap,'subject',subj,'settings'),'cfg');
+        cfgs = cfg;
         dopairwise = aas_stream_has_contents(aap,'subject',subj,'settings_pairwise');
-        cfgs = dat.cfg;
-        if dopairwise
+        npw = 0;
+        if dopairwise            
             for fnpw = cellstr(aas_getfiles_bystream(aap,'subject',subj,'settings_pairwise'))'
-                dat = load(fnpw{1});
-                cfgs(end+1) = dat.cfg;
+                load(fnpw{1},'cfg');
+                npw = npw + 1;
+                cfgs(1+npw) = cfg;
+            end
+        end
+        doonevsall = aas_stream_has_contents(aap,'subject',subj,'settings_onevsall');
+        nova = 0;
+        if doonevsall            
+            for fnova = cellstr(aas_getfiles_bystream(aap,'subject',subj,'settings_onevsall'))'
+                load(fnova{1},'cfg');
+                nova = nova + 1;
+                cfgs(1+npw+nova) = cfg;
             end
         end
         
         if aas_getsetting(aap,'permutation.iteration') >= 1e4
             aas_log(aap,false,'WARNING: permutation with more than 9999 iterations is not supported -> permutation.iteration = 9999');
             aap.tasklist.currenttask.settings.permutation.iteration = 9999;
+        end
+        
+        srcmodulename = strrep(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'firstlevel_statistics','decode'); % CAVE: assumption on module name
+        srcpath = aas_getsubjpath(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),subj);
+        
+        %% Prepare data (if needed)
+        if aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
+            % create samples
+            dirBeta = strrep(spm_file(cfg.files.name{1},'path'),srcpath,aas_getsubjpath(aap,subj));
+            aas_makedir(aap,dirBeta);
+            
+            load(aas_getfiles_bystream(aap,'subject',subj,'roidata_firstlevel_betas'),'ROI');
+            load(aas_getfiles_bystream(aap,'study',[],'valid_roi_firstlevel_betas'),'ValidROI');
+            [~,roiInd] = intersect([ROI.ROIval],[ValidROI.ROIval]);
+
+            betas = [ROI(roiInd).mean];
+            for b = 1:size(betas,1)
+                beta = betas(b,:);
+                save(fullfile(dirBeta,sprintf('beta_%04d.mat',b)),'beta');
+            end
         end
         
         %% Generate prescription (cfg, design, doIter)
@@ -82,8 +113,6 @@ switch task
             
             % update file locations
             cfgs(indCfg).files.mask = {aas_getfiles_bystream(aap,'subject',subj,'mask')};
-            srcmodulename = strrep(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'firstlevel_statistics','decode'); % CAVE: assumption on module name
-            srcpath = aas_getsubjpath(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),subj);
             cfgs(indCfg).files.name = strrep(cfgs(indCfg).files.name,srcpath,aas_getsubjpath(aap,subj));
             
             cfgs(indCfg).design = [];
@@ -116,7 +145,7 @@ switch task
             if numel(designs) < aas_getsetting(aap,'permutation.iteration')
                 aas_log(aap,false,sprintf('WARNING: Number of possible iterations (%d) is lower than requested (%d) -> no permutations will be performed.',numel(designs),aas_getsetting(aap,'permutation.iteration')));
                 toExclude(end+1) = indCfg;
-                rmdir(cfgs(indCfg).results.dir);
+                rmdir(cfgs(indCfg).results.dir,'s');
             end
         end
         cfgs(toExclude) = []; doIter(toExclude) = [];
@@ -128,7 +157,8 @@ switch task
             if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
             try
                 cluster = parcluster(poolprofile);
-                if numel(aapoolprofile) > 1, cluster.ResourceTemplate = strjoin({aapoolprofile{2} cluster.ResourceTemplate}, ' '); end
+                if numel(aapoolprofile) > 1, cluster.SubmitArguments = aapoolprofile{2}; end
+                cluster.SubmitArguments = compose("%s --mem=%dG --time=%d", string(cluster.SubmitArguments), aap.options.aaparallel.memory, aap.options.aaparallel.walltime*60);
                 global aaworker;
                 wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
                 aas_log(aap,false,['INFO: parallel job storage is ' wdir]);
@@ -148,6 +178,7 @@ switch task
                 for i_perm = doIter{indCfg}                    
                     cfg_perm(end+1) = cfgs(indCfg);
                     cfg_perm(end).design = designs{i_perm};
+                    if indCfg > 1+npw, cfg_perm(end).design.unbalanced_data = 'ok'; end
                     cfg_perm(end).results.filestart = [cfgs(indCfg).results.filestart '_perm' sprintf('%04d',i_perm)];
 
                     if (numel(cfg_perm) == maxIterPerJob) ||... % batch is ready
@@ -164,6 +195,7 @@ switch task
                 for i_perm = doIter{indCfg}                    
                     cfg_perm = cfgs(indCfg);
                     cfg_perm.design = designs{i_perm};
+                    if indCfg > 1+npw, cfg_perm(end).design.unbalanced_data = 'ok'; end
                     cfg_perm.results.filestart = [cfgs(indCfg).results.filestart '_perm' sprintf('%04d',i_perm)];
                     
                     decoding(cfg_perm); % run permutation
@@ -172,7 +204,7 @@ switch task
         end
         
         %% Write 4D NIfTI
-        fnpw = {};
+        fnpw = {}; fnova = {};
         for indCfg = 1:numel(cfgs)
             clear designs; load(fullfile(cfgs(indCfg).results.dir,[cfgs(indCfg).results.filestart '_designs.mat']),'designs');
             dim = [cfgs(indCfg).datainfo.dim numel(designs)];
@@ -209,11 +241,14 @@ switch task
                 N.dat = reshape(N.dat,dim);
                 
                 if indCfg == 1, aap = aas_desc_outputs(aap,'subject',subj,['permuted_' cfgs(indCfg).results.output{o}],outfname); 
-                else, fnPW(end+1) = cellstr(outfname); end
+                elseif indCfg <= 1+npw, fnpw(end+1) = cellstr(outfname);
+                elseif indCfg <= 1+npw+nova, fnova(end+1) = cellstr(outfname);
+                end
             end
             clear N
         end
         if ~isempty(fnpw), aap = aas_desc_outputs(aap,'subject',subj,['permuted_' cfgs(indCfg).results.output{o} '_pairwise'],fnpw); end
+        if ~isempty(fnova), aap = aas_desc_outputs(aap,'subject',subj,['permuted_' cfgs(indCfg).results.output{o} '_onevsall'],fnova); end
         
         %% Statistics
         if aas_getsetting(aap,'dostatistics')
@@ -315,7 +350,11 @@ switch task
                 if ~any(strcmp(inp,'settings_pairwise')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','input'); end
                 src = setdiff(src,{'settings_pairwise'});
             end
-            inp(contains(inp,{'settings' 'settings_pairwise' 'mask' 'firstlevel_betas' 'connectivity' 'structural'})) = [];
+            if any(strcmp(src,'settings_onevsall'))
+                if ~any(strcmp(inp,'settings_onevsall')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','input'); end
+                src = setdiff(src,{'settings_onevsall'});
+            end
+            inp(contains(inp,{'settings' 'settings_pairwise' 'settings_onevsall' 'mask' 'firstlevel_betas' 'roidata_firstlevel_betas' 'valid_roi_firstlevel_betas' 'connectivity' 'structural'})) = [];
             for s = 1:numel(src)
                 if s <= numel(inp) && strcmp(inp{s},src{s}), continue; end
                 if s == 1

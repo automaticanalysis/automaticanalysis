@@ -27,9 +27,9 @@ end
 img = []; countVar = 0;
 for h = reshape(hdr,1,[])
     fname = strsplit(h.fname,',');
-    dat = load(fname{1},fname{2});
+    dat = load(fname{1},fname{2}); dat = dat.(fname{2});
     countVar = countVar + 1;
-    img(:,:,:,countVar) = dat.(fname{2})(:,:,:,str2double(fname{3}));
+    img(1:size(dat,1),1:size(dat,2),1:size(dat,3),countVar) = dat(:,:,:,str2double(fname{3}));
 end
 
 varargout{1} = img;
