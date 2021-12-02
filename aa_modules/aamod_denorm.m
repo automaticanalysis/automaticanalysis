@@ -111,14 +111,21 @@ switch task
             cellfun(@(f) delete(f), tmp_images);
         end
     case 'checkrequirements'
-        in =  aas_getstreams(aap,'input'); in = in{end}; % last stream
+        in = processStreams(aap,cell2mat(varargin));
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
         stageindex = sscanf(index,'_%05d');
-        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if iscell(out), out = out{1}; end
-        instream = textscan(in,'%s','delimiter','.'); instream = instream{1}{end};
-        if ~strcmp(out,instream)
-            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out,instream,'output');
-            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end
+        instream = cellfun(@(s) strsplit(s,'.'), in, 'UniformOutput', false); instream = cellfun(@(c) c(end), instream);
+        for i = 1:numel(instream)
+            if i <= numel(out)
+                if ~strcmp(out{i},instream{i})
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{i},instream{i},'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream{i} '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream{i},'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream{i} '''']);
+            end
         end
 end
 end

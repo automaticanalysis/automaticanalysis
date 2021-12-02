@@ -3,7 +3,7 @@
     <tasklist>
         <currenttask mfile_alias='aamod_roi_valid' domain='study' desc='Find valid ROIs for EPI' modality='MRI'>
             <AbsVoxThr>10</AbsVoxThr>
-            <SubjRemoveStat>mode</SubjRemoveStat>
+            <SubjRemoveStat options='mode|median|mean|none' ui='optionlist'>mode</SubjRemoveStat>
             <SubjRemoveThr></SubjRemoveThr>
             <ROIRemoveThr>0</ROIRemoveThr>
 

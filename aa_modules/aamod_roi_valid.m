@@ -29,7 +29,7 @@ switch task
     case 'doit'
         
         try AbsVoxThr      = aap.tasklist.currenttask.settings.AbsVoxThr;      catch, AbsVoxThr      = 10; end
-        try SubjRemoveStat = aap.tasklist.currenttask.settings.SubjRemoveStat; catch, SubjRemoveStat = 0.8; end
+        try SubjRemoveStat = aap.tasklist.currenttask.settings.SubjRemoveStat; catch, SubjRemoveStat = 'mode'; end
         try SubjRemoveThr  = aap.tasklist.currenttask.settings.SubjRemoveThr;  catch, SubjRemoveThr  = 3;  end
         try ROIRemoveThr   = aap.tasklist.currenttask.settings.ROIRemoveThr;   catch, ROIremoveThr   = 0;  end
         
@@ -46,7 +46,7 @@ switch task
             if strcmp(sourcedomain,'subject')
                 procind = 1;
                 indind = 1;
-            elseif ~isempty(strfind(sourcedomain,'session'))
+            elseif contains(sourcedomain,'session')
                 procind = aap.acq_details.selected_sessions;
                 indind = 1:2;
             end
@@ -85,12 +85,14 @@ switch task
                         % Keep only if N(invalid) is mean+Thr*STD or less:
                         scrit = mean(sum(invalidroi,2));
                         scrit = scrit + SubjRemoveThr*std(sum(invalidroi,2));
+                    case 'none'
+                        scrit = Inf;
                 end
                 
                 % Find rubbish subjects:
                 s2ignore = sum(invalidroi,2)>scrit;
                 
-                % Find ROIs to ignore (ignoring rubbish subjects):
+                % Find ROIs to ignore (after excluding rubbish subjects):
                 r2ignore = sum(invalidroi(~s2ignore,:))>ROIRemoveThr;
                 
                 % Session Summary:
@@ -131,14 +133,20 @@ switch task
         [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
         stageindex = sscanf(index,'_%05d');
         in = aap.tasksettings.(stagename)(stageindex).inputstreams.stream; if ~iscell(in), in = {in}; end
+        out = aas_getstreams(aap,'output'); if ~iscell(out), out = {out}; end
         
         % switch for source stage
         aaps = aas_setcurrenttask(aap,aap.internal.inputstreamsources{aap.tasklist.currenttask.modulenumber}.stream.sourcenumber);
         src = aas_getstreams(aaps,'output');
         for s = numel(in)
-            if ~strcmp(in{s},src{s})
-                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,in{s},src{s},'input');
-            end
-            aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' input stream: ''' src{s} '''']);
+            if s <= numel(out)
+                if ~strcmp(in{s},src{s})
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,in{s},src{s},'input');
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},strrep(src{s},'roidata','valid_roi'),'output');
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',src{s},'input');
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',strrep(src{s},'roidata','valid_roi'),'output');
+            end            
         end
 end
