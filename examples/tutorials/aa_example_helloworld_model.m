@@ -1,7 +1,7 @@
 
 % this script runs basic preprocessing, and first- and second-level model
 % on the ds000114 dataset used in the "helloworld" example script. It also
-% demonstrates how to do processing using the Matlab Parallel Computing 
+% demonstrates how to do processing using the Matlab Parallel Computing
 % Toolbox if it is available.
 
 % variable names in ALLUPPERCASE are placeholders that
@@ -25,7 +25,7 @@ PARAMETER_FNAME = '/path/to/parameter_xml_file';
 % the helloworld tasklist comes installed with aa:
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/aa_example_helloworld_model.xml');
+tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_helloworld_model.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
 
@@ -91,11 +91,11 @@ aap.directory_conventions.reportname='report.htm';
 % -------------------------------------------------------------------------
 
 % ds000114 has the data structured as two separate sessions which
-% we want to combine into a single analysis. (This is somewhat atypical 
-% in BIDS data.) We do so using the combinemultiple option. Note aa may 
+% we want to combine into a single analysis. (This is somewhat atypical
+% in BIDS data.) We do so using the combinemultiple option. Note aa may
 % print a warning about this -- you can ignore it.
 
-aap.acq_details.input.combinemultiple = true; 
+aap.acq_details.input.combinemultiple = true;
 
 % Here are a three options for processing the data:
 
@@ -119,8 +119,8 @@ aap = aas_processBIDS(aap, [], {'finger_foot_lips'});
 % modeling
 % -------------------------------------------------------------------------
 
-% aa will read the event files in ds000114 and create a model, but BIDS 
-% currently does not support contrast specification. As such model 
+% aa will read the event files in ds000114 and create a model, but BIDS
+% currently does not support contrast specification. As such model
 % contrasts must be added here.
 
 % note aas_addcontrast must come AFTER aas_processBIDS in the mfile
@@ -128,7 +128,7 @@ aap = aas_processBIDS(aap, [], {'finger_foot_lips'});
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts_*', '*', 'sameforallsessions', [-0.5 -0.5 1], 'lips', 'T');
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts_*', '*', 'singlesession:finger_foot_lips_test', [-0.5 -0.5 1], 'lips-test', 'T');
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts_*', '*', 'singlesession:finger_foot_lips_retest', [-0.5 -0.5 1], 'lips-retest', 'T');
-				   
+
 % -------------------------------------------------------------------------
 % run
 % -------------------------------------------------------------------------
@@ -137,6 +137,3 @@ aa_doprocessing(aap);
 
 % aa_report will crawl the results and generate an HTML summary
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-
-aa_close(aap);
-

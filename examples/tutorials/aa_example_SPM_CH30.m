@@ -26,7 +26,7 @@ PARAMETER_FNAME = '/path/to/parameter_xml_file';
 % the tasklist comes installed with aa so you don't need to specify it
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/aa_example_SPM_CH30.xml');
+tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_SPM_CH30.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
 
@@ -60,7 +60,7 @@ aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
 
 aap.options.NIFTI4D = 1;
-aap.acq_details.numdummies = 0;	
+aap.acq_details.numdummies = 0;
 aap.acq_details.input.correctEVfordummies = 0;
 
 % make sure the report name is set
@@ -79,13 +79,13 @@ aap = aas_processBIDS(aap);
 
 % UNITS can be 'secs' or 'scans' (the SPM auditory tutorial has it set
 % for 'scans' in the manual but the BIDS tsv is in secs)
- 
-aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs'; 
- 
+
+aap.tasksettings.aamod_firstlevel_model.xBF.UNITS = 'secs';
+
 % processBIDS will create the events for the model, but you must define the contrasts
 
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsessions', 1, 'L_G_R','T');
-						   
+
 % -------------------------------------------------------------------------
 % run and report
 % (you must have FSL installed to run reporting)
@@ -93,7 +93,3 @@ aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsession
 
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
-aa_close(aap);
-
-
-
