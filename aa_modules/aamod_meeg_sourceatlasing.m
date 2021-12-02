@@ -28,15 +28,13 @@ switch task
         sel = unique(source_atlas.aparc); sel(sel==0) = [];
         source_atlas.aparclabel = source_atlas.aparclabel(sel);
         for s = 1:numel(sel), source_atlas.aparc(source_atlas.aparc==sel(s)) = s; end
-        
-        % create spatial information for 'sensors' N.B.: it is still suboptimal 
-        for l = 1:numel(source_atlas.aparclabel)
-            ind = source_atlas.aparc == l;
-            labelpos(l,:) = mean(source_atlas.pos(ind,:),1);
-        end
+
+        [~,~,labelInd] = intersect(source_atlas.aparclabel,sourceatlas.aparclabel,'stable');
+        source_atlas.aparcpos = sourceatlas.aparcpos(labelInd,:);
+
         elec.label = strrep(source_atlas.aparclabel,'_',' ');
-        elec.chanpos = labelpos;
-        elec.elecpos = labelpos;
+        elec.chanpos = source_atlas.aparcpos;
+        elec.elecpos = source_atlas.aparcpos;
         
         %% Run through inputs
         outputfnames = {};
