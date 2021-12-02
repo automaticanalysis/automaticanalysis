@@ -10,7 +10,8 @@
             </qsub>
             
             <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
-            <dopairwise desc='do parowise decoding (for cases with more then two items only)' ui='yesno'>0</dopairwise>
+            <dopairwise desc='do pairwise decoding (for cases with more then two items only)' ui='yesno'>0</dopairwise>
+            <doonevsall desc='do one-vs-all decoding (for cases with more then two items only)' ui='yesno'>0</doonevsall>            
 
             <featureselection>
                 <method options='none|maxresponse|maxpooledredsponse|nonparammaxresponse|trainedweights|[external, single volume or colon-separated list of volumes]|RFE' ui='optionlist'>none</method>
@@ -51,13 +52,12 @@
                 </options>
             </decoding>
             
-            <method desc='decoding analysis' options='wholebrain|searchlight|roi' ui='optionlist'>searchlight</method>
+            <method desc='decoding analysis' options='roi|network' ui='optionlist'>roi</method>
             
-            <searchlight desc='spherical searchlight'>
-                <unit options='voxels|mm'>voxels</unit>
-                <radius>4</radius>
-            </searchlight>
-            
+            <network desc='within-network connectivity pattern'>
+                <networkrois desc='non-overlapping network specification, a list of cell arrays containg ROI values'></networkrois>
+            </network>
+                
             <measure desc='decoding_measure (multiple can be specified as colon-separeted list)' options='accuracy|sensitivity|specificity|balanced_accuracy|AUC|accuracy_minus_chance|sensitivity_minus_chance|specificity_minus_chance|balanced_accuracy_minus_chance|AUC_minus_chance' ui='optionlist'></measure>
             
             <!-- N.B.: input mask must have 'mask' or 'rois' in the streamname
@@ -66,6 +66,7 @@
             --> 
             <inputstreams>
                 <stream>connectivity</stream>
+                <stream>ROInames</stream>
             </inputstreams>
             
             <outputstreams desc='streams will correspond to the measure(s)'>

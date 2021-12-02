@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask mfile_alias='aamod_secondlevel_model' domain='study' desc='SPM second level model' modality='MRI'>
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <inputstreams>
+                <stream diagnostic="1">firstlevel_brainmask</stream>
+                <stream>settings</stream>
+                <stream isrenameable="1">input</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>secondlevel_spm</stream>
+                <stream>secondlevel_betas</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
