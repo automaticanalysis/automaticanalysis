@@ -57,6 +57,9 @@ switch task
                 sourcemodel.inside(~sourcemodel.inside,:) = [];
                 
             case 'corticalsheet'
+                [~, FS] = aas_cache_get(aap,'fs');
+                FS.load;
+                
                 aas_runFScommand(aap,sprintf('export PATH=$PATH:%s/bin_rh_linux64; %s/bin/ft_postfreesurferscript.sh %s %s %s',WB.toolPath, FT.toolPath,...
                     aas_getstudypath(aap),aas_getsubjname(aap,subj),...
                     fullfile(WB.templateDir,'standard_mesh_atlases')));
@@ -122,6 +125,24 @@ switch task
                 sourceatlas.aparclabel = vertcat(spm_file(atlaslh.aparclabel,'prefix','lh_'),spm_file(atlaslh.aparclabel,'prefix','rh_'));
                 sourceatlas.aparc = vertcat(atlaslh.aparc, atlasrh.aparc+numel(atlaslh.aparclabel));
                 
+                % combine atlas with labels and remove unspecified positions
+                T = FS.labels.(lower(aas_getsetting(aap,'options.corticalsheet.annotation')));
+                [~,indAparc,indLabel] = intersect(sourceatlas.aparclabel,T.Structure,'stable');
+                labelToRemove = true(1,numel(sourceatlas.aparclabel));
+                labelToRemove(indAparc) = false;
+                sourceatlas.aparclabel(labelToRemove) = [];
+                sourceatlas.aparcpos = [T.X(indLabel) T.Y(indLabel) T.Z(indLabel)];
+                aparcToRemove = setdiff(sourceatlas.aparc,indAparc);
+                posToRemove = arrayfun(@(a) sourceatlas.aparc == a, aparcToRemove, 'UniformOutput', false);
+                posToRemove = logical(sum(cat(2,posToRemove{:}),2));
+                sourceatlas.pos(posToRemove,:) = [];
+                sourceatlas.aparc = arrayfun(@(a) a-sum(labelToRemove(1:a)), sourceatlas.aparc);
+                sourceatlas.aparc(posToRemove,:) = [];
+                [trind, trelem] = ndgrid(1:size(sourceatlas.tri,1),1:size(sourceatlas.tri,2)); trind = transpose(trind); trelem = transpose(trelem);
+                indtri = logical(sum(arrayfun(@(x,y) any(sourceatlas.tri(x,y)==find(posToRemove)), trind, trelem)));
+                sourceatlas.tri = arrayfun(@(x,y) sourceatlas.tri(x,y)-sum(posToRemove(1:sourceatlas.tri(x,y))), trind, trelem)';
+                sourceatlas.tri(indtri,:) = [];                
+                
                 % register to sourcemodel
                 FT.addExternal('freesurfer');
                 fsmri = MRIread(mrifn);
@@ -146,6 +167,8 @@ switch task
                 fnAtlas = fullfile(aas_getsubjpath(aap,subj),'sourceatlas.mat');
                 save(fnAtlas,'sourceatlas');
                 aap = aas_desc_outputs(aap,'subject',subj,'sourceatlas',fnAtlas);
+
+                FS.unload;
         end
         
         sourcemodel = ft_struct2single(sourcemodel);

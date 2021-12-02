@@ -5,20 +5,19 @@ if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 %% config
 [~, FT] = aas_cache_get([],'fieldtrip');
-FT.load
+FT.load;
 FT.addExternal('brewermap');
 cmapbase = flipud(brewermap(128,'RdBu'));
 
 [~, BNV] = aas_cache_get([],'bnv');
-inputfiles.surf = fullfile(BNV.toolPath,'Data','SurfTemplate','BrainMesh_ICBM152_smoothed_tal.nv');
+BNV.load;
+
+inputfiles.surf = fullfile(BNV.toolPath,'Data','SurfTemplate','BrainMesh_Ch2_smoothed.nv');
 inputfiles.map = '';
 
-atlas = readtable(fullfile(BNV.toolPath,'Data','ExampleFiles','Desikan-Killiany68','Desikan-Killiany68.node'),'FileType','text');
 groupStat = data{1};
 
-labelcmb = strrep(groupStat.labelcmb,'h ','.');
-[~,~,roiind] = intersect(labelcmb,atlas.Var6);
-atlas = atlas(roiind,:);
+atlas = table(groupStat.elec.elecpos,ones(numel(groupStat.elec.label),2),strrep(groupStat.elec.label,' ','.'));
 nROI = size(atlas,1);
 fnNode = [savepath '_net.node'];
 writetable(atlas,fnNode,'FileType','text','WriteVariableNames',false,'Delimiter',' ');
@@ -38,6 +37,7 @@ mask = groupStat.stat.mask & ~isnan(groupStat.stat.stat);
 stat = groupStat.stat.stat .* mask;
 if ~any(stat,'all')
     delete(fnNode);
+    BNV.unload;
     return; 
 end
 [cmap, cmaprange] = cmap_adjust(cmapbase,stat(mask));
@@ -106,7 +106,7 @@ end
 for f = 1:size(snapshotwoi,1)
     mat = zeros(nROI,nROI);
     for roi = unique(groupStat.labelcmb(:,1),'stable')'
-        roiind = strcmp(atlas.Var6,strrep(roi{1},'h ','.'));
+        roiind = strcmp(atlas.Var3,strrep(roi{1},' ','.'));
         lcoi = strcmp(groupStat.labelcmb(:,1),roi{1});
         boiind = [find(freq >= snapshotwoi(f,1),1,'first') find(freq <= snapshotwoi(f,2),1,'last')];
         meas = mean(stat(lcoi,boiind(1):boiind(2)),2);
@@ -132,6 +132,7 @@ if isempty(savepath)
     delete(fnNode);
     delete(fnEdge);
 end
+BNV.unload;
 end
 
 function [cmap, cmaprange] = cmap_adjust(cmapbase,stat)

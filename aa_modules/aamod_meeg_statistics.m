@@ -1,4 +1,3 @@
-
 function [aap, resp] = aamod_meeg_statistics(aap,task)
 
 resp='';
@@ -321,7 +320,7 @@ switch task
             end
             
             if isfield(allInp{1},'pos') % source
-                allAtlas = struct('aparc',{},'aparclabel',{});
+                allAtlas = struct('aparc',{},'aparclabel',{}, 'aparcpos', {});
                 aas_log(aap,false,'INFO: selecting overlapping positions');
                 posJoint = all(cell2mat(cellfun(@(x) reshape(x.cfg.included,[],1), allInp, 'UniformOutput', false)),2);
                 allPos = zeros(sum(posJoint),3,numel(allInp));
@@ -344,7 +343,9 @@ switch task
                     allInp{i} = dat;
                     if aas_stream_has_contents(aap,'subject',subjmodel(i),'sourceatlas')
                         dat = load(aas_getfiles_bystream(aap,'subject',subjmodel(i),'sourceatlas')); sourceatlas = dat.sourceatlas;
-                        allAtlas(i) = keepfields(ft_sourceinterpolate(atlascfg, sourceatlas, allInp{i}),fieldnames(allAtlas));
+                        dat = keepfields(ft_sourceinterpolate(atlascfg, sourceatlas, allInp{i}),fieldnames(allAtlas));
+                        dat.aparcpos = sourceatlas.aparcpos;
+                        allAtlas(i) = dat;
                     end
                 end
                 if isfield(allInp{1},'tri')
