@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='*' desc='FSL epi_reg coregistration extended a la DCCN' modality='MRI'>
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>2</permanenceofoutput>
+            
+            <inputstreams>
+                <stream>t1totemplate_xfm</stream>
+                <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>
+                <stream isessential='0'>native_white</stream>
+                <stream isessential='0'>wholebrain_epi</stream>
+				<stream diagnostic='1' isrenameable='1'>meanepi</stream>  
+                <stream isrenameable='1'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isrenameable='1'>epi</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+
