@@ -405,9 +405,9 @@ cfg.files.xclass = [];
 cfg.files.descr = {};
 fns = cellstr(spm_select('FPList',dirSPM,'^beta_[0-9]{4}.mat'));
 for l = 1:numel(labelnames)
-    fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),labelnames{l}{1}));
-    if isempty(fnsLabel{1}), fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),['*' labelnames{l}{1}])); end
-    [~,fnInd] = intersect(fns,fnsLabel);
+    fnInd = cellfun(@(r) ~isempty(regexp(r,wildcard2regexp(labelnames{l}), 'once')), regressor_names(1,:));
+    fnsLabel = fns(fnInd);
+    
     cfg.files.name = vertcat(cfg.files.name,fnsLabel);
     cfg.files.chunk = vertcat(cfg.files.chunk,...
         [regressor_names{2,fnInd}]');
