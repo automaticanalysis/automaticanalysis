@@ -430,8 +430,10 @@ cfg.files.descr = {};
 for sess = aap.acq_details.selected_sessions
     fns = cellstr(aas_getfiles_bystream(aap,'session',[subj sess],'connectivity'));    
     for l = 1:numel(labelnames)
-        fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),labelnames{l}{1}));
-        if isempty(fnsLabel{1}), fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),['*' labelnames{l}{1}])); end
+        fnptrnLabel = spm_file(labelnames{l}{1},'ext','mat');
+        fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),fnptrnLabel));
+        if isempty(fnsLabel{1}), fnsLabel = cellstr(get_filenames(cfg.software,spm_file(fns{1},'path'),['*' fnptrnLabel])); end
+        
         cfg.files.name = vertcat(cfg.files.name,fnsLabel);
         cfg.files.chunk = vertcat(cfg.files.chunk,...
             sess*ones(numel(fnsLabel),1));
