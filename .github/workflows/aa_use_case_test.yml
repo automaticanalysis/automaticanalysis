@@ -41,7 +41,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -59,12 +59,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 1
           LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -77,14 +79,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
 
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
-
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
@@ -96,7 +90,14 @@ jobs:
           name: aatest_ds000114_AROMA
           path: |
             ~/projects/
-            
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
+
   aatest_ds000114_dartel:
     name: Testing SPM DARTEL
 
@@ -118,7 +119,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -136,12 +137,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 0
           LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -154,14 +157,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
 
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
-
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
@@ -173,6 +168,13 @@ jobs:
           name: aatest_ds000114_dartel
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds000114_diffusion:
     name: Testing Diffusion (with FSL)
@@ -195,7 +197,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -213,12 +215,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FSL, FaceMasking)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 1
           LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -231,14 +235,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
 
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
-
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
@@ -250,6 +246,13 @@ jobs:
           name: aatest_ds000114_diffusion
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds000114_fmri:
     name: Testing fMRI
@@ -272,7 +275,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -290,12 +293,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 0
           LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -310,14 +315,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
 
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
-
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
@@ -329,6 +326,13 @@ jobs:
           name: aatest_ds000114_fmri
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds000114_scrubbing:
     name: Testing fMRI frame censoring
@@ -351,7 +355,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -369,12 +373,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FaceMasking, FSL standards)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 0
           LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -390,14 +396,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
 
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
-
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
@@ -409,6 +407,13 @@ jobs:
           name: aatest_ds000114_scrubbing
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log
 
   aatest_ds002737_deface:
     name: Testing (Freesurfer) Deface and FaceMasking
@@ -431,7 +436,7 @@ jobs:
         run: |
           git config --global core.autocrlf false
           git config --global core.eol lf
-      
+
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
@@ -449,12 +454,14 @@ jobs:
           # MATLAB release to set up R2020a
           release: R2020a
 
-      - name: Install tools under $HOME/tools (SPM, FSL, FreeSurfer, FaceMasking)
+      - name: Install tools and configure aa
         run: |
-          source $GITHUB_WORKSPACE/.github/workflows/tools_install.sh
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
         env:
           LOAD_FSL: 1
           LOAD_FREESURFER: 1
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
       - name: Retrive test data under $HOME/data/aa_demo
         run: |
@@ -464,14 +471,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_EC2_METADATA_DISABLED: true
-
-      - name: Configure aa
-        run: |
-          echo "Free space:"
-          df -h
-          mkdir $HOME/.aa
-          cp $GITHUB_WORKSPACE/.github/workflows/aap_parameters_defaults_GitHub.xml $HOME/.aa/aap_parameters_user.xml
-          mkdir $HOME/projects
 
       - name: Run script
         uses: matlab-actions/run-command@v1
@@ -484,3 +483,10 @@ jobs:
           name: aatest_ds002737_deface
           path: |
             ~/projects/
+
+      - name: Archive results
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log

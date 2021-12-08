@@ -12,8 +12,9 @@ if ~isempty(iParam)
 end
 
 switch varargin{1}
-    case 'questdlg' % question, title, btn1, btn2, default
+    case 'questdlg' % question, title, btn1, btn2, (btn3,) default
         if isGUI
+            mac_extra_print(varargin{3})
             varargout{1} = questdlg(varargin{2:end});
         else
             btns = varargin(4:end-1);
@@ -27,8 +28,9 @@ switch varargin{1}
 
             varargout{1} = resp{1};
         end
-    case  'uigetdir'
+    case  'uigetdir' % path,title
         if isGUI
+            mac_extra_print(varargin{3})
             varargout{1} = uigetdir(varargin{2:end});
         else
             % TODO: implement an abort option here too?
@@ -37,8 +39,9 @@ switch varargin{1}
 
             varargout{1} = rootpath;
         end
-    case  'uigetfile'
+    case  'uigetfile' % filter,title,defname
         if isGUI
+            mac_extra_print(varargin{3})
             [varargout{1}, varargout{2}] = uigetfile(varargin{2:end});
         else
             defaultdir = varargin{4};
@@ -68,8 +71,9 @@ switch varargin{1}
             varargout{1} = seedparam;
             varargout{2} = rootpath;
         end
-    case  'uiputfile'
+    case  'uiputfile' % filter,title,defname
         if isGUI
+            mac_extra_print(varargin{3})
             [varargout{1}, varargout{2}] = uiputfile(varargin{2:end});
         else
             % TODO: implement an abort option here too?
@@ -87,4 +91,15 @@ switch varargin{1}
         error('Function %s is not an existing function or not implemented!',varargin{1});
 end
 
+end
+
+function mac_extra_print(title)
+% On mac, depending on os version, the custom dialog title does not always show
+% Print the title to the command window before showing the dialog
+if ismac()
+    fprintf('\n');
+    pause(0.5)
+    fprintf('%s\n', title);
+    pause(0.5)
+end
 end

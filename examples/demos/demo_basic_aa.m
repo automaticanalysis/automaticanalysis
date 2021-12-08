@@ -1,5 +1,5 @@
 % Automatic analysis (aa) - user master script
-% 
+%
 % This example runs one session of one subject through a standard SPM-based
 % fMRI analysis. After running, look at the results using SPM in
 % aa_demo_results/auditory/aamod_firstlevel_contrasts_00001/2014_03_29_9001/stats
@@ -23,13 +23,18 @@ aap.tasksettings.aamod_norm_write_meanepi.vox = [3 3 3];
 
 %% DATA
 % download the demo dataset (if necessary)
-aap = aa_downloaddemo(aap);
+% Here it is assumed that aap.directory_conventions.rawdatadir in the
+% parameter xml file is a single directory, not a list of directories
+% separated by pathsep characters.
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'aa_demo');
+aap.directory_conventions.rawdatadir = FULLDATAPATH;
+aa_downloaddemo(aap, 'aa_demo');
 
 % Define how subject identifier (e.g. 2014_03_29_9001) is turned into
 % subject foldername in rawdatadir
 aap.directory_conventions.subjectoutputformat = '%s';
 aap.directory_conventions.dicomfilter='*.IMA';
-% This is name of the structural protocol, as typed into the scanner. If 
+% This is name of the structural protocol, as typed into the scanner. If
 % you're consistent with this, it can be found automatically in each new subject
 aap.directory_conventions.protocol_structural = 'MPRAGE  iPAT2_sag';
 
@@ -39,7 +44,7 @@ aap.acq_details.numdummies = 10;
 %% STUDY
 % Where to put the analyzed data
 aap.acq_details.root = fullfile(aap.acq_details.root,'aa_demo');
-aap.directory_conventions.analysisid = 'auditory';     
+aap.directory_conventions.analysisid = 'auditory';
 
 % Add data
 % Just one session
@@ -48,8 +53,8 @@ aap = aas_addsession(aap,'lullaby_task');
 aap = aas_addsubject(aap,'S1','2014_03_29_9001','functional',{6});
 
 % Add model
-% Just one regressor here ('Sound'): block onsets 0, 26, 52... 390 secs and duration 15 secs 
-aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','Sound',0:26:390, 15);  
+% Just one regressor here ('Sound'): block onsets 0, 26, 52... 390 secs and duration 15 secs
+aap = aas_addevent(aap,'aamod_firstlevel_model','*','*','Sound',0:26:390, 15);
 
 % Specify contrast - just sound minus silence
 aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsessions', 1, 'sound-silence', 'T');
