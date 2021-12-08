@@ -1,6 +1,6 @@
 classdef testExamples < matlab.unittest.TestCase
     properties (TestParameter)
-        dataset = num2cell(aa_downloaddemo_datasets())
+        dataset = testExamples.create_dataset_parameter()
     end
 
     methods(Test, TestTags = {'Small'})
@@ -68,4 +68,19 @@ classdef testExamples < matlab.unittest.TestCase
             % TODO: How to verify correct run, apart from no-error?
         end
     end
+
+    methods(Static)
+        %% create_dataset_parameter
+        function dataset_par = create_dataset_parameter()
+            % Create single struct, with as fieldnames the dataset IDs.
+            % That way, those field names will be the value names in the
+            % test reporting
+            dataset_par = struct();
+            datasets = aa_downloaddemo_datasets();
+            for i = 1:length(datasets)
+                dataset_par.(datasets(i).ID) = datasets(i);
+            end
+        end
+    end
+
 end
