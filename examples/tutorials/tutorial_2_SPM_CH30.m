@@ -8,14 +8,16 @@
 % (NB: this data is missing gzip'ed versions of the structral and epi which
 % confuses aa. The easiest fix is just gzip /sub-01/anat/sub-01_T!w.nii
 % and /sub-01/func/sub-01_task-auditory_bold.nii after downloading).
+function tutorial_2_SPM_CH30()
 
+% variable names in ALLUPPERCASE are placeholders that
+% you may want to edit before the script is run.
+%
 % make a copy of this file to edit and put it somewhere in your Matlab path
 
 % -------------------------------------------------------------------------
 % INITIALIZATION
 % -------------------------------------------------------------------------
-
-clear all;
 aa_ver5;
 
 % PARAMETER_FNAME is the aa parameter file you must customize
@@ -26,7 +28,7 @@ PARAMETER_FNAME = '/path/to/parameter_xml_file';
 % the tasklist comes installed with aa so you don't need to specify it
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_SPM_CH30.xml');
+tasklist_fname = fullfile(aahome,'examples/tutorials/tutorial_2_SPM_CH30.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
 
@@ -93,3 +95,5 @@ aap = aas_addcontrast(aap, 'aamod_firstlevel_contrasts', '*', 'sameforallsession
 
 aa_doprocessing(aap);
 aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
+
+end
