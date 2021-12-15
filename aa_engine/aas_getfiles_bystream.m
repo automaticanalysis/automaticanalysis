@@ -10,7 +10,7 @@
 %
 % 2021 [MSJ] - double pause to improve OS-X PCT performance
 % Tibor Auer MRC CBU Cambridge, 2012-2013
-% Rhodri Cusack MRC CBU Cambridge, Feb 2010 
+% Rhodri Cusack MRC CBU Cambridge, Feb 2010
 %
 
 function [allfiles md5 inpstreamdesc]=aas_getfiles_bystream(aap,varargin)
@@ -23,7 +23,7 @@ if (nargin > 2) && ischar(varargin{1}) % unless the streamname is the only input
     streamDomain = varargin{1}; % nice if it's passed in...
 else
     switch numel(reqestedIndices)
-        
+
         case 0
             streamDomain = 'study';
         case 1
@@ -50,25 +50,26 @@ end
 % If the requested domain indices exist, we try to get the files, otherwise
 % we'll just return empty.
 if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow for domain = study
-    
+
     for e = 1:numel(order)
         if strcmp('input', order{e})
             [inpstreamdesc localroot]=aas_getinputstreamfilename(aap,varargin{:});
         else
             [inpstreamdesc localroot]=aas_getoutputstreamfilename(aap,varargin{:});
         end
-        aas_log(aap,false,sprintf('Load stream from file %s...',inpstreamdesc));
+        logsafe_path = strrep(inpstreamdesc, '\', '\\');
+        aas_log(aap,false,sprintf('Load stream from file %s...',logsafe_path));
         if exist(inpstreamdesc,'file'), break; end
         aas_log(aap,false,sprintf('\b but not found'));
     end
-    if (~exist(inpstreamdesc,'file')) 
-        aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',inpstreamdesc));
+    if (~exist(inpstreamdesc,'file'))
+        aas_log(aap,true,sprintf('Attempting to load stream from file %s, but not found',logsafe_path));
         inpstreamdesc = '';
         allfiles = '';
         md5 = '';
         return
     end;
-    
+
     % to avoid conflict in case of parallel execution make a copy of the file in tmp
     tmpfname = tempname;
     nTries = 1;
@@ -83,31 +84,31 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
     if ~exist(tmpfname,'file')
         aas_log(aap,true,sprintf('ERROR: Error occurred while copying %s to %s',inpstreamdesc,tmpfname));
     end
-    
+
     retries = 0;
     while retries < 5
         % check that file has been written. There may be a slight delay in
         % the file being available.
         if retries > 0
             copyfile(inpstreamdesc, tmpfname);
-            pause(1);            
+            pause(1);
             pause(1); % 2nd pause here may help PCT performance on OS-X
         end
-        
+
         fid=fopen(tmpfname,'r');
         lne=fgetl(fid);
         fclose(fid);
-        
+
         if isnumeric(lne)
             retries = retries + 1;
-            disp('MD5 line could not be found: waiting 1 second and retrying')            
-            pause(1);           
+            disp('MD5 line could not be found: waiting 1 second and retrying')
+            pause(1);
             pause(1); % 2nd pause here may help PCT performance on OS-X
             else
             break
         end
     end
-    
+
     % There should be an MD5 at the top
     ind=0;
     fid=fopen(tmpfname,'r');
@@ -124,14 +125,14 @@ if isempty(reqestedIndices) || ismember(reqestedIndices(end), domainI) % allow f
             error(['md5 did not exist: data dump saved to\n /imaging/dp01/temp/debug_' mfilename '.mat'])
         end
     end
-    
+
     % Now read in the files
     while (~feof(fid))
         ind=ind+1;
         allfiles=strvcat(allfiles,fullfile(localroot,fgetl(fid)));
     end;
     fclose(fid);
-    
+
     delete(tmpfname);
 else
     inpstreamdesc = '';
