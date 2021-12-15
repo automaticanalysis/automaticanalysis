@@ -7,14 +7,12 @@
 % paths, parameter files, etc are set up correctly.
 %
 % This file also shows the default function calls that will be used
-% in an all aa run scripts / functions:
+% in all aa run scripts / functions:
 %   aa_ver5
 %   aarecipe
 %   aas_processBIDS % when using BIDS data
 %   aa_doprocessing
 %
-% See "aa_example_helloworld_model" to actually do something useful
-% with the data.
 function tutorial_1_aa_setup()
 
 % variable names in ALLUPPERCASE are placeholders that
@@ -43,7 +41,7 @@ end
 %% ------------------------------------------------------------------------
 % Creating an aap structure
 % -------------------------------------------------------------------------
-% Call aarecipe to createa the aap settings structure from a parameter file
+% Call aarecipe to create the aap settings structure from a parameter file
 % and a tasklist file.
 % The default parameter file created in the previous step will be used,
 % since no parameter filename is provided.
