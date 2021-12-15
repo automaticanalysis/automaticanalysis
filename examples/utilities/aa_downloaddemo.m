@@ -51,7 +51,14 @@ if ~exist(fullfile(demodir),'dir') ... % Does not exist yet
     tgz_filename = [tempname dataset.filetype];
     tgz_filename = websave(tgz_filename, dataset.URL);
     unpack_dir = tempname;
-    untar(tgz_filename, unpack_dir);
+    switch dataset.filetype
+        case {'.zip'}
+            unzip(tgz_filename, unpack_dir);
+        case {'.tar.gz', '.tar'}
+            untar(tgz_filename, unpack_dir);
+        otherwise
+             aas_log(aap, true, ['ERROR: Developer error, unknown dataset filetype used for downloaddemo dataset: ' dataset.filetype]);
+    end
 
     % Depending on the contents of the downloaded tgz, different datasets
     % need different postprocessing to have the correct contents in demodir
