@@ -1,13 +1,10 @@
-
 % This script runs the Auditory fMRI example from the SPM manual
 % (chapter 30, as of this writing) in aa. It uses BIDS version
-% of the data. available for download at:
+% of the data, available for download at:
 %
 %  https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/MoAEpilot.bids.zip
 %
-% (NB: this data is missing gzip'ed versions of the structral and epi which
-% confuses aa. The easiest fix is just gzip /sub-01/anat/sub-01_T!w.nii
-% and /sub-01/func/sub-01_task-auditory_bold.nii after downloading).
+% The dataset will be automatically downloaded if you have not done so yet.
 function tutorial_2_SPM_CH30()
 
 % variable names in ALLUPPERCASE are placeholders that
@@ -20,39 +17,58 @@ function tutorial_2_SPM_CH30()
 % -------------------------------------------------------------------------
 aa_ver5;
 
-% PARAMETER_FNAME is the aa parameter file you must customize
-% before running aa -- see the aa documentation for help
-
-PARAMETER_FNAME = '/path/to/parameter_xml_file';
-
-% the tasklist comes installed with aa so you don't need to specify it
+%% ------------------------------------------------------------------------
+% Creating an aap structure
+% -------------------------------------------------------------------------
+% Call aarecipe to create the aap settings structure from a parameter file
+% and a tasklist file.
+% The default parameter file will be used (see tutorial_1_aa_setup), since
+% no parameter filename is provided.
+% The tasklist for tutorial_2_SPM_CH30 comes installed with aa.
+%
+% To use a non-default parameter file, set it as the first input to
+% aarecipe, like
+%PARAMETER_FNAME = '/path/to/parameter_xml_file';
+%aap = aarecipe(PARAMETER_FNAME, tasklist_fname);
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/tutorials/tutorial_2_SPM_CH30.xml');
+tasklist_fname = fullfile(aahome, 'examples', 'tutorials', 'tutorial_2_SPM_CH30.xml');
+aap = aarecipe(tasklist_fname);
 
-aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
-
+%% ------------------------------------------------------------------------
+% Specifying the results directories
 % -------------------------------------------------------------------------
-% results and data directory specification
-% -------------------------------------------------------------------------
+% Results will be created in the directory specified in
+% aap.acq_details.root, in a specific subdirectory as specified in
+% aap.directory_conventions.analysisid
+% It is possible within a run script to override the default values taken
+% from the parameter file.
+%
+% The directory in aap.acq_details.root must exist on your machine
+% When it runs, aa will create a subdirectory RESULTS_DIR.
+%
+% When ROOT_PATH and .root setting are outcommented: use value from parameter file
+%ROOT_PATH = '/path/to/dir/where/results_dir/will/be/created';
+%aap.acq_details.root = ROOT_PATH;
 
-% results will be created in ROOT_PATH/RESULTS_DIR
-% ROOT_PATH must exist on your machine
-% aa will create RESULTS_DIR when it runs
-
-ROOT_PATH = '/path/to/dir/where/results_dir/will/be/created';
-RESULTS_DIR = 'name_of_results_directory';
-
-aap.acq_details.root = ROOT_PATH;
+% The analysisid is specific for a particular analysis, and typically set
+% in the run script, i.e. here:
+RESULTS_DIR = mfilename();
 aap.directory_conventions.analysisid = RESULTS_DIR;
 
-% data specification
-% for BIDS data, just point rawdatadir at the top level BIDS directory
-% (i.e., wherever you downloaded MoAEpilot)
-
-FULLDATAPATH = '/full/path/to/toplevelBIDS';
-
+%% ------------------------------------------------------------------------
+% Specifying the data directory
+% -------------------------------------------------------------------------
+% For BIDS data, point rawdatadir at the top level BIDS directory.
+%
+% In this tutorial, will use demo dataset MoAEpilot, that will be
+% downloaded if necessary.
+% Here it is assumed that aap.directory_conventions.rawdatadir in the
+% parameter xml file is a single directory, not a list of directories
+% separated by pathsep characters.
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'MoAEpilot');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
+aa_downloaddemo(aap, 'MoAEpilot');
 
 % -------------------------------------------------------------------------
 % analysis options

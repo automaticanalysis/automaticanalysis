@@ -67,6 +67,16 @@ classdef testExamples < matlab.unittest.TestCase
             % Verification
             % TODO: How to verify correct run, apart from no-error?
         end
+
+        %% tutorial_2_SPM_CH30
+        function tutorial_2_test(testCase)
+            % Test that tutorial_2_SPM_CH30 runs out-of-the-box
+
+            tutorial_2_SPM_CH30()
+
+            % Verification
+            % TODO: How to verify correct run, apart from no-error?
+        end
     end
 
     methods(Static)
