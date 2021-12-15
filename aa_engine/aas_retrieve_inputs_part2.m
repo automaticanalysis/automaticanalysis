@@ -127,17 +127,24 @@ while any(depnotdone)
                                     %relativepath_src_from_dest=relativepath(src,newpth);
                                     oldpth=newpth;
                                 end;
-                                if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
-                                    cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
+                                if ispc()
+                                    % On Windows, always use copyfile for now.
+                                    % TODO: Allow hardlinks on Windows? Can they even be created without admin rights?
+                                    src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
+                                    copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
                                 else
-                                    % This is a hard link, not a symlink. This
-                                    % takes the timestamp of the destination file,
-                                    % and won't be deleted if the destination is
-                                    % deleted. So, more like a copy...
-                                    cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
-                                end;
-                                aas_shell(cmd);
-                                
+                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
+                                        cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    else
+                                        % This is a hard link, not a symlink. This
+                                        % takes the timestamp of the destination file,
+                                        % and won't be deleted if the destination is
+                                        % deleted. So, more like a copy...
+                                        cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    end
+                                    aas_shell(cmd);
+                                end
+
                                 % Write to stream file
                                 fprintf(fid_inp,'%s\n',streamfiles(depind).fns_dest{ind});
                             end;
