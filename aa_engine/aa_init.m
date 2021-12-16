@@ -72,7 +72,7 @@ end
 if isfield(aap.directory_conventions,'spmdir'), aap.directory_conventions.spmdir = SPMDIR; end
 if isfield(aap.directory_conventions,'toolbox') && any(tbxInd)
     aap.directory_conventions.toolbox(tbxInd).name = 'spm';
-    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR; 
+    aap.directory_conventions.toolbox(tbxInd).dir = SPMDIR;
 end
 
 % - by setting this environment variable it becomes possible to define other
@@ -237,6 +237,22 @@ reqpath = reqpath(strcmp('', reqpath)==0);
 exc = cell_index(reqpath, '.git');
 if exc
     reqpath(exc) = [];
+end
+
+% Windows: convert drive letters to unc paths
+% This because whe using Matlab Parallel Server, the cluster 'owner' may not have the same drive mappings as the user that submits the job.
+% The 'owner' will be the user that started MPS and added the nodes.  The batch jobs on the cluster are run as the 'owner' by default, unless specific changes have been made, a.o. to the mjs_def.bat file.
+if ispc()
+    [mappings, error_msg] = get_drive_mappings();
+    if ~isempty(error_msg)
+        msg = sprintf('ERROR: While converting mapped drive letters to UNC paths, encountered an error: %s', error_msg);
+        aas_log(aap,true,msg);
+    else
+        for i = 1:size(mappings,1)
+            safe_path = regexptranslate("escape", mappings{i,2});
+            reqpath = regexprep(reqpath, mappings{i,1}, safe_path);
+        end
+    end
 end
 
 end
