@@ -361,18 +361,21 @@ classdef aaq_batch < aaq
                             % jobinfo etc is indexed by the job ID so get i from jobinfo.
 
                             if obj.jobretries(JI.qi) <= obj.aap.options.aaworkermaximumretry
+                                logsafe_Diary = strrep(Task.Diary, '\', '\\');
+                                logsafe_ErrorMessage = strrep(Task.ErrorMessage, '\', '\\');
                                 msg = sprintf(['%s\n\n JOB FAILED WITH ERROR: \n %s',...
                                     ' \n\n Waiting a few seconds then trying again',...
                                     ' (%d tries remaining for this job)\n'...
                                     'Press Ctrl+C now to quit, then run aaq_qsub_debug()',...
                                     ' to run the job locally in debug mode.\n'],...
-                                    Task.Diary, Task.ErrorMessage, obj.aap.options.aaworkermaximumretry - obj.jobretries(JI.qi));
+                                    logsafe_Diary, logsafe_ErrorMessage, obj.aap.options.aaworkermaximumretry - obj.jobretries(JI.qi));
                                 aas_log(obj.aap, false, msg);
                                 obj.jobnotrun(JI.qi) = true;
                                 obj.remove_from_jobqueue(JI.JobID, true);
                                 pause(obj.pausedur)
                             else
-                                msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JI.JobID,JI.jobpath,JI.jobname,Task.ErrorMessage);
+                                logsafe_path = strrep(JI.jobpath, '\', '\\');
+                                msg = sprintf('Job%d on <a href="matlab: cd(''%s'')">%s</a> had an error: %s\n',JI.JobID,logsafe_path,JI.jobname,Task.ErrorMessage);
                                 for e = 1:numel(Task.Error.stack)
                                     % Stop tracking to internal
                                     if strfind(Task.Error.stack(e).file,'distcomp'), break, end
