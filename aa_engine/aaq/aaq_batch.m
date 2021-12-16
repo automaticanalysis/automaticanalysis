@@ -111,8 +111,11 @@ classdef aaq_batch < aaq
                 end
                 % Note that we're possibly overriding the number of workers
                 % that may have been stored in a pool profile
-                obj.pool.NumWorkers = aaparallel.numberofworkers;
-                obj.pool.JobStorageLocation = aaworker.parmpath;
+                % Override not allowed for MJS, so skip.
+                if ~isa(obj.pool, 'parallel.cluster.MJS')
+                    obj.pool.NumWorkers = aaparallel.numberofworkers;
+                    obj.pool.JobStorageLocation = aaworker.parmpath;
+                end
             catch ME
                 aas_log(aap,false,'WARNING: Cluster computing is not supported!');
                 aas_log(aap,false,sprintf('\tERROR in %s:\n\tline %d: %s',ME.stack(1).file, ME.stack(1).line, ME.message),aap.gui_controls.colours.warning);
