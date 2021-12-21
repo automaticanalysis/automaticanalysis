@@ -60,7 +60,8 @@ switch task
             instream = in{1};
             
             % Get data (assumes all data files are aligned)
-            VY = spm_vol(aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream));
+            fnames = cellstr(aas_getfiles_bystream_multilevel(aap,aap.tasklist.currenttask.domain,[varargin{:}],instream));
+            VY = cell2mat(spm_vol(fnames(contains(spm_file(fnames,'ext'),'nii'))));
             Yinv  = inv(VY(1).mat);
             [~, yXYZmm] = spm_read_vols(VY(1));
             
@@ -225,9 +226,17 @@ switch task
         out = aas_getstreams(aap,'output'); if ~iscell(out), out = {out}; end
         for s = 1:numel(inputstreams)
             instream = strsplit(inputstreams{s},'.'); instream = instream{end};
-            if ~strcmp(out{s},['roidata_' instream])
+            if s <= numel(out)
+                if ~strcmp(out{s},['roidata_' instream])
+                    aap = aas_renamestream(aap,...
+                        aap.tasklist.currenttask.name,out{s},...
+                        ['roidata_' instream],'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ...
+                        ' output stream: ''roidata_' instream '''']);
+                end
+            else
                 aap = aas_renamestream(aap,...
-                    aap.tasklist.currenttask.name,out{s},...
+                    aap.tasklist.currenttask.name,'append',...
                     ['roidata_' instream],'output');
                 aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ...
                     ' output stream: ''roidata_' instream '''']);
