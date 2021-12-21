@@ -195,9 +195,14 @@ switch task
             if ~any(strcmp(inp,'settings_pairwise')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','input'); end
             src = setdiff(src,{'settings_pairwise'});
         end
-        inp(contains(inp,{'settings' 'settings_pairwise' 'structural'})) = [];
-        for s = 1:numel(src) % every second excluding pairwise
-            if strcmp(inp{s},src{s}), continue; end
+        if any(strcmp(src,'settings_onevsall'))
+            if ~any(strcmp(inp,'settings_onevsall')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','input'); end
+            src = setdiff(src,{'settings_onevsall'});
+        end
+        inp(contains(inp,{'settings' 'settings_pairwise' 'settings_onevsall' 'structural'})) = [];
+        for s = 1:numel(src)            
+            if s <= numel(inp) && strcmp(inp{s},src{s}), continue; end
+            if contains(src{s},'pairwise'), src{s} = [src{s} ':isessential-0']; end % pairwise permutations may not be created
             if s == 1
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'input',src{s},'input');
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'permuted_input',['permuted_' src{s}],'input');
