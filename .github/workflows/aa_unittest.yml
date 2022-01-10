@@ -73,7 +73,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
 
-      - name: Archive results
+      - name: Archive data
+        uses: actions/upload-artifact@v2
+        with:
+          name: data_${{github.job}}
+          path: |
+            ~/projects/
+
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -136,7 +143,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'})
 
-      - name: Archive results
+      - name: Archive data
+        uses: actions/upload-artifact@v2
+        with:
+          name: data_${{github.job}}
+          path: |
+            ~/projects/
+
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}

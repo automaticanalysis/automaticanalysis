@@ -84,14 +84,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds000114_AROMA
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -162,14 +162,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds000114_dartel
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -240,14 +240,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds000114_diffusion
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -320,14 +320,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds000114_fmri
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -401,14 +401,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_scrubbing','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds000114_scrubbing
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
@@ -477,14 +477,14 @@ jobs:
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds002737_deface','haltonerror',true)
 
-      - name: Archive results
+      - name: Archive data
         uses: actions/upload-artifact@v2
         with:
           name: aatest_ds002737_deface
           path: |
             ~/projects/
 
-      - name: Archive results
+      - name: Archive log
         uses: actions/upload-artifact@v2
         with:
           name: testlog_${{github.job}}
