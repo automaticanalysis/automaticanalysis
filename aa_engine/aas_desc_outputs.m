@@ -135,5 +135,5 @@ switch(aap.directory_conventions.remotefilesystem)
         aaworker.outputstreams=[aaworker.outputstreams osd];
 end
 
-
-aas_log(aap,false,sprintf(' output stream %s %s written with %d file(s)',streamname,streamdesc,size(outputs,1)),aap.gui_controls.colours.outputstreams);
+logsafe_path = strrep(streamdesc, '\', '\\');
+aas_log(aap,false,sprintf(' output stream %s %s written with %d file(s)',streamname,logsafe_path,size(outputs,1)),aap.gui_controls.colours.outputstreams);

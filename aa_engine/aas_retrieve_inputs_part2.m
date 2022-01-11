@@ -39,7 +39,7 @@ while any(depnotdone)
                         line=fgetl(fid_check);
                         fclose(fid_check);
                 end;
-                
+
                 % If not archived
                 if strcmp(line(1:11),'ARCHIVED TO')
                     if ~archivemessage(depind)
@@ -51,9 +51,9 @@ while any(depnotdone)
                     switch streamfiles(depind).streamlocation
                         case 'remote'
                             aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
-                            
+
                             oldpth='';
-                            
+
                             % rsync in chunks. It will then compress.
                             chunksize=64;
                             transfernow=false;
@@ -87,7 +87,7 @@ while any(depnotdone)
                                     end;
                                 end;
                             end;
-                            
+
                             % Get read to write the stream file
                             [aap,datecheck_md5_recalc]=aas_md5(aap,streamfiles(depind).fns_dest_full,[],'filestats');
                             if exist(streamfiles(depind).inputstreamdesc,'file')
@@ -98,7 +98,7 @@ while any(depnotdone)
                             end;
                             fid_inp=fopen(streamfiles(depind).inputstreamdesc,'w');
                             fprintf(fid_inp,'MD5\t%s\t%s\n',streamfiles(depind).md5,datecheck_md5_recalc);
-                            
+
                             for ind=1:length(streamfiles(depind).fns)
                                 % Write to stream file
                                 fprintf(fid_inp,'%s\n',streamfiles(depind).fns_dest{ind});
@@ -108,10 +108,12 @@ while any(depnotdone)
                             end;
                             fclose(fid_inp);
                             depnotdone(depind)=false;
-                            
+
                         case 'local'
-                            
-                            aas_log(aap,false,sprintf(' retrieving stream %s from %s to %s',streamfiles(depind).streamname,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
+                            logsafe_path_src = strrep(streamfiles(depind).src, '\', '\\');
+                            logsafe_path_dest = strrep(streamfiles(depind).dest, '\', '\\');
+                            msg = sprintf(' retrieving stream %s from %s to %s',streamfiles(depind).streamname,logsafe_path_src,logsafe_path_dest);
+                            aas_log(aap,false,msg,aap.gui_controls.colours.inputstreams);
                             oldpth='';
                             % Get ready to write the stream file
                             fid_inp=fopen(streamfiles(depind).inputstreamdesc,'w');
@@ -125,33 +127,40 @@ while any(depnotdone)
                                     %relativepath_src_from_dest=relativepath(src,newpth);
                                     oldpth=newpth;
                                 end;
-                                if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
-                                    cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
+                                if ispc()
+                                    % On Windows, always use copyfile for now.
+                                    % TODO: Allow hardlinks on Windows? Can they even be created without admin rights?
+                                    src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
+                                    copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
                                 else
-                                    % This is a hard link, not a symlink. This
-                                    % takes the timestamp of the destination file,
-                                    % and won't be deleted if the destination is
-                                    % deleted. So, more like a copy...
-                                    cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
-                                end;
-                                aas_shell(cmd);
-                                
+                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
+                                        cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    else
+                                        % This is a hard link, not a symlink. This
+                                        % takes the timestamp of the destination file,
+                                        % and won't be deleted if the destination is
+                                        % deleted. So, more like a copy...
+                                        cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    end
+                                    aas_shell(cmd);
+                                end
+
                                 % Write to stream file
                                 fprintf(fid_inp,'%s\n',streamfiles(depind).fns_dest{ind});
                             end;
-                            
-                            
+
+
                             % Alert archiving system to new data if it is at work here
                             [spth snme sext]=fileparts(streamfiles(depind).inputstreamdesc);
                             dotpath=fullfile(streamfiles(depind).dest,['.' snme]);
-                            
+
                             if exist(dotpath,'dir')
                                 localchangelog=fullfile(dotpath,'log_localchanges.txt');
                                 lclfid=fopen(localchangelog,'a');
                                 fprintf(lclfid,'%s\tSTREAM REWRITTEN BY aa\n',datestr(now,'yyyy-mm-ddTHH:MM:SS.FFF'));
                                 fclose(lclfid);
                             end;
-                            
+
                             %                             % Bring across archiving if present, adjusting
                             %                             % as necessary to ensure duplicate (hard
                             %                             % linked) streams are archived only once, but
@@ -180,19 +189,19 @@ while any(depnotdone)
                             %                                     end;
                             %                                 end;
                             %                             end;
-                            
+
                             if isempty(streamfiles(depind).fns)
                                 aas_log(aap,false,sprintf('No inputs in stream %s',streamfiles(depind).streamname));
                             end;
                             fclose(fid_inp);
-                            
+
                             depnotdone(depind)=false;
                     end;
                 end;
             end;
         end;
     end;
-    
+
     % Wait a moment to avoid overloading the filesystem
     pause(1.0);
 end
