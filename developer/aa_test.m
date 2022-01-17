@@ -36,6 +36,20 @@ function aa_test(varargin)
 %   == 'localsingle' (default), jobs will run locally in a serial
 %   fashion. Other options include 'parpool' and 'batch' (cluster)
 %
+% 'tags' / 'not_tags', cell array of tags -
+%   == list of tags to filter what tests are run. Both 'tags' and 'not_tags'
+%   can be used at the same time. When neither is used, all tests will be
+%   run. When 'tags' is used, only tests that have at least one of the tags
+%   in the list are selected. When 'not_tags' is used, tests that have at
+%   least one of the tags in the list are excluded. Note that tests without
+%   any tags at all are not affected by these filters.
+%   Known tags:
+%    - 'Large' % Note that Large tests are expected to have a dedicated job
+%    in the CI workflow, to have them all run in parallel.
+%    - 'Medium'
+%    - 'Small'
+%    - 'Minimal_install' % Tests that should run correctly with just aa and spm installed
+%
 % Example Usage
 %
 %   aa_test;                      - run all scripts, use default settings
@@ -76,10 +90,14 @@ argParse.addParameter('deleteprevious', true, @(x) islogical(x) || isnumeric(x))
 argParse.addParameter('haltonerror', false, @(x) islogical(x) || isnumeric(x));
 argParse.addParameter('wheretoprocess','localsingle', @ischar);
 argParse.addParameter('parameterfile','', @ischar);
+argParse.addParameter('tags', {}, @iscellstr);
+argParse.addParameter('not_tags', {}, @iscellstr);
 argParse.parse(varargin{:});
 
+thisFolder = fileparts(mfilename("fullpath"));
+
 % logging
-logfile = fullfile(pwd,'aa_test.log');
+logfile = fullfile(thisFolder,'aa_test.log');
 if exist(logfile,'file')
     ow = input('aa_test.log exists. Overwrite?(Y/[N])> ','s');
     if (isempty(ow) || ow == 'N' || ow == 'n')
@@ -96,7 +114,10 @@ end
 testUseCases.pass_inputargs('set', argParse.Results);
 suiteUseCases = matlab.unittest.TestSuite.fromClass(?testUseCases);
 
-% PLACEHOLDER: Here, get the non-use case tests
+testsFolder = fullfile(thisFolder, 'tests');
+suiteTests = matlab.unittest.TestSuite.fromFolder(testsFolder);
+
+suite = [suiteUseCases, suiteTests];
 
 %% Apply glob-based filtering
 glob = argParse.Results.glob;
@@ -108,28 +129,53 @@ if ~isempty(glob)
         glob = glob(2:end);
     end
     constr = matlab.unittest.constraints.ContainsSubstring(glob);
-    select = matlab.unittest.selectors.HasName(constr);
+    do_select = matlab.unittest.selectors.HasName(constr);
     if globflag < 0
-        suiteUseCases = suiteUseCases.selectIf(~select);
+        suite = suite.selectIf(~do_select);
     elseif globflag > 0
-        suiteUseCases = suiteUseCases.selectIf(select);
+        suite = suite.selectIf(do_select);
     end
 end
 
-% PLACEHOLDER: Here, apply e.g. Tag based filtering
+%% Apply tag-based filtering
+tags = argParse.Results.tags;
+if ~isempty(tags)
+    do_select = ~matlab.unittest.selectors.HasTag;
+    for i = 1:length(tags)
+        do_select = do_select | matlab.unittest.selectors.HasTag(tags{i});
+    end
+    suite = suite.selectIf(do_select);
+end
+
+not_tags = argParse.Results.not_tags;
+if ~isempty(not_tags)
+    add_select = matlab.unittest.selectors.HasTag;
+    for i = 1:length(not_tags)
+        add_select = add_select & ~matlab.unittest.selectors.HasTag(not_tags{i});
+    end
+    do_select = ~matlab.unittest.selectors.HasTag | add_select;
+    suite = suite.selectIf(do_select);
+end
 
 %% Run tests
 runner = matlab.unittest.TestRunner.withTextOutput;
 file_plugin = matlab.unittest.plugins.ToFile(logfile);
 tap_plugin = matlab.unittest.plugins.TAPPlugin.producingOriginalFormat(file_plugin);
-runner.addPlugin(tap_plugin)
-results = runner.run(suiteUseCases);
+runner.addPlugin(tap_plugin);
+results = runner.run(suite);
 
 if argParse.Results.haltonerror
     % The unittest framework catches errors during tests
     % Here, throw an error is any test failed. A.o. to notify the
     % Continuous Integration of failure.
-    assertSuccess(results)
+    if isempty(results)
+        % Because assertSuccess thinks it is ok to have an empty resultset,
+        % but we think it is an error in the test filters specification,
+        % throw an error.
+        throw(MException('aa_test:emptySelection', 'Test selection after filtering is empty. Not a valid test selection'))
+    else
+        assertSuccess(results);
+    end
 end
 
 end

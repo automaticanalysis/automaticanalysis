@@ -68,7 +68,7 @@ classdef toolboxClass < handle
                 modDir = fullfile(fileparts(mfilename('fullpath')),[tbname '_mods']);
                 if exist(modDir,'dir')
                     addpath(genpath(modDir));
-                    modDir = strsplit(genpath(modDir),':');
+                    modDir = strsplit(genpath(modDir),pathsep);
                     obj.toolInPath = [modDir(1:end-1)'; obj.toolInPath];
                 end
                 obj.pStatus = obj.CONST_STATUS.loaded;

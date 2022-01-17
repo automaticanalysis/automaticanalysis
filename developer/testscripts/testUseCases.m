@@ -1,4 +1,5 @@
-classdef testUseCases < matlab.unittest.TestCase
+classdef (TestTags = {'Large'}) ...
+        testUseCases < matlab.unittest.TestCase
     %TESTUSECASES Tests that represent a full use case.
 
     properties (Constant)

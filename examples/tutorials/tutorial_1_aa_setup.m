@@ -7,18 +7,16 @@
 % paths, parameter files, etc are set up correctly.
 %
 % This file also shows the default function calls that will be used
-% in an all aa run scripts / functions:
+% in all aa run scripts / functions:
 %   aa_ver5
 %   aarecipe
 %   aas_processBIDS % when using BIDS data
 %   aa_doprocessing
 %
-% See "aa_example_helloworld_model" to actually do something useful
-% with the data.
 function tutorial_1_aa_setup()
 
 % variable names in ALLUPPERCASE are placeholders that
-% you must edit before the script can be run.
+% you may want to edit before the script is run.
 %
 % make a copy of this file to edit and put it somewhere in your Matlab path
 
@@ -36,12 +34,14 @@ aa_ver5;
 % parameter filename.
 % Settings can be overriden later where needed, in specific parameter files
 % and in run scripts, but that is not a subject in this tutorial file.
-aas_create_parameter_xml('', true, 'use_default_location', true, 'use_default_filename', true);
+if ~aa_has_user_parameter_file()
+    aas_create_parameter_xml('', true, 'use_default_location', true, 'use_default_filename', true);
+end
 
 %% ------------------------------------------------------------------------
 % Creating an aap structure
 % -------------------------------------------------------------------------
-% Call aarecipe to createa the aap settings structure from a parameter file
+% Call aarecipe to create the aap settings structure from a parameter file
 % and a tasklist file.
 % The default parameter file created in the previous step will be used,
 % since no parameter filename is provided.
@@ -61,18 +61,23 @@ aap = aarecipe(tasklist_fname);
 %
 % The directory in aap.acq_details.root must exist on your machine
 % When it runs, aa will create a subdirectory RESULTS_DIR.
-% aap.acq_details.root = ROOT_PATH; % Outcommented: use value from parameter file
+%aap.acq_details.root = ROOT_PATH; % Outcommented: use value from parameter file
 RESULTS_DIR = mfilename(); % Typically specific for a particular analysis.
 aap.directory_conventions.analysisid = RESULTS_DIR;
 
 %% ------------------------------------------------------------------------
 % Specifying the data directory
 % -------------------------------------------------------------------------
-% For BIDS data, point rawdatadir at the top level BIDS directory
-% (i.e., wherever you downloaded ds000114)
-FULLDATAPATH =  fullfile(aap.directory_conventions.rawdatadir, 'aa_demo');
+% For BIDS data, point rawdatadir at the top level BIDS directory.
+%
+% In this tutorial, will use a demo dataset ds000114, that will be
+% downloaded if necessary.
+% Here it is assumed that aap.directory_conventions.rawdatadir in the
+% parameter xml file is a single directory, not a list of directories
+% separated by pathsep characters.
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds000114');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
-aap = aa_downloaddemo(aap);
+aa_downloaddemo(aap, 'ds000114');
 
 %% ------------------------------------------------------------------------
 % Using BIDS input
@@ -82,7 +87,6 @@ aap = aa_downloaddemo(aap);
 % Here we only run sub-01 for the finger_foot_lips task (ds000114
 % contains four different tasks) since we're just testing whether
 % your aa install is working.
-
 aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
 
 %% ------------------------------------------------------------------------
@@ -90,7 +94,7 @@ aap = aas_processBIDS(aap, [], {'finger_foot_lips'}, {'sub-01'});
 % -------------------------------------------------------------------------
 aa_doprocessing(aap);
 
-% there really isn't any real "results" to review other than
+% There really isn't any real "results" to review other than
 % checking that aa ran and created RESULTS_DIR and populated
 % it with some files.
 

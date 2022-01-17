@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="/home/runner/work/automaticanalysis/automaticanalysis/aa_parametersets/aap_parameters_defaults.xml" parse="xml"/>
+    <local>
+        <directory_conventions>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/home/runner/data/aa_demo</rawdatadir>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
+                <dir ui='dir'>/home/runner/tools/spm12</dir>
+            </toolbox>
+        </directory_conventions>
+        <acq_details>
+            <root desc='Root on local machine for processed data' ui='dir'>/home/runner/projects</root>
+        </acq_details>
+    </local>
+</aap>
