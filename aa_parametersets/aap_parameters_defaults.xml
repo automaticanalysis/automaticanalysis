@@ -59,7 +59,6 @@
         <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'></templatedir>
         <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'></ROIdir>
         <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'></ANTSdir>
-        <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'></BrainWaveletdir>
         <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'></DCMTKdir>
         <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'></FaceMaskingdir>
         <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>

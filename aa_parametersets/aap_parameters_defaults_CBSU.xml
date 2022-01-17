@@ -46,8 +46,8 @@
                 </extraparameters>
             </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
-              <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>bwt</name>
-              <dir ui='dir'>/imaging/local/software/BrainWavelet</dir>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>bwt</name>
+                <dir ui='dir'>/imaging/local/software/BrainWavelet</dir>
             </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/imaging/local/software/fsl/v5.0.11/x86_64/fsl</fsldir>
@@ -64,7 +64,6 @@
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/imaging/local/templates</templatedir>
             <ROIdir desc='Directory where ROIs (in template space) are kept' ui='text'>/home/rcusack/ROIs</ROIdir>
             <ANTSdir desc='Path to Advanced Normalisation Tools (ANTS)' ui='dir'>/imaging/local/software/ANTs/v1.9</ANTSdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/imaging/local/software/BrainWavelet</BrainWaveletdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/imaging/local/software/dcmtk/v3.6.0/dcmtk</DCMTKdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/imaging/local/software/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
