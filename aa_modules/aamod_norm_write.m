@@ -28,8 +28,8 @@ switch task
         end
         % determine normalised struct
         [inp, inpattr] = aas_getstreams(aap,'input');
-        streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)};
-        structdiag = aas_getfiles_bystream_dep(aap,'subject',varargin{1},streamStruct);
+        streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)}; streamStruct = strsplit(streamStruct,'.'); 
+        structdiag = aas_getfiles_bystream_dep(aap,'subject',varargin{1},streamStruct{end});
         if size(structdiag,1) > 1
             sname = basename(structdiag);
             structdiag = structdiag((sname(:,1)=='w') | (sname(:,2)=='w'),:);
