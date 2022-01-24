@@ -41,7 +41,18 @@ classdef testExamples < matlab.unittest.TestCase
             aap.gui_controls.usecolouroutput = false;
 
             % Run the aa_downloaddemo
-            aa_downloaddemo(aap, dataset.ID)
+            switch dataset.ID
+                case {'ds000114'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-01')
+                case {'ds002737'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-01/ses-03')
+                case {'LEMON_EEG'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-032301')
+                case {'LEMON_MRI'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-032301/ses-01/anat')
+                otherwise
+                    aa_downloaddemo(aap, dataset.ID)
+            end
 
             % Verification
             msg = sprintf("Directory %s does not exist after running aa_downloaddemo", aap.directory_conventions.rawdatadir);
