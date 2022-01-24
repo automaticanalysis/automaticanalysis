@@ -490,3 +490,86 @@ jobs:
           name: testlog_${{github.job}}
           path: |
             ${{github.workspace}}/developer/aa_test.log
+
+  aatest_lemon_meeg:
+    name: Testing the M/EEG demo
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Maximize build space
+        uses: easimon/maximize-build-space@master
+        with:
+          root-reserve-mb: 51200
+          swap-size-mb: 1024
+          remove-dotnet: 'true'
+          remove-android: 'true'
+          remove-haskell: 'true'
+
+      - name: Set git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Check out repository under $GITHUB_WORKSPACE
+        uses: actions/checkout@v2
+
+      - name: Set up Python 2.7
+        uses: actions/setup-python@v2
+        with:
+          # Semantic version range syntax or exact version of a Python version
+          python-version: '2.7'
+          # Optional - x64 or x86 architecture, defaults to x64
+          architecture: 'x64'
+
+      - name: Set up MATLAB
+        uses: matlab-actions/setup-matlab@v1
+        with:
+          # MATLAB release to set up R2020a
+          release: R2020a
+
+      - name: Install tools and configure aa
+        run: |
+          python trigger_install.py
+        working-directory: ${{github.workspace}}/.github/workflows
+        env:
+          LOAD_FSL: 1
+          LOAD_FREESURFER: 0
+          PARAMETER_XML: aap_parameters_defaults_GitHub.xml
+
+      - name: Retrive test data under $HOME/data/aa_demo
+        run: |
+          mkdir -p $HOME/data/aa_demo
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032301 $HOME/data/aa_demo/LEMON_EEG/sub-032301 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032301/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032301/ses-01/anat --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032302 $HOME/data/aa_demo/LEMON_EEG/sub-032302 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032302/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032302/ses-01/anat --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032303 $HOME/data/aa_demo/LEMON_EEG/sub-032303 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032303/ses-01/anat$HOME/data/aa_demo/LEMON_MRI/sub-032303/ses-01/anat --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032304 $HOME/data/aa_demo/LEMON_EEG/sub-032304 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032304/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032304/ses-01/anat --quiet --recursive --no-sign-request
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
+
+      - name: Run script
+        uses: matlab-actions/run-command@v1
+        with:
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'meeg'})
+
+      - name: Archive data
+        uses: actions/upload-artifact@v2
+        with:
+          name: aatest_${{github.job}}
+          path: |
+            ~/projects/
+
+      - name: Archive log
+        uses: actions/upload-artifact@v2
+        with:
+          name: testlog_${{github.job}}
+          path: |
+            ${{github.workspace}}/developer/aa_test.log

@@ -30,6 +30,17 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
                 <dir ui='dir'>/home/runner/tools/ICA-AROMA</dir>
             </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
+                <dir ui='dir'>/home/runner/tools/eeglab</dir>
+                <extraparameters>
+                    <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                </extraparameters>
+            </toolbox>         
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fieldtrip</name>
+                <dir ui='dir'>/home/runner/tools/fieldtrip</dir>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/home/runner/tools/fsl</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/tools/config/fsl_bash.sh</fslsetup>
