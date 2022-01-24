@@ -275,7 +275,7 @@ switch task
                         [ntrial,indsubj] = sort(sum(allTime,2),'descend'); % number of trials as a function of number of subjects
                         if ischar(aas_getsetting(aap,'selectoverlappingdata.subjects')) % auto
                             atrial = ntrial'.*(1:numel(ntrial));
-                            i = find(atrial==max(atrial));
+                            i = find(atrial==max(atrial),1,'first');
                         else
                             for i = ceil(numel(allInp)*aas_getsetting(aap,'selectoverlappingdata.subjects')):numel(allInp)-1 % check if we can add more subjects without decreasing the number of trials
                                 if ntrial(i+1) < ntrial(i), break; end
