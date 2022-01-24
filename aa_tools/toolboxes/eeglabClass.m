@@ -55,21 +55,25 @@ classdef eeglabClass < toolboxClass
             if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
             
+            checkAMICA = false;
             pllist = plugin_getweb('', obj.plugins, 'newlist');
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
                     plugin_install(p.zip, p.name, p.version, p.size);
-                    if strcmp(p.name,'AMICA')
-                        plPath = fullfile(obj.toolPath,'plugins',p.foldername);
-                        if isunix
-                            fileattrib(fullfile(plPath,'amica15ex'),'+x')
-                            fileattrib(fullfile(plPath,'amica15ub'),'+x')
-                        end
-                    end
+                    if strcmp(p.name,'AMICA'), checkAMICA = true; end
                     is_new_plugin = true;
                 end
             end
             if is_new_plugin, obj.load; end
+            
+            if checkAMICA
+                [~,~,pl] = plugin_status('AMICA');
+                plPath = fullfile(obj.toolPath,'plugins',pl.foldername);
+                if isunix
+                    fileattrib(fullfile(plPath,'amica15ex'),'+x');
+                    fileattrib(fullfile(plPath,'amica15ub'),'+x');
+                end
+            end
             
             load@toolboxClass(obj,keepWorkspace)
         end
