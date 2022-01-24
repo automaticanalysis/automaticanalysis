@@ -59,6 +59,13 @@ classdef eeglabClass < toolboxClass
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
                     plugin_install(p.zip, p.name, p.version, p.size);
+                    if strcmp(p.name,'AMICA')
+                        plPath = fullfile(obj.toolPath,'plugins',p.foldername);
+                        if isunix
+                            fileattrib(fullfile(plPath,'amica15ex'),'+x')
+                            fileattrib(fullfile(plPath,'amica15ub'),'+x')
+                        end
+                    end
                     is_new_plugin = true;
                 end
             end
