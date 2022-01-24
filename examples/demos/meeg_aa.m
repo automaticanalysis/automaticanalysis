@@ -2,6 +2,7 @@
 % User master script example (aa version 5.*.*)
 %
 % This script demonstrates a basic EEG pipeline on the LEMON dataset: http://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html.
+% The retrieval of the dataset requires aws-cli
 %
 % It requires the following software to be configured in your parameterset
 %   - SPM
@@ -16,7 +17,7 @@
 clear;
 aa_ver5
 
-SUBJS = [10004 10005 10007 10010];
+SUBJS = [ 32301 32302 32303 32304 ];
 
 %% RECIPE
 aap = aarecipe('meeg_tasklist.xml');
@@ -31,7 +32,7 @@ EL.close;
 MRIFILE = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_1mm.nii.gz');
 
 % SITE-SPECIFIC CONFIGURATION:
-aap.options.wheretoprocess = 'parpool'; % queuing system
+aap.options.wheretoprocess = 'batch'; % queuing system
 aap.options.aaparallel.numberofworkers = 20;
 aap.options.aaparallel.memory = 4; % 12; % time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level requires > 12 GB RAM
 aap.options.aaparallel.walltime = 36;
@@ -166,32 +167,23 @@ end
 aap.directory_conventions.subject_directory_format = 1;
 % - eeg
 aarawdir = strsplit(aap.directory_conventions.rawmeegdatadir,':');
-aap.directory_conventions.meegsubjectoutputformat = 'sub-%06d';
-aap.directory_conventions.rawmeegdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'lemon/eeg');
+aap.directory_conventions.rawmeegdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'LEMON_EEG');
 aas_makedir(aap,aap.directory_conventions.rawmeegdatadir);
+aap.directory_conventions.meegsubjectoutputformat = 'sub-%06d/RSEEG';
 % - mri
 aarawdir = strsplit(aap.directory_conventions.rawdatadir,':');
-aap.directory_conventions.subjectoutputformat = 'sub-%06d';
-aap.directory_conventions.rawdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'lemon/mri');
+aap.directory_conventions.rawdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'LEMON_MRI');
 aas_makedir(aap,aap.directory_conventions.rawdatadir);
+aap.directory_conventions.subjectoutputformat = 'sub-%06d';
 
 % Retrieve and data
+aa_downloaddemo(aap,'LEMON_EEG',arrayfun(@(s) sprintf('sub-%06d',s), SUBJS, 'UniformOutput', false))
+aa_downloaddemo(aap,'LEMON_MRI',arrayfun(@(s) sprintf('sub-%06d/ses-01/anat',s), SUBJS, 'UniformOutput', false))
+
 aap = aas_add_meeg_session(aap,'run1');
 for subj = SUBJS
-    % - eeg
-    if ~exist(fullfile(aap.directory_conventions.rawmeegdatadir,sprintf(aap.directory_conventions.meegsubjectoutputformat,subj)),'dir')
-        aas_shell(['cd ' aap.directory_conventions.rawmeegdatadir ';wget -r --no-host-directories --directory-prefix=' sprintf(aap.directory_conventions.meegsubjectoutputformat,subj)...
-            ' --cut-dirs=7 ftp://ftp.gwdg.de/pub/misc/MPI-Leipzig_Mind-Brain-Body-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/' sprintf(aap.directory_conventions.meegsubjectoutputformat,subj)]);
-    end
-    % - mri
-    if ~exist(fullfile(aap.directory_conventions.rawdatadir,sprintf(aap.directory_conventions.subjectoutputformat,subj)),'dir')
-        aas_shell(['cd ' aap.directory_conventions.rawdatadir ';wget -r --no-host-directories --directory-prefix=' sprintf(aap.directory_conventions.subjectoutputformat,subj)...
-            ' --cut-dirs=8 ftp://ftp.gwdg.de/pub/misc/MPI-Leipzig_Mind-Brain-Body-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/' sprintf(aap.directory_conventions.subjectoutputformat,subj)...
-            '/ses-01/anat/' sprintf(aap.directory_conventions.subjectoutputformat,subj) '_ses-01_acq-mp2rage_T1w.nii.gz']);
-    end
-
-    eegacq = cellstr(spm_file(spm_select('FPListRec',meeg_findvol(aap,subj,'fullpath',true),'.*vhdr'),'filename'));
-    mriacq = cellstr(spm_file(spm_select('FPListRec',mri_findvol(aap,subj,'fullpath',true),'.*_ses-01_acq-mp2rage_T1w.nii.gz'),'filename'));
+    eegacq = cellstr(spm_file(spm_select('FPListRec',meeg_findvol(aap,subj,'fullpath',true),'.*vhdr'),'filename')); % filename only for EEG
+    mriacq = cellstr(spm_select('FPListRec',mri_findvol(aap,subj,'fullpath',true),'.*_ses-01_acq-mp2rage_T1w.nii.gz')); % fullfile for MRI
     if numel(eegacq) ~= numel(aap.acq_details.meeg_sessions), aas_log(aap,false,'The numbers of EEG sessions and EEG acquisitions do not match'); end
     if numel(mriacq) ~= 1, aas_log(aap,false,'There MUST be one structural MRI acquisition'); end
     aap = aas_addsubject(aap,{subj subj},'structural',mriacq,'functional',eegacq);
