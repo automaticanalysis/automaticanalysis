@@ -21,7 +21,13 @@ if demoind==0
     aas_log([],true,'aap.directory_conventions.rawdatadir contains no aa_demo directory');
 end
 demodir = regexp(rawdatadirs{demoind(1)},'[a-zA-Z0-9_\/.]*aa_demo','match');
-aap.directory_conventions.rawdatadir = fullfile(demodir{1},temp{2});
+switch temp{2}
+    case 'lemon'
+        aap.directory_conventions.rawmeegdatadir = fullfile(demodir{1},'LEMON_EEG');
+        aap.directory_conventions.rawdatadir = fullfile(demodir{1},'LEMON_MRI');
+    otherwise
+        aap.directory_conventions.rawdatadir = fullfile(demodir{1},temp{2});
+end
 
 anadir = fullfile(aap.acq_details.root, aap.directory_conventions.analysisid);
 fprintf('Saving results in: %s\n', anadir);
