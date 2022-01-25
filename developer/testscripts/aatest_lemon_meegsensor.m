@@ -99,7 +99,7 @@ aap.directory_conventions.meegsubjectoutputformat = 'sub-%06d/RSEEG';
 aap = aas_add_meeg_session(aap,'run1');
 for subj = SUBJS
     eegacq = cellstr(spm_file(spm_select('FPListRec',meeg_findvol(aap,subj,'fullpath',true),'.*vhdr'),'filename')); % filename only for EEG
-    aap = aas_addsubject(aap,{subj []]},'functional',eegacq);
+    aap = aas_addsubject(aap,{subj []},'functional',eegacq);
 end
 
 %% Epoching

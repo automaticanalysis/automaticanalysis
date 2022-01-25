@@ -491,7 +491,7 @@ jobs:
           path: |
             ${{github.workspace}}/developer/aa_test.log
 
-  aatest_lemon_meeg:
+  aatest_lemon_meegsensor:
     name: Testing the M/EEG (with statistics)
 
     # The type of runner that the job will run on
@@ -558,7 +558,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meeg','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsensor','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v2
