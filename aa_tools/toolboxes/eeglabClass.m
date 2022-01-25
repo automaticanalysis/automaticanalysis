@@ -60,9 +60,9 @@ classdef eeglabClass < toolboxClass
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
                     if strcmp(p.name,'AMICA')
-                        p.version = '1.6'; % force the tested version - TODO: revise
-                        p.zip = spm_file(p.zip,'basename',['amica' p.version]);
-                        p.size = 1;
+                        % p.version = '1.6'; % force the tested version - TODO: revise
+                        % p.zip = spm_file(p.zip,'basename',['amica' p.version]);
+                        % p.size = 1;
                         checkAMICA = true; 
                     end
                     plugin_install(p.zip, p.name, p.version, p.size);
@@ -77,6 +77,9 @@ classdef eeglabClass < toolboxClass
                 if isunix
                     fileattrib(fullfile(plPath,'amica15ex'),'+x');
                     fileattrib(fullfile(plPath,'amica15ub'),'+x');
+                    % shadow amica15ex with amica15ub (N.B.: revert if you work on the Expanse Supercomputer)
+                    movefile(fullfile(plPath,'amica15ex'),fullfile(plPath,'bcp_amica15ex'));
+                    system(sprintf('ln -s %s %s',fullfile(plPath,'amica15ub'),fullfile(plPath,'amica15ex')));
                 end
             end
             
