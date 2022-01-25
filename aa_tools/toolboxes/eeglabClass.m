@@ -59,8 +59,13 @@ classdef eeglabClass < toolboxClass
             pllist = plugin_getweb('', obj.plugins, 'newlist');
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
+                    if strcmp(p.name,'AMICA')
+                        p.version = '1.6'; % force the tested version - TODO: revise
+                        p.zip = spm_file(p.zip,'basename',['amica' p.version]);
+                        p.size = 1;
+                        checkAMICA = true; 
+                    end
                     plugin_install(p.zip, p.name, p.version, p.size);
-                    if strcmp(p.name,'AMICA'), checkAMICA = true; end
                     is_new_plugin = true;
                 end
             end
