@@ -1,0 +1,32 @@
+<aap>
+    <tasklist>
+        <initialisation>
+            <module><name>aamod_checkparameters</name></module>
+            <module><name>aamod_evaluatesubjectnames</name></module>
+            <module><name>aamod_study_init</name></module>
+            <module><name>aamod_newsubj_init</name></module>
+        </initialisation>
+        <main>
+            <module><name>aamod_meeg_get_file</name></module>
+            <module><name>aamod_meeg_converttoeeglab</name></module>
+            <module><name>aamod_meeg_filter</name></module>
+            <module><name>aamod_meeg_cleanartifacts</name></module>
+            <module><name>aamod_meeg_rereference</name></module>
+            <module><name>aamod_meeg_ica</name></module>
+            <module><name>aamod_meeg_icclassification</name></module>
+            <module><name>aamod_meeg_epochs</name></module>
+            <module>
+                <branch>
+                    <analysisid_suffix>_AVG</analysisid_suffix>
+                    <module><name>aamod_meeg_timefrequencyanalysis</name></module>
+                    <module><name>aamod_meeg_timefrequencystatistics</name></module>
+                </branch>
+                <branch>
+                    <analysisid_suffix>_CONT</analysisid_suffix>
+                    <module><name>aamod_meeg_timefrequencyanalysis</name></module>
+                    <module><name>aamod_meeg_timefrequencystatistics</name></module>
+                </branch>
+            </module>
+        </main>
+    </tasklist>
+</aap>

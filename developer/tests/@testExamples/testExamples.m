@@ -90,19 +90,6 @@ classdef testExamples < matlab.unittest.TestCase
         end
     end
 
-    methods(Test, TestTags = {'Large', 'demo', 'meeg'})
-
-        %% meeg_aa
-        function demo_2_test(testCase)
-            % Test that meeg_aa runs out-of-the-box
-
-            meeg_aa()
-
-            % Verification
-            % TODO: How to verify correct run, apart from no-error?
-        end
-    end
-
     methods(Static)
         %% create_dataset_parameter
         function dataset_par = create_dataset_parameter()
