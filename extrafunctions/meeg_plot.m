@@ -193,8 +193,9 @@ for t = 1:size(cfg.latency,1)
                         % add time
                         dataPlot.(cfg.parameter)(:,:,2) = dataPlot.(cfg.parameter);
                         dataPlot.time = [0 1];
-                        tmpcfg.xlim = [0 1];
+                        dataPlot.dimord = [dataPlot.dimord '_time'];
                         
+                        tmpcfg.xlim = dataPlot.time([1 end]);
                         tmpcfg.comment = 'yes';
                         ft_multiplotTFR(tmpcfg,dataPlot);
                         currfig = gcf;
@@ -228,6 +229,7 @@ for t = 1:size(cfg.latency,1)
             tmpcfg.funparameter = cfg.parameter;
             tmpcfg.funcolormap = cmaps{s};
             tmpcfg.funcolorlim = [minval(s) maxval(s)];
+            if isfield(dataPlot,'mask') && any(dataPlot.mask), tmpcfg.maskparameter = 'mask'; end
             switch cfg.view
                 case 'ortho'
                     adjustaxes = true;
@@ -244,7 +246,7 @@ for t = 1:size(cfg.latency,1)
                         colormap(cmaps{s});
                         currfig(a) = gcf;
                         arrayfun(@(x) copyobj(x,p(a)), flipud(get(get(currfig(a),'CurrentAxes'),'Children')));
-                        p(a).Children(1).AlphaData(p(a).Children(1).CData==0) = 0;
+                        if isfield(tmpcfg,'maskparameter'), p(a).Children(1).AlphaData(p(a).Children(1).CData==0) = 0; end
                         if a == 2, view(p(a),[90 -90]); end
                     end
             end

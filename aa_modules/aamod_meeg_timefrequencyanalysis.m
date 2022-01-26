@@ -155,11 +155,12 @@ switch task
                     aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
                     
                     % main 
-                    tf = {}; weights = [];
+                    tf = {}; tfProcessed = []; weights = [];
                     for i = 1:numel(data)
                         cfg = tfacfg;
                         cfg.trials = find(data(i).trialinfo==trialinfo);
                         if isempty(cfg.trials), continue; end
+                        tfProcessed(end+1) = i;
                         if isfield(cfg,'toi') && ischar(cfg.toi) && strcmp(cfg.toi,'all') % whole trial
                             cfg.toi = (data(1).time{1}(1)+data(1).time{1}(end))/2; % centre
                             cfg.t_ftimwin = (data(i).time{1}(end)-data(i).time{1}(1))*ones(1,numel(cfg.foi));
@@ -225,7 +226,7 @@ switch task
                             case 'segmentavg'
                                 timefreqModel.dimord    = 'chan_freq_time';
                                 if isfield(data(1),'ureventinfo')
-                                    timefreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
+                                    timefreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data(tfProcessed));
                                 else
                                     aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
                                 end
