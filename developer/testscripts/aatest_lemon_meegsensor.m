@@ -65,31 +65,26 @@ aap.tasksettings.aamod_meeg_ica.options.AMICA.rejsig = 3;
 aap.tasksettings.aamod_meeg_icclassification.method = 'ICLabel';
 aap.tasksettings.aamod_meeg_icclassification.criteria.prob = 'Brain>0.7'; % Eye<0.8:*Muscle<0.8
 
-for b = 1:2
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).ignorebefore = -6; % ignore the first 5 trials for each trialtype 
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).timefrequencyanalysis.method = 'mtmfft';
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).timefrequencyanalysis.taper = 'hanning';
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).timefrequencyanalysis.foi = [1:0.5:13 15 20 25 32 40 60 70 80 95 110 120];
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics.snapshotfwoi = [...
-        1 3.5;... % delta
-        4 7.5;... % theta
-        8 13;... % alpha
-        14 32;... % beta
-        33 80;... % low-gamma
-        81 120;... % high-gamma
-        ];
-    aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).contrastoperation = 'ratio';
-end
-aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).weightedaveraging = 1;
-aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi = [[0:120000:7*120000]' [0:120000:7*120000]'+120000];
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.ignorebefore = -6; % ignore the first 5 trials for each trialtype 
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.timefrequencyanalysis.method = 'mtmfft';
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.timefrequencyanalysis.taper = 'hanning';
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.timefrequencyanalysis.foi = [1:0.5:13 15 20 25 32 40 60 70 80 95 110 120];
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.diagnostics.snapshotfwoi = [...
+    1 3.5;... % delta
+    4 7.5;... % theta
+    8 13;... % alpha
+    14 32;... % beta
+    33 80;... % low-gamma
+    81 120;... % high-gamma
+    ];
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.contrastoperation = 'ratio';
+aap.tasksettings.aamod_meeg_timefrequencyanalysis.weightedaveraging = 1;
 
-for b = 1:2
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics,'Mode','update');
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
-end
+aap.tasksettings.aamod_meeg_timefrequencystatistics.threshold.method = 'analytic';
+aap.tasksettings.aamod_meeg_timefrequencystatistics.threshold.correction = 'no';
+aap.tasksettings.aamod_meeg_timefrequencystatistics.diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics.diagnostics,...
+    aap.tasksettings.aamod_meeg_timefrequencyanalysis.diagnostics,'Mode','update');
+aap.tasksettings.aamod_meeg_timefrequencystatistics.diagnostics.topohighlight = 'any';
 
 %% DATA
 % Directory for raw data:
@@ -121,10 +116,6 @@ aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEO','avg','EOAVG');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEC|-1xEO','avg','ECAVGminusEOAVG');
 aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00001','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00002','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
-
-aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEC','segmentavg','ECCONT');
-aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEO','segmentavg','EOCONT');
 
 %% RUN
 aa_doprocessing(aap);
