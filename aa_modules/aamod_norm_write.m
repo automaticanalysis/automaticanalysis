@@ -27,13 +27,17 @@ switch task
             inds = 1:length(streams);
         end
         % determine normalised struct
-        structdiag = aas_getfiles_bystream_dep(aap,'subject',varargin{1},'structural');
-        sname = basename(structdiag);
-        structdiag = structdiag((sname(:,1)=='w') | (sname(:,2)=='w'),:);
-        if isempty(structdiag) % probably due to structural input-output
-            structdiag = aap.directory_conventions.T1template;
-            if ~exist(structdiag,'file'), structdiag = fullfile(spm('Dir'),structdiag); end
-            structdiag = which(structdiag);
+        [inp, inpattr] = aas_getstreams(aap,'input');
+        streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)}; streamStruct = strsplit(streamStruct,'.'); 
+        structdiag = aas_getfiles_bystream_dep(aap,'subject',varargin{1},streamStruct{end});
+        if size(structdiag,1) > 1
+            sname = basename(structdiag);
+            structdiag = structdiag((sname(:,1)=='w') | (sname(:,2)=='w'),:);
+            if isempty(structdiag) % probably due to structural input-output
+                structdiag = aap.directory_conventions.T1template;
+                if ~exist(structdiag,'file'), structdiag = fullfile(spm('Dir'),structdiag); end
+                structdiag = which(structdiag);
+            end
         end
         for streamind = inds
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
@@ -157,7 +161,9 @@ switch task
             if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
                     (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
                     (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
-                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'structural');
+                [inp, inpattr] = aas_getstreams(aap,'input');
+                streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)};
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},streamStruct);
             end
         end
         

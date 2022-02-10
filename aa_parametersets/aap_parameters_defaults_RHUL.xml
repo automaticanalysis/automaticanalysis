@@ -28,6 +28,10 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>cosmomvpa</name>
                 <dir ui='dir'>/usr/local/apps/psycapps/CoSMoMVPA/CoSMoMVPA-1.1.0</dir>
             </toolbox> 
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>bwt</name>
+                <dir ui='dir'>/usr/local/apps/psycapps/BrainWavelet/BrainWavelet-1.1</dir>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/usr/local/apps/psycapps/fsl/fsl-6.0.1</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/usr/local/apps/psycapps/config/fsl_bash 5.0.10</fslsetup>
@@ -40,7 +44,6 @@
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/usr/local/apps/psycapps/templates</templatedir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/usr/local/apps/psycapps/spm_toolboxes/GIFT/GroupICAT-4.0b</GIFTdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/usr/local/apps/psycapps/dcmtk/dcmtk-3.6.2</DCMTKdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/usr/local/apps/psycapps/BrainWavelet/BrainWavelet-1.1</BrainWaveletdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/usr/local/apps/psycapps/FaceMasking/FaceMasking-06.30.2015</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
             <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>PsychoSGE</poolprofile>

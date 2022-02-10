@@ -60,6 +60,10 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>bnv</name>
                 <dir ui='dir'>/users/psychology01/software/BrainNetViewer</dir>
             </toolbox>
+            <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
+                <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>bwt</name>
+                <dir ui='dir'>/users/psychology01/software/BrainWavelet</dir>
+            </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
             <fsldir desc='Path to fsl' ui='dir'>/opt/pkg/apps/fsl/6.0.3-py/FSL</fsldir>
             <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/users/psychology01/software/config/fsl_bash</fslsetup>
@@ -72,7 +76,6 @@
             <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/users/psychology01/software/standard</templatedir>
             <GIFTdir desc='Path to GIFT toolbox' ui='dir'>/users/psychology01/software/GroupICATv4.0b</GIFTdir>
             <DCMTKdir desc='Path to DICOM Toolkit' ui='dir'>/users/psychology01/software/dcmtk</DCMTKdir>
-            <BrainWaveletdir desc='Path to BrainWavelet toolbox' ui='dir'>/users/psychology01/software/BrainWavelet</BrainWaveletdir>
             <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/users/psychology01/software/FaceMasking</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
             <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>eureka</poolprofile>

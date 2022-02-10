@@ -21,9 +21,9 @@ verbose0 = aap.options.verbose; aap.options.verbose = -1; % ignore error
 
 % parents
 while isempty(img) && ~isempty(domain)
-    d = d + 1;    
-    [img, md5, streamdesc] = aas_getfiles_bystream(aap,domain,index(1:end-d+1),streamname,source);
-    domain = aas_finddomain(aap,domain,'parent');
+    d = d + 1;
+    if d > 1, domain = aas_finddomain(aap,domain,'parent'); end
+    if ~isempty(domain), [img, md5, streamdesc] = aas_getfiles_bystream(aap,domain,index(1:end-d+1),streamname,source); end
 end
 
 if isempty(img)
