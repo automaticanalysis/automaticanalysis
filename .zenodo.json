@@ -51,6 +51,7 @@
     "workflow",
     "pipeline"
   ],
-  "license": "MIT License",
-  "upload_type": "software"
+   "license": "MIT", 
+   "upload_type": "software", 
+   "access_right": "open"
 }
