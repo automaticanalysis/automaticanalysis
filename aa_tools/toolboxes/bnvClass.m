@@ -52,7 +52,8 @@ classdef bnvClass < toolboxClass
             out.edg.size_size = obj.displaySettings.edgeSize;
             out.edg.color = 2;
             out.edg.color_map = 3;
-            out.edg.CM = feval(obj.displaySettings.LUT,64);
+            cm = feval(obj.displaySettings.LUT,128); % avoid edges with too light or dark colours
+            out.edg.CM = cm(33:96,:);
             out.edg.directed = 1;
         end
     end

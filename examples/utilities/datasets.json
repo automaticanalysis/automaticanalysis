@@ -1,0 +1,37 @@
+[
+    {
+        "ID": "aa_demo",
+        "URL": "https://files.osf.io/v1/resources/umhtq/providers/osfstorage/5b7465680b87a00018c6a76f",
+        "type": ".tar.gz"
+    },
+    {
+        "ID": "ds114_test2",
+        "URL": "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/57e549f9b83f6901d457d162",
+        "type": ".tar"
+    },
+    {
+        "ID": "MoAEpilot",
+        "URL": "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/MoAEpilot.bids.zip",
+        "type": ".zip"
+    },
+    {
+        "ID": "ds000114",
+        "URL": "s3://openneuro.org/ds000114",
+        "type": "AWS"
+    },
+    {
+        "ID": "ds002737",
+        "URL": "s3://openneuro.org/ds002737",
+        "type": "AWS"
+    },
+    {
+        "ID": "LEMON_EEG",
+        "URL": "s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID",
+        "type": "AWS"
+    },
+    {
+        "ID": "LEMON_MRI",
+        "URL": "s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw",
+        "type": "AWS"
+    }
+]
