@@ -6,6 +6,10 @@ classdef eeglabClass < toolboxClass
     
     properties (Access = private)
         plugins = []
+        % tested plugin versions, will not overwrite already installed plugins
+        safePlugins = {...
+            '{"name": "clean_rawdata", "version": "2.5"}'...
+            }
     end
     
     properties (Access = protected, Dependent)
@@ -45,6 +49,7 @@ classdef eeglabClass < toolboxClass
             obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
+            obj.safePlugins = cellfun(@jsondecode, obj.safePlugins);
         end
         
         function load(obj,keepWorkspace)
@@ -55,33 +60,20 @@ classdef eeglabClass < toolboxClass
             if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
             
-            checkAMICA = false;
             pllist = plugin_getweb('', obj.plugins, 'newlist');
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
-                    if strcmp(p.name,'AMICA')
-                        % p.version = '1.6'; % force the tested version - TODO: revise
-                        % p.zip = spm_file(p.zip,'basename',['amica' p.version]);
-                        % p.size = 1;
-                        checkAMICA = true; 
+                    safeInf = obj.safePlugins(strcmp({obj.safePlugins.name},p.name));
+                    if ~isempty(safeInf)
+                        p.zip = spm_file(p.zip,'basename',[safeInf.name safeInf.version]);
+                        p.version = safeInf.version;
+                        p.size = 1; % force install
                     end
                     plugin_install(p.zip, p.name, p.version, p.size);
                     is_new_plugin = true;
                 end
             end
             if is_new_plugin, obj.load; end
-            
-            if checkAMICA
-                [~,~,pl] = plugin_status('AMICA');
-                plPath = fullfile(obj.toolPath,'plugins',pl.foldername);
-                if isunix
-                    fileattrib(fullfile(plPath,'amica15ex'),'+x');
-                    fileattrib(fullfile(plPath,'amica15ub'),'+x');
-                    % shadow amica15ex with amica15ub (N.B.: revert if you work on the Expanse Supercomputer)
-                    movefile(fullfile(plPath,'amica15ex'),fullfile(plPath,'bcp_amica15ex'));
-                    system(sprintf('ln -s %s %s',fullfile(plPath,'amica15ub'),fullfile(plPath,'amica15ex')));
-                end
-            end
             
             load@toolboxClass(obj,keepWorkspace)
         end
