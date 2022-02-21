@@ -39,9 +39,9 @@ aap.directory_conventions.analysisid = 'bids_ds114';
 % Here it is assumed that aap.directory_conventions.rawdatadir in the
 % parameter xml file is a single directory, not a list of directories
 % separated by pathsep characters.
-FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds114_test2');
+FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds000114');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
-aa_downloaddemo(aap, 'ds000114');
+aa_downloaddemo(aap, 'ds114_test2');
 
 aap.acq_details.numdummies = 1;
 

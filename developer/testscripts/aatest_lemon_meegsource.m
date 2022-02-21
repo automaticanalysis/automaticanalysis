@@ -1,7 +1,5 @@
-% Automatic analysis
-% User master script example (aa version 5.*.*)
-%
-% This script demonstrates a basic EEG pipeline on the LEMON dataset: http://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html.
+function aatest_lemon_meegsource(parameterfile, deleteprevious, wheretoprocess)
+% This script tests an advanced EEG pipeline on a single participant in the LEMON dataset: http://fcon_1000.projects.nitrc.org/indi/retro/MPI_LEMON.html.
 % The retrieval of the dataset requires aws-cli
 %
 % It requires the following software to be configured in your parameterset
@@ -10,35 +8,18 @@
 %   - EEGLAB with extensions Fileio, bva-io, clean_rawdata, AMICA, dipfit, Fieldtrip-lite, firfilt, fitTwoDipoles, ICLabel, Viewprops
 %   - FieldTrip
 % See aa_parametersets/aap_parameters_defaults_UoS.xml, lines 21-56 for example configuration
-%
-% N.B.: Time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level is disabled because it requires high amount of memory. You can 
-% enable it by uncommenting the corresponding lines in the tasklist and this UMS marked with corresponding comment.
 
-clear;
-aa_ver5
+aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
-SUBJS = [ 32301 32302 32303 32304 ];
+SUBJS = [ 32301 ];
 
 %% RECIPE
-aap = aarecipe('meeg_tasklist.xml');
-SPM = aas_inittoolbox(aap,'spm');
-SPM.load;
-
 EL = aas_inittoolbox(aap,'eeglab');
 EL.load;
 CHANNELFILE = fullfile(EL.dipfitPath,'standard_BESA','standard-10-5-cap385.elp');
 EL.close;
 
 MRIFILE = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_1mm.nii.gz');
-
-% SITE-SPECIFIC CONFIGURATION:
-aap.options.wheretoprocess = 'batch'; % queuing system: localsingle, batch, parpool
-aap.options.aaparallel.numberofworkers = 20;
-aap.options.aaparallel.memory = 4; % 12; % time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level requires > 12 GB RAM
-aap.options.aaparallel.walltime = 36;
-aap.options.aaworkerGUI = 0;
-aap.options.garbagecollection = 1;
-aap.options.diagnostic_videos = 0;
 
 %% PIPELINE
 % Directory & sub-directory for analysed data:
@@ -143,49 +124,18 @@ for b = 1:2
         aap.tasksettings.aamod_meeg_timefrequencyanalysis(b).diagnostics,'Mode','update');
 end
 
-for b = 1:2
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(1).diagnostics,'Mode','update');
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.topohighlight = 'any';
-end
-
-indtime = [0:1000:(size(aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics.snapshottwoi,1)-1)*1000]';
-for b = 3%:4 % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.method = 'analytic';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).threshold.correction = 'no';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.subjects = 'auto';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).selectoverlappingdata.time = 'ignore';
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics = struct_update(aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics,...
-        aap.tasksettings.aamod_meeg_timefrequencyanalysis(2).diagnostics,'Mode','update');
-    aap.tasksettings.aamod_meeg_timefrequencystatistics(b).diagnostics.snapshottwoi = [indtime-250 indtime+250];
-end
-
 %% DATA
 % Directory for raw data:
 aap.directory_conventions.subject_directory_format = 1;
 % - eeg
-aarawdir = strsplit(aap.directory_conventions.rawmeegdatadir,':');
-aap.directory_conventions.rawmeegdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'LEMON_EEG');
-aas_makedir(aap,aap.directory_conventions.rawmeegdatadir);
 aap.directory_conventions.meegsubjectoutputformat = 'sub-%06d/RSEEG';
 % - mri
-aarawdir = strsplit(aap.directory_conventions.rawdatadir,':');
-aap.directory_conventions.rawdatadir = fullfile(aarawdir{cell_index(aarawdir,'aa_demo')},'LEMON_MRI');
-aas_makedir(aap,aap.directory_conventions.rawdatadir);
 aap.directory_conventions.subjectoutputformat = 'sub-%06d';
-
-% Retrieve and data
-aa_downloaddemo(aap,'LEMON_EEG',arrayfun(@(s) sprintf('sub-%06d',s), SUBJS, 'UniformOutput', false))
-aa_downloaddemo(aap,'LEMON_MRI',arrayfun(@(s) sprintf('sub-%06d/ses-01/anat',s), SUBJS, 'UniformOutput', false))
 
 aap = aas_add_meeg_session(aap,'run1');
 for subj = SUBJS
     eegacq = cellstr(spm_file(spm_select('FPListRec',meeg_findvol(aap,subj,'fullpath',true),'.*vhdr'),'filename')); % filename only for EEG
     mriacq = cellstr(spm_select('FPListRec',mri_findvol(aap,subj,'fullpath',true),'.*_ses-01_acq-mp2rage_T1w.nii.gz')); % fullfile for MRI
-    if numel(eegacq) ~= numel(aap.acq_details.meeg_sessions), aas_log(aap,false,'The numbers of EEG sessions and EEG acquisitions do not match'); end
-    if numel(mriacq) ~= 1, aas_log(aap,false,'There MUST be one structural MRI acquisition'); end
     aap = aas_addsubject(aap,{subj subj},'structural',mriacq,'functional',eegacq);
 end
 
@@ -207,13 +157,9 @@ aap.tasksettings.aamod_meeg_epochs.timewindow = [0 2000];
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEC','avg','ECAVG');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEO','avg','EOAVG');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00001','*','singlesession:run1','+1xEC|-1xEO','avg','ECAVGminusEOAVG');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00001','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00002','*',{'ECAVG' 'EOAVG'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'','ECAVGminusEOAVG');
 
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEC','segmentavg','ECCONT');
 aap = aas_add_meeg_trialmodel(aap,'aamod_meeg_timefrequencyanalysis_00002','*','singlesession:run1','+1xEO','segmentavg','EOCONT');
-aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00003','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT');
-% aap = aas_add_meeg_groupmodel(aap,'aamod_meeg_timefrequencystatistics_00004','*',{'ECCONT' 'EOCONT'},'all',repmat([1 2],1,aas_getN_bydomain(aap,'subject')),'all','ECCONTminusEOCONT'); % disabled time-resolved (CONT branch) aamod_meeg_timefrequencystatistics at source level
 
 %% RUN
 aa_doprocessing(aap);

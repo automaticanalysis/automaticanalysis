@@ -17,13 +17,11 @@
     },
     {
       "affiliation": "Curious AI",
-      "name": "Grabovetsky, Alejandro (Sasha) Vicente",
-      "orcid": ""
+      "name": "Grabovetsky, Alejandro (Sasha) Vicente"
     },
     {
       "affiliation": "Washington University in Saint Louis",
-      "name": "Jones, Michael",
-      "orcid": ""
+      "name": "Jones, Michael S."
     },
     {
       "affiliation": "MRC Cognition and Brain Sciences Unit",
@@ -53,6 +51,7 @@
     "workflow",
     "pipeline"
   ],
-  "license": "MIT License",
-  "upload_type": "software"
+   "license": "MIT", 
+   "upload_type": "software", 
+   "access_right": "open"
 }

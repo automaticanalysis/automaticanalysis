@@ -6,10 +6,15 @@
 %  - aap: The aap structure
 %  - dataset_id: One of the following values
 %    + 'aa_demo'
-%    + 'ds000114'
+%    + 'ds114_test2'
+%    + 'MoAEpilot'
+%    + 'ds000114', N.B.: you may want to specify subset because the whole dataset is large
+%    + 'ds002737', N.B.: you may want to specify subset because the whole dataset is large
+%    + 'LEMON_EEG', N.B.: you may want to specify subset because the whole dataset is large
+%    + 'LEMON_MRI', N.B.: you may want to specify subset because the whole dataset is large
 %
 % aa_downloaddemo(aap, dataset_id)
-function aa_downloaddemo(aap, dataset_id)
+function aa_downloaddemo(aap, dataset_id, subset)
 
 %% Inputs checking
 demodir = aap.directory_conventions.rawdatadir;
@@ -25,7 +30,11 @@ if length(sources)>1
 end
 
 % Check dataset_id
-datasets = aa_downloaddemo_datasets();
+datasets = datasetClass.empty;
+for d = jsondecode(fileread('datasets.json'))'
+    par = struct2cell(d);
+    datasets(end+1) = datasetClass(par{:});
+end
 IDs = {datasets.ID};
 ID_ind = strcmp(dataset_id, IDs);
 if sum(ID_ind) ~= 1
@@ -48,32 +57,8 @@ if ~exist(fullfile(demodir),'dir') ... % Does not exist yet
     aas_log(aap, false, ['INFO: downloading demo data to ' logsafe_path]);
 
     % Download and unpack the data to a temp dir first
-    tgz_filename = [tempname dataset.filetype];
-    tgz_filename = websave(tgz_filename, dataset.URL);
-    unpack_dir = tempname;
-    switch dataset.filetype
-        case {'.zip'}
-            unzip(tgz_filename, unpack_dir);
-        case {'.tar.gz', '.tar'}
-            untar(tgz_filename, unpack_dir);
-        otherwise
-             aas_log(aap, true, ['ERROR: Developer error, unknown dataset filetype used for downloaddemo dataset: ' dataset.filetype]);
-    end
-
-    % Depending on the contents of the downloaded tgz, different datasets
-    % need different postprocessing to have the correct contents in demodir
-    dataset.postprocessing(unpack_dir, demodir);
-
-    % Check success
-    if ~exist(fullfile(demodir),'dir') ... % Does not exist yet
-        || length(dir(demodir))<3 % Directory is empty (only . and .. entries in dir listing)
-        % assert(exist(sources{demoind},'dir')~=0);
-    else
-        aas_log(aap, false, 'INFO: done');
-    end
-
-    % delete the downloaded archive
-    delete(tgz_filename);
+    if nargin == 3, dataset.subset = subset; end
+    dataset.download(demodir);    
 else
     msg = sprintf('INFO: aa_downloaddemo: Directory %s is already non-empty, skipping data download', logsafe_path);
     aas_log(aap, false, msg);

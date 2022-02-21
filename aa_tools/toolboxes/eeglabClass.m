@@ -1,4 +1,3 @@
-
 classdef eeglabClass < toolboxClass
     properties
         requiredPlugins = {}
@@ -6,6 +5,11 @@ classdef eeglabClass < toolboxClass
     
     properties (Access = private)
         plugins = []
+        % tested plugin versions, will not overwrite already installed plugins
+        safePlugins = {...
+            '{"name": "clean_rawdata", "version": "2.5", "doPostprocess": 0}'...
+            '{"name": "AMICA", "version": "", "doPostprocess": 1}'...
+            }
     end
     
     properties (Access = protected, Dependent)
@@ -45,6 +49,7 @@ classdef eeglabClass < toolboxClass
             obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
+            obj.safePlugins = cellfun(@jsondecode, obj.safePlugins);
         end
         
         function load(obj,keepWorkspace)
@@ -55,14 +60,30 @@ classdef eeglabClass < toolboxClass
             if ~obj.showGUI, set(gcf,'visible','off'); end
             obj.plugins = evalin('base','PLUGINLIST');
             
+            plPost = {};
             pllist = plugin_getweb('', obj.plugins, 'newlist');
             for p = reshape(pllist,1,[])
                 if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
+                    safeInf = obj.safePlugins(strcmp({obj.safePlugins.name},p.name));
+                    if ~isempty(safeInf) && ~isempty(safeInf.version)
+                        p.version = safeInf.version;
+                        p.zip = spm_file(p.zip,'basename',[p.name p.version]);
+                        p.size = 1; % force install
+                    end
+                    if ~isempty(safeInf) && safeInf.doPostprocess, plPost(end+1) = {p.name}; end
+                    
                     plugin_install(p.zip, p.name, p.version, p.size);
+                    
                     is_new_plugin = true;
                 end
             end
             if is_new_plugin, obj.load; end
+
+            % postprocess 
+            for p = reshape(plPost,1,[])
+                aas_log([],false,['INFO: post-process installtion of ' p{1}]);
+                obj.(['postprocess_' p{1}])();
+            end
             
             load@toolboxClass(obj,keepWorkspace)
         end
@@ -77,6 +98,20 @@ classdef eeglabClass < toolboxClass
         function val = get.dipfitPath(obj)
             [~,~,pl] = plugin_status('dipfit');
             val = fullfile(obj.toolPath,'plugins',pl.foldername);
+        end
+    end
+    
+    methods (Access = private)
+        function postprocess_AMICA(obj)
+            [~,~,pl] = plugin_status('AMICA');
+            plPath = fullfile(obj.toolPath,'plugins',pl.foldername);
+            if isunix
+               fileattrib(fullfile(plPath,'amica15ex'),'+x'); 
+               fileattrib(fullfile(plPath,'amica15ub'),'+x'); 
+               % shadow amica15ex with amica15ub (N.B.: revert if you work on the Expanse Supercomputer)
+               movefile(fullfile(plPath,'amica15ex'),fullfile(plPath,'bcp_amica15ex'));
+               system(sprintf('ln -s %s %s',fullfile(plPath,'amica15ub'),fullfile(plPath,'amica15ex')));
+            end
         end
     end
 end

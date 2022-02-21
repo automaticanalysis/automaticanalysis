@@ -31,7 +31,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 50176
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -72,6 +72,10 @@ jobs:
         uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_EC2_METADATA_DISABLED: true
 
       - name: Archive data
         uses: actions/upload-artifact@v2
@@ -100,7 +104,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 51200
+          root-reserve-mb: 50176
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'

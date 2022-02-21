@@ -4,18 +4,18 @@ classdef testExamples < matlab.unittest.TestCase
     end
 
     methods(Test, TestTags = {'Small'})
-        %% aa_downloaddemo_datasets
+        %% aa_downloaddemo datasets
         function downloaddemo_datasets_test(testCase)
-            % Test that aa_downloaddemo_datasets returns a non-empty struct
+            % Test that aa_downloaddemo datasets returns a non-empty struct
             % array, with at least a field 'ID'
-
-            retval = aa_downloaddemo_datasets();
+            
+            retval = jsondecode(fileread('datasets.json'));
 
             % Verification
-            msg = "Empty return value from aa_downloaddemo_datasets";
+            msg = "Empty return value from datasets.json";
             testCase.verifyNotEmpty(retval, msg);
 
-            msg = "Values returned by aa_downloaddemo_datasets do not have a field 'ID'";
+            msg = "Values returned by datasets.json do not have a field 'ID'";
             testCase.verifyTrue(isfield(retval, 'ID'), msg)
         end
 
@@ -41,7 +41,18 @@ classdef testExamples < matlab.unittest.TestCase
             aap.gui_controls.usecolouroutput = false;
 
             % Run the aa_downloaddemo
-            aa_downloaddemo(aap, dataset.ID)
+            switch dataset.ID
+                case {'ds000114'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-01')
+                case {'ds002737'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-01/ses-03')
+                case {'LEMON_EEG'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-032301')
+                case {'LEMON_MRI'}
+                    aa_downloaddemo(aap, dataset.ID, 'sub-032301/ses-01/anat')
+                otherwise
+                    aa_downloaddemo(aap, dataset.ID)
+            end
 
             % Verification
             msg = sprintf("Directory %s does not exist after running aa_downloaddemo", aap.directory_conventions.rawdatadir);
@@ -86,7 +97,7 @@ classdef testExamples < matlab.unittest.TestCase
             % That way, those field names will be the value names in the
             % test reporting
             dataset_par = struct();
-            datasets = aa_downloaddemo_datasets();
+            datasets = jsondecode(fileread('datasets.json'));
             for i = 1:length(datasets)
                 dataset_par.(datasets(i).ID) = datasets(i);
             end

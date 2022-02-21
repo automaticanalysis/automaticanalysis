@@ -77,7 +77,7 @@ aap.directory_conventions.analysisid = RESULTS_DIR;
 % separated by pathsep characters.
 FULLDATAPATH = fullfile(aap.directory_conventions.rawdatadir, 'ds000114');
 aap.directory_conventions.rawdatadir = FULLDATAPATH;
-aa_downloaddemo(aap, 'ds000114');
+aa_downloaddemo(aap, 'ds114_test2');
 
 %% ------------------------------------------------------------------------
 % Using BIDS input
