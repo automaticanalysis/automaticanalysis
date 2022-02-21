@@ -39,7 +39,7 @@ switch task
                 aap = aas_report_add(aap,subj,'<table><tr><td>');
                 imgpath = fullfile(localpath,fdiag(d).name);
                 aap=aas_report_addimage(aap,subj,imgpath);
-                [p f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
+                [p, f] = fileparts(imgpath); avipath = fullfile(p,[strrep(f(1:end-2),'slices','avi') '.avi']);
                 if exist(avipath,'file'), aap=aas_report_addimage(aap,subj,avipath); end
                 aap = aas_report_add(aap,subj,'</td></tr></table>');
             end
@@ -73,7 +73,7 @@ switch task
         % set up job
         % template
         template = aas_getfiles_bystream(aap, 'dartel_template');
-         [pth,nam,ext] = fileparts(template);
+         [~,nam,ext] = fileparts(template);
         if ~exist(fullfile(localpath,[nam ext]),'file')
             copyfile(template,fullfile(localpath,[nam ext]));
         end
@@ -99,7 +99,7 @@ switch task
             MMt = spm_get_space(template);
             mni.code = 'MNI152';
             mni.affine = xfm*MMt;
-            [pth,nam,ext] = fileparts(template);
+            [~,nam,~] = fileparts(template);
             save(fullfile(localpath,[nam '_2mni.mat']),'mni');            
         end
         
@@ -135,12 +135,12 @@ switch task
             % delete any previous results because otherwise nifti write routine
             % doesn't save disc space when you reslice to a coarser voxel
             for c=1:size(P,1)
-                [pth fle ext]=fileparts(P(c,:));
+                [pth, fle, ext]=fileparts(P(c,:));
                 previous = fullfile(pth,[aap.spm.defaults.normalise.write.prefix fle ext]);
                 if exist(previous,'file') > 0
-                    [s w] = aas_shell(['rm ' previous],true); % quietly
+                    [s, w] = aas_shell(['rm ' previous],true); % quietly
                 end
-            end;
+            end
             job.data.subj.images = cellstr(imgs);
             
             aas_log(aap, false, sprintf('Running with %s...', which('spm_dartel_norm_fun')));
@@ -165,12 +165,15 @@ switch task
             end
             
             % binarise if specified
-            if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)
-                for e = 1:size(wimgs,1)
-                    inf = spm_vol(deblank(wimgs(e,:)));
-                    Y = spm_read_vols(inf);
-                    Y = Y>=aap.tasklist.currenttask.settings.PVE;
-                    nifti_write(deblank(wimgs(e,:)),Y,'Binarized',inf)
+            if ~isempty(aas_getsetting(aap,'PVE'))
+                pve = aas_getsetting(aap,'PVE',streamind-1); % account for the skipped dartel_templatetomni_xfm
+                if pve
+                    for e = 1:size(wimgs,1)
+                        V = spm_vol(deblank(wimgs(e,:)));
+                        Y = spm_read_vols(V);
+                        Y = Y >= pve;
+                        nifti_write(deblank(wimgs(e,:)),Y,'Binarized',V)
+                    end
                 end
             end
             
@@ -179,7 +182,9 @@ switch task
             if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
                     (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
                     (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
-                aas_checkreg(aap,index{:},streams{streamind},'structural');
+                [inp, inpattr] = aas_getstreams(aap,'input');
+                streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)};
+                aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},streamStruct);
             end
             if ~exist('xfm','var')
                 MMt = spm_get_space(template);
@@ -193,8 +198,22 @@ switch task
         end
         
     case 'checkrequirements'
+        in = aas_getstreams(aap,'input'); in(1:4) = []; % not for reference
+        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
+        stageindex = sscanf(index,'_%05d');
+        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; out = setdiff(out,{'dartel_templatetomni_xfm'});
+        for s = 1:numel(in)
+            instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
+            if s <= numel(out)
+                if ~strcmp(out{s},instream)
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,out{s},instream,'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                end
+            else
+                aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',instream,'output');
+                aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+            end
+        end
         
-    otherwise
-        aas_log(aap,1,sprintf('Unknown task %s',task));
-end;
+end
 end
