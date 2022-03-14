@@ -59,7 +59,17 @@ switch task
                 job.woptions = flags;
                 out = spm_run_norm(job);
             elseif aas_stream_has_contents(aap,'dartel_templatetomni_xfm') && aas_stream_has_contents(aap,'dartel_flowfield') % DARTEL
-                % NYI
+                ff = aas_getfiles_bystream(aap, subj, 'dartel_flowfield');
+                if ~exist(fullfile(aas_getpath_bydomain(aap,domain,cell2mat(varargin)),[basename(ff) '.nii']),'file')
+                    copyfile(ff,fullfile(aas_getpath_bydomain(aap,domain,cell2mat(varargin)),[basename(ff) '.nii']));
+                end
+                ff = fullfile(aas_getpath_bydomain(aap,domain,cell2mat(varargin)),basename([ff '.nii']));
+                
+                job.flowfields = {ff};
+                job.images = images;
+                job.interp = aap.tasklist.currenttask.settings.interp;
+                job.K = 6;
+                out = spm_dartel_invnorm(job);                
             elseif aas_stream_has_contents(aap,'freesurfer') % freesurfer
                 fstemplate = fullfile(aas_getstudypath(aap),'fsaverage');
                 if ~exist(fstemplate,'dir'), aas_shell(sprintf('ln -s %s/subjects/fsaverage %s',aap.directory_conventions.freesurferdir,fstemplate)); end
@@ -135,7 +145,8 @@ function [workstream, regstreams] = processStreams(aap,indices)
 workstreamind = cellfun(@(a) ~isempty(a) && isfield(a,'isrenameable') && a.isrenameable, streamattr);
 workstream = inpstreams(workstreamind); inpstreams(workstreamind) = [];
 
-regstreams = inpstreams(1:end-1); toRemove = [];
+regstreamsind = cellfun(@(a) ~isempty(a) && isfield(a,'diagnostic') && a.diagnostic, streamattr);
+regstreams = inpstreams(regstreamsind); toRemove = [];
 for i = 1:numel(regstreams)
     if ~aas_stream_has_contents(aap,aap.tasklist.currenttask.domain,indices,regstreams{i}), toRemove(end+1) = i; end
 end

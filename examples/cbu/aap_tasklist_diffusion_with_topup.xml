@@ -36,7 +36,7 @@
                     <module><name>aamod_diffusion_dki_tractography_prepare</name></module>
                     <module><name>aamod_diffusion_coreg_extended_2_dki</name></module>
                     <module><name>aamod_diffusion_norm_write_dartel_dki</name></module>
-                    <module><name>aamod_diffusion_rois_dartel_denorm_dki</name></module>
+                    <module><name>aamod_diffusion_dartel_denorm_dki_rois</name></module>
                     <module><name>aamod_diffusion_dartel_denorm_dki</name></module>
                 </branch>
                 <branch>
