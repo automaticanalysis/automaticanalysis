@@ -15,6 +15,8 @@
             <bb desc='bounding box of normalised images (-X X -Y Y -Z Z)'></bb>
             <preserve desc='0 = preserve concentration (unmodulated), 1 = preserved total (modulated)'>0</preserve> 
             
+            <PVE desc='binarize controling Partial Volume Effect'></PVE>
+
 			<inputstreams>
 				<stream>dartel_template</stream>
                 <stream isessential="0">dartel_templatetomni_xfm</stream>  
@@ -24,10 +26,14 @@
 			</inputstreams>
 			
 			<outputstreams>
-                <stream isrenameable='1'>epi</stream>
-                <stream>dartel_templatetomni_xfm</stream>  
+                <stream>dartel_templatetomni_xfm</stream>
+                <stream isrenameable='1'>epi</stream>                
 			</outputstreams>
             
+            <diagnostic>
+                <streamind desc='index of main (i.e. non-diagnostic) stream to be reported'>2</streamind>
+            </diagnostic> 
+
         </currenttask>
     </tasklist>
 </aap>
