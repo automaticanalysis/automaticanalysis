@@ -27,6 +27,11 @@ switch task
     case 'doit'
         [~, TDT] = aas_cache_get(aap,'tdt');
         TDT.load;
+        
+        flagsReslice = aap.spm.defaults.realign.write;
+        flagsReslice.which = [1 0];
+        flagsReslice.interp = 0;
+        
         cfg = TDT.defaults;
         cfg.analysis = aas_getsetting(aap,'method');
         
@@ -169,6 +174,13 @@ switch task
             end
             for f = 1:numel(fnMask)
                 V = spm_vol(fnMask{f});
+                if ~isempty(Ydata) && ~isequal(V.dim, size(Ydata)) % reslice mask if needed
+                    aas_log(aap,false,sprintf('There is a geometry mismatch between the mask (%s) and the data (%s) -> reslicing mask (assuming alignment)\n.',fnMask{f},fnBeta{1}));
+                    spm_reslice({fnBeta{1} fnMask{f}},flagsReslice);
+                    fnMask{f} = spm_file(fnMask{f},'prefix',flagsReslice.prefix);
+                    V = spm_vol(fnMask{f});
+                end
+                
                 Y = spm_read_vols(V);
                 mask_num = unique(Y(:));
                 mask_num(isnan(mask_num)|mask_num==0) = [];
