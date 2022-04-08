@@ -25,7 +25,7 @@ SUBJ = {...
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_tasklist_structural.xml');
+aap=aarecipe('structural.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub'; % queuing system	% typical value localsingle or qsub

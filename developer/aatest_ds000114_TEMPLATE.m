@@ -113,7 +113,6 @@ function aatest_ds000114_TEMPLATE(parameterfile, deleteprevious, wheretoprocess)
 % function aa_test_inittest, which also processes the options passed by
 % aa_test:
 
-% % % % % aap = aa_test_inittest(mfilename('fullpath'),deleteprevious);
 aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
 % from here down, everything works like a normal aa script. You set options
@@ -127,8 +126,6 @@ aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, whe
 % -------------------------------------------------------------------------
 % analysis options
 % -------------------------------------------------------------------------
-
-% % % % aap.options.wheretoprocess = wheretoprocess;
 
 aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	

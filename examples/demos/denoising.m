@@ -33,7 +33,7 @@
 clear all;
 aa_ver5;
 
-aap = aarecipe('aa_example_denoising.xml');      % this uses parameter file ~/.aa/aap_parameters_user.xml
+aap = aarecipe('denoising.xml');      % this uses parameter file ~/.aa/aap_parameters_user.xml
 
 % ------------------------------------------------------------------------------------------------------------------------------
 % DIRECTORY AND DATA OPTIONS

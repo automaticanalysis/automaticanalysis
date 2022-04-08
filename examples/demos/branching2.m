@@ -14,7 +14,7 @@ clear
 aa_ver5;
 
 %% LOAD RECIPE AND TASKLIST
-aap = aarecipe('demo_branching2_tasklist.xml');
+aap = aarecipe('branching2.xml');
 
 %% DEFINE STUDY SPECIFIC PARAMETERS
 aap.options.wheretoprocess = 'localsingle';
