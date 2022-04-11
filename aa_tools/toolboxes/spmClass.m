@@ -34,9 +34,17 @@ classdef spmClass < toolboxClass
         
         function load(obj)
             addpath(obj.toolPath);
-            spm_jobman('initcfg');
             
             load@toolboxClass(obj)
+            
+            spm_jobman('initcfg');
+            
+            % Update stored path
+            p = split(path,pathsep);                
+            obj.toolInPath = cat(1,...
+                obj.toolInPath,...
+                setdiff(p(cellfun(@(x) contains(x,obj.toolPath), p)),obj.toolInPath)...
+                );
         end
     end
 end
