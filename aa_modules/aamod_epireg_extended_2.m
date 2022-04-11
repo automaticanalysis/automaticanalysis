@@ -138,7 +138,7 @@ switch task
             % The mean EPI will already be in the space required for the
             % individual EPIs. Hence, we can...
             
-            MM = spm_get_space(mEPIimg);
+            MMe = spm_get_space(mEPIimg);
         end
         
         % Locate all the EPIs we want to coregister
@@ -156,10 +156,10 @@ switch task
                 % Apply the space of the coregistered mean EPI to the
                 % remaining EPIs (safest solution!)
                 if exist('MMs','var')
-                    MM0 = spm_get_space(EPIimg{m}{e});
-                    MM = MMs\MM0;
+                    MMe0 = spm_get_space(EPIimg{m}{e});
+                    MMe = MMs\MMe0;
                 end
-                spm_get_space(EPIimg{m}{e}, MM);
+                spm_get_space(EPIimg{m}{e}, MMe);
             end
             EPIimg{m}(excl) = [];
         end
@@ -175,7 +175,7 @@ switch task
             end
         end
         
-        xfm = spm_imatrix(inv(MM/MM0));
+        xfm = spm_imatrix(inv(MMe/MM0));
         fn = fullfile(aas_getpath_bydomain(aap,domain,cell2mat(varargin)),'epitotarget_xfm.mat');
         save(fn,'xfm');
         aap = aas_desc_outputs(aap,domain,cell2mat(varargin),'epitotarget_xfm',fn);
