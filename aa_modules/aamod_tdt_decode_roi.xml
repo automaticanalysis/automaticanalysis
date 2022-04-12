@@ -58,6 +58,7 @@
             
             <outputstreams desc='streams will correspond to the measure(s)'>
                 <stream>settings</stream>
+                <stream>samples</stream>
                 <stream>mask</stream>
                 <stream isrenameable='1'>result</stream>
             </outputstreams>    
