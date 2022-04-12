@@ -2,14 +2,17 @@
 <!--  This is a tempate for a module header processing an MRI session --> 
 <aap>
     <tasklist>
-        <currenttask mfile_alias='aamod_tdt_decode' domain='subject' desc='aa module for MVPA of ROI-ROI connectivity with The Decoding Toolbox' modality='MRI'>
+        <currenttask mfile_alias='aamod_tdt_decode' domain='subject' desc='aa module for MVPA of combined ROI-based activity and ROI-ROI connectivity with The Decoding Toolbox' modality='MRI'>
             
             <qsub>
                 <timeBase desc='Required time in hours'>0.5</timeBase>
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
-            <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'></itemList>
+            <itemList desc='Cell of event names (or distinct parts). Wildcard asterisk, regular expression, and multiple event names referring to the same category are allowed. Regular expression MUST be prefixed with "regexp:". Wildcard asterisk, regular expression are NOT ALLOWED for multiple event names.'>
+                <roi></roi>
+                <connectivity></connectivity>
+            </itemList>            
             <dopairwise desc='do pairwise decoding (for cases with more then two items only)' ui='yesno'>0</dopairwise>
             <doonevsall desc='do one-vs-all decoding (for cases with more then two items only)' ui='yesno'>0</doonevsall>            
 
@@ -52,7 +55,7 @@
                 </options>
             </decoding>
             
-            <method desc='decoding analysis' options='roi|network' ui='optionlist'>roi</method>
+            <method desc='decoding analysis' options='roi|network' ui='optionlist'>network</method>
             
             <network desc='within-network connectivity pattern'>
                 <networkrois desc='non-overlapping network specification, a list of cell arrays containg ROI values'></networkrois>
@@ -67,11 +70,14 @@
             <inputstreams>
                 <stream>connectivity</stream>
                 <stream>ROInames</stream>
+                <stream>firstlevel_spm</stream>
+                <stream>roidata_firstlevel_betas</stream>
+                <stream>valid_roi_firstlevel_betas</stream>                
             </inputstreams>
             
             <outputstreams desc='streams will correspond to the measure(s)'>
                 <stream>settings</stream>
-                <stream>samples</stream>                
+                <stream>samples</stream>
                 <stream>mask</stream>
                 <stream isrenameable='1'>result</stream>
             </outputstreams>    

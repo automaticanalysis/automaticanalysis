@@ -189,7 +189,7 @@ switch task
         
         % automatic connection to the nearest aamod_tdt_decode
         srcmodulename = strrep(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'secondlevel_prevalence','decode'); % CAVE: assumption on module name
-        src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),'output'); src = setdiff(src,{'settings' 'mask'});
+        src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),'output'); src = setdiff(src,{'settings' 'samples' 'mask'});
         inp = aas_getstreams(aap,'input'); 
         if any(strcmp(src,'settings_pairwise'))
             if ~any(strcmp(inp,'settings_pairwise')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','input'); end

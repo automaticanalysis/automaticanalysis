@@ -88,23 +88,6 @@ switch task
         srcmodulename = strrep(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'firstlevel_statistics','decode'); % CAVE: assumption on module name
         srcpath = aas_getsubjpath(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),subj);
         
-        %% Prepare data (if needed)
-        if aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
-            % create samples
-            dirBeta = strrep(spm_file(cfg.files.name{1},'path'),srcpath,aas_getsubjpath(aap,subj));
-            aas_makedir(aap,dirBeta);
-            
-            load(aas_getfiles_bystream(aap,'subject',subj,'roidata_firstlevel_betas'),'ROI');
-            load(aas_getfiles_bystream(aap,'study',[],'valid_roi_firstlevel_betas'),'ValidROI');
-            [~,roiInd] = intersect([ROI.ROIval],[ValidROI.ROIval]);
-
-            betas = [ROI(roiInd).mean];
-            for b = 1:size(betas,1)
-                beta = betas(b,:);
-                save(fullfile(dirBeta,sprintf('beta_%04d.mat',b)),'beta');
-            end
-        end
-        
         %% Generate prescription (cfg, design, doIter)
         toExclude = [];
         doIter = cell(1,numel(cfgs));
@@ -154,17 +137,24 @@ switch task
         doParallel = aas_getsetting(aap,'permutation.numberofworkers') > 1;
         if doParallel
             aapoolprofile = strsplit(aap.directory_conventions.poolprofile,':'); poolprofile = aapoolprofile{1};
-            if ~strcmp(aap.options.wheretoprocess,'qsub'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work for parfor',poolprofile)); end
+            if ~strcmp(aap.options.wheretoprocess,'batch'), aas_log(aap,false,sprintf('WARNING: pool profile %s is not used via DCS/MPaS; therefore it may not work',poolprofile)); end
             try
-                cluster = parcluster(poolprofile);
-                if numel(aapoolprofile) > 1, cluster.SubmitArguments = aapoolprofile{2}; end
-                cluster.SubmitArguments = compose("%s --mem=%dG --time=%d", string(cluster.SubmitArguments), aap.options.aaparallel.memory, aap.options.aaparallel.walltime*60);
+                global aaparallel;
+                aaparallel = aap.options.aaparallel;
                 global aaworker;
+                q = aaq_batch(aap);
+                cluster = q.pool;
+                
                 wdir = spm_file(tempname,'basename'); wdir = fullfile(aaworker.parmpath,wdir(1:8));
                 aas_log(aap,false,['INFO: parallel job storage is ' wdir]);
                 aas_makedir(aap,wdir);
                 cluster.JobStorageLocation = wdir;
-                nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
+                if cluster.NumWorkers > 1
+                    nWorkers = min([cluster.NumWorkers aas_getsetting(aap,'permutation.numberofworkers')]);
+                else
+                    nWorkers = aas_getsetting(aap,'permutation.numberofworkers');
+                end
+                aas_log(aap,false,sprintf('INFO: %s initialised with %d workers.',poolprofile,nWorkers));
             catch E
                 aas_log(aap,false,['WARNING: ' poolprofile ' could not been initialised - ' E.message ' --> parallelisation is disabled']);
                 doParallel = false;
@@ -224,7 +214,7 @@ switch task
                     dat = load(outpermfnames{n}); results = dat.results;
                     output = results.(cfgs(indCfg).results.output{o}).output;
                     Y = zeros(results.datainfo.dim);
-                    if strcmpi(cfgs(indCfg).analysis,'roi')
+                    if strcmpi(cfgs(indCfg).analysis,'roi') && (numel(results.roi_names) > 1)
                         roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), results.roi_names);
                         output = num2cell(output);
                     else
@@ -258,9 +248,9 @@ switch task
             for o = 1:numel(cfg.results.output)
                 aas_log(aap,false,['INFO: Inferencing - ' cfg.results.output{o}]);
                 result = cellstr(aas_getfiles_bystream(aap,'subject',subj,cfg.results.output{o}));
-                dat = load(result{strcmp(spm_file(result,'ext'),'mat')}); res_mat = dat.results; % TODO: potential issue with connectivity, where both results are MAT files
+                dat = load(result{strcmp(spm_file(result,'ext'),'mat') & strcmp(spm_file(result,'basename'),spm_file(cfg.results.output{o},'prefix','res_'))}); res_mat = dat.results; % TODO: potential issue with connectivity, where both results are MAT files
                 reference = spm_select('FPList',spm_file(aas_getfiles_bystream(aap,'subject',subj,['permuted_' cfg.results.output{o}],'output'),'path'),...
-                    ['^perm[0-9]{4}_' cfg.results.output{o} '.mat$']);%
+                    ['^res_perm[0-9]{4}_' cfg.results.output{o} '.mat$']);%
                 dat = load(aas_getfiles_bystream(aap,'subject',subj,'settings')); statcfg = dat.cfg;
                 statcfg.stats.test = 'permutation';
                 statcfg.stats.tail = 'right';
@@ -272,66 +262,74 @@ switch task
                 % - create thresholded image
                 fnstatres = fullfile(statdir,['stats_' statcfg.stats.output '_' statcfg.stats.test '_' statcfg.stats.tail '.mat']);
                 statres = load(fnstatres); statres = statres.results_out;
+                V.dt = [spm_type('float32') 0];
+                V.mat = statres.datainfo.mat;
+                V.private.mat = statres.datainfo.mat;
                 
-                outfname = spm_file(fnstatres,'ext','nii','prefix','thresh_');
-                N      = nifti;
-                N.dat  = file_array(outfname,statres.datainfo.dim,[16 0]);
-                N.mat  = statres.datainfo.mat;
-                N.mat0 = statres.datainfo.mat;
-                N.descrip     = ['thresholded ' cfg.results.output{o}];
-                create(N);
-                
-                Z = statres.(cfg.results.output{o}).output;
-                Z(statres.(cfg.results.output{o}).p >= 0.05) = 0;
-                Y = zeros(statres.datainfo.dim);
-                if strcmp(cfg.analysis,'roi')
+                Z = statres.(cfg.results.output{o}).z;
+                thrZ = Z; thrZ(statres.(cfg.results.output{o}).p >= 0.05) = 0;
+                if strcmp(cfg.analysis,'roi') && (numel(results.roi_names) > 1)
                     roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), statres.roi_names);
                     Z = num2cell(Z);
+                    thrZ = num2cell(thrZ);
                 else
                     roiInd = 1;
                     Z = {Z};
+                    thrZ = {thrZ};
                 end
+                
+                Y = zeros(statres.datainfo.dim);
                 for r = 1:numel(roiInd)
                     Y(statres.mask_index_each{r}) = Z{r};
                 end
-                N.dat(:,:,:) = Y;
-                spm_get_space(N.dat.fname, N.mat);
-                
-                N.dat = reshape(N.dat,statres.datainfo.dim);
+                outfname = spm_file(fnstatres,'ext','nii');
+                nifti_write(outfname,Y,cfg.results.output{o},V);
+                aap = aas_desc_outputs(aap,'subject',subj,['zstat_' cfg.results.output{o}],outfname);
+
+                Y = zeros(statres.datainfo.dim);
+                for r = 1:numel(roiInd)
+                    Y(statres.mask_index_each{r}) = thrZ{r};
+                end
+                outfname = spm_file(fnstatres,'ext','nii','prefix','thresh_');
+                nifti_write(outfname,Y,['thresholded ' cfg.results.output{o}],V);
+                aap = aas_desc_outputs(aap,'subject',subj,['thresholded_' cfg.results.output{o}],outfname);
                 
                 % - overlay
-                % -- edges of activation
-                slims = ones(4,2);
-                sAct = arrayfun(@(x) any(Y(x,:,:),'all'), 1:size(Y,1));
-                if numel(find(sAct))<2, slims(1,:) = [1 size(Y,1)];
-                else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                sAct = arrayfun(@(y) any(Y(:,y,:),'all'), 1:size(Y,2));
-                if numel(find(sAct))<2, slims(2,:) = [1 size(Y,2)];
-                else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                sAct = arrayfun(@(z) any(Y(:,:,z),'all'), 1:size(Y,3));
-                if numel(find(sAct))<2, slims(3,:) = [1 size(Y,3)];
-                else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                % -- convert to mm
-                slims = sort(N.mat*slims,2);
-                % -- extend if too narrow (min. 50mm)
-                slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
-                
-                % - draw
-                axis = {'sagittal','coronal','axial'};
-                for a = 1:3
-                    if any(cell2mat(Z)~=0), stat_fname = {N.dat.fname}; else, stat_fname = {}; end
-                    [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
-                    fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
+                if ~isempty(bgfname)
+                    % -- edges of activation
+                    slims = ones(4,2);
+                    sAct = arrayfun(@(x) any(Y(x,:,:),'all'), 1:size(Y,1));
+                    if numel(find(sAct))<2, slims(1,:) = [1 size(Y,1)];
+                    else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                    sAct = arrayfun(@(y) any(Y(:,y,:),'all'), 1:size(Y,2));
+                    if numel(find(sAct))<2, slims(2,:) = [1 size(Y,2)];
+                    else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                    sAct = arrayfun(@(z) any(Y(:,:,z),'all'), 1:size(Y,3));
+                    if numel(find(sAct))<2, slims(3,:) = [1 size(Y,3)];
+                    else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                    % -- convert to mm
+                    slims = sort(V.mat*slims,2);
+                    % -- extend if too narrow (min. 50mm)
+                    slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
                     
-                    if (~any(cell2mat(Z)~=0))
-                        annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
+                    % - draw
+                    axis = {'sagittal','coronal','axial'};
+                    for a = 1:3
+                        if any(cell2mat(Z)~=0), stat_fname = {outfname}; else, stat_fname = {}; end
+                        [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
+                        fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
+                        
+                        if (~any(cell2mat(Z)~=0))
+                            annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
+                        end
+                        
+                        spm_print(fnsl{a},fig,'jpg')
+                        close(fig);
                     end
                     
-                    spm_print(fnsl{a},fig,'jpg')
-                    close(fig);
+                    dlmwrite(fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',cfg.results.output{o})),[min(v(v~=0)), max(v)]);
+
                 end
-                
-                dlmwrite(fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',cfg.results.output{o})),[min(v(v~=0)), max(v)]);
             end
         end
         
@@ -344,7 +342,7 @@ switch task
             
             % automatic connection to the nearest aamod_tdt_decode
             srcmodulename = strrep(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'firstlevel_statistics','decode'); % CAVE: assumption on module name
-            src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),'output'); src = setdiff(src,{'settings' 'mask'});
+            src = aas_getstreams(aas_setcurrenttask(aap,aas_getsourcestage(aap,srcmodulename,'settings')),'output'); src = setdiff(src,{'settings' 'samples' 'mask'});
             inp = aas_getstreams(aap,'input');
             if any(strcmp(src,'settings_pairwise'))
                 if ~any(strcmp(inp,'settings_pairwise')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','input'); end
@@ -354,7 +352,7 @@ switch task
                 if ~any(strcmp(inp,'settings_onevsall')), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','input'); end
                 src = setdiff(src,{'settings_onevsall'});
             end
-            inp(contains(inp,{'settings' 'settings_pairwise' 'settings_onevsall' 'mask' 'firstlevel_betas' 'roidata_firstlevel_betas' 'valid_roi_firstlevel_betas' 'connectivity' 'structural'})) = [];
+            inp(contains(inp,{'settings' 'settings_pairwise' 'settings_onevsall' 'samples' 'mask' 'firstlevel_betas' 'roidata_firstlevel_betas' 'valid_roi_firstlevel_betas' 'connectivity' 'structural'})) = [];
             for s = 1:numel(src)
                 if s <= numel(inp) && strcmp(inp{s},src{s}), continue; end
                 if s == 1

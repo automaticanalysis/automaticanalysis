@@ -14,18 +14,13 @@
                  <numberofworkers desc='number of parallel workers to run permutations on the cluster, requires valid DCS/MPaS-based poolprofile and cluster allowing submission from worker nodes (0 or 1 means no parallelisation)'>0</numberofworkers>
             </permutation>
             
-            <dostatistics desc='indicates whether performing statistics (CAVE: it may crash on certain systems)' ui='yesno'>0</dostatistics>
-            
-            <overlay>
-                <nth_slice desc='in mm'>6</nth_slice>
-            </overlay>
+            <dostatistics desc='indicates whether performing statistics (CAVE: it may crash on certain systems)' ui='yesno'>1</dostatistics>
             
             <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
             <inputstreams>
                 <stream>settings</stream>
+                <stream>samples</stream>
                 <stream>mask</stream>
-                <stream>roidata_firstlevel_betas</stream>
-                <stream>valid_roi_firstlevel_betas</stream>                
                 <stream isrenameable='1'>input</stream>
             </inputstreams>
             

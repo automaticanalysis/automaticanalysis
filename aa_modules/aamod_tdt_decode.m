@@ -27,6 +27,11 @@ switch task
     case 'doit'
         [~, TDT] = aas_cache_get(aap,'tdt');
         TDT.load;
+        
+        flagsReslice = aap.spm.defaults.realign.write;
+        flagsReslice.which = [1 0];
+        flagsReslice.interp = 0;
+        
         cfg = TDT.defaults;
         cfg.analysis = aas_getsetting(aap,'method');
         
@@ -148,9 +153,9 @@ switch task
         
         if aas_stream_has_contents(aap,'subject',subj,'firstlevel_spm')
             fnSPM = aas_getfiles_bystream(aap,'subject',subj,'firstlevel_spm');
-            dat = load(fnSPM);
+            load(fnSPM,'SPM');
             dirSPM = fullfile(aas_getsubjpath(aap,subj),aap.directory_conventions.stats_singlesubj);
-            orderBF = dat.SPM.xBF.order;
+            orderBF = SPM.xBF.order;
             regressor_names = design_from_spm(dirSPM);
         end
         
@@ -169,6 +174,13 @@ switch task
             end
             for f = 1:numel(fnMask)
                 V = spm_vol(fnMask{f});
+                if ~isempty(Ydata) && ~isequal(V.dim, size(Ydata)) % reslice mask if needed
+                    aas_log(aap,false,sprintf('There is a geometry mismatch between the mask (%s) and the data (%s) -> reslicing mask (assuming alignment)\n.',fnMask{f},fnBeta{1}));
+                    spm_reslice({fnBeta{1} fnMask{f}},flagsReslice);
+                    fnMask{f} = spm_file(fnMask{f},'prefix',flagsReslice.prefix);
+                    V = spm_vol(fnMask{f});
+                end
+                
                 Y = spm_read_vols(V);
                 mask_num = unique(Y(:));
                 mask_num(isnan(mask_num)|mask_num==0) = [];
@@ -198,93 +210,94 @@ switch task
                 end
                 if iscell(labelnames{l}), labelnames{l} = labelnames{l}{1}; end
             end
-        elseif aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
-            % check labelnames for SPM design
-            for l = 1:numel(labelnames)
-                if numel(labelnames{l}) > 1, labelnames{l} = ['regexp:^[' sprintf('(%s)',labelnames{l}{:}) ']*$']; end
-                if orderBF > 1 && isempty(regexp(labelnames{l},'(?<=bin)[ \[\(]{1,3}[1-9]','once'))
-                    if ~isempty(strfind(labelnames{l},'regexp')), aas_log(aap,true,'Regular expression and multiple event names do not support automatic detection of multi-order BF'); end
-                    labelnames{l} = ['regexp:^' strrep(labelnames{l},'*','.*') 'bin [' sprintf('(%d)',1:9) ']']; % add all orders as defaults
-                end
-                if iscell(labelnames{l}), labelnames{l} = labelnames{l}{1}; end
-            end
             
-            cfg.software = 'matlab';
-            cfg.analysis = 'roi';
-            
-            % create samples
-            load(aas_getfiles_bystream(aap,'subject',subj,'roidata_firstlevel_betas'),'ROI');
-            load(aas_getfiles_bystream(aap,'study',[],'valid_roi_firstlevel_betas'),'ValidROI');
-            [~,roiInd] = intersect([ROI.ROIval],[ValidROI.ROIval]);
-            
-            betas = [ROI(roiInd).mean];
-            for b = 1:size(betas,1)
-                beta = betas(b,:);
-                save(spm_file(fnSPM,'filename',sprintf('beta_%04d.mat',b)),'beta');
-            end
-            
-            % create rois            
-            rois = zeros(1,size(betas,2));
-            networkSpec = aas_getsetting(aap,'network.networkrois');
-            for n = 1:numel(networkSpec)
-                [~,indRois] = intersect(ValidROI.ROIval,networkSpec{n});
-                rois(1,indRois) = n;
-            end
-            fnMask = fullfile(aas_getsubjpath(aap,subj),'rois.mat');
-            save(fnMask,'rois');
-            cfg.files.mask = fnMask;
-            
-        elseif aas_stream_has_contents(aap,'subject',subj,'connectivity') % connectivity
-            cfg.software = 'matlab';
-            cfg.analysis = 'roi';
-            
-            % create rois
-            fnCM = cellstr(aas_getfiles_bystream(aap,'subject',subj,'connectivity'));
-            hdr = read_header_matlab(fnCM{1});
-            dat = read_image_matlab(hdr);
-            switch aas_getsetting(aap,'method')
-                case 'roi' % roi-wise each column decoded separately
-                    rois = repmat([1:hdr.dim(2)],hdr.dim(1),1);
-                case 'network' % within sub-network, each sub-network decoded as whole
-                    rois = zeros(hdr.dim);
-                    networkSpec = aas_getsetting(aap,'network.networkrois');
-                    validROIs = readtable(aas_getfiles_bystream(aap,'study',[],'ROInames'),'ReadVariableNames',false);
-                    validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), validROIs.Var1);
-                    for n = 1:numel(networkSpec)
-                        [~,indRois] = intersect(validROIs,networkSpec{n});
-                        rois(indRois,indRois) = n;
+            switch cfg.analysis
+                case 'searchlight'
+                    cfg.searchlight = aas_getsetting(aap,'searchlight');
+                case 'network'
+                    cfg.analysis = 'roi';
+                    netspec = aas_getsetting(aap,'network.networkrois');
+                    if ~isempty(netspec) % single-volume multi-label roi expected
+                        aas_log(aap,false,'INFO: recoding rois for networks')
+                        V = spm_vol(cfg.files.mask{1});
+                        Y = spm_read_vols(V);
+                        M = zeros(size(Y));
+                        for net = 1:numel(netspec)
+                            m = false(size(Y));
+                            for r = reshape(netspec{net},1,[])
+                                m = m | (Y == r);
+                            end
+                            M = M + net*m;
+                        end
                     end
-            end
-            rois(isnan(dat)) = 0;
-            fnMask = fullfile(aas_getsubjpath(aap,subj),'rois.mat');
-            save(fnMask,'rois');
-            cfg.files.mask = fnMask;
+                    spm_write_vol(V,M);
+            end            
         else
-            aas_log(aap,true,'NYI');
+            cfg.software = 'matlab';
+            cfg.analysis = 'roi';
+
+            if aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
+                labelnamesROI = labelnames;
+                if isstruct(labelnamesROI), labelnamesROI = labelnamesROI.roi; end
+                % check labelnames for SPM design
+                for l = 1:numel(labelnamesROI)
+                    if numel(labelnamesROI{l}) > 1, labelnamesROI{l} = ['regexp:^[' sprintf('(%s)',labelnamesROI{l}{:}) ']*$']; end
+                    if orderBF > 1 && isempty(regexp(labelnamesROI{l},'(?<=bin)[ \[\(]{1,3}[1-9]','once'))
+                        if ~isempty(strfind(labelnamesROI{l},'regexp')), aas_log(aap,true,'Regular expression and multiple event names do not support automatic detection of multi-order BF'); end
+                        labelnamesROI{l} = ['regexp:^' strrep(labelnamesROI{l},'*','.*') 'bin [' sprintf('(%d)',1:9) ']']; % add all orders as defaults
+                    end
+                    if iscell(labelnamesROI{l}), labelnamesROI{l} = labelnamesROI{l}{1}; end
+                end
+                
+                % create samples
+                load(aas_getfiles_bystream(aap,'subject',subj,'roidata_firstlevel_betas'),'ROI');
+                load(aas_getfiles_bystream(aap,'study',[],'valid_roi_firstlevel_betas'),'ValidROI');
+                [~,roiInd] = intersect([ROI.ROIval],[ValidROI.ROIval]);
+                
+                betas = [ROI(roiInd).mean];
+                for b = 1:size(betas,1)
+                    beta = betas(b,:);
+                    save(spm_file(fnSPM,'filename',sprintf('beta_%04d.mat',b)),'beta');
+                end
+                
+                % create rois
+                rois = zeros(1,size(betas,2));
+                networkSpec = aas_getsetting(aap,'network.networkrois');
+                for n = 1:numel(networkSpec)
+                    [~,indRois] = intersect(ValidROI.ROIval,networkSpec{n});
+                    rois(1,indRois) = n;
+                end
+                fnMaskROI = fullfile(aas_getsubjpath(aap,subj),'rois_roi.mat');
+                save(fnMaskROI,'rois');
+            end
+            if aas_stream_has_contents(aap,'subject',subj,'connectivity') % connectivity
+                labelnamesConnectivity = labelnames;
+                if isstruct(labelnamesConnectivity), labelnamesConnectivity = labelnamesConnectivity.connectivity; end
+
+                % create rois
+                validROIs = readtable(aas_getfiles_bystream(aap,'study',[],'ROInames'),'ReadVariableNames',false);
+                validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), validROIs.Var1);
+
+                fnCM = cellstr(aas_getfiles_bystream(aap,'subject',subj,'connectivity'));
+                hdr = read_header_matlab(fnCM{1});
+                dat = read_image_matlab(hdr);
+                switch aas_getsetting(aap,'method')
+                    case 'roi' % roi-wise each column decoded separately
+                        rois = repmat([1:hdr.dim(2)],hdr.dim(1),1);
+                    case 'network' % within sub-network, each sub-network decoded as whole
+                        rois = zeros(hdr.dim);
+                        networkSpec = aas_getsetting(aap,'network.networkrois');
+                        for n = 1:numel(networkSpec)
+                            [~,indRois] = intersect(validROIs,networkSpec{n});
+                            rois(indRois,indRois) = n;
+                        end
+                end
+                rois(isnan(dat)) = 0;
+                fnMaskConnectivity = fullfile(aas_getsubjpath(aap,subj),'rois_connectivity.mat');
+                save(fnMaskConnectivity,'rois');
+            end
         end
 
-        switch cfg.analysis
-            case 'searchlight'
-                cfg.searchlight = aas_getsetting(aap,'searchlight');
-            case 'network'
-                cfg.analysis = 'roi';
-                netspec = aas_getsetting(aap,'network.networkrois');
-                if ~isempty(netspec) % single-volume multi-label roi expected
-                    aas_log(aap,false,'INFO: recoding rois for networks')
-                    V = spm_vol(cfg.files.mask{1});
-                    Y = spm_read_vols(V);
-                    M = zeros(size(Y));
-                    for net = 1:numel(netspec)
-                        m = false(size(Y));
-                        for r = reshape(netspec{net},1,[])
-                            m = m | (Y == r);
-                        end
-                        M = M + net*m;
-                    end
-                end
-                spm_write_vol(V,M);
-        end
- 
         cfg.results.dir = fullfile(aas_getsubjpath(aap,subj), 'decoding');
         cfg.results.output = strsplit(aas_getsetting(aap,'measure'),':');
         cfg.results.overwrite = 1;
@@ -294,12 +307,49 @@ switch task
         
         % original multiclass
         if aas_stream_has_contents(aap,'subject',subj,'firstlevel_betas')
+            aas_log(aap,false,'INFO: VV decoding');
             cfg = decoding_describe_data(cfg,labelnames,1:length(labelnames),regressor_names,dirSPM);
-        elseif aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
-            cfg = decoding_describe_data_roi(cfg,labelnames,1:length(labelnames),regressor_names,dirSPM);
-        elseif aas_stream_has_contents(aap,'subject',subj,'connectivity') % connectivity        
-            cfg = decoding_describe_data_connectivity(cfg,labelnames,1:length(labelnames), aap, subj);
+        else
+            if aas_stream_has_contents(aap,'subject',subj,'roidata_firstlevel_betas') % roi
+                cfgROI = decoding_describe_data_roi(cfg,labelnamesROI,1:length(labelnamesROI),regressor_names,dirSPM);
+            end
+            if aas_stream_has_contents(aap,'subject',subj,'connectivity') % connectivity
+                cfgConnectivity = decoding_describe_data_connectivity(cfg,labelnamesConnectivity,1:length(labelnamesConnectivity), aap, subj);
+            end
+            if exist('cfgROI','var') && exist('cfgConnectivity','var') % connectivity + roi
+                aas_log(aap,false,'INFO: joint decoding - ROI + Connectivity');
+                labelnames = aas_getsetting(aap,'itemList');
+                [~,indROI,indConnectivity] = intersect(ValidROI.ROIval,validROIs);
+                load(fnMaskROI,'rois');
+                maskROIs = rois(indROI);
+                load(fnMaskConnectivity,'rois');
+                maskConnectivity = rois(indConnectivity,indConnectivity);
+                rois = [maskROIs; maskConnectivity];
+                fnMask = fullfile(aas_getsubjpath(aap,subj),'rois.mat');
+                save(fnMask,'rois');
+                for f = 1:numel(cfgROI.files.name)
+                    load(cfgROI.files.name{f},'beta');
+                    load(cfgConnectivity.files.name{f},'sessionCM');
+                    beta = [beta(indROI); sessionCM(indConnectivity,indConnectivity)];
+                    save(cfgROI.files.name{f},'beta');
+                end
+                cfg = cfgROI;
+                cfg.files.mask = fnMask;
+                labelnames = labelnamesROI;
+            elseif exist('cfgROI','var')
+                aas_log(aap,false,'INFO: ROI decoding');
+                cfg = cfgROI;
+                cfg.files.mask = fnMaskROI;
+                labelnames = labelnamesROI;
+            elseif exist('cfgConnectivity','var')
+                aas_log(aap,false,'INFO: Connectivity decoding');
+                cfg = cfgConnectivity;
+                cfg.files.mask = fnMaskConnectivity;
+                labelnames = labelnamesConnectivity;
+            end
         end
+        aap = aas_desc_outputs(aap,'subject',subj,'samples',cfg.files.name);
+        cfg0.files.mask = cfg.files.mask;
 
         cfg.design = make_design_cv(cfg);
         decoding(cfg);
@@ -377,7 +427,7 @@ switch task
             if dopairwise, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','output'); end
             if doonevsall, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','output'); end
             
-            out = aas_getstreams(aap,'output'); out = setdiff(out,{'settings' 'settings_pairwise' 'mask'});
+            out = aas_getstreams(aap,'output'); out = setdiff(out,{'settings' 'settings_pairwise' 'samples' 'mask'});
             meas = aas_getsetting(aap,'measure'); meas = strsplit(meas,':');
             if isempty(meas{1}), aas_log(aap,true,'no measure specified'); end
             for s = 1:numel(meas)
@@ -443,4 +493,12 @@ for sess = aap.acq_details.selected_sessions
         cfg.files.descr = vertcat(cfg.files.descr,spm_file(fns(l),'basename'));
     end
 end
+
+% reorder to match with the others (labels -> chunks)
+[~,ind] = sortrows([cfg.files.label cfg.files.chunk]);
+cfg.files.name = cfg.files.name(ind);
+cfg.files.chunk = cfg.files.chunk(ind);
+cfg.files.label = cfg.files.label(ind);
+cfg.files.labelname = cfg.files.labelname(ind);
+cfg.files.descr = cfg.files.descr(ind);
 end
