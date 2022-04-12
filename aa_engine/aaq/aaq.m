@@ -220,11 +220,13 @@ classdef aaq < handle
                     if strlength(obj.initialSubmitArguments) > 0 && ~startsWith(obj.initialSubmitArguments,' ')
                         obj.initialSubmitArguments = " " + obj.initialSubmitArguments; 
                     end
-                    obj.pool.SubmitArguments = compose("--mem=%dG --time=%d", mem, walltime*60);
+                    obj.pool.SubmitArguments = '';
+                    resourceTemplate = string(regexp(obj.pool.ResourceTemplate,'.*(?<=--mem-per-cpu=)','match'));
+                    resourceTemplate = compose(resourceTemplate + "%dG --time=%d", mem, walltime*60);
                     if isMaxFiltInTasklist && isNeuromagSpec
                         obj.initialSubmitArguments = obj.initialSubmitArguments + " --constraint=maxfilter";
                     end
-                    obj.pool.SubmitArguments = convertStringsToChars(string(obj.pool.SubmitArguments) +...
+                    obj.pool.ResourceTemplate = convertStringsToChars(string(resourceTemplate) +...
                         obj.initialSubmitArguments);
                     if doSetNumWorkers
                         aaparallel.numberofworkers = 1;
