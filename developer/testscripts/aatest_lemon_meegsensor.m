@@ -9,7 +9,7 @@ function aatest_lemon_meeg(parameterfile, deleteprevious, wheretoprocess)
 
 aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 
-SUBJS = [ 32301 32302 32303 32304 ];
+SUBJS = [ 32301 32302 32303 ];
 
 %% RECIPE
 EL = aas_inittoolbox(aap,'eeglab');
