@@ -46,11 +46,13 @@ switch task
         flags = aap.spm.defaults.coreg;
         % update flags
         flags.write.which = [1 0]; % do not (re)write target and mean
+        flags.write = repmat(flags.write,1,numel(aas_getstreams(aap,'output')));
+        
         if isfield(aap.tasklist.currenttask.settings,'eoptions')
             fields = fieldnames(aap.tasklist.currenttask.settings.eoptions);
             for f = 1:numel(fields)
                 if ~isempty(aap.tasklist.currenttask.settings.eoptions.(fields{f}))
-                    flags.estimate.(fields{f}) = aap.tasklist.currenttask.settings.eoptions.(fields{f});
+                    flags.estimate.(fields{f}) = aas_getsetting(aap,['eoptions.' fields{f}]);
                 end
             end
         end
@@ -58,7 +60,9 @@ switch task
             fields = fieldnames(aap.tasklist.currenttask.settings.roptions);
             for f = 1:numel(fields)
                 if ~isempty(aap.tasklist.currenttask.settings.roptions.(fields{f}))
-                    flags.write.(fields{f}) = aap.tasklist.currenttask.settings.roptions.(fields{f});
+                    for i = 1:numel(aas_getstreams(aap,'output'))
+                        flags.write(i).(fields{f}) = aas_getsetting(aap,['roptions.' fields{f}],i);
+                    end
                 end
             end
         end
@@ -128,10 +132,13 @@ switch task
         end
         
         %% Reslice:
-        if aas_getsetting(aap,'doReslice')
-            spm_reslice(strvcat(targetimfn,sourceimfn,otherimfn),flags.write);
-        else
-            flags.write.prefix = ''; % same file
+        imfnToResolice = strvcat(sourceimfn,otherimfn);
+        for e = 1:size(imfnToResolice,1)
+            if aas_getsetting(aap,'doReslice')
+                spm_reslice(strvcat(targetimfn,deblank(imfnToResolice(e,:))),flags.write(e));
+            else
+                flags.write(e).prefix = ''; % same file
+            end
         end
         
         %% Describe the outputs and Diagnostics 
@@ -148,7 +155,7 @@ switch task
             otherimfn = aas_getfiles_bystream(aap,domain,cell2mat(varargin),outpstream{s});
             otherimfn2 = '';
             for e = 1:size(otherimfn,1)
-                fpath = spm_file(otherimfn(e,:),'prefix',flags.write.prefix);
+                fpath = spm_file(otherimfn(e,:),'prefix',flags.write(s).prefix);
 
                 % binarise if specified
                 if isfield(aap.tasklist.currenttask.settings,'PVE') && ~isempty(aap.tasklist.currenttask.settings.PVE)

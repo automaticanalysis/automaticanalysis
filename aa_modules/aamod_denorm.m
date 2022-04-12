@@ -98,6 +98,9 @@ switch task
             flags.which = [1 0];
             
             % Reslice
+            if ~aas_getsetting(aap,'decoregextended')
+                regstreams = regstreams(1);
+            end
             imreslice = {aas_getfiles_bystream_multilevel(aap,domain,cell2mat(varargin),regstreams{end})};
             for r = 1:numel(out.files)
                 imreslice{r+1} = spm_file(out.files{r},'path',aas_getpath_bydomain(aap,domain,cell2mat(varargin)));

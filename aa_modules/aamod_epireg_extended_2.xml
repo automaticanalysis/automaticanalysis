@@ -12,6 +12,7 @@
             
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
+                <stream isessential='0'>epitotarget_xfm</stream>
                 <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>
                 <stream isessential='0'>native_white</stream>
                 <stream isessential='0'>wholebrain_epi</stream>
@@ -20,6 +21,7 @@
             </inputstreams>
             
             <outputstreams>
+                <stream>epitotarget_xfm</stream>                
                 <stream isrenameable='1'>epi</stream>
             </outputstreams>
             

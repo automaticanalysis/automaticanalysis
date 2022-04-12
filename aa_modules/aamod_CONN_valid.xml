@@ -8,9 +8,12 @@
                 <memoryBase desc='Required memory in GB'>1</memoryBase>
             </qsub>
             
+            <useValidROI desc='Use ROI validation (output from aamod_roi_valid_*)' ui='yesno'>0</useValidROI>
+            
             <inputstreams>
                 <stream>settings</stream>
                 <stream>connectivity</stream>
+                <stream isessential='0' isrenameable='1'>valid_roi_epi</stream>
             </inputstreams>
             
             <outputstreams>

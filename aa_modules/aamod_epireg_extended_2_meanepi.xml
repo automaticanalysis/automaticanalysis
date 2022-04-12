@@ -10,12 +10,9 @@
             
             <permanenceofoutput>2</permanenceofoutput>
             
-            <eoptions>
-                <cost_fun>nmi</cost_fun>
-            </eoptions>
-            
             <inputstreams>
                 <stream>t1totemplate_xfm</stream>
+                <stream isessential='0'>epitotarget_xfm</stream>
                 <stream diagnostic='1'>aamod_coreg_extended_1_00001.structural</stream>
                 <stream isessential='0'>native_white</stream>
                 <stream isessential='0'>wholebrain_epi</stream>                
@@ -24,6 +21,7 @@
             
             <outputstreams>
                 <stream>meanepi</stream>
+                <stream>epitotarget_xfm</stream>                
             </outputstreams>
         </currenttask>
     </tasklist>

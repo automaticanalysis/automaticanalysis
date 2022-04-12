@@ -277,7 +277,6 @@ switch task
                 % create rois
                 validROIs = readtable(aas_getfiles_bystream(aap,'study',[],'ROInames'),'ReadVariableNames',false);
                 validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), validROIs.Var1);
-
                 fnCM = cellstr(aas_getfiles_bystream(aap,'subject',subj,'connectivity'));
                 hdr = read_header_matlab(fnCM{1});
                 dat = read_image_matlab(hdr);

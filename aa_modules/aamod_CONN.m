@@ -98,7 +98,7 @@ switch task
         nROIs = numel(CONN_x.Setup.rois.names)-1;
         CONN_x.Setup.rois.dimensions = repmat({1},1,nROIs);
         [~, indTissue] = intersect(CONN_x.Setup.rois.names,{'WM' 'CSF'});
-        CONN_x.Setup.rois.dimensions(indTissue) = {16};
+        CONN_x.Setup.rois.dimensions(indTissue) = {1};
         CONN_x.Setup.rois.mask = false(1,nROIs);
         CONN_x.Setup.rois.subjectspecific = true(1,nROIs);
         CONN_x.Setup.rois.sessionspecific = true(1,nROIs);

@@ -25,7 +25,14 @@ switch task
 %             aap = aas_report_add(aap,subj,'</td></tr></table>');
 %         end
     case 'doit'
-        % find common ROI names and indices
+        % ROI validation - if requested and available
+        inp = aas_getstreams(aap,'input');
+        useValidROIs = aas_getsetting(aap,'useValidROI');
+        if ~isempty(useValidROIs) && useValidROIs && (numel(inp) >= 3) && aas_stream_has_contents(aap,'study',[],inp{3})
+            load(aas_getfiles_bystream(aap,'study',[],inp{3}),'ValidROI');
+        end
+        
+        % find common ROI names
         ROIs = cell(1,aas_getN_bydomain(aap,'subject'));
         for subj = 1:aas_getN_bydomain(aap,'subject')
             load(aas_getfiles_bystream(aap,'subject',subj,'settings'),'CONN_x');
@@ -36,6 +43,15 @@ switch task
                 commonROIs = intersect(commonROIs,ROIs{subj});
             end
         end
+                
+        % ROI validation
+        if exist('ValidROI','var')
+            validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), commonROIs);
+            [~,~,indConnectivity] = intersect(ValidROI.ROIval,validROIs);
+            commonROIs = commonROIs(indConnectivity);
+        end
+        
+        % determine final indices
         indROIs = cell(1,aas_getN_bydomain(aap,'subject'));
         for subj = 1:aas_getN_bydomain(aap,'subject')
             [~, indROIs{subj}] = intersect(ROIs{subj},commonROIs);
