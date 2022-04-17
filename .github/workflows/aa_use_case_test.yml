@@ -31,7 +31,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -109,7 +109,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -187,7 +187,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -265,7 +265,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -345,7 +345,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -426,7 +426,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -502,7 +502,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -548,8 +548,6 @@ jobs:
           aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032302/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032302/ses-01/anat --quiet --recursive --no-sign-request
           aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032303 $HOME/data/aa_demo/LEMON_EEG/sub-032303 --quiet --recursive --no-sign-request
           aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032303/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032303/ses-01/anat --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032304 $HOME/data/aa_demo/LEMON_EEG/sub-032304 --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032304/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032304/ses-01/anat --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -585,7 +583,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 50176
+          root-reserve-mb: 48128
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'

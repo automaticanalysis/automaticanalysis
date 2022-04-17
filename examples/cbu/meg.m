@@ -13,7 +13,7 @@ clear;
 aa_ver5
 
 %% RECIPE:
-aap = aarecipe('aap_tasklist_meg.xml');
+aap = aarecipe('meg.xml');
 SPM = aas_inittoolbox(aap,'spm');
 SPM.load;
 

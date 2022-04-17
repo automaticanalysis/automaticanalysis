@@ -12,7 +12,7 @@ clear
 aa_ver5
 
 %% LOAD TASKLIST
-aap = aarecipe('bids_ds000114_tasklist.xml');
+aap = aarecipe('ds000114.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'batch'; % queuing system			% typical value batch | localsingle

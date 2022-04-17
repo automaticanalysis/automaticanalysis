@@ -16,7 +16,7 @@ clear
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-aap=aarecipe('aap_tasklist_freesurfer.xml');
+aap=aarecipe('freesurfer.xml');
 
 % Modify standard recipe module selection here if you'd like
 aap.options.wheretoprocess = 'qsub';
