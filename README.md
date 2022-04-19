@@ -1,7 +1,6 @@
-Automatic Analysis (_aa_) software was originally developed by Dr Rhodri Cusack
-for supporting research at the MRC Cognition and Brain Science Unit. It
-is made available to the academic community in the hope that it may
-prove useful.
+Automatic Analysis (_aa_) is a pipeline system for neuroimaging written primarily in Matlab. It supports SPM 12, as well as selected functions from other software packages  (e.g., FSL, Freesurfer). The goal is to facilitate automatic, flexible, and  replicable neuroimaging analyses through a comprehensive pipeline system.
+
+The software was originally developed by Dr Rhodri Cusack for supporting research at the MRC Cognition and Brain Science Unit. It is made available to the academic community in the hope that it may prove useful.
 
 ![CI](https://github.com/automaticanalysis/automaticanalysis/actions/workflows/aa_use_case_test.yml/badge.svg?event=push)
 [![Docker image available!](https://img.shields.io/badge/docker-bids%2Faa-brightgreen.svg?logo=docker&style=flat)](https://hub.docker.com/r/bids/aa/)
@@ -9,38 +8,21 @@ prove useful.
 [![resource](https://img.shields.io/badge/RRID-SCR__003560-blue?style=flat)](https://scicrunch.org/scicrunch/Resources/record/nlx_144509-1/SCR_003560/resolver)
 [![DOI](https://zenodo.org/badge/3820833.svg)](https://zenodo.org/badge/latestdoi/3820833)
 
-Definitions: _aa_ means the Automatic Analysis software package and any
-associated documentation whether electronic or printed.
+Definitions: _aa_ means the Automatic Analysis software package and any associated documentation whether electronic or printed.
 
 # License
 
-Use of this software is subject to the terms of the license, found in
-the license.txt file distributed with this software.
+Use of this software is subject to the terms of the license, found in the license.txt file distributed with this software.
 
-# Update #
+# Documentation #
 
-Please, be aware that this README is not updated anymore; therefore, some information might be outdated and the links might be broken.
+The best source for aa documentation is the github wiki at: https://github.com/automaticanalysis/automaticanalysis/wiki
 
-The new website at http://automaticanalysis.github.io is now live and should be the primary point of reference.
-
-Please, consult with this README only when you do not find the desired information at http://automaticanalysis.github.io.
-
-# About
-
-aa is a pipeline system for neuroimaging written primarily in Matlab. It
-supports SPM 12, as well as selected functions from other software packages 
-(e.g., FSL, Freesurfer). The goal is to facilitate automatic, flexible, and 
-replicable neuroimaging analyses through a comprehensive pipeline system.
-
-More information can be found on the [_aa_ website](http://automaticanalysis.github.io).
+A second website at http://automaticanalysis.github.io provides recent aa news and current events, as well as discussion of topics that might be of interest to aa developers.
 
 # Help and support
 
 Please feel free to open a discusion thread or an issue here on GitHub if you want to make comment or suggestions or are having trouble getting _aa_ to work.
-
-There is also a discussion list:
-
-https://groups.google.com/d/forum/automaticanalysis
 
 # Software updates
 
