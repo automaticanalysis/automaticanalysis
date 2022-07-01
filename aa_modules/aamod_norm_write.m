@@ -104,7 +104,7 @@ switch task
             for c=1:size(P,1)
                 thisfile = spm_file(P(c,:),'prefix',flags.prefix);
                 if exist(thisfile,'file')
-                    aas_shell(['rm ' thisfile]);
+                    delete(thisfile);
                 end
             end
             
