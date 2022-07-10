@@ -1,6 +1,8 @@
 function [aap, resp] = aamod_meeg_crossfrequencyanalysis(aap,task,subj)
 resp='';
 
+EST = aas_getstreams(aap,'output'); 
+
 switch task
     case 'report'
 %         channels = aas_getsetting(aap,'crossfrequencyanalysis.chanphase'); if isempty(channels), channels = {}; end
@@ -51,6 +53,12 @@ switch task
         tfacfg.foi = [cfa.foiphase cfa.foiamp];
         tfacfg.t_ftimwin = aas_getsetting(aap,'timefrequencyanalysis.twoicps')./tfacfg.foi;
         
+        % band-average
+        bndcfg0 = [];
+        bndcfg0.parameter = {'fourierspctrm'};
+        bndcfg0.bandspec = aas_getsetting(aap,'bandspecification');
+        if isempty(bndcfg0.bandspec.band), EST = setdiff(EST,{'connband'},'stable'); end
+        
         combinecfg = [];
         combinecfg.parameter = 'crsspctrm';
         combinecfg.normalise = 'no';
@@ -64,7 +72,7 @@ switch task
         
         for m = models(subjmatches).model
             
-            conSessions = cell(1,numel(m.session.names));
+            conSessions = cell(numel(EST),numel(m.session.names));
             
             % process sessions
             includedsessionnumbers = cellfun(@(x) find(strcmp({aap.acq_details.meeg_sessions.name},x)),m.session.names);
@@ -144,156 +152,206 @@ switch task
                 events = cellfun(@(x) strsplit(x,'-'), kvs,'UniformOutput',false);
                 conEvents = cell(1,numel(m.event.names));
                 
-                for e = 1:numel(m.event.names)
-                    eventLabel = m.event.names{e};
-                    trialinfo = str2double(events{cellfun(@(x) strcmp(x{1},eventLabel), events)}{2});
-                    aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
-                    
-                    % main 
-                    cf = {}; weights = [];
-                    for i = 1:numel(data)
-                        cfg = tfacfg;
-                        cfg.trials = find(data(i).trialinfo==trialinfo);
-                        if isempty(cfg.trials), continue; end
-                        tf = ft_freqanalysis(cfg, data(i));
-                        tf.dimord = strrep(tf.dimord,'rpttap','rpt'); % ft_selectdata does not recognise rpttap
-                        cfacfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqlow);
-                        cfacfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqhigh);
-                        tmpcf = ft_crossfrequencyanalysis(cfacfg,tf);
-                        indnoCF = arrayfun(@(x) all(~nanfill(squeeze(tmpcf.crsspctrm(x,:,:,:)),0),'all'),1:size(tmpcf.labelcmb,1));
-                        tmpcf.crsspctrm(indnoCF,:,:,:) = [];
-                        if isfield(tmpcf,'labelcmb'), tmpcf.labelcmb(indnoCF,:) = [];
-                        else, tmpcf.label(indnoCF,:) = []; end
-                        cf{end+1} = tmpcf;
-                        cf{end}.elec = tf.elec;
-                        if aas_getsetting(aap,'weightedaveraging')
-                            weights(end+1) = numel(cfg.trials);
-                        else
-                            weights(end+1) = 1;
-                        end
+                for indEst = 1:numel(EST)
+                    switch EST{indEst}
+                        case 'crossfreq'
+                            bndcfg = [];
+                        case 'crossband'
+                            bndcfg = bndcfg0;
                     end
-                    if isempty(cf), continue; end
                     
-                    % combine
-                    cfg = combinecfg; 
-                    cfg.normalise = 'yes';
-                    cfg.weights = weights;
-                    crossfreqMain = ft_combine(cfg,cf{:});
-                    
-%                     meeg_diagnostics_conn(crossfreqMain,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
-                    
-                    % trialmodel
-                    crossfreqModel = crossfreqMain;
-                    if ischar(m.samplevector)
-                        switch m.samplevector
-                            case 'avg' % average - it is done
-                            % do nothing
-                            case 'segmentavg'
-                                crossfreqModel.dimord    = [crossfreqModel.dimord '_time'];
-                                if isfield(data(1),'ureventinfo')
-                                    crossfreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
-                                else
-                                    aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
-                                end
-                                dat = cellfun(@(x) x.crsspctrm, cf, 'UniformOutput', false);
-                                crossfreqModel.crsspctrm = cat(ndims(dat{1})+1,dat{:});
+                    for e = 1:numel(m.event.names)
+                        eventLabel = m.event.names{e};
+                        trialinfo = str2double(events{cellfun(@(x) strcmp(x{1},eventLabel), events)}{2});
+                        aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
+                        
+                        if ~isempty(bndcfg)
+                            % ipf - filenames MUST contain eventLabel distiguishably
+                            ipf = [];
+                            if aas_stream_has_contents(aap,'subject',subj,'ipf')
+                                fnIPF = cellstr(aas_getfiles_bystream(aap,'subject',subj,'ipf'));
+                                load(fnIPF{contains(spm_file(fnIPF,'basename'),eventLabel)},'ipf');
+                            end
+                            bndcfg.ipf = ipf;
                         end
-                    else
-                        clear cf
+                        
+                        % main
+                        cf = {}; weights = [];
                         for i = 1:numel(data)
                             cfg = tfacfg;
                             cfg.trials = find(data(i).trialinfo==trialinfo);
+                            if isempty(cfg.trials), continue; end
                             tf = ft_freqanalysis(cfg, data(i));
                             tf.dimord = strrep(tf.dimord,'rpttap','rpt'); % ft_selectdata does not recognise rpttap
-                            cfg = cfacfg;
-                            cfg.keeptrials = 'yes';
-                            cfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqlow);
-                            cfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqhigh);
-                            tmpcf = ft_crossfrequencyanalysis(cfg,tf);                                                    
+                            cfacfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqlow);
+                            cfacfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfacfg.freqhigh);
+                            
+                            if ~isempty(bndcfg)
+                                tf = ft_average_bands(bndcfg,bndcfg.ipf,tf);
+                                bandspec = tf.bandspec;
+                                freq = cellfun(@mean, bandspec.bandbound)';
+                                tf = rmfield(tf,intersect(fieldnames(tf),{'band','bandspec'}));
+                                tf.freq = freq;
+                                tf.dimord = strrep(tf.dimord,'band','freq');
+                                tmpcf = ft_crossfrequencyanalysis(cfacfg,tf);
+                                tmpcf.bandlow = bandspec.band(cfacfg.freqlow(1) <= freq & cfacfg.freqlow(2) >= freq);
+                                tmpcf.bandhigh = bandspec.band(cfacfg.freqhigh(1) <= freq & cfacfg.freqhigh(2) >= freq);
+                                tmpcf = rmfield(tmpcf,{'freqlow' 'freqhigh'});
+                                tmpcf.dimord = strrep(tmpcf.dimord,'freq','band');
+                                tmpcf.bandspec = bandspec;
+                            else
+                                tmpcf = ft_crossfrequencyanalysis(cfacfg,tf);
+                            end                           
+                            
                             indnoCF = arrayfun(@(x) all(~nanfill(squeeze(tmpcf.crsspctrm(x,:,:,:)),0),'all'),1:size(tmpcf.labelcmb,1));
-                            tmpcf.crsspctrm(indnoCF,:,:,:,:) = [];
+                            tmpcf.crsspctrm(indnoCF,:,:,:) = [];
                             if isfield(tmpcf,'labelcmb'), tmpcf.labelcmb(indnoCF,:) = [];
                             else, tmpcf.label(indnoCF,:) = []; end
-                            tmpcf.elec = tf.elec;
-                            
-                            X = m.samplevector(data(i).sampleinfo(:,1)); X = X - mean(X); X = X / (max(X)-min(X));
-                            X = [X ones(size(X,1),1)];
-                            for ch = 1:size(tmptfr.crsspctrm,2)
-                                for f1 = 1:size(tmptfr.crsspctrm,3)
-                                    for f2 = 1:size(tmptfr.crsspctrm,4)
-                                        for ph = 1:size(tmptfr.crsspctrm,5)
-                                            b = X\tmptfr.crsspctrm(:,ch,f1,f2,ph);
-                                            resavg(ch,f1,f2,ph) = b(1);
-                                            resvar(ch,f1,f2,ph) = var(X*b - tmptfr.powspctrm(:,ch,f1,f2));
-                                            resdof(ch,f1,f2,ph) = size(tmptfr.powspctrm,1) - size(X,2);
-                                        end
-                                    end
-                                end
+                            cf{end+1} = tmpcf;
+                            cf{end}.elec = tf.elec;
+                            if aas_getsetting(aap,'weightedaveraging')
+                                weights(end+1) = numel(cfg.trials);
+                            else
+                                weights(end+1) = 1;
                             end
-                            cf{i} = crossfreqModel;
-                            cf{i}.powspctrm = resavg;
-                            cf{i}.var = resvar;
-                            cf{i}.dof = resdof;
                         end
+                        if isempty(cf), continue; end
                         
                         % combine
                         cfg = combinecfg;
                         cfg.normalise = 'yes';
                         cfg.weights = weights;
-                        crossfreqModel = ft_combine(cfg,cf{:});
+                        crossfreqMain = ft_combine(cfg,cf{:});
+                        
+                        %                     meeg_diagnostics_conn(crossfreqMain,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
+                        
+                        % trialmodel
+                        crossfreqModel = crossfreqMain;
+                        if ischar(m.samplevector)
+                            switch m.samplevector
+                                case 'avg' % average - it is done
+                                    % do nothing
+                                case 'segmentavg'
+                                    crossfreqModel.dimord    = [crossfreqModel.dimord '_time'];
+                                    if isfield(data(1),'ureventinfo')
+                                        crossfreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
+                                    else
+                                        aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
+                                    end
+                                    dat = cellfun(@(x) x.crsspctrm, cf, 'UniformOutput', false);
+                                    crossfreqModel.crsspctrm = cat(ndims(dat{1})+1,dat{:});
+                            end
+                        else
+                            clear cf
+                            for i = 1:numel(data)
+                                cfg = tfacfg;
+                                cfg.trials = find(data(i).trialinfo==trialinfo);
+                                tf = ft_freqanalysis(cfg, data(i));
+                                tf.dimord = strrep(tf.dimord,'rpttap','rpt'); % ft_selectdata does not recognise rpttap
+                                cfg = cfacfg;
+                                cfg.keeptrials = 'yes';
+                                cfg.freqlow = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqlow);
+                                cfg.freqhigh = arrayfun(@(x) tf.freq(abs(tf.freq-x)==min(abs(tf.freq-x))),cfg.freqhigh);
+                                
+                                if ~isempty(bndcfg)
+                                    tf = ft_average_bands(bndcfg,bndcfg.ipf,tf);
+                                    bandspec = tf.bandspec;
+                                    freq = cellfun(@mean, bandspec.bandbound)';
+                                    tf = rmfield(tf,intersect(fieldnames(tf),{'band','bandspec'}));
+                                    tf.freq = freq;
+                                    tf.dimord = strrep(tf.dimord,'band','freq');
+                                    tmpcf = ft_crossfrequencyanalysis(cfg,tf);
+                                else
+                                    tmpcf = ft_crossfrequencyanalysis(cfg,tf);
+                                end
+                                
+                                indnoCF = arrayfun(@(x) all(~nanfill(squeeze(tmpcf.crsspctrm(x,:,:,:)),0),'all'),1:size(tmpcf.labelcmb,1));
+                                tmpcf.crsspctrm(indnoCF,:,:,:,:) = [];
+                                if isfield(tmpcf,'labelcmb'), tmpcf.labelcmb(indnoCF,:) = [];
+                                else, tmpcf.label(indnoCF,:) = []; end
+                                tmpcf.elec = tf.elec;
+                                
+                                X = m.samplevector(data(i).sampleinfo(:,1)); X = X - mean(X); X = X / (max(X)-min(X));
+                                X = [X ones(size(X,1),1)];
+                                for ch = 1:size(tmpcf.crsspctrm,2)
+                                    for f1 = 1:size(tmpcf.crsspctrm,3)
+                                        for f2 = 1:size(tmpcf.crsspctrm,4)
+                                            for ph = 1:size(tmpcf.crsspctrm,5)
+                                                b = X\tmpcf.crsspctrm(:,ch,f1,f2,ph);
+                                                resavg(ch,f1,f2,ph) = b(1);
+                                                resvar(ch,f1,f2,ph) = var(X*b - tmpcf.powspctrm(:,ch,f1,f2));
+                                                resdof(ch,f1,f2,ph) = size(tmpcf.powspctrm,1) - size(X,2);
+                                            end
+                                        end
+                                    end
+                                end
+                                cf{i} = crossfreqModel;
+                                cf{i}.powspctrm = resavg;
+                                cf{i}.var = resvar;
+                                cf{i}.dof = resdof;
+                            end
+                            
+                            % combine
+                            cfg = combinecfg;
+                            cfg.normalise = 'yes';
+                            cfg.weights = weights;
+                            crossfreqModel = ft_combine(cfg,cf{:});
+                        end
+                        
+                        %                     meeg_diagnostics_conn(crossfreqModel,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+                        
+                        conEvents{e} = crossfreqModel;
+                        crossfreq.(eventLabel).main = crossfreqMain;
+                        crossfreq.(eventLabel).model = crossfreqModel;
                     end
-                          
-%                     meeg_diagnostics_conn(crossfreqModel,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
-
-                    conEvents{e} = crossfreqModel;
-                    crossfreq.(eventLabel).main = crossfreqMain;
-                    crossfreq.(eventLabel).model = crossfreqModel;
+                    if any(cellfun(@(x) isempty(x), conEvents)), continue; end
+                    
+                    % contarst events
+                    cfg = combinecfg;
+                    cfg.weights = m.event.weights;
+                    if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
+                    crossfreq = ft_combine(cfg,conEvents{:});
+                    %                 meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
+                    
+                    % save/update output
+                    crossfreqFn = fullfile(aas_getsesspath(aap,subj,sess),[EST{indEst} '_' m.name '.mat']);
+                    save(crossfreqFn,'crossfreq');
+                    
+                    % append to stream
+                    outputFn = {};
+                    outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],EST{indEst});
+                    if exist(outstreamFn,'file')
+                        outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],EST{indEst},'output'));
+                    end
+                    outputFn{end+1} = crossfreqFn;
+                    aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],EST{indEst},outputFn);
+                    
+                    conSessions{indEst, sess} = crossfreq;
                 end
-                if any(cellfun(@(x) isempty(x), conEvents)), continue; end
+            end
+            if any(cellfun(@(x) isempty(x), conSessions)), continue; end
+            
+            for indEst = 1:numel(EST)
+                % contrast sessions
+                cfg = combinecfg;
+                cfg.weights = m.session.weights;
+                crossfreq = ft_combine(cfg,conSessions{indEst,:});
+                %             meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
                 
-                % contarst events
-                cfg = combinecfg; 
-                cfg.weights = m.event.weights;
-                if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
-                crossfreq = ft_combine(cfg,conEvents{:});
-%                 meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
-              
                 % save/update output
-                crossfreqFn = fullfile(aas_getsesspath(aap,subj,sess),['crossfreq_' m.name '.mat']);
+                crossfreq.cfg = []; % remove provenance to save space
+                crossfreqFn = fullfile(aas_getsubjpath(aap,subj),[EST{indEst} '_' m.name '.mat']);
                 save(crossfreqFn,'crossfreq');
                 
                 % append to stream
                 outputFn = {};
-                outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],'crossfreq');
+                outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,EST{indEst});
                 if exist(outstreamFn,'file')
-                    outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],'crossfreq','output'));
+                    outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,EST{indEst},'output'));
                 end
                 outputFn{end+1} = crossfreqFn;
-                aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],'crossfreq',outputFn);
-                
-                conSessions{sess} = crossfreq;
-            end            
-            if any(cellfun(@(x) isempty(x), conSessions)), continue; end
-            
-            % contrast sessions
-            cfg = combinecfg; 
-            cfg.weights = m.session.weights;
-            crossfreq = ft_combine(cfg,conSessions{:});
-%             meeg_diagnostics_conn(crossfreq,diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
-           
-            % save/update output
-            crossfreq.cfg = []; % remove provenance to save space
-            crossfreqFn = fullfile(aas_getsubjpath(aap,subj),['crossfreq_' m.name '.mat']);
-            save(crossfreqFn,'crossfreq');
-            
-            % append to stream
-            outputFn = {};
-            outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'crossfreq');
-            if exist(outstreamFn,'file')
-                outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'crossfreq','output'));
+                aap = aas_desc_outputs(aap,'subject',subj,EST{indEst},outputFn);
             end
-            outputFn{end+1} = crossfreqFn;
-            aap = aas_desc_outputs(aap,'subject',subj,'crossfreq',outputFn);
         end
         
         FT.rmExternal('spm12');

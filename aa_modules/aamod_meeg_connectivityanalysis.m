@@ -11,39 +11,41 @@ METHOD_MVAR = struct(...
     'NSparcorr_biased',7,...
     'ARFIT',10,...
     'BURGV',11 ...
-);
+    );
+
+EST = aas_getstreams(aap,'output');
 
 switch task
     case 'report'
-%         channels = aas_getsetting(aap,'crossfrequencyanalysis.chanphase'); if isempty(channels), channels = {}; end
-%         models = strrep(spm_file(cellstr(aas_getfiles_bystream(aap,'subject',subj,'crossfreq')),'basename'),'crossfreq_','')';
-%         aap = aas_report_add(aap,subj,'<table id="data"><tr>');
-%         aap = aas_report_add(aap,subj,'<th>Phase channel</th>');
-%         for m = models, aap = aas_report_add(aap,subj,['<th>Model: ' m{1} '</th>']); end
-%         aap = aas_report_add(aap,subj,'</tr>');
-% 
-%         for ch = channels
-%             aap = aas_report_add(aap,subj,'<tr>');
-%             aap = aas_report_add(aap,subj,['<td>' ch{1} '</td>']);
-%             for m = models
-%                 aap = aas_report_add(aap,subj,'<td>');
-%                 if isempty(ch{1})
-%                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_multiplot.jpg']);
-%                 else
-%                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' ch{1} '_multiplot.jpg']);
-%                 end
-%                 if exist(fnimg,'file'), aap=aas_report_addimage(aap,subj,fnimg); end
-%                 aap = aas_report_add(aap,subj,'</td>');
-%             end
-%             aap = aas_report_add(aap,subj,'</tr>');
-%         end
-% 
-%         aap = aas_report_add(aap,subj,'</table>');
+        %         channels = aas_getsetting(aap,'crossfrequencyanalysis.chanphase'); if isempty(channels), channels = {}; end
+        %         models = strrep(spm_file(cellstr(aas_getfiles_bystream(aap,'subject',subj,'crossfreq')),'basename'),'crossfreq_','')';
+        %         aap = aas_report_add(aap,subj,'<table id="data"><tr>');
+        %         aap = aas_report_add(aap,subj,'<th>Phase channel</th>');
+        %         for m = models, aap = aas_report_add(aap,subj,['<th>Model: ' m{1} '</th>']); end
+        %         aap = aas_report_add(aap,subj,'</tr>');
+        %
+        %         for ch = channels
+        %             aap = aas_report_add(aap,subj,'<tr>');
+        %             aap = aas_report_add(aap,subj,['<td>' ch{1} '</td>']);
+        %             for m = models
+        %                 aap = aas_report_add(aap,subj,'<td>');
+        %                 if isempty(ch{1})
+        %                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_multiplot.jpg']);
+        %                 else
+        %                     fnimg = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m{1} '_' ch{1} '_multiplot.jpg']);
+        %                 end
+        %                 if exist(fnimg,'file'), aap=aas_report_addimage(aap,subj,fnimg); end
+        %                 aap = aas_report_add(aap,subj,'</td>');
+        %             end
+        %             aap = aas_report_add(aap,subj,'</tr>');
+        %         end
+        %
+        %         aap = aas_report_add(aap,subj,'</table>');
     case 'doit'
         [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
         FT.addExternal('spm12');
-
+        
         mvarcfg = [];
         tfacfg = [];
         conncfg = [];
@@ -53,16 +55,16 @@ switch task
         % conncfg.keeptrials  = 'no';
         
         if ~isempty(conncfg.foi), tfacfg.foi = conncfg.foi; end
-        conncfg = rmfield(conncfg, 'foi');        
+        conncfg = rmfield(conncfg, 'foi');
         switch conncfg.method
-%                 mvarcfg = aas_getsetting(aap,'multivariateautoregressiveanalysis');
-%                 if METHOD_MVAR.(mvarcfg.method) == 0
-%                     mvarcfg.method = 'bsmart';
-%                 else
-%                     mvarcfg.mvarmethod = METHOD_MVAR.(mvarcfg.method);
-%                     mvarcfg.method = 'biosig';
-%                 end
-%                 tfacfg.method = 'mvar';
+            %                 mvarcfg = aas_getsetting(aap,'multivariateautoregressiveanalysis');
+            %                 if METHOD_MVAR.(mvarcfg.method) == 0
+            %                     mvarcfg.method = 'bsmart';
+            %                 else
+            %                     mvarcfg.mvarmethod = METHOD_MVAR.(mvarcfg.method);
+            %                     mvarcfg.method = 'biosig';
+            %                 end
+            %                 tfacfg.method = 'mvar';
             case {'granger' 'wpli_debiased'}
                 tfacfg.method = 'mtmfft';
                 tfacfg.taper  = 'dpss';
@@ -72,20 +74,26 @@ switch task
                 combinecfg.parameter = [conncfg.method 'spctrm'];
             otherwise
                 aas_log(aap,true,'NYI');
-        end               
+        end
+        
+        % band-average
+        bndcfg0 = [];
+        bndcfg0.parameter = {'fourierspctrm'};
+        bndcfg0.bandspec = aas_getsetting(aap,'bandspecification');
+        if isempty(bndcfg0.bandspec.band), EST = setdiff(EST,{'connband'},'stable'); end
         
         combinecfg.normalise = 'no';
         
         diagcfg = aas_getsetting(aap,'diagnostics');
         diagcfg.parameter = combinecfg.parameter;
-              
+        
         models = aas_getsetting(aap,'trialmodel');
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
         if ~any(subjmatches), aas_log(aap,true,['No trialmodel specification found for ' aas_getsubjdesc(aap,subj)]); end
         
         for m = models(subjmatches).model
             
-            conSessions = cell(1,numel(m.session.names));
+            conSessions = cell(numel(EST),numel(m.session.names));
             
             % process sessions
             includedsessionnumbers = cellfun(@(x) find(strcmp({aap.acq_details.meeg_sessions.name},x)),m.session.names);
@@ -97,7 +105,7 @@ switch task
                 switch spm_file(meegfn{1},'ext')
                     case 'mat'
                         filetype = 'fieldtrip';
-                    case 'set' 
+                    case 'set'
                         filetype = 'eeglab';
                         meegfn = meegfn(strcmp(spm_file(meegfn,'ext'),'set'));
                     otherwise
@@ -120,9 +128,9 @@ switch task
                             EEG = pop_loadset('filepath',spm_file(meegfn{seg},'path'),'filename',spm_file(meegfn{seg},'filename'));
                             if isempty(EEG.epoch)
                                 aas_log(aap,false,sprintf('WARNING: segment # %d has no trial --> skipped',seg));
-                                continue; 
+                                continue;
                             end
-                            FT.reload;                            
+                            FT.reload;
                             data(seg) = ft_struct2single(eeglab2fieldtripER(EEG,'reorient',1));
                             EL.unload; % FieldTrip's eeglab toolbox is incomplete
                     end
@@ -187,111 +195,132 @@ switch task
                 events = cellfun(@(x) strsplit(x,'-'), kvs,'UniformOutput',false);
                 conEvents = cell(1,numel(m.event.names));
                 
-                for e = 1:numel(m.event.names)
-                    eventLabel = m.event.names{e};
-                    trialinfo = str2double(events{cellfun(@(x) strcmp(x{1},eventLabel), events)}{2});
-                    aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
-                    
-                    conncfg.trials = trialinfo;
-                    
-                    % main 
-                    conn = {}; weights = [];
-                    for i = 1:numel(data)                        
-                        conn{end+1} = run_connectivity({mvarcfg,tfacfg,conncfg,combinecfg},data(i)); 
-
-                        if aas_getsetting(aap,'weightedaveraging')
-                            weights(end+1) = numel(trials);
-                        else
-                            weights(end+1) = 1;
-                        end
+                for indEst = 1:numel(EST)
+                    switch EST{indEst}
+                        case 'connfreq'
+                            bndcfg = [];
+                        case 'connband'
+                            bndcfg = bndcfg0;
                     end
-                    indNoConn = cellfun(@(c) isempty(c.(combinecfg.parameter)), conn);
-                    conn(indNoConn) = [];
-                    weights(indNoConn) = [];
                     
-                    if isempty(conn), continue; end
-                    
-                    % combine
-                    cfg = combinecfg; 
-                    cfg.normalise = 'yes';
-                    cfg.weights = weights;
-                    connfreqMain = ft_combine(cfg,conn{:});
-                    
-%                     meeg_diagnostics_conn({connfreqMain},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
-                    
-                    % trialmodel
-                    switch m.samplevector
-                        case 'avg' % average - all trials across segments
-                            % concatenate data
-                            dat = rmfield(data,{'ureventinfo'});
-                            dat = num2cell(dat);
-                            dat = ft_appenddata(struct('keepsampleinfo','no'),dat{:});
-                            
-                            connfreqModel = run_connectivity({mvarcfg,tfacfg,conncfg,combinecfg},dat); 
-                        case 'segmentavg'
-                            connfreqModel = connfreqMain;
-                            connfreqModel.dimord    = [connfreqModel.dimord '_time'];
-                            if isfield(data(1),'ureventinfo')
-                                connfreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
-                                connfreqModel.time(indNoConn) = [];
-                            else
-                                aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
+                    for e = 1:numel(m.event.names)
+                        eventLabel = m.event.names{e};
+                        trialinfo = str2double(events{cellfun(@(x) strcmp(x{1},eventLabel), events)}{2});
+                        aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
+                        
+                        if ~isempty(bndcfg)
+                            % ipf - filenames MUST contain eventLabel distiguishably
+                            ipf = [];
+                            if aas_stream_has_contents(aap,'subject',subj,'ipf')
+                                fnIPF = cellstr(aas_getfiles_bystream(aap,'subject',subj,'ipf'));
+                                load(fnIPF{contains(spm_file(fnIPF,'basename'),eventLabel)},'ipf');
                             end
-                            dat = cellfun(@(x) x.(combinecfg.parameter), conn, 'UniformOutput', false);
-                            connfreqModel.(combinecfg.parameter) = cat(ndims(dat{1})+1,dat{:});
+                            bndcfg.ipf = ipf;
+                        end
+                        
+                        conncfg.trials = trialinfo;
+                        
+                        % main
+                        conn = {}; weights = [];
+                        for i = 1:numel(data)
+                            conn{end+1} = run_connectivity({mvarcfg,tfacfg,conncfg,bndcfg,combinecfg},data(i));
+                            
+                            if aas_getsetting(aap,'weightedaveraging')
+                                weights(end+1) = numel(trials);
+                            else
+                                weights(end+1) = 1;
+                            end
+                        end
+                        indNoConn = cellfun(@(c) isempty(c.(combinecfg.parameter)), conn);
+                        conn(indNoConn) = [];
+                        weights(indNoConn) = [];
+                        
+                        if isempty(conn), continue; end
+                        
+                        % combine
+                        cfg = combinecfg;
+                        cfg.normalise = 'yes';
+                        cfg.weights = weights;
+                        connfreqMain = ft_combine(cfg,conn{:});
+                        
+                        %                     meeg_diagnostics_conn({connfreqMain},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' eventLabel]));
+                        
+                        % trialmodel
+                        switch m.samplevector
+                            case 'avg' % average - all trials across segments
+                                % concatenate data
+                                dat = rmfield(data,{'ureventinfo'});
+                                dat = num2cell(dat);
+                                dat = ft_appenddata(struct('keepsampleinfo','no'),dat{:});
+                                
+                                connfreqModel = run_connectivity({mvarcfg,tfacfg,conncfg,bndcfg,combinecfg},dat);
+                            case 'segmentavg'
+                                connfreqModel = connfreqMain;
+                                connfreqModel.dimord    = [connfreqModel.dimord '_time'];
+                                if isfield(data(1),'ureventinfo')
+                                    connfreqModel.time = arrayfun(@(x) x.ureventinfo.latency(1), data);
+                                    connfreqModel.time(indNoConn) = [];
+                                else
+                                    aas_log(aap,true,'ERROR: original eventinfo (ureventinfo) is not available, use EEGLAB dataset as input')
+                                end
+                                dat = cellfun(@(x) x.(combinecfg.parameter), conn, 'UniformOutput', false);
+                                connfreqModel.(combinecfg.parameter) = cat(ndims(dat{1})+1,dat{:});
+                        end
+                        
+                        %                     meeg_diagnostics_conn({connfreqModel},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+                        
+                        conEvents{e} = connfreqModel;
+                        connfreq.(eventLabel).main = connfreqMain;
+                        connfreq.(eventLabel).model = connfreqModel;
                     end
+                    if any(cellfun(@(x) isempty(x), conEvents)), continue; end
                     
-%                     meeg_diagnostics_conn({connfreqModel},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+                    % contarst events
+                    cfg = combinecfg;
+                    cfg.weights = m.event.weights;
+                    if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
+                    connfreq = ft_combine(cfg,conEvents{:});
+                    %                 meeg_diagnostics_conn({connfreq},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
+                    
+                    % save/update output
+                    connfreqFn = fullfile(aas_getsesspath(aap,subj,sess),[EST{indEst} '_' m.name '.mat']);
+                    save(connfreqFn,'connfreq');
+                    
+                    % append to stream
+                    outputFn = {};
+                    outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],EST{indEst});
+                    if exist(outstreamFn,'file')
+                        outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],EST{indEst},'output'));
+                    end
+                    outputFn{end+1} = connfreqFn;
+                    aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],EST{indEst},outputFn);
 
-                    conEvents{e} = connfreqModel;
-                    connfreq.(eventLabel).main = connfreqMain;
-                    connfreq.(eventLabel).model = connfreqModel;
+                    conSessions{indEst,sess} = connfreq;
                 end
-                if any(cellfun(@(x) isempty(x), conEvents)), continue; end
+            end
+            if any(cellfun(@(x) isempty(x), conSessions(1,:))), continue; end
+            
+            for indEst = 1:numel(EST)
+                % contrast sessions
+                cfg = combinecfg;
+                cfg.weights = m.session.weights;
+                connfreq = ft_combine(cfg,conSessions{indEst,:});
+                %             meeg_diagnostics_conn({connfreq},diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
                 
-                % contarst events
-                cfg = combinecfg; 
-                cfg.weights = m.event.weights;
-                if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
-                connfreq = ft_combine(cfg,conEvents{:});
-%                 meeg_diagnostics_conn({connfreq},diagcfg,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
-              
                 % save/update output
-                connfreqFn = fullfile(aas_getsesspath(aap,subj,sess),['connfreq_' m.name '.mat']);
+                connfreq.cfg = []; % remove provenance to save space
+                connfreqFn = fullfile(aas_getsubjpath(aap,subj),[EST{indEst} '_' m.name '.mat']);
                 save(connfreqFn,'connfreq');
                 
                 % append to stream
                 outputFn = {};
-                outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],'connfreq');
+                outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,EST{indEst});
                 if exist(outstreamFn,'file')
-                    outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],'connfreq','output'));
+                    outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,EST{indEst},'output'));
                 end
                 outputFn{end+1} = connfreqFn;
-                aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],'connfreq',outputFn);
-                
-                conSessions{sess} = connfreq;
-            end            
-            if any(cellfun(@(x) isempty(x), conSessions)), continue; end
-            
-            % contrast sessions
-            cfg = combinecfg; 
-            cfg.weights = m.session.weights;
-            connfreq = ft_combine(cfg,conSessions{:});
-%             meeg_diagnostics_conn({connfreq},diagcfg,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
-           
-            % save/update output
-            connfreq.cfg = []; % remove provenance to save space
-            connfreqFn = fullfile(aas_getsubjpath(aap,subj),['connfreq_' m.name '.mat']);
-            save(connfreqFn,'connfreq');
-            
-            % append to stream
-            outputFn = {};
-            outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'connfreq');
-            if exist(outstreamFn,'file')
-                outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'connfreq','output'));
+                aap = aas_desc_outputs(aap,'subject',subj,EST{indEst},outputFn);
             end
-            outputFn{end+1} = connfreqFn;
-            aap = aas_desc_outputs(aap,'subject',subj,'connfreq',outputFn);
         end
         
         FT.rmExternal('spm12');
@@ -304,7 +333,7 @@ end
 
 function conn = run_connectivity(cfg,dat)
 conn = [];
-[mvarcfg,tfacfg,conncfg,combinecfg] = cfg{:};
+[mvarcfg,tfacfg,conncfg,bndcfg,combinecfg] = cfg{:};
 
 trials = find(dat.trialinfo==conncfg.trials);
 conncfg = rmfield(conncfg,'trials');
@@ -313,7 +342,20 @@ dat = ft_selectdata(struct('trials',trials),dat);
 
 if ~isempty(mvarcfg), dat = ft_mvaranalysis(mvarcfg,dat); end
 if ~isempty(tfacfg), dat = ft_freqanalysis(tfacfg,dat); end
-conn = ft_connectivityanalysis(conncfg,dat);
+if ~isempty(bndcfg)
+    dat = ft_average_bands(bndcfg,bndcfg.ipf,dat);
+    bandspec = dat.bandspec;
+    freq = cellfun(@mean, bandspec.bandbound)';
+    dat = rmfield(dat,intersect(fieldnames(dat),{'band','bandspec'}));
+    dat.freq = freq;
+    dat.dimord = strrep(dat.dimord,'band','freq');
+    conn = rmfield(ft_connectivityanalysis(conncfg,dat),'freq');
+    conn.dimord = strrep(conn.dimord,'freq','band');
+    conn.band = bandspec.band;
+    conn.bandspec = bandspec;
+else
+    conn = ft_connectivityanalysis(conncfg,dat);
+end
 
 if ~isfield(conn,'labelcmb')
     conn.labelcmb = ft_channelcombination({conn.label,conn.label},conn.label,1,2);

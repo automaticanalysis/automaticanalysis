@@ -2,6 +2,8 @@ function [aap, resp] = aamod_meeg_timefrequencyanalysis(aap,task,subj)
 
 resp='';
 
+EST = aas_getstreams(aap,'output'); EST = setdiff(EST,{'peak'},'stable');
+
 switch task
     case 'report'
         bands = aas_getsetting(aap,'diagnostics.snapshotfwoi'); bands = ['multiplot'; mat2cell(bands,ones(1,size(bands,1)))];
@@ -57,6 +59,16 @@ switch task
         bccfg.baselinetype = 'relative';
         bccfg.parameter    = {'powspctrm' 'crsspctrm'};
         
+        % band-average
+        bndcfg = [];
+        bndcfg.parameter = {'powspctrm' 'crsspctrm'};
+        bndcfg.bandspec = aas_getsetting(aap,'bandspecification');
+        if isempty(bndcfg.bandspec.band), EST = setdiff(EST,{'timeband'},'stable'); end
+
+        combinecfg = [];
+        combinecfg.parameter = {'powspctrm' 'crsspctrm'};
+        combinecfg.normalise = 'no';
+        
         diag = aas_getsetting(aap,'diagnostics');
         diag.parameter = 'powspctrm';
         
@@ -64,13 +76,10 @@ switch task
         subjmatches=strcmp(aap.acq_details.subjects(subj).subjname,{models.subject});
         if ~any(subjmatches), aas_log(aap,true,['No trialmodel specification found for ' aas_getsubjdesc(aap,subj)]); end
         
-        combinecfg = [];
-        combinecfg.parameter = {'powspctrm' 'crsspctrm'};
-        combinecfg.normalise = 'no';
-        
         for m = models(subjmatches).model
             
-            conSessions = cell(1,numel(m.session.names));
+            conSessionsFreq = cell(1,numel(m.session.names));
+            conSessionsBand = cell(1,numel(m.session.names));
             
             % process sessions
             includedsessionnumbers = cellfun(@(x) find(strcmp({aap.acq_details.meeg_sessions.name},x)),m.session.names);
@@ -147,12 +156,20 @@ switch task
                 % process events
                 kvs = regexp(spm_file(meegfn{1},'basename'),'[A-Z]+-[0-9]+','match');
                 events = cellfun(@(x) strsplit(x,'-'), kvs,'UniformOutput',false);
-                conEvents = cell(1,numel(m.event.names));
+                conEventsFreq = cell(1,numel(m.event.names));
+                conEventsBand = cell(1,numel(m.event.names));
                 
                 for e = 1:numel(m.event.names)
                     eventLabel = m.event.names{e};
                     trialinfo = str2double(events{cellfun(@(x) strcmp(x{1},eventLabel), events)}{2});
                     aas_log(aap,false,sprintf('INFO: processing event %s with trialinfo %d',eventLabel,trialinfo));
+                    
+                    % ipf - filenames MUST contain eventLabel distiguishably
+                    ipf = [];
+                    if aas_stream_has_contents(aap,'subject',subj,'ipf')
+                        fnIPF = cellstr(aas_getfiles_bystream(aap,'subject',subj,'ipf'));
+                        load(fnIPF{contains(spm_file(fnIPF,'basename'),eventLabel)},'ipf');
+                    end
                     
                     % main 
                     tf = {}; tfProcessed = []; weights = [];
@@ -187,7 +204,8 @@ switch task
                     
                     diagFn = fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename '_' eventLabel]);
                     if ~(ischar(m.samplevector) && strcmp(m.samplevector,'cont')) &&... % not for continuous 
-                        ~exist([diagFn '_multiplot.jpg'],'file')
+                            isempty(bndcfg.bandspec.band) &&... % not for band
+                            ~exist([diagFn '_multiplot.jpg'],'file')
                         meeg_diagnostics_TFR(timefreqMain,diag,eventLabel,diagFn);
                     end
                     
@@ -264,58 +282,98 @@ switch task
                         cfg.weights = weights;
                         timefreqModel = ft_combine(cfg,tf{:});
                     end
-                          
-                    meeg_diagnostics_TFR(timefreqModel,diag,[m.name '_' eventLabel],fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
-
-                    conEvents{e} = timefreqModel;
+                    
+                    conEventsFreq{e} = timefreqModel;
                     timefreq.(eventLabel).main = timefreqMain;
                     timefreq.(eventLabel).model = timefreqModel;
+
+                    % band-average
+                    if ~isempty(bndcfg.bandspec.band)
+                        timebandMain = ft_average_bands(bndcfg,ipf,timefreqMain);
+                        timebandModel = ft_average_bands(bndcfg,ipf,timefreqModel);
+                        conEventsBand{e} = timebandModel;
+                        timeband.(eventLabel).main = timebandMain;
+                        timeband.(eventLabel).model = timebandModel;
+                        timefreqDiag = timebandModel;
+                    else
+                        timefreqDiag = timefreqModel;
+                    end
+                          
+                    meeg_diagnostics_TFR(timefreqDiag,diag,[m.name '_' eventLabel],fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_' eventLabel]));
+
                 end
-                if any(cellfun(@(x) isempty(x), conEvents)), continue; end
+                if any(cellfun(@(x) isempty(x), conEventsFreq)), continue; end
                 
-                % contarst events
                 cfg = combinecfg; 
                 cfg.weights = m.event.weights;
                 if prod(cfg.weights) < 0, cfg.contrast = aas_getsetting(aap,'contrastoperation'); end % differential contrast
-                timefreq = ft_combine(cfg,conEvents{:});
-                meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));
                 
+                for estim = EST
+                    switch estim{1}
+                        case 'timefreq'
+                            conData = conEventsFreq;
+                        case 'timeband'
+                            conData = conEventsBand;
+                    end
+
+                    % contarst events
+                    timefreq = ft_combine(cfg,conData{:});
+                    % save/update output
+                    timefreqFn = fullfile(aas_getsesspath(aap,subj,sess),[estim{1} '_' m.name '.mat']);
+                    save(timefreqFn,'timefreq');
+                    
+                    % append to stream
+                    outputFn = {};
+                    outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],estim{1});
+                    if exist(outstreamFn,'file')
+                        outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],estim{1},'output'));
+                    end
+                    outputFn{end+1} = timefreqFn;
+                    aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],estim{1},outputFn);
+                    
+                    switch estim{1}
+                        case 'timefreq'
+                            conSessionsFreq{sess} = timefreq;
+                        case 'timeband'
+                            conSessionsBand{sess} = timefreq;
+                    end
+                end
+
+                % diag the last estimate
+                meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsesspath(aap,subj,sess),['diagnostic_' mfilename  '_' m.name '_eventcontrast']));                
+            end            
+            if any(cellfun(@(x) isempty(x), conSessionsFreq)), continue; end
+            
+            cfg = combinecfg;
+            cfg.weights = m.session.weights;
+
+            for estim = EST
+                switch estim{1}
+                    case 'timefreq'
+                        conData = conSessionsFreq;
+                    case 'timeband'
+                        conData = conSessionsBand;
+                end
+                % contrast sessions
+                timefreq = ft_combine(cfg,conData{:});
+
                 % save/update output
-                timefreqFn = fullfile(aas_getsesspath(aap,subj,sess),['timefreq_' m.name '.mat']);
+                timefreq.cfg = []; % remove provenance to save space
+                timefreqFn = fullfile(aas_getsubjpath(aap,subj),[estim{1} '_' m.name '.mat']);
                 save(timefreqFn,'timefreq');
-                
+
                 % append to stream
                 outputFn = {};
-                outstreamFn = aas_getoutputstreamfilename(aap,'meeg_session',[subj, sessnum],'timefreq');
+                outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,estim{1});
                 if exist(outstreamFn,'file')
-                    outputFn = cellstr(aas_getfiles_bystream(aap,'meeg_session',[subj, sessnum],'timefreq','output'));
+                    outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,estim{1},'output'));
                 end
                 outputFn{end+1} = timefreqFn;
-                aap = aas_desc_outputs(aap,'meeg_session',[subj,sess],'timefreq',outputFn);
-                
-                conSessions{sess} = timefreq;
-            end            
-            if any(cellfun(@(x) isempty(x), conSessions)), continue; end
-            
-            % contrast sessions
-            cfg = combinecfg; 
-            cfg.weights = m.session.weights;
-            timefreq = ft_combine(cfg,conSessions{:});
-            meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
-            
-            % save/update output
-            timefreq.cfg = []; % remove provenance to save space
-            timefreqFn = fullfile(aas_getsubjpath(aap,subj),['timefreq_' m.name '.mat']);
-            save(timefreqFn,'timefreq');
-            
-            % append to stream
-            outputFn = {};
-            outstreamFn = aas_getoutputstreamfilename(aap,'subject',subj,'timefreq');
-            if exist(outstreamFn,'file')
-                outputFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,'timefreq','output'));
+                aap = aas_desc_outputs(aap,'subject',subj,estim{1},outputFn);
             end
-            outputFn{end+1} = timefreqFn;
-            aap = aas_desc_outputs(aap,'subject',subj,'timefreq',outputFn);
+
+            % diag the last estimate
+            meeg_diagnostics_TFR(timefreq,diag,m.name,fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename  '_' m.name]));
         end
         
         FT.rmExternal('spm12');
@@ -323,5 +381,9 @@ switch task
     case 'checkrequirements'
         if ~aas_cache_get(aap,'eeglab'), aas_log(aap,false,'EEGLAB is not found -> You will not be able process EEGLAB data'); end
         if ~aas_cache_get(aap,'fieldtrip'), aas_log(aap,true,'FieldTrip is not found'); end
+
+        if isempty(aas_getsetting(aap,'bandspecification.band'))
+            if aas_stream_has_contents(aap,'timeband'), aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'timeband',[],'output'); end
+        end
 end
 end
