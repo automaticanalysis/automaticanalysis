@@ -28,6 +28,11 @@
             <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
             <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
             
+            <bandspecification desc='averaging frequency estimate according to the bands, adjusted if stream ipf is also provided'>
+                <band desc='band names, [1xN] cell of strings'></band>
+                <bandbound desc='band boundaries [1xN] cell of [1x2] double arrays in Hz'></bandbound>
+            </bandspecification>
+            
             <trialmodel desc='modelling trials'>
                 <subject></subject>
                 <model>
@@ -40,10 +45,12 @@
             
             <inputstreams>
                 <stream>meeg</stream>
+                <stream isessential='0' isrenameable='1'>ipf</stream> 
             </inputstreams>
             
             <outputstreams>
-                <stream>crossfreq</stream>
+                <stream isessential='0' isrenameable='1'>crossfreq</stream>
+                <stream isessential='0' isrenameable='1'>crossband</stream>
             </outputstreams>
             
              <diagnostics>

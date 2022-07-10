@@ -14,6 +14,32 @@ if numel(data{1}.label) < 4 % plot single channels
 end
 plotcfg.layout = ft_prepare_layout([],data{1});
 
+% band -> freq
+if isfield(data{1},'band') % assume same data type
+    if isnumeric(diag.snapshotfwoi{1}) % convert band to freq
+        for d = 1:numel(data)
+            if isfield(data{d},'bandspec')
+                bands = data{d}.bandspec.bandbound;
+                freq = cellfun(@mean, bands)';
+            else
+                ft_error('no band specification found, cannot convert band to Hz');
+            end
+            data{d} = rmfield(data{d},intersect(fieldnames(data{d}),{'band','bandspec'}));
+            data{d}.freq = freq;
+            data{d}.dimord = strrep(data{d}.dimord,'band','freq');
+        end
+    elseif ischar(diag.snapshotfwoi{1})
+        for d = 1:numel(data)
+            [~,indDiag,indData] = intersect(diag.snapshotfwoi,data{1}.band,'stable');
+            data{d} = rmfield(data{d},intersect(fieldnames(data{d}),{'band','bandspec'}));
+            data{d}.freq = indData;
+            data{d}.dimord = strrep(data{d}.dimord,'band','freq');
+        end
+        diagBands = diag.snapshotfwoi;
+        diag.snapshotfwoi = [indDiag-0.25 indDiag+0.25];
+    end
+end
+
 % plot as TFR
 fig = meeg_plot(plotcfg,data);
 
@@ -39,7 +65,12 @@ if isfield(diag,'snapshotfwoi') && ~isempty(diag.snapshotfwoi) && isfield(data{1
 
         if nargin == 4 && ~isempty(savepath)
             figFn = savepath;
-            print(fig,'-noui',[figFn '_topoplot_freq-' sprintf('%1.2f-%1.2f',diag.snapshotfwoi(f,:)) '.jpg'],'-djpeg','-r300');
+            if exist('diagBands','var') % bands
+                freqspec = diagBands{round(mean(diag.snapshotfwoi(f,:)))};
+            else
+                freqspec = sprintf('%1.2f-%1.2f',diag.snapshotfwoi(f,:));
+            end
+            print(fig,'-noui',[figFn '_topoplot_freq-' freqspec '.jpg'],'-djpeg','-r300');
             close(fig);
         end
     end

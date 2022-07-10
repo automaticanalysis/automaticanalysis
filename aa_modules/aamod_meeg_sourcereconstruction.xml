@@ -22,14 +22,20 @@
                 <projecttotarget desc='refine realignment by projecting the electrodes to the target'>1</projecttotarget>
             </realignelectrodes>
             
-            <inputstreams>
+            <bandspecification desc='averaging frequency estimate according to the bands, adjusted if stream ipf is also provided'>
+                <band desc='band names, [1xN] cell of strings'></band>
+                <bandbound desc='band boundaries [1xN] cell of [1x2] double arrays in Hz'></bandbound>
+            </bandspecification>
+            
+            <inputstreams desc='input MUST be the last stream'>
                 <stream>headmodel</stream>
                 <stream>sourcemodel</stream>
                 <stream>segmentation</stream>
                 <stream isessential='0'>sensors</stream>
                 <stream isessential='0'>leadfield</stream>
                 <stream isessential='0'>sourcefilter</stream>
-                <stream isrenameable='1'>input</stream>
+                <stream isessential='0' isrenameable='1'>ipf</stream>
+                <stream isrenameable='1'>input</stream>                
             </inputstreams>
             
             <outputstreams>
