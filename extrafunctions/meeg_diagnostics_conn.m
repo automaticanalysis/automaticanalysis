@@ -4,6 +4,19 @@ if nargin >= 3, figtitle = varargin{1}; else, figtitle = 'Sample'; end
 if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 %% config
+if isfield(diag,'snapshotfwoi'), snapshotwoi = diag.snapshotfwoi; fieldofinterest = 'band';
+elseif isfield(diag,'snapshotfwoiphase') && ~isempty(diag.snapshotfwoiphase), snapshotwoi = diag.snapshotfwoiphase; fieldofinterest = 'bandlow';
+elseif isfield(diag,'snapshotfwoiamplitude') && ~isempty(diag.snapshotfwoiamplitude), snapshotwoi = diag.snapshotfwoiamplitude; fieldofinterest = 'bandhigh';
+else, aas_log([],true,'no valid snapshot specification found');
+end
+if iscellstr(snapshotwoi)
+    if numel(snapshotwoi) < size(data{1}.stat.stat,2)
+        [~,indTWOI] = intersect(data{1}.(fieldofinterest),snapshotwoi);
+    elseif numel(snapshotwoi) > size(data{1}.stat.stat,2)
+        aas_log([],true,'snapshot(f)woi has a larger range than the output of statistics');
+    end
+end
+
 [~, FT] = aas_cache_get([],'fieldtrip');
 FT.load;
 FT.addExternal('brewermap');
@@ -24,8 +37,9 @@ writetable(atlas,fnNode,'FileType','text','WriteVariableNames',false,'Delimiter'
 inputfiles.node = fnNode;
 
 if isfield(groupStat,'freq'), freq = groupStat.freq;
+elseif isfield(groupStat,'freqlow'), freq = groupStat.freqlow;
 elseif isfield(groupStat,'freqhigh'), freq = groupStat.freqhigh;
-else, aap_log([],true,'no fieldname found for frequency'); 
+else, aas_log([],true,'no fieldname found for frequency'); 
 end
 
 labelcmb = arrayfun(@(l) strjoin(groupStat.labelcmb(l,:),'-'),1:size(groupStat.labelcmb,1),'UniformOutput',false);
@@ -41,6 +55,7 @@ if ~any(stat,'all')
     return; 
 end
 [cmap, cmaprange] = cmap_adjust(cmapbase,stat(mask));
+if diff(cmaprange) == 0, cmaprange = sort(cmaprange .* [0.9 1.1]); end % add range in case of uniform values
 if all(stat(stat~=0)>0), sfx = 'p';
 elseif all(stat(stat~=0)<0), sfx = 'n';
 else, sfx = 'pn';
@@ -59,7 +74,12 @@ colormap(cmap); caxis(cmaprange); colorbar;
 set(ax, 'Color', [0.75 0.75 0.75]);
 for a = ax
     set(a,'YTick',labeltick,'YGrid','on'); set(a,'YTickLabel',{});
-    set(a,'XTickLabel',round(freq(get(a,'XTick')))); 
+    set(a,'XTick',1:size(stat,2)); 
+    if iscellstr(snapshotwoi)
+        set(a,'XTickLabel',snapshotwoi);
+    else
+        set(a,'XTickLabel',round(freq(get(a,'XTick'))));
+    end
 end
 set(ax(1),'YTickLabel',labelcmb(labeltick));
 set(h,'Name',figtitle);
@@ -97,18 +117,18 @@ end
 %% Network (for each FOI)
 if numel(sfx) > 1, aas_log([],true,'mixed stat - NYI'); end
 
-if isfield(diag,'snapshotfwoi'), snapshotwoi = diag.snapshotfwoi; 
-elseif isfield(diag,'snapshotfwoiphase') && ~isempty(diag.snapshotfwoiphase), snapshotwoi = diag.snapshotfwoiphase; 
-elseif isfield(diag,'snapshotfwoiamplitude') && ~isempty(diag.snapshotfwoiamplitude), snapshotwoi = diag.snapshotfwoiamplitude; 
-else, aas_log([],true,'no valid snapshot specification found'); 
-end
-
 for f = 1:size(snapshotwoi,1)
     mat = zeros(nROI,nROI);
     for roi = unique(groupStat.labelcmb(:,1),'stable')'
         roiind = strcmp(atlas.Var3,strrep(roi{1},' ','.'));
         lcoi = strcmp(groupStat.labelcmb(:,1),roi{1});
-        boiind = [find(freq >= snapshotwoi(f,1),1,'first') find(freq <= snapshotwoi(f,2),1,'last')];
+        if iscellstr(snapshotwoi)
+            boiind = [f f];
+            fnEdge = sprintf('%s_net_%s_%c.edge',savepath,snapshotwoi{f},sfx);
+        else
+            boiind = [find(freq >= snapshotwoi(f,1),1,'first') find(freq <= snapshotwoi(f,2),1,'last')];
+            fnEdge = sprintf('%s_net_%d-%d_%c.edge',savepath,snapshotwoi(f,:),sfx);
+        end
         meas = mean(stat(lcoi,boiind(1):boiind(2)),2);
         if nROI > numel(meas)
             mat(:,roiind) = [meas(1:find(roiind)-1); 0; meas(find(roiind):end)]; % auto-connectivity
@@ -118,7 +138,7 @@ for f = 1:size(snapshotwoi,1)
         % mat(mat(:,roiind)<cmaprange(1)/2,roiind) = 0; % at least half of the band
     end
     if ~any(mat,'all'), continue; end
-    fnEdge = sprintf('%s_net_%d-%d_%c.edge',savepath,snapshotwoi(f,:),sfx);
+    
     dlmwrite(fnEdge,mat,'\t');    
     inputfiles.edge = fnEdge;
     fig = BrainNet(inputfiles,BNV.BNVSettings);

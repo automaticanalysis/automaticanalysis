@@ -7,7 +7,7 @@ if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 if ~iscell(data), data = {data}; end
 
-plotcfg = keepfields(diag,{'parameter' 'view'});
+plotcfg = keepfields(diag,intersect(fieldnames(diag),{'parameter' 'view' 'statlim'}));
 plotcfg.latency = diag.snapshottwoi./1000; % second
 
 % extract data if needed

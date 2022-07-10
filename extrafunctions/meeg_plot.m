@@ -102,13 +102,21 @@ for s = 1:numel(data)
         mask = true(size(data{s}.(cfg.parameter)));
     end
     if strcmp(labels{s},'stat')
-        minval(s) = prctile(data{s}.(cfg.parameter)(mask),1,'all');
-        maxval(s) = prctile(data{s}.(cfg.parameter)(mask),99,'all');
+        if isfield(cfg,'statlim') && ~isempty(cfg.statlim)
+            minval(s) = cfg.statlim(1);
+            maxval(s) = cfg.statlim(2);
+        else
+            minval(s) = prctile(data{s}.(cfg.parameter)(mask),1,'all');
+            maxval(s) = prctile(data{s}.(cfg.parameter)(mask),99,'all');
+        end
     else
         minval(s) = prctile(cell2mat(cellfun(@(d) d.(cfg.parameter)(mask), data(~strcmp(labels,'stat')), 'UniformOutput',false)),1,'all');
         maxval(s) = prctile(cell2mat(cellfun(@(d) d.(cfg.parameter)(mask), data(~strcmp(labels,'stat')), 'UniformOutput',false)),99,'all');
     end
-    if minval(s) == maxval(s), minval(s) = 0.9*minval(s); end
+    if minval(s) == maxval(s)
+        minval(s) = minval(s)-abs(0.1*minval(s)); 
+        maxval(s) = maxval(s)+abs(0.1*maxval(s));
+    end
     % colormaps
     if (minval(s) < 0) && (maxval(s) > 0)
         r = maxval(s)/-minval(s);
