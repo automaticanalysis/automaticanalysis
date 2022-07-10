@@ -11,7 +11,7 @@ if nargin < 5
 end
 
 if strcmp(type,'output')
-    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  It might breake dependency for the consecuting module(s).\n  Make sure that you know what you are doing!',origstream,stage,newstream));
+    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  It might break dependency for the consecuting module(s).\n  Make sure that you know what you are doing!',origstream,stage,newstream));
 end
 
 %% Locate STAGE

@@ -14,7 +14,7 @@ SUBJ = {...
      };
 
 %% LOAD TASKLIST
-aap=aarecipe('aap_tasklist_ASL.xml');
+aap=aarecipe('ASL.xml');
 
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path

@@ -69,25 +69,16 @@ classdef testExamples < matlab.unittest.TestCase
 
     methods(Test, TestTags = {'Medium', 'Minimal_install'})
 
-        %% tutorial_1_aa_setup
+        %% tutorial_1
         function tutorial_1_test(testCase)
-            % Test that tutorial_1_aa_setup runs out-of-the-box
+            % Test that tutorial_1 runs out-of-the-box
 
-            tutorial_1_aa_setup()
-
-            % Verification
-            % TODO: How to verify correct run, apart from no-error?
-        end
-
-        %% tutorial_2_SPM_CH30
-        function tutorial_2_test(testCase)
-            % Test that tutorial_2_SPM_CH30 runs out-of-the-box
-
-            tutorial_2_SPM_CH30()
+            tutorial_1_SPM_CH30()
 
             % Verification
             % TODO: How to verify correct run, apart from no-error?
         end
+
     end
 
     methods(Static)

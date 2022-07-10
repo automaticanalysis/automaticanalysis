@@ -46,7 +46,8 @@ function [ errflag,errstring ] = overlay_nifti(nii_fname, template_fname, render
 %
 % CHANGE HISTORY
 %
-% 08/2020 [msj] - change default brightness from 0.5 to 0.2
+% 04/2022 [MSJ] - use insertText for label
+% 08/2020 [MSJ] - change default brightness from 0.5 to 0.2
 % 10/2019 [MSJ] - modified to handle up to three nii
 % 09/2019 [MSJ] - new
 %
@@ -125,20 +126,14 @@ if (nargin < 5)
     image_label = [];
 end
 
-
 if (nargin < 6)
-%     brightness = 0.5;
-    % this better for multiple map overlap
     brightness = 0.2;
 end
-
 
 % ------------------------------------------------------------------------
 % 1) Render - we can use shortcut in spm_render by just passing
 % in the nifti and render image filename
 % ------------------------------------------------------------------------
-
-% need to set up global prevrend for some reason...
 
 global prevrend
 prevrend = struct('rendfile', render_fname, 'brt',0.5, 'col',eye(3));
@@ -153,10 +148,8 @@ mon(:,:,2) = tr_3Dto2D(squeeze(img(:,:,2,[1 3 5 2 4 6])));
 mon(:,:,3) = tr_3Dto2D(squeeze(img(:,:,3,[1 3 5 2 4 6])));
 mon = mon(1:size(mon,2)*2/3,:,:);			
 
-if (~isempty(image_label))
-    mon = insertInImage(mon, @()text(40,25,strrep(image_label,'_','-')),...
-    {'fontweight','bold','color','y','fontsize',16,...
-    'linewidth',1,'margin',5,'backgroundcolor','k'});	
+if (~isempty(image_label) && exist('insertText')>0)
+    mon = insertText(mon,[10 10],image_label,'FontSize',18,'BoxColor','black','TextColor','yellow');
 end
 
 [ p,n,~ ] = fileparts(savefile_fname);
@@ -164,10 +157,8 @@ render_savefile_fname = fullfile(p,[n '_render.jpg']);
 
 imwrite(mon,render_savefile_fname);
 
-  
 % ------------------------------------------------------------------------
 % 2) three ortho section overlays 
-% (this code mostly stolen from aamod_firstlevel_threshold...)
 % ------------------------------------------------------------------------
 
 % alas, slices currently can't handle > 1 nii
@@ -229,16 +220,20 @@ for a = 0:2 % in 3 axes
     iYepi = img_rot90(iYepi);
     iYtemplate = img_rot90(aYtemplate(:,:,iSl:nth_slice:end));
 
-    [ img,~,~ ] = map_overlay(iYtemplate,iYepi,1-transparency);                                
+    % TA recently changed map_overlay -- including the old version here as
+    % a local file until we have time to fix it properly
+    
+    [ img,~,~ ] = img_overlay(iYtemplate,iYepi,1-transparency);  
+
     mon = tr_3Dto2D(img_tr(img(:,:,:,1),a==2));
     mon(:,:,2) = tr_3Dto2D(img_tr(img(:,:,:,2),a==2));
     mon(:,:,3) = tr_3Dto2D(img_tr(img(:,:,:,3),a==2));
 
-    if (~isempty(image_label))
-        mon = insertInImage(mon, @()text(40,25,strrep(image_label,'_','-')),...
-        {'fontweight','bold','color','y','fontsize',14,...
-        'linewidth',1,'margin',5,'backgroundcolor','k'});	
-    end
+    if (~isempty(image_label) && exist('insertText')>0)
+        fs = 18;
+        if (a==0);fs=16;end % axial montage has less x-extent to work with...
+        mon = insertText(mon,[10 10],image_label,'FontSize',fs,'BoxColor','black','TextColor','yellow');
+    end   
     
     [ p,n,~ ] = fileparts(savefile_fname);
 	slice_fname = fullfile(p,sprintf('%s_%d.jpg',n,a+1));
@@ -278,4 +273,52 @@ if toDo
 else
     fo = fi;
 end
+end
+
+
+% ------------------------------------------------------------------------
+function [img0, cmap, v] = img_overlay(bg,stat,trans)
+% ------------------------------------------------------------------------
+
+cmap = vertcat(gray(128), create_grad([1 1 1],[0 0 1],64),...
+    create_grad([1 0 0],[1 1 0],32),create_grad([1 1 0],[1 1 1],32));
+
+if nargin < 3, trans = 1; end
+
+% Default
+v = [-Inf Inf];
+
+fa = stat.*(stat>0);
+fd = stat.*(stat<0);
+f = zeros(size(bg,1),size(bg,2),size(bg,3));
+if numel(fa(fa>0))
+    [fa,va] = histc2D(fa,194,256);
+    v(194:256) = va;
+    f = fa;
+end
+if numel(fd(fd<0))
+    [fd,vd] = histc2D(fd,130,191);
+    v(130:191) = vd;
+    f = f + fd;
+end
+img = histc2D(bg,1,127);
+
+for z = 1:size(img,3)
+    f0(:,:,z,:) = ind2rgb(f(:,:,z),cmap);
+    img0(:,:,z,:) = ind2rgb(img(:,:,z),cmap);
+end
+
+for x = 1:size(img,1)
+    for y = 1:size(img,2)
+        for z = 1:size(img,3)
+            if ~isnan(f(x,y,z)) && f(x,y,z)
+                cr = create_grad(img0(x,y,z,:),f0(x,y,z,:),11);
+                cr(cr<0) = -cr(cr<0); cr(cr>1) = 1;
+                img0(x,y,z,:) = cr(round(trans*10)+1,:);
+            end
+        end
+    end
+end
+v = v';
+
 end

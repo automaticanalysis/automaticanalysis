@@ -14,6 +14,9 @@ on:
   workflow_dispatch:
 
 # Default settings
+env:
+  DISKSIZE: 47104
+
 defaults:
     run:
       shell: bash
@@ -31,7 +34,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -109,7 +112,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -187,7 +190,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -265,7 +268,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -345,7 +348,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -426,7 +429,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -502,7 +505,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
@@ -583,7 +586,7 @@ jobs:
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
-          root-reserve-mb: 49152
+          root-reserve-mb: ${{ env.DISKSIZE }}
           swap-size-mb: 1024
           remove-dotnet: 'true'
           remove-android: 'true'
