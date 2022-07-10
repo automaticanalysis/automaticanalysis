@@ -1,16 +1,20 @@
 
 %% CONNECT DATA PIPELINE BY IDENTIFYING SOURCE OF INPUT FROM OUTPUT STREAMS
 %   Works back through dependencies to determine where inputs come from
-function [aap]=aas_findinputstreamsources(aap)
+function [aap]=aas_findinputstreamsources(aap,saveprov)
+
+if nargin < 2, saveprov = true; end
 
 % save provenance
-provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.dot');
-pfid = fopen(provfn,'w');
-fprintf(pfid,'digraph {\n\t');
-dotR = {};
+if saveprov
+    provfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_prov.dot');
+    pfid = fopen(provfn,'w');
+    fprintf(pfid,'digraph {\n\t');
+    dotR = {};
 
-cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
-cfid = fopen(cmapfn,'w');
+    cmapfn = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid,'aap_cmap.txt');
+    cfid = fopen(cmapfn,'w');
+end
 
 % Make empty cell structures for input and output streams
 aap.internal.inputstreamsources=cell(length(aap.tasklist.main.module),1);
@@ -100,10 +104,12 @@ for k1=1:length(aap.tasklist.main.module)
                 end
                 aas_log(aap,false,sprintf('Stage %s input %s comes from remote host %s stream %s',stagename,stream.name,stream.host,stream.sourcestagename));
                 % write provenance
-                fprintf(pfid,'"R%s" -> "R%s_%05d" [ label="%s" ];',['Remote ' stream.host ': ' stream.sourcestagename],stagename,index,stream.name);
-                dotR(end+1) = cellstr(['Remote ' stream.host ': ' stream.sourcestagename]);
-                dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
-				fprintf(cfid,'%s\t%s\t%s_%05d\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
+                if saveprov
+                    fprintf(pfid,'"R%s" -> "R%s_%05d" [ label="%s" ];',['Remote ' stream.host ': ' stream.sourcestagename],stagename,index,stream.name);
+                    dotR(end+1) = cellstr(['Remote ' stream.host ': ' stream.sourcestagename]);
+                    dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
+                    fprintf(cfid,'%s\t%s\t%s_%05d\n',['Remote ' stream.host ': ' stream.sourcestagename],stream.name,stagename,index);
+                end
             else
                 
                 [aap, stagethatoutputs, mindepth]=searchforoutput(aap,k1,inputstreamname,true,0,inf);
@@ -116,10 +122,12 @@ for k1=1:length(aap.tasklist.main.module)
                     sourceindex=aap.tasklist.main.module(stagethatoutputs).index;
                     aas_log(aap,false,sprintf('Stage %s input %s comes from %s which is %d dependencies prior',stagename,inputstreamname,sourcestagename,mindepth));
                     % write provenance
-                    fprintf(pfid,'"R%s_%05d" -> "R%s_%05d" [ label="%s" ];',sourcestagename,sourceindex,stagename,index,inputstreamname);
-                    dotR(end+1) = cellstr(sprintf('%s_%05d',sourcestagename,sourceindex));
-                    dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
-					fprintf(cfid,'%s_%05d\t%s\t%s_%05d\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
+                    if saveprov
+                        fprintf(pfid,'"R%s_%05d" -> "R%s_%05d" [ label="%s" ];',sourcestagename,sourceindex,stagename,index,inputstreamname);
+                        dotR(end+1) = cellstr(sprintf('%s_%05d',sourcestagename,sourceindex));
+                        dotR(end+1) = cellstr(sprintf('%s_%05d',stagename,index));
+                        fprintf(cfid,'%s_%05d\t%s\t%s_%05d\n',sourcestagename,sourceindex,inputstreamname,stagename,index);
+                    end
                     stream=[];
                     stream.name=inputstreamname;
                     stream.sourcenumber=stagethatoutputs;
@@ -168,17 +176,19 @@ for k1=1:length(aap.tasklist.main.module)
         end
     end
 end
-dotR = unique(dotR,'stable');
-for r = 1:numel(dotR)
-    fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ];\n',dotR{r},dotR{r});
+if saveprov
+    dotR = unique(dotR,'stable');
+    for r = 1:numel(dotR)
+        fprintf(pfid,'\t"R%s" [ label="%s", shape = ellipse, color = blue ];\n',dotR{r},dotR{r});
+    end
+    fprintf(pfid,'}');
+    fclose(pfid);
+    % create provenance map
+    if ~unix('which dot')
+        unix(sprintf('dot %s -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'dot','png')));
+    end
+    fclose(cfid);
 end
-fprintf(pfid,'}');
-fclose(pfid);
-% create provenance map
-if ~unix('which dot')
-    unix(sprintf('dot %s -Grankdir=TB -Tpng -o %s',provfn,strrep(provfn,'dot','png')));
-end
-fclose(cfid);
 
 % RECURSIVELY SEARCH DEPENDENCIES
 %  to see which will have outputted each
