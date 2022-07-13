@@ -348,7 +348,7 @@ switch task
                     end
                 end
             end
-            if exist('indDiag','var')
+            if ~isempty(indDiag)
                 diagBands = {};
                 for f = 1:numel(fieldwoi)
                     diagBands{f} = diag.(fieldwoi{f});
@@ -685,8 +685,8 @@ switch task
         outstreamFn = aas_getoutputstreamfilename(aap,'study',[],'groupstat');
         if exist(outstreamFn,'file')
             outputFn0 = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat','output'));
+            outputFn = cat(1,outputFn0,outputFn);
         end
-        outputFn = cat(1,outputFn0,outputFn);
         aap = aas_desc_outputs(aap,'study',[],'groupstat',outputFn);
 
         FT.unload;
@@ -750,7 +750,7 @@ for c = 1:numel(cfg)
         groupStat = cellfun(@(x) meeg_average(avgcfg,x), groupStat,'UniformOutput',false);
         for fave = fieldnames(cfg{c}.average)'
             pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
-            if contains(fave{1},'freq') && exist('diagBands','var')
+            if contains(fave{1},'freq') && ~isempty(diagBands)
                 indMeas = strcmp(fieldofinterest,strrep(fave{1},'freq','band'));
                 diagFn = sprintf('%s_%s-%s',diagFn,fave{1},strrep(diagBands{indMeas}{mean(cfg{c}.average.(fave{1}))},' ','')); % add suffix to statFn
             else
