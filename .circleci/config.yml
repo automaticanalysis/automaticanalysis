@@ -8,11 +8,6 @@ jobs:
     machine:
       image: 'ubuntu-2204:2022.04.1'
 
-    # Environment
-    parameters:
-      github_workspace:
-        type: string
-        default: ~/project
     environment:
       GITHUB_WORKSPACE: ~/project
 
@@ -23,9 +18,9 @@ jobs:
       - run:
           name: Install tools and configure aa
           command: |
+            ls $GITHUB_WORKSPACE/.github/workflows/
             python --version
-            python trigger_install.py
-          working_directory: <<parameters.github_workspace>>/.github/workflows
+            python $GITHUB_WORKSPACE/.github/workflows/trigger_install.py
       - matlab/run-command:
           command: myscript
 
