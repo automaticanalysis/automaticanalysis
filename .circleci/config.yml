@@ -12,6 +12,7 @@ jobs:
 
     environment:
       GITHUB_WORKSPACE: /home/circleci/automaticanalysis
+      AWS_EC2_METADATA_DISABLED: true
 
     steps:
       - checkout
@@ -30,6 +31,7 @@ jobs:
             PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
       - aws-cli/setup:
           profile-name: example
+          aws-region: eu-west-2
       - matlab/run-command:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
 
