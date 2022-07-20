@@ -9,7 +9,7 @@ jobs:
       image: 'ubuntu-2204:2022.04.1'
 
     environment:
-      GITHUB_WORKSPACE: /home/circleci/project
+      GITHUB_WORKSPACE: /home/circleci/automaticanalysis
 
     steps:
       - checkout
@@ -18,6 +18,7 @@ jobs:
       - run:
           name: Install tools and configure aa
           command: |
+            mv /home/circleci/project/$GITHUB_WORKSPACE
             cd $GITHUB_WORKSPACE/.github/workflows
             python --version
             python trigger_install.py
