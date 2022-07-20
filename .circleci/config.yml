@@ -2,7 +2,7 @@
 version: 2.1
 orbs:
   matlab: mathworks/matlab@0
-  python: circleci/python@2.0.3
+  python: circleci/python@0
 
 jobs:
   not_large:
