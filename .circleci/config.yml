@@ -17,7 +17,7 @@ jobs:
             python --version
             ls
             python trigger_install.py
-          working_directory: ~/repo/.github/workflows
+          working_directory: ~/project/automaticanalysis/.github/workflows
       - matlab/run-command:
           command: myscript
 
