@@ -13,8 +13,8 @@ jobs:
           version: '2.7'
           pkg-manager: pip
       - checkout
-      - matlab/install
-          release: 'R2020a'
+      - matlab/install:
+          release: R2020a
       - run:
           name: Install tools and configure aa
           command: |
