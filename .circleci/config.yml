@@ -9,7 +9,7 @@ jobs:
       image: 'ubuntu-2204:2022.04.1'
 
     environment:
-      GITHUB_WORKSPACE: ~/project
+      GITHUB_WORKSPACE: /home/circleci/project
 
     steps:
       - checkout
