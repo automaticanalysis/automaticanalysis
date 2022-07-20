@@ -21,7 +21,7 @@ jobs:
             python --version
             ls
             python trigger_install.py
-          working_directory: 
+          working_directory: ~/repo/.github/workflows
       - matlab/run-command:
           command: myscript
 
