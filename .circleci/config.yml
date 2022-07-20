@@ -13,16 +13,16 @@ jobs:
 
     steps:
       - checkout
-      - matlab/install:
-          release: R2020a
+      #- matlab/install:
+      #    release: R2020a
       - run:
           name: Install tools and configure aa
           command: |
-            ls $GITHUB_WORKSPACE/.github/workflows/
+            ls $GITHUB_WORKSPACE -la
             python --version
             python $GITHUB_WORKSPACE/.github/workflows/trigger_install.py
-      - matlab/run-command:
-          command: myscript
+      #- matlab/run-command:
+      #    command: myscript
 
 workflows:
   build:
