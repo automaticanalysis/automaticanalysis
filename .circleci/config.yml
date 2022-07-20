@@ -91,7 +91,7 @@ jobs:
           parameter_xml: aap_parameters_defaults_CircleCI.xml
           load_freesurfer: 0
           load_fsl: 1
-          command: aa_downloaddemo(aap,'ds000114',{'sub-01'}); aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
+          command: aap.directory_conventions.rawdatadir = fullfile(aap.directory_conventions.rawdatadir,'ds000114'); aa_downloaddemo(aap,'ds000114',{'sub-01'}); aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
 
 workflows:
   build:
