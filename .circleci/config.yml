@@ -36,5 +36,5 @@ jobs:
 workflows:
   build:
     jobs:
-      - not_large
+      - not_large:
           context: aws
