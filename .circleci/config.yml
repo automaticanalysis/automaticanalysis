@@ -5,7 +5,49 @@ orbs:
   aws-cli: circleci/aws-cli@3
 
 jobs:
-  not_large:
+  unittest_not-large:
+    machine:
+      image: 'ubuntu-2204:2022.04.1'
+      resource_class: medium
+
+    environment:
+      GITHUB_WORKSPACE: /home/circleci/automaticanalysis
+      AWS_DEFAULT_REGION: eu-west-2
+      AWS_EC2_METADATA_DISABLED: true
+
+    steps:
+      - checkout
+      - matlab/install:
+          release: R2020a # comes with Python 2.7
+
+      - run:
+          name: Install tools and configure aa
+          command: |
+            mv ~/project $GITHUB_WORKSPACE
+            cd $GITHUB_WORKSPACE/.github/workflows
+            python trigger_install.py
+          environment:
+            LOAD_FSL: 0
+            LOAD_FREESURFER: 0
+            PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
+
+      - aws-cli/setup:
+          profile-name: example
+
+      - matlab/run-command:
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+      
+      # Artifacts (TODO: grab images)
+      - run:
+          name: Prepare artifacts
+          command: |
+            mkdir /tmp/output
+            cp $GITHUB_WORKSPACE/developer/aa_test.log /tmp/output
+      - store_artifacts:
+          destination: log
+          path: /tmp/output
+
+  unittest_tutorial-minimal:
     machine:
       image: 'ubuntu-2204:2022.04.1'
       resource_class: medium
@@ -29,14 +71,15 @@ jobs:
           environment:
             LOAD_FSL: 0
             LOAD_FREESURFER: 0
-            PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
+            PARAMETER_XML: aap_parameters_defaults_CircleCI_minimal.xml
 
       - aws-cli/setup:
           profile-name: example
 
       - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'})
       
+      # Artifacts (TODO: grab images)
       - run:
           name: Prepare artifacts
           command: |
@@ -49,5 +92,7 @@ jobs:
 workflows:
   build:
     jobs:
-      - not_large:
+      - unittest_not-large:
+          context: aws
+      - unittest_tutorial-minimal:
           context: aws
