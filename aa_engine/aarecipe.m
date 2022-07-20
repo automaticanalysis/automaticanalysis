@@ -22,13 +22,15 @@ varargin(strcmp(varargin,'nogui')) = [];
 
 Pref.ReadAttr=0;
 
-switch(numel(varargin))
-    case 0
-        warning('You must provide a tasklist to aarecipe.\n');
-    case 1
+switch nargin
+    case {0 1}
         aa_info = aaClass('nopath', 'nogreet');
         defaultparameters = aa_info.parameter_xml_filename;
-        tasklistxml = varargin{1};
+        if nargin
+            tasklistxml = varargin{1};
+        else
+            warning('You must provide a tasklist to aarecipe.\n');
+        end
     case 2
         defaultparameters = varargin{1};
         tasklistxml = varargin{2};

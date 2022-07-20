@@ -51,7 +51,7 @@ commands:
           profile-name: example
 
       - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; <<parameters.command>>
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aap = aarecipe('<< parameters.parameter_xml >>'); <<parameters.command>>
       
       # Artifacts (TODO: grab images)
       - run:
@@ -82,10 +82,21 @@ jobs:
           load_fsl: 0
           command: aa_test('haltonerror', true, 'tags', {'Minimal_install'})
 
+  usecase_AROMA:
+    executor: ubuntu
+    steps:
+      - testaa:
+          parameter_xml: aap_parameters_defaults_CircleCI.xml
+          load_freesurfer: 0
+          load_fsl: 1
+          command: aa_downloaddemo(aap,'ds000114',{'sub-01'}); aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
+
 workflows:
   build:
     jobs:
       - unittest_not-large:
           context: aws
       - unittest_tutorial-minimal:
+          context: aws
+      - usecase_AROMA:
           context: aws
