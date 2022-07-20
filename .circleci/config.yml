@@ -4,8 +4,8 @@ orbs:
   matlab: mathworks/matlab@0
   aws-cli: circleci/aws-cli@3
 
-jobs:
-  unittest_not-large:
+executors:
+  ubuntu:
     machine:
       image: 'ubuntu-2204:2022.04.1'
       resource_class: medium
@@ -15,6 +15,22 @@ jobs:
       AWS_DEFAULT_REGION: eu-west-2
       AWS_EC2_METADATA_DISABLED: true
 
+commands:
+  testaa:
+    description: "Testing Automatic Analysis"
+    parameters:
+      parameter_xml: 
+        type: string
+        default: aap_parameters_defaults_CircleCI.xml
+      load_fsl:
+        type: integer
+        default: 0
+      load_freesurfer:
+        type: integer
+        default: 0
+      command:
+        type: string
+        default: aa_ver5
     steps:
       - checkout
       - matlab/install:
@@ -27,15 +43,15 @@ jobs:
             cd $GITHUB_WORKSPACE/.github/workflows
             python trigger_install.py
           environment:
-            LOAD_FSL: 0
-            LOAD_FREESURFER: 0
-            PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
+            LOAD_FSL: << parameters.load_fsl >>
+            LOAD_FREESURFER: << parameters.load_freesurfer >>
+            PARAMETER_XML: << parameters.parameter_xml >>
 
       - aws-cli/setup:
           profile-name: example
 
       - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; <<parameters.command>>
       
       # Artifacts (TODO: grab images)
       - run:
@@ -46,48 +62,25 @@ jobs:
       - store_artifacts:
           destination: log
           path: /tmp/output
+
+jobs:
+  unittest_not-large:
+    executor: ubuntu
+    steps:
+      - testaa:
+          parameter_xml: aap_parameters_defaults_CircleCI.xml
+          load_freesurfer: 0
+          load_fsl: 0
+          command: aa_test('haltonerror', true, 'not_tags', {'Large'})
 
   unittest_tutorial-minimal:
-    machine:
-      image: 'ubuntu-2204:2022.04.1'
-      resource_class: medium
-
-    environment:
-      GITHUB_WORKSPACE: /home/circleci/automaticanalysis
-      AWS_DEFAULT_REGION: eu-west-2
-      AWS_EC2_METADATA_DISABLED: true
-
+    executor: ubuntu
     steps:
-      - checkout
-      - matlab/install:
-          release: R2020a
-
-      - run:
-          name: Install tools and configure aa
-          command: |
-            mv ~/project $GITHUB_WORKSPACE
-            cd $GITHUB_WORKSPACE/.github/workflows
-            python trigger_install.py
-          environment:
-            LOAD_FSL: 0
-            LOAD_FREESURFER: 0
-            PARAMETER_XML: aap_parameters_defaults_CircleCI_minimal.xml
-
-      - aws-cli/setup:
-          profile-name: example
-
-      - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'})
-      
-      # Artifacts (TODO: grab images)
-      - run:
-          name: Prepare artifacts
-          command: |
-            mkdir /tmp/output
-            cp $GITHUB_WORKSPACE/developer/aa_test.log /tmp/output
-      - store_artifacts:
-          destination: log
-          path: /tmp/output
+      - testaa:
+          parameter_xml: aap_parameters_defaults_CircleCI_minimal.xml
+          load_freesurfer: 0
+          load_fsl: 0
+          command: aa_test('haltonerror', true, 'tags', {'Minimal_install'})
 
 workflows:
   build:
