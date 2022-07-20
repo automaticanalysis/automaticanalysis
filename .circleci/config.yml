@@ -7,6 +7,7 @@ jobs:
   not_large:
     machine:
       image: 'ubuntu-2204:2022.04.1'
+      resource_class: medium
 
     environment:
       GITHUB_WORKSPACE: /home/circleci/automaticanalysis
@@ -25,7 +26,7 @@ jobs:
           environment:
             LOAD_FSL: 0
             LOAD_FREESURFER: 0
-            PARAMETER_XML: aap_parameters_defaults_GitHub.xml
+            PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
       #- matlab/run-command:
       #    command: myscript
 
