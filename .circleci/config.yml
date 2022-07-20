@@ -40,7 +40,9 @@ commands:
           name: Install tools and configure aa
           command: |
             mv ~/project $GITHUB_WORKSPACE
+            mkdir ~/.aa
             cd $GITHUB_WORKSPACE/.github/workflows
+            cp << parameters.parameter_xml >> ~/.aa/aap_parameters_user.xml
             python trigger_install.py
           environment:
             LOAD_FSL: << parameters.load_fsl >>
@@ -51,7 +53,7 @@ commands:
           profile-name: example
 
       - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa = aaClass; aap = aarecipe(fullfile(aa.Path,'.github','workflows','<< parameters.parameter_xml >>')); SPM = aas_inittoolbox(aap,'spm'); SPM.load; <<parameters.command>>
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa = aaClass; aap = aarecipe(); SPM = aas_inittoolbox(aap,'spm'); SPM.load; <<parameters.command>>
       
       # Artifacts (TODO: grab images)
       - run:
