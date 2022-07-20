@@ -2,6 +2,7 @@
 version: 2.1
 orbs:
   matlab: mathworks/matlab@0
+  aws-cli: circleci/aws-cli@3
 
 jobs:
   not_large:
@@ -14,8 +15,8 @@ jobs:
 
     steps:
       - checkout
-      #- matlab/install:
-      #    release: R2020a
+      - matlab/install:
+          release: R2020a
       - run:
           name: Install tools and configure aa
           command: |
@@ -27,10 +28,13 @@ jobs:
             LOAD_FSL: 0
             LOAD_FREESURFER: 0
             PARAMETER_XML: aap_parameters_defaults_CircleCI.xml
-      #- matlab/run-command:
-      #    command: myscript
+      - aws-cli/setup:
+          profile-name: example
+      - matlab/run-command:
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
 
 workflows:
   build:
     jobs:
       - not_large
+          context: aws
