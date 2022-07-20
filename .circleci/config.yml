@@ -51,7 +51,7 @@ commands:
           profile-name: example
 
       - matlab/run-command:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aap = aarecipe('$GITHUB_WORKSPACE/.github/workflows/<< parameters.parameter_xml >>'); <<parameters.command>>
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa = aaClass; aap = aarecipe(fullfile(aa.Path,'.github','workflows','<< parameters.parameter_xml >>')); SPM = aas_inittoolbox(aap,'spm'); SPM.load; <<parameters.command>>
       
       # Artifacts (TODO: grab images)
       - run:
