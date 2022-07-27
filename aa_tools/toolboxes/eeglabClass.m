@@ -5,11 +5,6 @@ classdef eeglabClass < toolboxClass
     
     properties (Access = private)
         plugins = []
-        % tested plugin versions, will not overwrite already installed plugins
-        safePlugins = {...
-            '{"name": "clean_rawdata", "version": "2.5", "doPostprocess": 0}'...
-            '{"name": "AMICA", "version": "", "doPostprocess": 1}'...
-            }
     end
     
     properties (Access = protected, Dependent)
@@ -30,7 +25,7 @@ classdef eeglabClass < toolboxClass
             argParse.addRequired('path',@ischar);
             argParse.addParameter('name','',@ischar);
             argParse.addParameter('doAddToPath',defaultAddToPath,@(x) islogical(x) || isnumeric(x));
-            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@iscellstr);
+            argParse.addParameter('requiredPlugins',defaultRequiredPlugins,@(x) iscellstr(x) || isstruct(x));
             argParse.addParameter('doKeepGUI',defaultKeepGUI,@(x) islogical(x) || isnumeric(x));
             argParse.parse(path,varargin{:});
             
@@ -49,10 +44,14 @@ classdef eeglabClass < toolboxClass
             obj = obj@toolboxClass(argParse.Results.name,argParse.Results.path,argParse.Results.doAddToPath,vars);
             
             obj.requiredPlugins = argParse.Results.requiredPlugins;
-            obj.safePlugins = cellfun(@jsondecode, obj.safePlugins);
         end
         
         function load(obj,keepWorkspace)
+            % backward compatibility
+            if ~isstruct(obj.requiredPlugins)
+                obj.requiredPlugins = cell2struct([obj.requiredPlugins;repmat({[]},2,10)],{'name','version','doPostprocess'});
+            end
+            
             if nargin < 2, keepWorkspace = false; end
             addpath(obj.toolPath);
             is_new_plugin = false;
@@ -63,14 +62,15 @@ classdef eeglabClass < toolboxClass
             plPost = {};
             pllist = plugin_getweb('', obj.plugins, 'newlist');
             for p = reshape(pllist,1,[])
-                if any(strcmp(obj.requiredPlugins, p.name)) && ~p.installed
-                    safeInf = obj.safePlugins(strcmp({obj.safePlugins.name},p.name));
-                    if ~isempty(safeInf) && ~isempty(safeInf.version)
-                        p.version = safeInf.version;
+                if any(strcmp({obj.requiredPlugins.name}, p.name)) && ~p.installed
+                    plInf = obj.requiredPlugins(strcmp({obj.requiredPlugins.name},p.name));
+                    if ~isempty(plInf.version)
+                        if isnumeric(plInf.version), plInf.version = num2str(plInf.version); end
+                        p.version = plInf.version;
                         p.zip = spm_file(p.zip,'basename',[p.name p.version]);
                         p.size = 1; % force install
                     end
-                    if ~isempty(safeInf) && safeInf.doPostprocess, plPost(end+1) = {p.name}; end
+                    if ~isempty(plInf.doPostprocess) && plInf.doPostprocess, plPost(end+1) = {p.name}; end
                     
                     plugin_install(p.zip, p.name, p.version, p.size);
                     
