@@ -262,6 +262,14 @@ if subjname{1} == '*'
     subjname = {aap.acq_details.subjects.subjname};
 end
 
+sub_id = 0;
+for idx=1:nnz(~cellfun('isempty',{aap.acq_details.subjects.subjname}))
+    if(contains(aap.acq_details.subjects(idx).subjname, subjname))
+        sub_id = idx;
+        break;
+    end
+end
+
 for subj = 1:numel(subjname)
     % check if (any of) the session(s) of the subject exist
     if ~strcmp(sessionspec,'uniquebysession')
@@ -276,7 +284,7 @@ for subj = 1:numel(subjname)
                     'did not find sessname %s in {aap.acq_details.sessions.name}',...
                     sessnames{s}));
             end
-            [~, mriser] = aas_get_series(aap,'functional',subj,sess);
+            [~, mriser] = aas_get_series(aap,'functional',sub_id,sess);
             if isempty(mriser) || (isnumeric(mriser) && ~mriser), havesess(s) = false; end
         end
         if ~any(havesess), continue; end
