@@ -232,19 +232,7 @@ switch task
             numel(cellstr(spm_select('List',aas_getstudypath(aap),['^' m.name '_']))) == nRes |...
             numel(cellstr(spm_select('List',aas_getstudypath(aap),['^' m.name]))) == nRes,...
             models);
-        if ~isempty(modelIsRun)
-            models(modelIsRun) = []; 
-            % clean existig results for unfinished models
-            if aas_stream_has_contents(aap,'study',[],'groupstat')
-                resStat = cellstr(aas_getfiles_bystream(aap,'study',[],'groupstat'));
-                resFns = arrayfun(@(m) cellstr(spm_select('FPList',aas_getstudypath(aap),['^' m.name])),models,'UniformOutput',false);
-                for m = cat(1,resFns{:})'
-                    delete(m{1});
-                    resStat(strcmp(resStat,m{1})) = [];
-                end
-                aap = aas_desc_outputs(aap,'study',[],'groupstat',resStat);
-            end
-        end
+        if ~isempty(modelIsRun), models(modelIsRun) = []; end
         outputFn = {};
         for m = models
             diag = aas_getsetting(aap,'diagnostics');
@@ -725,17 +713,9 @@ end
 for c = 1:numel(cfg)
     diagFn = cfg{c}.savepath;
     
-    stat = fstat(cfg{c}, allInp{:});
-    
-    % plot
+    % group mean(s)
     groupStat = {};
     avgcfg = keepfields(cfg{c},{'parameter','latency'});
-    if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
-        pcfg.snapshottwoi = pcfg.snapshottwoi(...
-            arrayfun(@(i) any(arrayfun(@(t) pcfg.snapshottwoi(i,1) < t & pcfg.snapshottwoi(i,2) > t, stat.time*1000)), 1:size(pcfg.snapshottwoi,1)) ...
-            ,:);
-    end
-    
     if numel(unique(m.groupmodel)) <= 2
         for g = unique(m.groupmodel)
             groupStat{end+1} = ft_granddescriptives(avgcfg, allInp{cfg{c}.design(1,:)==g});
@@ -749,21 +729,40 @@ for c = 1:numel(cfg)
         avgcfg.parameter = {avgcfg.parameter [avgcfg.parameter 'sem']};
         groupStat = cellfun(@(x) meeg_average(avgcfg,x), groupStat,'UniformOutput',false);
         for fave = fieldnames(cfg{c}.average)'
-            pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
             if contains(fave{1},'freq') && ~isempty(diagBands)
                 indMeas = strcmp(fieldofinterest,strrep(fave{1},'freq','band'));
+                pcfg.(DIM2SETTING(fave{1})) = strrep(diagBands{indMeas}(mean(cfg{c}.average.(fave{1}))),' ','');
                 diagFn = sprintf('%s_%s-%s',diagFn,fave{1},strrep(diagBands{indMeas}{mean(cfg{c}.average.(fave{1}))},' ','')); % add suffix to statFn
             else
+                pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
                 diagFn = sprintf('%s_%s-%1.2f-%1.2f',diagFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
             end
         end
     end
-    stat.mask(isnan(stat.mask)) = 0;
-    groupStat{1}.stat = stat;
-    groupStat{1}.stat.subjects = m.subjects(subjmodel);
-    if isstruct(atlas), groupStat{1} = struct_update(groupStat{1},atlas,'Mode','extend'); end
+    
+    % run stat
     statFn{c} = spm_file(strrep(diagFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
-    save(statFn{c},'groupStat');
+    if ~exist(statFn{c},'file')
+        aas_log(aap,false,['INFO - running statistics: ' spm_file(statFn{c},'basename')]);
+        stat = fstat(cfg{c}, allInp{:});
+        
+        stat.mask(isnan(stat.mask)) = 0;
+        groupStat{1}.stat = stat;
+        groupStat{1}.stat.subjects = m.subjects(subjmodel);
+        if isstruct(atlas), groupStat{1} = struct_update(groupStat{1},atlas,'Mode','extend'); end
+        save(statFn{c},'groupStat');
+    else
+        aas_log(aap,false,['INFO - loading previously calculated statistics: ' spm_file(statFn{c},'basename')]);
+        load(statFn{c},'groupStat');
+    end
+    
+    % plot
+    % - correct timeplot if needed
+    if isfield(pcfg,'snapshottwoi') && ~isempty(pcfg.snapshottwoi)
+        pcfg.snapshottwoi = pcfg.snapshottwoi(...
+            arrayfun(@(i) any(arrayfun(@(t) pcfg.snapshottwoi(i,1) < t & pcfg.snapshottwoi(i,2) > t, stat.time*1000)), 1:size(pcfg.snapshottwoi,1)) ...
+            ,:);
+    end
     
     pcfg.parameter = cfg{c}.parameter;
     fdiag(groupStat,pcfg,m.name,diagFn);
