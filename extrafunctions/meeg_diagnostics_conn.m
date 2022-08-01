@@ -153,7 +153,8 @@ for f = 1:size(snapshotwoi,1)
     meas = mean(stat(:,boiind(1):boiind(2)),2); mask = logical(meas);
     connT = table(string(groupStat.labelcmb(mask,:)), meas(mask),'VariableNames',{'conn' 'stat'});
     step = (max(connT.stat)-min(connT.stat))/(size(CM,1)-1);
-    connT.indCol = round((connT.stat-min(connT.stat))/step)+1;
+    if step == 0, connT.indCol(:) = round(size(CM,1)/2);
+    else, connT.indCol = round((connT.stat-min(connT.stat))/step)+1; end
     
     % - plot atlas
     fig = figure; set(fig,'Position',[0 0 1080 1080]);
