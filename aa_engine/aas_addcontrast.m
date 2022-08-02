@@ -284,7 +284,7 @@ for subj = 1:numel(subjname)
                     'did not find sessname %s in {aap.acq_details.sessions.name}',...
                     sessnames{s}));
             end
-            [~, mriser] = aas_get_series(aap,'functional',sub_id,sess);
+            [~, mriser] = aas_get_series(aap,'functional',find(strcmp({aap.acq_details.subjects.subjname},subjname{subj})),sess);
             if isempty(mriser) || (isnumeric(mriser) && ~mriser), havesess(s) = false; end
         end
         if ~any(havesess), continue; end
