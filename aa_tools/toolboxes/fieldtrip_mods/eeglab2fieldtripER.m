@@ -146,4 +146,5 @@ end
 
 % clear path
 ft_warning('removing %s toolbox from your MATLAB path',tbpath)
+ft_hastoolbox('eeglab',3); % prevent FT ignoring next call
 rmpath(tbpath)
