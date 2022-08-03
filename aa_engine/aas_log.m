@@ -28,9 +28,9 @@ if ~isfield(aap.options,'verbose'), aap.options.verbose = 2; end
 if ~aap.gui_controls.usecolouroutput
     style='text';
 elseif nargin < 4
-    if ~isempty(strfind(msg,'ERROR')) && isfield(aap.gui_controls.colours,'error'), style = aap.gui_controls.colours.error;
-    elseif ~isempty(strfind(msg,'WARNING')) && isfield(aap.gui_controls.colours,'warning'), style = aap.gui_controls.colours.warning;
-    elseif ~isempty(strfind(msg,'INFO')) && isfield(aap.gui_controls.colours,'info'), style = aap.gui_controls.colours.info;
+    if contains(msg,'ERROR') && isfield(aap.gui_controls.colours,'error'), style = aap.gui_controls.colours.error;
+    elseif contains(msg,'WARNING') && isfield(aap.gui_controls.colours,'warning'), style = aap.gui_controls.colours.warning;
+    elseif contains(msg,'INFO') && isfield(aap.gui_controls.colours,'info'), style = aap.gui_controls.colours.info;
     else style='text';
     end
 end

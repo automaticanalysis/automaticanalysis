@@ -17,6 +17,8 @@
                 <timewindow></timewindow>
             </model>
             
+            <numberofworkers desc='number of parallel workers to run permutations on the cluster, requires valid DCS/MPaS-based poolprofile and cluster allowing submission from worker nodes (0 or 1 means no parallelisation)'>0</numberofworkers>
+            
             <selectoverlappingdata>
                 <time desc='specify how to treat time' options='ignore|auto|[second to round to]' ui='optionlist'>auto</time>
                 <subjects desc='minimum amount of subjects required to have overlapping data' options='auto|[ratio of all subjects]' ui='optionlist'>1</subjects>
@@ -30,10 +32,10 @@
                 <p desc='critical value for cluster and single-sample'>0.05</p>
             </threshold>
             
-            <inputstreams>
-                <stream>timefreq</stream>
-                <stream isessential='0'>sourcesurface</stream>
-                <stream isessential='0'>sourceatlas</stream>
+            <inputstreams desc='data stream MUST be the first stream'>
+                <stream isrenameable='1'>timefreq</stream>
+                <stream isrenameable='1' isessential='0'>sourcesurface</stream>
+                <stream isrenameable='1' isessential='0'>sourceatlas</stream>
             </inputstreams>
             
             <outputstreams>
@@ -42,7 +44,7 @@
             </outputstreams>
             
             <diagnostics>
-                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix) or in bands corresponding to the input'></snapshotfwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
                 <topohighlight desc='highlight electrode on topoplot depending on whether it shows significancy any or all of the samples' options='any|all' ui='optionlist'>all</topohighlight>
                 <!--

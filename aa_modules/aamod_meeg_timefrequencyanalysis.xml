@@ -26,6 +26,11 @@
             <ignorebefore desc='ignore trials before this one, negative number means for each trialtype'></ignorebefore>
             <ignoreafter desc='ignore trials after this one, negative number means for each trialtype'></ignoreafter>            
             
+            <bandspecification desc='averaging frequency estimate according to the bands, adjusted if stream ipf is also provided'>
+                <band desc='band names, [1xN] cell of strings'></band>
+                <bandbound desc='band boundaries [1xN] cell of [1x2] double arrays in Hz'></bandbound>
+            </bandspecification>
+
             <trialmodel desc='modelling trials'>
                 <subject></subject>
                 <model>
@@ -38,16 +43,18 @@
             
             <inputstreams>
                 <stream>meeg</stream>
+                <stream isessential='0' isrenameable='1'>ipf</stream>                
             </inputstreams>
             
             <outputstreams>
-                <stream>timefreq</stream>
+                <stream isessential='0' isrenameable='1'>timefreq</stream>
+                <stream isessential='0' isrenameable='1'>timeband</stream>
                 <stream>peak</stream>
             </outputstreams>
             
             <diagnostics>
-                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix)'></snapshotfwoi>
-                <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
+                <snapshotfwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (as Nx2 matrix) or in bands corresponding to bandspecification.band'></snapshotfwoi>
+                <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (as Nx2 matrix)'></snapshottwoi>
             </diagnostics>
             
         </currenttask>

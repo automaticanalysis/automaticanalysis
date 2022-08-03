@@ -16,6 +16,13 @@
                 <groupmodel></groupmodel>
                 <timewindow></timewindow>
             </model>
+
+            <numberofworkers desc='number of parallel workers to run permutations on the cluster, requires valid DCS/MPaS-based poolprofile and cluster allowing submission from worker nodes (0 or 1 means no parallelisation)'>0</numberofworkers>
+
+            <neighbourhood desc='specify how to calculate signal neighbourhood (for data with elec only)'>
+                <method options='distance|triangulation' ui='optionlist'>distance</method>
+                <distance desc='specify criterion to determin distance, autosymm aims for a symmetric neighbourhood, minimumneighbour:[int] results in distance with minimum [int] neighbours, [mm] defines distance' options='autosymm|minimumneighbour:[int]|[mm]' ui='optionlist'>minimumneighbour:3</distance>
+            </neighbourhood>
             
             <selectoverlappingdata>
                 <time desc='specify how to treat time' options='ignore|auto|[second to round to]' ui='optionlist'>auto</time>
@@ -32,7 +39,7 @@
             </threshold>
             
             <inputstreams>
-                <stream>crossfreq</stream>
+                <stream isrenameable='1'>crossfreq</stream>
             </inputstreams>
             
             <outputstreams>
@@ -40,8 +47,8 @@
             </outputstreams>
             
             <diagnostics desc='at least one has to be specified to generate images, in case of specifying more than one'>
-                <snapshotfwoiphase desc='phase-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix), [] means averaging over the available range'></snapshotfwoiphase>
-                <snapshotfwoiamplitude desc='amplitude-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix), [] means averaging over the available range'></snapshotfwoiamplitude>
+                <snapshotfwoiphase desc='phase-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix) or in bands corresponding to the input, [] means averaging over the available range'></snapshotfwoiphase>
+                <snapshotfwoiamplitude desc='amplitude-defining timefrequencywindow-of-interest for snapshots specified as [start stop] in Hz (or as Nx2 matrix) or in bands corresponding to the input, [] means averaging over the available range'></snapshotfwoiamplitude>
                 <snapshotphwoi desc='phasewindow-of-interest for snapshots specified as [start stop] in degrees (or as Nx2 matrix), [] means averaging over the available range'></snapshotphwoi>
                 <snapshottwoi desc='timefrequencywindow-of-interest for snapshots specified as [start stop] in milliseconds (or as Nx2 matrix)'></snapshottwoi>
             </diagnostics>

@@ -1,6 +1,7 @@
 function [aap, resp] = aamod_meeg_sourcereconstruction(aap,task,subj)
 
 resp='';
+EST = aas_getstreams(aap,'output'); EST = setdiff(EST,{'peak'},'stable');
 
 switch task
     case 'report'
@@ -25,7 +26,7 @@ switch task
         end                
         
     case 'doit'
-        [junk, FT] = aas_cache_get(aap,'fieldtrip');
+        [~, FT] = aas_cache_get(aap,'fieldtrip');
         FT.load;
         FT.addExternal('spm12');
         
@@ -44,6 +45,11 @@ switch task
         sourcemodel = dat.sourcemodel;
         hasSensors = aas_stream_has_contents(aap,'sensors');
         
+        % band-average
+        bndcfg = [];
+        bndcfg.parameter = {'pow'};
+        bndcfg.bandspec = aas_getsetting(aap,'bandspecification');
+
         inpstream = aas_getstreams(aap,'input'); inpstream = inpstream{end};
         if aas_stream_has_contents(aap,'subject',subj,inpstream)
             infnames = cellstr(aas_getfiles_bystream(aap,'subject',subj,inpstream));
@@ -267,7 +273,17 @@ switch task
                 data.elec = elec_final;
                 timefreq     = ft_struct2single(ft_sourceanalysis(cfg, data));  % compute the source model
             end
-            if numel(m.event.weights) > 1  % contrast (assumed to be later than its primaries
+            timefreq.avg.dimord = strrep(data.dimord,'chan','pos');
+            if numel(m.event.weights) == 1 % single
+                if ~isempty(bndcfg.bandspec.band) % bands
+                    ipf = [];
+                    if aas_stream_has_contents(aap,'subject',subj,'ipf')
+                        fnIPF = cellstr(aas_getfiles_bystream(aap,'subject',subj,'ipf'));
+                        load(fnIPF{contains(spm_file(fnIPF,'basename'),m.event.names{1})},'ipf');
+                    end
+                    timeband = ft_average_bands(bndcfg,ipf,timefreq);
+                end
+            else  % contrast (assumed to be later than its primaries
                 testmodel = repmat(rmfield(m,'name'),1,numel(m.event.names));
                 for tm = 1:numel(testmodel)
                     testmodel(tm).event.names = m.event.names(tm);
@@ -276,26 +292,46 @@ switch task
                 prmodels = arrayfun(@(tm) find(arrayfun(@(om) isequal(rmfield(om,'name'),tm),models)), testmodel, 'UniformOutput', false);
                 if any(cellfun(@isempty, prmodels)), aas_log(aap,true,sprintf('One or more of the primary trialmodel(s) of %s not found', m.name)); end
                 prmodels = cell2mat(prmodels);
-                for pri = 1:numel(prmodels)
-                    dat = load(outfnames{pri}); f = fieldnames(dat); prdata{pri} = ft_selectdata([],dat.(f{1}));                    
+                for estim = EST
+                    for pri = 1:numel(prmodels)
+                        dat = load(strrep(outfnames{pri},'timefreq',estim{1})); f = fieldnames(dat); dat = dat.(f{1});
+                        if isfield(dat.avg,'dimord'), dat.avg = rmfield(dat.avg,'dimord'); end
+                        prdata{pri} = ft_selectdata([],dat);
+                        prdata{pri}.dimord = strrep(data.dimord,'chan','pos');
+                    end
+                    combinecfg.parameter = 'pow';
+                    combinecfg.weights = m.event.weights;
+                    combinecfg.contrast = aas_getsetting(sourceaap,'contrastoperation');
+                    combinecfg.normalise = 'no';
+                    combinedata = ft_combine(combinecfg,prdata{:});
+                    switch estim{1}
+                        case 'timefreq'
+                            timefreq.avg.pow = combinedata.pow;
+                        case 'timeband'
+                            timeband.avg.pow = combinedata.pow;
+                    end                    
                 end
-                combinecfg.parameter = 'pow';
-                combinecfg.weights = m.event.weights;
-                combinecfg.contrast = aas_getsetting(sourceaap,'contrastoperation');
-                combinecfg.normalise = 'no';
-                combinedata = ft_combine(combinecfg,prdata{:});
-                timefreq.avg.pow = combinedata.pow;
             end
-            timefreq.avg.dimord = strrep(data.dimord,'chan','pos');
-            timefreq.avg = rmfield(timefreq.avg,'filter');
+            timefreq.avg = rmfield(timefreq.avg,intersect(fieldnames(timefreq.avg),{'filter','filterdimord'}));
             timefreq.cfg = []; % remove provenance to save space
             timefreq.cfg.included = sourcemodel.included;
             save(outfnames{i},'timefreq')
+            if ~isempty(bndcfg.bandspec.band)
+                timefreq = timeband;
+                timefreq.avg.dimord = strrep_multi(data.dimord,{'chan' 'freq'},{'pos' 'band'});
+                timefreq.avg = rmfield(timefreq.avg,intersect(fieldnames(timefreq.avg),{'filter','filterdimord'}));
+                timefreq.cfg = []; % remove provenance to save space
+                timefreq.cfg.included = sourcemodel.included;
+                save(strrep(outfnames{i},'freq','band'),'timefreq')
+            end
         end
         
         %% save outputs
         if ~prepareOnly
             aap = aas_desc_outputs(aap,'subject',subj,'timefreq',outfnames);
+            if ~isempty(bndcfg.bandspec.band)
+                aap = aas_desc_outputs(aap,'subject',subj,'timeband',strrep(outfnames,'freq','band'));
+            end
         end
         
         FT.rmExternal('spm12');
@@ -305,13 +341,15 @@ switch task
         
         if strcmp(aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name,'aamod_meeg_sourcereconstruction')
             instream = aas_getstreams(aap,'input'); instream = instream{end};
-            [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
-            stageindex = sscanf(index,'_%05d');
             outstream = aas_getstreams(aap,'output',1); % assume single output
             instream = textscan(instream,'%s','delimiter','.'); instream = instream{1}{end};
             if ~strcmp(outstream,instream)
                 aap = aas_renamestream(aap,aap.tasklist.currenttask.name,outstream,instream,'output');
                 aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' instream '''']);
+                if ~isempty(aas_getsetting(aap,'bandspecification.band'))
+                    aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append',strrep(instream,'freq','band'),'output');
+                    aas_log(aap,false,['INFO: ' aap.tasklist.currenttask.name ' output stream: ''' strrep(instream,'freq','band') '''']);
+                end
             end
         end
 end

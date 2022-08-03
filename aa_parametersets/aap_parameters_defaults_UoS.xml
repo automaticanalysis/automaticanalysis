@@ -26,7 +26,38 @@
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
                 <dir ui='dir'>/users/psychology01/software/eeglab</dir>
                 <extraparameters>
-                    <requiredPlugins>Fileio:bva-io:clean_rawdata:AMICA:dipfit:Fieldtrip-lite:firfilt:fitTwoDipoles:ICLabel:Viewprops</requiredPlugins>
+                    <requiredPlugins>
+                        <name>Fileio</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>bva-io</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>clean_rawdata</name>
+                        <version>2.5</version>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>AMICA</name>
+                        <doPostprocess desc='replace amica15ex with amica15ub'>1</doPostprocess>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>dipfit</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>Fieldtrip-lite</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>firfilt</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>fitTwoDipoles</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>ICLabel</name>
+                    </requiredPlugins>
+                    <requiredPlugins>
+                        <name>Viewprops</name>
+                    </requiredPlugins>
                 </extraparameters>
             </toolbox>         
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
