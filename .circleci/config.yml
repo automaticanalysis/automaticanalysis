@@ -54,6 +54,7 @@ commands:
 
       - matlab/run-command:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa = aaClass; aap = aarecipe(); SPM = aas_inittoolbox(aap,'spm'); SPM.load; <<parameters.command>>
+          no-output-timeout: 3h
       
       # Artifacts (TODO: grab images)
       - run:
