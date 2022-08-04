@@ -21,7 +21,7 @@ switch task
         % Fieldmaps
         FM = aas_getfiles_bystream(aap,domain,[subj,sess],'fieldmap');
         for f = 1:size(FM,1)
-            aas_shell(['cp ' squeeze(FM(f,:)) ' ' FMdir]);
+            copyfile(squeeze(FM(f,:)),FMdir);
             FMfn{f} = spm_file(FM(f,:),'path',FMdir);
         end
         switch size(FM,1)
