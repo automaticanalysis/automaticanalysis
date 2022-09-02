@@ -7,6 +7,7 @@ The software was originally developed by Dr Rhodri Cusack for supporting researc
 [![manuscript](https://img.shields.io/badge/doi-10.3389%2Ffninf.2014.00090-blue.svg?style=flat)](http://doi.org/10.3389/fninf.2014.00090)
 [![resource](https://img.shields.io/badge/RRID-SCR__003560-blue?style=flat)](https://scicrunch.org/scicrunch/Resources/record/nlx_144509-1/SCR_003560/resolver)
 [![DOI](https://zenodo.org/badge/3820833.svg)](https://zenodo.org/badge/latestdoi/3820833)
+[![View Automatic Analysis (aa) on File Exchange](https://www.mathworks.com/matlabcentral/images/matlab-file-exchange.svg)](https://uk.mathworks.com/matlabcentral/fileexchange/106615-automatic-analysis-aa)
 
 Definitions: _aa_ means the Automatic Analysis software package and any associated documentation whether electronic or printed.
 
