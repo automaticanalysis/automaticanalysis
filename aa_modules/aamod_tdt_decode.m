@@ -421,8 +421,13 @@ switch task
         if subj == 1 % only once
             if ~aas_cache_get(aap,'tdt'), aas_log(aap,true,'TDT is not found'); end
             
-            dopairwise = aas_getsetting(aap,'dopairwise') && numel(aas_getsetting(aap,'itemList')) > 2;
-            doonevsall = aas_getsetting(aap,'doonevsall') && numel(aas_getsetting(aap,'itemList')) > 2;
+            items = aas_getsetting(aap,'itemList');
+            if isstruct(items) % connectivity + ROI
+                items = items.roi;
+            end
+            
+            dopairwise = aas_getsetting(aap,'dopairwise') && numel(items) > 2;
+            doonevsall = aas_getsetting(aap,'doonevsall') && numel(items) > 2;
             if dopairwise, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','output'); end
             if doonevsall, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','output'); end
             
@@ -489,7 +494,7 @@ for sess = aap.acq_details.selected_sessions
         cfg.files.label = vertcat(cfg.files.label,labels(l)*ones(numel(fnsLabel),1));
         cfg.files.labelname = vertcat(cfg.files.labelname,...
             repmat(cellstr(strjoin(labelnames{l},'+')),numel(fnsLabel),1));
-        cfg.files.descr = vertcat(cfg.files.descr,spm_file(fns(l),'basename'));
+        cfg.files.descr = vertcat(cfg.files.descr,spm_file(fnsLabel,'basename'));
     end
 end
 

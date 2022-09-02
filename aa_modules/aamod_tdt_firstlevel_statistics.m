@@ -35,18 +35,19 @@ switch task
                 sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_3_001.jpg',output{o}));
             if exist(imgfname,'file')
                 tstat = dlmread(strrep(imgfname,'_overlay_3_001.jpg','.txt'));
-                
-                % add image and report to subject
-                aap = aas_report_add(aap, subj,'<table><tr>');
-                aap = aas_report_add(aap, subj, sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
-                aap = aas_report_addimage(aap, subj, imgfname);
-                aap = aas_report_add(aap,subj,'</tr></table>');
-                
-                % add image and report to summary
-                aap = aas_report_add(aap,sprintf('TDT%02d',o),'<table><tr>');
-                aap = aas_report_add(aap,sprintf('TDT%02d',o),sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
-                aap = aas_report_addimage(aap,sprintf('TDT%02d',o), imgfname);
-                aap = aas_report_add(aap,sprintf('TDT%02d',o),'</tr></table>');
+                if numel(tstat) > 1 % not only 0                    
+                    % add image and report to subject
+                    aap = aas_report_add(aap, subj,'<table><tr>');
+                    aap = aas_report_add(aap, subj, sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
+                    aap = aas_report_addimage(aap, subj, imgfname);
+                    aap = aas_report_add(aap,subj,'</tr></table>');
+                    
+                    % add image and report to summary
+                    aap = aas_report_add(aap,sprintf('TDT%02d',o),'<table><tr>');
+                    aap = aas_report_add(aap,sprintf('TDT%02d',o),sprintf('T = %2.2f - %2.2f</tr><tr>', tstat(1), tstat(2)));
+                    aap = aas_report_addimage(aap,sprintf('TDT%02d',o), imgfname);
+                    aap = aas_report_add(aap,sprintf('TDT%02d',o),'</tr></table>');
+                end
             end
         end
     case 'doit'
@@ -120,8 +121,11 @@ switch task
                 doneIter = cellfun(@(f) sscanf(f,[cfgs(indCfg).results.filestart '_perm%04d']), cellstr(spm_select('List',cfgs(indCfg).results.dir,'.*_cfg.mat')));
                 doIter{indCfg} = setdiff(doIter{indCfg}, doneIter);
             else
-                combine = 0;   % see make_design_permutations how you can run all analysis in one go, might be faster but takes more memory
-                designs = make_design_permutation(cfgs(indCfg),aas_getsetting(aap,'permutation.iteration'),combine);
+                tmpcfg = cfgs(indCfg);
+                tmpcfg.permute.n_perms_select = aas_getsetting(aap,'permutation.iteration');
+                cfg.permute.combine = 0; % disable running all analysis in one go, might be faster (when no parallelisation is available) but takes more memory
+                cfg.permute.exchangeable = 0; % keep data from different decoding chunks (e.g. runs) separate
+                designs = make_design_permutation(tmpcfg);
                 save(fnDesign,'designs')
                 doIter{indCfg} = 1:numel(designs);
             end
@@ -199,9 +203,20 @@ switch task
             clear designs; load(fullfile(cfgs(indCfg).results.dir,[cfgs(indCfg).results.filestart '_designs.mat']),'designs');
             dim = [cfgs(indCfg).datainfo.dim numel(designs)];
             for o = 1:numel(cfgs(indCfg).results.output)
-                aas_log(aap,false,['INFO: Saving - ' spm_file(cfgs(indCfg).results.dir,'basename') ' ' cfgs(indCfg).results.output{o}]);
                 outpermfnames = cellstr(spm_select('FPList',cfgs(indCfg).results.dir,['^' cfgs(indCfg).results.filestart '_perm[0-9]{4}_' cfgs(indCfg).results.output{o} '.mat']));
                 outfname = fullfile(cfgs(indCfg).results.dir,[cfgs(indCfg).results.filestart '_perm_' cfgs(indCfg).results.output{o} '.nii']);
+                
+                % check if exists
+                if indCfg == 1, streamName = ['permuted_' cfgs(indCfg).results.output{o}]; 
+                elseif indCfg <= 1+npw, streamName = ['permuted_' cfgs(indCfg).results.output{o} '_pairwise'];
+                elseif indCfg <= 1+npw+nova, streamName = ['permuted_' cfgs(indCfg).results.output{o} '_onevsall'];
+                end
+                if aas_stream_has_contents(aap,'subject',subj,streamName) &&...
+                        any(strcmp(outfname, cellstr(aas_getfiles_bystream(aap,'subject',subj,streamName,'output'))))
+                    continue
+                end
+                
+                aas_log(aap,false,['INFO: Saving - ' spm_file(cfgs(indCfg).results.dir,'basename') ' ' cfgs(indCfg).results.output{o}]);
                 
                 N      = nifti;
                 N.dat  = file_array(outfname,dim,[16 0]);
@@ -211,7 +226,7 @@ switch task
                 create(N);
                 
                 for n = 1:numel(designs)
-                    dat = load(outpermfnames{n}); results = dat.results;
+                    load(outpermfnames{n},'results');
                     output = results.(cfgs(indCfg).results.output{o}).output;
                     Y = zeros(results.datainfo.dim);
                     if strcmpi(cfgs(indCfg).analysis,'roi') && (numel(results.roi_names) > 1)
@@ -242,93 +257,102 @@ switch task
         
         %% Statistics
         if aas_getsetting(aap,'dostatistics')
-            cfg = cfgs(1); % for main analysis only (TODO: add for the pairwise, if they exist)
-            statdir = spm_file(cfg.results.dir,'basename','stats');
-            aas_makedir(aap,statdir);
-            for o = 1:numel(cfg.results.output)
-                aas_log(aap,false,['INFO: Inferencing - ' cfg.results.output{o}]);
-                result = cellstr(aas_getfiles_bystream(aap,'subject',subj,cfg.results.output{o}));
-                dat = load(result{strcmp(spm_file(result,'ext'),'mat') & strcmp(spm_file(result,'basename'),spm_file(cfg.results.output{o},'prefix','res_'))}); res_mat = dat.results; % TODO: potential issue with connectivity, where both results are MAT files
-                reference = spm_select('FPList',spm_file(aas_getfiles_bystream(aap,'subject',subj,['permuted_' cfg.results.output{o}],'output'),'path'),...
-                    ['^res_perm[0-9]{4}_' cfg.results.output{o} '.mat$']);%
-                dat = load(aas_getfiles_bystream(aap,'subject',subj,'settings')); statcfg = dat.cfg;
-                statcfg.stats.test = 'permutation';
-                statcfg.stats.tail = 'right';
-                statcfg.stats.output = statcfg.results.output{o};
-                statcfg.stats.results.write = 1;
-                statcfg.stats.results.fpath = statdir;
-                decoding_statistics(statcfg,res_mat,reference);
+            for indCfg = 1:numel(cfgs)
+                cfg = cfgs(indCfg);
                 
-                % - create thresholded image
-                fnstatres = fullfile(statdir,['stats_' statcfg.stats.output '_' statcfg.stats.test '_' statcfg.stats.tail '.mat']);
-                statres = load(fnstatres); statres = statres.results_out;
-                V.dt = [spm_type('float32') 0];
-                V.mat = statres.datainfo.mat;
-                V.private.mat = statres.datainfo.mat;
-                
-                Z = statres.(cfg.results.output{o}).z;
-                thrZ = Z; thrZ(statres.(cfg.results.output{o}).p >= 0.05) = 0;
-                if strcmp(cfg.analysis,'roi') && (numel(results.roi_names) > 1)
-                    roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), statres.roi_names);
-                    Z = num2cell(Z);
-                    thrZ = num2cell(thrZ);
-                else
-                    roiInd = 1;
-                    Z = {Z};
-                    thrZ = {thrZ};
+                if indCfg == 1, sfx = ''; 
+                elseif indCfg <= 1+npw, sfx = '_pairwise';
+                elseif indCfg <= 1+npw+nova, sfx = '_onevsall';
                 end
                 
-                Y = zeros(statres.datainfo.dim);
-                for r = 1:numel(roiInd)
-                    Y(statres.mask_index_each{r}) = Z{r};
-                end
-                outfname = spm_file(fnstatres,'ext','nii');
-                nifti_write(outfname,Y,cfg.results.output{o},V);
-                aap = aas_desc_outputs(aap,'subject',subj,['zstat_' cfg.results.output{o}],outfname);
-
-                Y = zeros(statres.datainfo.dim);
-                for r = 1:numel(roiInd)
-                    Y(statres.mask_index_each{r}) = thrZ{r};
-                end
-                outfname = spm_file(fnstatres,'ext','nii','prefix','thresh_');
-                nifti_write(outfname,Y,['thresholded ' cfg.results.output{o}],V);
-                aap = aas_desc_outputs(aap,'subject',subj,['thresholded_' cfg.results.output{o}],outfname);
-                
-                % - overlay
-                if ~isempty(bgfname)
-                    % -- edges of activation
-                    slims = ones(4,2);
-                    sAct = arrayfun(@(x) any(Y(x,:,:),'all'), 1:size(Y,1));
-                    if numel(find(sAct))<2, slims(1,:) = [1 size(Y,1)];
-                    else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                    sAct = arrayfun(@(y) any(Y(:,y,:),'all'), 1:size(Y,2));
-                    if numel(find(sAct))<2, slims(2,:) = [1 size(Y,2)];
-                    else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                    sAct = arrayfun(@(z) any(Y(:,:,z),'all'), 1:size(Y,3));
-                    if numel(find(sAct))<2, slims(3,:) = [1 size(Y,3)];
-                    else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
-                    % -- convert to mm
-                    slims = sort(V.mat*slims,2);
-                    % -- extend if too narrow (min. 50mm)
-                    slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
+                statdir = spm_file(cfg.results.dir,'basename',strrep(cfg.results.filestart,'res','stats'));
+                aas_makedir(aap,statdir);
+                for o = 1:numel(cfg.results.output)
+                    aas_log(aap,false,['INFO: Inferencing - ' cfg.results.output{o} sfx]);
+                    result = cellstr(aas_getfiles_bystream(aap,'subject',subj,[cfg.results.output{o} sfx]));
+                    dat = load(result{strcmp(spm_file(result,'ext'),'mat') & strcmp(spm_file(result,'basename'),spm_file(cfg.results.output{o},'prefix',[cfg.results.filestart '_']))}); res_mat = dat.results; % TODO: potential issue with connectivity, where both results are MAT files
+                    reference = spm_select('FPList',spm_file(aas_getfiles_bystream(aap,'subject',subj,['permuted_' cfg.results.output{o} sfx],'output'),'path'),...
+                        ['^' cfg.results.filestart '_perm[0-9]{4}_' cfg.results.output{o} '.mat$']);%
+                    cfgFn = cellstr(aas_getfiles_bystream(aap,'subject',subj,['settings' sfx]));
+                    dat = load(cfgFn{startsWith(spm_file(cfgFn,'basename'),cfg.results.filestart)}); statcfg = dat.cfg;
+                    statcfg.stats.test = 'permutation';
+                    statcfg.stats.tail = 'right';
+                    statcfg.stats.output = statcfg.results.output{o};
+                    statcfg.stats.results.write = 1;
+                    statcfg.stats.results.fpath = statdir;
+                    decoding_statistics(statcfg,res_mat,reference);
                     
-                    % - draw
-                    axis = {'sagittal','coronal','axial'};
-                    for a = 1:3
-                        if any(cell2mat(Z)~=0), stat_fname = {outfname}; else, stat_fname = {}; end
-                        [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
-                        fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
-                        
-                        if (~any(cell2mat(Z)~=0))
-                            annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
-                        end
-                        
-                        spm_print(fnsl{a},fig,'jpg')
-                        close(fig);
+                    % - create thresholded image
+                    fnstatres = fullfile(statdir,['stats_' statcfg.stats.output '_' statcfg.stats.test '_' statcfg.stats.tail '.mat']);
+                    statres = load(fnstatres); statres = statres.results_out;
+                    V.dt = [spm_type('float32') 0];
+                    V.mat = statres.datainfo.mat;
+                    V.private.mat = statres.datainfo.mat;
+                    
+                    Z = statres.(cfg.results.output{o}).z;
+                    thrZ = Z; thrZ(statres.(cfg.results.output{o}).p >= 0.05) = 0;
+                    if strcmp(cfg.analysis,'roi') && (numel(statres.roi_names) > 1)
+                        roiInd = cellfun(@(rname) sscanf(rname,'roi%05d'), statres.roi_names);
+                        Z = num2cell(Z);
+                        thrZ = num2cell(thrZ);
+                    else
+                        roiInd = 1;
+                        Z = {Z};
+                        thrZ = {thrZ};
                     end
                     
-                    dlmwrite(fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',cfg.results.output{o})),[min(v(v~=0)), max(v)]);
-
+                    Y = zeros(statres.datainfo.dim);
+                    for r = 1:numel(roiInd)
+                        Y(statres.mask_index_each{r}) = Z{r};
+                    end
+                    outfname = spm_file(fnstatres,'ext','nii');
+                    nifti_write(outfname,Y,cfg.results.output{o},V);
+                    aap = aas_desc_outputs(aap,'subject',subj,['zstat_' cfg.results.output{o} sfx],outfname);
+                    
+                    Y = zeros(statres.datainfo.dim);
+                    for r = 1:numel(roiInd)
+                        Y(statres.mask_index_each{r}) = thrZ{r};
+                    end
+                    outfname = spm_file(fnstatres,'ext','nii','prefix','thresh_');
+                    nifti_write(outfname,Y,['thresholded ' cfg.results.output{o}],V);
+                    aap = aas_desc_outputs(aap,'subject',subj,['thresholded_' cfg.results.output{o} sfx],outfname);
+                    
+                    % - overlay
+                    if ~isempty(bgfname)
+                        % -- edges of activation
+                        slims = ones(4,2);
+                        sAct = arrayfun(@(x) any(Y(x,:,:),'all'), 1:size(Y,1));
+                        if numel(find(sAct))<2, slims(1,:) = [1 size(Y,1)];
+                        else, slims(1,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                        sAct = arrayfun(@(y) any(Y(:,y,:),'all'), 1:size(Y,2));
+                        if numel(find(sAct))<2, slims(2,:) = [1 size(Y,2)];
+                        else, slims(2,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                        sAct = arrayfun(@(z) any(Y(:,:,z),'all'), 1:size(Y,3));
+                        if numel(find(sAct))<2, slims(3,:) = [1 size(Y,3)];
+                        else, slims(3,:) = [find(sAct,1,'first') find(sAct,1,'last')]; end
+                        % -- convert to mm
+                        slims = sort(V.mat*slims,2);
+                        % -- extend if too narrow (min. 50mm)
+                        slims = slims + (repmat([-25 25],4,1).*repmat(diff(slims,[],2)<50,1,2));
+                        
+                        % - draw
+                        axis = {'sagittal','coronal','axial'};
+                        for a = 1:3
+                            if any(cell2mat(Z)~=0), stat_fname = {outfname}; else, stat_fname = {}; end
+                            [fig, v] = map_overlay(bgfname,stat_fname,axis{a},slims(a,1):aas_getsetting(aap,'overlay.nth_slice'):slims(a,2));
+                            fnsl{a} = fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s_overlay_%d.jpg',cfg.results.output{o},a));
+                            
+                            if (~any(cell2mat(Z)~=0))
+                                annotation('textbox',[0 0.475 0.5 0.5],'String','No voxels survive threshold','FitBoxToText','on','fontweight','bold','color','y','fontsize',18,'backgroundcolor','k');
+                            end
+                            
+                            spm_print(fnsl{a},fig,'jpg')
+                            close(fig);
+                        end
+                        
+                        dlmwrite(fullfile(aas_getsubjpath(aap,subj), sprintf('diagnostic_aamod_tdt_firstlevel_statistics_%s.txt',cfg.results.output{o})),[min(v(v~=0)), max(v)]);
+                        
+                    end
                 end
             end
         end

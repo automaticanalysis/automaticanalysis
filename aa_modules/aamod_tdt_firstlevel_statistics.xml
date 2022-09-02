@@ -23,9 +23,9 @@
             <!-- N.B.: input mask (firstlevel_brainmask/GM mask) must have "mask" in the streamname --> 
             <inputstreams>
                 <stream>settings</stream>
+                <stream>samples</stream>
                 <stream>mask</stream>
                 <stream>structural</stream>
-                <stream>firstlevel_betas</stream>
                 <stream isrenameable='1'>input</stream>
             </inputstreams>
             
