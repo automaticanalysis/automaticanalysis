@@ -164,14 +164,15 @@ switch task
             EPIimg{m}(excl) = [];
         end
         
-        %% Describe the outputs and Diagnostics
-        
-        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
-                    (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
-                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && m == aap.tasklist.currenttask.settings.diagnostic.streamind)
+        %% Describe the outputs and Diagnostics        
+        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') || ~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic
             aas_checkreg(aap,domain,cell2mat(varargin),mEPIimg,'structural');
             for m = 1:numel(mainstream)
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
+            end
+        else % struct aap.tasklist.currenttask.settings.diagnostic
+            if isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind')
+                aas_checkreg(aap,domain,cell2mat(varargin),mainstream{aap.tasklist.currenttask.settings.diagnostic.streamind},'structural');
             end
         end
         
@@ -192,10 +193,8 @@ switch task
         [in, attr] = aas_getstreams(aap,'input'); 
         indModRef = find(cellfun(@(a) isstruct(a) && isfield(a,'diagnostic') && a.diagnostic, attr),1,'last');
         in(1:indModRef-1) = []; % not for cross-modality reference(s)
-        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
-        stageindex = sscanf(index,'_%05d');
-        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; if ~iscell(out), out = {out}; end 
-        out = setdiff(out,{'epitotarget_xfm'});
+        out = aas_getstreams(aap,'output'); if ~iscell(out), out = {out}; end 
+        out = setdiff(out,{'epitotarget_xfm'},'stable');
         for s = 1:numel(in)
             instream = strsplit(in{s},'.'); instream = instream{end};
             if s <= numel(out)

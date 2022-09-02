@@ -23,7 +23,7 @@ switch task
             inds = aap.tasklist.currenttask.settings.diagnostic.streamind;
         else
             inds = 1:length(streams);
-        end
+        end        
         for streamind = inds
             if strcmp(streams{streamind}, 'dartel_templatetomni_xfm'), continue, end
             streamfn = aas_getfiles_bystream(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},'output');
@@ -118,8 +118,8 @@ switch task
 		% find out what streams we should normalise
         streams=aas_getstreams(aap,'output');
         for streamind=1:length(streams)
-            if ~aas_stream_has_contents(aap,streams{streamind}), continue; end
             if isstruct(streams{streamind}), streams{streamind} = streams{streamind}.CONTENT; end
+            if ~aas_stream_has_contents(aap,streams{streamind}), continue; end            
             if strcmp(streams{streamind},'dartel_templatetomni_xfm'), continue; end % skip            
             imgs = [];
             % Image to reslice
@@ -181,7 +181,7 @@ switch task
             aap=aas_desc_outputs(aap,index{:},streams{streamind},wimgs);
             if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
                     (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
-                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && streamind == aap.tasklist.currenttask.settings.diagnostic.streamind)
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && ((streamind - any(strcmp(streams,'dartel_templatetomni_xfm'))) == aap.tasklist.currenttask.settings.diagnostic.streamind))
                 [inp, inpattr] = aas_getstreams(aap,'input');
                 streamStruct = inp{cellfun(@(a) isfield(a,'diagnostic') && a.diagnostic, inpattr)};
                 aas_checkreg(aap,aap.tasklist.currenttask.domain,cell2mat(varargin),streams{streamind},streamStruct);
@@ -198,10 +198,13 @@ switch task
         end
         
     case 'checkrequirements'
-        in = aas_getstreams(aap,'input'); in(1:4) = []; % not for reference
-        [stagename, index] = strtok_ptrn(aap.tasklist.currenttask.name,'_0');
-        stageindex = sscanf(index,'_%05d');
-        out = aap.tasksettings.(stagename)(stageindex).outputstreams.stream; out = setdiff(out,{'dartel_templatetomni_xfm'});
+        [in, inAttr] = aas_getstreams(aap,'input'); 
+        [in, indIn] = setdiff(in,{'dartel_template' 'dartel_templatetomni_xfm' 'dartel_flowfield'},'stable'); inAttr = inAttr(indIn);
+        % do not consider structural if it is a diagnostic stream
+        if any(contains(in,'structural')) && isfield(inAttr{contains(in,'structural')},'diagnostic') && inAttr{contains(in,'structural')}.diagnostic
+            in(contains(in,'structural')) = [];
+        end
+        out = aas_getstreams(aap,'output'); out = setdiff(out,{'dartel_templatetomni_xfm'},'stable');
         for s = 1:numel(in)
             instream = textscan(in{s},'%s','delimiter','.'); instream = instream{1}{end};
             if s <= numel(out)
