@@ -16,7 +16,7 @@ clear
 aa_ver5
 
 %% DEFINE SPECIFIC PARAMETERS
-aap=aarecipe('aap_tasklist_fmri_multi.xml');
+aap=aarecipe('fmri_multi.xml');
 
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path

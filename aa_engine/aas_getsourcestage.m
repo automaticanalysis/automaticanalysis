@@ -22,10 +22,13 @@ else % based on stream
         stream = stream{1};
         while ~strcmp(currmod,sourcemod)
             inpstreams = aap.internal.inputstreamsources{currmodnum}.stream;
-            try
+            srcmatch = strcmp({inpstreams.name},stream);
+            if any(srcmatch)
                 currmodnum = inpstreams(strcmp({inpstreams.name},stream)).sourcenumber;
-            catch
-                aas_log(aap,true,sprintf('stream "%s" cannot be tracked beyond module "%s"',stream,currmod));
+            else
+                aas_log(aap,true,sprintf('stream "%s" cannot be tracked beyond module "%s"',stream,currmod)); 
+                currmodnum = [];
+                break;
             end
             currmod = aap.tasklist.main.module(currmodnum).name;
         end

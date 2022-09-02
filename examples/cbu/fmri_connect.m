@@ -31,7 +31,7 @@ SUBJ = {...
 
 %% DEFINE SPECIFIC PARAMETERS
 %  Default recipe without model
-aap=aarecipe('aap_tasklist_fmri_connect.xml');
+aap=aarecipe('fmri_connect.xml');
 
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path

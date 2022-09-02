@@ -3,5 +3,3 @@ This directory contains example scripts that require access to the CBU imaging s
 run. We include them here to illustrate advanced AA applications that have yet to find
 their way into analyses of fully open datasets (but please note that many examples use
 CamCAN, for which you can request access even if you are not a member of CBU).
-
-For an automated test, see `aa_testcode/aatest`.   

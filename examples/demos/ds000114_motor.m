@@ -1,8 +1,7 @@
 
 % this script runs basic preprocessing, and first- and second-level model
-% on the ds000114 dataset used in the "helloworld" example script. It also
-% demonstrates how to do processing using the Matlab Parallel Computing
-% Toolbox if it is available.
+% on the ds000114 dataset motor task. It also demonstrates how to do processing 
+% using the Matlab Parallel Computing Toolbox if it is available.
 
 % variable names in ALLUPPERCASE are placeholders that
 % you must edit before the script can be run
@@ -22,12 +21,17 @@ aa_ver5;
 
 PARAMETER_FNAME = '/path/to/parameter_xml_file';
 
-% the helloworld tasklist comes installed with aa:
+% the tasklist for this analysis comes installed with aa:
 
 [aahome,~,~] = fileparts(which('aa_ver5'));
-tasklist_fname = fullfile(aahome,'examples/tutorials/aa_example_helloworld_model.xml');
+tasklist_fname = fullfile(aahome,'examples/demos/ds000114_motor.xml');
 
 aap = aarecipe(PARAMETER_FNAME,tasklist_fname);
+
+% tip: if you are using the default parameter file (~/.aa/aap_parameters_user.xml)
+% you can use this simpler syntax for aarecipe:
+%
+% aap = aarecipe(tasklist_fname);
 
 % -------------------------------------------------------------------------
 % results and data directory specification

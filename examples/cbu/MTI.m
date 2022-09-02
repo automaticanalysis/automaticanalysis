@@ -23,7 +23,7 @@ SUBJ = {...
      'S05' 140931; ...
      };
 
-aap = aarecipe('aap_tasklist_MTI.xml');
+aap = aarecipe('MTI.xml');
 
 % this example uses SPM tools in the user script, so we have to ensure SPM is
 % on the path

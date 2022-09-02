@@ -26,7 +26,7 @@
         <module><name>aamod_smooth</name>
             <extraparameters>
                 <aap><tasklist><currenttask><settings>
-                    <FWHM>8</FWHM>
+                    <FWHM>6</FWHM>
                 </settings></currenttask></tasklist></aap>
             </extraparameters>
         </module>

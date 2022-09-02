@@ -17,9 +17,9 @@ switch task
         %% Select
         series = horzcat(aap.acq_details.subjects(subj).seriesnumbers{:});
         if ~iscell(series) ... 
-                || (~isstruct(series{1}) ... % hdr+fname
-                && ~ischar(series{1}) ... % fname
-                && ~iscell(series{1})) % fname (4D)
+                || (~isstruct(series{sess}) ... % hdr+fname
+                && ~ischar(series{sess}) ... % fname
+                && ~iscell(series{sess})) % fname (4D)
             aas_log(aap,true,['ERROR: Was expecting list of struct(s) of fname+hdr or fname in cell array\n' help('aas_addsubject')]);            
         end
         series = series{sess};

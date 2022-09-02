@@ -12,7 +12,7 @@ classdef aaClass
         aaURL
         aawiki
         % user config directory
-        configdir = fullfile(getenv('HOME'), '.aa');
+        configdir
         % user parameter file name
         parameter_xml_filename = 'aap_parameters_user.xml';
     end
@@ -35,6 +35,8 @@ classdef aaClass
             end
 
             % user config directory
+            if ispc, obj.configdir = fullfile(getenv('HOMEPATH'),'.aa');
+            else, obj.configdir = fullfile(getenv('HOME'),'.aa'); end
             aas_makedir([], obj.configdir);
             addpath(obj.configdir);
 

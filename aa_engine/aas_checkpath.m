@@ -14,7 +14,7 @@ end
 % When used in aas_log messages, escape backward slashes from windows paths.
 logsafe_path = strrep(pth, '\', '\\');
 
-allowedchars = '-\w/.\_';
+allowedchars = '-\w/.\_:';
 if exist('allowwildcards','var') && ~isempty(allowwildcards) && allowwildcards
     allowedchars = [allowedchars, '*?'];
 end

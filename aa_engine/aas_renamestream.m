@@ -11,7 +11,7 @@ if nargin < 5
 end
 
 if strcmp(type,'output')
-    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  It might breake dependency for the consecuting module(s).\n  Make sure that you know what you are doing!',origstream,stage,newstream));
+    aas_log(aap,false,sprintf('WARNING: Renaming output %s of %s to %s.\n  It might break dependency for the consecuting module(s).\n  Make sure that you know what you are doing!',origstream,stage,newstream));
 end
 
 %% Locate STAGE
@@ -113,11 +113,20 @@ if ~iscell(aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream) %
         aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream = singlenewstream;
     end
 else
-    aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    if isfield(aap,'internal')
-        aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-        aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+    if isempty(newstream)
+        aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = [];
+        aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = [];
+        if isfield(aap,'internal')
+            aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = [];
+            aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = [];
+        end
+    else
+        aap.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+        aap.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+        if isfield(aap,'internal')
+            aap.internal.aap_initial.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+            aap.internal.aap_initial.aap_beforeuserchanges.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+        end
     end
 end
 
@@ -135,12 +144,17 @@ if isfield(aap,'internal') && ((numel(streamindex) > 1) || ~isnan(streamindex))
 end
 
 % Edit schema
-if isempty(newstream) || ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
-    aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
-    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream; end
-elseif ~isempty(newstream) % with attributes
-    aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
-    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream; end
+if isempty(newstream)
+    aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = [];
+    if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream(ind) = []; end
+else
+    if  ~isstruct(aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind})
+        aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream;
+        if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind} = newstream; end
+    else % with attributes
+        aap.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream;
+        if isfield(aap,'internal'), aap.internal.aap_initial.schema.tasksettings.(stagename)(stageindex).([type 'streams']).stream{ind}.CONTENT = newstream; end
+    end
 end
 
 % Update current (if applicable)
