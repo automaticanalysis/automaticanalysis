@@ -275,6 +275,8 @@ switch task
                 if isstruct(labelnamesConnectivity), labelnamesConnectivity = labelnamesConnectivity.connectivity; end
 
                 % create rois
+                validROIs = readtable(aas_getfiles_bystream(aap,'study',[],'ROInames'),'ReadVariableNames',false);
+                validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), validROIs.Var1);
                 fnCM = cellstr(aas_getfiles_bystream(aap,'subject',subj,'connectivity'));
                 hdr = read_header_matlab(fnCM{1});
                 dat = read_image_matlab(hdr);
@@ -284,8 +286,6 @@ switch task
                     case 'network' % within sub-network, each sub-network decoded as whole
                         rois = zeros(hdr.dim);
                         networkSpec = aas_getsetting(aap,'network.networkrois');
-                        validROIs = readtable(aas_getfiles_bystream(aap,'study',[],'ROInames'),'ReadVariableNames',false);
-                        validROIs = cellfun(@(r) sscanf(r,'Atlas.cluster%d'), validROIs.Var1);
                         for n = 1:numel(networkSpec)
                             [~,indRois] = intersect(validROIs,networkSpec{n});
                             rois(indRois,indRois) = n;
@@ -315,7 +315,7 @@ switch task
             if aas_stream_has_contents(aap,'subject',subj,'connectivity') % connectivity
                 cfgConnectivity = decoding_describe_data_connectivity(cfg,labelnamesConnectivity,1:length(labelnamesConnectivity), aap, subj);
             end
-            if exist('cfgROI','var') && exist('cfgConnectivity','var')
+            if exist('cfgROI','var') && exist('cfgConnectivity','var') % connectivity + roi
                 aas_log(aap,false,'INFO: joint decoding - ROI + Connectivity');
                 labelnames = aas_getsetting(aap,'itemList');
                 [~,indROI,indConnectivity] = intersect(ValidROI.ROIval,validROIs);
@@ -347,6 +347,7 @@ switch task
                 labelnames = labelnamesConnectivity;
             end
         end
+        aap = aas_desc_outputs(aap,'subject',subj,'samples',cfg.files.name);
         cfg0.files.mask = cfg.files.mask;
 
         cfg.design = make_design_cv(cfg);
@@ -420,12 +421,17 @@ switch task
         if subj == 1 % only once
             if ~aas_cache_get(aap,'tdt'), aas_log(aap,true,'TDT is not found'); end
             
-            dopairwise = aas_getsetting(aap,'dopairwise') && numel(aas_getsetting(aap,'itemList')) > 2;
-            doonevsall = aas_getsetting(aap,'doonevsall') && numel(aas_getsetting(aap,'itemList')) > 2;
+            items = aas_getsetting(aap,'itemList');
+            if isstruct(items) % connectivity + ROI
+                items = items.roi;
+            end
+            
+            dopairwise = aas_getsetting(aap,'dopairwise') && numel(items) > 2;
+            doonevsall = aas_getsetting(aap,'doonevsall') && numel(items) > 2;
             if dopairwise, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_pairwise','output'); end
             if doonevsall, aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'append','settings_onevsall','output'); end
             
-            out = aas_getstreams(aap,'output'); out = setdiff(out,{'settings' 'settings_pairwise' 'mask'});
+            out = aas_getstreams(aap,'output'); out = setdiff(out,{'settings' 'settings_pairwise' 'samples' 'mask'});
             meas = aas_getsetting(aap,'measure'); meas = strsplit(meas,':');
             if isempty(meas{1}), aas_log(aap,true,'no measure specified'); end
             for s = 1:numel(meas)
@@ -488,7 +494,15 @@ for sess = aap.acq_details.selected_sessions
         cfg.files.label = vertcat(cfg.files.label,labels(l)*ones(numel(fnsLabel),1));
         cfg.files.labelname = vertcat(cfg.files.labelname,...
             repmat(cellstr(strjoin(labelnames{l},'+')),numel(fnsLabel),1));
-        cfg.files.descr = vertcat(cfg.files.descr,spm_file(fns(l),'basename'));
+        cfg.files.descr = vertcat(cfg.files.descr,spm_file(fnsLabel,'basename'));
     end
 end
+
+% reorder to match with the others (labels -> chunks)
+[~,ind] = sortrows([cfg.files.label cfg.files.chunk]);
+cfg.files.name = cfg.files.name(ind);
+cfg.files.chunk = cfg.files.chunk(ind);
+cfg.files.label = cfg.files.label(ind);
+cfg.files.labelname = cfg.files.labelname(ind);
+cfg.files.descr = cfg.files.descr(ind);
 end

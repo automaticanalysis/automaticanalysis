@@ -169,12 +169,16 @@ switch task
             modNames = meas;
             if aas_stream_has_contents(aap,'subject',1,'settings_pairwise')
                 for fnpw = cellstr(aas_getfiles_bystream(aap,'subject',1,'settings_pairwise'))'
-                    load(fnpw{1},'cfg');
-                    modNames = cat(1,modNames,spm_file(meas,'suffix',['_' strjoin(strrep(unique(cfg.files.labelname,'stable'),' ','-'),'_vs_')]));
+                    load(fnpw{1},'cfg');                    
+                    pwName = spm_file(meas,'suffix',['_' strjoin(strrep(unique(cfg.files.labelname,'stable'),' ','-'),'_vs_')]);
+                    % take out characters that don't go well in filenames...
+                    pwName{1} = char(regexp(pwName{1},'[a-zA-Z0-9_-]','match'))';
+                    modNames = cat(1,modNames,pwName);
                 end                
             end
             
             for n = 1:numel(modNames)
+                % take out characters that don't go well in filenames...
                 rfxdir = fullfile(rfxrootdir,modNames{n});
                 aas_makedir(aap, rfxdir);
                 SPM(n) = SPM(1);
