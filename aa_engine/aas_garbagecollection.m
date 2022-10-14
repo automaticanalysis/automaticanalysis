@@ -49,8 +49,8 @@ end
 if ~exist('modulestoscan','var') || isempty(modulestoscan)
     modulestoscan=1:length(aap.tasklist.main.module);
     %     exclude modelling modules, if any
-    ind = cell_index(strfind({aap.tasklist.main.module.name}, 'level'),'1');
-    if ind, modulestoscan=1:ind-1; end
+    ind = cell_index({aap.tasklist.main.module.name}, 'level');
+    if ind(1), modulestoscan=1:ind(1)-1; end
 end
 
 if (~exist('permanencethreshold','var')) || isempty(permanencethreshold)
@@ -65,6 +65,7 @@ end;
 imgCategory = {'.IMA' '.dcm' '.nii' '.img' '.hdr'};
 
 numdel=0;
+bytesdel=0;
 
 garbagelog=fullfile(studypath,sprintf('garbage_collection.txt'));
 fprintf('Logfile: %s\n',garbagelog);
@@ -149,6 +150,7 @@ for modind=modulestoscan
                 numdel=numdel+1;
             elseif exist(fn{1},'file')
                 fprintf(fid,'%s\n',fn{1});
+                bytesdel = bytesdel + dir(fn{1}).bytes;
                 if actuallydelete, delete(fn{1}); end
                 numdel=numdel+1;
             end
@@ -184,9 +186,9 @@ fprintf(fid,'---end---\n');
 fclose(fid);
 
 if (~actuallydelete)
-    aas_log(aap,false,sprintf('Garbage collection would delete %d files/folders',numdel));
+    aas_log(aap,false,sprintf('Garbage collection would delete %0.2f GB of %d files/folders',bytesdel / 10^9,numdel));
 else
-    aas_log(aap,false,sprintf('Garbage collection deleted %d files/folders',numdel));
+    aas_log(aap,false,sprintf('Garbage collection deleted %0.2f GB of %d files/folders',bytesdel / 10^9,numdel));
 end
 end
 
