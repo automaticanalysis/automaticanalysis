@@ -30,7 +30,6 @@ function install_tool() {
                 git reset --hard ${giturl[3]}
                 ;;
         esac
-        fi
         if [[ -f ${folder}/requirements.txt ]]; then
             pip install -r ${folder}/requirements.txt
         fi
