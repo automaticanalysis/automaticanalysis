@@ -27,7 +27,9 @@ function install_tool() {
                 ;;
             4)
                 git clone -b ${giturl[2]} ${giturl[1]}
+                cd ${folder}
                 git reset --hard ${giturl[3]}
+                cd ${OLDPWD}
                 ;;
         esac
         if [[ -f ${folder}/requirements.txt ]]; then
