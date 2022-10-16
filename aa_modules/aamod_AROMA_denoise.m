@@ -3,13 +3,13 @@ function [ aap,resp ] = aamod_AROMA_denoise(aap, task, subject_index, session_in
 % denoise an EPI using FSL's ICA-AROMA
 %
 % This requires AROMA-ICA to be installed and added as an aa toolbox.
-% Also, AROMA requires python2.7 and pip.
+% Also, AROMA requires python3.6 and pip.
 %
 % The easiest way to install is prolly:
 %
 %   % cd /users/abcd1234/tools
 %   % git clone https://github.com/maartenmennes/ICA-AROMA.git
-%   % python2.7 -m pip install -r ICA-AROMA/requirements.txt
+%   % pip install -r ICA-AROMA/requirements.txt
 %
 %   (assuming that the repo link is still valid)
 %
@@ -178,7 +178,7 @@ switch task
             rmdir(OUT_DIR,'s');
         end
         
-        command = sprintf('python2.7 %s -in %s -out %s -mc %s -m %s', AROMA_FNAME, EPIMNI_FNAME, OUT_DIR, MC_FNAME, REFMASK_FNAME);
+        command = sprintf('python %s -in %s -out %s -mc %s -m %s', AROMA_FNAME, EPIMNI_FNAME, OUT_DIR, MC_FNAME, REFMASK_FNAME);
         [ status,result ] = aas_runfslcommand(aap,command);
         if (status > 0)
             aas_log(aap, true, sprintf('Error running AROMA: %s', result));
@@ -240,15 +240,11 @@ switch task
             aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
-        % AROMA requires python2.7
-        % use system instead of aas_shell to avoid the latter's confusing error message if which not found
-        
-        [ status,result ] = system('which python2.7');
+        % AROMA requires python3.6
+        [~,w] = aas_shell('python --version'); 
+        verPy = regexp(w,'(?<=Python )[0-9\.]*','match');
+        if ~startsWith(verPy{1},'3.6'), aas_log(aap,true,sprintf('%s: ICA_AROMA requires python 3.6 (not found). Exiting...', mfilename)); end
 
-        if (status > 0 || isempty(result))
-            aas_log(aap, true, sprintf('%s: ICA_AROMA requires python 2.7 (not found). Exiting...', mfilename));
-        end       
-        
         % may as well check for template while we're here
         
         WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm.nii.gz');             
