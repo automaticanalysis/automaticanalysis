@@ -2,14 +2,16 @@ function [ aap,resp ] = aamod_AROMA_denoise(aap, task, subject_index, session_in
 %
 % denoise an EPI using FSL's ICA-AROMA
 %
-% This requires AROMA-ICA to be installed and added as an aa toolbox.
-% Also, AROMA requires python3.6 and pip.
+% This requires AROMA-ICA to be installed and added as an aa toolbox. The commit of e8d7a5891563aff7ff71375078314c417d32d808 is recommended.
+% Also, AROMA requires Python 3.6 and pip.
 %
 % The easiest way to install is prolly:
 %
 %   % cd /users/abcd1234/tools
 %   % git clone https://github.com/maartenmennes/ICA-AROMA.git
-%   % pip install -r ICA-AROMA/requirements.txt
+%   % cd ICA-AROMA
+%   % git reset --hard e8d7a5891563aff7ff71375078314c417d32d808
+%   % pip install -r requirements.txt
 %
 %   (assuming that the repo link is still valid)
 %
