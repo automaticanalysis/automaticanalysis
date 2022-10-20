@@ -17,14 +17,23 @@ function install_tool() {
     folder=$3
 
     if [[ $url == git+* ]]; then
-        IFS='+' read -ra giturl <<< "$url"        
-        if [[ -z ${giturl[2]} ]]; then
-            git clone ${giturl[1]}
-        else
-            git clone -b ${giturl[2]} ${giturl[1]}
-        fi
+        IFS='+' read -ra giturl <<< "$url"
+        case ${#giturl[@]} in
+            2)
+                git clone ${giturl[1]}
+                ;;
+            3)
+                git clone -b ${giturl[2]} ${giturl[1]}
+                ;;
+            4)
+                git clone -b ${giturl[2]} ${giturl[1]}
+                cd ${folder}
+                git reset --hard ${giturl[3]}
+                cd ${OLDPWD}
+                ;;
+        esac
         if [[ -f ${folder}/requirements.txt ]]; then
-            python2.7 -m pip install -r ${folder}/requirements.txt
+            pip install -r ${folder}/requirements.txt
         fi
     fi
 
