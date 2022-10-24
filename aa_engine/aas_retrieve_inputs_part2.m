@@ -72,7 +72,11 @@ while any(depnotdone)
                                     oldpth=newpth;
                                     numtotransfer=1;
                                 else
-                                    inps=[inps fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
+                                    if (aap.options.NIFTI4D == 1)
+                                        inps=[inps fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
+                                    else
+                                        inps=[fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
+                                    end                                    
                                     numtotransfer=numtotransfer+1;
                                 end;
                                 if (streamfiles(depind).wasnamechange)
@@ -80,7 +84,9 @@ while any(depnotdone)
                                     numtotransfer=0;
                                     inps='';
                                 else
-                                    if (numtotransfer>0) && (ind==length(streamfiles(depind).fns) || numtotransfer>chunksize)
+                                    if (aap.options.NIFTI4D == 0)
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                    elseif (numtotransfer>0) && (ind==length(streamfiles(depind).fns) || numtotransfer>chunksize)
                                         aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
                                         numtotransfer=0;
                                         inps='';
