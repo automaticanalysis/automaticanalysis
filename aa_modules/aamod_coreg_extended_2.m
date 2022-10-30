@@ -165,11 +165,18 @@ switch task
         
         %% Describe the outputs and Diagnostics
         
-        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') ||...
+        % Diagnostic stream
+        if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') || ...
                     (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
-                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && m == aap.tasklist.currenttask.settings.diagnostic.streamind)
+                    (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && aap.tasklist.currenttask.settings.diagnostic.streamind > -1)
             aas_checkreg(aap,domain,cell2mat(varargin),mEPIimg,'structural');
-            for m = 1:numel(mainstream)
+        end
+        
+        % Main streams
+        for m = 1:numel(mainstream)
+            if ~isfield(aap.tasklist.currenttask.settings,'diagnostic') || ...
+                        (~isstruct(aap.tasklist.currenttask.settings.diagnostic) && aap.tasklist.currenttask.settings.diagnostic) ||...
+                        (isstruct(aap.tasklist.currenttask.settings.diagnostic) && isfield(aap.tasklist.currenttask.settings.diagnostic,'streamind') && aap.tasklist.currenttask.settings.diagnostic.streamind == m)
                 aas_checkreg(aap,domain,cell2mat(varargin),mainstream{m},'structural');
             end
         end
