@@ -39,6 +39,14 @@ switch (aap.directory_conventions.fslshell)
         end
         cmd = [cmd fslcmd ''''];
         [s, w]=aas_shell(cmd);
+    case 'wsl'
+        cmd=['bash' ' -c -i ''' fslsetup];
+        fslcmd = convertWinPathToWSL(fslcmd);
+        for e = 1:size(ENV,1)
+            cmd = [cmd sprintf('export %s=%s;',ENV{e,1},convertWinPathToWSL(ENV{e,2}))];
+        end
+        cmd = [cmd fslcmd ''''];
+        [s, w]=aas_shell(cmd);
 end
 
 % Display error if there was one
