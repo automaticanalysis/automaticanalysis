@@ -48,11 +48,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -126,11 +126,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -204,11 +204,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -282,11 +282,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -362,11 +362,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -443,11 +443,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -519,11 +519,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
@@ -600,11 +600,11 @@ jobs:
       - name: Check out repository under $GITHUB_WORKSPACE
         uses: actions/checkout@v2
 
-      - name: Set up Python 2.7
+      - name: Set up Python 3.6
         uses: actions/setup-python@v2
         with:
           # Semantic version range syntax or exact version of a Python version
-          python-version: '2.7'
+          python-version: '3.6'
           # Optional - x64 or x86 architecture, defaults to x64
           architecture: 'x64'
 
