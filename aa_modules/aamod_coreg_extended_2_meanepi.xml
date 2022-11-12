@@ -24,6 +24,11 @@
             <outputstreams>
                 <stream>meanepi</stream>
             </outputstreams>
+
+            <diagnostic>
+                <streamind desc='index of main output stream (i.e. image) to be reported, 0 means the diagnostic stream only'>1</streamind>
+            </diagnostic> 
+            
         </currenttask>
     </tasklist>
 </aap>
