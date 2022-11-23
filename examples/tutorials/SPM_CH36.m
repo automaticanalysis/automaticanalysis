@@ -208,10 +208,12 @@ aap.tasksettings.aamod_firstlevel_model(1).highpassfilter= 192;
 % aap.tasksettings.aamod_firstlevel_threshold(1).threshold.correction = 'none';
 % aap.tasksettings.aamod_firstlevel_threshold(1).description = '0.001 UNC/ 10 ext';
 
+% this matches settings used for vois extraction in the clickthrough
+
 aap.tasksettings.aamod_firstlevel_threshold(1).threshold.p = 0.05;
 aap.tasksettings.aamod_firstlevel_threshold(1).threshold.extent = 3;
 aap.tasksettings.aamod_firstlevel_threshold(1).threshold.correction = 'FWE';
-aap.tasksettings.aamod_firstlevel_threshold(1).description = '0.05 FWE/ 10 ext';
+aap.tasksettings.aamod_firstlevel_threshold(1).description = '0.05 FWE/ 3 ext';
 
 % 2) PPI model
 
