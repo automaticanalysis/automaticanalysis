@@ -2,7 +2,242 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='VOI extraction' modality='MRI' >
+ 
+         <!--
+
+            Extract an eigenvariate from a functional image in preparation for subsequent 
+            processing (e.g., PPI modeling).
+
+            ** ROI DEFINITION ***
+
+            Several options are provided to define the ROI (i.e. the voxel locations 
+            used to calculate the eigenvariate):
+
+               1a) a fixed sphere specified by a center and diameter
+               1b) a movable sphere specified by a contrast and a diameter
+               2) a mask image and a threshold
+               3) an atlas image and a label
+
+            FIXED SPHERE
+
+            A fixed sphere ROI is defined setting type=sphere, centre=xyz
+            and providing the sphere center in <centredefinition><xyz>
+            and the diameter in <size>. Alternately, the sphere center 
+            can be defined using an atlas image (see example usage below),
+
+            NB: <size> is the *diameter* of the sphere, not radius.
             
+
+            MASK
+
+            A mask ROI is defined setting <type> to "mask" and specifying a
+            threshold in the <maskthresh> field. The ROI is defined as all 
+            voxels in the image exceeding the threshold. 
+
+            Specification of the mask file is reviewed below.
+
+            ATLAS
+
+            An "atlas" is a nift image with integer voxel values (labels) that identify
+            various anatomical structures or functional regions. For example, the Schaefer
+            atlas available at https://github.com/ThomasYeoLab/CBIG contains an extensive
+            cortical parcellation including rContPFCL (label 2034), rDorsAttnPrCv (2022),
+            and rDorsAttnPost (3030).
+
+            Use of an atlas is specified by setting the <type> parameter to "roi".
+            The label to be used is specified in <centredefinition><roival>.
+
+            NB: A binarized image (i.e., 0/1 voxels) can be treated either as an atlas 
+            containing a single <roival> of 1 or as a mask with a <maskthresh> of 0.
+
+
+            ATLAS OR MASK FILE SPECIFICATION
+
+            An atlas or mask file is defined by calling aas_addinitalstream 
+            in your userscript and specifying the fullpath to the file:
+
+               aap = aas_addinitialstream(aap, 'rois', 'sub-01', {'/path/to/roi.nii'});
+               aap = aas_addinitialstream(aap, 'rois', 'sub-02', {'/path/to/roi.nii'});
+               etc.
+
+            note the streamname is 'rois' and the subject ID must be specified. An
+            initalstream must be defined for each subject in the analysis.
+
+            If you have multiple instances of aamod_vois_extract in your tasklist, you can
+            assign different files to each rois stream if necessary by using the full 
+            module instance name:
+
+               aap = aas_addinitialstream(aap, 'aamod_extract_vois_00001.rois', 'sub-01', {'/path/to/roi1.nii'});
+               aap = aas_addinitialstream(aap, 'aamod_extract_vois_00002.rois', 'sub-01', {'/path/to/roi2.nii'});
+               etc.
+
+
+            DEFINING A SPHERE CENTER USING AN ATLAS IMAGE
+
+            An atlas can be used to define a the center of a spherical ROI in two ways:
+
+            1) if <centre> is "roicentre", the center is defined as the mean [x y z] of
+            all voxel values in the atlas image matching the specified label (roival).
+
+            2) if <roicentre> is "roimaximum", the ROI is centered at the maximum value 
+            of a contrast image masked by the voxel values in the atlas image matching 
+            the label. The contrast name is specified in <centredefinition><contrast>.
+
+
+            EXAMPLE ROI DEFINITIONS
+
+            1) 10 mm fixed sphere, center specified explicitly
+
+            <VOI>
+               <name>fixed_sphere_example_1</name>
+               <type>sphere</type>
+               <centre>xyz</centre>
+               <centerdefinition>
+                <xyz><[15 -78 -9]</xyz>
+               </centredefinition>
+               <size>10</size>
+            </VOI>
+
+            2) 10 mm fixed sphere, center defined using an atlas
+
+            <VOI>
+               <name>fixed_sphere_example_2</name>
+               <type>roi</type>
+               <centre>roicentre</centre>
+               <centerdefinition>
+                <roival>42</roival>
+               </centredefinition>
+               <size>10</size>
+            </VOI>
+
+            (additionally, in userscript):
+
+            aap = aas_addinitialstream(aap,'rois','sub-01',{'/path/to/schaeferatlas.nii'});
+            aap = aas_addinitialstream(aap,'rois','sub-02',{'/path/to/schaeferatlas.nii'});
+            etc...
+
+            The sphere center is computed as the [x y z] average of all voxels
+            in the atlas matching the specified label (i.e. roival). If the altas
+            region of interest is bilateral, the result may be unexpected.
+
+            3) 10 mm "movable" sphere; center defined by a contrast masked by an atlas
+
+            <VOI>
+               <name>movable_sphere_example</name>
+               <type>sphere</type>
+               <centre>roimaximum</centre>
+               <centerdefinition>
+                <roival>42</roival>
+                <contrast>TASK</contrast>
+               </centredefinition>
+               <size>10</size>
+            </VOI>
+
+            (in userscript):
+
+            aap = aas_addinitialstream(aap,'rois','sub-01',{'/path/to/schaeferatlas.nii'});
+            aap = aas_addinitialstream(aap,'rois','sub-02',{'/path/to/schaeferatlas.nii'});
+            etc...
+
+            The sphere will be centered on the maximum of the contrast image within the
+            specified atlas ROI. The sphere center can vary from subject-to-subject,
+            as determined by the specifics of the contrast map.
+
+            4) mask defined using a thresholded file
+
+            <VOI>
+               <name>mask_example_1</name>
+               <type>mask</type>
+               <maskthresh>3.0</maskthresh>
+            </VOI>
+
+            (in userscript):
+
+            aap = aas_addinitialstream(aap,'rois','sub-01',{'/path/to/maskfile.nii'});
+            aap = aas_addinitialstream(aap,'rois','sub-02',{'/path/to/maskfile.nii'});
+            etc.
+
+            5) mask defined using a binarized file
+
+            <VOI>
+               <name>mask_example_2</name>
+               <type>mask</type>
+               <maskfile>/path/to/spmT_0003_binarized.nii</maskfile>
+               <maskthresh>0</maskthresh>
+            </VOI>
+
+            (in userscript):
+
+            aap = aas_addinitialstream(aap,'rois','sub-01',{'/path/to/binarizedmaskfile.nii'});
+            aap = aas_addinitialstream(aap,'rois','sub-02',{'/path/to/binarizedmaskfile.nii'});
+            etc.
+
+            6) mask defined using an atlas
+
+            <VOI>
+               <name>mask_example_3</name>
+               <type>roi</type>
+               <centerdefinition>
+                <roival>42</roival>
+               </centredefinition>
+            </VOI>
+
+            (in userscript):
+
+            aap = aas_addinitialstream(aap,'rois','sub-01',{'/path/to/schaeferatlas.nii'});
+            aap = aas_addinitialstream(aap,'rois','sub-02',{'/path/to/schaeferatlas.nii'});
+            etc...
+
+            Note the appearance of <centerdefinition> here is misleading - the
+            field is only used to specify an atlas label in its <roival> subfield. It
+            is *not* used to compute a center (as is done in when <type> = "roicenter").
+
+            *** DEFAULT MASKING ***
+
+            Regardless of method, the defined ROI is additionally constrained 
+            using the wholebrain mask calculated by SPM in the first-level model 
+            used to generate the spm_* inputstream used in the module. 
+
+            *** ADJUST ***
+
+            The timeseries data can be "adjusted" (i.e. a model fit to the data is 
+            subtracted off) prior to calculating the eigenvariate. The adjustment is based
+            on the regresssors which appear in the input stream firstlevel_spm. 
+
+            Three options are available:
+
+               1) "none" - no adjustment (i.e., process the raw epi data)
+               2) "all" - adjust for all regressors (i.e. process the residuals)
+               3) contrast name - adjust the data using a named contrast 
+
+            A named contrast is defined using aas_addcontrast in the userscript. For example, 
+            if your model contains three regressors of interest and six motion extimates,
+            you can define a 3x9 F contrast "EOI" (effects of interest), then specify:
+
+               <adjust>EOI</adjust>
+
+            which will subtract off the effects the motion estimates and use the adjusted
+            data to construct the eigenvariate. (An example of this in a clickthrough
+            analysis is provided in Chapter 36 of the SPM12 manual.)
+
+            *** NAME ***
+
+            You must provide a name for the vois in the <name> field.
+
+            This name is used in other modules to identify vois.
+
+            *** OUTPUT ***
+
+            The module creates a single output stream named vois containing the eigenvariate
+            (the score of the first principal component of the voxels in a specified ROI)
+            of each defined ROI. The data is saved to the file VOI_name_n.mat, where "name"
+            is the string used in the <name> field and n is the VOI index. The contents of
+            this file can be displayed using: spm_regions('display','/path/to/VOI_<name>_x.mat').
+            Note if you are using the VOI in a PPI analysis, a jpeg of the eigenvariate and
+            the associated PPI regressors is automatically generated by aamod_ppi_prepare.
+
+            -->
+
             <qsub>
                 <timeBase></timeBase>
                 <memoryBase></memoryBase>
@@ -10,11 +245,11 @@
             
             <permanenceofoutput>3</permanenceofoutput>
             
-            <adjust desc='removing variance explained' ui='optionlist' options='none|all|[contrast name]'>none</adjust>
+            <adjust desc='remove variance explained' ui='optionlist' options='none|all|contrastname'>none</adjust>
             
             <VOI>
                 <name desc='Name of the VOI'></name>
-                <type ui='optionlist' options='sphere|mask|roi|blob'></type>
+                <type ui='optionlist' options='sphere|roi|mask'></type>
                 <centre ui='optionlist' options='xyz|roicentre|roimaximum'></centre>
                 <centredefinition>
                     <xyz></xyz>
@@ -22,15 +257,16 @@
                     <contrast desc='name of the contrast'></contrast>
                 </centredefinition>
                 <size desc='diametre for sphere, in mm'></size>
+                <maskthresh desc='threshold used for type=mask'></maskthresh>
             </VOI>
-            
+                       
             <inputstreams>
                 <stream>firstlevel_spm</stream> 
                 <stream>firstlevel_brainmask</stream>
                 <stream>firstlevel_betas</stream>                
                 <stream isessential="0">firstlevel_spmts</stream> 
                 <stream isessential="0">firstlevel_spmfs</stream>
-                <stream isrenameable="1" isessential="0">rois</stream>
+                <stream isessential="0">rois</stream>
             </inputstreams>
 
             <outputstreams>
