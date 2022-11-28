@@ -103,7 +103,11 @@ if ~cachehit
         if ~isempty(host)
             cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
         else
-            cmd = sprintf('rsync -vt %s %s', src, dest);
+            if ~ispc()
+                cmd = sprintf('rsync -vt %s %s', src, dest);
+            else
+                cmd = sprintf('copy %s %s', src, dest);
+            end
         end
         [s, w]=aas_shell(cmd,allow404,~allow404);
         if (s==0)
