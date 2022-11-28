@@ -266,7 +266,7 @@
                 <stream>firstlevel_betas</stream>                
                 <stream isessential="0">firstlevel_spmts</stream> 
                 <stream isessential="0">firstlevel_spmfs</stream>
-                <stream isessential="0">rois</stream>
+                <stream isessential="0" isrenameable="1">rois</stream>
             </inputstreams>
 
             <outputstreams>

@@ -254,7 +254,7 @@ aap.tasksettings.aamod_vois_extract.VOI(1).size = 10;
 % aap.tasksettings.aamod_vois_extract.VOI(1).centredefinition.contrast = 'C_MOT';
 % aap.tasksettings.aamod_vois_extract.VOI(1).size = 10;
 % 
-% aap = aas_addinitialstream(aap,'aamod_vois_extract_TA_00001.rois','M00527',{'/path/to/anatomical/atlas.nii'}); 
+% aap = aas_addinitialstream(aap,'aamod_vois_extract_00001.rois','M00527',{'/path/to/anatomical/atlas.nii'}); 
 
 % 4) options for ppi_prepare:
 
@@ -263,11 +263,9 @@ aap.tasksettings.aamod_ppi_prepare.PPI.voiname = 'V2';
 aap.tasksettings.aamod_ppi_prepare.PPI.contrastspec = '+1xattention|-1xnoattention';
 
 
-
 % ------------------------------------------------------------------------------------------------------------------------------
 % RUN
 % ------------------------------------------------------------------------------------------------------------------------------
-
 
 aa_doprocessing(aap);
 

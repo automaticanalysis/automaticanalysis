@@ -41,10 +41,11 @@ switch task
 
         % the rois instream (if present) can either be used as a
         % mask (type=mask) or an atlas (type=roi). 
-
+        
         rois_instream = [];
-        if (aas_stream_has_contents(aap, subj, 'rois'))
-            rois_instream = aas_getstreams(aap,'input'); rois_instream = rois_instream{end}; 
+        instreams = aas_getstreams(aap,'input'); 
+        if (aas_stream_has_contents(aap, subj, instreams{end}))
+            rois_instream = instreams{end};
         end
         
         for sess = aap.acq_details.selected_sessions 
