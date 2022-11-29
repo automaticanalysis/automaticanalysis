@@ -60,9 +60,9 @@ switch task
                 % explicitly, add them to model
                 
                 [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
-                if any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
- 
-                     covToRemove = [];
+                if isstruct(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+
+                    covToRemove = [];
                     PPIs = cellstr(aas_getfiles_bystream(aap,'session',[subj,sess],'ppi'));
                     for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
                         defPPI = defCov.covariate(indDefPPI);
@@ -88,18 +88,17 @@ switch task
                     % providing flexible PPI modeling options to those
                     % who need them.
                
-                    load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
-                    [phys, psych] = strtok(PPI.name,'x('); psych = psych(3:end-1);
+                    temp = load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
 
                     aap = aas_addcovariate(aap,modname,...
                         basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                        'PPI',PPI.ppi,0,1);
+                        'PPI',temp.PPI.ppi,0,1);
                     aap = aas_addcovariate(aap,modname,...
                         basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                        ['Psych_' psych],PPI.P,0,1);
+                        'PSYCH',temp.PPI.P,0,1);
                     aap = aas_addcovariate(aap,modname,...
                         basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
-                        ['Phys_' phys],PPI.Y,0,1);
+                        'PHYS',temp.PPI.Y,0,1);
 
                 end % if ~isempty(defCov{1})...       
             end % if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')...
