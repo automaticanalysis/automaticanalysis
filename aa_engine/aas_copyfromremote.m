@@ -121,7 +121,6 @@ if ~cachehit
                 break;
             end;
         end     
-        [s, w]=aas_shell(cmd,allow404,~allow404);
         if (s==0)
             if vargs.verbose
                 aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
