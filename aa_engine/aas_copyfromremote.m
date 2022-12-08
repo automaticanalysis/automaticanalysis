@@ -99,16 +99,28 @@ if ~cachehit
     % Exponential back off if connection refused
     retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
     for retry=retrydelay
-        % -t option preserves timestamp of remote file
-        if ~isempty(host)
-            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
+        if isempty(host)
+            copyfile(src, dest);
         else
-            if ~ispc()
-                cmd = sprintf('rsync -vt %s %s', src, dest);
+            % -t option preserves timestamp of remote file
+            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
+            [s, w]=aas_shell(cmd,allow404,~allow404);
+            if (s==0)
+                if vargs.verbose
+                    aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+                end
+                break;
+            end;
+            if (allow404 && ~isempty(strfind(w,'No such file or directory')))
+                break;
+            end;
+            if (~isempty(strfind(w,'Connection refused')))
+                aas_log(aap,false,sprintf('Connection refused in transfer, retry in %d s',retry));
+                pause(retry)
             else
-                cmd = sprintf('copy %s %s', src, dest);
-            end
-        end
+                break;
+            end;
+        end     
         [s, w]=aas_shell(cmd,allow404,~allow404);
         if (s==0)
             if vargs.verbose
