@@ -121,21 +121,6 @@ if ~cachehit
                 break;
             end;
         end     
-        if (s==0)
-            if vargs.verbose
-                aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
-            end
-            break;
-        end;
-        if (allow404 && ~isempty(strfind(w,'No such file or directory')))
-            break;
-        end;
-        if (~isempty(strfind(w,'Connection refused')))
-            aas_log(aap,false,sprintf('Connection refused in transfer, retry in %d s',retry));
-            pause(retry)
-        else
-            break;
-        end;
     end;
     
     % Copy to cache
