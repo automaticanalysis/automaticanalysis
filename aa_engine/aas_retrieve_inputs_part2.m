@@ -53,7 +53,6 @@ while any(depnotdone)
                             aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
 
                             oldpth='';
-
                             % rsync in chunks. It will then compress.
                             chunksize=64;
                             transfernow=false;
@@ -84,8 +83,8 @@ while any(depnotdone)
                                     numtotransfer=0;
                                     inps='';
                                 else
-                                    use_remotesymlink = 0; % Determines if the stream is suitable for symlink or not
-                                    if (~streamfiles(depind).ismodified) && isfield(aap.options,'remotesymlink')
+                                    use_remotesymlink = 0; % if the stream is not modified, symlink is suitable.
+                                    if (~streamfiles(depind).ismodified) && aap.options.remotesymlinks
                                         use_remotesymlink = 1; % if the stream is not modified, symlink is suitable.
                                         % Symlink requires exact file name pointing to the target file.
                                         % Not a directory. So make the target path a file instead
@@ -156,14 +155,17 @@ while any(depnotdone)
                                         copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
                                     end
                                 else
-                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
+                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
                                         cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
-                                    else
+                                    elseif aap.options.hardlinks
                                         % This is a hard link, not a symlink. This
                                         % takes the timestamp of the destination file,
                                         % and won't be deleted if the destination is
                                         % deleted. So, more like a copy...
                                         cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    elseif aap.options.symlinks
+                                        % This is a symlink
+                                        cmd=['ln -s ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
                                     end
                                     aas_shell(cmd);
                                 end

@@ -104,8 +104,13 @@ if ~cachehit
         if isempty(host)
             if (allowremotesymlink)
                 if ~isfile(dest)
-                    cmd= ['mklink ' dest ' ' src];
-                    [s, w]=aas_shell(cmd,allow404,~allow404);
+                    if ispc()
+                        cmd = sprintf('mklink %s %s', dest, src);
+                        [s, w]=aas_shell(cmd,allow404,~allow404);
+                    else
+                        cmd = sprintf('ln -s %s %s', dest, src);
+                        [s, w]=aas_shell(cmd,allow404,~allow404);
+                    end
                 end
             else
                 copyfile(src, dest);
