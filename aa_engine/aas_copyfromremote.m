@@ -18,12 +18,14 @@ function [aap]=aas_copyfromremote(aap,host,src,dest,varargin)
 vdefaults = { ...
     'allow404',     0, [0 1], ...     % 0 = crash on 404s? 1 = allow them?
     'allowcache',  -1, [-1 0 1], ...  % -1 = default to aaq.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
-    'verbose',      1, [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'verbose',      0, [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'allowremotesymlink', 0, [0 1] ...    % Allow symlink when using remote connected pipelines; 1= allow 0= don't allow
 };
 
 vargs = vargParser(varargin, vdefaults);
 
 allow404 = vargs.allow404;
+allowremotesymlink =  vargs.allowremotesymlink;
 
 % Only cache single files, if allowed
 allowremotecache = false;
@@ -99,13 +101,35 @@ if ~cachehit
     % Exponential back off if connection refused
     retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
     for retry=retrydelay
-        % -t option preserves timestamp of remote file
-        if ~isempty(host)
-            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
+        if isempty(host)
+            if (allowremotesymlink)
+                if ~isfile(dest)
+                    cmd= ['mklink ' dest ' ' src];
+                    [s, w]=aas_shell(cmd,allow404,~allow404);
+                end
+            else
+                copyfile(src, dest);
+            end
         else
-            cmd = sprintf('rsync -vt %s %s', src, dest);
-        end
-        [s, w]=aas_shell(cmd,allow404,~allow404);
+            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
+            [s, w]=aas_shell(cmd,allow404,~allow404);
+            if (s==0)
+                if vargs.verbose
+                    aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+                end
+                break;
+            end;
+            if (allow404 && ~isempty(strfind(w,'No such file or directory')))
+                break;
+            end;
+            if (~isempty(strfind(w,'Connection refused')))
+                aas_log(aap,false,sprintf('Connection refused in transfer, retry in %d s',retry));
+                pause(retry)
+            else
+                break;
+            end;
+        end    
+
         if (s==0)
             if vargs.verbose
                 aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');

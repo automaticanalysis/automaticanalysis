@@ -66,7 +66,7 @@ while any(depnotdone)
                                 if (~strcmp(oldpth,newpth))
                                     aas_makedir(aap,newpth);
                                     if (numtotransfer>0)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlink',aap.options.remotesymlink);
                                     end;
                                     inps=[fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
                                     oldpth=newpth;
@@ -80,14 +80,21 @@ while any(depnotdone)
                                     numtotransfer=numtotransfer+1;
                                 end;
                                 if (streamfiles(depind).wasnamechange)
-                                    aas_copyfromremote(aap, streamfiles(depind).inputstream.host, fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}),streamfiles(depind).fns_dest_full{ind},'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                    aas_copyfromremote(aap, streamfiles(depind).inputstream.host, fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}),streamfiles(depind).fns_dest_full{ind},'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlink',aap.options.remotesymlink);
                                     numtotransfer=0;
                                     inps='';
                                 else
+                                    use_remotesymlink = 0; % Determines if the stream is suitable for symlink or not
+                                    if (~streamfiles(depind).ismodified) && isfield(aap.options,'remotesymlink')
+                                        use_remotesymlink = 1; % if the stream is not modified, symlink is suitable.
+                                        % Symlink requires exact file name pointing to the target file.
+                                        % Not a directory. So make the target path a file instead
+                                        oldpth = fullfile(oldpth,streamfiles(depind).fns{ind}); 
+                                    end
                                     if (aap.options.NIFTI4D == 0)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlink',use_remotesymlink);
                                     elseif (numtotransfer>0) && (ind==length(streamfiles(depind).fns) || numtotransfer>chunksize)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlink',use_remotesymlink);
                                         numtotransfer=0;
                                         inps='';
                                     end;
@@ -134,10 +141,20 @@ while any(depnotdone)
                                     oldpth=newpth;
                                 end;
                                 if ispc()
-                                    % On Windows, always use copyfile for now.
-                                    % TODO: Allow hardlinks on Windows? Can they even be created without admin rights?
                                     src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
-                                    copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                    if (~streamfiles(depind).ismodified) && aap.options.symlinks
+                                        if ~isfile(streamfiles(depind).fns_dest_full{ind})
+                                            cmd=['mklink ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                            aas_shell(cmd);
+                                        end
+                                    elseif (~streamfiles(depind).ismodified) && aap.options.hardlinks
+                                        if ~isfile(streamfiles(depind).fns_dest_full{ind})
+                                            cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                            aas_shell(cmd);
+                                        end
+                                    elseif (streamfiles(depind).ismodified) && ~aap.options.symlinks
+                                        copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                    end
                                 else
                                     if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
                                         cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
