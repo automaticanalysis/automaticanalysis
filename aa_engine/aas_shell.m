@@ -34,6 +34,9 @@ if ~hit
 end
 
 %% Run
+if ispc()
+    cmd = strrep(cmd,'\','\\');
+end
 if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
 [s,w]=system([prefix cmd]);
 
