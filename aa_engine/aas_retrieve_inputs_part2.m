@@ -63,7 +63,7 @@ while any(depnotdone)
                                 % Copy file
                                 [pth,nme,ext]=fileparts(streamfiles(depind).fns_dest_full{ind});
                                 newpth=pth;
-                                if (~streamfiles(depind).ismodified)
+                                if (~streamfiles(depind).ismodified & aap.options.remotesymlinks == 1)
                                     use_remotesymlink = 1;
                                 end
                                 if (~strcmp(oldpth,newpth))
