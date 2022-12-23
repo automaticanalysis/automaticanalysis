@@ -105,7 +105,9 @@ for depind=1:length(deps)
             %  stage, and the dest corresponds to the inputstream of the
             %  next stage. A touch confusing!
             outputstreamdesc=fullfile(dest,sprintf('stream_%s_remoteoutputfrom_%s_%s.txt',fromstreamname,inputstream.host,inputstream.sourcestagename));
-            
+            if ~isfile(remoteoutputstreamdesc)
+                continue;
+            end;
             aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache, 'verbose', 1);
             
             if (exist(outputstreamdesc,'file'))
