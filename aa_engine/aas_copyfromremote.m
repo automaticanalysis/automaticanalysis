@@ -100,6 +100,8 @@ end
 if ~cachehit
     % Exponential back off if connection refused
     retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
+    w = '';
+    s = -1;
     for retry=retrydelay
         if isempty(host)
             if (allowremotesymlink)
@@ -113,7 +115,8 @@ if ~cachehit
                     end
                 end
             else
-                copyfile(src, dest);
+                cmd = sprintf('copy %s %s', src, dest);
+                [s, w]=aas_shell(cmd,allow404,~allow404);
             end
         else
             cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
