@@ -101,7 +101,10 @@ if ~cachehit
     for retry=retrydelay
         if isempty(host)
             copyfile(src, dest);
-        else
+            if vargs.verbose
+                 aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+           end
+       else
             % -t option preserves timestamp of remote file
             cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
             [s, w]=aas_shell(cmd,allow404,~allow404);
