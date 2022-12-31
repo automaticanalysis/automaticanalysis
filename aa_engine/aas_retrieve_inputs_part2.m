@@ -50,7 +50,13 @@ while any(depnotdone)
                     % Retrieve remote or local stream?
                     switch streamfiles(depind).streamlocation
                         case 'remote'
-                            aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,streamfiles(depind).src,streamfiles(depind).dest),aap.gui_controls.colours.inputstreams);
+                            logsafe_path_src = streamfiles(depind).src;
+                            logsafe_path_dest = streamfiles(depind).dest;
+                            if ispc()
+                                logsafe_path_src = strrep(streamfiles(depind).src, '\', '\\');
+                                logsafe_path_dest = strrep(streamfiles(depind).dest, '\', '\\');
+                            end
+                            aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,logsafe_path_src,logsafe_path_dest),aap.gui_controls.colours.inputstreams);
 
                             oldpth='';
 
