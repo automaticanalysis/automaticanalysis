@@ -17,8 +17,8 @@ function [aap]=aas_copyfromremote(aap,host,src,dest,varargin)
 % Set the defaults arguments
 vdefaults = { ...
     'allow404',     0, [0 1], ...     % 0 = crash on 404s? 1 = allow them?
-    'allowcache',  -1, [-1 0 1], ...  % -1 = default to aaq.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
-    'verbose',      1, [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'allowcache',   aaq.directory_conventions.allowremotecache, [-1 0 1], ...  % -1 = default to aaq.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
+    'verbose',      aap.options.verbose, [0 1], ...     % Display all those annoying "Retrieved..." messages?
 };
 
 vargs = vargParser(varargin, vdefaults);
@@ -107,7 +107,7 @@ if ~cachehit
        else
             % -t option preserves timestamp of remote file
             cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
-            [s, w]=aas_shell(cmd,allow404,~allow404);
+            [s, w]=aas_shell(cmd,aap.options.verbose,~allow404);
             if (s==0)
                 if vargs.verbose
                     aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
