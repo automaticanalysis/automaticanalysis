@@ -2,6 +2,33 @@
 <aap>
     <tasklist>
         <currenttask domain='subject' desc='SPM PPI prepare for firstevel model' modality='MRI' >
+   
+            <!--
+
+            Create PPI variables for use as regressors in a subsequent GLM
+
+            The required <PPI> fields are defined as follows
+
+               name - a name for the PPI (ex: V2x(Att-NoAtt))
+               voiname - a VOI name defined in an instance of aamod_vois_extract appearing previously in the tasklist
+               contrastspec - the contrast used to define the PPI regressors. This can be one of the following:
+
+                  1) a contrast vector (e.g, [0.5 0.5 -1]) - NB: the vector is right-zero-padded as needed
+                  2) the name of a contrast defined using aas_addcontrast in the userscript
+                  3) a contrast specification in the form [weight]x[regressorname] (e.g., "+1xatt|-1xnoatt")
+
+            Notes
+
+            1) "name" is used in various files created by the module that contain the PPI regressor definitions.
+            Be aware aa will strip any special characters in the name string you provide that interact poorly 
+            with the operating system when appearing in a filename such as "(", "-", ")" and so forth.
+            If you examine the module directory contents when the analysis has finished you may notice 
+            the output filenames differ slightly from the name you provided. 
+
+            2) the module saves a QA jpeg of the three regressors created (cf. Fig 36.13 in the SPM12 manual)
+            in the file "diagnostic_aamod_ppi_prepare_<name>_00x.jpg".
+
+            -->
             
             <qsub>
                 <timeBase>0.5</timeBase>

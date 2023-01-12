@@ -6,18 +6,13 @@
 % Based on original by FIL London and Adam Hampshire MRC CBU Cambridge Feb 2006
 % Modified for aa by Rhodri Cusack MRC CBU Mar 2006-Aug 2007
 % Thanks to Rik Henson for various suggestions (modified) [AVG & TA]
-%
-% CHANGE HISTORY
-%
-% 09/2021 [MSJ] added rWLS; don't wait for reporting to plot the design 
-% matrix, save masks as QA images; save regressors to text file (SPM 
-% figure labeling is hard to read!)
 
 function [aap,resp]=aamod_firstlevel_model(aap,task,subj)
 
 resp='';
 
 switch task
+    
     case 'report' % [TA]
         if ~exist(fullfile(aas_getsubjpath(aap,subj),'diagnostic_aamod_firstlevel_model_design.jpg'),'file')
             load(aas_getfiles_bystream(aap,subj,aap.tasklist.currenttask.outputstreams.stream{1}));
@@ -44,10 +39,10 @@ switch task
         % Get subject directory
         cwd=pwd;
         
- 		% We can now have missing sessions per subject, so we're going to use only
+        % We can now have missing sessions per subject, so we're going to use only
         % the sessions that are common to this subject and selected_sessions
         
-        [numSess, sessInds] = aas_getN_bydomain(aap, 'session', subj);
+        [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
         subjSessionI = intersect(sessInds, aap.acq_details.selected_sessions);
         numSess = numel(subjSessionI);
         
@@ -56,10 +51,17 @@ switch task
         modindex = str2num(modname(modnameind+1:end));
         
         % Add PPI if exist
+        
         for sess = subjSessionI
+            
             if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')
+                
+                % if the user has defined ppidef_* covariates
+                % explicitly, add them to model
+                
                 [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
-                if ~isempty(defCov)
+                if isstruct(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+
                     covToRemove = [];
                     PPIs = cellstr(aas_getfiles_bystream(aap,'session',[subj,sess],'ppi'));
                     for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
@@ -67,7 +69,6 @@ switch task
                         covToRemove(end+1) = indDefPPI;
                         fnPPI = PPIs{contains(spm_file(PPIs,'basename'),defPPI.vector')};
                         dat = load(fnPPI); PPI = dat.PPI;                        
-
                         if ~any(strcmp({aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate.name},['Phys_' PPI.xY.name]))
                             aap = aas_addcovariate(aap,modname,...
                                 aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
@@ -76,14 +77,33 @@ switch task
                         aap = aas_addcovariate(aap,modname,...
                             aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
                             strrep(defPPI.name,'ppidef_',''),PPI.ppi,0,1);
-                        %                     aap = aas_addcovariate(aap,modname,...
-                        %                         aas_getsubjname(aap,subj),aas_getsessname(aap,sess),...
-                        %                         ['Psych_' psych],PPI.P,0,1);
-                    end
+                    end                 
                     aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC(ind).covariate(covToRemove) = []; % remove original definition
-                end
-            end
-        end
+              
+                else
+
+                    % if the user has not defined ppidef_* covariates explicity,
+                    % just add the 3 regressors from the ppi stream. This
+                    % makes basic PPI modeling easier to use while still
+                    % providing flexible PPI modeling options to those
+                    % who need them.
+               
+                    temp = load(aas_getfiles_bystream(aap,subj,sess,'ppi'));
+
+                    aap = aas_addcovariate(aap,modname,...
+                        basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                        'PPI',temp.PPI.ppi,0,1);
+                    aap = aas_addcovariate(aap,modname,...
+                        basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                        'PSYCH',temp.PPI.P,0,1);
+                    aap = aas_addcovariate(aap,modname,...
+                        basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
+                        'PHYS',temp.PPI.Y,0,1);
+
+                end % if ~isempty(defCov{1})...       
+            end % if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')...
+        end % for sess = subjSessionI...
+    
         % update current sesstings
         aap.tasklist.currenttask.settings.modelC = aap.tasksettings.(modname(1:modnameind-1))(modindex).modelC;
         
@@ -257,7 +277,7 @@ switch task
  
         % its convenient to save the design matrix now rather than having to run reporting...
 
-        spm_DesRep('DesOrth',SPMest.xX);
+        spm_DesRep('DesMtx',SPMdes.xX,[],SPMdes.xsDes);
         h = spm_figure('GetWin', 'Graphics');
         set(h,'Renderer','opengl');
         % the following is a workaround for font rescaling weirdness
@@ -310,7 +330,7 @@ switch task
         
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
             if ~aas_cache_get(aap,'wls'), aas_log(aap,true,'rWLS toolbox not found'); end
-        end       
+        end              
         
         %% Add PPI preparations (if needed)
         [~, sessInds] = aas_getN_bydomain(aap, 'session', subj);
@@ -322,9 +342,12 @@ switch task
         for sess = subjSessionI
             if aas_stream_has_contents(aap,'ppi')
                 [defCov, ind] = aas_getsetting(aap,'modelC','session',[subj sess]);
-                if ~isempty(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                
+                    if isstruct(defCov) && any(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
+                                      
                     ppiprepstage = aap.tasklist.main.module(aas_getsourcestage(aap,'aamod_ppi_prepare','ppi'));                        
                     ppis = aap.tasksettings.aamod_ppi_prepare(ppiprepstage.index).PPI;
+
                     for indDefPPI = find(cellfun(@(x) ~isempty(regexp(x,'^ppidef_.*', 'once')), {defCov.covariate.name}))
                         defPPI = defCov.covariate(indDefPPI).vector;
                         

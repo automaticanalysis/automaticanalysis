@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+	<tasklist>
+				
+	<initialisation>
+        <module><name>aamod_study_init</name></module>
+	</initialisation>
+				
+	<main>
+                       
+        <module><name>aamod_structuralfromnifti</name></module>
+        <module><name>aamod_epifromnifti</name></module>
+        
+        <module><name>aamod_firstlevel_model</name></module>
+        <module><name>aamod_firstlevel_contrasts</name></module>
+        <module><name>aamod_firstlevel_threshold</name></module>    
+                
+        <!-- PPI -->
+        
+        <module><name>aamod_vois_extract</name></module>      
+        <module><name>aamod_ppi_prepare</name></module>
+       
+        <module><name>aamod_firstlevel_model</name></module>
+        <module><name>aamod_firstlevel_contrasts</name></module>
+        <module><name>aamod_firstlevel_threshold</name></module>
+
+        </main>
+
+    </tasklist>
+</aap>
