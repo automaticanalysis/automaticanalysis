@@ -59,20 +59,23 @@ while any(depnotdone)
                             aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,logsafe_path_src,logsafe_path_dest),aap.gui_controls.colours.inputstreams);
 
                             oldpth='';
-
                             % rsync in chunks. It will then compress.
                             chunksize=64;
                             transfernow=false;
                             numtotransfer=0;
                             inps='';
+                            use_remotesymlinks = 0;
                             for ind=1:length(streamfiles(depind).fns)
                                 % Copy file
                                 [pth,nme,ext]=fileparts(streamfiles(depind).fns_dest_full{ind});
                                 newpth=pth;
+                                if (~streamfiles(depind).ismodified & aap.options.remotesymlinks == 1)
+                                    use_remotesymlinks = 1;
+                                end
                                 if (~strcmp(oldpth,newpth))
                                     aas_makedir(aap,newpth);
                                     if (numtotransfer>0)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlinks',use_remotesymlinks);
                                     end;
                                     inps=[fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' '];
                                     oldpth=newpth;
@@ -86,14 +89,17 @@ while any(depnotdone)
                                     numtotransfer=numtotransfer+1;
                                 end;
                                 if (streamfiles(depind).wasnamechange)
-                                    aas_copyfromremote(aap, streamfiles(depind).inputstream.host, fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}),streamfiles(depind).fns_dest_full{ind},'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                    aas_copyfromremote(aap, streamfiles(depind).inputstream.host, fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}),streamfiles(depind).fns_dest_full{ind},'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlinks',use_remotesymlinks);
                                     numtotransfer=0;
                                     inps='';
                                 else
+                                    if use_remotesymlinks
+                                        oldpth = fullfile(oldpth,streamfiles(depind).fns{ind}); 
+                                    end
                                     if (aap.options.NIFTI4D == 0)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlinks',use_remotesymlinks);
                                     elseif (numtotransfer>0) && (ind==length(streamfiles(depind).fns) || numtotransfer>chunksize)
-                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache);
+                                        aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlinks',use_remotesymlinks);
                                         numtotransfer=0;
                                         inps='';
                                     end;
@@ -140,23 +146,37 @@ while any(depnotdone)
                                     oldpth=newpth;
                                 end;
                                 if ispc()
-                                    % On Windows, always use copyfile for now.
-                                    % TODO: Allow hardlinks on Windows? Can they even be created without admin rights?
                                     src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
-                                    copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                    if (~streamfiles(depind).ismodified)
+                                        if ~isfile(streamfiles(depind).fns_dest_full{ind})
+                                            if aap.options.symlinks
+                                                cmd=['mklink ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                                aas_shell(cmd);
+                                            elseif aap.options.hardlinks
+                                                cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                                aas_shell(cmd);
+                                            else
+                                                copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                            end
+                                        end
+                                    elseif (streamfiles(depind).ismodified)
+                                        copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                    end
                                 else
-                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks
+                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
                                         cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
-                                    else
+                                    elseif aap.options.hardlinks
                                         % This is a hard link, not a symlink. This
                                         % takes the timestamp of the destination file,
                                         % and won't be deleted if the destination is
                                         % deleted. So, more like a copy...
                                         cmd=['ln -f ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
+                                    elseif aap.options.symlinks
+                                        % This is a symlink
+                                        cmd=['ln -s ' fullfile(streamfiles(depind).src,streamfiles(depind).fns{ind}) ' ' streamfiles(depind).fns_dest_full{ind}];
                                     end
                                     aas_shell(cmd);
                                 end
-
                                 % Write to stream file
                                 fprintf(fid_inp,'%s\n',streamfiles(depind).fns_dest{ind});
                             end;
