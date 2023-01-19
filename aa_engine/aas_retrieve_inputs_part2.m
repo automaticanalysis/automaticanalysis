@@ -57,21 +57,17 @@ while any(depnotdone)
                                 logsafe_path_dest = strrep(streamfiles(depind).dest, '\', '\\');
                             end
                             aas_log(aap,false,sprintf(' retrieve remote stream %s from %s:%s to %s',streamfiles(depind).streamname,streamfiles(depind).inputstream.host,logsafe_path_src,logsafe_path_dest),aap.gui_controls.colours.inputstreams);
-
                             oldpth='';
                             % rsync in chunks. It will then compress.
                             chunksize=64;
                             transfernow=false;
                             numtotransfer=0;
                             inps='';
-                            use_remotesymlinks = 0;
+                            use_remotesymlinks = ~streamfiles(depind).ismodified && (aap.options.remotesymlinks == 1);
                             for ind=1:length(streamfiles(depind).fns)
                                 % Copy file
                                 [pth,nme,ext]=fileparts(streamfiles(depind).fns_dest_full{ind});
                                 newpth=pth;
-                                if (~streamfiles(depind).ismodified & aap.options.remotesymlinks == 1)
-                                    use_remotesymlinks = 1;
-                                end
                                 if (~strcmp(oldpth,newpth))
                                     aas_makedir(aap,newpth);
                                     if (numtotransfer>0)
@@ -94,7 +90,7 @@ while any(depnotdone)
                                     inps='';
                                 else
                                     if use_remotesymlinks
-                                        oldpth = fullfile(oldpth,streamfiles(depind).fns{ind}); 
+                                        oldpth = fullfile(oldpth,streamfiles(depind).fns{ind}); % To find the exact path of the file (instead of directory)
                                     end
                                     if (aap.options.NIFTI4D == 0)
                                         aas_copyfromremote(aap, streamfiles(depind).inputstream.host, inps,oldpth,'verbose',0,'allowcache',streamfiles(depind).inputstream.allowcache,'allowremotesymlinks',use_remotesymlinks);
@@ -147,20 +143,14 @@ while any(depnotdone)
                                 end;
                                 if ispc()
                                     src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
-                                    if (~streamfiles(depind).ismodified)
-                                        if ~isfile(streamfiles(depind).fns_dest_full{ind})
-                                            if aap.options.symlinks
-                                                cmd=['mklink ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
-                                                aas_shell(cmd);
-                                            elseif aap.options.hardlinks
-                                                cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
-                                                aas_shell(cmd);
-                                            else
-                                                copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
-                                            end
-                                        end
-                                    elseif (streamfiles(depind).ismodified)
+                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
                                         copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                    elseif aap.options.hardlinks && ~isfile(streamfiles(depind).fns_dest_full{ind})
+                                        cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                        aas_shell(cmd);
+                                    elseif aap.options.symlinks && ~isfile(streamfiles(depind).fns_dest_full{ind})
+                                        cmd=['mklink ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                        aas_shell(cmd);
                                     end
                                 else
                                     if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks

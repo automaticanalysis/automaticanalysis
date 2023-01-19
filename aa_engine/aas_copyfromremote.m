@@ -102,7 +102,7 @@ if ~cachehit
     retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
     for retry=retrydelay
         if isempty(host)
-            if (allowremotesymlink)
+            if (allowremotesymlinks)
                 if ~isfile(dest)
                     if ispc()
                         cmd = sprintf('mklink %s %s', dest, src);
