@@ -109,7 +109,7 @@
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>1</NIFTI4D>
         <hardlinks desc='Allow hardlinks during retrieving inputs' ui='yesno'>1</hardlinks>
-        <remotesymlinks desc='Allow symlinks for remote pipeline connection when receiving inputs?' ui='yesno'>0</remotesymlinks>
+        <remotesymlinks desc='Allow symlinks for remote pipeline connection when receiving inputs? Warning: WIN users must enable symlinks via the Group Policy Editor and this may cause a security issue.' ui='yesno'>0</remotesymlinks>
         <symlinks desc='Allow symlinks during retrieving local inputs? Warning: WIN users must enable symlinks via the Group Policy Editor and this may cause a security issue.' ui='yesno'>0</symlinks>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
         <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
