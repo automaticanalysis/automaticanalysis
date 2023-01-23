@@ -115,6 +115,9 @@ if ~cachehit
             else
                 copyfile(src, dest);
                 if vargs.verbose
+                    if ispc()
+                        src = strrep(src, '\', '\\');
+                    end
                     aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
                 end
             end
