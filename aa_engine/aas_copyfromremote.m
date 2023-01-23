@@ -98,30 +98,32 @@ if allowremotecache
 end
 
 if ~cachehit
-    % Exponential back off if connection refused
-    retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
-    for retry=retrydelay
-        if isempty(host)
-            if (allowremotesymlinks)
-                if ~isfile(dest)
-                    if ispc()
-                        cmd = sprintf('mklink %s %s', dest, src);
-                        [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
-                    else
-                        cmd = sprintf('ln -s %s %s', dest, src);
-                        [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
-                    end
-                end
-            else
-                copyfile(src, dest);
-                if vargs.verbose
-                    if ispc()
-                        src = strrep(src, '\', '\\');
-                    end
-                    aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+    if isempty(host)
+        if ~isfile(src)
+            aas_log(aap,true,sprintf('File %s does not exist.',src),'m');
+        end
+        if (allowremotesymlinks)
+            if ~isfile(dest)
+                if ispc()
+                    cmd = sprintf('mklink %s %s', dest, src);
+                    [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
+                else
+                    cmd = sprintf('ln -s %s %s', dest, src);
+                    [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
                 end
             end
-       else
+        else
+            copyfile(src, dest);
+            if vargs.verbose
+                if ispc()
+                    src = strrep(src, '\', '\\');
+                end
+                aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+            end
+        end
+    else
+        retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
+        for retry=retrydelay
             % -t option preserves timestamp of remote file
             cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
             [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
@@ -141,7 +143,7 @@ if ~cachehit
                 break;
             end;
         end     
-    end;
+    end
     
     % Copy to cache
     if allowremotecache
