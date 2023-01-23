@@ -1,4 +1,4 @@
-function aatest_ds000114_fmri(parameterfile, deleteprevious,wheretoprocess)
+function aatest_ds000114_fmri_symlinks(parameterfile, deleteprevious,wheretoprocess)
 
 % This script runs a basic modeling pipeline (preprocessing through secondlevel)
 % using ds000114 motor and line bisection tasks. The data should be dowloaded 
