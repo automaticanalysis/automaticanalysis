@@ -18,7 +18,7 @@ aap = aarecipe(['$AAHOME/developer/testscripts/aatest_ds000114_fmri_localpipelin
 aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
 
-aap.acq_details.root = pwd;
+aap.acq_details.root = '/home/runner/projects';
 aap.directory_conventions.analysisid = 'aatest_ds000114_fmri_local_prep';
 prep_dir = 'aatest_ds000114_fmri_local_prep';
 
@@ -55,6 +55,7 @@ aa_close(aap);
 aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
 aap = aarecipe(['$AAHOME/developer/testscripts/aatest_ds000114_fmri_localpipeline_model.xml']);
 
+aap.acq_details.root = '/home/runner/projects';
 aap.options.remotesymlinks = 1;
 aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	
