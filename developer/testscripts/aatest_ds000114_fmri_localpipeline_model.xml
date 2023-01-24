@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        
+        <initialisation>	
+            <module><name>aamod_study_init</name></module>
+        </initialisation>
+		
+        <main>                    
+
+        <module>
+            <branch>
+                <analysisid_suffix>_FingerFootLips</analysisid_suffix>
+                <selected_sessions>finger_foot_lips_test finger_foot_lips_retest</selected_sessions>
+                <module><name>aamod_firstlevel_model</name></module>
+                <module><name>aamod_firstlevel_contrasts</name></module>
+                <module><name>aamod_firstlevel_threshold</name></module>
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>              
+                <module><name>aamod_secondlevel_threshold</name></module>	                   
+            </branch>
+            <branch>
+                <analysisid_suffix>_LineBisection</analysisid_suffix>
+                <selected_sessions>line_bisection_test line_bisection_retest</selected_sessions>
+                <module><name>aamod_firstlevel_model</name></module>
+                <module><name>aamod_firstlevel_contrasts</name></module>
+                <module><name>aamod_firstlevel_threshold</name></module>
+                <module><name>aamod_secondlevel_model</name></module>	
+                <module><name>aamod_secondlevel_contrasts</name></module>              
+                <module><name>aamod_secondlevel_threshold</name></module>	                   
+           </branch>
+        </module>                  
+
+        </main>
+    </tasklist>
+</aap>
