@@ -46,10 +46,10 @@ jobs:
           git config --global core.eol lf
 
       - name: Check out repository under $GITHUB_WORKSPACE
-        uses: actions/checkout
+        uses: actions/checkout@v3
 
       - name: Set up Python 3.6
-        uses: actions/setup-python
+        uses: actions/setup-python@v4
         with:
           # Semantic version range syntax or exact version of a Python version
           python-version: '3.6'
@@ -81,14 +81,14 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Archive data
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v3
         with:
           name: data_${{github.job}}
           path: |
             ~/projects/
 
       - name: Archive log
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v3
         with:
           name: testlog_${{github.job}}
           path: |
@@ -119,10 +119,10 @@ jobs:
           git config --global core.eol lf
 
       - name: Check out repository under $GITHUB_WORKSPACE
-        uses: actions/checkout
+        uses: actions/checkout@v3
 
       - name: Set up Python 3.6
-        uses: actions/setup-python
+        uses: actions/setup-python@v4
         with:
           # Semantic version range syntax or exact version of a Python version
           python-version: '3.6'
@@ -151,14 +151,14 @@ jobs:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'})
 
       - name: Archive data
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v3
         with:
           name: data_${{github.job}}
           path: |
             ~/projects/
 
       - name: Archive log
-        uses: actions/upload-artifact
+        uses: actions/upload-artifact@v3
         with:
           name: testlog_${{github.job}}
           path: |
