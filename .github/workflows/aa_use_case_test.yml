@@ -57,7 +57,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -83,7 +83,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
 
@@ -135,7 +135,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -161,7 +161,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
 
@@ -213,7 +213,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -239,7 +239,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
 
@@ -291,7 +291,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -319,7 +319,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
 
@@ -371,7 +371,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -400,7 +400,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_scrubbing','haltonerror',true)
 
@@ -452,7 +452,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -476,7 +476,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds002737_deface','haltonerror',true)
 
@@ -528,7 +528,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -557,7 +557,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsensor','haltonerror',true)
 
@@ -609,7 +609,7 @@ jobs:
           architecture: 'x64'
 
       - name: Set up MATLAB
-        uses: matlab-actions/setup-matlab
+        uses: matlab-actions/setup-matlab@v1
         with:
           # MATLAB release to set up R2020a
           release: R2020a
@@ -634,7 +634,7 @@ jobs:
           AWS_EC2_METADATA_DISABLED: true
 
       - name: Run script
-        uses: matlab-actions/run-command
+        uses: matlab-actions/run-command@v1
         with:
           command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsource','haltonerror',true)
 
