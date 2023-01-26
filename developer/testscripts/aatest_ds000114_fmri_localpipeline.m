@@ -8,19 +8,13 @@ function aatest_ds000114_fmri_localpipeline(parameterfile, deleteprevious,wheret
 % init
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
-aap = aarecipe(['$AAHOME/developer/testscripts/aatest_ds000114_fmri_localpipeline_prep.xml']);
-
+aap = aa_test_inittest([mfilename('fullpath') '_prep'], parameterfile, deleteprevious, wheretoprocess);
 % -------------------------------------------------------------------------
 % First pre-process the data.
 % -------------------------------------------------------------------------
 
 aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
-
-aap.acq_details.root = '/home/runner/projects';
-aap.directory_conventions.analysisid = 'aatest_ds000114_fmri_local_prep';
-prep_dir = 'aatest_ds000114_fmri_local_prep';
 
 aap.options.remotesymlinks = 1;
 aap.options.NIFTI4D = 1;
@@ -33,6 +27,8 @@ aap.tasksettings.aamod_segment8.samp = 2;
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
 aap.tasksettings.aamod_slicetiming.refslice = 16;
 aap.tasksettings.aamod_smooth.FWHM = 5;
+
+prep_dir = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid);
 
 % -------------------------------------------------------------------------
 % BIDS
@@ -52,17 +48,13 @@ aa_close(aap);
 % Part 2 - form a local pipeline connection
 % -------------------------------------------------------------------------
 
-aap = aa_test_inittest(mfilename('fullpath'), parameterfile, deleteprevious, wheretoprocess);
-aap = aarecipe(['$AAHOME/developer/testscripts/aatest_ds000114_fmri_localpipeline_model.xml']);
+aap = aa_test_inittest([mfilename('fullpath') '_model'], parameterfile, deleteprevious, wheretoprocess);
 
-aap.acq_details.root = '/home/runner/projects';
 aap.options.remotesymlinks = 1;
 aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
-
-aap.directory_conventions.analysisid = 'aatest_ds000114_fmri_local_model'
 
 aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03'});
 
