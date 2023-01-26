@@ -29,6 +29,7 @@ aap.tasksettings.aamod_slicetiming.refslice = 16;
 aap.tasksettings.aamod_smooth.FWHM = 5;
 
 prep_dir = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid);
+first_dir = pwd;
 
 % -------------------------------------------------------------------------
 % BIDS
@@ -56,6 +57,7 @@ aap.acq_details.numdummies = 4;
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
 
+cd(first_dir);
 aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','sub-02','sub-03'});
 
 connector = fullfile(aap.acq_details.root,prep_dir);
