@@ -29,7 +29,7 @@ aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
 aap.tasksettings.aamod_slicetiming.refslice = 16;
 aap.tasksettings.aamod_smooth.FWHM = 5;
 
-prep_dir = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid);
+prep_dir = fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid '_prep']);
 first_dir = pwd;
 
 % -------------------------------------------------------------------------
