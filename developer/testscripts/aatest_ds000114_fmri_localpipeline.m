@@ -1,8 +1,9 @@
 function aatest_ds000114_fmri_localpipeline(parameterfile, deleteprevious,wheretoprocess)
 
-% This script runs a basic modeling pipeline (preprocessing through secondlevel)
-% using ds000114 motor and line bisection tasks. The data should be dowloaded 
-% prior to running the script
+% This script runs a local pipeline connection to first pre-process the study,
+% and then does modelling. It is the same script as ds000114_fmri except that
+% it uses a pipeline connection to use preprocessed results for modelling.
+% The script also uses symlinks to load stream files to the new modules instead of copying.
 
 % -------------------------------------------------------------------------
 % init
@@ -16,7 +17,7 @@ aap = aa_test_inittest([mfilename('fullpath') '_prep'], parameterfile, deletepre
 aap.options.autoidentifystructural_choosefirst = 1;
 aap.options.autoidentifystructural_chooselast = 0;
 
-aap.options.remotesymlinks = 1;
+aap.options.remotesymlinks = 1; % Use symlinks instead of copying
 aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
