@@ -337,7 +337,7 @@ jobs:
           path: |
             ${{github.workspace}}/developer/aa_test.log
   
-  aatest_ds000114_fmri_symlinks:
+  aatest_ds000114_fmrisymlinks:
     name: Testing fMRI with symlinks
 
     # The type of runner that the job will run on
@@ -401,12 +401,12 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri_symlinks','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrisymlinks','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
-          name: aatest_ds000114_fmri
+          name: aatest_ds000114_fmrisymlinks
           path: |
             ~/projects/
 
@@ -417,7 +417,7 @@ jobs:
           path: |
             ${{github.workspace}}/developer/aa_test.log
 
-  aatest_ds000114_fmri_localpipeline:
+  aatest_ds000114_fmrilocalpipeline:
     name: Testing fMRI using local pipeline connection
 
     # The type of runner that the job will run on
@@ -481,12 +481,12 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri_localpipeline','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrilocalpipeline','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
-          name: aatest_ds000114_fmri
+          name: aatest_ds000114_fmrilocalpipeline
           path: |
             ~/projects/
 
