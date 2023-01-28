@@ -9,7 +9,7 @@
 % covarVector   = covariate vector, which should be as long as the session. In case of a PPI specification, it MUST be in a format of 
 %                   <voi name>|<weight>x<regressor name>[|<weight>x<regressor name>[...]]
 % HRF           = do we want to convolve this covariate with the HRF? (0 - no; 1 - yes)
-% interest      = is this covariate of interest, or a nuisa`  B nce covariate?
+% interest      = is this covariate of interest, or a nuisance covariate?
 
 function aap = aas_addcovariate(aap,modulename,subject,session,covarName,covarVector,HRF,interest)
 
