@@ -44,8 +44,6 @@ aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01','su
 
 aa_doprocessing(aap);
 
-aa_close(aap);
-
 % -------------------------------------------------------------------------
 % Part 2 - form a local pipeline connection
 % -------------------------------------------------------------------------
