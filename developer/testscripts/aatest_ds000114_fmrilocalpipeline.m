@@ -104,13 +104,13 @@ aap = aas_addcontrast(aap,'aamod_firstlevel_contrasts_00002','*','singlesession:
 % run
 % -------------------------------------------------------------------------
 
+aa_doprocessing(aap);
+
 % if directory_conventions.reportname is undefined, skip reporting
 
 if isfield(aap.directory_conventions,'reportname') && ~isempty(aap.directory_conventions.reportname)
     aa_report(fullfile(aas_getstudypath(aap),aap.directory_conventions.analysisid));
 end
-
-aa_doprocessing(aap);
 
 aa_close(aap);
 
