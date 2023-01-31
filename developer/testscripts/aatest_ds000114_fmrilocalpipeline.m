@@ -48,6 +48,7 @@ aa_doprocessing(aap);
 % Part 2 - form a local pipeline connection
 % -------------------------------------------------------------------------
 
+SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load;
 aap = aa_test_inittest([mfilename('fullpath') 'model'], parameterfile, deleteprevious, wheretoprocess);
 
 aap.options.remotesymlinks = 1;
