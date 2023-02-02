@@ -216,7 +216,13 @@ for depind=1:length(deps)
                 fclose(fid);
                 
                 if ~reloadfiles
-                    aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
+                    logsafe_path_src = src;
+                    logsafe_path_dest = dest;
+                    if ispc()
+                        logsafe_path_src = strrep(src, '\', '\\');
+                        logsafe_path_dest = strrep(dest, '\', '\\');
+                    end
+                    aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,logsafe_path_src,logsafe_path_dest),aap.gui_controls.colours.inputstreams);
                 else
                 
                     % Just queue for retrieval in part 2 (remote)                   
