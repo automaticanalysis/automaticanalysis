@@ -49,7 +49,6 @@ aa_doprocessing(aap);
 % -------------------------------------------------------------------------
 cd(first_dir);
 
-SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load;
 aap = aa_test_inittest([mfilename('fullpath') 'model'], parameterfile, deleteprevious, wheretoprocess);
 
 aap.options.remotesymlinks = 1;
@@ -59,6 +58,7 @@ aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
 
 aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01'}); %,'sub-02','sub-03'
+SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load;
 
 connector = fullfile(prep_dir);
 aap=aas_doprocessing_initialisationmodules(aap);
