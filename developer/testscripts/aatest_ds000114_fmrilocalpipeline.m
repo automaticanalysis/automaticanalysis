@@ -32,13 +32,7 @@ aap.tasksettings.aamod_smooth.FWHM = 5;
 prep_dir = fullfile(aap.acq_details.root,[aap.directory_conventions.analysisid]);
 first_dir = pwd;
 
-% -------------------------------------------------------------------------
-% BIDS
-% -------------------------------------------------------------------------
-
 aap.acq_details.input.combinemultiple = 1;
-
-% five subjects is about minimum to run a second level model
 
 aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01'}); %,'sub-02','sub-03'
 
@@ -49,7 +43,6 @@ aa_doprocessing(aap);
 % -------------------------------------------------------------------------
 cd(first_dir);
 
-SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load;
 aap = aa_test_inittest([mfilename('fullpath') 'model'], parameterfile, deleteprevious, wheretoprocess);
 
 aap.options.remotesymlinks = 1;
@@ -57,6 +50,8 @@ aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
+
+aap.acq_details.input.combinemultiple = 1;
 
 aap = aas_processBIDS(aap,[],{'finger_foot_lips','line_bisection'},{'sub-01'}); %,'sub-02','sub-03'
 
