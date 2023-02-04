@@ -36,7 +36,7 @@ for depind=1:length(deps)
         % First we need to get the previous aap file
         remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
         
-        aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache,'verbose', 0);
+        aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache,'verbose',aap.options.remotecpverbose);
         
         aap_remote=load(remote_aap_fn);
         aap_remote=aap_remote.aap;
@@ -109,7 +109,7 @@ for depind=1:length(deps)
             if ~isfile(remoteoutputstreamdesc)
                 continue;
             end;
-            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache, 'verbose', 1);
+            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache,'verbose',aap.options.remotecpverbose);
             
             if (exist(outputstreamdesc,'file'))
                 

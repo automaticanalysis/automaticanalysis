@@ -18,7 +18,7 @@ function [aap]=aas_copyfromremote(aap,host,src,dest,varargin)
 vdefaults = { ...
     'allow404',     0, [0 1], ...     % 0 = crash on 404s? 1 = allow them?
     'allowcache',   aap.directory_conventions.allowremotecache, [-1 0 1], ...  % -1 = default to aap.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
-    'verbose',      logical(aap.options.verbose), [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'verbose',      logical(aap.options.remotecpverbose), [0 1], ...     % Display all those annoying "Retrieved..." messages?
     'allowremotesymlinks', 0, [0 1] ...    % Allow symlinks when using remote connected pipelines; 1= allow 0= don't allow
 };
 
