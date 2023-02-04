@@ -46,6 +46,7 @@ cd(first_dir);
 aap = aa_test_inittest([mfilename('fullpath') 'model'], parameterfile, deleteprevious, wheretoprocess);
 
 aap.options.remotesymlinks = 1;
+aap.options.remotecpverbose = 1;
 aap.options.NIFTI4D = 1;
 aap.acq_details.numdummies = 4;	
 aap.acq_details.numdummies = 1;
