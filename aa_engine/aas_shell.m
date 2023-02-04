@@ -77,6 +77,8 @@ if ~isempty(w)
     rw = sprintf('%s\n',l{:});
 end
 w = sprintf('%s\n%s',rw,lw);
-
+if ispc()
+    w = strrep(w,'\','\\'); % If Windows, fix the path for logging
+end
 if ~quiet, aas_log([],false,w); end
 
