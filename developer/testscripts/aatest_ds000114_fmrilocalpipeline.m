@@ -1,9 +1,10 @@
 function aatest_ds000114_fmrilocalpipeline(parameterfile, deleteprevious,wheretoprocess)
 
 % This script runs a local pipeline connection to first pre-process the study,
-% and then does modelling. It is the same script as ds000114_fmri except that
+% and then does modelling using a local pipeline connection. 
+% It is the same script as ds000114_fmri except that
 % it uses a pipeline connection to use preprocessed results for modelling.
-% The script also uses symlinks to load stream files to the new modules instead of copying.
+% The script uses symlinks to load stream files to the new modules instead of copying.
 
 % -------------------------------------------------------------------------
 % init
@@ -11,7 +12,7 @@ function aatest_ds000114_fmrilocalpipeline(parameterfile, deleteprevious,whereto
 
 aap = aa_test_inittest([mfilename('fullpath') 'prep'], parameterfile, deleteprevious, wheretoprocess);
 % -------------------------------------------------------------------------
-% First pre-process the data.
+% Part 1 - First pre-process the data.
 % -------------------------------------------------------------------------
 
 aap.options.autoidentifystructural_choosefirst = 1;
