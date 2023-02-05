@@ -108,7 +108,7 @@ if ~cachehit
                     cmd = sprintf('mklink %s %s', dest, src);
                     [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
                 else
-                    cmd = sprintf('ln -s %s %s', dest, src);
+                    cmd = sprintf('ln -s %s %s', src, dest);
                     [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
                 end
             end
