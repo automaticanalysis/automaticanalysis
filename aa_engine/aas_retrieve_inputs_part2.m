@@ -144,7 +144,15 @@ while any(depnotdone)
                                 if ispc()
                                     src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
                                     if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
-                                        copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                        nTries = 1;
+                                        while nTries <= aap.options.maximumretry
+                                            try
+                                                copyfile(src_full, streamfiles(depind).fns_dest_full{ind});
+                                                break;
+                                            catch
+                                                nTries = nTries + 1;
+                                            end
+                                        end
                                     elseif aap.options.hardlinks && ~isfile(streamfiles(depind).fns_dest_full{ind})
                                         cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
                                         aas_shell(cmd);
