@@ -143,7 +143,7 @@ while any(depnotdone)
                                 end;
                                 if ispc()
                                     src_full = fullfile(streamfiles(depind).src, streamfiles(depind).fns{ind});
-                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
+                                    if (streamfiles(depind).ismodified) || (~aap.options.hardlinks && ~aap.options.symlinks)
                                         nTries = 1;
                                         while nTries <= aap.options.maximumretry
                                             try
@@ -154,14 +154,14 @@ while any(depnotdone)
                                             end
                                         end
                                     elseif aap.options.hardlinks && ~isfile(streamfiles(depind).fns_dest_full{ind})
-                                        cmd=['mklink /H' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
+                                        cmd=['mklink /H ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
                                         aas_shell(cmd);
                                     elseif aap.options.symlinks && ~isfile(streamfiles(depind).fns_dest_full{ind})
                                         cmd=['mklink ' streamfiles(depind).fns_dest_full{ind} ' ' src_full];
                                         aas_shell(cmd);
                                     end
                                 else
-                                    if (streamfiles(depind).ismodified) || ~aap.options.hardlinks || ~aap.options.symlinks
+                                    if (streamfiles(depind).ismodified) || (~aap.options.hardlinks && ~aap.options.symlinks)
                                         cmd=['cd ' streamfiles(depind).src '; rsync -tl ' streamfiles(depind).fns{ind} ' ' streamfiles(depind).fns_dest_full{ind}];
                                     elseif aap.options.hardlinks
                                         % This is a hard link, not a symlink. This
