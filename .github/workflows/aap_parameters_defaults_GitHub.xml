@@ -50,6 +50,7 @@
                     </requiredPlugins>
                     <requiredPlugins>
                         <name>dipfit</name>
+                        <version>4.3</version>
                     </requiredPlugins>
                     <requiredPlugins>
                         <name>Fieldtrip-lite</name>
