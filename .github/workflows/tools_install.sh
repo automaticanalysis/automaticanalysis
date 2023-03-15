@@ -1,4 +1,4 @@
-TOOLDIR=$HOME/tools
+TOOLDIR=/test/tools
 mkdir $TOOLDIR
 mkdir $TOOLDIR/config
 TEMPLATEDIR=$TOOLDIR/templates

@@ -3,14 +3,14 @@
     <xi:include href="/home/runner/work/automaticanalysis/automaticanalysis/aa_parametersets/aap_parameters_defaults.xml" parse="xml"/>
     <local>
         <directory_conventions>
-            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/home/runner/data/aa_demo</rawdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/test/data/aa_demo</rawdatadir>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
-                <dir ui='dir'>/home/runner/tools/spm12</dir>
+                <dir ui='dir'>/test/tools/spm12</dir>
             </toolbox>
         </directory_conventions>
         <acq_details>
-            <root desc='Root on local machine for processed data' ui='dir'>/home/runner/projects</root>
+            <root desc='Root on local machine for processed data' ui='dir'>/test/projects</root>
         </acq_details>
     </local>
 </aap>

@@ -3,8 +3,8 @@
     <xi:include href="/home/runner/work/automaticanalysis/automaticanalysis/aa_parametersets/aap_parameters_defaults.xml" parse="xml"/>
     <local>
         <directory_conventions>
-            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/home/runner/data/aa_demo</rawdatadir>
-            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>/home/runner/data/aa_demo</rawmeegdatadir>
+            <rawdatadir desc='Directories to find raw MRI data' ui='dir_list'>/test/data/aa_demo</rawdatadir>
+            <rawmeegdatadir desc='Directory to find raw MEEG data' ui='dir'>/test/data/aa_demo</rawmeegdatadir>
             <rawdataafterconversionprefix desc='Prefix of raw data after conversion from DICOM to NIFTI' ui='text'>fMR</rawdataafterconversionprefix>
             <subject_directory_format desc='Format of subject directory' ui='optionlist' options='from subject_directory_names|from data|S#|manual'>3</subject_directory_format>
             <rawseries_usefileorder desc='In raw data, use number in file listing not filtering by series number' ui='yesno'>0</rawseries_usefileorder>
@@ -20,19 +20,19 @@
             <dicomfilter ui='text'>*.IMA</dicomfilter>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>spm</name>
-                <dir ui='dir'>/home/runner/tools/spm12</dir>
+                <dir ui='dir'>/test/tools/spm12</dir>
             </toolbox>                       
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>wls</name>
-                <dir ui='dir'>/home/runner/tools/rwls</dir>
+                <dir ui='dir'>/test/tools/rwls</dir>
             </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>aroma</name>
-                <dir ui='dir'>/home/runner/tools/ICA-AROMA</dir>
+                <dir ui='dir'>/test/tools/ICA-AROMA</dir>
             </toolbox>
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>eeglab</name>
-                <dir ui='dir'>/home/runner/tools/eeglab</dir>
+                <dir ui='dir'>/test/tools/eeglab</dir>
                 <extraparameters>
                     <requiredPlugins>
                         <name>Fileio</name>
@@ -70,19 +70,19 @@
             </toolbox>         
             <toolbox desc='Toolbox with implemented interface in extrafunctions/toolboxes' ui='custom'>
                 <name desc='Name corresponding to the name of the interface without the "Class" suffix' ui='text'>fieldtrip</name>
-                <dir ui='dir'>/home/runner/tools/fieldtrip</dir>
+                <dir ui='dir'>/test/tools/fieldtrip</dir>
             </toolbox>
             <linuxshell desc='Linux shell used to run linux commands' ui='text'>bash</linuxshell>
-            <fsldir desc='Path to fsl' ui='dir'>/home/runner/tools/fsl</fsldir>
-            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/home/runner/tools/config/fsl_bash.sh</fslsetup>
+            <fsldir desc='Path to fsl' ui='dir'>/test/tools/fsl</fsldir>
+            <fslsetup desc='Path to fsl setup script, executing before any fsl command' ui='text'>/test/tools/config/fsl_bash.sh</fslsetup>
             <fslshell desc='Shell used to run FSL' ui='text'>bash</fslshell>
             <fsloutputtype desc='Output type used by FSL' ui='text'>NIFTI</fsloutputtype>
-            <freesurferdir desc='Path to freesurfer' ui='dir'>/home/runner/tools/freesurfer</freesurferdir>        
+            <freesurferdir desc='Path to freesurfer' ui='dir'>/test/tools/freesurfer</freesurferdir>        
             <freesurfershell desc='Shell used to run FreeSurfer' ui='text'>bash</freesurfershell>
             <freesurfersetup desc='Path to FreeSurfer setup script, executing before any FreeSurfer command' ui='text'></freesurfersetup>
-            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/home/runner/tools/freesurfer/FreeSurferEnv.sh;</freesurferenvironment>
-            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/home/runner/tools/templates</templatedir>
-            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/home/runner/tools/mask_face/nrg-improc</FaceMaskingdir>
+            <freesurferenvironment desc='Path to FreeSurfer environmental setup script, executing before any FreeSurfer command' ui='text'>/test/tools/freesurfer/FreeSurferEnv.sh;</freesurferenvironment>
+            <templatedir desc='Path to folder with various templates (e.g. for aamod_freesurfer_deface)' ui='dir'>/test/tools/templates</templatedir>
+            <FaceMaskingdir desc='Path to FaceMasking (WUSTL NRG)' ui='dir'>/test/tools/mask_face/nrg-improc</FaceMaskingdir>
             <allowremotecache desc='Allow local caching of files from remote server' ui='optionlist'>1</allowremotecache>
             <poolprofile desc='Cluster Profile and (optional) initial submit argument (e.g. asking for specific queue or resource) separated with colon' ui='text'>local</poolprofile>
         </directory_conventions>
@@ -101,7 +101,7 @@
             <autoidentifytmaps desc='Automatically identify t maps?' ui='yesno'>0</autoidentifytmaps>
         </options>
         <acq_details>
-            <root desc='Root on local machine for processed data' ui='dir'>/home/runner/projects</root>
+            <root desc='Root on local machine for processed data' ui='dir'>/test/projects</root>
         </acq_details>
     </local>
 </aap>
