@@ -6,9 +6,9 @@ name: Use case tests
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ none ]
+    branches: [ master ]
   pull_request:
-    branches: [ none ]
+    branches: [ master ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -38,6 +38,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -69,12 +77,12 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -83,14 +91,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_AROMA','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_AROMA
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -117,6 +125,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -148,12 +164,12 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -162,14 +178,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_dartel','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_dartel
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -195,6 +211,14 @@ jobs:
           haskell: true
           large-packages: true
           swap-storage: true
+
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
 
       - name: Set git to use LF
         run: |
@@ -227,12 +251,12 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01/ses-test $HOME/data/aa_demo/ds000114/sub-01/ses-test --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01/ses-test /test/data/aa_demo/ds000114/sub-01/ses-test --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -241,14 +265,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_diffusion','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_diffusion
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -275,6 +299,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -306,14 +338,14 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-02 /test/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-03 /test/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -322,14 +354,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmri','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_fmri
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -356,6 +388,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -387,14 +427,14 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-02 /test/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-03 /test/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -403,14 +443,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrisymlinks','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrisymlinks','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_fmrisymlinks
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -437,6 +477,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -468,14 +516,14 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-02 /test/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-03 /test/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -484,14 +532,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrilocalpipeline','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_fmrilocalpipeline','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_fmrilocalpipeline
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -518,6 +566,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -549,15 +605,15 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114 $HOME/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-01 $HOME/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-02 $HOME/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-03 $HOME/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
-          aws s3 cp s3://openneuro.org/ds000114/sub-04 $HOME/data/aa_demo/ds000114/sub-04 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "task-*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114 /test/data/aa_demo/ds000114 --quiet --recursive --exclude "*" --include "dwi*" --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-01 /test/data/aa_demo/ds000114/sub-01 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-02 /test/data/aa_demo/ds000114/sub-02 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-03 /test/data/aa_demo/ds000114/sub-03 --quiet --recursive --no-sign-request
+          aws s3 cp s3://openneuro.org/ds000114/sub-04 /test/data/aa_demo/ds000114/sub-04 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -566,14 +622,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_scrubbing','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds000114_scrubbing','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds000114_scrubbing
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -599,6 +655,14 @@ jobs:
           haskell: true
           large-packages: true
           swap-storage: true
+
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
 
       - name: Set git to use LF
         run: |
@@ -631,10 +695,10 @@ jobs:
           LOAD_FREESURFER: 1
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 $HOME/data/aa_demo/ds002737/sub-01/ses-03 --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://openneuro.org/ds002737/sub-01/ses-03 /test/data/aa_demo/ds002737/sub-01/ses-03 --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -643,14 +707,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_ds002737_deface','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_ds002737_deface','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_ds002737_deface
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -677,6 +741,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -708,15 +780,15 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032301 $HOME/data/aa_demo/LEMON_EEG/sub-032301 --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032301/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032301/ses-01/anat --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032302 $HOME/data/aa_demo/LEMON_EEG/sub-032302 --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032302/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032302/ses-01/anat --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032303 $HOME/data/aa_demo/LEMON_EEG/sub-032303 --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032303/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032303/ses-01/anat --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032301 /test/data/aa_demo/LEMON_EEG/sub-032301 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032301/ses-01/anat /test/data/aa_demo/LEMON_MRI/sub-032301/ses-01/anat --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032302 /test/data/aa_demo/LEMON_EEG/sub-032302 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032302/ses-01/anat /test/data/aa_demo/LEMON_MRI/sub-032302/ses-01/anat --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032303 /test/data/aa_demo/LEMON_EEG/sub-032303 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032303/ses-01/anat /test/data/aa_demo/LEMON_MRI/sub-032303/ses-01/anat --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -725,14 +797,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsensor','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsensor','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_${{github.job}}
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -759,6 +831,14 @@ jobs:
           large-packages: true
           swap-storage: true
 
+      - name: Create test space
+        run: |
+          sudo mkdir /test
+          sudo chown runner: /test
+          sudo chmod u+w /test
+          echo "Free space:"
+          df -h
+
       - name: Set git to use LF
         run: |
           git config --global core.autocrlf false
@@ -790,11 +870,11 @@ jobs:
           LOAD_FREESURFER: 0
           PARAMETER_XML: aap_parameters_defaults_GitHub.xml
 
-      - name: Retrive test data under $HOME/data/aa_demo
+      - name: Retrive test data under /test/data/aa_demo
         run: |
-          mkdir -p $HOME/data/aa_demo
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032301 $HOME/data/aa_demo/LEMON_EEG/sub-032301 --quiet --recursive --no-sign-request
-          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032301/ses-01/anat $HOME/data/aa_demo/LEMON_MRI/sub-032301/ses-01/anat --quiet --recursive --no-sign-request
+          mkdir -p /test/data/aa_demo
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/EEG_MPILMBB_LEMON/EEG_Raw_BIDS_ID/sub-032301 /test/data/aa_demo/LEMON_EEG/sub-032301 --quiet --recursive --no-sign-request
+          aws s3 cp s3://fcp-indi/data/Projects/INDI/MPI-LEMON/MRI_MPILMBB_LEMON/MRI_Raw/sub-032301/ses-01/anat /test/data/aa_demo/LEMON_MRI/sub-032301/ses-01/anat --quiet --recursive --no-sign-request
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -803,14 +883,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile(getenv('HOME'),'tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsource','haltonerror',true)
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('glob','aatest_lemon_meegsource','haltonerror',true)
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: aatest_${{github.job}}
           path: |
-            ~/projects/
+            /test/projects/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
