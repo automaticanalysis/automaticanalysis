@@ -126,7 +126,7 @@ for locI = length(remoteAAlocations) : -1 : 1
     destAAPfn = fullfile(studyPath, sprintf('aap_parameters_%05d.mat', locI));
     
     % Copy the remote AAP file, could error here if the file can''t be found remotely
-    aap = aas_copyfromremote(aap, remoteAAlocations(locI).host, remoteAAPfn, destAAPfn, 'allowcache', remoteAAlocations(locI).allowcache);
+    aap = aas_copyfromremote(aap, remoteAAlocations(locI).host, remoteAAPfn, destAAPfn, 'allowcache', remoteAAlocations(locI).allowcache, 'verbose', aap.options.remotecpverbose);
     
     % Load it!
     if ~exist(destAAPfn, 'file'), aas_log(aap, 1, sprintf('Cannot find %s', remoteAAPfn)); end
@@ -365,7 +365,7 @@ for modI = 1 : length(aap.tasklist.main.module)
                                             end
                                             remoteSrcDesc = fullfile(remoteSrcPath, sprintf('stream_%s_outputfrom_%s.txt', strrep(inputStreams{iI},[remoteStage '.'],''), remoteStage));
                                             localSrcDesc = fullfile(trgPath, sprintf('stream_%s_remoteoutputfrom_%s_%s.txt', inputStreams{iI}, remoteAAlocations(remoteOutput.locI).host, remoteStage));
-                                            aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', 0);
+                                            aap = aas_copyfromremote(aap, remoteAAlocations(remoteOutput.locI).host, remoteSrcDesc, localSrcDesc, 'allow404', 1, 'allowcache', remoteAAlocations(remoteOutput.locI).allowcache, 'verbose', aap.options.remotecpverbose);
                                             
                                             % If it didn't copy, then we should reset this stage
                                             if ~exist(localSrcDesc)

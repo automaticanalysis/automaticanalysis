@@ -36,7 +36,7 @@ for depind=1:length(deps)
         % First we need to get the previous aap file
         remote_aap_fn=fullfile(dest,'remote_aap_parameters.mat');
         
-        aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache,'verbose', 0);
+        aap=aas_copyfromremote(aap,inputstream.host,inputstream.aapfilename,remote_aap_fn,'allowcache',inputstream.allowcache,'verbose',aap.options.remotecpverbose);
         
         aap_remote=load(remote_aap_fn);
         aap_remote=aap_remote.aap;
@@ -109,7 +109,7 @@ for depind=1:length(deps)
             if ~isfile(remoteoutputstreamdesc)
                 continue;
             end;
-            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache, 'verbose', 1);
+            aap=aas_copyfromremote(aap,inputstream.host,remoteoutputstreamdesc,outputstreamdesc,'allow404',1,'allowcache',inputstream.allowcache,'verbose',aap.options.remotecpverbose);
             
             if (exist(outputstreamdesc,'file'))
                 
@@ -216,7 +216,13 @@ for depind=1:length(deps)
                 fclose(fid);
                 
                 if ~reloadfiles
-                    aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,src,dest),aap.gui_controls.colours.inputstreams);
+                    logsafe_path_src = src;
+                    logsafe_path_dest = dest;
+                    if ispc()
+                        logsafe_path_src = strrep(src, '\', '\\');
+                        logsafe_path_dest = strrep(dest, '\', '\\');
+                    end
+                    aas_log(aap,false,sprintf(' retrieve stream %s [checksum match, not recopied] from %s to %s',streamname,logsafe_path_src,logsafe_path_dest),aap.gui_controls.colours.inputstreams);
                 else
                 
                     % Just queue for retrieval in part 2 (remote)                   
