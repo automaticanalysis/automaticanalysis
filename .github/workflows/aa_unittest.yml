@@ -15,7 +15,7 @@ on:
 
 # Default settings
 env:
-  DISKSIZE: 43008
+  DISKSIZE: 41984
 
 defaults:
     run:
