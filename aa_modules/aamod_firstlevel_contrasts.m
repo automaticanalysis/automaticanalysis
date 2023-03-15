@@ -6,6 +6,8 @@
 %
 % CHANGE HISTORY
 %
+% 03/2023 [MSJ] fix eachagainstbaseline; remove 20 contrast restriction
+%               on diagnostic plot; save a plaintext list of contrast names
 % 09/2021 [MSJ] added string contrast option for "uniquebysession";
 
 function [aap,resp]=aamod_firstlevel_contrasts(aap,task,subj)
@@ -69,17 +71,20 @@ switch task
         end
         
         contrasts=settings.contrasts(contrasts_set);
+        
         % add contrasts for each task regressor v baseline?
         if settings.eachagainstbaseline
             if isempty(contrasts), contrasts(1).subject = aas_getsubjname(aap,subj); end
-            basev = zeros(1,numel(SPM.xX.name));
-            if any(cellfun(@(x) ~isempty(regexp(x,'.*constant$', 'once')), SPM.xX.name)), basev(end) = []; end
-            for conind = 1:numel(SPM.xX.name)
-                if any(cellfun(@(x) ~isempty(regexp(SPM.xX.name{conind},sprintf('.*%s$',x), 'once')), {'x' 'y' 'z' 'r' 'p' 'j' 'constant'})), continue; end
+            % contrast vector SHOULDNT include entries for the model
+            % constants (causes crash later) - so just subtract off number
+            % of sessions and we should be G2G (SPM.xX.iC should never
+            % reference these slots) foobar
+            basev = zeros(1,numel(SPM.xX.name)-nsess);
+            for conind = 1:numel(SPM.xX.iC)
                 newv = basev;
-                newv(conind) = 1;
+                newv(SPM.xX.iC(conind)) = 1; 
                 contrasts.con(end+1)= struct(...
-                    'format','sameforallsessions',...
+                    'format','uniquebysession',...
                     'vector',newv,...
                     'session',[],...
                     'type','T',...
@@ -87,6 +92,7 @@ switch task
                     );
             end
         end
+
         
         if isempty(contrasts)
             aas_log(aap,true,'ERROR: Can''t find declaration of what contrasts to use  -  check user master script!');
@@ -136,7 +142,7 @@ switch task
                     contrasts.con(conind).vector = str2num(...
                         contrasts.con(conind).vector);
                 end
-                % Make contract vector
+                % Make contrast vector
                 switch(contrasts.con(conind).format)
                     
                     case {'singlesession','sessions','sameforallsessions'}
@@ -164,7 +170,7 @@ switch task
                             if (sessforcon(sess))
                                 if isnumeric(contrasts.con(conind).vector) % vcontrast vector
                                     if (size(contrasts.con(conind).vector,2) > numcolsinthissess)
-                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got ',sess,numcolsinthissess)); 
+                                        aas_log(aap,true,sprintf('ERROR: Number of columns in contrast matrix for session %d is more than number of columns in model for this session - wanted %d columns, got %d ',sess,numcolsinthissess,size(contrasts.con(conind).vector,2))); 
                                     elseif (size(contrasts.con(conind).vector,2) < numcolsinthissess) % padding if shorter
                                         convec = [convec sessforcon(sess)*contrasts.con(conind).vector zeros(size(contrasts.con(conind).vector,1),numcolsinthissess-size(contrasts.con(conind).vector,2))];
                                     else
@@ -214,7 +220,7 @@ switch task
         
                        if ischar(contrasts.con(conind).vector) 
                            
-                           % new! apply string contrast across all sessions as a whole
+                           % apply string contrast across all sessions as a whole
                            % (events in contrast can be missing in some sessions) 
                            
                             convec = zeros(1,totnumcolsbarconstants);
@@ -288,10 +294,22 @@ switch task
                 cons{ccount}(inds) = 0;
                 
                 % DIAGNOSTIC
+                
+                % contrast name
                 aas_log(aap,false,contrasts.con(conind).name)
-                for cindex  =  1:max(size(convec_names))
-                    aas_log(aap,false,sprintf('\t%s: %d', convec_names{cindex}, convec(SPM.xX.iC(cindex))))
-                end
+                
+                % list of its event weights
+
+                % if there are a large number of contrasts (e.g., item analysis), echoing
+                % each contrast vector to the command window can take quite awhile...
+                % -- let the user opt-out
+
+                if ~isempty(aas_getsetting(aap,'diagnostics.display_convecs')) && aas_getsetting(aap,'diagnostics.display_convecs')
+                    for cindex  =  1:max(size(convec_names))
+                        aas_log(aap,false,sprintf('\t%s: %d', convec_names{cindex}, convec(SPM.xX.iC(cindex))))
+                    end
+                end            
+                
             end
         end 
        
@@ -312,7 +330,10 @@ switch task
         
         % save diagnostic summary images
         diag(aap, subj, SPM);
-        
+  
+        % save a plaintext list of the contrasts
+        writetable(cell2table(convec_names'), fullfile(aas_getsubjpath(aap,subj),'CONTRAST_NAMES.txt'),'WriteVariableNames',0)
+  
         % Describe outputs
         
         %  updated spm
@@ -350,6 +371,7 @@ end
 
 
 function h = diag(aap,subj,SPM)
+
 % Based on Rik Henson's script
 
 % Note this calculation of efficiency takes the 'filtered and whitened'
@@ -387,39 +409,52 @@ columnsCon = nan(numel(cons), length(nameCols));
 for conind = 1:numel(cons)    
     fullCon = cons{conind}';
     selCon = fullCon(SPM.xX.iC);    
-    columnsCon(conind, :) = selCon;    
-    
+    columnsCon(conind, :) = selCon;      
     % Normalize Contrast
     fullCon = fullCon / max(sum(fullCon(fullCon>0)), sum(fullCon(fullCon < 0)));
     % Calculate efficiency
     effic(conind) = trace(fullCon*iXX*fullCon')^-1;    
 end
 
-% get Text size
-h = figure; set(h, 'Position', [1 1 1280 720]); % HD
-ht = text(1,1,nameCons,'FontSize',12,'FontWeight','Bold','interpreter','none');
+% reduce font size as the number of contrasts to display increases
+% -- this isn't perfect, but it works better than using a fixed font size
+
+FS = 16;
+if (numel(cons)>5);FS=14;end
+if (numel(cons)>20);FS=12;end
+if (numel(cons)>50);FS=8;end
+if (numel(cons)>100);FS=5;end
+
+winheight = 200*numel(cons);
+if (winheight > 720); winheight=720; end
+
+h = figure; set(h, 'Position', [1 1 1280 winheight]); % HD
+ht = text(1,1,nameCons,'FontSize',FS,'FontWeight','Bold','interpreter','none');
 set(ht,'Unit','normalized');
 tSize = get(ht,'Extent'); tWidth = tSize(3);
+vt = text(1,1,nameCols,'FontSize',FS,'FontWeight','Bold','interpreter','none');
+set(vt,'Unit','normalized');
+tSize = get(vt,'Extent'); tHeight = 0.1 + tSize(3);
+
+tHeight = 2*tHeight;
+
 close(h);
 
-h = figure; set(h, 'Position', [1 1 1280 720]); % HD
-subplot('Position', [tWidth 0.1 0.6-tWidth 0.9/20*numel(cons)]); % assume not more then 20 contrast
+h = figure; set(h, 'Position', [1 1 1280 winheight]); % HD
+subplot('Position', [tWidth 0.15 0.6-tWidth 0.9-tHeight]); % assume not more then 20 contrast
 imagesc(columnsCon);
 colormap(vertcat(create_grad([0 0 1],[1 1 1],128),create_grad([1 1 1],[1 0 0],128)));
 caxis([-max(abs(columnsCon(:))) max(abs(columnsCon(:)))]);
-% set(gca, 'YTick', 1:numel(cons), 'YTickLabel',nameCons,  ...
-%     'Xtick', 1:length(nameCols), 'XTickLabel',nameCols)
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel',strrep(nameCons,'_','-'),  ...
     'Xtick', 1:length(nameCols), 'XTickLabel',strrep(nameCols,'_','-'))
 set(gca, 'XAxisLocation','top');
-xlab = rotateticklabel(gca,90);
-set(gca,'FontSize',12,'FontWeight','Bold');
-set(xlab,'FontSize',12,'FontWeight','Bold');
-set(xlab,'Interpreter','none');
 
-subplot('Position', [0.6 0.1 0.35 0.9/20*numel(cons)]);
+if (numel(cons)>5); set(gca,'XTickLabelRotation',90);end
+
+set(gca,'FontSize',FS,'FontWeight','Bold');
+subplot('Position', [0.6 0.15 0.35 0.9-tHeight]);
 set(gca, 'YTick', 1:numel(cons), 'YTickLabel','');
-set(gca,'FontSize',12,'FontWeight','Bold');
+set(gca,'FontSize',FS,'FontWeight','Bold');
 hold on;
 cmap = colorcube(numel(cons));
 
@@ -428,10 +463,10 @@ if aas_getsetting(aap,'estimateefficiency')
         barh(numel(cons) - conind + 1, log(effic(conind)), 'FaceColor',cmap(conind,:));
     end
     ylim([0.5 numel(cons)+0.5])
-    xlabel('Log Efficiency')
+    title('Log Efficiency','FontSize',18)
     Xs = xlim;
     efficiencyVals = create_grad(Xs(1),Xs(2),5);
-    set(gca, 'Xtick', efficiencyVals, 'XtickLabel', sprintf('%1.1f|',exp(efficiencyVals)))
+    set(gca, 'Xtick', efficiencyVals, 'XtickLabel', compose("%1.1f", exp(efficiencyVals)), 'FontSize', 18)
 end
 
 fname = fullfile(aas_getsubjpath(aap,subj),['diagnostic_' mfilename '.jpg']);
