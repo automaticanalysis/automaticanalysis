@@ -21,7 +21,7 @@ function aa_report_export(studyPath, target)
     end
 
     % top-level HTMLs
-    topHMLSs = {'html_main' 'html_S00' 'html_moco' 'html_reg' 'html_C00'};
+    topHMLSs = intersect(reportFields,{'html_main' 'html_S00' 'html_moco' 'html_reg' 'html_C00'})';
 
     % HTMLs in subfolders
     subHTMLs = reportFields(cellfun(@(f) ~contains(f,{'S00' 'C00'}) & ~isempty(regexp(f,'(S[0-9]{2})|(C[0-9]{2})', 'once')), reportFields))';
