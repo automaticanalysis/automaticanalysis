@@ -23,7 +23,7 @@ aap.acq_details.numdummies = 4;
 aap.acq_details.numdummies = 1;
 aap.acq_details.input.correctEVfordummies = 1;
 
-aap.tasksettings.aamod_segment8.writenormimg = 0;
+aap.tasksettings.aamod_segment8.writenormimg = 1;
 aap.tasksettings.aamod_segment8.samp = 2;
 aap.tasksettings.aamod_slicetiming.autodetectSO = 1;
 aap.tasksettings.aamod_slicetiming.refslice = 16;

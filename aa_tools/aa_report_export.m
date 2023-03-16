@@ -6,6 +6,9 @@ function aa_report_export(studyPath, target)
     aas_makedir([],mediaDir);
 
     load(fullfile(studyPath,'aap_parameters_reported.mat'),'aap');
+
+    aas_log(aap,false,['INFO: Exporting ' spm_file(studyPath,'basename') '...']);
+
     oldRoot = fullfile(aap.acq_details.root,aap.directory_conventions.analysisid);
 
     copyfile(fullfile(oldRoot,'aa_*'),target);
