@@ -80,7 +80,7 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'})
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('haltonerror', true, 'not_tags', {'Large'}); aa_test_getreport('/test/projects','/test/projects/report')
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -91,7 +91,7 @@ jobs:
         with:
           name: data_${{github.job}}
           path: |
-            /test/projects/
+            /test/projects/report/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
@@ -163,14 +163,14 @@ jobs:
       - name: Run script
         uses: matlab-actions/run-command@v1
         with:
-          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'})
+          command: addpath(getenv('GITHUB_WORKSPACE')); aa_ver5; SPM = spmClass(fullfile('/test','tools','spm12')); SPM.load; aa_test('haltonerror', true, 'tags', {'Minimal_install'}); aa_test_getreport('/test/projects','/test/projects/report')
 
       - name: Archive data
         uses: actions/upload-artifact@v3
         with:
           name: data_${{github.job}}
           path: |
-            /test/projects/
+            /test/projects/report/
 
       - name: Archive log
         uses: actions/upload-artifact@v3
