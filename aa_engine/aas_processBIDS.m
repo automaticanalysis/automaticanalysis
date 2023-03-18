@@ -38,9 +38,16 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %     - aap.acq_details.convertBIDSEventsToUppercase: true == convert event names to uppercase
 %     - aap.acq_details.maxBIDSEventNameLength: >0 == truncate event names
 %     - aap.acq_details.omitBIDSmodeling: true == return w/o processing modeling data
+%     - aap.acq_details.BIDSeventregex: optionally select a subset of  event types
+%
+%   Note BIDSeventregex (if defined) is tested *before* stripping special characters 
+%   or converting to uppercase -- i.e. it is applied to the event names as they appear
+%   in the tsv. See "help regexp" for tips on using regular expressions.
+%                                        
 %
 % CHANGE HISTORY:
 %
+%   M Jones WashU 2023 -- added BIDSeventregex for selection of event types
 %   M Jones WashU 2021 -- look for .nii if .nii.gz doesn't exist (structural and epi files only)
 %   M Jones WashU 2020 -- added acq_details tsv processing options
 %   J Carlin 2018 -- Update
@@ -205,6 +212,12 @@ if (isfield(aap.acq_details,'maxBIDSEventNameLength') && aap.acq_details.maxBIDS
     maxBIDSEventNameLength = aap.acq_details.maxBIDSEventNameLength;
 else
     maxBIDSEventNameLength = Inf;
+end
+
+if (isfield(aap.acq_details,'BIDSeventregexp') && ~isempty(aap.acq_details.BIDSeventregexp))
+    BIDSeventregexp = aap.acq_details.BIDSeventregexp;
+else
+    BIDSeventregexp = [];
 end
 
 % locate first_level modules
@@ -393,6 +406,15 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 aas_log(aap,false,sprintf('WARNING: No event found for subject %s task/run %s\n',subjname,taskname));
                             else
                                 EVENTS = tsvread(eventfname);
+                                
+                                if ~isempty(BIDSeventregexp)    
+                                    temp = EVENTS(:,cell_index(EVENTS(1,:),'trial_type'));
+                                    keepers = regexp(temp,BIDSeventregexp);
+                                    keepers = ~cellfun(@isempty,keepers);
+                                    keepers(1) = 1; % include column labels   
+                                    EVENTS = EVENTS(keepers,:);
+                                end                              
+                                
                                 iName = cell_index(EVENTS(1,:),regcolumn);
                                 iOns = cell_index(EVENTS(1,:),'onset');
                                 iDur = cell_index(EVENTS(1,:),'duration');

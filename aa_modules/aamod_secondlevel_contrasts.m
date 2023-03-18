@@ -20,6 +20,7 @@ switch task
         end
         
     case 'doit'
+        
         nsub=length(aap.acq_details.subjects);
         aas_log(aap,false,sprintf('%d subjects',nsub));
         % New option to allow suffix to output file in extraparameters
@@ -30,9 +31,10 @@ switch task
         end
         
         rfxrootdir = fullfile(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);
-	% if rfxdir doesn't exist, create it [MSJ]
-	if ~exist(rfxrootdir,'file'); mkdir(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);end
-	cd(rfxrootdir);
+        % if rfxdir doesn't exist, create it [MSJ]
+        if ~exist(rfxrootdir,'file'); mkdir(aap.acq_details.root,[aap.directory_conventions.rfx stats_suffix]);end
+        savedir = pwd;
+        cd(rfxrootdir);
         
         %% Now set up contrasts
         fnSPMs = aas_getfiles_bystream(aap,'secondlevel_spm');
@@ -72,6 +74,8 @@ switch task
         if ~isempty(char(allCons)), aap = aas_desc_outputs(aap,'secondlevel_cons',char(allCons)); end
         if ~isempty(char(allTs)), aap = aas_desc_outputs(aap,'secondlevel_spmts',char(allTs)); end
         if ~isempty(char(allFs)), aap = aas_desc_outputs(aap,'secondlevel_spmfs',char(allFs)); end        
+        
+        cd(savedir);
         
     case 'checkrequirements'
         
