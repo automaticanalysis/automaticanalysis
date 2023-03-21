@@ -1,10 +1,10 @@
-TOOLDIR=$HOME/tools
+TOOLDIR=/test/tools
 mkdir $TOOLDIR
 mkdir $TOOLDIR/config
 TEMPLATEDIR=$TOOLDIR/templates
 
 sudo apt-get update
-sudo apt-get install libtinfo5 libtinfo6 dc libxml2-utils
+sudo apt-get install libtinfo5 libtinfo6 dc libxml2-utils graphviz
 python -m pip install --upgrade pip
 
 # All MATLAB tools MUST be installed referred by the parameterset

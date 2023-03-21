@@ -105,10 +105,13 @@
         <maximumretry desc='Maximum number of (re)tries to retrieve file' ui='double'>1</maximumretry>
         <checktasksettingconsistency desc='Check whether settings have changed since the last execution' ui='yesno'>0</checktasksettingconsistency>
         <verbose desc='How verbose to be: 0 - do not show any message; 1 - show errors only; 2 - show every message' ui='double'>2</verbose>
+        <remotecpverbose desc='How verbose to be when copying from remote: 0 - do not show any message; 1 - shows all messages' ui='yesno'>0</remotecpverbose>
         <timelog desc='Do we print time elapsed after each module?' ui='yesno'>1</timelog>
         <email desc='Send an email when analysis is done or breaks?' ui='text'></email>
         <NIFTI4D desc='Use NIFTI-4D instead of NIFTI-3D' ui='yesno'>1</NIFTI4D>
         <hardlinks desc='Allow hardlinks during retrieving inputs' ui='yesno'>1</hardlinks>
+        <remotesymlinks desc='Allow symlinks for remote pipeline connection when receiving inputs? Warning: WIN users must enable symlinks via the Group Policy Editor and this may cause a security issue.' ui='yesno'>0</remotesymlinks>
+        <symlinks desc='Allow symlinks during retrieving local inputs? Warning: WIN users must enable symlinks via the Group Policy Editor and this may cause a security issue.' ui='yesno'>0</symlinks>
         <autoidentifystructural desc='Automatically identify structurals?' ui='yesno'>1</autoidentifystructural>
         <autoidentifystructural_chooselast desc='Automatically select last of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_chooselast>
         <autoidentifystructural_choosefirst desc='Automatically select first of structurals when there is more than one?' ui='yesno'>0</autoidentifystructural_choosefirst>

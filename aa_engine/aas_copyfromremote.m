@@ -17,13 +17,15 @@ function [aap]=aas_copyfromremote(aap,host,src,dest,varargin)
 % Set the defaults arguments
 vdefaults = { ...
     'allow404',     0, [0 1], ...     % 0 = crash on 404s? 1 = allow them?
-    'allowcache',  -1, [-1 0 1], ...  % -1 = default to aaq.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
-    'verbose',      1, [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'allowcache',   aap.directory_conventions.allowremotecache, [-1 0 1], ...  % -1 = default to aap.directory_conventions.allowremotecache; 0 = force no; 1 = force yes
+    'verbose',      logical(aap.options.remotecpverbose), [0 1], ...     % Display all those annoying "Retrieved..." messages?
+    'allowremotesymlinks', 0, [0 1] ...    % Allow symlinks when using remote connected pipelines; 1= allow 0= don't allow
 };
 
 vargs = vargParser(varargin, vdefaults);
 
 allow404 = vargs.allow404;
+allowremotesymlinks =  vargs.allowremotesymlinks;
 
 % Only cache single files, if allowed
 allowremotecache = false;
@@ -96,32 +98,52 @@ if allowremotecache
 end
 
 if ~cachehit
-    % Exponential back off if connection refused
-    retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
-    for retry=retrydelay
-        % -t option preserves timestamp of remote file
-        if ~isempty(host)
-            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
-        else
-            cmd = sprintf('rsync -vt %s %s', src, dest);
+    if isempty(host)
+        if ~isfile(src)
+            aas_log(aap,true,sprintf('File %s does not exist.',src),'m');
         end
-        [s, w]=aas_shell(cmd,allow404,~allow404);
-        if (s==0)
+        if (allowremotesymlinks)
+            if ~isfile(dest)
+                if ispc()
+                    cmd = sprintf('mklink %s %s', dest, src);
+                    [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
+                else
+                    cmd = sprintf('ln -s %s %s', src, dest);
+                    [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
+                end
+            end
+        else
+            copyfile(src, dest);
             if vargs.verbose
+                if ispc()
+                    src = strrep(src, '\', '\\');
+                end
                 aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
             end
-            break;
-        end;
-        if (allow404 && ~isempty(strfind(w,'No such file or directory')))
-            break;
-        end;
-        if (~isempty(strfind(w,'Connection refused')))
-            aas_log(aap,false,sprintf('Connection refused in transfer, retry in %d s',retry));
-            pause(retry)
-        else
-            break;
-        end;
-    end;
+        end
+    else
+        retrydelay=[1 2 4 8 16 32 64 128 256 512 768 1024 2048 1];
+        for retry=retrydelay
+            % -t option preserves timestamp of remote file
+            cmd = sprintf('rsync -t %s:''%s'' %s',host,src,dest);
+            [s, w]=aas_shell(cmd,~vargs.verbose,~allow404);
+            if (s==0)
+                if vargs.verbose
+                    aas_log(aap,false,sprintf('Retrieved %s from %s',src,host),'m');
+                end
+                break;
+            end;
+            if (allow404 && ~isempty(strfind(w,'No such file or directory')))
+                break;
+            end;
+            if (~isempty(strfind(w,'Connection refused')))
+                aas_log(aap,false,sprintf('Connection refused in transfer, retry in %d s',retry));
+                pause(retry)
+            else
+                break;
+            end;
+        end     
+    end
     
     % Copy to cache
     if allowremotecache

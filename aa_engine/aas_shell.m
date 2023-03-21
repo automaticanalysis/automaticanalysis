@@ -34,7 +34,11 @@ if ~hit
 end
 
 %% Run
-if ~quiet, aas_log([],false,['Running: ' prefix cmd]); end
+log_path = cmd;
+if ispc()
+    log_path = strrep(log_path,'\','\\'); % If Windows, fix the path for cprintf
+end
+if ~quiet, aas_log([],false,['Running: ' prefix log_path]); end
 [s,w]=system([prefix cmd]);
 
 if strcmp('shell-init: error', w)
@@ -54,7 +58,7 @@ end
 %% Process error if we're in non-quiet mode OR if we want to stop for errors
 if s && (~quiet || stopforerrors)
     [junk, wenv]=system('/usr/bin/env');
-    aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix cmd]));
+    aas_log([],false,sprintf('***LINUX ERROR FROM SHELL %s\n***WHILE RUNNING COMMAND\n%s',w,[prefix log_path]));
     aas_log([],stopforerrors,sprintf('***WITH ENVIRONMENT VARIABLES\n%s',wenv));
     aas_log([],false,'***END, CONTINUING');
 end
@@ -73,6 +77,8 @@ if ~isempty(w)
     rw = sprintf('%s\n',l{:});
 end
 w = sprintf('%s\n%s',rw,lw);
-
+if ispc()
+    w = strrep(w,'\','\\'); % If Windows, fix the path for logging
+end
 if ~quiet, aas_log([],false,w); end
 

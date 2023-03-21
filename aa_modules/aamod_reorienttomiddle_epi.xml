@@ -9,6 +9,14 @@
                 <memoryBase desc='Required memory in GB'>0.5</memoryBase>
             </qsub>
             
+            <!-- NB: this module will reorient each frame in the epi *independentally* -->
+            <!-- (i.e., each frame may be moved by a different amount). This has the -->
+            <!-- effect of performing an approximate realignnment on the data. As such, -->
+            <!-- aamod_realign will underestimate the realignment parameters if run after -->
+            <!-- this module, which may be potentially harmful if the RP are then -->
+            <!-- used as nuisance regressors in the GLM (because they do not represent -->
+            <!-- the true subject motion). Caveat emptor. -->
+            
             <inputstreams>
                 <stream>epi</stream>
             </inputstreams>

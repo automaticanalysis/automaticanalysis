@@ -207,4 +207,6 @@ save(fullfile(studyroot,'aap_parameters_reported.mat'), 'aap','-v7.3');
 
 aa_close(aap);
 
+fprintf('Fetching report finished...\n');
+
 end
