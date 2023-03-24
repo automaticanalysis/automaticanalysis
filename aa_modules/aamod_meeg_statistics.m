@@ -738,13 +738,15 @@ for c = 1:numel(cfg)
                 diagFn = sprintf('%s_%s-%1.2f-%1.2f',diagFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
             end
         end
+        avgcfg.parameter(2) = []; 
+        allStatInp = cellfun(@(x) meeg_average(avgcfg,x), allInp,'UniformOutput',false);
     end
     
     % run stat
     statFn{c} = spm_file(strrep(diagFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
     if ~exist(statFn{c},'file')
         aas_log(aap,false,['INFO - running statistics: ' spm_file(statFn{c},'basename')]);
-        stat = fstat(cfg{c}, allInp{:});
+        stat = fstat(cfg{c}, allStatInp{:});
         
         stat.mask(isnan(stat.mask)) = 0;
         groupStat{1}.stat = stat;
