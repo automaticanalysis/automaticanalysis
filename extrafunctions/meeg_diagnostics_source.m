@@ -7,7 +7,7 @@ if nargin >= 4, savepath = varargin{2}; else, savepath = ''; end
 
 if ~iscell(data), data = {data}; end
 
-plotcfg = keepfields(diag,intersect(fieldnames(diag),{'parameter' 'view' 'statlim'}));
+plotcfg = keepfields(diag,intersect(fieldnames(diag),{'parameter' 'width' 'view' 'statlim'}));
 plotcfg.latency = diag.snapshottwoi./1000; % second
 
 % extract data if needed
@@ -55,7 +55,7 @@ set(fig,'Name',figtitle)
 
 if nargin == 4 && ~isempty(savepath)
     figFn = savepath;
-    print(fig,'-noui',[figFn '.jpg'],'-djpeg','-r300');
+    print(fig,'-noui',[figFn '.jpg'],'-djpeg','-r400');
     close(fig);
 end
 end

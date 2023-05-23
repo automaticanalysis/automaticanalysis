@@ -242,11 +242,6 @@ switch task
             aas_log(aap, true, sprintf('%s: ICA_AROMA must be installed in %s. Exiting...', mfilename, AROMA_FNAME));
         end
 
-        % AROMA requires python3.6
-        [~,w] = aas_shell('python --version'); 
-        verPy = regexp(w,'(?<=Python )[0-9\.]*','match');
-        if ~startsWith(verPy{1},'3.6'), aas_log(aap,true,sprintf('%s: ICA_AROMA requires python 3.6 (not found). Exiting...', mfilename)); end
-
         % may as well check for template while we're here
         
         WARPREF = fullfile(aap.directory_conventions.fsldir,'data/standard/MNI152_T1_2mm.nii.gz');             

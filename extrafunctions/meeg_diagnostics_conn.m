@@ -20,10 +20,11 @@ end
 [~, FT] = aas_cache_get([],'fieldtrip');
 FT.load;
 FT.addExternal('brewermap');
-cmapbase = flipud(brewermap(128,'RdBu'));
+cmapbase = flipud(brewermap(192,'RdBu'));
+cmapbase(65:128,:) = [];
+
 
 [~, BNV] = aas_cache_get([],'bnv');
-CM = BNV.BNVSettings.edg.CM;
 BNV.load;
 
 inputfiles.surf = fullfile(BNV.toolPath,'Data','SurfTemplate','BrainMesh_Ch2_smoothed.nv');
@@ -70,16 +71,20 @@ labeltick = 1:labeltickstep:size(groupStat.labelcmb,1);
 
 %% Get data
 mask = groupStat.stat.mask & ~isnan(groupStat.stat.stat);
-stat = groupStat.stat.stat .* mask;
-if ~any(stat,'all')
+if ~any(mask,'all')
     delete(fnNode);
     BNV.unload;
     return; 
 end
+stat = groupStat.stat.stat .* mask;
 [cmap, cmaprange] = cmap_adjust(cmapbase,stat(mask));
 if diff(cmaprange) == 0, cmaprange = sort(cmaprange .* [0.9 1.1]); end % add range in case of uniform values
-if all(stat(stat~=0)>0), sfx = 'p';
-elseif all(stat(stat~=0)<0), sfx = 'n';
+if all(stat(stat~=0)>0)
+    sfx = 'p';
+    BNV.displaySettings.LUT = cmap;
+elseif all(stat(stat~=0)<0)
+    sfx = 'n';
+    BNV.displaySettings.LUT = flipud(cmap);
 else, sfx = 'pn';
 end
 
@@ -152,8 +157,8 @@ for f = 1:size(snapshotwoi,1)
     % - select data
     meas = mean(stat(:,boiind(1):boiind(2)),2); mask = logical(meas);
     connT = table(string(groupStat.labelcmb(mask,:)), meas(mask),'VariableNames',{'conn' 'stat'});
-    step = (max(connT.stat)-min(connT.stat))/(size(CM,1)-1);
-    if step == 0, connT.indCol(:) = round(size(CM,1)/2);
+    step = (max(connT.stat)-min(connT.stat))/(size(cmap,1)-1);
+    if step == 0, connT.indCol(:) = round(size(cmap,1)/2);
     else, connT.indCol = round((connT.stat-min(connT.stat))/step)+1; end
     
     % - plot atlas
@@ -169,7 +174,7 @@ for f = 1:size(snapshotwoi,1)
         circAtlas.y(circAtlas.label == connT.conn(i,1)),...
         circAtlas.x(circAtlas.label == connT.conn(i,2))-circAtlas.x(circAtlas.label == connT.conn(i,1)),...
         circAtlas.y(circAtlas.label == connT.conn(i,2))-circAtlas.y(circAtlas.label == connT.conn(i,1)),...
-        'AutoScaleFactor',1,'Color',CM(connT.indCol(i),:),'LineWidth',2 ...
+        'AutoScaleFactor',1,'Color',cmap(connT.indCol(i),:),'LineWidth',2 ...
         ), 1:size(connT,1))
     set(fig,'Name',figtitle);
     if ~isempty(savepath)
@@ -193,8 +198,9 @@ for f = 1:size(snapshotwoi,1)
     end
     if ~any(mat,'all') || isequal(mat,diag(diag(mat))), continue; end % empty or auto-connectivity (BNV cannot visualise) only
     dlmwrite(fnEdge,mat,'\t');    
-    inputfiles.edge = fnEdge;
+    inputfiles.edge = fnEdge;  
     fig = BrainNet(inputfiles,BNV.BNVSettings);
+    set(gca,'FontSize',16,'FontWeight','bold');
     set(fig,'Name',figtitle);
     if ~isempty(savepath)
         print(fig,'-noui',spm_file(fnEdge,'ext','jpg'),'-djpeg','-r300');
@@ -217,8 +223,7 @@ if (minval < 0) && (maxval > 0)
     else, cmap = [cmapcold(cmapbase,64); cmaphot(cmapbase,round(r*64))];
     end
 elseif minval < 0, cmap = cmapcold(cmapbase,64);
-else
-    cmap = cmaphot(cmapbase,64);
+else, cmap = cmaphot(cmapbase,64);
 end
 cmaprange = [minval, maxval];
 end

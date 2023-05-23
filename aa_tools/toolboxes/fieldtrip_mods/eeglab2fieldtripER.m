@@ -120,28 +120,30 @@ data = ft_redefinetrial(struct('trl',trl),data);
 data.ureventinfo = array2table(ureventinfo,'VariableNames',{'eventnum' 'eventnum_all' 'latency'});
 
 if cfg.reorient
+    % plot layout and check Fz-Oz and F3-F4
+    cfg.figure = figure('Visible','off');
+    ft_layoutplot(cfg,data);
+    txtFz = findobj(cfg.figure.Children(2).Children,'String','Fz');
+    txtCz = findobj(cfg.figure.Children(2).Children,'String','Cz');
+    txtF3 = findobj(cfg.figure.Children(2).Children,'String','F3');
+    txtF4 = findobj(cfg.figure.Children(2).Children,'String','F4');
+    if any(cellfun(@isempty,{txtFz txtCz txtF3 txtF4}))
+        ft_warning('Fz, Cz, F3 and F4 must be defined for automatic detection of orientation');
+    end
+    AP = txtFz.Position - txtCz.Position;
+    LR = txtF4.Position - txtF3.Position;
+    close(cfg.figure);
+    indY = find(AP == max(abs(AP)));
+    indX = find(LR == max(abs(LR)));
+    indZ = setdiff(1:3,[indX indY]);
+    
     % check axes order
-    chind = cellfun(@(x) find([1 strcmp(data.elec.label,x)],1,'last'), {'Fz' 'Cz' 'Oz'})-1;
-    if sum(chind~=0) < 2 || ~chind(1)
-        ft_warning('Fz and at least one of Cz and Oz must be defined for automatic detection of orientation');
-    else
-        chind(chind==0) = [];
-        EXP_VO = [1 3 2]; % expected order variance -> this should be 1 3 2
-        [junk,so] = sort(std(data.elec.elecpos(chind,:))); %
-        data.elec.elecpos(:,1:3) = data.elec.elecpos(:,so(EXP_VO));
-        data.elec.chanpos(:,1:3) = data.elec.chanpos(:,so(EXP_VO));
-    end
+    data.elec.elecpos(:,1:3) = data.elec.elecpos(:,[indX indY indZ]);
+    data.elec.chanpos(:,1:3) = data.elec.chanpos(:,[indX indY indZ]);
+    
     % check axes direction
-    % - L-R
-    chind = cellfun(@(x) find([1 strcmp(data.elec.label,x)],1,'last'), {'C3' 'C4'})-1;
-    if sum(chind~=0) < 2
-        ft_warning('both C3 and C4 must be defined for automatic detection of orientation');
-    else
-        if diff(data.elec.elecpos(chind,1)) < 0 % L-R
-            data.elec.elecpos(:,1) = -data.elec.elecpos(:,1);
-            data.elec.chanpos(:,1) = -data.elec.chanpos(:,1);
-        end
-    end
+    data.elec.elecpos(:,1) = (AP(indX)/abs(AP(indX)))*data.elec.elecpos(:,1);
+    data.elec.elecpos(:,2) = (AP(indY)/abs(AP(indY)))*data.elec.elecpos(:,2);
 end
 
 % clear path

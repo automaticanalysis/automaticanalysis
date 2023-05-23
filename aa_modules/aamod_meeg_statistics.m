@@ -340,7 +340,7 @@ switch task
                 diagBands = {};
                 for f = 1:numel(fieldwoi)
                     diagBands{f} = diag.(fieldwoi{f});
-                    diag.(fieldwoi{f}) = [indDiag{f}-0.25 indDiag{f}+0.25];
+                    diag.(fieldwoi{f}) = [indData{f}-0.25 indData{f}+0.25];
                     pcfg.(fieldwoi{f}) = [indDiag{f}-0.25 indDiag{f}+0.25];
                 end
             end
@@ -731,20 +731,22 @@ for c = 1:numel(cfg)
         for fave = fieldnames(cfg{c}.average)'
             if contains(fave{1},'freq') && ~isempty(diagBands)
                 indMeas = strcmp(fieldofinterest,strrep(fave{1},'freq','band'));
-                pcfg.(DIM2SETTING(fave{1})) = strrep(diagBands{indMeas}(mean(cfg{c}.average.(fave{1}))),' ','');
-                diagFn = sprintf('%s_%s-%s',diagFn,fave{1},strrep(diagBands{indMeas}{mean(cfg{c}.average.(fave{1}))},' ','')); % add suffix to statFn
+                pcfg.(DIM2SETTING(fave{1})) = strrep(diagBands{indMeas}(allInp{1}.(fave{1})==mean(cfg{c}.average.(fave{1}))),' ','');
+                diagFn = sprintf('%s_%s-%s',diagFn,fave{1},strrep(diagBands{indMeas}{allInp{1}.(fave{1})==mean(cfg{c}.average.(fave{1}))},' ','')); % add suffix to statFn
             else
                 pcfg.(DIM2SETTING(fave{1})) = cfg{c}.average.(fave{1});
                 diagFn = sprintf('%s_%s-%1.2f-%1.2f',diagFn,fave{1},cfg{c}.average.(fave{1})); % add suffix to statFn
             end
         end
+        avgcfg.parameter(2) = []; 
+        allStatInp = cellfun(@(x) meeg_average(avgcfg,x), allInp,'UniformOutput',false);
     end
     
     % run stat
     statFn{c} = spm_file(strrep(diagFn,['diagnostic_' aap.tasklist.main.module(aap.tasklist.currenttask.modulenumber).name '_'],''),'ext','mat');
     if ~exist(statFn{c},'file')
         aas_log(aap,false,['INFO - running statistics: ' spm_file(statFn{c},'basename')]);
-        stat = fstat(cfg{c}, allInp{:});
+        stat = fstat(cfg{c}, allStatInp{:});
         
         stat.mask(isnan(stat.mask)) = 0;
         groupStat{1}.stat = stat;
