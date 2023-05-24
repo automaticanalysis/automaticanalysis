@@ -9,10 +9,9 @@
             </qsub>
             
             <permanenceofoutput>2</permanenceofoutput>
-                        
-            
+                                 
             <inputstreams>
-                <stream>brainmask</stream>                
+                <stream isrenameable='1'>brainmask</stream>
             </inputstreams>
             
             <outputstreams>                                

@@ -1,20 +1,24 @@
 % AA module - Create a binary brainmask for a group of subjects based on
 % individually-defined binary masks
 %
+% summer 2023 [MSJ] - modifed to use renamble instream
+%
+
 function [aap, resp] = aamod_brainmaskcombine(aap, task)
 resp='';
 
 switch task
+    
     case 'report'
         
     case 'doit'
-        
-        % how many subjects?
+              
+        mask_inputstream_struct = aap.tasklist.currenttask.inputstreams(1).stream{1};
+
         nSubj = length(aap.acq_details.subjects);
         
-        % for each subject, get their brain mask
         for subjInd = 1:nSubj
-            singleMasks{subjInd} = aas_getfiles_bystream(aap, subjInd, 'brainmask');
+            singleMasks{subjInd} = aas_getfiles_bystream(aap, subjInd, mask_inputstream_struct.CONTENT);         
         end
         
        Vi = spm_vol(strvcat(singleMasks));
@@ -26,8 +30,7 @@ switch task
        
        f = 'all(X)'; % all 1s
        flags = {1,0,0};
-       
-        
+     
        Vo = spm_imcalc(Vi,Vo,f,flags);
        
        aap = aas_desc_outputs(aap, 'groupbrainmask', outName);

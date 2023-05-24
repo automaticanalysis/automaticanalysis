@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='intersubject correlation' modality='MRI'>
+            
+            <!-- compute correlation maps of all subject epis considered pairwise -->
+            <!-- see: Hasson et al. Science 303:1634-1640 (2004) -->
+            
+            <!-- NB: "n" subjects = n(n-1)/2 pairings, which can be quite large -->
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+
+
+            <!-- you can define in-brain voxels via -->
+            
+            <!-- 1) the "groupbrainmask" input stream -->
+            <!-- 2) a fullpath to an explicit mask (e.g., for ROI analysis) -->
+            <!-- 3) a threshold for on-the-fly implicit masking -->
+ 
+            <!-- notes on masking -->
+            
+            <!-- if more than one mask is defined, the intersection is used -->
+          
+            <!-- in addition to this mask, voxels = 0 or NaN -->
+            <!-- in any frame are excluded from analysis -->   
+                        
+            <!-- interpretation: only include voxels that exceed this fraction -->
+            <!-- of the average signal across all frames (FYI: this is how SPM -->        
+            <!-- implements implicit masking ; SPM default threshold = 0.80) -->
+            
+            <!-- note the implicit mask is based on the first epi only -->
+            <!-- as such, a better approach is to generate a proper group brainmask -->
+            <!-- say, by running aamod_brainmaskcombine on the output of segmentation  -->
+            <!-- or firstlevel_brainmask and use the groupbrainmask input stream -->
+            
+            <!-- NB: the same mask is applied to all subjects -->
+            <!-- NB: jpg of the brainmask used in analysis is saved and should be reviewed -->        
+         
+            <explicit_mask_fname></explicit_mask_fname>
+            <implicit_mask_threshold></implicit_mask_threshold>
+
+
+            <!-- you may restrict the number of sessions used in the correlations -->
+            <!-- Ex: "inf" == "use all sessions (or the largest number possible -->
+            <!-- if two subjects have a different number of sessions) and -->
+            <!-- "1" == use one session from each subject regardless of how -->
+            <!-- many are defined -->
+
+            <maximum_number_of_sessions>Inf</maximum_number_of_sessions>
+
+
+            <!-- you have to option to save the individual paired maps -->
+            <!-- (there will likely be a (very) large number of these) -->
+            <!-- note the average map (.nii and .jpg) is always saved) -->
+
+            <save_individual_maps>0</save_individual_maps>
+
+            <!-- in addition to the full correlation maps, you can generate -->
+            <!-- a "summary" correlation matrix based on the per-frame mean -->
+            <!-- across all in-brain voxels. (This can be used for an ROI -->
+            <!-- analysis by defining the ROI using an explicit mask) -->
+
+            <!-- matrix entry (i,j) is result from SUB_SESS(i) v SUB_SESS(j) and -->
+            <!-- is saved to file "summary_correlation_matrix.mat" w/ variables -->
+            <!-- "summary_correlation_matrix_r" , "summary_correlation_matrix_p" -->
+            <!-- and a list of row/col identifiers in "summary_descriptors" -->
+
+            <generate_summary_correlation_matrix>0</generate_summary_correlation_matrix>
+
+ 
+            <!-- misc options -->
+
+            <!-- subtract per-frame global signal before computing correlation? -->
+            <!-- (global signal == average over all in-brain voxels) -->
+
+            <subtract_global_signal>0</subtract_global_signal>
+                       
+            <!-- you may choose only to examine positive values -->
+            
+            <show_only_positive_values>0</show_only_positive_values>
+            
+            <!-- you may choose only to examine negative values -->
+            
+            <show_only_negative_values>0</show_only_negative_values>
+		          
+            <!-- you may apply a custom threshold (-inf == no thresholding) -->
+
+            <rmap_threshold>-inf</rmap_threshold>
+ 
+            <!-- you may generate Z-maps instead of r-maps -->
+            <!-- (computed using Fisher Z transform) -->
+            
+            <convert_r_to_z>0</convert_r_to_z> 
+          
+            <!-- echo progress and diagnostics to command window? -->
+            
+            <verbose>1</verbose>
+                 
+            <!-- STREAMS -->
+           
+            <inputstreams>
+                <stream isessential='0' isrenameable='1'>groupbrainmask</stream>
+                <stream>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream isessential='0'>intersubject_correlation_maps</stream>
+                <stream>average_intersubject_correlation_map</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>

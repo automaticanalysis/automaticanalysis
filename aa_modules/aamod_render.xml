@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='render brainmaps' modality='MRI'>
+            
+            <!-- save rendered jpegs of the given input stream "brainmaps" -->
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+
+            <!-- there are currently three render options available: -->
+
+            <renderer options='spm|washu|neurodot'>spm</renderer>
+             
+            <!-- 1) spm = the standard SPM 6 brain render in red -->
+            <!-- 2) washu = a modified version of SPM render developed at washu -->
+            <!-- 3) neurodot = renderer provided in the NeuroDOT package -->
+
+            <!-- the renderers (mostly) each have different options -->
+            <!-- use the options below that are appropriate for your choice -->
+
+            <!-- note the spm render option also generates coronal, axial, and sagittal montages -->
+            <!-- additionally the spm render option allows you to label the images -->
+            <!-- (the other renderers currently do not offer this) -->
+
+            <!-- note to use the neurodot renderer, you must install the NeuroDot toolbox -->
+
+
+            <!-- COLOR SCALING OPTIONS -->
+
+            <!-- (note color scaling is not currently available in the spm -->
+            <!-- renderer option (instead, pass in thresholded images) -->
+
+            <!-- option: uses the max and min across all images as colorscale -->
+
+            <use_common_colorscale>0</use_common_colorscale>
+
+            <!-- option: plot only positive or only negative values -->
+
+            <plot_positive_only>0</plot_positive_only>
+            <plot_negative_only>0</plot_negative_only>       
+
+
+            <!-- OPTIONS SPECIFIC TO renderer = spm -->
+
+            <spm_render>
+
+                <!-- if template_fname or render_fname are left empty, -->
+                <!-- the values from  aap.directory_conventions.Render -->
+                <!-- and aap.directory_conventions.T1template are used -->
+
+                <template_fname></template_fname>
+                <render_fname></render_fname>
+
+                <!-- brightness is a gamma correction ; 0.2 seems to work well -->
+
+                <brightness>0.2</brightness>
+
+                <!-- option: add a label (in yellow text) to upper left corner -->
+
+                <label></label>   
+
+            </spm_render>
+            
+
+            <!-- OPTIONS SPECIFIC TO renderer = washu -->
+
+            <washu_render>          
+
+                <!-- predefined layouts with reasonable default settings -->        
+
+                <layout options='4view|lefthemi|righthemi'>lefthemi</layout>
+
+                <!-- brain inflation (default = 50%) -->
+
+                <inflate>50</inflate>
+
+                <!-- option: explicitly define the colorscale used for all images -->            
+                <!-- example: <colorscale>[0 0.5]</colorscale> -->
+                <!-- NB: this overrides all other colorscale options -->
+
+                <colorscale></colorscale>
+
+                <!-- additional customization is available via the <cfg> field -->
+                <!-- see "help washu_surfacerender" for options -->
+
+                <cfg></cfg>
+
+            </washu_render>  
+
+
+            <!-- OPTIONS SPECIFIC TO renderer = neurodot -->
+
+            <!-- see: NeuroDOT_Tutorial_Visualization_Overview.ppx -->
+            <!-- included in the NeuroDOT distribution documentation -->
+            <!-- for an explanation of these settings -->
+
+            <neurodot_render>
+
+                <scale>0.50</scale>
+                <positive_threshold>0.01</positive_threshold>
+                <negative_threshold>0.01</negative_threshold>
+                <colormap>jet</colormap>
+                <view options='lat|dorsal|post'>lat</view>
+                <show_colorbar>0</show_colorbar>
+
+            </neurodot_render>
+          
+                    
+            <inputstreams>
+                <stream isrenameable='1'>brainmaps</stream>
+            </inputstreams>
+
+            <outputstreams>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
