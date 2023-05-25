@@ -56,9 +56,14 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 
 global BIDSsettings;
 
-% we need spm_select here...
-SPMtool = aas_inittoolbox(aap,'spm');
-SPMtool.load;
+spm_was_loaded = true; % Was SPM loaded before?
+
+if ~exist('spm')
+   % we need spm_select here...
+   SPMtool = aas_inittoolbox(aap,'spm');
+   SPMtool.load;
+   spm_was_loaded = false; % If SPM was not loaded already, we loaded it
+end
 
 if ~exist('sessnames','var') || isempty(sessnames)
     sessnames = [];
@@ -169,7 +174,9 @@ end
 % take SPM off the path again (since the user might end up wanting a different SPM for
 % actual data analysis)
 
-SPMtool.unload;
+if ~spm_was_loaded
+   SPMtool.unload; % Now let's unload it.
+end
 
 end
 
