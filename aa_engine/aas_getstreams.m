@@ -28,7 +28,14 @@ streamtype = varargin{1}; varargin(1) = [];
 select = []; if ~isempty(varargin), select = varargin{1}; end
 
 %% Process
-streams = task.([streamtype 'streams']).stream;
+
+if isstruct(task.([streamtype 'streams'])) && isfield(task.([streamtype 'streams']),'stream')
+    streams = task.([streamtype 'streams']).stream;
+else
+    streams = [];
+    return;
+end
+
 if ~iscell(streams), streams = {streams}; end
 schemas = aap.schema.tasksettings.(stagename)(index).([streamtype 'streams']).stream;
 

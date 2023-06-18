@@ -38,28 +38,31 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %     - aap.acq_details.convertBIDSEventsToUppercase: true == convert event names to uppercase
 %     - aap.acq_details.maxBIDSEventNameLength: >0 == truncate event names
 %     - aap.acq_details.omitBIDSmodeling: true == return w/o processing modeling data
-%     - aap.acq_details.BIDSeventregex: optionally select a subset of  event types
+%     - aap.acq_details.BIDSeventregexp: only add a subset of events added to the model
 %
-%   Note BIDSeventregex (if defined) is tested *before* stripping special characters 
-%   or converting to uppercase -- i.e. it is applied to the event names as they appear
-%   in the tsv. See "help regexp" for tips on using regular expressions.
-%                                        
+%       Note BIDSeventregexp is tested *before* stripping special characters or
+%       converting to uppercase -- i.e. it is applied to the event names as they appear
+%       in the tsv. See "help regexp" for tips on using regular expressions.                             
 %
 % CHANGE HISTORY:
 %
-%   M Jones WashU 2023 -- added BIDSeventregex for selection of event types
+%   M Jones WashU 2023 -- added BIDSboldfilter for selection of nii based on json header info
+%   M Jones WashU 2023 -- added BIDSeventregexp for selection of event types
 %   M Jones WashU 2021 -- look for .nii if .nii.gz doesn't exist (structural and epi files only)
 %   M Jones WashU 2020 -- added acq_details tsv processing options
+%
 %   J Carlin 2018 -- Update
 %   Tibor Auer MRC CBU Cambridge 2015 -- new
 
 global BIDSsettings;
+
 spm_was_loaded = true; % Was SPM loaded before?
+
 if ~exist('spm')
-    % we need spm_select here...
-    SPMtool = aas_inittoolbox(aap,'spm');
-    SPMtool.load;
-    spm_was_loaded = false; % If SPM was not loaded already, we loaded it.
+   % we need spm_select here...
+   SPMtool = aas_inittoolbox(aap,'spm');
+   SPMtool.load;
+   spm_was_loaded = false; % If SPM was not loaded already, we loaded it
 end
 
 if ~exist('sessnames','var') || isempty(sessnames)
@@ -127,8 +130,11 @@ if isempty(SUBJ)
         aap.directory_conventions.rawdatadir));
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% MAIN LOOP %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % 1st pass - Add sessions only
-% 2ns pass - Add data
+% 2nd pass - Add data
+
 for p = [false true]
     for subj = 1:size(SUBJ,1)
         subjID = deblank(SUBJ(subj,:));
@@ -149,6 +155,7 @@ for p = [false true]
             end
         end
     end
+        
     if ~p && BIDSsettings.combinemultiple && (size(SESS,1) > 1)
         % sort sessions
         sessstr = regexp(cellstr(SESS),'-','split');
@@ -166,11 +173,16 @@ end
 
 % take SPM off the path again (since the user might end up wanting a different SPM for
 % actual data analysis)
+
 if ~spm_was_loaded
-    SPMtool.unload; % Now let's unload it.
+   SPMtool.unload; % Now let's unload it.
 end
 
 end
+
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -220,6 +232,13 @@ else
     BIDSeventregexp = [];
 end
 
+if (isfield(aap.acq_details,'BIDSboldfilter') && ~isempty(aap.acq_details.BIDSboldfilter))
+    BIDSboldfilter = aap.acq_details.BIDSboldfilter;
+else
+    BIDSboldfilter = [];
+end
+
+
 % locate first_level modules
 stagenumModel(1) = struct('name','aamod_firstlevel_model','ind',...
     find(strcmp({aap.tasklist.main.module.name},'aamod_firstlevel_model')));
@@ -246,9 +265,13 @@ specialimages = {};
 
 
 for cf = cellstr(spm_select('List',sesspath,'dir'))'
+    
     switch cf{1}
-	case '.'
+        
+	    case '.'
+            
         case structDIR
+            
             if ~toAddData, continue; end
             for sfx = {'T1w','T2w'}
                 image = cellstr(spm_select('FPList',fullfile(sesspath,structDIR),[subjname '.*_' sfx{1} '.*.nii.gz']))';
@@ -260,7 +283,9 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 info = ''; if ~isempty(hdrfname{1}), info = loadjson_multi(hdrfname); end
                 structuralimages = horzcat(structuralimages,struct('fname',image{1},'hdr',info));
             end
+            
         case diffusionDIR
+            
             for cfname = cellstr(spm_select('FPList',fullfile(sesspath,diffusionDIR),[subjname '.*_dwi.*.nii.gz']))
                 sessfname = strrep_multi(basename(cfname{1}),{[subjname '_'] '.nii'},{'',''});
                 [bvalfname, runstr] = retrieve_file(fullfile(sesspath,diffusionDIR,[subjname '_' sessfname '.bval'])); bvalfname = bvalfname{1}; % ASSUME only one instance
@@ -295,7 +320,9 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     aas_log(aap,true,sprintf('ERROR: No BVals/BVecs found for subject %s run %s!\n',subjname,sessfname))
                 end
             end
+            
         case fieldmapDIR
+            
             if ~toAddData, continue; end
 
             fmaps = cellstr(spm_select('FPList',fullfile(sesspath,fieldmapDIR),[subjname '.*.json'])); % ASSUME next to the image
@@ -323,7 +350,9 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 end
                 fieldmapimages = horzcat(fieldmapimages,fmap);
             end
+            
         case functionalDIR
+            
             allepi = cellstr(spm_select('FPList',...
                 fullfile(sesspath,functionalDIR),[subjname '.*_task.*_bold.nii.gz']))';
             % if gz doesn't exist, see if unziped version does:
@@ -335,7 +364,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                 tasks = cellfun(@(x)get_taskname(sesspath,subjname,x),allepi,'uniformoutput',0);
                 outepi = {};
                 for t = BIDSsettings.tasknames(:)'
-%                   thits = cell_index(tasks,t{1});
+                    % thits = cell_index(tasks,t{1});
                     % cell_index(wawa,'foo') returns true for both 'foo...' and '...foo...'
                     % (so it can't differentiate between, say, "overt-foo" and "covert-foo")
                     % use startsWith() instead:
@@ -362,8 +391,9 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     if isfield(info,'RepetitionTime'), TR = info.RepetitionTime; end
                 end
 
-                % Skip?
+                % Skip? (i.e, if there are sessions selected and this taskname is not one of them, then don't add the data)
                 if ~isempty(aap.acq_details.selected_sessions) && ~any(strcmp({aap.acq_details.sessions(aap.acq_details.selected_sessions).name},taskname)), continue; end
+
                 aap = aas_addsession(aap,taskname);
 
                 if ~toAddData, continue; end
@@ -397,7 +427,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
 
                             if ~TR
                                 aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjname,taskname))
-                                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible!\n')
+                                aas_log(aap,false,'WARNING: No correction of EV onset for dummies is possible.\n')
                             end
 
                             % Search for event file
@@ -451,7 +481,7 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                         else
                                             adjusted_onsets = adjusted_onsets(selector);
                                             temp = durations{e};
-                                            adjusted_onset_durations = temp(selector);
+                                            adjusted_onset_durations = temp(selector);                                         
                                             aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},adjusted_onsets,adjusted_onset_durations);
                                         end
 
@@ -462,19 +492,25 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                     end
                 end
             end
+            
         otherwise
             aas_log(aap,false,sprintf('NYI: Input %s is not supported',cf{1}));
-    end
-end
+            
+    end % switch
+end % loop over sesspath
+
 if toAddData
-    aap = aas_addsubject(aap,subjname,mriname,...
-        'structural',structuralimages,...
-        'functional',functionalimages,...
-        'fieldmaps',fieldmapimages,...
-        'diffusion',diffusionimages,...
-        'specialseries',specialimages);
+ 
+    aap = aas_addsubject(aap, subjname, mriname, ...
+            'structural', structuralimages, ...
+            'functional', functionalimages, ...
+            'fieldmaps', fieldmapimages, ...
+            'diffusion', diffusionimages, ...
+            'specialseries', specialimages);
+        
 end
-end
+
+end % add_data
 
 function [outfname, runstr] = retrieve_file(fname)
 
@@ -588,3 +624,5 @@ for i = 1:numel(old)
     str = strrep(str, old{i}, new{i});
 end
 end
+
+
