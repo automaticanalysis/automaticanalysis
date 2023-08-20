@@ -40,7 +40,7 @@ switch task
 
         temp = diff(epi,1,2);
         temp = temp(any(temp,2),:);
-        wb = rms(temp);
+        wb =  sqrt(mean(temp .* temp)); % RMS
 
         %------------------------------------------------------------------
         % GREY MATTER (if gm mask provided) 
@@ -94,7 +94,8 @@ switch task
 
             % ~~ is a clever trick to make sure mask is 0/1 (not 0/something)
 
-            gm = rms( diff(epi(~~gm_mask(:),:),1,2) );	% grey matter DVARS
+            temp = diff(epi(~~gm_mask(:),:),1,2);	% grey matter DVARS
+            gm =  sqrt(mean(temp .* temp)); % RMS
 
         else
             gm = [];
@@ -140,7 +141,8 @@ switch task
 
             wm_mask = spm_read_vols(spm_vol(wm_mask_filename));
 
-            wm = rms( diff(epi(~~wm_mask(:),:),1,2) );	% white matter DVARS
+            temp = diff(epi(~~wm_mask(:),:),1,2);	% white matter DVARS
+            wm =  sqrt(mean(temp .* temp)); % RMS
 
         else
             wm = [];
