@@ -367,7 +367,7 @@ outNSeg = char(...
     aas_getfiles_bystream(aap,subj,'normalised_density_white'),...
     aas_getfiles_bystream(aap,subj,'normalised_density_csf'));
 
-OVERcolours = {[1 0 0], [0 1 0], [0 0 1]};
+OVERcolours = {[0 0 1], [0 1 0], [1 0 0]}; % make overlay colors match histogram colors
 
 %% Draw native template
 spm_check_registration(Simg)

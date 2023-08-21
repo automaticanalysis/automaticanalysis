@@ -47,6 +47,7 @@ switch task
         if (aas_stream_has_contents(aap, subj, instreams{end}))
             rois_instream = instreams{end};
         end
+
         
         for sess = aap.acq_details.selected_sessions 
             
@@ -74,15 +75,20 @@ switch task
 
                     case 'mask'
 
-                        if isempty(rois_instream)       
-                            aas_log(aap,true,'You must specify a mask in the rois instream to use the type=mask option');
+                        if (isempty(rois_instream) && isempty(v.maskfname))      
+                            aas_log(aap,true,'You must specify a mask in the rois instream or maskfname field to use the type=mask option');
                         end
-                        
+                                              
                         if isempty(v.maskthresh)       
                             aas_log(aap,true,'You must specify a mask threshold in <maskthresh> to use the type=mask option');
                         end
                       
-                        job.roi{1}.mask.image = {aas_getfiles_bystream(aap,'subject', subj, rois_instream)};
+                        if (isempty(rois_instream))
+                            job.roi{1}.mask.image = {v.maskfname};
+                        else  
+                            job.roi{1}.mask.image = {aas_getfiles_bystream(aap,'subject', subj, rois_instream)};
+                        end
+                        
                         job.roi{1}.mask.threshold = v.maskthresh;                    
 
                     case 'roi'

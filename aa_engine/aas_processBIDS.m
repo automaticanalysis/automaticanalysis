@@ -1,22 +1,27 @@
-function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
-% Allow specify Subjects, Sessions and Events from Brain Imaging Data Structure (BIDS)
+function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn,varargin)
 %
-%       aap = aas_processBIDS(aap,[sessnames],[tasknames],[SUBJ],[regcolumn])
+% Specify Subjects, Sessions and Events from Brain Imaging Data Structure (BIDS)
+%
+%       aap = aas_processBIDS(aap,[sessnames],[tasknames],[SUBJ],[regcolumn],[options])
 %
 % Required:
-%     - aap.directory_conventions.rawdatadir: path to BIDS
 %
-% Optional:
-%     - sessnames - cell array with sessions to process (useful if you only want
-%           some sessions, or if you want to preserve a certain session order)
-%     - tasknames - cell array of tasks to process - see sessnames
-%     - SUBJ - cell or char array of subjects to process
-%     - regcolumn - (default 'trial_type') column in events.tsv to use for first
-%           level model
+%     - aap : (aap.directory_conventions.rawdatadir - path to BIDS directory)
 %
-% Relevant AAP sub-fields:
+% Optional 
+%
+%     - sessnames : cell array with sessions to process (useful if you only want
+%                   some sessions, or if you want to preserve a certain session order)
+%     - tasknames : cell array of tasks to process - see sessnames
+%     - SUBJ      : cell or char array of subjects to process
+%     - regcolumn : (default 'trial_type') column in events.tsv to use for first level model
+%     - varargin  : processing options specified as name/value pairs (see below)
+%
+% Relevant aap sub-fields:
+%
 %     - aap.acq_details.input.combinemultiple:
 %           Combines multiple sessions per subjects (default = false)
+%
 %     - aap.acq_details.input.selected_sessions:
 %           selection of a subset of tasks/runs based on their names (e.g. 'task-001_run01')
 %           - elements are strings: selecting for preprocessing and analysis
@@ -24,15 +29,18 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %               - one cell is a selection for one "aamod_firstlevel_model" (in the tasklist)
 %               - tasks/runs selected for any "aamod_firstlevel_model" are pre-processed
 %           (default = [], all tasks/runs are selected for both preprocessing and analysis)
+%
 %     - aap.acq_details.input.correctEVfordummies: whether number of
 %           dummies should be take into account when defining onset times (default = true);
 %           Also requires:
 %               - aap.acq_details.numdummies: number of (acquired) dummy scans (default = 0);
 %               - "repetition_time" (TR) specified in JSON header
 %
-%   the following (optional) fields add flexibility in the handling of
-%   modeling (i.e., tsv) data. They can be combined as needed:
+%   the following (optional) acq_details fields add flexibility in the
+%   handling of modeling (i.e., tsv) data. They can be combined as needed:
 %
+%     - aap.acq_details.eventduration: use this value for all event durations (ignore tsv values)
+%     - aap.acq_details.firstlevelmodelSubset: only define events for these instances of aamod_firstlevel_model
 %     - aap.acq_details.stripBIDSEventNames: true == strip special characters from event names
 %     - aap.acq_details.omitNullBIDSEvents: true == do not add "null" events to model
 %     - aap.acq_details.convertBIDSEventsToUppercase: true == convert event names to uppercase
@@ -44,12 +52,18 @@ function aap = aas_processBIDS(aap,sessnames,tasknames,SUBJ,regcolumn)
 %       converting to uppercase -- i.e. it is applied to the event names as they appear
 %       in the tsv. See "help regexp" for tips on using regular expressions.                             
 %
-% CHANGE HISTORY:
+%   -----------------------------------------------------------------------
+%   NB: use of acq_details to specify these options is depreciated and
+%   will be removed in a future release. Instead, specify options as
+%   one or more name/value pairs in the call to aas_processBIDS:
 %
-%   M Jones WashU 2023 -- added BIDSboldfilter for selection of nii based on json header info
-%   M Jones WashU 2023 -- added BIDSeventregexp for selection of event types
-%   M Jones WashU 2021 -- look for .nii if .nii.gz doesn't exist (structural and epi files only)
-%   M Jones WashU 2020 -- added acq_details tsv processing options
+%   aap = aas_processBIDS(aap,...,'eventduration',0,'omitNullevents',true);
+%
+%   note "BIDS" does *not* appear in the option name in a name/value pair
+%   (e.g., use 'omitNullevents' not 'omitNullBIDSEvents')
+%   -----------------------------------------------------------------------
+%
+% HISTORY
 %
 %   J Carlin 2018 -- Update
 %   Tibor Auer MRC CBU Cambridge 2015 -- new
@@ -65,6 +79,7 @@ if ~exist('spm')
    spm_was_loaded = false; % If SPM was not loaded already, we loaded it
 end
 
+
 if ~exist('sessnames','var') || isempty(sessnames)
     sessnames = [];
 end
@@ -76,6 +91,27 @@ end
 if ~exist('regcolumn','var') || isempty(regcolumn)
     regcolumn = 'trial_type';
 end
+
+% parse any value/pair options
+
+argParse = inputParser;
+argParse.addParameter('omitModeling', false, @(x) islogical(x) || isnumeric(x));
+% argParse.addParameter('regcolumn','trial_type', @ischar); % leave as is
+argParse.addParameter('stripEventNames', false, @(x) islogical(x) || isnumeric(x));
+argParse.addParameter('omitNullEvents', false, @(x) islogical(x) || isnumeric(x));
+argParse.addParameter('convertEventsToUppercase', false, @(x) islogical(x) || isnumeric(x));
+argParse.addParameter('maxEventNameLength', inf, @isnumeric);
+argParse.addParameter('eventregexp', '', @ischar); 
+argParse.addParameter('eventDuration', [], @isnumeric);
+argParse.addParameter('firstlevelmodelSubset', [], @isnumeric);
+argParse.parse(varargin{:});
+
+% argParse.Results a struct w/ fieldnames defined in addParameter and w/ 
+% values parsed from a name/value pair or otherwise = to default value
+
+BIDSsettings = argParse.Results; 
+
+% add remaining settings
 
 BIDSsettings.directories.structDIR = 'anat';
 BIDSsettings.directories.functionalDIR = 'func';
@@ -182,8 +218,6 @@ end
 
 
 
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% UTILS %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function aap = add_data(aap,mriname,sesspath,toAddData,regcolumn)
@@ -194,48 +228,62 @@ functionalDIR = BIDSsettings.directories.functionalDIR;
 fieldmapDIR = BIDSsettings.directories.fieldmapDIR;
 diffusionDIR = BIDSsettings.directories.diffusionDIR;
 
-% defaults for acq_details flags
+% check for options still lurking in acq_details flags (and warn about depreciation)
 
 if (isfield(aap.acq_details,'omitBIDSmodeling') && aap.acq_details.omitBIDSmodeling == true)
+    aas_log(aap,false,sprintf('Use of acq_details.omitBIDSmodeling is depreciated. Pass as an option/value pair instead.'))
     omitBIDSmodeling = true;
 else
-	omitBIDSmodeling = false;
+	omitBIDSmodeling = BIDSsettings.omitModeling;
 end
 
 if (isfield(aap.acq_details,'stripBIDSEventNames') && aap.acq_details.stripBIDSEventNames == true)
+    aas_log(aap,false,sprintf('Use of acq_details.stripBIDSEventNames is depreciated. Pass as an option/value pair instead.'))
     stripBIDSEventNames = true;
 else
-    stripBIDSEventNames = false;
+    stripBIDSEventNames = BIDSsettings.stripEventNames;
 end
 
 if (isfield(aap.acq_details,'omitNullBIDSEvents') && aap.acq_details.omitNullBIDSEvents == true)
+    aas_log(aap,false,sprintf('Use of acq_details.omitNullBIDSEvents is depreciated. Pass as an option/value pair instead.'))
     omitNullBIDSEvents = true;
 else
-    omitNullBIDSEvents = false;
+    omitNullBIDSEvents = BIDSsettings.omitNullEvents;
 end
 
 if (isfield(aap.acq_details,'convertBIDSEventsToUppercase') && aap.acq_details.convertBIDSEventsToUppercase == true)
+    aas_log(aap,false,sprintf('Use of acq_details.convertBIDSEventsToUppercase is depreciated. Pass as an option/value pair instead.'))
     convertBIDSEventsToUppercase = true;
 else
-    convertBIDSEventsToUppercase = false;
+    convertBIDSEventsToUppercase = BIDSsettings.convertEventsToUppercase;
 end
 
 if (isfield(aap.acq_details,'maxBIDSEventNameLength') && aap.acq_details.maxBIDSEventNameLength > 0)
+    aas_log(aap,false,sprintf('Use of acq_details.maxBIDSEventNameLength is depreciated. Pass as an option/value pair instead.'))
     maxBIDSEventNameLength = aap.acq_details.maxBIDSEventNameLength;
 else
-    maxBIDSEventNameLength = Inf;
+    maxBIDSEventNameLength = BIDSsettings.maxEventNameLength;
 end
 
 if (isfield(aap.acq_details,'BIDSeventregexp') && ~isempty(aap.acq_details.BIDSeventregexp))
+    aas_log(aap,false,sprintf('Use of acq_details.BIDSeventregexp is depreciated. Pass as an option/value pair instead.'))
     BIDSeventregexp = aap.acq_details.BIDSeventregexp;
 else
-    BIDSeventregexp = [];
+    BIDSeventregexp = BIDSsettings.eventregexp;
 end
 
-if (isfield(aap.acq_details,'BIDSboldfilter') && ~isempty(aap.acq_details.BIDSboldfilter))
-    BIDSboldfilter = aap.acq_details.BIDSboldfilter;
+if (isfield(aap.acq_details,'eventDuration') && ~isempty(aap.acq_details.eventDuration))
+    aas_log(aap,false,sprintf('Use of acq_details.eventDuration is depreciated. Pass as an option/value pair instead.'))
+    eventDuration = aap.acq_details.eventDuration;
 else
-    BIDSboldfilter = [];
+    eventDuration = BIDSsettings.eventDuration;
+end
+
+if (isfield(aap.acq_details,'firstlevelmodelSubset') && ~isempty(aap.acq_details.firstlevelmodelSubset))
+    aas_log(aap,false,sprintf('Use of acq_details.firstlevelmodelSubset is depreciated. Pass as an option/value pair instead.'))
+    firstlevelmodelSubset = aap.acq_details.firstlevelmodelSubset;
+else
+    firstlevelmodelSubset = BIDSsettings.firstlevelmodelSubset;
 end
 
 
@@ -424,6 +472,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                 sess = textscan(aap.tasklist.main.module(thisstage.ind(m)).extraparameters.aap.acq_details.selected_sessions,'%s'); sess = sess{1};
                                 if any(strcmp(sess,'*')) || any(strcmp(sess,taskname)), iModel(end+1) = aap.tasklist.main.module(thisstage.ind(m)).index; end
                             end
+                            
+                            if ~isempty(firstlevelmodelSubset); iModel = iModel(firstlevelmodelSubset); end
 
                             if ~TR
                                 aas_log(aap,false,sprintf('WARNING: No (RepetitionTime in) header found for subject %s task/run %s',subjname,taskname))
@@ -481,7 +531,8 @@ for cf = cellstr(spm_select('List',sesspath,'dir'))'
                                         else
                                             adjusted_onsets = adjusted_onsets(selector);
                                             temp = durations{e};
-                                            adjusted_onset_durations = temp(selector);                                         
+                                            adjusted_onset_durations = temp(selector);
+                                            if ~isempty(eventDuration); adjusted_onset_durations = eventDuration * ones(size(adjusted_onset_durations)); end
                                             aap = aas_addevent(aap,sprintf('%s_%05d',thisstage.name,m),subjname,taskname,names{e},adjusted_onsets,adjusted_onset_durations);
                                         end
 

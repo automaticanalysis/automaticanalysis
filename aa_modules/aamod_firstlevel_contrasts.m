@@ -78,7 +78,7 @@ switch task
             % contrast vector SHOULDNT include entries for the model
             % constants (causes crash later) - so just subtract off number
             % of sessions and we should be G2G (SPM.xX.iC should never
-            % reference these slots) foobar
+            % reference these slots)
             basev = zeros(1,numel(SPM.xX.name)-nsess);
             for conind = 1:numel(SPM.xX.iC)
                 newv = basev;
@@ -331,8 +331,8 @@ switch task
         % save diagnostic summary images
         diag(aap, subj, SPM);
   
-        % save a plaintext list of the contrasts
-        writetable(cell2table(convec_names'), fullfile(aas_getsubjpath(aap,subj),'CONTRAST_NAMES.txt'),'WriteVariableNames',0)
+        % save a plaintext list of the regressors
+        writetable(cell2table(convec_names'), fullfile(aas_getsubjpath(aap,subj),'REGRESSORS.txt'),'WriteVariableNames',0)
   
         % Describe outputs
         

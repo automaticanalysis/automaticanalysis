@@ -71,6 +71,7 @@
                aap = aas_addinitialstream(aap, 'aamod_extract_vois_00002.rois', 'sub-01', {'/path/to/roi2.nii'});
                etc.
 
+            Alternatively, you can specify the mask as a fullpath to a file in <maskfname>
 
             DEFINING A SPHERE CENTER USING AN ATLAS IMAGE
 
@@ -258,6 +259,7 @@
                 </centredefinition>
                 <size desc='diametre for sphere, in mm'></size>
                 <maskthresh desc='threshold used for type=mask'></maskthresh>
+                <maskfname desc='path to maskfile (if not in rois)'></maskfname>
             </VOI>
                        
             <inputstreams>

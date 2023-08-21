@@ -26,6 +26,7 @@ function [ aap,resp ] = aamod_secondlevel_randomise(aap,task)
 %
 % CHANGE HISTORY
 %
+% 08/2023 [MSJ] skip F contrasts
 % 06/2021 [MSJ] attempt to implement sensible FSL file naming
 % 06/2019 [MSJ] Modified to run one or two sample ttest w/ covariates
 %
@@ -148,9 +149,22 @@ switch task
 
         SPM = load(aas_getfiles_bystream(aap, 1, 'firstlevel_spm'));
         SPM = SPM.SPM;
-        temp = { SPM.xCon(:).name };
+        dirnames = { SPM.xCon(:).name };       
+
+        % aa weirdness: the stream firstlevel_cons only contains T
+        % contrasts (because it only saves con_xxxx.nii and
+        % SPM writes F contrasts to ess_xxxx.nii). Currently,
+        % we simply ignore any F contrasts
+
+        fcheck = strcmp({SPM.xCon.STAT},'F');
+
+        if any(fcheck)
+            aas_log(aap, false, sprintf('Ignoring F contrasts'));
+            dirnames(fcheck) = [];
+        end
+
         % take out characters that don't go well in filenames...
-        dirnames = cellfun(@(x) char(regexp(x,'[a-zA-Z0-9_-]','match'))', temp, 'UniformOutput',false);
+        dirnames = cellfun(@(x) char(regexp(x,'[a-zA-Z0-9_-]','match'))', dirnames, 'UniformOutput',false);
 
         % output file extension may be .nii or nii.gz
         % BUGWATCH: need to deal with nii.gz in aamod_secondlevel_randomise_threshold
@@ -273,6 +287,9 @@ switch task
              end
 
         end
+        
+        % pause here to let filesystem catch-up
+        pause(1);
 
         % clean up temp files; Note we don't delete design.mat and 
         % design.con in two-group test -- leave for verification

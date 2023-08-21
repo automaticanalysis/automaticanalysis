@@ -261,12 +261,15 @@ switch task
             cvals = 0.8 * [ 1 0 0 ; 0 1 0; 0 0 1; 0 1 1 ; 1 0 1; 1 1 0 ];
             title_string = cell(numel(event_names),1);
             
+            cindex = 0;
             for index = 1:numel(event_names)
-                bh = bar(frameseries(index,:),bw,clist(mod(index,length(clist))));
-                set(bh,'FaceColor',cvals(mod(index,length(clist)),:));
+                cindex = cindex + 1;
+                if (cindex > length(clist)); cindex = 1; end
+                bh = bar(frameseries(index,:),bw,clist(cindex));
+                set(bh,'FaceColor',cvals(cindex,:));
                 surviving_framecount = dot(frameseries(index,:),1-master_scrub_indicator);
                 frameloss_percent = round(100 * dot(frameseries(index,:),master_scrub_indicator) / sum(frameseries(index,:)));
-                title_string{index} = sprintf('%s(%s) %d%%     ', strrep(event_names{index},'_','-'), clist(mod(index,length(clist))), frameloss_percent);
+                title_string{index} = sprintf('%s(%s) %d%%     ', strrep(event_names{index},'_','-'), clist(cindex), frameloss_percent);
                 hold on;
                 
                 % warn about excessive frameloss_percent
@@ -286,9 +289,9 @@ switch task
                 % crash (these can't appear in the fieldname for a struct). Look into
                 % aap.acq_details.stripBIDSEventNames if doing BIDS input (if not doing
                 % BIDS input, just behave yourself when naming events)
-
-                scrubstats.([ 'surviving_framecount_' event_names{index}]) = surviving_framecount;
-                scrubstats.([ 'frameloss_percent_' event_names{index}]) = frameloss_percent;
+                
+                scrubstats.([ 'surviving_framecount_' strrep(event_names{index},' ','_')]) = surviving_framecount;
+                scrubstats.([ 'frameloss_percent_' strrep(event_names{index},' ','_')]) = frameloss_percent;
 
             end
             
@@ -303,6 +306,8 @@ switch task
             fsize = 12;
             if (numel(event_names) > 3); fsize=10; end
             if (numel(event_names) > 5); fsize=8; end
+            if (numel(event_names) > 10); fsize=5; end
+            if (numel(event_names) > 15); fsize=1; end
                 
             title(sprintf('%s',title_string{:}),'FontName','Helvetica', 'FontSize', fsize);
 
@@ -371,8 +376,8 @@ frameseries = [];
 
 % must have firstlevel model settings -- bail if no
 
-if (~isfield(aap.tasksettings,'aamod_firstlevel_model')) return; end
-if (~isfield(aap.tasksettings.aamod_firstlevel_model, 'model')) return; end
+if (~isfield(aap.tasksettings,'aamod_firstlevel_model')); return; end
+if (~isfield(aap.tasksettings.aamod_firstlevel_model, 'model')); return; end
     
 model = aap.tasksettings.aamod_firstlevel_model.model;   
 
