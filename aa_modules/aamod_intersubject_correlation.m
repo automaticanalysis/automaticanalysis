@@ -1,9 +1,10 @@
 function [aap,resp] = aamod_intersubject_correlation(aap, task)
 %
-% generate intersubject correlation maps from epi
+% generate intersubject correlation maps from functional data
 %
 % Change History
 %
+% fall 2023 [MSJ] -- added outlier filtering
 % spring 2023 [MSJ] -- new
 %
 
@@ -34,7 +35,11 @@ switch task
         end
         
         generate_summary_correlation_matrix = aap.tasklist.currenttask.settings.generate_summary_correlation_matrix;
-        
+      
+        outlier_filter = aap.tasklist.currenttask.settings.outlier_filter;
+        outlier_threshold = aap.tasklist.currenttask.settings.outlier_threshold;
+        if strcmp(outlier_filter,'none');exclude_outliers=false;else;exclude_outliers=true;end
+                             
         % ****************     
         % DATA
         % ****************
@@ -58,8 +63,12 @@ switch task
             end
 
             for session_index = session_list
+                
+                % switch to renameable input stream
 
-                temp = aas_getfiles_bystream(aap, subject_index, session_index, 'epi');              
+                data_instream_struct = aap.tasklist.currenttask.inputstreams(1).stream{2};
+                temp = aas_getfiles_bystream(aap, subject_index, session_index, data_instream_struct.CONTENT); 
+
                 fnames{end+1} = temp;
                 FID{end+1} = sprintf('SUB%02dSESS%02d',subject_index, session_index);
 
@@ -80,7 +89,7 @@ switch task
         % if more than one mask is defined, the intersection is applied
                  
         % the bare minimum mask simply excludes zero and NaN voxels 
-        % we're going to assume we can determine this from the first epi
+        % we're going to assume we can determine this from the first file
                      
         header = spm_vol(fnames{1});
         Y = spm_read_vols(header);             % nrow x ncol x nslice x nframes       
@@ -91,7 +100,7 @@ switch task
                 
         % 1) optional implicit mask
         
-        % assume we can build this using first epi (currently in "Y")
+        % assume we can build this using first file (currently in "Y")
         
         if (~isempty(aap.tasklist.currenttask.settings.implicit_mask_threshold))
             implicit_mask_threshold = aap.tasklist.currenttask.settings.implicit_mask_threshold;          
@@ -181,6 +190,8 @@ switch task
         
         [nrow,ncol,nslice] = size(mask);
         unrolled_mask = reshape(mask,nrow*ncol*nslice,1);
+        
+        outlier_log = {}; % save a record of outliers (if any)
 
         % -----------------------------------------------------------------
         % loop over all files in fnames, generates pairwise corr maps 
@@ -200,25 +211,55 @@ switch task
             header = spm_vol(fname1);
             data1 = spm_read_vols(header);
 
-            [nrow,ncol,nslice,nframe] = size(data1);
-            
-            if (subtract_global_signal == true)
-                tempdata = reshape(data1,nrow*ncol*nslice,nframe);
-                tempdata = tempdata - mean(tempdata(unrolled_mask==1,:),1);
-                % subtraction may have created nonzero values
-                % outside of mask; ergo, reapply mask now:
-                tempdata(unrolled_mask~=1,:) = 0;
-                data1 = reshape(tempdata,nrow,ncol,nslice,nframe);
+            [nrow,ncol,nslice,nframe1] = size(data1);
+   
+            if (exclude_outliers == true)
+
+                tempdata = reshape(data1,nrow*ncol*nslice,nframe1);
+
+                data1_outliers = find_outliers(tempdata,outlier_filter,outlier_threshold);
+                data1_keepers = ~data1_outliers;
+
+                % note we don't remove data1 outliers here -- we must wait to get the
+                % outliers from data2, then remove the union of the two outlier sets
+                % from both data1 and data2
+                %
+                % as such, we need a copy of data1 containing all frames as a starting
+                % point in the inner loop because the outlier union may be different
+                % for each data2
+
+                data1_allframes = data1;
+
+            else
+
+                % if we're not doing outlier exclusion, we can get a speed-up
+                % by processing data1 once here, otherwise we must wait until
+                % until we have data2 outliers and process data1 in inner loop
+                % because we exclude frames containing outliers in *either* data
+
+                % also, could prolly rewrite this code to use fewer "reshapes"
+                % but it makes the processing more explicit and (hopefully!)
+                % less error prone...
+
+                if (subtract_global_signal == true)
+                    tempdata = reshape(data1,nrow*ncol*nslice,nframe1);
+                    tempdata = tempdata - mean(tempdata(unrolled_mask==1,:),1);
+                    % subtraction may have created nonzero values
+                    % outside of mask; ergo, reapply mask now:
+                    tempdata(unrolled_mask~=1,:) = 0;
+                    data1 = reshape(tempdata,nrow,ncol,nslice,nframe1);
+                end
+
+                if (generate_summary_correlation_matrix == true)
+                    % extract summary data *before* normalization
+                    tempdata = reshape(data1,nrow*ncol*nslice,nframe1);
+                    data1_summary = mean(tempdata(unrolled_mask==1,:),1);
+                end
+
+                data1 = normalize(data1,4);
+
             end
 
-            if (generate_summary_correlation_matrix == true)
-                % extract summary data *before* normalization
-                tempdata1 = reshape(data1,nrow*ncol*nslice,nframe);
-                data1_summary = mean(tempdata1(unrolled_mask==1,:),1);
-            end
-            
-            data1 = normalize(data1,4);
-    
             for findex2 = findex1+1:numel(fnames)
 
                 if (verbose)
@@ -228,6 +269,65 @@ switch task
                 fname2 = fnames{findex2};        
                 header = spm_vol(fname2);
                 data2 = spm_read_vols(header); 
+                
+                [nrow,ncol,nslice,nframe] = size(data2);
+                
+                % sanity check
+                
+                if (nframe ~= nframe1)
+                    aas_log(aap,false,sprintf('WARNING: %s and %s have different number of frames. Skipping this pair...', FID{findex1}, FID{findex2}));               
+                    continue;
+                end
+
+                
+                if (exclude_outliers == true)
+
+                    tempdata = reshape(data2,nrow*ncol*nslice,nframe);
+
+                    data2_outliers = find_outliers(tempdata,outlier_filter,outlier_threshold);
+                    data2_keepers = ~data2_outliers;
+
+                        % now remove outliers in EITHER data1 and data2 from BOTH data1 and data2
+
+                        keepers = data1_keepers & data2_keepers;
+
+                        % data2 --------------------------------------------------------------
+
+                        tempdata = tempdata(:,keepers);
+                        data2 = reshape(tempdata,nrow,ncol,nslice,sum(keepers));
+
+                        % data1 --------------------------------------------------------------
+
+                        tempdata = reshape(data1_allframes,nrow*ncol*nslice,nframe);
+                        tempdata = tempdata(:,keepers);
+                        data1 = reshape(tempdata,nrow,ncol,nslice,sum(keepers));
+
+                        nframe = size(data1,4); % outlier removal changes nframe...
+
+                        if (subtract_global_signal == true)
+                            tempdata = reshape(data1,nrow*ncol*nslice,nframe);
+                            tempdata = tempdata - mean(tempdata(unrolled_mask==1,:),1);
+                            tempdata(unrolled_mask~=1,:) = 0;
+                            data1 = reshape(tempdata,nrow,ncol,nslice,nframe);
+                        end
+
+                        if (generate_summary_correlation_matrix == true)
+                            tempdata = reshape(data1,nrow*ncol*nslice,nframe);
+                            data1_summary = mean(tempdata(unrolled_mask==1,:),1);
+                        end
+
+                        data1 = normalize(data1,4);
+
+                        % save an outlier record
+
+                        tempstring = sprintf(' %d ', find(~keepers));
+                        outlier_log{end+1} = sprintf('%s v %s : %s', FID{findex1}, FID{findex2}, tempstring);
+
+                        if (verbose)
+                            aas_log(aap,false,sprintf('INFO: common outliers: %s', tempstring));
+                        end
+
+                end    
           
                 if (subtract_global_signal == true)
                     tempdata = reshape(data2,nrow*ncol*nslice,nframe);
@@ -236,20 +336,21 @@ switch task
                     data2 = reshape(tempdata,nrow,ncol,nslice,nframe);
                 end 
 
-               if (generate_summary_correlation_matrix == true)
-                    tempdata2 = reshape(data2,nrow*ncol*nslice,nframe);
-                    data2_summary = mean(tempdata2(unrolled_mask==1,:),1); 
+                if (generate_summary_correlation_matrix == true)
+                    tempdata = reshape(data2,nrow*ncol*nslice,nframe);
+                    data2_summary = mean(tempdata(unrolled_mask==1,:),1); 
                     [ summary_r,summary_p ] = corr(data1_summary(:), data2_summary(:));
                     summary_correlation_matrix_r(findex1,findex2) = summary_r;
                     summary_correlation_matrix_p(findex1,findex2) = summary_p;
                     summary_descriptors{end+1} =  sprintf('%s_v_%s', FID{findex1}, FID{findex2});                 
                 end
-                
-                data2 = normalize(data2,4);
 
+ 
+                data2 = normalize(data2,4);
+    
                 % for normalized data, r = dot product divided by vector length - 1
 
-                RMAP = dot(data1,data2,4) / (size(data1,4)-1);
+                RMAP = dot(data1,data2,4) / (nframe-1);
 
                 % normalization will create NaN at voxels outside of brain
                 % (because these voxels have constant (i.e. 0) timeseries)
@@ -351,6 +452,14 @@ switch task
             save(fname,'summary_correlation_matrix_r','summary_correlation_matrix_p', 'summary_descriptors');
         end
         
+        % an outlier log is saved but not desc'ed
+        
+        if (exclude_outliers == true)
+            fname = fullfile(aas_getstudypath(aap),'OUTLIERS.mat');
+            save(fname,'outlier_log');
+        end
+
+        
     case 'checkrequirements'
         
     otherwise
@@ -363,8 +472,39 @@ end
 
 
 
+% helper function
 
+function outliers = find_outliers(data,outlier_filter,outlier_threshold)
 
+switch outlier_filter
+
+    case 'anymedian'
+
+        outliers = isoutlier(data,'median',2, 'ThresholdFactor',outlier_threshold);
+        outliers = any(outliers,1);
+
+    case 'anymean'
+
+        outliers = isoutlier(data,'mean',2, 'ThresholdFactor',outlier_threshold);
+        outliers = any(outliers,1);
+
+    case 'mediansum'
+
+        sumovervoxels = sum(data,1);
+        outliers = isoutlier(sumovervoxels,'median', 'ThresholdFactor',outlier_threshold);                  
+
+    case 'meansum'
+
+        sumovervoxels = sum(data,1);
+        outliers = isoutlier(sumovervoxels,'mean', 'ThresholdFactor',outlier_threshold);
+
+    otherwise
+
+        aas_log(aap,true,sprintf('Unknown outlier filter %s', outlier_filter));
+        
+end             
+
+end
 
 
 
