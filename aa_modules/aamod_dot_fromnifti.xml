@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='session' mfile_alias='aamod_epifromnifti' desc='generate dot stream from nifti' modality='MRI'>
+     
+            <!-- this module generates an dot stream from a nifti file -->
+            <!-- it reuses aamod_epifromnifti.m rather than writing a dedicated -->
+            <!-- aamod_dot_fromnifti.m which would largely be identical code -->
+            
+            <!-- the difference is we create "dot" and "functional_header" outstreams -->
+            <!-- (rather than "epi" and "epi_dicom_header"); we are gradually modifying -->
+            <!-- modules that hardcode epi and epi_dicom_header to use renameable streams -->
+            <!-- (and perhaps adding an aamod_*_dot aliased header) if that functionality -->
+            <!-- is useful outside of epi processing (ex: aamod_firstlevel_model) -->
+                        
+            <qsub>
+                <timeBase>0.2</timeBase>
+                <memoryBase>0.2</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>1</permanenceofoutput>          
+            
+            <numdummies></numdummies>
+            
+            <inputstreams>
+            </inputstreams>
+            
+            <!-- do not change the order of these streams -->
+            <!-- (required for renameability) -->
+            
+            <outputstreams>
+                <stream>dot</stream>
+                <stream>dummyscans</stream>
+                <stream>dot_header</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

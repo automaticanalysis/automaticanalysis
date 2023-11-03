@@ -145,13 +145,27 @@ switch task
             if iscell(V), V = cell2mat(V); end
             spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
+        
+        
         % And describe outputs
+
+        % new: output streams are renameable so that other modalities
+        % (e.g., dot) can reuse aamod_epifromnifti w/ just a header alias
+        
+        outputstreams = aas_getstreams(aap,'output'); 
+        
+        ostream_01 = outputstreams{1};
+        ostream_02 = outputstreams{2};
+        ostream_03 = outputstreams{3};
+         
         if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
-        aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
-        aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
+        aap=aas_desc_outputs(aap,subj,sess, ostream_01,finalepis);
+        aap = aas_desc_outputs(aap,subj,sess,ostream_02,dummylist);
+        
+        dcmhdrfn = fullfile(sesspth,'functional_header.mat');
         save(dcmhdrfn,'DICOMHEADERS');
-        aap = aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
+        aap = aas_desc_outputs(aap,subj,sess,ostream_03,dcmhdrfn);
+
         
     case 'checkrequirements'
         

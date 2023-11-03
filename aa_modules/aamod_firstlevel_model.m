@@ -378,11 +378,16 @@ switch task
             end
         end
         
-        %% Adjust outstream
-        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
-            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
-            aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
+        %% Adjust outstream?
+                
+        % the residual streamname is the last listed in the outputs
+        outputstreams = aas_getstreams(aap,'output');        
+        residualstreamname = outputstreams{end};
+        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),residualstreamname))
+            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,residualstreamname,[],'output');
+            aas_log(aap,false,sprintf('REMOVED: %s output stream: %s', aap.tasklist.currenttask.name,residualstreamname));
         end
+
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));

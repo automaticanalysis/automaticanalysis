@@ -120,26 +120,40 @@ end
 %%%%%%%%%%%%%%%%%%%
 clear SPM
 
-%% retrieve TR from DICOM header
-% TR is manually specified (not recommended as source of error)
+%% retrieve TR
+
+
 if isfield(aap.tasklist.currenttask.settings,'TR') && ...
         ~isempty(aap.tasklist.currenttask.settings.TR)
-    SPM.xY.RT =aap.tasklist.currenttask.settings.TR;
+    
+    % TR is manually specified
+    
+    SPM.xY.RT = aap.tasklist.currenttask.settings.TR;
+    
 else
-    % Get TR from DICOM header checking they're the same for all sessions
+    
+    % Get TR from header
+    
     for sess=subjSessionI
-        try
-            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
-        catch
-            DICOMHEADERS=load(aas_getfiles_bystream(aap,subj,sess,'epi_header')); % For backwards compatibility
+                
+        if aas_isfile_bystream(aap,subj,sess,'epi_dicom_header') % epi 
+            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_dicom_header'));
+
+        elseif aas_isfile_bystream(aap,subj,sess,'dot_header') % dot
+            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'dot_header')); 
+            
+        elseif aas_isfile_bystream(aap,subj,sess,'epi_header') % backwards compatibility
+            DICOMHEADERS = load(aas_getfiles_bystream(aap,subj,sess,'epi_header')); 
+     
+        else
+            aas_log(aap,true,sprintf('No header found for this data. Exiting...')); 
+            
         end
+
         try
-            TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+            TR = DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
         catch
-        end
-        % [AVG] This is for backwards compatibility!
-        if ~exist('TR','var') || isempty(TR)
-            TR=DICOMHEADERS.DICOMHEADERS{1}.volumeTR;
+            aas_log(aap,true,sprintf('TR not found in header. Exiting...'));          
         end
         
         if (sess==subjSessionI(1))
@@ -149,7 +163,9 @@ else
                 aas_log(aap,true,sprintf('Session %d has different TR from earlier sessions, they can''t be in the same model.',sess));
             end
         end
+        
     end
+    
 end
 
 %% Set up basis functions
