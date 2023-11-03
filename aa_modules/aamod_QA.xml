@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='study' desc='make QA summary of functional data' modality='MRI'>
+            
+            <!-- generate a collection of epi QA maps -->
+            
+            <qsub>
+                <timeBase>1</timeBase>
+                <memoryBase>1</memoryBase>
+            </qsub>
+            
+            <!-- number of voxels to include in QA plots -->
+            
+            <!-- actual number will probably be less, as any NaN or -->
+            <!-- zero timeseries are asssumed outside brain and skipped -->
+            
+            <nvoxels>1000</nvoxels>
+            
+            <!-- min/max color scaling for the carpet plot -->
+            
+            <carpetscale>[-2 0.8]</carpetscale>
+            
+            <!-- outlier flagging -->
+
+            <outlier_filter options='anymedian|anymean|mediansum|meansum|none'>meansum</outlier_filter>
+            <outlier_threshold>3</outlier_threshold>
+          
+            <inputstreams>
+                <stream isrenameable='1'>epi</stream>
+            </inputstreams>
+            
+            <outputstreams>
+                <stream>QA_summary</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
