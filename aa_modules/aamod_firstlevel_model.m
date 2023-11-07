@@ -380,9 +380,13 @@ switch task
         
         %% Adjust outstream?
                 
-        % the residual streamname is the last listed in the outputs
-        outputstreams = aas_getstreams(aap,'output');        
-        residualstreamname = outputstreams{end};
+        % if we don't write residuals, we need to delete the residual output stream
+        % the residual streamname is the same as the input streamname (e.g, "epi" in => "epi" out as residuals)
+        % however, we can't assume the name = "epi" because the stream is renameable
+        % instead, we assume the input is the first input stream
+        
+        inputstreams = aas_getstreams(aap,'input');        
+        residualstreamname = inputstreams{1};
         if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),residualstreamname))
             aap = aas_renamestream(aap,aap.tasklist.currenttask.name,residualstreamname,[],'output');
             aas_log(aap,false,sprintf('REMOVED: %s output stream: %s', aap.tasklist.currenttask.name,residualstreamname));
