@@ -97,12 +97,12 @@
             
             <inputstreams>
                 <stream >dot</stream>
-				<stream isessential='0'>ppi</stream>
+		<stream isessential='0'>ppi</stream>
                 <stream isessential='0'>listspikes</stream>
                 <stream isessential='0'>dot_header</stream>
                 <stream isessential='0'>realignment_parameter</stream>                
-				<stream isessential='0'>compSignal</stream>
-				<stream isessential='0'>gd_results</stream>
+		<stream isessential='0'>compSignal</stream>
+		<stream isessential='0'>gd_results</stream>
             </inputstreams>
             
             <!-- dot outstream used for residuals and will be removed -->
