@@ -18,28 +18,28 @@ switch task
         
         % put some xml settings into local variables for better code readability
 
-        subtract_global_signal = aap.tasklist.currenttask.settings.subtract_global_signal;
-        convert_r_to_z = aap.tasklist.currenttask.settings.convert_r_to_z;       
-        verbose = aap.tasklist.currenttask.settings.verbose;
-        save_individual_maps = aap.tasklist.currenttask.settings.save_individual_maps;
+        subtract_global_signal = aas_getsetting(aap,'subtract_global_signal');
+        convert_r_to_z = aas_getsetting(aap,'convert_r_to_z');
+        verbose = aas_getsetting(aap,'verbose');
+        save_individual_maps = aas_getsetting(aap,'save_individual_maps');
         
-        rmap_threshold = aap.tasklist.currenttask.settings.rmap_threshold;
-        show_only_positive_values = aap.tasklist.currenttask.settings.show_only_positive_values; 
-        show_only_negative_values = aap.tasklist.currenttask.settings.show_only_negative_values; 
+        rmap_threshold = aas_getsetting(aap,'rmap_threshold');
+        show_only_positive_values = aas_getsetting(aap,'show_only_positive_values'); 
+        show_only_negative_values = aas_getsetting(aap,'show_only_negative_values'); 
         
-        maximum_number_of_sessions = aap.tasklist.currenttask.settings.maximum_number_of_sessions;
+        maximum_number_of_sessions = aas_getsetting(aap,'maximum_number_of_sessions');
 
         if (save_individual_maps == true)
             mkdir(aas_getstudypath(aap),fullfile('pairwise_maps'));
             individual_map_fnames = {}; % cell array of fnames for desc
         end
         
-        generate_summary_correlation_matrix = aap.tasklist.currenttask.settings.generate_summary_correlation_matrix;
+        generate_summary_correlation_matrix = aas_getsetting(aap,'generate_summary_correlation_matrix');
       
-        outlier_filter = aap.tasklist.currenttask.settings.outlier_filter;
-        outlier_threshold = aap.tasklist.currenttask.settings.outlier_threshold;
+        outlier_filter = aas_getsetting(aap,'outlier_filter');
+        outlier_threshold = aas_getsetting(aap,'outlier_threshold');
         if strcmp(outlier_filter,'none');exclude_outliers=false;else;exclude_outliers=true;end
-                             
+                              
         % ****************     
         % DATA
         % ****************
@@ -63,12 +63,9 @@ switch task
             end
 
             for session_index = session_list
+                                
+                temp = aas_getfiles_bystream(aap, subject_index, session_index, aas_getstreams(aap,'input', 2));
                 
-                % switch to renameable input stream
-
-                data_instream_struct = aap.tasklist.currenttask.inputstreams(1).stream{2};
-                temp = aas_getfiles_bystream(aap, subject_index, session_index, data_instream_struct.CONTENT); 
-
                 fnames{end+1} = temp;
                 FID{end+1} = sprintf('SUB%02dSESS%02d',subject_index, session_index);
 
@@ -128,12 +125,11 @@ switch task
         mask_has_changed = false; 
         
         % 2) optional instream mask
-
-        mask_inputstream_struct = aap.tasklist.currenttask.inputstreams(1).stream{1};
-
-        if (aas_stream_has_contents(aap, mask_inputstream_struct.CONTENT))
-
-            instream_mask_fname = aas_getfiles_bystream(aap, mask_inputstream_struct.CONTENT);
+                  
+        if (aas_stream_has_contents(aap,aas_getstreams(aap,'input',1))) 
+                
+            instream_mask_fname = aas_getfiles_bystream(aap, aas_getstreams(aap,'input',1));
+               
             instream_mask_header = spm_vol(instream_mask_fname);
 
             if (~isequal(instream_mask_header.dim,mask_header.dim)|| ~isequal(instream_mask_header.mat,mask_header.mat))

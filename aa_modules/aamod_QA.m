@@ -13,15 +13,14 @@ switch task
 	
     case 'report'
         
-    case 'doit'		
+    case 'doit'		  
         
- 
-        nvoxels = aap.tasklist.currenttask.settings.nvoxels;
-        carpetscale = aap.tasklist.currenttask.settings.carpetscale;
-        
-        outlier_filter = aap.tasklist.currenttask.settings.outlier_filter;
-        outlier_threshold = aap.tasklist.currenttask.settings.outlier_threshold;
-           
+        nvoxels = aas_getsetting(aap,'nvoxels');
+        carpetscale = aas_getsetting(aap,'carpetscale');
+
+        outlier_filter = aas_getsetting(aap,'outlier_filter');
+        outlier_threshold = aas_getsetting(aap,'outlier_threshold');
+       
         savedir = fullfile(aas_getstudypath(aap),'QA_images');
         if ~exist(savedir,'dir');mkdir(savedir);end
         
@@ -37,7 +36,7 @@ switch task
             aas_log(aap, true, 'Cannot open summary file for writing. Halting...');
         end
         
-        group_outliers = []; % for group outlier plot...
+        group_outliers = []; % accumulate outliers for group outlier plot...
 
         for subject_index = subindex_list
 
@@ -46,9 +45,8 @@ switch task
             
             for session_index = session_list        
 
-                data_instream_struct = aap.tasklist.currenttask.inputstreams(1).stream{1};
-                fname = aas_getfiles_bystream(aap, subject_index, session_index, data_instream_struct.CONTENT); 
-
+                fname = aas_getfiles_bystream(aap, subject_index, session_index, aas_getstreams(aap,'input',1)); 
+        
                 header = spm_vol(fname);
                 data = spm_read_vols(header);
             
@@ -218,30 +216,36 @@ switch task
         % this is useful for detecting correlated artifacts across subjects
         
         % get a little better appearance if we size the window to fit data
-        
+               
         [nrows,ncols] = size(group_outliers);
-
-        if (strcmp(aap.options.wheretoprocess, 'localsingle'))
-            h2 = figure('Position',[0 0 6*ncols 20*nrows], 'Color', [1 1 1],'NumberTitle','off', 'Visible', 'off', 'MenuBar', 'none');
-            movegui(h2, 'center');
-            set(h2, 'Visible', 'on');
-        else
-            h2 = figure('Position',[0 0 6*ncols 20*nrows],'Color', [1 1 1], 'NumberTitle','off','MenuBar','none');
-        end
-             
-        group_outliers(end+1,end+1) = 0; % pcolor needs a dummy row/col
-        pcolor(group_outliers);
-        title('Outliers','FontSize',16);
-        xlabel('frame','FontSize',14);
-        ylabel('subject','FontSize',14);
-        colormap gray;
         
-        fname_out = fullfile(aas_getstudypath(aap),'group_outliers.jpg');
-        set(h2,'Renderer','opengl');
-        set(findall(h2,'Type','text'),'FontUnits','normalized');
-        h2.InvertHardcopy = 'off';
-        print(h2, '-djpeg', '-r150', fname_out);
-        close(h2);
+        % don't need to make a group plot if there's just one subject
+ 
+        if (nrows > 1)
+
+            if (strcmp(aap.options.wheretoprocess, 'localsingle'))
+                h2 = figure('Position',[0 0 5*ncols 50+20*nrows], 'Color', [1 1 1],'NumberTitle','off', 'Visible', 'off', 'MenuBar', 'none');
+                movegui(h2, 'center');
+                set(h2, 'Visible', 'on');
+            else
+                h2 = figure('Position',[0 0 5*ncols 50+20*nrows],'Color', [1 1 1], 'NumberTitle','off','MenuBar','none');
+            end
+
+            group_outliers(end+1,end+1) = 0; % pcolor needs a terminal dummy row/col
+            pcolor(group_outliers);
+            title('Outliers','FontSize',16);
+            xlabel('frame','FontSize',14);
+            ylabel('subject','FontSize',14);
+            colormap gray;
+
+            fname_out = fullfile(aas_getstudypath(aap),'group_outliers.jpg');
+            set(h2,'Renderer','opengl');
+            set(findall(h2,'Type','text'),'FontUnits','normalized');
+            h2.InvertHardcopy = 'off';
+            print(h2, '-djpeg', '-r150', fname_out);
+            close(h2);
+        
+        end
         
         aap = aas_desc_outputs(aap, 'data_summary', summary_fname);
 
