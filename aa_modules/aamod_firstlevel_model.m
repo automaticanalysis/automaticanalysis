@@ -243,8 +243,10 @@ switch task
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
         
         if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
+            inputstreams = aas_getstreams(aap,'input');        
+            residualstreamname = inputstreams{1};
             for s = subjSessionI
-                aap=aas_desc_outputs(aap,subj,s,'epi',residuals{s});
+                aap=aas_desc_outputs(aap,subj,s,residualstreamname,residuals{s});
             end
         end
 
@@ -383,7 +385,7 @@ switch task
         % if we don't write residuals, we need to delete the residual output stream
         % the residual streamname is the same as the input streamname (e.g, "epi" in => "epi" out as residuals)
         % however, we can't assume the name = "epi" because the stream is renameable
-        % instead, we assume the input is the first input stream
+        % instead, we assume the name is the first input stream
         
         inputstreams = aas_getstreams(aap,'input');        
         residualstreamname = inputstreams{1};
