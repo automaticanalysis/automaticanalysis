@@ -21,7 +21,15 @@
             
             <carpetscale>[-2 0.8]</carpetscale>
             
-            <!-- outlier flagging -->
+            <!-- outlier flagging ; flag frame as an outlier if: -->
+            
+            <!-- anymedian = any voxel in the frame exceeds threshold x MAD from the median -->
+            <!-- anymean   = any voxel in the frame exceeds threshold x SD from the mean -->
+            <!-- mediansum = sum across voxels in the frame exceeds threshold x MAD from the median -->
+            <!-- meansum   = sum across voxels in the frame exceeds threshold x SD from the mean -->
+            <!-- none      = apply no outlier detection -->
+
+            <!-- (MAD = median absolute deviation; SD = standard deviation) -->
 
             <outlier_filter options='anymedian|anymean|mediansum|meansum|none'>meansum</outlier_filter>
             <outlier_threshold>3</outlier_threshold>

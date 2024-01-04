@@ -21,8 +21,11 @@ switch task
         outlier_filter = aas_getsetting(aap,'outlier_filter');
         outlier_threshold = aas_getsetting(aap,'outlier_threshold');
        
-        savedir = fullfile(aas_getstudypath(aap),'QA_images');
-        if ~exist(savedir,'dir');mkdir(savedir);end
+        imagedir = fullfile(aas_getstudypath(aap),'QA_images');
+        if ~exist(imagedir,'dir');mkdir(imagedir);end
+        
+        datadir = fullfile(aas_getstudypath(aap),'QA_data');
+        if ~exist(datadir,'dir');mkdir(datadir);end
         
         [ ~,subindex_list ] = aas_getN_bydomain(aap,'subject');
 
@@ -80,10 +83,15 @@ switch task
                 % this results in a reasonably good selection
                 % especially if nvoxels is large-ish
                 
-                data = data(all(data~=0,2),:);             
+                data = data(all(data~=0,2),:);  
+  
+                % removing DC offset improves joy and carpet plot color scaling...
+                % (and has no effect on outlier identification)
+                
+                data = data - mean(data(:));
  
                 % style points - open window in center of display
-                % (this trick only works if not running cluster)
+                % (this trick only works if running localsingle)
                
                 if (strcmp(aap.options.wheretoprocess, 'localsingle'))
                     h = figure('Position',[0 0 1500 1000], 'Color', [1 1 1],'NumberTitle','off', 'Visible', 'off', 'MenuBar', 'none');
@@ -116,12 +124,12 @@ switch task
                 ylabel('voxel','FontSize',14);
                 title('grayplot','FontSize',14);
 
-                % sum over voxels plot and outliers
+                % average over voxels plot and outliers
 
                 subplot(3,3,[1 2 3]);
 
-                sumovervoxels = sum(data,1,'omitnan');
-                plot(sumovervoxels,'k','LineWidth',2);
+                summary = mean(data,1,'omitnan');
+                plot(summary,'k','LineWidth',2);
                 a = axis;
                 hold on;
                 
@@ -139,11 +147,11 @@ switch task
                   
                     case 'mediansum'
                         
-                        outliers = isoutlier(sumovervoxels,'median', 'ThresholdFactor',outlier_threshold);                  
+                        outliers = isoutlier(summary,'median', 'ThresholdFactor',outlier_threshold);                  
                         
                     case 'meansum'
                         
-                        outliers = isoutlier(sumovervoxels,'mean', 'ThresholdFactor',outlier_threshold);
+                        outliers = isoutlier(summary,'mean', 'ThresholdFactor',outlier_threshold);
  
                     case 'none'
                         
@@ -159,21 +167,21 @@ switch task
                 
                 % include stats in title
                 
-                [~,n,~]=fileparts(fname);
-                n = strrep(n,'_','-');
-                titlestring = [n '   dim: ' num2str([r c s f]) '   voxsize: ' num2str(voxsize') '   max: ' num2str(datamax,3) ' min: ' num2str(datamin,3) '    nan: ' num2str(nancount) ' zeros: ' num2str(zerocount)];
+                ID = sprintf('%s-%s',aas_getsubjname(aap,subject_index),aas_getsessname(aap,session_index));
+
+                titlestring = [strrep(ID,'_','-') '   dim: ' num2str([r c s f]) '   voxsize: ' num2str(voxsize')  '  min: ' num2str(datamin,3)  '  max: ' num2str(datamax,3)  '  nan: ' num2str(nancount) ' zeros: ' num2str(zerocount)];
                 title(titlestring,'FontSize',18);
                 
                 if ~isempty(outlier_index)
                     odescriptor = sprintf('outliers (%s > %g)', outlier_filter, outlier_threshold);
-                    legend({'sum over voxels', odescriptor},'FontSize',16);
+                    legend({'global signal', odescriptor},'FontSize',16);
                 else
-                    legend('sum over voxels','FontSize',16);
+                    legend('global signal','FontSize',16);
                 end
                 xlabel('frame','FontSize',18);
                 ylabel('intensity','FontSize',18);
 
-                fname_out = fullfile(savedir,sprintf('%s.jpg', n));
+                fname_out = fullfile(imagedir,sprintf('%s.jpg', strrep(ID,'-','_')));
 
                 set(h,'Renderer','opengl');
                 set(findall(h,'Type','text'),'FontUnits','normalized');
@@ -181,7 +189,12 @@ switch task
                 print(h, '-djpeg', '-r150', fname_out);
                 
                 close(h);
-                              
+                
+                % save the summary data
+
+                fname_out = fullfile(datadir,sprintf('%s.mat', strrep(ID,'-','_')));
+                save(fname_out,'data','summary');
+                            
                 % collect outliers for group outlier plot
                                 
                 if (isempty(group_outliers))
