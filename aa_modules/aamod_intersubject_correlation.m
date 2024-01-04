@@ -14,7 +14,7 @@ switch task
 	
     case 'report'
         
-    case 'doit'		
+    case 'doit'	
         
         % put some xml settings into local variables for better code readability
 
@@ -67,7 +67,7 @@ switch task
                 temp = aas_getfiles_bystream(aap, subject_index, session_index, aas_getstreams(aap,'input', 2));
                 
                 fnames{end+1} = temp;
-                FID{end+1} = sprintf('SUB%02dSESS%02d',subject_index, session_index);
+                FID{end+1} = sprintf('%s-%s',aas_getsubjname(aap,subject_index),aas_getsessname(aap,session_index));
 
             end
 
@@ -225,7 +225,7 @@ switch task
                 % for each data2
 
                 data1_allframes = data1;
-
+                        
             else
 
                 % if we're not doing outlier exclusion, we can get a speed-up
@@ -251,9 +251,9 @@ switch task
                     tempdata = reshape(data1,nrow*ncol*nslice,nframe1);
                     data1_summary = mean(tempdata(unrolled_mask==1,:),1);
                 end
-
-                data1 = normalize(data1,4);
-
+                
+                data1 = normalize(data1,4);                  
+ 
             end
 
             for findex2 = findex1+1:numel(fnames)
@@ -287,6 +287,22 @@ switch task
 
                         keepers = data1_keepers & data2_keepers;
 
+                        if (all(keepers==0))
+                            % if outlier exclusion removed all frames, we must skip this pair...
+                            if (verbose)
+                                aas_log(aap,false,'INFO: No frames survive outlier exclusion. Skipping this pair...');
+                            end
+                            outlier_log{end+1} = sprintf('%s v %s : *** no frames survive ***');
+                            continue;
+                        else
+                            % otherwise, save/display outlier information
+                            tempstring = sprintf(' %d ', find(~keepers));
+                            outlier_log{end+1} = sprintf('%s v %s : %s', FID{findex1}, FID{findex2}, tempstring);
+                            if (verbose)
+                                aas_log(aap,false,sprintf('INFO: common outliers: %s', tempstring));
+                            end
+                        end                                             
+                        
                         % data2 --------------------------------------------------------------
 
                         tempdata = tempdata(:,keepers);
@@ -314,15 +330,6 @@ switch task
 
                         data1 = normalize(data1,4);
 
-                        % save an outlier record
-
-                        tempstring = sprintf(' %d ', find(~keepers));
-                        outlier_log{end+1} = sprintf('%s v %s : %s', FID{findex1}, FID{findex2}, tempstring);
-
-                        if (verbose)
-                            aas_log(aap,false,sprintf('INFO: common outliers: %s', tempstring));
-                        end
-
                 end    
           
                 if (subtract_global_signal == true)
@@ -341,9 +348,8 @@ switch task
                     summary_descriptors{end+1} =  sprintf('%s_v_%s', FID{findex1}, FID{findex2});                 
                 end
 
- 
                 data2 = normalize(data2,4);
-    
+
                 % for normalized data, r = dot product divided by vector length - 1
 
                 RMAP = dot(data1,data2,4) / (nframe-1);
@@ -493,7 +499,19 @@ switch outlier_filter
 
         sumovervoxels = sum(data,1);
         outliers = isoutlier(sumovervoxels,'mean', 'ThresholdFactor',outlier_threshold);
+        
+    case 'GVTD'
 
+        temp = diff(data,1,2);
+        GVTD =  sqrt(mean(temp .* temp));
+        outliers = GVTD>outlier_threshold;
+
+        % length(outliers) is 1 less than length(data) because diff
+        % ergo need to add back 1 frame -- always exclude last frame
+
+        outliers(end+1) = 1;
+
+        
     otherwise
 
         aas_log(aap,true,sprintf('Unknown outlier filter %s', outlier_filter));

@@ -98,9 +98,10 @@
             <convert_r_to_z>0</convert_r_to_z> 
             
             <!-- outlier exclusion -->
+            <!-- see aamod_QA for description of options -->
 
-            <outlier_filter options='anymedian|anymean|mediansum|meansum|none'>meansum</outlier_filter>
-            <outlier_threshold>3</outlier_threshold>
+            <outlier_filter options='none|anymedian|anymean|mediansum|meansum|GVTD'>none</outlier_filter>
+            <outlier_threshold></outlier_threshold>
         
             <!-- echo progress and diagnostics to command window? -->
             
