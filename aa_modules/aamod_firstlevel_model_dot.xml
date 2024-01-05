@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<aap>
+    <tasklist>
+        <currenttask domain='subject' mfile_alias='aamod_firstlevel_model' desc='First level model for dot' modality='MRI'>
+            
+            <!-- this header is a copy of aamod_firstlevel_model.xml -->
+            <!-- w/ modifications to use dot rather than epi data -->
+            
+            <qsub>
+                <timeBase>0.5</timeBase>
+                <memoryBase>0.25</memoryBase>
+            </qsub>
+            
+            <permanenceofoutput>3</permanenceofoutput>
+            
+            <!-- no firstlevelmasking here any more - use aap.spm.defaults.mask.thresh=-inf;-->
+            <!-- includemovementpars 0=none; 1=realignment parms -->
+            <includemovementpars>1</includemovementpars>
+            
+            <!-- if the stream 'listspikes' is present, should we include deltas for each spike? -->
+            <includespikes>0</includespikes>
+            
+            <!-- if the stream 'gd_results' is present, should we include the PCA noise regressors? -->
+            <includeGLMDNregs>1</includeGLMDNregs>
+            
+            <!-- Movement matrix, deciding which derivatives/orders of the movement parameters are used! -->
+            <moveMat>[1 0 0; 0 0 0]</moveMat>
+            
+            <!-- include Compartment Regressors derived from aamod_compSignal 
+            By default filled with [2 3] [i.e. WM and CSF signals] if you have run aamoc_compSignal-->
+            <compRegs>[2 3]</compRegs>
+            
+            <!-- high pass filter in seconds -->
+            <highpassfilter>128</highpassfilter>
+            
+            <!-- First level model masking
+			0 - none
+			1 - implicit
+			otherwise (0-1) - fraction threshold
+			-->
+            <firstlevelmasking>1</firstlevelmasking>
+            
+            <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
+            <autocorrelation>AR(1)</autocorrelation>
+            
+            <!-- enable/disable orthogoanlisation (only for SPM12 and above) -->
+            <orthogonalisation>1</orthogonalisation>
+            
+            <!-- write residuals (only for SPM12 and above) 
+            (empty) - do not write
+            0       - corrected for no effect
+            NaN     - corrected for all effect
+            >0      - corrected for a given contrast
+            -->
+            <writeresiduals></writeresiduals>
+            
+			<allowemptymodel>0</allowemptymodel>
+			
+            <!-- TR, if we wish to define it within the first level model 
+            If empty, we try to find from DICOM headers... -->
+            <TR></TR>
+            
+            <model>
+                <subject></subject>
+                <session></session>
+                <event>
+                    <name></name>
+                    <ons></ons>
+                    <dur></dur>
+                </event>
+            </model>
+            
+            <modelC>
+                <subject></subject>
+                <session></session>
+                <covariate>
+                    <name></name>
+                    <vector></vector>
+                    <HRF></HRF>
+                    <interest></interest>
+                </covariate>
+            </modelC>
+            
+            <xBF>
+                <T>17</T>
+                <UNITS>secs</UNITS>
+                <Volterra>1</Volterra>
+                <name>hrf</name>
+                <length>32</length>
+                <order>1</order>
+                <T0></T0>
+                <bf></bf>
+            </xBF>
+            
+            <!-- changed epi to hdddot and epi_dicom_header to dot_header -->
+            <!-- removed sliceorder stream -->
+            
+            <inputstreams>
+                <stream >dot</stream>
+		<stream isessential='0'>ppi</stream>
+                <stream isessential='0'>listspikes</stream>
+                <stream isessential='0'>dot_header</stream>
+                <stream isessential='0'>realignment_parameter</stream>                
+		<stream isessential='0'>compSignal</stream>
+		<stream isessential='0'>gd_results</stream>
+            </inputstreams>
+            
+            <!-- dot outstream used for residuals and will be removed -->
+            <!-- if 'writeresiduals' is not set (which is usually the case) -->
+            
+            <!-- dot must appear last in the outputstreams list -->
+            <!-- otherwise it will break stream renaming -->
+            
+            <outputstreams>
+                <stream>firstlevel_spm</stream>
+                <stream>firstlevel_betas</stream>
+                <stream>firstlevel_brainmask</stream>
+                <stream isrenameable='1'>dot</stream>
+            </outputstreams>
+            
+        </currenttask>
+    </tasklist>
+</aap>
+

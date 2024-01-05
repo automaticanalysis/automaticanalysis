@@ -3,8 +3,10 @@
     <tasklist>
         <currenttask domain='study' desc='intersubject correlation' modality='MRI'>
             
-            <!-- compute correlation maps of all subject epis considered pairwise -->
+            <!-- compute correlation maps of all subject functional maps considered pairwise -->
             <!-- see: Hasson et al. Science 303:1634-1640 (2004) -->
+
+            <!-- default inputstreamname = "epi" -->
             
             <!-- NB: "n" subjects = n(n-1)/2 pairings, which can be quite large -->
             
@@ -94,7 +96,13 @@
             <!-- (computed using Fisher Z transform) -->
             
             <convert_r_to_z>0</convert_r_to_z> 
-          
+            
+            <!-- outlier exclusion -->
+            <!-- see aamod_QA for description of options -->
+
+            <outlier_filter options='none|anymedian|anymean|mediansum|meansum|GVTD'>none</outlier_filter>
+            <outlier_threshold></outlier_threshold>
+        
             <!-- echo progress and diagnostics to command window? -->
             
             <verbose>1</verbose>
@@ -103,7 +111,7 @@
            
             <inputstreams>
                 <stream isessential='0' isrenameable='1'>groupbrainmask</stream>
-                <stream>epi</stream>
+                <stream isrenameable='1'>epi</stream>
             </inputstreams>
             
             <outputstreams>

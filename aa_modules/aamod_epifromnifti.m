@@ -17,9 +17,9 @@ switch task
         %% Select
         series = horzcat(aap.acq_details.subjects(subj).seriesnumbers{:});
         if ~iscell(series) ... 
-                || (~isstruct(series{sess}) ... % hdr+fname
-                && ~ischar(series{sess}) ... % fname
-                && ~iscell(series{sess})) % fname (4D)
+                || (~isstruct(series{1}) ... % hdr+fname
+                && ~ischar(series{1}) ... % fname
+                && ~iscell(series{1})) % fname (4D)
             aas_log(aap,true,['ERROR: Was expecting list of struct(s) of fname+hdr or fname in cell array\n' help('aas_addsubject')]);            
         end
         series = series{sess};
@@ -145,13 +145,37 @@ switch task
             if iscell(V), V = cell2mat(V); end
             spm_file_merge(char({V(numdummies+1:end).fname}),finalepis,0,DICOMHEADERS{1}.volumeTR);
         end
-        % And describe outputs
+              
+        % Describe outputs
+
+        % new: output streams are renameable so that other modalities
+        % (e.g., dot) can reuse aamod_epifromnifti w/ just a header alias
+        
+        % we assume the first output streamname defines the modality;
+        % the remaining outstream names are derived from it
+        
+        outputstreams = aas_getstreams(aap,'output'); 
+        
+        ostream_01 = outputstreams{1};
+       
+        ostream_02 = 'dummyscans';
+        
+        if strcmp(ostream_01,'epi')
+            ostream_03 = 'epi_dicom_header';
+        elseif strcmp(ostream_01,'dot')
+            ostream_03 = 'dot_header';
+        else
+            ostream_03 = 'functional_header';
+        end      
+         
         if comp, rmdir(fullfile(sesspth,'temp'),'s'); end
-        aap=aas_desc_outputs(aap,subj,sess,'epi',finalepis);
-        aap = aas_desc_outputs(aap,subj,sess,'dummyscans',dummylist);
-        dcmhdrfn = fullfile(sesspth,'dicom_headers.mat');
+        aap=aas_desc_outputs(aap,subj,sess, ostream_01,finalepis);
+        aap = aas_desc_outputs(aap,subj,sess,ostream_02,dummylist);
+        
+        dcmhdrfn = fullfile(sesspth,'functional_header.mat');
         save(dcmhdrfn,'DICOMHEADERS');
-        aap = aas_desc_outputs(aap,subj,sess,'epi_dicom_header',dcmhdrfn);
+        aap = aas_desc_outputs(aap,subj,sess,ostream_03,dcmhdrfn);
+
         
     case 'checkrequirements'
         
