@@ -152,6 +152,20 @@ else
                         catch
                             aas_log(aap,true,sprintf('Could not find module in remote aap file with stage tag %s',inp.sourcestagename));
                         end
+                        indexMap = aas_mapindices_betweenAAPs(aap,sourceaap); % Map remote and local aap indices
+                        backup_deps = deps; % Take a backup of current dependencies for us to use after correct mapping.
+                        for d = 1:numel(deps)
+                           if strcmp(deps{d}{1},'subject')
+                                subj_id = deps{d}{2};
+                                deps{d}{2} = indexMap.subject(subj_id); % find the correct subj index
+                           end
+                           if strcmp(deps{d}{1},'session')
+                                subj_id = deps{d}{2}(1);
+                                session_id = deps{d}{2}(2);
+                                deps{d}{2}(1) = indexMap.subject(subj_id); % find the correct subj index
+                                deps{d}{2}(2) = indexMap.session(session_id); % find the correct session index
+                           end
+                        end
                     end
                     for d = 1:numel(deps)
                         if ~strcmp(deps{d}{1},inp.sourcedomain) ||... % only relevant modules
@@ -168,6 +182,11 @@ else
                         close_task(aap,tempdirtodelete);
                         aas_writedoneflag(aap,doneflag,'skipped');
                         return
+                    end
+
+                    if exist('backup_deps','var') % Do we have a backup of the remote mapped dependency array?
+                        deps = backup_deps; % Use the remote mapped dependency array if it exists
+                        clear backup_deps % clear them after use
                     end
 
                     [gotinputs, streamfiles{inpind}]=aas_retrieve_inputs_part1(aap,inp,allinputs,deps);
