@@ -12,18 +12,24 @@ switch modality
 end
 
 
-outsess = sess;
+outsess = sess; hasSess = false;
 for d = 1:numel(aap.acq_details.subjects(subj).mriname)
     series = seriesnumbers{d};
     outsess = outsess - numel(series);
     if outsess < 1
+        hasSess = true;
         outsess = numel(series) + outsess;
         break;
     end
 end
 
-if iscell(series) % Multi-meas (e.g. multi-echo)
-    seriesnum=series{outsess};
+if hasSess
+    if iscell(series) % Multi-meas (e.g. multi-echo)
+        seriesnum=series{outsess};
+    else
+        seriesnum=series(outsess);
+    end
 else
-    seriesnum=series(outsess);
+    d = [];
+    seriesnum = [];
 end
