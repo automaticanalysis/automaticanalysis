@@ -26,6 +26,7 @@ function [ aap,resp ] = aamod_secondlevel_randomise(aap,task)
 %
 % CHANGE HISTORY
 %
+% 10/2024 [MSJ] swap "sleep" for "pause" and { } for "extractfield"
 % 08/2023 [MSJ] skip F contrasts
 % 06/2021 [MSJ] attempt to implement sensible FSL file naming
 % 06/2019 [MSJ] Modified to run one or two sample ttest w/ covariates
@@ -76,7 +77,7 @@ switch task
                 master_subject_list = { master_subject_list{:}, temp{:} };
             end   
         else
-            master_subject_list = extractfield(aap.acq_details.subjects,'subjname');
+        master_subject_list = { aap.acq_details.subjects.subjname };
         end
         
         nsub = numel(master_subject_list);
@@ -271,25 +272,23 @@ switch task
             pause(1);  % feels necessary to let bg process launch...
         end
               
-        % block here until all outfiles exist
+        % block until all the contrast directories are populated
 
         for cindex = 1:numel(dirnames)
 
             dirname = dirnames{cindex};
 
-            % block until all the contrast directories are populated
-
             temp = dir(fullfile(pth, sprintf('%s/*tstat*.%s', dirname, fsl_file_extension)));
 
             while (numel(temp) == 0)
-                unix('sleep 60s');
+                pause(60);
                 temp = dir(fullfile(pth, sprintf('%s/*tstat*.%s', dirname, fsl_file_extension)));
              end
 
         end
         
-        % pause here to let filesystem catch-up
-        pause(1);
+        % one final block here in case filesystem needs to catch-up
+        pause(60);
 
         % clean up temp files; Note we don't delete design.mat and 
         % design.con in two-group test -- leave for verification
@@ -402,7 +401,7 @@ if (isempty(group_two_subjectIDs))
                 
     end
 
-    % this only time this if branch should be entered is one group + one
+    % the only time this if branch should be entered is one group + one
     % covariate (one group no covariates uses simplified fsl call (see line
     % ~139 and two groups uses branch below). As such, an eye(2) contrast
     % isn't useful here -- if the covariate is nuisance, we just want [1 0]
