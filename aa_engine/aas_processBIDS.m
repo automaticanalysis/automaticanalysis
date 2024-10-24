@@ -662,13 +662,20 @@ end
 
 function LIST = tsvread(fname)
 filestr = fileread(fname);
+% this is counting lines based on the number of newlines (char(10))
+% this is error-prone because some files may have a terminal newline
+% and some may not. We can improve this by stripping any trailing
+% whitespace then adding one...
 nLines = sum(double(filestr)==10);
+filestr = strtrim(filestr);
+nLines = sum(double(filestr)==10)+1;
 LIST = textscan(filestr,'%s','Delimiter','\t');
 LIST = LIST{1};
 % protect against extraneous whitespace in the tsv:
 LIST = LIST(~cellfun(@isempty,LIST));
 LIST = reshape(LIST,[],nLines)';
 end
+
 
 function str = strrep_multi(str, old, new)
 for i = 1:numel(old)
