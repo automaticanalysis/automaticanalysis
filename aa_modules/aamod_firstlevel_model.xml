@@ -36,7 +36,11 @@
 			otherwise (0-1) - fraction threshold
 			-->
             <firstlevelmasking>1</firstlevelmasking>
-            
+
+            <!-- optional explicit mask (fullpath to .nii file) applied to all subjects -->
+            <!-- SPM will combine (intersect) this with firstlevelmasking option -->
+            <explicitmaskfname></explicitmaskfname>
+
             <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
             <autocorrelation>AR(1)</autocorrelation>
             
@@ -96,8 +100,9 @@
                 <stream isessential='0'>epi_dicom_header</stream>
                 <stream isessential='0'>sliceorder</stream>
                 <stream isessential='0'>realignment_parameter</stream>                
-				<stream isessential='0'>compSignal</stream>
-				<stream isessential='0'>gd_results</stream>
+                <stream isessential='0'>compSignal</stream>
+                <stream isessential='0'>gd_results</stream>
+                <stream isessential='0'>physreg</stream>
             </inputstreams>
             
             <outputstreams>
