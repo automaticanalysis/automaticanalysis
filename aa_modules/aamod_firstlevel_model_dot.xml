@@ -39,6 +39,10 @@
 			otherwise (0-1) - fraction threshold
 			-->
             <firstlevelmasking>1</firstlevelmasking>
+
+            <!-- optional explicit mask (fullpath to .nii file) applied to all subjects -->
+            <!-- SPM will combine (intersect) this with firstlevelmasking option -->
+            <explicitmaskfname></explicitmaskfname>
             
             <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
             <autocorrelation>AR(1)</autocorrelation>
@@ -54,7 +58,7 @@
             -->
             <writeresiduals></writeresiduals>
             
-			<allowemptymodel>0</allowemptymodel>
+            <allowemptymodel>0</allowemptymodel>
 			
             <!-- TR, if we wish to define it within the first level model 
             If empty, we try to find from DICOM headers... -->
@@ -103,6 +107,7 @@
                 <stream isessential='0'>realignment_parameter</stream>                
 		<stream isessential='0'>compSignal</stream>
 		<stream isessential='0'>gd_results</stream>
+                <stream isessential='0'>physreg</stream>
             </inputstreams>
             
             <!-- dot outstream used for residuals and will be removed -->
