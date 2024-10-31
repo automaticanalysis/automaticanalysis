@@ -100,6 +100,8 @@ switch task
                         basename(aas_getsubjpath(aap,subj)),aap.acq_details.sessions(sess).name,...
                         'PHYS',temp.PPI.Y,0,1);
 
+
+
                 end % if ~isempty(defCov{1})...       
             end % if aas_stream_has_contents(aap,'session',[subj,sess],'ppi')...
         end % for sess = subjSessionI...
@@ -143,6 +145,7 @@ switch task
         %%%%%%%%%%%%%%%%%%%
         
         SPM.xY.P = allfiles;
+
         if aap.tasklist.currenttask.settings.firstlevelmasking && aap.tasklist.currenttask.settings.firstlevelmasking < 1
             spm_get_defaults('mask.thresh',aap.tasklist.currenttask.settings.firstlevelmasking);
         end
@@ -253,10 +256,8 @@ switch task
         aap=aas_desc_outputs(aap,subj,'firstlevel_betas',betafns);
         
         if isfield(aap.tasklist.currenttask.settings,'writeresiduals') && ~isempty(aap.tasklist.currenttask.settings.writeresiduals)
-            inputstreams = aas_getstreams(aap,'input');        
-            residualstreamname = inputstreams{1};
             for s = subjSessionI
-                aap=aas_desc_outputs(aap,subj,s,residualstreamname,residuals{s});
+                aap=aas_desc_outputs(aap,subj,s,'epi',residuals{s});
             end
         end
 
@@ -390,20 +391,11 @@ switch task
             end
         end
         
-        %% Adjust outstream?
-                
-        % if we don't write residuals, we need to delete the residual output stream
-        % the residual streamname is the same as the input streamname (e.g, "epi" in => "epi" out as residuals)
-        % however, we can't assume the name = "epi" because the stream is renameable
-        % instead, we assume the name is the first input stream
-        
-        inputstreams = aas_getstreams(aap,'input');        
-        residualstreamname = inputstreams{1};
-        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),residualstreamname))
-            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,residualstreamname,[],'output');
-            aas_log(aap,false,sprintf('REMOVED: %s output stream: %s', aap.tasklist.currenttask.name,residualstreamname));
+        %% Adjust outstream
+        if isempty(aas_getsetting(aap,'writeresiduals')) && any(strcmp(aas_getstreams(aap,'output'),'epi'))
+            aap = aas_renamestream(aap,aap.tasklist.currenttask.name,'epi',[],'output');
+            aas_log(aap,false,sprintf('REMOVED: %s output stream: epi', aap.tasklist.currenttask.name'));
         end
-
         
     otherwise
         aas_log(aap,1,sprintf('Unknown task %s',task));

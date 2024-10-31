@@ -37,10 +37,6 @@
 			-->
             <firstlevelmasking>1</firstlevelmasking>
 
-            <!-- optional explicit mask (fullpath to .nii file) applied to all subjects -->
-            <!-- SPM will combine (intersect) this with firstlevelmasking option -->
-            <explicitmaskfname></explicitmaskfname>
-
             <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
             <autocorrelation>AR(1)</autocorrelation>
             
@@ -95,7 +91,7 @@
             
             <inputstreams>
                 <stream isrenameable='1' ismodified='0'>epi</stream>
-				<stream isessential='0'>ppi</stream>
+                <stream isessential='0'>ppi</stream>
                 <stream isessential='0'>listspikes</stream>
                 <stream isessential='0'>epi_dicom_header</stream>
                 <stream isessential='0'>sliceorder</stream>
@@ -103,6 +99,7 @@
                 <stream isessential='0'>compSignal</stream>
                 <stream isessential='0'>gd_results</stream>
                 <stream isessential='0'>physreg</stream>
+                <stream isessential='0'>explicitmask</stream>
             </inputstreams>
             
             <outputstreams>
