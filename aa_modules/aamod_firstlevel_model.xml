@@ -35,7 +35,14 @@
 			1 - implicit
 			otherwise (0-1) - fraction threshold
 			-->
+
             <firstlevelmasking>1</firstlevelmasking>
+
+            <!-- note you can also provide an explicit mask using the explicitmask -->
+            <!-- input stream (SPM will take the intersection w/ firstlevelmasking) -->
+            <!-- the explicit mask can be subject-level (one for each subject) -->
+            <!-- or study level (one mask applied to all subjects); specify -->
+            <!-- the explicit mask using aas_addinitialstream -->
 
             <!-- 'None' or 'AR(1)' or 'wls' (must have rWLS toolbox installed) -->
             <autocorrelation>AR(1)</autocorrelation>

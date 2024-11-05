@@ -195,8 +195,9 @@ switch task
         % (SPM will intersect this with any implicit masking...)
         
         if aas_stream_has_contents(aap, subj,'explicitmask')
-           explicitmaskfname = aas_getfiles_bystream(aap, subj,'explicitmask');
-           aas_log(aap,false,sprintf('Adding explicit mask %s', explicitmaskfname));
+            % this will look for mask at subject level, then
+            % try study level is a subject level mask not found
+           explicitmaskfname = aas_getfiles_bystream_multilevel(aap, 'subject', subj, 'explicitmask');
            SPMdes.xM.VM = spm_vol(explicitmaskfname);
         end
 
