@@ -55,6 +55,7 @@ function washu_surfacerender(img, cmap, cfg, fname)
 
 % CHANGE HISTORY
 %
+% 10/2024 [MSJ] - fix scaling for passed colormap
 % 06/2021 [MSJ] - cleanup
 % 05/2020 [MSJ] - new; modified from jp_spm8_surfacerender
 %                 add missing helper functions
@@ -295,7 +296,6 @@ cdat = zeros(size(v,2),3);
 maxv = max(abs(v)); % largest positive or negative value
 minv = -1 * maxv;
 
-
 if any(v(:))
   if strcmp(cfg.colorscale, 'symmetrical')
     cdat = squeeze(ind2rgb(floor( (v(:)-minv)/(2*maxv) * size(col,1)), col));
@@ -303,8 +303,7 @@ if any(v(:))
   elseif ~isempty(cfg.colorscale)
     cmin = cfg.colorscale(1);
     cmax = cfg.colorscale(2);
-    
-    cdat = squeeze(ind2rgb(floor( (v(:)-cmin)/(cmax) * size(col,1)), col));
+    cdat = squeeze(ind2rgb(floor( (v(:)-cmin)/(cmax-cmin) * size(col,1)), col));
     fprintf('Color scale from %g to %g.\n', cmin, cmax);    
   else
     if size(col,1)>3

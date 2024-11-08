@@ -178,7 +178,7 @@ switch task
             SPMdes.xX.W  = sparse(eye(size(SPMdes.xY.P,1)));
             SPMdes.xVi.V = sparse(eye(size(SPMdes.xY.P,1)));            
         end
-
+        
         %%%%%%%%%%%%%%%%%%%
         %% ESTIMATE MODEL%%
         %%%%%%%%%%%%%%%%%%%
@@ -190,7 +190,17 @@ switch task
                 spm_unlink(fullfile(SPMdes.swd, prevmask(ind,:)));
             end
         end
-                
+
+        % add explicit mask if one is specified
+        % (SPM will intersect this with any implicit masking...)
+        
+        if aas_stream_has_contents(aap, subj,'explicitmask')
+            % this will look for mask at subject level, then
+            % try study level is a subject level mask not found
+           explicitmaskfname = aas_getfiles_bystream_multilevel(aap, 'subject', subj, 'explicitmask');
+           SPMdes.xM.VM = spm_vol(explicitmaskfname);
+        end
+
         if (strcmp(aap.tasklist.currenttask.settings.autocorrelation,'wls'))
             SPMest = spm_rwls_spm(SPMdes);
         else
